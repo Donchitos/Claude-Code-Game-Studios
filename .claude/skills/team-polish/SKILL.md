@@ -3,7 +3,7 @@ name: team-polish
 description: "Orchestrate the polish team: coordinates performance-analyst, technical-artist, sound-designer, and qa-tester to optimize, polish, and harden a feature or area for release quality."
 argument-hint: "[feature or area to polish]"
 user-invocable: true
-allowed-tools: Read, Glob, Grep, Write, Edit, Bash, Task
+allowed-tools: Read, Glob, Grep, Write, Edit, Bash, Task, AskUserQuestion, TodoWrite
 ---
 When this skill is invoked, orchestrate the polish team through a structured pipeline.
 

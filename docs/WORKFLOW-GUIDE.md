@@ -3,7 +3,7 @@
 > **How to go from zero to a shipped game using the Agent Architecture.**
 >
 > This guide walks you through every phase of game development using the
-> 48-agent system, 35 slash commands, and automated hooks. It assumes you
+> 48-agent system, 36 slash commands, and automated hooks. It assumes you
 > have Claude Code installed and are working from the project root.
 
 ---
@@ -252,7 +252,31 @@ Also define **anti-pillars** -- things your game intentionally avoids:
 You create all the design documents that define how your game works. Nothing
 gets coded yet -- this is pure design and architecture.
 
-### Step 2.1: Create the Game Design Document (GDD)
+### Step 2.1: Decompose Your Concept Into Systems
+
+Before writing individual GDDs, enumerate all the systems your game needs:
+
+```
+/design-systems map
+```
+
+This creates `design/gdd/systems-index.md` — a master tracking document that:
+
+- Lists every system your game needs (combat, movement, UI, etc.)
+- Maps dependencies between systems
+- Assigns priority tiers (MVP, Vertical Slice, Alpha, Full Vision)
+- Determines design order (Foundation → Core → Feature → Presentation → Polish)
+
+Then design each system in dependency order:
+
+```
+/design-systems next
+```
+
+This picks the highest-priority undesigned system and guides you through creating
+its GDD. Each completed GDD goes through `/design-review` before the next starts.
+
+### Step 2.2: Create the Game Design Document (GDD)
 
 For each major system in your game, create a design document in `design/gdd/`.
 Use the template:
@@ -1690,7 +1714,7 @@ conflicts go to `producer`.
 |-------|----------|
 | **Onboarding** | `/start` |
 | **Ideation** | `/brainstorm` |
-| **Design** | `/design-review`, `/architecture-decision` |
+| **Design** | `/design-systems`, `/design-review`, `/architecture-decision` |
 | **Sprint** | `/sprint-plan`, `/estimate`, `/scope-check`, `/retrospective` |
 | **Implementation** | `/code-review`, `/prototype`, `/tech-debt` |
 | **Testing** | `/balance-check`, `/playtest-report`, `/perf-profile` |

@@ -91,6 +91,12 @@ All examples follow the **collaborative workflow pattern:**
 Question → Options → Decision → Draft → Approval
 ```
 
+> **Note:** These examples show the collaborative pattern as conversational text.
+> In practice, agents now use the `AskUserQuestion` tool at decision points to
+> present structured option pickers (with labels, descriptions, and multi-select).
+> The pattern is **Explain → Capture**: agents explain their analysis in
+> conversation first, then present a structured UI picker for the user's decision.
+
 ### ✅ **Collaborative Behaviors Shown:**
 
 1. **Agents Ask Before Assuming**

@@ -43,7 +43,15 @@ fi
 if [ -n "$DATA_FILES" ]; then
     for file in $DATA_FILES; do
         if [[ "$file" == *.json ]]; then
-            if ! python -m json.tool "$file" > /dev/null 2>&1; then
+            # Find a working Python command
+            PYTHON_CMD=""
+            for cmd in python python3 py; do
+                if command -v "$cmd" >/dev/null 2>&1; then
+                    PYTHON_CMD="$cmd"
+                    break
+                fi
+            done
+            if [ -n "$PYTHON_CMD" ] && ! "$PYTHON_CMD" -m json.tool "$file" > /dev/null 2>&1; then
                 echo "ERROR: $file is not valid JSON"
                 EXIT_CODE=1
             fi

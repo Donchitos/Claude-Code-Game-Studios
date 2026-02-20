@@ -3,7 +3,7 @@ name: team-ui
 description: "Orchestrate the UI team: coordinates ux-designer, ui-programmer, and art-director to design, implement, and polish a user interface feature from wireframe to final."
 argument-hint: "[UI feature description]"
 user-invocable: true
-allowed-tools: Read, Glob, Grep, Write, Edit, Bash, Task
+allowed-tools: Read, Glob, Grep, Write, Edit, Bash, Task, AskUserQuestion, TodoWrite
 ---
 When this skill is invoked, orchestrate the UI team through a structured pipeline.
 

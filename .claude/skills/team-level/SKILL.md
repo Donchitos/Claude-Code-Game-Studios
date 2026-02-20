@@ -3,7 +3,7 @@ name: team-level
 description: "Orchestrate level design team: level-designer + narrative-director + world-builder + art-director + systems-designer + qa-tester for complete area/level creation."
 argument-hint: "[level name or area to design]"
 user-invocable: true
-allowed-tools: Read, Glob, Grep, Write, Edit, Bash, Task
+allowed-tools: Read, Glob, Grep, Write, Edit, Bash, Task, AskUserQuestion, TodoWrite
 ---
 
 When this skill is invoked:

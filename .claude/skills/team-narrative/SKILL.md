@@ -3,7 +3,7 @@ name: team-narrative
 description: "Orchestrate the narrative team: coordinates narrative-director, writer, world-builder, and level-designer to create cohesive story content, world lore, and narrative-driven level design."
 argument-hint: "[narrative content description]"
 user-invocable: true
-allowed-tools: Read, Glob, Grep, Write, Edit, Task
+allowed-tools: Read, Glob, Grep, Write, Edit, Task, AskUserQuestion, TodoWrite
 ---
 When this skill is invoked, orchestrate the narrative team through a structured pipeline.
 

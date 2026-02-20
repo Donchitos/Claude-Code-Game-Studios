@@ -15,7 +15,7 @@ FRESH_PROJECT=true
 # Check if engine is configured
 if [ -f ".claude/docs/technical-preferences.md" ]; then
   ENGINE_LINE=$(grep -E "^\- \*\*Engine\*\*:" .claude/docs/technical-preferences.md 2>/dev/null)
-  if echo "$ENGINE_LINE" | grep -qv "TO BE CONFIGURED" 2>/dev/null; then
+  if [ -n "$ENGINE_LINE" ] && ! echo "$ENGINE_LINE" | grep -q "TO BE CONFIGURED" 2>/dev/null; then
     FRESH_PROJECT=false
   fi
 fi
@@ -151,3 +151,5 @@ fi
 echo ""
 echo "💡 To get a comprehensive project analysis, run: /project-stage-detect"
 echo "==================================="
+
+exit 0

@@ -99,6 +99,7 @@ Ask yourself: "What department would handle this in a real studio?"
 | `/project-stage-detect` | Analyze project state, detect stage, identify gaps |
 | `/reverse-document` | Generate design/architecture docs from existing code |
 | `/setup-engine` | Configure engine + version, populate reference docs |
+| `/design-systems` | Decompose concept into systems, map dependencies, guide per-system GDDs |
 | `/team-combat` | Orchestrate full combat team pipeline |
 | `/team-narrative` | Orchestrate full narrative team pipeline |
 | `/team-ui` | Orchestrate full UI team pipeline |
@@ -207,7 +208,7 @@ CLAUDE.md                          -- Master config (read this first, ~60 lines)
 .claude/
   settings.json                    -- Claude Code hooks and project settings
   agents/                          -- 48 agent definitions (YAML frontmatter)
-  skills/                          -- 35 slash command definitions (YAML frontmatter)
+  skills/                          -- 36 slash command definitions (YAML frontmatter)
   hooks/                           -- 8 hook scripts (.sh) wired by settings.json
   rules/                           -- 11 path-specific rule files
   docs/

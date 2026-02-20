@@ -12,7 +12,7 @@ INPUT=$(cat)
 if command -v jq >/dev/null 2>&1; then
     COMMAND=$(echo "$INPUT" | jq -r '.tool_input.command // empty')
 else
-    COMMAND=$(echo "$INPUT" | grep -oE '"command"\s*:\s*"[^"]*"' | sed 's/"command"\s*:\s*"//;s/"$//')
+    COMMAND=$(echo "$INPUT" | grep -oE '"command"[[:space:]]*:[[:space:]]*"[^"]*"' | sed 's/"command"[[:space:]]*:[[:space:]]*"//;s/"$//')
 fi
 
 # Only process git push commands
@@ -21,23 +21,23 @@ if ! echo "$COMMAND" | grep -qE '^git[[:space:]]+push'; then
 fi
 
 CURRENT_BRANCH=$(git rev-parse --abbrev-ref HEAD 2>/dev/null)
-FULL_GATE=false
+MATCHED_BRANCH=""
 
 # Check if pushing to a protected branch
 for branch in develop main master; do
     if [ "$CURRENT_BRANCH" = "$branch" ]; then
-        FULL_GATE=true
+        MATCHED_BRANCH="$branch"
         break
     fi
     # Also check if pushing to a protected branch explicitly (quote branch name for safety)
     if echo "$COMMAND" | grep -qE "[[:space:]]${branch}([[:space:]]|$)"; then
-        FULL_GATE=true
+        MATCHED_BRANCH="$branch"
         break
     fi
 done
 
-if [ "$FULL_GATE" = true ]; then
-    echo "Push to protected branch '$CURRENT_BRANCH' detected." >&2
+if [ -n "$MATCHED_BRANCH" ]; then
+    echo "Push to protected branch '$MATCHED_BRANCH' detected." >&2
     echo "Reminder: Ensure build passes, unit tests pass, and no S1/S2 bugs exist." >&2
     # Allow the push but warn -- uncomment below to block instead:
     # echo "BLOCKED: Run tests before pushing to $CURRENT_BRANCH" >&2

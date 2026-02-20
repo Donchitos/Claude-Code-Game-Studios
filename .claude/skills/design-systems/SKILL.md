@@ -3,7 +3,7 @@ name: design-systems
 description: "Decompose a game concept into individual systems, map dependencies, prioritize design order, and guide creation of per-system GDDs."
 argument-hint: "[optional: 'map' to create/update the systems index, system-name to design a specific system, or 'next' for the highest-priority undesigned system]"
 user-invocable: true
-allowed-tools: Read, Glob, Grep, Write, Edit
+allowed-tools: Read, Glob, Grep, Write, Edit, AskUserQuestion, TodoWrite
 ---
 
 When this skill is invoked:

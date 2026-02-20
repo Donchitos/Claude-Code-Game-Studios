@@ -7,8 +7,8 @@ SESSION_LOG_DIR="production/session-logs"
 
 mkdir -p "$SESSION_LOG_DIR" 2>/dev/null
 
-# Log recent git activity from this session
-RECENT_COMMITS=$(git log --oneline --since="1 hour ago" 2>/dev/null)
+# Log recent git activity from this session (check up to 8 hours for long sessions)
+RECENT_COMMITS=$(git log --oneline --since="8 hours ago" 2>/dev/null)
 MODIFIED_FILES=$(git diff --name-only 2>/dev/null)
 
 # --- Clean up active session state on normal shutdown ---

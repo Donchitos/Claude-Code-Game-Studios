@@ -3,7 +3,7 @@ name: team-combat
 description: "Orchestrate the combat team: coordinates game-designer, gameplay-programmer, ai-programmer, technical-artist, sound-designer, and qa-tester to design, implement, and validate a combat feature end-to-end."
 argument-hint: "[combat feature description]"
 user-invocable: true
-allowed-tools: Read, Glob, Grep, Write, Edit, Bash, Task
+allowed-tools: Read, Glob, Grep, Write, Edit, Bash, Task, AskUserQuestion, TodoWrite
 ---
 When this skill is invoked, orchestrate the combat team through a structured pipeline.
 

@@ -25,15 +25,16 @@
 | `/perf-profile` | Structured performance profiling with bottleneck identification and recommendations |
 | `/project-stage-detect` | Automatically analyze project state, detect stage, identify gaps, and recommend next steps |
 | `/reverse-document` | Generate design or architecture documents from existing implementation (works backwards from code) |
-| `/team-combat` | Orchestrate combat team: game-designer + gameplay-programmer + ai-programmer + tech-artist + sound-designer + qa-tester |
+| `/team-combat` | Orchestrate combat team: game-designer + gameplay-programmer + ai-programmer + technical-artist + sound-designer + qa-tester |
 | `/team-narrative` | Orchestrate narrative team: narrative-director + writer + world-builder + level-designer |
 | `/team-ui` | Orchestrate UI team: ux-designer + ui-programmer + art-director |
 | `/team-release` | Orchestrate release team: release-manager + qa-lead + devops-engineer + producer |
-| `/team-polish` | Orchestrate polish team: performance-analyst + tech-artist + sound-designer + qa-tester |
+| `/team-polish` | Orchestrate polish team: performance-analyst + technical-artist + sound-designer + qa-tester |
 | `/team-audio` | Orchestrate audio team: audio-director + sound-designer + technical-artist + gameplay-programmer |
 | `/team-level` | Orchestrate level team: level-designer + narrative-director + world-builder + art-director + systems-designer + qa-tester |
 | `/launch-checklist` | Complete launch readiness validation across all departments |
 | `/patch-notes` | Generate player-facing patch notes from git history and internal data |
 | `/brainstorm` | Guided ideation using professional studio methods (MDA, SDT, Bartle, verb-first) |
 | `/gate-check` | Validate readiness to advance between development phases (PASS/CONCERNS/FAIL) |
+| `/design-systems` | Decompose game concept into systems, map dependencies, prioritize design order, guide per-system GDDs |
 | `/setup-engine` | Configure engine + version, detect knowledge gaps, populate version-aware reference docs |

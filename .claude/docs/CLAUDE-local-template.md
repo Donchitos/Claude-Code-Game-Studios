@@ -34,4 +34,4 @@ This file is gitignored and will not be committed.
 
 1. Copy this template to your project root: `cp .claude/docs/CLAUDE-local-template.md CLAUDE.local.md`
 2. Edit to match your preferences
-3. Verify `.claude/CLAUDE.local.md` or `CLAUDE.local.md` is in `.gitignore`
+3. Verify `CLAUDE.local.md` is in `.gitignore` (Claude Code reads it from the project root)

@@ -11,7 +11,13 @@ STATE_FILE="production/session-state/active.md"
 if [ -f "$STATE_FILE" ]; then
     echo ""
     echo "## Active Session State (from $STATE_FILE)"
-    cat "$STATE_FILE"
+    STATE_LINES=$(wc -l < "$STATE_FILE" 2>/dev/null | tr -d ' ')
+    if [ "$STATE_LINES" -gt 100 ] 2>/dev/null; then
+        head -n 100 "$STATE_FILE"
+        echo "... (truncated — $STATE_LINES total lines, showing first 100)"
+    else
+        cat "$STATE_FILE"
+    fi
 else
     echo ""
     echo "## No active session state file found"

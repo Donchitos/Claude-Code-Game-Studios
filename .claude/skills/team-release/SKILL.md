@@ -3,7 +3,7 @@ name: team-release
 description: "Orchestrate the release team: coordinates release-manager, qa-lead, devops-engineer, and producer to execute a release from candidate to deployment."
 argument-hint: "[version number or 'next']"
 user-invocable: true
-allowed-tools: Read, Glob, Grep, Write, Edit, Bash, Task
+allowed-tools: Read, Glob, Grep, Write, Edit, Bash, Task, AskUserQuestion, TodoWrite
 ---
 When this skill is invoked, orchestrate the release team through a structured pipeline.
 

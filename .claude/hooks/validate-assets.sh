@@ -12,7 +12,7 @@ INPUT=$(cat)
 if command -v jq >/dev/null 2>&1; then
     FILE_PATH=$(echo "$INPUT" | jq -r '.tool_input.file_path // empty')
 else
-    FILE_PATH=$(echo "$INPUT" | grep -oE '"file_path"\s*:\s*"[^"]*"' | sed 's/"file_path"\s*:\s*"//;s/"$//')
+    FILE_PATH=$(echo "$INPUT" | grep -oE '"file_path"[[:space:]]*:[[:space:]]*"[^"]*"' | sed 's/"file_path"[[:space:]]*:[[:space:]]*"//;s/"$//')
 fi
 
 # Normalize path separators (Windows backslash to forward slash)

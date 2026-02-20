@@ -12,7 +12,7 @@ INPUT=$(cat)
 if command -v jq >/dev/null 2>&1; then
     COMMAND=$(echo "$INPUT" | jq -r '.tool_input.command // empty')
 else
-    COMMAND=$(echo "$INPUT" | grep -oE '"command"\s*:\s*"[^"]*"' | sed 's/"command"\s*:\s*"//;s/"$//')
+    COMMAND=$(echo "$INPUT" | grep -oE '"command"[[:space:]]*:[[:space:]]*"[^"]*"' | sed 's/"command"[[:space:]]*:[[:space:]]*"//;s/"$//')
 fi
 
 # Only process git commit commands
@@ -31,7 +31,7 @@ WARNINGS=""
 # Check design documents for required sections
 DESIGN_FILES=$(echo "$STAGED" | grep -E '^design/gdd/')
 if [ -n "$DESIGN_FILES" ]; then
-    for file in $DESIGN_FILES; do
+    while IFS= read -r file; do
         if [[ "$file" == *.md ]] && [ -f "$file" ]; then
             for section in "Overview" "Detailed" "Edge Cases" "Dependencies" "Acceptance Criteria"; do
                 if ! grep -qi "$section" "$file"; then
@@ -39,7 +39,7 @@ if [ -n "$DESIGN_FILES" ]; then
                 fi
             done
         fi
-    done
+    done <<< "$DESIGN_FILES"
 fi
 
 # Validate JSON data files -- block invalid JSON
@@ -54,7 +54,7 @@ if [ -n "$DATA_FILES" ]; then
         fi
     done
 
-    for file in $DATA_FILES; do
+    while IFS= read -r file; do
         if [ -f "$file" ]; then
             if [ -n "$PYTHON_CMD" ]; then
                 if ! "$PYTHON_CMD" -m json.tool "$file" > /dev/null 2>&1; then
@@ -65,32 +65,32 @@ if [ -n "$DATA_FILES" ]; then
                 echo "WARNING: Cannot validate JSON (python not found): $file" >&2
             fi
         fi
-    done
+    done <<< "$DATA_FILES"
 fi
 
 # Check for hardcoded gameplay values in gameplay code
 # Uses grep -E (POSIX extended) instead of grep -P (Perl) for cross-platform compatibility
 CODE_FILES=$(echo "$STAGED" | grep -E '^src/gameplay/')
 if [ -n "$CODE_FILES" ]; then
-    for file in $CODE_FILES; do
+    while IFS= read -r file; do
         if [ -f "$file" ]; then
             if grep -nE '(damage|health|speed|rate|chance|cost|duration)[[:space:]]*[:=][[:space:]]*[0-9]+' "$file" 2>/dev/null; then
                 WARNINGS="$WARNINGS\nCODE: $file may contain hardcoded gameplay values. Use data files."
             fi
         fi
-    done
+    done <<< "$CODE_FILES"
 fi
 
 # Check for TODO/FIXME without assignee -- uses grep -E instead of grep -P
 SRC_FILES=$(echo "$STAGED" | grep -E '^src/')
 if [ -n "$SRC_FILES" ]; then
-    for file in $SRC_FILES; do
+    while IFS= read -r file; do
         if [ -f "$file" ]; then
             if grep -nE '(TODO|FIXME|HACK)[^(]' "$file" 2>/dev/null; then
                 WARNINGS="$WARNINGS\nSTYLE: $file has TODO/FIXME without owner tag. Use TODO(name) format."
             fi
         fi
-    done
+    done <<< "$SRC_FILES"
 fi
 
 # Print warnings (non-blocking) and allow commit

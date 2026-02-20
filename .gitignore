@@ -12,6 +12,7 @@ Desktop.ini
 # === Claude Code Local ===
 .claude/settings.local.json
 .claude/docs/UPGRADE-PLAN.md
+CLAUDE.local.md
 production/session-logs/
 production/session-state/*.md
 

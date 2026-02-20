@@ -31,7 +31,7 @@ for file in $MERGED_ASSETS; do
     filename=$(basename "$file")
 
     # Check naming convention (lowercase with underscores)
-    if echo "$filename" | grep -qP '[A-Z\s-]'; then
+    if echo "$filename" | grep -qE '[A-Z[:space:]-]'; then
         WARNINGS="$WARNINGS\nNAMING: $file -- must be lowercase with underscores"
         EXIT_CODE=1
     fi

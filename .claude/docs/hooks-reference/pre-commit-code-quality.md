@@ -27,14 +27,14 @@ if [ -n "$CODE_FILES" ]; then
         if [[ "$file" == src/gameplay/* ]]; then
             # Look for numeric literals that are likely balance values
             # Adjust the pattern for your language
-            if grep -nP '(?<![\w.])(?:damage|health|speed|rate|chance|cost|duration)\s*[:=]\s*\d+' "$file"; then
+            if grep -nE '(damage|health|speed|rate|chance|cost|duration)[[:space:]]*[:=][[:space:]]*[0-9]+' "$file"; then
                 echo "WARNING: $file may contain hardcoded gameplay values. Use data files."
                 # Warning only, not blocking
             fi
         fi
 
         # Check for TODO/FIXME without assignee
-        if grep -nP '(TODO|FIXME|HACK)(?!\()' "$file"; then
+        if grep -nE '(TODO|FIXME|HACK)[^(]' "$file"; then
             echo "WARNING: $file has TODO/FIXME without owner tag. Use TODO(name) format."
         fi
 

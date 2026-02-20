@@ -78,7 +78,7 @@ Based on scanned artifacts, determine stage:
 
 ### 4. Generate Stage Report
 
-Use template: `docs/templates/project-stage-report.md`
+Use template: `.claude/docs/templates/project-stage-report.md`
 
 **Report structure**:
 ```markdown
@@ -139,7 +139,7 @@ Recommended next steps:
 - [Priority 2]
 - [Priority 3]
 
-May I write the full stage analysis to docs/project-stage-report.md?
+May I write the full stage analysis to production/project-stage-report.md?
 ```
 
 Wait for user approval before creating the file.
@@ -182,6 +182,6 @@ This skill follows the collaborative design principle:
 2. **Present Options**: "Should I create X, or is it tracked elsewhere?"
 3. **User Decides**: Wait for direction
 4. **Show Draft**: Display report summary
-5. **Get Approval**: "May I write to docs/project-stage-report.md?"
+5. **Get Approval**: "May I write to production/project-stage-report.md?"
 
 **Never** silently write files. **Always** show findings and ask before creating artifacts.

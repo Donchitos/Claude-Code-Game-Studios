@@ -3,7 +3,7 @@ name: team-audio
 description: "Orchestrate audio team: audio-director + sound-designer + technical-artist + gameplay-programmer for full audio pipeline from direction to implementation."
 argument-hint: "[feature or area to design audio for]"
 user-invocable: true
-allowed-tools: Read, Glob, Grep, Write, Edit, Bash, Task
+allowed-tools: Read, Glob, Grep, Write, Edit, Bash, Task, AskUserQuestion, TodoWrite
 ---
 
 When this skill is invoked, orchestrate the audio team through a structured pipeline.
