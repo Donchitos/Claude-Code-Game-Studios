@@ -54,7 +54,7 @@ The result: you still make every decision, but now you have a team that asks the
 | **Skills** | 37 | Slash commands for common workflows (`/start`, `/sprint-plan`, `/code-review`, `/brainstorm`, etc.) |
 | **Hooks** | 8 | Automated validation on commits, pushes, asset changes, session lifecycle, agent audit, and gap detection |
 | **Rules** | 11 | Path-scoped coding standards enforced when editing gameplay, engine, AI, UI, network code, and more |
-| **Templates** | 28 | Document templates for GDDs, ADRs, sprint plans, economy models, faction design, and more |
+| **Templates** | 29 | Document templates for GDDs, ADRs, sprint plans, economy models, faction design, and more |
 
 ## Studio Hierarchy
 

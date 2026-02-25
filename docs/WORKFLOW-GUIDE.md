@@ -257,7 +257,7 @@ gets coded yet -- this is pure design and architecture.
 Before writing individual GDDs, enumerate all the systems your game needs:
 
 ```
-/map-systems map
+/map-systems
 ```
 
 This creates `design/gdd/systems-index.md` — a master tracking document that:
@@ -1743,7 +1743,8 @@ conflicts go to `producer`.
 3. Create a game concept doc (templates/game-concept.md)
 4. Define game pillars (templates/game-pillars.md)
 5. /design-review on your concept doc
-6. Start creating GDDs for each system
+6. /map-systems to decompose concept into systems with dependencies and priorities
+7. /design-system to author per-system GDDs (guided, section-by-section)
 ```
 
 ### Workflow 2: "I have a design and want to start coding"

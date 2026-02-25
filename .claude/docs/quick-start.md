@@ -137,6 +137,11 @@ Templates are in `.claude/docs/templates/`:
 - `pitch-document.md` -- for pitching the game to stakeholders
 - `economy-model.md` -- for virtual economy design (sink/faucet model)
 - `faction-design.md` -- for faction identity, lore, and gameplay role
+- `systems-index.md` -- for systems decomposition and dependency mapping
+- `project-stage-report.md` -- for project stage detection output
+- `design-doc-from-implementation.md` -- for reverse-documenting existing code into GDDs
+- `architecture-doc-from-code.md` -- for reverse-documenting code into architecture docs
+- `concept-doc-from-prototype.md` -- for reverse-documenting prototypes into concept docs
 
 ### 5. Follow the Coordination Rules
 

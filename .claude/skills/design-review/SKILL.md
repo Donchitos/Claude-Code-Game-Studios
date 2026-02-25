@@ -72,5 +72,9 @@ When this skill is invoked:
        > then write per-system GDDs."
    - If the document is an individual system GDD:
      - Check if the systems index references this system
-     - If so, suggest updating its status: "Update the systems index status for
-       this system from 'In Design' to 'Designed'."
+     - If verdict is APPROVED: suggest "Update the systems index status for
+       this system to 'Approved'."
+     - If verdict is NEEDS REVISION or MAJOR REVISION NEEDED: suggest "Update
+       the systems index status for this system to 'In Review'."
+     - Note: This skill is read-only. The user (or `/design-system`) must
+       perform the actual status update in the systems index.

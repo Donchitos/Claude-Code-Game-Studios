@@ -401,7 +401,10 @@ After the GDD is complete (and optionally reviewed):
 
 - Read the systems index
 - Update the target system's row:
-  - Status: "Not Started" -> "In Design" or "In Review" (depending on review)
+  - If design-review was run and verdict is APPROVED: Status → "Approved"
+  - If design-review was run and verdict is NEEDS REVISION: Status → "In Review"
+  - If design-review was skipped: Status → "Designed" (pending review)
+  - If the user chose "I'll review it myself first": Status → "Designed"
   - Design Doc: link to `design/gdd/[system-name].md`
 - Update the Progress Tracker counts
 

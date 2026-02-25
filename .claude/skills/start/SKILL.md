@@ -112,6 +112,7 @@ The user knows what they want to make but hasn't documented it.
    - `/brainstorm` or `/setup-engine` (their pick)
    - `/design-review` — validate the concept doc
    - `/map-systems` — decompose the concept into individual systems with dependencies and priorities
+   - `/design-system` — author per-system GDDs (guided, section-by-section)
    - `/architecture-decision` — make first technical decisions
    - `/sprint-plan` — plan the first sprint
 
@@ -127,6 +128,7 @@ The user has artifacts already. Figure out what exists and what's missing.
 4. Show the recommended path:
    - `/project-stage-detect` — full gap analysis
    - `/setup-engine` — if not configured
+   - `/design-system` — if systems index exists but GDDs are incomplete
    - `/gate-check` — validate readiness for next phase
    - `/sprint-plan` — organize the work
 
