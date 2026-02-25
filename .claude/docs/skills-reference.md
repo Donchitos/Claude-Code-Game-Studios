@@ -36,5 +36,6 @@
 | `/patch-notes` | Generate player-facing patch notes from git history and internal data |
 | `/brainstorm` | Guided ideation using professional studio methods (MDA, SDT, Bartle, verb-first) |
 | `/gate-check` | Validate readiness to advance between development phases (PASS/CONCERNS/FAIL) |
-| `/design-systems` | Decompose game concept into systems, map dependencies, prioritize design order, guide per-system GDDs |
+| `/map-systems` | Decompose game concept into systems, map dependencies, prioritize design order, guide per-system GDDs |
+| `/design-system` | Guided, section-by-section GDD authoring for a single game system with cross-referencing and incremental writing |
 | `/setup-engine` | Configure engine + version, detect knowledge gaps, populate version-aware reference docs |

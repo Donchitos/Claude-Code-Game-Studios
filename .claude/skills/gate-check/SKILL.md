@@ -186,7 +186,7 @@ For items that can't be automatically verified, **ask the user**:
 
 Based on the verdict, suggest specific next steps:
 
-- **No systems index?** → `/design-systems` to decompose the concept into systems
+- **No systems index?** → `/map-systems` to decompose the concept into systems
 - **Missing design docs?** → `/reverse-document` or delegate to `game-designer`
 - **Missing ADRs?** → `/architecture-decision`
 - **Tests failing?** → delegate to `lead-programmer` or `qa-tester`

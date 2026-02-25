@@ -200,7 +200,7 @@ Ground the concept in reality:
    - "Run `/setup-engine [engine] [version]` to configure the engine and populate version-aware reference docs"
    - "Use `/design-review design/gdd/game-concept.md` to validate completeness"
    - "Discuss vision with the `creative-director` agent for pillar refinement"
-   - "Decompose the concept into individual systems with `/design-systems` — maps dependencies, assigns priorities, and guides per-system GDD creation"
+   - "Decompose the concept into individual systems with `/map-systems` — maps dependencies, assigns priorities, and guides per-system GDD creation"
    - "Prototype the core loop with `/prototype [core-mechanic]`"
    - "Playtest the prototype with `/playtest-report` to validate the hypothesis"
    - "If validated, plan the first sprint with `/sprint-plan new`"

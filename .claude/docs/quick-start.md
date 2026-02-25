@@ -99,7 +99,8 @@ Ask yourself: "What department would handle this in a real studio?"
 | `/project-stage-detect` | Analyze project state, detect stage, identify gaps |
 | `/reverse-document` | Generate design/architecture docs from existing code |
 | `/setup-engine` | Configure engine + version, populate reference docs |
-| `/design-systems` | Decompose concept into systems, map dependencies, guide per-system GDDs |
+| `/map-systems` | Decompose concept into systems, map dependencies, guide per-system GDDs |
+| `/design-system` | Guided, section-by-section GDD authoring for a single game system |
 | `/team-combat` | Orchestrate full combat team pipeline |
 | `/team-narrative` | Orchestrate full narrative team pipeline |
 | `/team-ui` | Orchestrate full UI team pipeline |
@@ -165,10 +166,13 @@ If you already know what you need, jump directly to the relevant path:
    - If the engine version is newer than the LLM's training data, it fetches
      current docs from the web so agents suggest correct APIs
 3. **Validate the concept** — Run `/design-review design/gdd/game-concept.md`
-4. **Test the core loop** — Run `/prototype [core-mechanic]`
-5. **Playtest it** — Run `/playtest-report` to validate the hypothesis
-6. **Plan the first sprint** — Run `/sprint-plan new`
-7. Start building
+4. **Decompose into systems** — Run `/map-systems` to map all systems and dependencies
+5. **Design each system** — Run `/design-system [system-name]` (or `/map-systems next`)
+   to write GDDs in dependency order
+6. **Test the core loop** — Run `/prototype [core-mechanic]`
+7. **Playtest it** — Run `/playtest-report` to validate the hypothesis
+8. **Plan the first sprint** — Run `/sprint-plan new`
+9. Start building
 
 ### Path B: "I know what I want to build"
 
@@ -177,10 +181,12 @@ If you already have a game concept and engine choice:
 1. **Set up the engine** — Run `/setup-engine [engine] [version]`
    (e.g., `/setup-engine godot 4.6`) — also creates technical preferences
 2. **Write the Game Pillars** — delegate to `creative-director`
-3. **Create the initial ADR** — Run `/architecture-decision`
-4. **Create the first milestone** in `production/milestones/`
-5. **Plan the first sprint** — Run `/sprint-plan new`
-6. Start building
+3. **Decompose into systems** — Run `/map-systems` to enumerate systems and dependencies
+4. **Design each system** — Run `/design-system [system-name]` for GDDs in dependency order
+5. **Create the initial ADR** — Run `/architecture-decision`
+6. **Create the first milestone** in `production/milestones/`
+7. **Plan the first sprint** — Run `/sprint-plan new`
+8. Start building
 
 ### Path C: "I know the game but not the engine"
 
@@ -208,7 +214,7 @@ CLAUDE.md                          -- Master config (read this first, ~60 lines)
 .claude/
   settings.json                    -- Claude Code hooks and project settings
   agents/                          -- 48 agent definitions (YAML frontmatter)
-  skills/                          -- 36 slash command definitions (YAML frontmatter)
+  skills/                          -- 37 slash command definitions (YAML frontmatter)
   hooks/                           -- 8 hook scripts (.sh) wired by settings.json
   rules/                           -- 11 path-specific rule files
   docs/

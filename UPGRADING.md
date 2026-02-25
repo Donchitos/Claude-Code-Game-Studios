@@ -80,13 +80,13 @@ Best when: you didn't use git to set up the template (just downloaded a zip).
 
 **Released:** 2026-02-21
 **Commit range:** `ad540fe..e289ce9`
-**Key themes:** Context Resilience, AskUserQuestion integration, `/design-systems` skill
+**Key themes:** Context Resilience, AskUserQuestion integration, `/map-systems` skill
 
 ### What Changed
 
 | Category | Changes |
 |----------|---------|
-| **New skills** | `/start` (onboarding), `/design-systems` (systems decomposition) |
+| **New skills** | `/start` (onboarding), `/map-systems` (systems decomposition), `/design-system` (guided GDD authoring) |
 | **New hooks** | `session-start.sh` (recovery), `detect-gaps.sh` (gap detection) |
 | **New templates** | `systems-index.md`, 3 collaborative-protocol templates |
 | **Context management** | Major rewrite — file-backed state strategy added |
@@ -106,7 +106,8 @@ versions directly with no risk to your project content.
 **New files to add:**
 ```
 .claude/skills/start/SKILL.md
-.claude/skills/design-systems/SKILL.md
+.claude/skills/map-systems/SKILL.md
+.claude/skills/design-system/SKILL.md
 .claude/docs/templates/systems-index.md
 .claude/docs/templates/collaborative-protocols/design-agent-protocol.md
 .claude/docs/templates/collaborative-protocols/implementation-agent-protocol.md
@@ -202,7 +203,7 @@ is just the empty placeholder.
 #### `.claude/docs/templates/game-concept.md`
 
 Minor structural update — a `## Next Steps` section was added pointing to
-`/design-systems`. Add that section to your copy if you want the updated
+`/map-systems`. Add that section to your copy if you want the updated
 guidance, but it's not required.
 
 #### `.claude/settings.json`

@@ -67,7 +67,7 @@ When this skill is invoked:
    - If the document being reviewed is `game-concept.md` or `game-pillars.md`:
      - Check if `design/gdd/systems-index.md` exists
      - If it does NOT exist, add to Recommendations:
-       > "This concept is ready for systems decomposition. Run `/design-systems`
+       > "This concept is ready for systems decomposition. Run `/map-systems`
        > to break it down into individual systems with dependencies and priorities,
        > then write per-system GDDs."
    - If the document is an individual system GDD:

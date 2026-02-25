@@ -1,7 +1,7 @@
 ---
-name: design-systems
-description: "Decompose a game concept into individual systems, map dependencies, prioritize design order, and guide creation of per-system GDDs."
-argument-hint: "[optional: 'map' to create/update the systems index, system-name to design a specific system, or 'next' for the highest-priority undesigned system]"
+name: map-systems
+description: "Decompose a game concept into individual systems, map dependencies, prioritize design order, and create the systems index."
+argument-hint: "[optional: 'next' to pick the highest-priority undesigned system and hand off to /design-system]"
 user-invocable: true
 allowed-tools: Read, Glob, Grep, Write, Edit, AskUserQuestion, TodoWrite
 ---
@@ -10,14 +10,12 @@ When this skill is invoked:
 
 ## 1. Parse Arguments
 
-Three modes:
+Two modes:
 
-- **No argument / `map`**: `/design-systems` or `/design-systems map` — Run the full
-  decomposition workflow (Phases 1-5) to create or update the systems index.
-- **System name**: `/design-systems combat` — Jump directly to Phase 6 to design
-  a specific system's GDD. Requires the systems index to exist already.
-- **`next`**: `/design-systems next` — Pick the highest-priority undesigned system
-  from the index and start designing it (Phase 6).
+- **No argument**: `/map-systems` — Run the full decomposition workflow (Phases 1-5)
+  to create or update the systems index.
+- **`next`**: `/map-systems next` — Pick the highest-priority undesigned system
+  from the index and hand off to `/design-system` (Phase 6).
 
 ---
 
@@ -212,12 +210,12 @@ After writing, update `production/session-state/active.md` with:
 
 ---
 
-## 7. Phase 6: Design Individual Systems (Optional, Iterative)
+## 7. Phase 6: Design Individual Systems (Handoff to /design-system)
 
 This phase is entered when:
 - The user says "yes" to designing systems after creating the index
-- The user invokes `/design-systems [system-name]`
-- The user invokes `/design-systems next`
+- The user invokes `/map-systems [system-name]`
+- The user invokes `/map-systems next`
 
 ### Step 6a: Select the System
 
@@ -230,70 +228,26 @@ This phase is entered when:
 Use `AskUserQuestion` for: "Start designing [system-name] now, pick a different
 system, or stop here?"
 
-### Step 6b: Delegate to Agents
+### Step 6b: Hand Off to /design-system
 
-Use the Task tool to delegate GDD writing to the appropriate agent(s):
+Once a system is selected, invoke the `/design-system [system-name]` skill.
 
-**For most gameplay systems:**
-Delegate to `game-designer` with this context in the Task prompt:
-- The system name and description from the systems index
-- The game concept summary (elevator pitch, pillars, core loop)
-- The dependency list (what this system depends on, what depends on it)
-- Any existing related GDDs (read and summarize for context)
-- The GDD template to follow (`.claude/docs/templates/game-design-document.md`)
-- The 8 required sections per coding standards
-- Instruction to follow the collaborative protocol and use incremental file writing
+The `/design-system` skill handles the full GDD authoring process:
+- Gathers context from game concept, systems index, and dependency GDDs
+- Creates a file skeleton immediately
+- Walks through all 8 required sections one at a time (collaborative, incremental)
+- Cross-references existing docs to prevent contradictions
+- Routes to specialist agents for domain expertise
+- Writes each section to file as soon as it's approved
+- Runs `/design-review` when complete
+- Updates the systems index
 
-**For formula-heavy systems (combat, economy, progression):**
-Also delegate to `systems-designer` for detailed mathematical modeling. The
-`game-designer` handles the high-level design; the `systems-designer` fills in
-formulas, interaction matrices, and tuning knobs.
+**Do not duplicate the /design-system workflow here.** This skill owns the systems
+*index*; `/design-system` owns individual system *GDDs*.
 
-**For narrative systems (dialogue, quests, lore):**
-Coordinate with `narrative-director` in addition to `game-designer`.
+### Step 6c: Loop or Stop
 
-**For UI systems:**
-Coordinate with `ux-designer` in addition to `game-designer`.
-
-**For audio systems:**
-Coordinate with `audio-director` and `sound-designer`.
-
-**For economy systems:**
-Coordinate with `economy-designer`.
-
-Present the agent's output to the user for review and approval before writing.
-
-### Step 6c: Write the GDD
-
-After user approval, write the GDD to `design/gdd/[system-name].md`.
-(The delegated agent handles this, following the collaborative protocol.)
-
-### Step 6d: Run Design Review
-
-After the GDD is written, run `/design-review design/gdd/[system-name].md` to
-validate:
-- All 8 required sections are present and complete
-- Formulas are internally consistent
-- Dependencies match what other GDDs expect
-- Edge cases don't contradict other systems
-- Rules are precise enough for a programmer to implement
-
-If the review finds issues:
-- Present them to the user
-- Fix the identified holes before proceeding to the next system
-- Re-run the review after fixes to confirm resolution
-
-### Step 6e: Update the Systems Index
-
-After each GDD passes review:
-- Update the system's Status in the enumeration table (Not Started -> Approved)
-- Update the Design Doc path column
-- Update the Progress Tracker counts
-- Ask: "May I update the systems index at `design/gdd/systems-index.md`?"
-
-### Step 6f: Loop or Stop
-
-After each system, use `AskUserQuestion`:
+After `/design-system` completes, use `AskUserQuestion`:
 - "Continue to the next system ([next system name])?"
 - "Pick a different system?"
 - "Stop here for this session?"
@@ -307,13 +261,7 @@ If continuing, return to Step 6a.
 After the systems index is created (or after designing some systems), suggest
 the appropriate next actions:
 
-- For each undesigned MVP system, recommend the right agent(s):
-  - Gameplay mechanics: `game-designer` + `systems-designer`
-  - UI systems: `game-designer` + `ux-designer`
-  - Audio systems: `audio-director` + `sound-designer`
-  - Narrative systems: `game-designer` + `narrative-director`
-  - Economy systems: `economy-designer`
-  - Level design: `level-designer`
+- "Run `/design-system [system-name]` to write the next system's GDD"
 - "Run `/design-review [path]` on each completed GDD to validate quality"
 - "Run `/gate-check pre-production` to check if you're ready to start building"
 - "Prototype the highest-risk system with `/prototype [system]`"
@@ -331,11 +279,11 @@ This skill follows the collaborative design principle at every phase:
    - Phase 3: "Dependency ordering correct?"
    - Phase 4: "Priority assignments match your vision?"
    - Phase 5: "May I write the systems index?"
-   - Phase 6: "Start designing, pick different, or stop?"
+   - Phase 6: "Start designing, pick different, or stop?" then hand off to `/design-system`
 3. **"May I write to [filepath]?"** before every file write
 4. **Incremental writing**: Update the systems index after each system is designed
-5. **Design review loop**: Every completed GDD passes `/design-review` before the
-   next system starts — holes are caught early, not downstream
+5. **Handoff**: Individual GDD authoring is owned by `/design-system`, which handles
+   incremental section writing, cross-referencing, design review, and index updates
 6. **Session state updates**: Write to `production/session-state/active.md` after
    each milestone (index created, system designed, priorities changed)
 
