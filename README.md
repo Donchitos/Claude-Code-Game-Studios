@@ -35,6 +35,7 @@ The result: you still make every decision, but now you have a team that asks the
 - [Studio Hierarchy](#studio-hierarchy)
 - [Slash Commands](#slash-commands)
 - [Getting Started](#getting-started)
+- [Upgrading](#upgrading)
 - [Project Structure](#project-structure)
 - [How It Works](#how-it-works)
 - [Design Philosophy](#design-philosophy)
@@ -141,6 +142,12 @@ All hooks fail gracefully if optional tools are missing — nothing breaks, you 
    - `/brainstorm` — explore game ideas from scratch
    - `/setup-engine godot 4.6` — configure your engine if you already know
    - `/project-stage-detect` — analyze an existing project
+
+## Upgrading
+
+Already using an older version of this template? See [UPGRADING.md](UPGRADING.md)
+for step-by-step migration instructions, a breakdown of what changed between
+versions, and which files are safe to overwrite vs. which need a manual merge.
 
 ## Project Structure
 
