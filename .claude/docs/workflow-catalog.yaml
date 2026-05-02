@@ -150,9 +150,17 @@ phases:
 
   pre-production:
     label: "Pre-Production"
-    description: "UX specs, asset specs, prototype the core mechanic, define stories, validate fun"
+    description: "Visual entity inventory, UX specs, asset specs, prototype the core mechanic, define stories, validate fun"
     next_phase: production
     steps:
+      - id: entity-inventory
+        name: "Visual Entity & Screen Inventory"
+        command: /asset-spec
+        required: false
+        artifact:
+          glob: "design/assets/entity-inventory.md"
+        description: "Enumerate everything the game needs visually: entities (characters, enemies, buildings, environment pieces), UI screens, HUD elements, panels. Run /asset-spec with no arguments to start a collaborative inventory session — brief or detailed based on your responses. Reads GDDs and art bible to propose a starting list; you add, remove, and adjust. Becomes the source of truth for all art and UX work. Not required if the game has very few distinct visual elements."
+
       - id: asset-spec
         name: "Asset Specs"
         command: /asset-spec
@@ -160,7 +168,7 @@ phases:
         repeatable: true
         artifact:
           glob: "design/assets/asset-manifest.md"
-        description: "Generate per-asset visual specifications and AI generation prompts from approved GDDs and level docs. Run once per system/level/character."
+        description: "Generate per-asset visual specifications and AI generation prompts. Run once per entity, system, level, or character. If no source doc exists, /asset-spec interviews you inline — no narrative document required."
 
       - id: ux-design
         name: "UX Specs (key screens)"
@@ -169,8 +177,8 @@ phases:
         repeatable: true
         artifact:
           glob: "design/ux/*.md"
-          min_count: 1
-        description: "Author UX specs for main menu, core gameplay HUD, and interaction patterns. Reads input method and platform from technical-preferences.md."
+          min_count: 3
+        description: "Author UX specs for the screens identified in the entity inventory (or GDDs if no inventory). Minimum required: main menu, core gameplay HUD, pause menu. Add more screens as the inventory identifies them. Reads input method and platform from technical-preferences.md."
 
       - id: ux-review
         name: "UX Review"
@@ -181,11 +189,11 @@ phases:
       - id: prototype
         name: "Prototype"
         command: /prototype
-        required: true
+        required: false
         artifact:
           glob: "prototypes/*/README.md"
           min_count: 1
-        description: "Build throwaway prototypes in isolated worktree to validate core mechanic"
+        description: "Build a throwaway prototype to validate the core mechanic is fun before committing to full production. Recommended for first-time mechanics or high-risk design decisions. Solo devs with proven concepts may skip."
 
       - id: create-epics
         name: "Create Epics"
@@ -225,13 +233,13 @@ phases:
         description: "Plan the first sprint with prioritized stories from epics"
 
       - id: vertical-slice
-        name: "Vertical Slice (playtested)"
-        command: /playtest-report
-        required: true
+        name: "Vertical Slice"
+        command: /vertical-slice
+        required: false
         artifact:
-          glob: "production/playtests/*.md"
+          glob: "prototypes/*/REPORT.md"
           min_count: 1
-        description: "Document vertical slice playtest sessions using /playtest-report. Run at least once here (≥1 session required before Production; ≥3 required before Polish). Each session should cover one complete run-through of the core loop."
+        description: "Build and playtest a vertical slice — a complete end-to-end pass through the core loop. Recommended before committing epics and stories to production. Skipping is a valid solo dev call but increases risk of late-stage design pivots. If built, must be played and documented before advancing."
 
   production:
     label: "Production"

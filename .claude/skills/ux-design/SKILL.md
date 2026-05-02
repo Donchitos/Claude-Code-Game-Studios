@@ -416,9 +416,13 @@ Context  ->  Questions  ->  Options  ->  Decision  ->  Draft  ->  Approval  ->  
 4. **Decision**: User picks an approach or provides custom direction.
 5. **Draft**: Write the section content in conversation for review. Flag provisional
    assumptions explicitly.
-6. **Approval**: "Does this capture it? Any changes before I write it to the file?"
-7. **Write**: Use `Edit` to replace the `[To be designed]` placeholder with approved
-   content. Confirm the write.
+6. **Approval**: Use `AskUserQuestion`:
+   - "Does this capture the [section name] correctly?"
+   - Options: "Yes — write it to the file", "Small changes needed (describe below)", "Major rethink needed"
+   Do not proceed to step 7 until the user selects "Yes".
+7. **Write**: Use `AskUserQuestion`: "May I write the [section name] section to `[filepath]`?"
+   - Options: "Yes, write it", "Wait — one more change"
+   Once confirmed, use `Edit` to replace the `[To be designed]` placeholder with approved content.
 
 After writing each section, update `production/session-state/active.md`.
 
@@ -501,7 +505,9 @@ This is the largest and most interactive section. Work through it in sub-section
   area, action bar, sidebar, etc.).
 - Offer 2-3 zone arrangements with rationale for each. Reference platform and
   input context gathered from game concept.
-- Ask: "Do any of these match your mental image, or shall we build a custom arrangement?"
+- Use `AskUserQuestion` to capture the choice:
+  - "Which zone arrangement fits best?"
+  - Options: [the 2-3 named arrangements you just presented] + "None — build a custom arrangement"
 
 **Sub-section 3 — Component Inventory**:
 - For each zone, list the UI components it contains. For each component, note:
@@ -672,7 +678,9 @@ Write at least 5 specific, testable criteria that a QA tester can verify without
 - 1 accessibility criterion (per committed tier)
 - 1 criterion specific to this screen's core purpose
 
-Ask the user to confirm: "Do these criteria cover what would actually make this screen 'done' for your QA process?"
+Use `AskUserQuestion` to confirm:
+- "Do these acceptance criteria cover what would make this screen 'done' for your QA process?"
+- Options: "Yes — these are solid", "Add one more criterion", "Remove or rephrase one"
 
 ---
 
@@ -812,8 +820,9 @@ For each pattern (existing or new), document:
 **Reference**: [Screenshot path or ASCII example, if available]
 ```
 
-Work through patterns in groups. Offer: "Shall I draft the first batch based on what
-I've found in the existing specs, or do you want to define them one by one?"
+Work through patterns in groups. Use `AskUserQuestion`:
+- "How do you want to work through these patterns?"
+- Options: "Draft the first batch from existing specs (faster)", "Define them one by one (more control)", "Start with the most-used pattern first"
 
 ---
 
@@ -839,8 +848,9 @@ this screen have a corresponding element in this spec? Present any gaps.
 **2. Pattern library alignment**: Are all interaction patterns used in this spec
 referenced by name? If a new pattern was invented during this spec session, flag
 it for addition to the pattern library:
-> "This spec uses [pattern name], which isn't in the pattern library yet.
-> Want to add it now, or flag it as a gap?"
+Use `AskUserQuestion`:
+- "This spec uses [pattern name], which isn't in the pattern library yet. What should we do?"
+- Options: "Add it to the pattern library now", "Flag it as a gap and continue", "Skip — this pattern is one-off"
 
 **3. Navigation consistency**: Do the entry/exit points in this spec match the
 navigation map in any related specs? Flag mismatches.

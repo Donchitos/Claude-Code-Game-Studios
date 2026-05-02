@@ -144,10 +144,10 @@ A depends on B). If any cycle is detected (e.g. A→B→A, or A→B→C→A):
 ### Gate: Pre-Production → Production
 
 **Required Artifacts:**
-- [ ] Vertical slice exists in `prototypes/` with a REPORT.md (run `/vertical-slice`)
+- [ ] Vertical slice exists in `prototypes/` with a REPORT.md (run `/vertical-slice`) — **recommended, not blocking**; if absent, surface as CONCERNS
 - [ ] First sprint plan exists in `production/sprints/`
 - [ ] Art bible is complete (all 9 sections) and AD-ART-BIBLE sign-off verdict is recorded in `design/art/art-bible.md`
-- [ ] Character visual profiles exist for key characters referenced in narrative docs
+- [ ] Entity inventory exists at `design/assets/entity-inventory.md` (recommended — run `/asset-spec` with no arguments to generate collaboratively from GDDs + art bible)
 - [ ] All MVP-tier GDDs from systems index are complete
 - [ ] Master architecture document exists at `docs/architecture/architecture.md`
 - [ ] At least 3 ADRs covering Foundation-layer decisions exist in `docs/architecture/`
@@ -157,9 +157,9 @@ A depends on B). If any cycle is detected (e.g. A→B→A, or A→B→C→A):
       layer epics present (use `/create-epics layer: foundation` and
       `/create-epics layer: core` to create them, then `/create-stories [epic-slug]`
       for each epic)
-- [ ] Vertical Slice build exists and is playable (not just scope-defined)
-- [ ] Vertical Slice has been playtested with at least 1 documented session (internal OK; 3+ recommended before committing the full team to Production)
-- [ ] Vertical Slice playtest report exists at `production/playtests/` or equivalent
+- [ ] Vertical Slice build exists and is playable (not just scope-defined) — **recommended, not blocking**; if absent, surface as CONCERNS
+- [ ] Vertical Slice has been playtested with at least 1 documented session — **recommended, not blocking**; if absent, surface as CONCERNS
+- [ ] Vertical Slice playtest report exists at `production/playtests/` or equivalent — **recommended, not blocking**; if absent, surface as CONCERNS
 - [ ] UX specs exist for key screens: main menu, core gameplay HUD (at `design/ux/`), pause menu
 - [ ] HUD design document exists at `design/ux/hud.md` (if game has in-game HUD)
 - [ ] All key screen UX specs have passed `/ux-review` (verdict APPROVED or NEEDS REVISION accepted)
@@ -179,15 +179,19 @@ A depends on B). If any cycle is detected (e.g. A→B→A, or A→B→C→A):
       (run `/review-all-gdds` and `/architecture-review` if not done recently)
 - [ ] **Core fantasy is delivered** — at least one playtester independently described an experience that matches the Player Fantasy section of the core system GDDs (without being prompted).
 
-**Vertical Slice Validation** (FAIL if any item is NO):
+**Vertical Slice Validation** (only run these checks if a Vertical Slice was built):
 - [ ] A human has played through the core loop without developer guidance
 - [ ] The game communicates what to do within the first 2 minutes of play
 - [ ] No critical "fun blocker" bugs exist in the Vertical Slice build
 - [ ] The core mechanic feels good to interact with (this is a subjective check — ask the user)
 
-> **Note**: If any Vertical Slice Validation item is FAIL, the verdict is automatically FAIL
-> regardless of other checks. Advancing without a validated Vertical Slice is the #1 cause of
-> production failure in game development (per GDC postmortem data from 155 projects).
+> **Verdict rules for Vertical Slice:**
+> - **Slice was built AND any validation item is NO** → verdict is automatically FAIL. A broken
+>   or unfun vertical slice should not advance to Production.
+> - **Slice was not built (skipped)** → downgrade to CONCERNS only, not FAIL. Surface the risk
+>   clearly: "Advancing without a validated Vertical Slice increases the risk of late-stage design
+>   pivots. Recommended before committing full production scope." The user decides.
+> - Skipping is a valid solo dev or time-constrained call. Shipping a broken one is not.
 
 ---
 
