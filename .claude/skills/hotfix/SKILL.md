@@ -3,18 +3,27 @@ name: hotfix
 description: "Emergency fix workflow that bypasses normal sprint processes with a full audit trail. Creates hotfix branch, tracks approvals, and ensures the fix is backported correctly."
 argument-hint: "[bug-id or description]"
 user-invocable: true
-allowed-tools: Read, Glob, Grep, Write, Edit, Bash, Task
+allowed-tools: Read, Glob, Grep, Write, Edit, Bash, Task, AskUserQuestion
 ---
 
 > **Explicit invocation only**: This skill should only run when the user explicitly requests it with `/hotfix`. Do not auto-invoke based on context matching.
 
 ## Phase 1: Assess Severity
 
-Read the bug description or ID. Determine severity:
+Read the bug description or ID. Assess severity using these criteria:
 
-- **S1 (Critical)**: Game unplayable, data loss, security vulnerability — hotfix immediately
-- **S2 (Major)**: Significant feature broken, workaround exists — hotfix within 24 hours
-- If severity is S3 or lower, recommend using the normal bug fix workflow instead and stop.
+- **S1 (Critical)**: Game unplayable, data loss, security vulnerability
+- **S2 (Major)**: Significant feature broken, workaround exists
+- **S3 or lower**: Minor issue — normal bug fix workflow applies
+
+Confirm with `AskUserQuestion`:
+- Prompt: "I've assessed this as **[assessed severity]** — [brief rationale]. Confirm severity to proceed:"
+- Options:
+  - `[A] S1 (Critical) — game unplayable, data loss, or security issue`
+  - `[B] S2 (Major) — significant feature broken, workaround exists`
+  - `[C] S3 or lower — redirect to normal bug fix workflow`
+
+If [C]: stop. Verdict: **REDIRECTED** — use the normal bug fix workflow for S3 and below.
 
 ---
 

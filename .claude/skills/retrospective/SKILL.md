@@ -3,7 +3,7 @@ name: retrospective
 description: "Generates a sprint or milestone retrospective by analyzing completed work, velocity, blockers, and patterns. Produces actionable insights for the next iteration."
 argument-hint: "[sprint-N|milestone-name]"
 user-invocable: true
-allowed-tools: Read, Glob, Grep, Write
+allowed-tools: Read, Glob, Grep, Write, AskUserQuestion
 context: |
   !git log --oneline --since="2 weeks ago" 2>/dev/null
 ---
@@ -22,17 +22,14 @@ Before loading any data, glob for an existing retrospective file:
   (also check `production/sprints/sprint-[N]-retrospective.md` as an alternate location)
 - For milestone retrospectives: `production/retrospectives/retro-[milestone-name]-*.md`
 
-If a matching file is found, present the user with:
+If a matching file is found, use `AskUserQuestion`:
+- Prompt: "An existing retrospective was found: [filename]. How do you want to proceed?"
+- Options:
+  - `[A] Update existing — load it and add/revise sections with new data`
+  - `[B] Start fresh — generate a new retrospective (archive the old one)`
 
-```
-An existing retrospective was found: [filename]
-
-[A] Update existing retrospective — load it and add/revise sections
-[B] Start fresh — generate a new retrospective, archiving the old one
-```
-
-Wait for user selection before continuing. If updating, read the existing file and
-carry its content forward into the generation phase, revising sections with new data.
+If [A]: read the existing file and carry its content forward, revising sections with new data.
+If [B]: continue to Phase 2 with a blank slate. Before writing the new file, rename the existing one with a `-archived-[date]` suffix.
 
 ---
 

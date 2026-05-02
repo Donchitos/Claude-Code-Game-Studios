@@ -176,7 +176,20 @@ Before finalising the sprint plan, spawn `producer` via Task using gate **PR-SPR
 
 Pass: proposed story list (titles, estimates, dependencies), total team capacity in hours/days, any carryover from the previous sprint, milestone constraints and deadline.
 
-Present the producer's assessment. If UNREALISTIC, revise the story selection (defer stories to Should Have or Nice to Have) before asking for write approval. If CONCERNS, surface them and let the user decide whether to adjust.
+Present the producer's assessment.
+
+If UNREALISTIC: revise the story selection (defer stories to Should Have or Nice to Have) and re-present the updated plan before asking for write approval.
+
+If CONCERNS, use `AskUserQuestion`:
+- Prompt: "Producer flagged concerns with this sprint plan. How do you want to proceed?"
+- Options:
+  - `[A] Proceed as planned — I accept the risk`
+  - `[B] Adjust scope — defer some Should Have stories`
+  - `[C] Extend the sprint timeline`
+
+If [A]: proceed to write approval.
+If [B]: revise the story list, re-present the updated plan, then proceed to write approval.
+If [C]: adjust sprint dates and capacity, re-present the updated plan, then proceed to write approval.
 
 After handling the producer's verdict, ask: "May I write this sprint plan to `production/sprints/sprint-[N].md`?" If yes, write the file, creating the directory if needed. Verdict: **COMPLETE** — sprint plan created. If no: Verdict: **BLOCKED** — user declined write.
 
