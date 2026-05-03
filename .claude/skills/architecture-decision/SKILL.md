@@ -48,7 +48,7 @@ Enter **retrofit mode**:
      Options: "Proposed", "Accepted", "Deprecated", "Superseded by ADR-XXXX"
    - For **ADR Dependencies**: ask — "Does this decision depend on any other ADR?
      Does it enable or block any other ADR or epic?" Accept "None" for each field.
-   - For **Engine Compatibility**: read the engine reference docs (same as Step 0 below)
+   - For **Engine Compatibility**: read the engine reference docs (same as Step 1 below)
      and ask the user to confirm the domain. Then generate the table with verified data.
    - For **GDD Requirements Addressed**: ask — "Which GDD systems motivated this decision?
      What specific requirement in each GDD does this ADR address?"
@@ -58,7 +58,7 @@ Enter **retrofit mode**:
 7. Suggest: "Run `/architecture-review` to re-validate coverage now that this ADR
    has its Status and Dependencies fields."
 
-If NOT in retrofit mode, proceed to Step 0 below (normal ADR authoring).
+If NOT in retrofit mode, proceed to Step 1 below (normal ADR authoring).
 
 **No-argument guard**: If no argument was provided (title is empty), ask before
 running Phase 0:
@@ -66,7 +66,7 @@ running Phase 0:
 > "What technical decision are you documenting? Please provide a short title
 > (e.g., `event-system-architecture`, `physics-engine-choice`)."
 
-Use the user's response as the title, then proceed to Step 0.
+Use the user's response as the title, then proceed to Step 1.
 
 ---
 
