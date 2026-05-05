@@ -246,6 +246,16 @@ stencil buffer (4.5), shader texture types changed from `Texture2D` to
 
 When in doubt, prefer the API documented in the reference files over your training data.
 
+## Tooling — ripgrep File Filtering
+
+**CRITICAL**: There is no `gdscript` type in ripgrep. `*.gd` files are registered
+under the `gap` type (GAP programming language). Using `--type gdscript` or passing
+`type: "gdscript"` to the Grep tool produces a hard error — the search never executes.
+
+**Always use `glob: "*.gd"`** when filtering GDScript files:
+- Grep tool: `glob: "*.gd"` ✓  |  `type: "gdscript"` ✗
+- Shell/CI: `rg --glob "*.gd"` ✓  |  `rg --type gdscript` ✗
+
 ## Coordination
 - Work with **godot-specialist** for overall Godot architecture
 - Work with **art-director** for visual direction and material standards

@@ -62,8 +62,8 @@ if [ -f "$STATE_FILE" ]; then
     echo "A previous session left state at: $STATE_FILE"
     echo "Read this file to recover context and continue where you left off."
     echo ""
-    echo "Quick summary:"
-    head -20 "$STATE_FILE" 2>/dev/null
+    echo "Quick summary (last 20 lines):"
+    tail -20 "$STATE_FILE" 2>/dev/null
     TOTAL_LINES=$(wc -l < "$STATE_FILE" 2>/dev/null)
     if [ "$TOTAL_LINES" -gt 20 ]; then
         echo "  ... ($TOTAL_LINES total lines — read the full file to continue)"

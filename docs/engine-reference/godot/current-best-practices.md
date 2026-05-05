@@ -93,6 +93,12 @@ This supplements (not replaces) the agent's built-in knowledge.
 - Live preview in Quick Open dialog when "Live Preview" enabled
 - New "Select Mode" (v key) prevents accidental transforms; old mode renamed "Transform Mode" (q key)
 
+## Tooling
+
+- **ripgrep has no `gdscript` type**: `*.gd` is registered under `gap` (GAP programming language).
+  `rg --type gdscript` is a hard error — the search never executes.
+  Always use `rg --glob "*.gd"` (shell) or `glob: "*.gd"` (Grep tool) to filter GDScript files.
+
 ## Platform (4.5+)
 
 - **visionOS export**: First new platform since open-sourcing (windowed app mode)
