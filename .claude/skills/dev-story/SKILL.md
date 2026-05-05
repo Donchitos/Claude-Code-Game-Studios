@@ -4,6 +4,7 @@ description: "Read a story file and implement it. Loads the full context (story,
 argument-hint: "[story-path]"
 user-invocable: true
 allowed-tools: Read, Glob, Grep, Write, Bash, Task, AskUserQuestion
+model: sonnet
 ---
 
 # Dev Story

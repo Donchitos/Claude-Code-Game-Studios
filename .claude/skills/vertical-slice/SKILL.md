@@ -4,6 +4,7 @@ description: "Pre-Production validation — build a production-quality end-to-en
 argument-hint: "[--review full|lean|solo]"
 user-invocable: true
 allowed-tools: Read, Glob, Grep, Write, Edit, Bash, Task, AskUserQuestion
+model: sonnet
 agent: prototyper
 isolation: worktree
 ---

@@ -4,6 +4,7 @@ description: "After architecture is complete, produces a flat actionable rules s
 argument-hint: "[update — regenerate from current ADRs]"
 user-invocable: true
 allowed-tools: Read, Glob, Grep, Write, Task
+model: sonnet
 agent: technical-director
 ---
 

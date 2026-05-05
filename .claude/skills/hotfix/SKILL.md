@@ -4,6 +4,7 @@ description: "Emergency fix workflow that bypasses normal sprint processes with 
 argument-hint: "[bug-id or description]"
 user-invocable: true
 allowed-tools: Read, Glob, Grep, Write, Edit, Bash, Task, AskUserQuestion
+model: sonnet
 ---
 
 > **Explicit invocation only**: This skill should only run when the user explicitly requests it with `/hotfix`. Do not auto-invoke based on context matching.

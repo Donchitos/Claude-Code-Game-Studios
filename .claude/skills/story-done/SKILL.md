@@ -4,6 +4,7 @@ description: "End-of-story completion review. Reads the story file, verifies eac
 argument-hint: "[story-file-path] [--review full|lean|solo]"
 user-invocable: true
 allowed-tools: Read, Glob, Grep, Bash, Write, Edit, AskUserQuestion, Task
+model: sonnet
 ---
 
 # Story Done

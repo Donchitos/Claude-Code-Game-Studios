@@ -4,6 +4,7 @@ description: "Generates a sprint or milestone retrospective by analyzing complet
 argument-hint: "[sprint-N|milestone-name]"
 user-invocable: true
 allowed-tools: Read, Glob, Grep, Write, AskUserQuestion
+model: sonnet
 context: |
   !git log --oneline --since="2 weeks ago" 2>/dev/null
 ---

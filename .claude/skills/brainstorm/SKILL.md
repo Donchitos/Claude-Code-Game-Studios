@@ -4,6 +4,7 @@ description: "Guided game concept ideation — from zero idea to a structured ga
 argument-hint: "[genre or theme hint, or 'open'] [--review full|lean|solo]"
 user-invocable: true
 allowed-tools: Read, Glob, Grep, Write, WebSearch, Task, AskUserQuestion
+model: sonnet
 ---
 
 When this skill is invoked:

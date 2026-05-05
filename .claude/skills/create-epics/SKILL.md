@@ -4,6 +4,7 @@ description: "Translate approved GDDs + architecture into epics — one epic per
 argument-hint: "[system-name | layer: foundation|core|feature|presentation | all] [--review full|lean|solo]"
 user-invocable: true
 allowed-tools: Read, Glob, Grep, Write, Task, AskUserQuestion
+model: sonnet
 agent: technical-director
 ---
 

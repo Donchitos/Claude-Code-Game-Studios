@@ -4,6 +4,7 @@ description: "Performs an architectural and quality code review on a specified f
 argument-hint: "[path-to-file-or-directory]"
 user-invocable: true
 allowed-tools: Read, Glob, Grep, Bash, Task
+model: sonnet
 agent: lead-programmer
 ---
 

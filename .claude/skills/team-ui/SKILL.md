@@ -4,6 +4,7 @@ description: "Orchestrate the UI team through the full UX pipeline: from UX spec
 argument-hint: "[UI feature description]"
 user-invocable: true
 allowed-tools: Read, Glob, Grep, Write, Edit, Bash, Task, AskUserQuestion, TodoWrite
+model: sonnet
 ---
 When this skill is invoked, orchestrate the UI team through a structured pipeline.
 

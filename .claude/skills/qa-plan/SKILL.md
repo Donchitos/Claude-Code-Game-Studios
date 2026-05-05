@@ -4,6 +4,7 @@ description: "Generate a QA test plan for a sprint or feature. Reads GDDs and st
 argument-hint: "[sprint | feature: system-name | story: path]"
 user-invocable: true
 allowed-tools: Read, Glob, Grep, Write, AskUserQuestion
+model: sonnet
 agent: qa-lead
 ---
 

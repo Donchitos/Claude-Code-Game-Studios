@@ -4,6 +4,7 @@ description: "Guided, section-by-section authoring of the master architecture do
 argument-hint: "[focus-area: full | layers | data-flow | api-boundaries | adr-audit] [--review full|lean|solo]"
 user-invocable: true
 allowed-tools: Read, Glob, Grep, Write, Bash, AskUserQuestion, Task
+model: sonnet
 agent: technical-director
 ---
 

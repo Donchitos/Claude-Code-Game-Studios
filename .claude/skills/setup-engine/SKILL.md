@@ -4,6 +4,7 @@ description: "Configure the project's game engine and version. Pins the engine i
 argument-hint: "[engine] | [engine version] | refresh | upgrade [old-version] [new-version] | no args for guided selection"
 user-invocable: true
 allowed-tools: Read, Glob, Grep, Write, Edit, WebSearch, WebFetch, Task, AskUserQuestion
+model: sonnet
 ---
 
 When this skill is invoked:

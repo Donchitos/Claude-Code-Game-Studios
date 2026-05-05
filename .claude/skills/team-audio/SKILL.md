@@ -4,6 +4,7 @@ description: "Orchestrate audio team: audio-director + sound-designer + technica
 argument-hint: "[feature or area to design audio for]"
 user-invocable: true
 allowed-tools: Read, Glob, Grep, Write, Edit, Bash, Task, AskUserQuestion, TodoWrite
+model: sonnet
 ---
 
 If no argument is provided, output usage guidance and exit without spawning any agents:

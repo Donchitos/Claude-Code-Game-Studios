@@ -4,6 +4,7 @@ description: "Brownfield onboarding — audits existing project artifacts for te
 argument-hint: "[focus: full | gdds | adrs | stories | infra]"
 user-invocable: true
 allowed-tools: Read, Glob, Grep, Write, AskUserQuestion
+model: sonnet
 agent: technical-director
 ---
 

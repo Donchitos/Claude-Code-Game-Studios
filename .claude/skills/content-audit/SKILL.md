@@ -4,6 +4,7 @@ description: "Audit GDD-specified content counts against implemented content. Id
 argument-hint: "[system-name | --summary | (no arg = full audit)]"
 user-invocable: true
 allowed-tools: Read, Glob, Grep, Write
+model: sonnet
 agent: producer
 ---
 

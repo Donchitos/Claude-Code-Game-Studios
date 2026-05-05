@@ -302,36 +302,6 @@ How a story gets from backlog to closed (summary view):
 
 ---
 
-## Skill Chain: UX Pipeline in Detail (Legacy Reference)
-
-```
-design/gdd/*.md (UX requirements extracted)
-design/player-journey.md (emotional arc)
-        │
-        ▼
-/ux-design hud              → design/ux/hud.md
-/ux-design screen [name]    → design/ux/screens/[name].md
-/ux-design patterns         → design/ux/interaction-patterns.md
-        │
-        ▼
-/ux-review design/ux/
-        │
-        ├── APPROVED → all specs ready for /team-ui
-        ├── NEEDS REVISION → blocking issues listed → fix → re-run review
-        └── MAJOR REVISION → fundamental UX problems → significant redesign
-                │
-                ▼ (after APPROVED)
-        /team-ui
-                │
-                ├── Phase 1: context load + /ux-design (if specs missing)
-                ├── Phase 2: visual design (art-director)
-                ├── Phase 3: layout implementation (ui-programmer)
-                ├── Phase 4: accessibility audit (accessibility-specialist)
-                └── Phase 5: final review
-```
-
----
-
 ## Brownfield Onboarding Flow
 
 For projects with existing work (use `/start` option D or run directly):

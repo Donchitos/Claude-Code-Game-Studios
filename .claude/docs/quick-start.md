@@ -226,8 +226,8 @@ If you already know what you need, jump directly to the relevant path:
 4. **Decompose into systems** — Run `/map-systems` to map all systems and dependencies
 5. **Design each system** — Run `/design-system [system-name]` (or `/map-systems next`)
    to write GDDs in dependency order
-6. **Validate the concept** — Run `/prototype [core-mechanic]` (1–3 days — before writing GDDs)
-7. **Design each system** — Run `/design-system [system-name]` to write GDDs, informed by prototype learnings
+6. **Prototype the mechanic** — Run `/prototype [core-mechanic]` (1–3 days — before writing GDDs)
+7. **Design each system** — Run `/design-system [system-name]` to write GDDs, informed by prototype findings
 8. **Plan the first sprint** — After architecture and `/vertical-slice`, run `/sprint-plan new`
 9. Start building
 

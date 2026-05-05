@@ -4,6 +4,7 @@ description: "Validates a UX spec, HUD design, or interaction pattern library fo
 argument-hint: "[file-path or 'all' or 'hud' or 'patterns']"
 user-invocable: true
 allowed-tools: Read, Glob, Grep
+model: sonnet
 agent: ux-designer
 ---
 
