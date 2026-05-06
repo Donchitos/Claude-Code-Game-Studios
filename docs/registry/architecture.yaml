@@ -29,8 +29,8 @@
 #   All forbidden patterns: Grep pattern="^  - pattern:" (forbidden_patterns section)
 #   Superseded entries:     Grep pattern="status: superseded"
 
-version: 1
-last_updated: ""
+version: 2
+last_updated: 2026-05-07
 
 # ─── STATE OWNERSHIP ─────────────────────────────────────────────────────────
 # Who is the authoritative owner of each piece of shared game state.
@@ -43,7 +43,57 @@ last_updated: ""
 # interface: how other systems access this state (read-only property, method call,
 #   signal, shared resource, etc.) — this is the contract other ADRs depend on.
 
-state_ownership: []
+state_ownership:
+  - state: library_entries
+    status: active
+    owner_system: library-service
+    adr: docs/architecture/adr-0001-library-storage-format.md
+    interface: |
+      LibraryService.get_entry(id: String) -> LibraryEntry (read-only).
+      LibraryService.get_holding(synthesized_id: String) -> LibraryHolding (read-only).
+      LibraryService.search(query: String, filters: Dictionary) -> Array[LibraryEntry] (read-only).
+      All entries are Godot Resource subclasses cached by ResourceLoader.
+    write_access: library-service-only
+    referenced_by:
+      - docs/architecture/adr-0001-library-storage-format.md
+    added: 2026-05-04
+    revised: ""
+
+  - state: evaluation_state
+    status: active
+    owner_system: evaluation-service
+    adr: docs/architecture/adr-0007-submission-evaluation-algorithm.md
+    interface: |
+      EvaluationService.current_state -> State enum (read-only externally).
+      Values: IDLE | VALIDATING | COMPUTING | REPORTING | DONE.
+      External systems (#5 Browser, #7 Editor) inspect to gate UI affordances
+      (e.g., Submit 버튼 disable when current_state != IDLE) but never write.
+    write_access: evaluation-service-only
+    referenced_by:
+      - docs/architecture/adr-0007-submission-evaluation-algorithm.md
+    added: 2026-05-06
+    revised: ""
+
+  - state: case_entries
+    status: active
+    owner_system: case-service
+    adr: docs/architecture/adr-0003-case-data-storage-format.md
+    interface: |
+      CaseService.get_case(id: String) -> CaseFile (read-only).
+      CaseService.case_count() -> int (read-only — also used as heuristic guard
+      by EvaluationService._ready() to skip await on pre-fired cases_loaded signal).
+      CaseService._cases is the authoritative store; CaseService._disabled tracks
+      cases that failed validation (per ADR-0003 fault isolation, Library EC-5 mirror).
+      All cases are CaseFile Resource instances loaded via ResourceLoader at boot.
+    write_access: case-service-only
+    referenced_by:
+      - docs/architecture/adr-0003-case-data-storage-format.md
+      - docs/architecture/adr-0007-submission-evaluation-algorithm.md
+    added: 2026-05-06
+    revised: ""
+    notes: |
+      Originally should have been registered when ADR-0003 was Accepted (2026-05-05)
+      but was missed. Registered retroactively during architecture-review 2026-05-06.
 
 # Example:
 #
@@ -71,7 +121,120 @@ state_ownership: []
 #
 # pattern options: signal | direct_call | event_bus | shared_resource | rpc | none
 
-interfaces: []
+interfaces:
+  - contract: library_loaded
+    status: active
+    pattern: signal
+    producer: library-service
+    consumers:
+      - case-service                # waits for signal before validating case correct_citations
+    adr: docs/architecture/adr-0001-library-storage-format.md
+    signal_signature: "library_loaded(entry_count: int)"
+    referenced_by:
+      - docs/architecture/adr-0001-library-storage-format.md
+    added: 2026-05-04
+    revised: ""
+
+  - contract: evaluation_completed
+    status: active
+    pattern: signal
+    producer: evaluation-service
+    consumers:
+      - case-file-browser           # transitions to VerdictArrived state
+      - verdict-reveal-sequence     # #10 — envelope + 인장 연출 trigger
+      - career-progression          # #11 — EvaluationResult persistence
+      - retrospective-replay        # #14 — subscores + matched/missed/redundant 시각화
+    adr: docs/architecture/adr-0007-submission-evaluation-algorithm.md
+    signal_signature: "evaluation_completed(result: EvaluationResult)"
+    referenced_by:
+      - docs/architecture/adr-0007-submission-evaluation-algorithm.md
+    added: 2026-05-06
+    revised: ""
+
+  - contract: submission_rejected
+    status: active
+    pattern: signal
+    producer: evaluation-service
+    consumers:
+      - brief-editor                # #7 — display rejection reason, return to edit
+    adr: docs/architecture/adr-0007-submission-evaluation-algorithm.md
+    signal_signature: "submission_rejected(reason: String)"
+    referenced_by:
+      - docs/architecture/adr-0007-submission-evaluation-algorithm.md
+    added: 2026-05-06
+    revised: ""
+
+  - contract: cases_loaded
+    status: active
+    pattern: signal
+    producer: case-service
+    consumers:
+      - evaluation-service          # waits for signal (or uses case_count() heuristic guard)
+      - case-file-browser           # #5 — Catalog 초기 빌드 트리거
+    adr: docs/architecture/adr-0003-case-data-storage-format.md
+    signal_signature: "cases_loaded(case_count: int)"
+    referenced_by:
+      - docs/architecture/adr-0003-case-data-storage-format.md
+      - docs/architecture/adr-0007-submission-evaluation-algorithm.md
+    added: 2026-05-06
+    revised: ""
+    notes: |
+      Originally should have been registered when ADR-0003 was Accepted (2026-05-05)
+      but was missed. Registered retroactively during architecture-review 2026-05-06.
+      Pattern mirrors library_loaded (ADR-0001 §IG #6).
+
+  - contract: citation_drag_started
+    status: active
+    pattern: signal
+    producer: library-service
+    consumers:
+      - reasoning-workspace          # #6 — DeskPane drop zone hint 활성 (FROZEN/READ_ONLY 시 비활성)
+    adr: docs/architecture/adr-0008-workspace-layout.md
+    signal_signature: "citation_drag_started(library_id: String)"
+    referenced_by:
+      - docs/architecture/adr-0008-workspace-layout.md
+    added: 2026-05-07
+    revised: ""
+    notes: |
+      ADR-0008 §2 hybrid topology — LibraryService autoload single emitter (Gate ③
+      invariant 1 exactly-once 보장). Native drop은 별개 path (`_drop_data` callback);
+      본 시그널은 *drag-start hint 활성* 전용. ADR-0001 amendment trigger — LibraryService에
+      신규 signal 추가 의무.
+
+  - contract: workspace_handoff_started
+    status: active
+    pattern: signal
+    producer: case-file-browser
+    consumers:
+      - reasoning-workspace          # #6 — INACTIVE → ACTIVE 전이 + DeskPane 통제권 위임
+    adr: docs/architecture/adr-0008-workspace-layout.md
+    signal_signature: "workspace_handoff_started(case_id: String)"
+    referenced_by:
+      - docs/architecture/adr-0008-workspace-layout.md
+    added: 2026-05-07
+    revised: ""
+    notes: |
+      Reasoning Workspace GDD §3.3 ↔ Case File Browser §3.6 cross-link. ADR-0008
+      §1 Control hierarchy lock 후 본 contract 등록 — Browser FactsOpen → WorkspaceHandoff
+      전이 시 emit.
+
+  - contract: workspace_handoff_ended
+    status: active
+    pattern: signal
+    producer: reasoning-workspace
+    consumers:
+      - case-file-browser            # #5 — SubmissionPending 또는 WorkspaceHandoff 유지 판단
+    adr: docs/architecture/adr-0008-workspace-layout.md
+    signal_signature: 'workspace_handoff_ended(case_id: String, reason: String)'  # reason ∈ {"submitted", "paused"}
+    referenced_by:
+      - docs/architecture/adr-0008-workspace-layout.md
+    added: 2026-05-07
+    revised: ""
+    notes: |
+      reason = "submitted" → Browser SubmissionPending 전이; reason = "paused" → Browser
+      WorkspaceHandoff 유지 (재진입 가능). Reasoning Workspace cycle 2 game-designer
+      IMPORTANT carry-over (이탈 trigger 명시) — UI Foundation epic이 Browser CatalogIdle
+      back-navigation 시점 emit 결정 의무.
 
 # Example:
 #
@@ -100,7 +263,74 @@ interfaces: []
 # Register a budget when an ADR explicitly claims a frame time allocation.
 # The registry lets /architecture-review verify the total doesn't exceed the target.
 
-performance_budgets: []
+performance_budgets:
+  - system: legal-reference-library
+    status: active
+    budget_type: load_time            # not per-frame; this system only loads at boot
+    load_time_budget_ms_mvp: 500      # MVP 30 entries (AC-17)
+    load_time_budget_ms_v1: 2000      # v1+ 300 entries (AC-17)
+    memory_budget_mb: 80              # ResourceLoader cache cap (Library GDD Section 7.4)
+    adr: docs/architecture/adr-0001-library-storage-format.md
+    notes: |
+      Load-time budget only — Library entries are eager-loaded at boot, then resident in
+      ResourceLoader cache. Per-frame cost is near-zero after boot (Dictionary lookup).
+      Memory cap 80MB applies to total ResourceLoader cache size for Library entries.
+    referenced_by:
+      - docs/architecture/adr-0001-library-storage-format.md
+    added: 2026-05-04
+    revised: ""
+
+  - system: evaluation-service
+    status: active
+    budget_type: per_call             # per-evaluation, not per-frame
+    per_call_budget_ms: 50            # GDD AC-21 — average case (correct 6 + player 6 citations)
+    memory_kb_avg_per_call: 256       # GDD AC-22 — averaged via OS.get_static_memory_usage() over 100 iterations
+    adr: docs/architecture/adr-0007-submission-evaluation-algorithm.md
+    notes: |
+      Per-call budget triggered by EvaluationService.submit() — not a per-frame cost.
+      Memory measurement uses OS.get_static_memory_usage() baseline + 100-iteration averaging
+      because Performance.get_monitor() suffers from GC defer + monitor-tick noise that makes
+      single-call delta unreliable (godot-specialist verification 2026-05-06, ADR-0007 Risk 6).
+      No caching — every submit() recomputes (AC-23 byte-identical determinism enables this).
+    referenced_by:
+      - docs/architecture/adr-0007-submission-evaluation-algorithm.md
+    added: 2026-05-06
+    revised: ""
+
+  - system: case-data
+    status: active
+    budget_type: load_time            # not per-frame; Case data is eager-loaded at boot like Library
+    load_time_budget_ms_mvp: 100      # MVP 30 cases (AC-6 — release build)
+    memory_budget_mb: 1               # MVP 30 cases meta memory (AC-7 — case_meta_memory_budget_kb)
+    adr: docs/architecture/adr-0003-case-data-storage-format.md
+    notes: |
+      Eager load at boot (after LibraryService.library_loaded), then resident.
+      Per-frame cost near-zero after boot (Dictionary lookup via CaseService.get_case).
+      First seed case 1차 측정 PASSED 2026-05-05 — 30 추정 release 22 ms / 748 KB
+      meta memory. Originally should have been registered when ADR-0003 was Accepted
+      but was missed. Registered retroactively during architecture-review 2026-05-06.
+    referenced_by:
+      - docs/architecture/adr-0003-case-data-storage-format.md
+    added: 2026-05-06
+    revised: ""
+
+  - system: ui-fonts
+    status: active
+    budget_type: gpu_resident         # GPU texture memory for font atlases + cached glyph cache
+    bonmyeongjo_msdf_atlas_mb: 14     # 본명조 MSDF Hangul-only at 32×32 cells, BC7-compressed
+    total_fonts_resident_mb: 50       # all 3 families (본명조 MSDF + Pretendard TTF + Plex Mono TTF) cap
+    adr: docs/architecture/adr-0004-korean-text-rendering-msdf-font.md
+    notes: |
+      MSDF atlas is pre-generated at editor time and committed as .tres — no runtime
+      generation cost. BC7 / ETC2 GPU compression on Forward+ reduces resident size by ~4×.
+      Pretendard + Plex Mono TTF use Godot's dynamic glyph cache; first-paint of each
+      glyph triggers small CPU + GPU upload (~1 ms amortised). Memory cap separate from
+      Library ResourceLoader cache (80 MB) — font assets sit in their own ResourceLoader
+      slot. Verification: gdunit4 or manual evidence at tests/integration/font-rendering/.
+    referenced_by:
+      - docs/architecture/adr-0004-korean-text-rendering-msdf-font.md
+    added: 2026-05-06
+    revised: ""
 
 # Example:
 #
@@ -131,7 +361,221 @@ performance_budgets: []
 # Register an API decision when the choice is non-obvious and other ADRs might
 # make a different choice for the same purpose without knowing this was decided.
 
-api_decisions: []
+api_decisions:
+  - purpose: legal_reference_storage
+    status: active
+    api: "Godot custom Resource (.tres) via ResourceLoader.load(); LibraryEntry / LibraryLawEntry / LibraryPrecedentEntry / LibraryHolding classes"
+    not: "external YAML, Markdown + YAML front-matter, JSON, FileAccess.get_file_as_string + manual parse"
+    adr: docs/architecture/adr-0001-library-storage-format.md
+    reason: |
+      Static typing catches schema drift at parse time; ResourceLoader provides cache,
+      hot reload, thread safety; .tres is text format → git diff friendly; no external
+      dependency (GDScript ships JSON and Resource only — YAML would require an addon).
+    referenced_by:
+      - docs/architecture/adr-0001-library-storage-format.md
+    added: 2026-05-04
+    revised: ""
+
+  - purpose: library_holding_id_synthesis
+    status: active
+    api: "LibraryService.get_holding(synthesized_id: String) — single source of truth for case+holding ID concatenation and parsing"
+    not: "ad-hoc string concatenation in callers (e.g., '%s/holding-%d' % [case_id, n])"
+    adr: docs/architecture/adr-0001-library-storage-format.md
+    reason: |
+      Synthesis rule (delimiter, sub-holding nesting) may evolve. Centralising in
+      LibraryService.get_holding() means future format changes touch one function,
+      not every #6 evidence array or #7 brief editor token rendering site.
+    referenced_by:
+      - docs/architecture/adr-0001-library-storage-format.md
+    added: 2026-05-04
+    revised: ""
+
+  - purpose: submission_evaluation_storage
+    status: active
+    api: "Godot custom Resource (.tres) via class_name + extends Resource + @export — PlayerSubmission / EvaluationResult / CommentTemplates classes under src/data/"
+    not: "Dictionary I/O between EvaluationService and consumers (#7/#10/#11/#14); inline schema in script files"
+    adr: docs/architecture/adr-0007-submission-evaluation-algorithm.md
+    reason: |
+      Mirrors ADR-0001 (Library) and ADR-0003 (Case Data) — static typing catches
+      schema drift at parse time across 4 downstream consumers (#7 Brief Editor,
+      #10 Verdict Reveal, #11 Career Progression, #14 Retrospective Replay).
+      Dictionary I/O would lose autocomplete, refactor safety, and create silent
+      key-typo bugs that only surface at the 4-consumer integration boundary.
+    referenced_by:
+      - docs/architecture/adr-0007-submission-evaluation-algorithm.md
+    added: 2026-05-06
+    revised: ""
+
+  - purpose: verdict_threshold_storage
+    status: active
+    api: "design/registry/entities.yaml `constants:` section (`submission_verdict_thresholds: {pagi: 0.7, low: 0.3}`) loaded once via EvaluationService._ready()"
+    not: "per-case override in case .tres scoring_weights or case-level fields; const inline in evaluation_service.gd"
+    adr: docs/architecture/adr-0007-submission-evaluation-algorithm.md
+    reason: |
+      verdict thresholds are global by Pillar 1 design (모든 케이스가 동일 평가 룰).
+      Per-case override would create 'easy mode' cases that destroy 변별력. Inline
+      const requires code change for tuning — playtest sprint cycle penalty.
+      entities.yaml lets designers tune without touching .gd files (mirror ADR-0003
+      scoring_weights externalisation).
+    referenced_by:
+      - docs/architecture/adr-0007-submission-evaluation-algorithm.md
+    added: 2026-05-06
+    revised: ""
+
+  - purpose: citation_drop_signal_topology_hybrid
+    status: active
+    api: "Hybrid: Godot 4.6 native drag-drop API (`Control._get_drag_data` / `_can_drop_data` / `_drop_data` callbacks) for drop completion + LibraryService autoload signal `citation_drag_started(library_id)` for drop-zone hint activation. Application-level `WorkspaceData.pending_citation: String` for KB Space-mark/Space-attach path (mirror of pointer drag)."
+    not: "Pure signal topology (drag_completed signal — no native API leverage); pure native API (no signal — drop-zone hint cannot activate during drag); dual emitter from both LibraryService and LibraryPane (Gate ③ invariant 1 violation — exactly-once not guaranteed)"
+    adr: docs/architecture/adr-0008-workspace-layout.md
+    reason: |
+      Native drag-drop API is best for drop validation (`_can_drop_data` provides
+      Workspace State guard at the engine level) but does not emit a "drag started"
+      event — only `_get_drag_data` is called once at drag init. Drop-zone hint
+      activation requires an explicit signal. Hybrid topology uses each channel
+      where it fits: native callbacks for the drop, LibraryService signal for the
+      hint. KB path reuses the same signal path (Space-mark also emits
+      citation_drag_started) — single emitter ensures Gate ③ invariant 1.
+    referenced_by:
+      - docs/architecture/adr-0008-workspace-layout.md
+    added: 2026-05-07
+    revised: ""
+
+  - purpose: chain_data_schema_single_source
+    status: active
+    api: "`src/data/chain_data_schema.gd` defines `const SCHEMA_V1_ALLOWED_FIELDS` (top-level keys) + `const SCHEMA_V1_NODE_FIELDS` (per-node keys). Both Workspace builder (#6) and EvaluationService Pre-evaluation Gate (#9) import this file."
+    not: "Inline const definitions in workspace builder + evaluation_service (Gate § 3.1.2 dual-layer guard fails the moment one drifts); Dictionary keys in entities.yaml (runtime parse cost + loose typing); hardcoded keys in test fixtures (test/prod drift)"
+    adr: docs/architecture/adr-0008-workspace-layout.md
+    reason: |
+      Reasoning Workspace GDD §3.1 Rule 6 establishes a dual-layer schema guard
+      for Pillar 1 silent regression defense. Dual-layer requires both layers to
+      validate against the same allow-list. Single source of truth via const file
+      makes drift impossible — any modification triggers compile-time import
+      failure in the consumer that lags. Forbidden_pattern
+      `chain_data_schema_allow_list_duplication` enforces this.
+    referenced_by:
+      - docs/architecture/adr-0008-workspace-layout.md
+      - docs/architecture/adr-0007-submission-evaluation-algorithm.md
+    added: 2026-05-07
+    revised: ""
+
+  - purpose: workspace_pending_citation_application_state
+    status: active
+    api: "`WorkspaceData.pending_citation: String` (empty = no pending; non-empty = library_id awaiting attach). Set by LibraryPane on KB Space-mark or LB pane-switcher → A button. Cleared by Workspace on Space-attach success or Esc/B cancel."
+    not: "LibraryService autoload pending_citation (LibraryService is observation-free per Gate ③ invariant 4); Per-LibraryPane local state (pane switching loses pending — KB workflow broken)"
+    adr: docs/architecture/adr-0008-workspace-layout.md
+    reason: |
+      KB CitationDrop spans pane focus changes (LibraryPane → DeskPane via Tab).
+      Per-pane state would clear on Tab. WorkspaceData ownership is correct because
+      pending_citation is a *Workspace-side* concept (drop validation is Workspace's
+      Rule 4 responsibility per Gate ③ invariant 4); LibraryPane is just the focus
+      origin. Native drag (Pointer) and KB pending are mutually exclusive — guard
+      enforced via `WorkspaceData.pending_citation == ""` precondition for native
+      drag start.
+    referenced_by:
+      - docs/architecture/adr-0008-workspace-layout.md
+    added: 2026-05-07
+    revised: ""
+
+  - purpose: tree_panning_camera2d
+    status: active
+    api: "DeskCanvas (SubViewportContainer + SubViewport) hosts `HypothesisNodeRoot` (Node2D) with a Camera2D for panning. Mouse middle-drag pans 1:1; gamepad right-stick analog at 600 px/s; D-pad/Tab/Arrow auto-center on focused node (0.2s lerp). Camera position clamped to HypothesisNodeRoot bounding box + 200px padding."
+    not: "ScrollContainer with internal Node2D (loses analog stick + auto-center); manual translate on HypothesisNodeRoot (no clamp + no smooth lerp); Camera2D on root scene (other panes panned simultaneously)"
+    adr: docs/architecture/adr-0008-workspace-layout.md
+    reason: |
+      4-deep tree (4 × 200px ≈ 900px wide) at 1366×768 floor (DeskPane ≈ 566px)
+      requires horizontal panning. Auto-center on KB/gamepad focus traversal keeps
+      focused node visible without manual scroll. SubViewport isolates the
+      Camera2D from other UI (CatalogPane, LibraryPane don't pan). Clamping
+      prevents player from panning into infinite empty space (UX disorientation).
+    referenced_by:
+      - docs/architecture/adr-0008-workspace-layout.md
+    added: 2026-05-07
+    revised: ""
+
+  - purpose: memo_panel_inline_fallback_threshold
+    status: active
+    api: "MemoPanel position: (A) inline next to selected node = primary; (B) DeskPane bottom-right 320×220px fixed = fallback. Trigger: DeskPane.size.x < 720 OR (selected_node.global_position.x + selected_node.size.x + 16 + 320 > DeskPane.global_position.x + DeskPane.size.x). Reflow on `_on_node_selected(node)` or `_on_resize()`."
+    not: "(A) only with no fallback (overflow at floor resolution); (B) fixed always (loses spatial node-memo coupling — Pillar 1 weakened); (C) modal (Pillar 3 contemplative flow violation per cycle 1 reject)"
+    adr: docs/architecture/adr-0008-workspace-layout.md
+    reason: |
+      GDD §9.3 cycle 1 recommendation (A) primary + (B) fallback was missing
+      trigger threshold — cycle 2 ux-designer IMPORTANT closure. 720px boundary
+      derives from 1366×768 floor (DeskPane ≈ 566 < 720 → (B) is default at floor;
+      1080p Wide DeskPane > 720 → (A) primary). 16px gap + 320px memo width covers
+      ~24-char RichTextLabel display.
+    referenced_by:
+      - docs/architecture/adr-0008-workspace-layout.md
+    added: 2026-05-07
+    revised: ""
+
+  - purpose: gamepad_pane_switcher_lb_rb
+    status: active
+    api: "LB / RB shoulder buttons cycle pane focus (CatalogPane ↔ LibraryPane ↔ DeskPane). Within each pane, D-pad / left-stick traverses focusable elements (cards / nodes / buttons)."
+    not: "Single D-pad handles both pane switch + element navigate (modal confusion); per-button assignment for pane direct jump (button budget over-spend on 3-pane layout)"
+    adr: docs/architecture/adr-0008-workspace-layout.md
+    reason: |
+      Gamepad CitationDrop two-step (OQ-W9 closure) requires player to navigate
+      LibraryPane → DeskPane mid-flow. LB/RB cycle is the standard 3-pane gamepad
+      idiom (mirrors Steam/console UI navigation). D-pad reserved for in-pane
+      element traversal (more frequent operation). Reasoning Workspace GDD §9.4.3
+      did not specify pane switcher — ADR-0008 §5 fills the gap.
+    referenced_by:
+      - docs/architecture/adr-0008-workspace-layout.md
+    added: 2026-05-07
+    revised: ""
+
+  - purpose: font_msdf_hangul_only
+    status: active
+    api: "본명조 (Korean serif): MSDF FontFile (multichannel_signed_distance_field=true, msdf_size=32, msdf_pixel_range=6) covering Hangul precomposed only (U+AC00-U+D7A3, ~11,172 glyphs). Hanja (U+4E00-U+9FFF) handled via FontFile.fallbacks → NotoSerifCJK TTF (non-MSDF)."
+    not: "Full-glyph MSDF including Hanja (~13,500 glyphs at 64×64 cell ≈ 220 MB GPU resident — 4× the 50 MB budget); MSDF-only without TTF fallback (silent OS-font fallback for missing Hanja → cross-machine inconsistency)"
+    adr: docs/architecture/adr-0004-korean-text-rendering-msdf-font.md
+    reason: |
+      Korean serif strokes alias badly at small sizes (11–14pt body) — MSDF gives
+      crisp scaling. But naive full-glyph MSDF blows the GPU memory budget by 4×.
+      Hangul-only MSDF + Hanja TTF fallback keeps body-size 본명조 crisp where
+      it matters, while accepting Hanja anti-aliasing at 14pt+ display sizes
+      (Hanja appears mainly in headlines like "大法院"/"破棄"/"棄却").
+      32×32 atlas cell + BC7 GPU compression = ~14 MB resident — fits the
+      50 MB total font asset budget comfortably.
+    referenced_by:
+      - docs/architecture/adr-0004-korean-text-rendering-msdf-font.md
+    added: 2026-05-06
+    revised: ""
+
+  - purpose: font_subpixel_screen_optimised
+    status: active
+    api: "Pretendard (Korean sans-serif): TTF FontFile + subpixel_positioning = SUBPIXEL_POSITIONING_ONE_QUARTER + antialiasing = ANTIALIASING_LCD + hinting = HINTING_LIGHT. IBM Plex Mono KR (mono): TTF FontFile + subpixel_positioning = SUBPIXEL_POSITIONING_DISABLED + antialiasing = ANTIALIASING_GRAYSCALE + hinting = HINTING_NORMAL."
+    not: "MSDF for screen-optimised fonts (negates Pretendard/Plex Mono's screen design); SUBPIXEL_POSITIONING_AUTO for Pretendard 11–14pt (settles on ONE_HALF — measurably less sharp than ONE_QUARTER); subpixel positioning enabled for monospace (breaks pixel-grid alignment)"
+    adr: docs/architecture/adr-0004-korean-text-rendering-msdf-font.md
+    reason: |
+      Pretendard is Korean sans-serif designed screen-native — MSDF would
+      coarsen sub-pixel stroke detail. ONE_QUARTER subpixel + LIGHT hinting
+      gives Korean body 11–14pt vertical-stroke alignment that AUTO does not
+      guarantee. Plex Mono KR is fundamentally pixel-grid-aligned (mono
+      design intent) — subpixel positioning destroys the grid. Per-family
+      rendering matched to font design intent, not one-size-fits-all.
+    referenced_by:
+      - docs/architecture/adr-0004-korean-text-rendering-msdf-font.md
+    added: 2026-05-06
+    revised: ""
+
+  - purpose: ui_theme_type_variations
+    status: active
+    api: "Single default Theme at assets/data/themes/default.tres with 12–15 type variations (e.g., &\"BodyLabel\", &\"CaptionLabel\", &\"CourtHeadline\", &\"HeroLabel\", &\"CodeLabel\", &\"CommentLabel\"). Controls set theme_type_variation property to select. Weight changes use Control.add_theme_font_override(\"font\", weight_resource) at instance level."
+    not: "Per-Control inline font/size assignment without type variations (defeats Theme reuse + makes global tuning impossible); separate Theme per screen (breaks i18n adaptation — one Theme update propagates to all screens)"
+    adr: docs/architecture/adr-0004-korean-text-rendering-msdf-font.md
+    reason: |
+      Art Bible §6 specifies 8 document types each with distinct family+size
+      combinations. Type variations let one Theme express all of them, so a
+      tuning change (e.g., Pretendard body size 14→15) propagates to every
+      affected Control without touching scenes. Per-screen Themes would force
+      duplicate updates and i18n size adjustments would scale linearly with
+      screen count. Type variation pattern is the idiomatic Godot 4.6
+      approach for this scale (godot-specialist verification 2026-05-06).
+    referenced_by:
+      - docs/architecture/adr-0004-korean-text-rendering-msdf-font.md
+    added: 2026-05-06
+    revised: ""
 
 # Example:
 #
@@ -157,7 +601,329 @@ api_decisions: []
 # Register a pattern when an ADR explicitly bans it AND other ADRs might
 # unknowingly use it (i.e., it's a tempting but wrong approach for this project).
 
-forbidden_patterns: []
+forbidden_patterns:
+  - pattern: library_data_load_via_FileAccess
+    status: active
+    description: |
+      Library data files (.tres) must be loaded via ResourceLoader.load() or load().
+      Direct FileAccess.get_file_as_string() + manual parsing is forbidden for any
+      file under assets/data/library/.
+    why: |
+      Bypasses Godot's resource cache (memory waste + duplicate parsing), loses
+      static typing (LibraryEntry subclass safety), breaks hot reload, and forces
+      reimplementation of UTF-8 + nested SubResource handling that ResourceLoader
+      already provides. Also breaks the 4.4 FileAccess.store_* bool-return contract.
+    adr: docs/architecture/adr-0001-library-storage-format.md
+    added: 2026-05-04
+
+  - pattern: library_holding_id_synthesis_in_callers
+    status: active
+    description: |
+      Concatenating <case_id> + '/holding-' + N to form a holding ID outside
+      LibraryService is forbidden. All synthesis and parsing of holding IDs
+      must go through LibraryService.get_holding(synthesized_id).
+    why: |
+      Synthesis rule may evolve (different delimiter, sub-holding nesting,
+      escape rules for unusual case numbers). Centralising in one function means
+      a future change updates one location instead of every consumer
+      (#6 Reasoning Workspace evidence, #7 Brief Editor cite token rendering).
+    adr: docs/architecture/adr-0001-library-storage-format.md
+    added: 2026-05-04
+
+  - pattern: library_runtime_external_api_call
+    status: active
+    description: |
+      Game runtime code (anything under src/) must NEVER call external Korean
+      law APIs (e.g., 국가법령정보센터 Open API, korean-law-mcp MCP server,
+      glaw.scourt.go.kr scrapers, or any other live legal-data fetch) to
+      populate Library entries or to validate citations at play time.
+      All Library data is statically loaded from .tres files at boot
+      (LibraryService Autoload). External API tools are permitted ONLY in
+      content-authoring tools (under tools/ or production/consultations/),
+      where their fetched data is manually reviewed and committed as .tres
+      seeds.
+    why: |
+      (1) Violates ADR-0001 "외부 의존성 0" — game runtime depends only on
+      engine-built-in features. (2) Violates Pillar 4 "끝나도 따라온다" —
+      game must work without internet, or the player can't take the
+      "reading muscle" home with them. (3) Open API rate limits / outages
+      would brick the game. (4) Library content must be reviewed by lawyer
+      consultants before reaching players — raw API fetch bypasses that
+      gate. Tools like korean-law-mcp belong in lawyer-prep workflows and
+      seed-content authoring scripts, never in src/.
+    adr: docs/architecture/adr-0001-library-storage-format.md
+    added: 2026-05-04
+
+  - pattern: per_case_verdict_threshold_override
+    status: active
+    description: |
+      Case .tres files MUST NOT contain verdict_threshold_* fields, scoring_weights
+      keys named verdict_threshold_*, or any case-level mechanism that overrides
+      the global verdict thresholds. The thresholds (pagi: 0.7, low: 0.3) live in
+      design/registry/entities.yaml `constants:` section as a single global source
+      of truth. EvaluationService loads them once at _ready() and never accepts
+      per-case overrides at runtime.
+    why: |
+      Pillar 1 (Truth Is Weighted) demands that all cases be evaluated under the
+      same rule set — per-case threshold override would create de facto 'easy
+      mode' cases by lowering the bar to 파기 cutoff, destroying the verdict's
+      meaning as a *weighted truth* signal. Per-case scoring_weights tuning
+      (which IS allowed by ADR-0003) provides legitimate per-case difficulty
+      adjustment via subscore weight redistribution. Threshold override is the
+      Anti-Pillar shortcut.
+    adr: docs/architecture/adr-0007-submission-evaluation-algorithm.md
+    added: 2026-05-06
+
+  - pattern: evaluation_caching_by_case_id
+    status: active
+    description: |
+      EvaluationService MUST NOT cache EvaluationResult instances keyed by
+      case_id, player_disposition, or any submission-derived hash. Every
+      submit() call recomputes from scratch — even when the same case_id has
+      been evaluated before in this session. External callers (#11 Career
+      Progression, #14 Retrospective Replay) MUST NOT cache returned
+      EvaluationResult and re-emit it later as a substitute for re-evaluation.
+    why: |
+      AC-23 byte-identical determinism makes caching algorithmically unnecessary
+      (same input → same output). Caching introduces stale-data risk: when
+      designers tune scoring_weights in entities.yaml or case .tres files,
+      a cached EvaluationResult from a prior run would not reflect the change
+      until invalidation. Always-recompute is simpler, deterministic, and
+      ensures playtest tuning takes effect immediately without explicit cache
+      busts.
+    adr: docs/architecture/adr-0007-submission-evaluation-algorithm.md
+    added: 2026-05-06
+
+  - pattern: autoload_order_violation_evaluation
+    status: active
+    description: |
+      EvaluationService MUST be registered THIRD in project.godot [autoload]
+      section — after LibraryService (FIRST) and CaseService (SECOND). Moving
+      it to FIRST or SECOND, or registering it before either of those services,
+      is forbidden.
+    why: |
+      Godot autoloads initialize synchronously in registration order. By the
+      time EvaluationService._ready() runs, LibraryService and CaseService
+      have already emitted their *_loaded signals. EvaluationService uses
+      heuristic guards (`LibraryService.entry_count() > 0`,
+      `CaseService.case_count() > 0`) to decide whether to await — this works
+      ONLY if the predecessors have actually completed. If EvaluationService
+      runs before either, the guards return 0 and `await` will hang forever
+      until the predecessor's _ready() completes — but in a chain inversion,
+      the predecessor's _ready() may itself await something that depends on
+      EvaluationService, creating a deadlock or boot fail. The THIRD-position
+      requirement is a precondition for the heuristic guard pattern (Risk 3
+      in ADR-0007) to work correctly.
+    adr: docs/architecture/adr-0007-submission-evaluation-algorithm.md
+    added: 2026-05-06
+
+  - pattern: text_server_simple_for_korean
+    status: active
+    description: |
+      project.godot MUST set [rendering] text_server/backend = "TextServerAdvanced"
+      explicitly. Relying on the default or allowing TextServerSimple is forbidden
+      for any project shipping Korean text. The Compatibility renderer can silently
+      downgrade to TextServerSimple — that downgrade is forbidden for this project.
+    why: |
+      Korean text requires HarfBuzz shaping for Hangul jamo composition (Unicode
+      Hangul Syllable Algorithm) and Hanja correctness. TextServerSimple does not
+      ship HarfBuzz — it produces broken Korean rendering (missing jamo composition,
+      incorrect Hanja shaping, no bidi support). The bug is silent: text appears
+      but is malformed. This must be locked at project-setting level, not relied on
+      as a default, because Compatibility renderer toggles can downgrade silently.
+    adr: docs/architecture/adr-0004-korean-text-rendering-msdf-font.md
+    added: 2026-05-06
+
+  - pattern: font_msdf_full_glyph_set
+    status: active
+    description: |
+      MSDF atlases for fonts covering full CJK glyph sets (~13K+ glyphs including
+      Hangul + Hanja + Latin) at 64×64 cell sizes are forbidden. Restrict MSDF to
+      either (a) Hangul-only (~11K glyphs) at 32×32 cells with GPU compression,
+      or (b) explicit smaller subset with documented memory budget.
+    why: |
+      13K glyphs × 64×64 cells × 4 bytes/pixel ≈ 220 MB GPU resident — 4× the
+      50 MB font asset budget and roughly 10% of the 2 GB memory ceiling. The
+      coverage was originally proposed in ADR-0004 draft and rejected after
+      godot-specialist verification (2026-05-06) — actual atlas memory is far
+      higher than the original 30–50 MB estimate. Hangul-only at 32×32 + BC7
+      compression keeps it at ~14 MB. Hanja gets TTF fallback (still legible at
+      headline sizes where Hanja appears).
+    adr: docs/architecture/adr-0004-korean-text-rendering-msdf-font.md
+    added: 2026-05-06
+
+  - pattern: label_for_long_body_text
+    status: active
+    description: |
+      Using `Label` (Godot built-in single-line/multi-line text Control) for long
+      body text (≥10 lines, e.g., #20 Library full_opinion or #5 Browser DeskPane
+      4–8 paragraph 본문) is forbidden. Long body text MUST use `RichTextLabel`
+      with `scroll_active = true` inside a `ScrollContainer` parent for visual
+      virtualization (off-screen lines not rendered).
+    why: |
+      Label renders the entire text to a single draw call regardless of scroll
+      position. 500 lines of Korean text in a Label triggers a frame-budget spike
+      every render — typically dropping below 60fps target on the #20 Library
+      full_opinion view. RichTextLabel with scroll_active virtualizes off-screen
+      content, keeping per-frame cost bounded by visible line count regardless
+      of total document length. This is a hard requirement for the 60fps + 16.6ms
+      frame budget specified in technical-preferences.md.
+    adr: docs/architecture/adr-0004-korean-text-rendering-msdf-font.md
+    added: 2026-05-06
+
+  - pattern: inline_theme_override_without_type_variation
+    status: active
+    description: |
+      Setting font + font_size on a Control via `add_theme_font_override("font", ...)`
+      AND `add_theme_font_size_override("font_size", ...)` simultaneously WITHOUT
+      using a Theme type variation (theme_type_variation property) is forbidden for
+      Controls following Art Bible §6 document types. Type variations are the
+      authoritative pattern; instance overrides are reserved for weight changes
+      within an existing type variation.
+    why: |
+      Per-Control inline font + size assignment defeats Theme reuse — a global
+      tuning change (e.g., Pretendard body 14→15pt) cannot propagate to every
+      affected Control without touching every scene. Type variations centralize
+      family + size choices in default.tres, leaving instance-level overrides for
+      genuinely instance-specific adjustments (e.g., bold weight on a single
+      heading within a paragraph). Mixed usage produces inconsistent rendering
+      and breaks i18n adaptation, where one Theme update should cover all screens.
+    adr: docs/architecture/adr-0004-korean-text-rendering-msdf-font.md
+    added: 2026-05-06
+
+  - pattern: dict_value_packed_array_inplace_mutation
+    status: active
+    description: |
+      Storing a `PackedStringArray` (or any other Packed* typed array) as a
+      Dictionary value, then attempting in-place mutation via dict[key].append()
+      or dict[key].push_back() is forbidden. PackedStringArray is a *value type*
+      with copy-on-write semantics — Dictionary returns a copy, not a reference.
+      Use `Array` (reference type) as the Dictionary value type, OR explicit
+      copy-mutate-write-back pattern: `var arr := dict[key]; arr.append(x);
+      dict[key] = arr`.
+    why: |
+      The bug is silent: `dict[key].append(x)` succeeds without warning but
+      mutates a temporary copy that is discarded. Operator-side semantics
+      (PackedStringArray as value type) differ from `Array` (reference type)
+      and the GDScript surface looks identical. Surfaced during ADR-0002
+      Library Search Index development (n-gram inverted index) — all search
+      queries returned 0 results because every postings list mutation was
+      silently lost. Documented in ADR-0002 §11 Implementation Lesson.
+    adr: docs/architecture/adr-0002-library-search-index-format.md
+    added: 2026-05-06
+    notes: |
+      Carry-over candidate from architecture-review 2026-05-05 (post-ADR-0003).
+      Registered retroactively during architecture-review 2026-05-06. Future
+      ADRs that store collections as Dictionary values must reference this
+      pattern when justifying Array vs Packed* choice.
+
+  - pattern: class_name_collides_with_autoload_name
+    status: active
+    description: |
+      Registering a `class_name` identifier in a script that is *also* used as
+      the autoload name in `project.godot [autoload]` section is forbidden.
+      Autoload-bound services (LibraryService, CaseService, EvaluationService)
+      MUST omit `class_name` from their script — they are accessed exclusively
+      through the autoload global, not as a class. Resource subclasses
+      (LibraryEntry, CaseFile, PlayerSubmission, EvaluationResult, etc.) keep
+      their `class_name` as those are *types*, not autoload singletons.
+    why: |
+      Godot 4.x stores autoload names and class_name identifiers in the same
+      global namespace. Registering both for the same identifier creates a
+      duplicate-definition warning at editor parse time AND a runtime ambiguity
+      where script reload may bind the identifier to the script type rather
+      than the autoload instance — breaking `LibraryService.entry_count()`
+      style calls intermittently. Surfaced during LibraryService autoload
+      registration (ADR-0001 §IG #3) and reconfirmed during CaseService
+      (ADR-0003) and EvaluationService (ADR-0007) — all three services follow
+      the no-class_name pattern.
+    adr: docs/architecture/adr-0001-library-storage-format.md
+    added: 2026-05-06
+    notes: |
+      Carry-over candidate from architecture-review 2026-05-05 (post-ADR-0003).
+      Applies to all 3 autoload services (LibraryService FIRST + CaseService
+      SECOND + EvaluationService THIRD per `autoload_order_violation_evaluation`).
+      Registered retroactively during architecture-review 2026-05-06.
+
+  - pattern: submit_during_active_evaluation
+    status: active
+    description: |
+      Calling `EvaluationService.submit(submission)` while
+      `EvaluationService.current_state` is in {VALIDATING, COMPUTING, REPORTING}
+      is forbidden. The service rejects the second call with `push_warning` and
+      no signal emission — but external callers (#5 Browser, #7 Brief Editor)
+      MUST proactively gate the Submit button via `current_state != IDLE` rather
+      than relying on the defensive guard. The guard is a safety net, not a
+      contract for repeated submission attempts.
+    why: |
+      Distinct from `autoload_order_violation_evaluation` (which is about
+      registration order in project.godot) — this pattern guards *runtime
+      reentrant calls*. Without external UI gating, players can spam the
+      Submit button during the ~50ms evaluation window, generating
+      noise warnings and making subscore breakdowns harder to debug.
+      The forbidden pattern documents the *external contract* that consumers
+      must respect, not just the internal state guard. ADR-0007 §EC-7 + AC-18
+      define the rejection behaviour; this pattern formalises the consumer
+      obligation.
+    adr: docs/architecture/adr-0007-submission-evaluation-algorithm.md
+    added: 2026-05-06
+    notes: |
+      New candidate surfaced during architecture-review 2026-05-06 from
+      session-state Pri 4 carry-over. Browser/Editor implementations must
+      disable Submit button when current_state != IDLE — this is the primary
+      enforcement; defensive guard is secondary.
+
+  - pattern: chain_data_schema_allow_list_duplication
+    status: active
+    description: |
+      The chain_data schema_version=1 allow-list (top-level fields + node
+      fields) MUST be defined exactly once in `src/data/chain_data_schema.gd`
+      as `const SCHEMA_V1_ALLOWED_FIELDS` and `const SCHEMA_V1_NODE_FIELDS`.
+      Both Workspace builder (in #6 Reasoning Workspace) and EvaluationService
+      Pre-evaluation Gate (in #9 Submission & Evaluation) must `import` or
+      reference the same const — neither may inline its own copy.
+    why: |
+      ADR-0007 §3.1.2 + Reasoning Workspace GDD §3.1 Rule 6 establish a
+      dual-layer schema guard for Pillar 1 silent regression defense. The
+      guard fails the moment one layer's allow-list drifts from the other —
+      a schema_version=1 violation could pass the builder check but fail
+      Pre-evaluation Gate, or vice versa. Single source of truth makes drift
+      impossible. Inline duplication in either consumer is the *anti-pattern*
+      that the dual-layer architecture is designed to prevent — duplication
+      defeats the structural defense.
+    adr: docs/architecture/adr-0008-workspace-layout.md
+    added: 2026-05-07
+    notes: |
+      Surfaced during reasoning-workspace 2026-05-07 cycle 2 design-review —
+      cross-concurrence by game-designer + godot-specialist (B-NEW-2 + Item 7).
+      Workspace Layout ADR-0008 §1 Migration Plan creates the const file.
+
+  - pattern: library_subsystem_observe_drop_result
+    status: active
+    description: |
+      LibraryService autoload (and any LibraryPane scene node) MUST NOT
+      observe or query the result of CitationDrop hit-test (drop accept /
+      reject). LibraryService emits `citation_drag_started(library_id)` only;
+      drop completion + Rule 4 validation (cap, duplicate, type) is solely
+      Workspace's responsibility. If LibraryService needs telemetry on
+      drop outcomes, Workspace must call an explicit notification method
+      (e.g., `LibraryService.notify_citation_attached(library_id, node_id)`)
+      after the fact — polling is forbidden.
+    why: |
+      Reasoning Workspace GDD §3.3 Gate ③ invariant 4 — separation of
+      concerns between Library Subsystem (citation source emit) and Workspace
+      (drop validation + side effects). Polling violations create coupling
+      where LibraryService becomes implicitly aware of Workspace's Rule 4
+      cap policy, hit-test geometry, and Workspace State guards. This makes
+      LibraryService's behavior dependent on Workspace's internal state —
+      the exact opposite of the contract established by Gate ③.
+    adr: docs/architecture/adr-0008-workspace-layout.md
+    added: 2026-05-07
+    notes: |
+      Reasoning Workspace cycle 2 BLOCKING #8 closure context. Native
+      drag-drop API + LibraryService signal hybrid topology requires this
+      pattern to be explicitly forbidden because both channels could be
+      tempted to query drop result.
 
 # Example:
 #

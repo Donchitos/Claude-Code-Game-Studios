@@ -36,8 +36,8 @@
 #   Sections: entities | items | formulas | constants
 #   Each entry: name, status, source, referenced_by[], attributes{}, added, revised
 
-version: 1
-last_updated: ""
+version: 9
+last_updated: 2026-05-07
 
 # ─── ENTITIES ────────────────────────────────────────────────────────────────
 # Named game-world objects: enemies, NPCs, characters, factions, bosses.
@@ -139,7 +139,441 @@ formulas: []
 #
 # Required fields: name, status, source, referenced_by, value, unit, added
 
-constants: []
+constants:
+  - name: library_id_format_law
+    status: active
+    source: design/gdd/legal-reference-library.md
+    referenced_by:
+      - design/gdd/legal-reference-library.md
+    value: "law:[slug]-art-[N]"
+    unit: id_format
+    notes: |
+      법령 항목 ID 형식. slug는 영문(예: criminal-act),
+      N은 조 번호. 케이스의 correct_citations[] 및 다른 시스템의
+      참조에서 이 형식을 따른다. 예: law:criminal-act-art-250.
+      Provisional — 자문 검수 후 잠금.
+    added: 2026-05-04
+    revised: ""
+
+  - name: library_id_format_case
+    status: active
+    source: design/gdd/legal-reference-library.md
+    referenced_by:
+      - design/gdd/legal-reference-library.md
+    # 2026-05-04 revised v3 — Q5-A direct DRF (형법 376 KB) + Q5-B 헌재 8부호 검증 추가.
+    # Old value: "case:[year][code][seq]"
+    # Old notes (v1): "code는 사건부호 영문화 (도→do, 다→da, 누→nu, 노→no, 헌바→heonba ...)" — 누를 Supreme Court 행정으로 잘못 분류.
+    # v2 (2026-05-04 lexguard): 18개 부호 중 10개(Supreme 6 + High 2 + District 2) 검증, 헌재 8개 미검증.
+    # v3 (2026-05-04 후속): 헌재 8개 부호 직접 DRF(target=detc) 검증 완료. 절차 분류 추가.
+    #   Source: production/research/legal-corpus/q05-hanja-and-case-codes/q05b-constitutional-codes.md
+    value: "case:[court-prefix?][year][code][seq]"
+    unit: id_format
+    notes: |
+      판결 항목 ID 형식. 한국 사법부 사건부호 — 4계층 (Q5 검증 2026-05-04):
+        Supreme Court: 도 do (형사) | 다 da (민사) | 두 du (행정)
+                       모 mo (형사 결정/재항고) | 므 meu (가사) | 스 seu (가사 특별)
+        High Court:    노 no (형사 항소) | 누 nu (행정 항소)
+                       나 na (민사 항소, 미검증) | 르 reu (가사 항소, 미검증)
+        District Court: 고합 gohap (형사 합의) | 가단 gadan (민사 단독)
+                        가합 gahap, 고단 godan, 구합 guhap — 미검증
+        Constitutional Court (verified 2026-05-04 via direct DRF target=detc):
+                        헌가 heonga (위헌법률심판제청) | 헌나 heonna (탄핵심판)
+                        헌다 heonda (정당해산심판)     | 헌라 heonra (권한쟁의심판)
+                        헌마 heonma (§68① 헌법소원)   | 헌바 heonba (§68② 헌법소원)
+                        헌사 heonsa (가처분)           | 헌아 heona  (재심)
+      예: case:2019do1234 (대법원). 하급심은 court-prefix 슬러그 옵션
+      (예: case:seoul-high-2024nu56537, case:busan-2024gohap56).
+      헌재 예: case:2013heonda1, case:2024heonna2.
+      Pre-1998 행정사건은 누 at 대법원 — 게임 timeline post-1998 권장 (era clash 회피).
+      Romanization: MOCT Revised Romanization 2000 (ㅡ→eu, ㅓ→eo).
+      헌재 분포 추정 (q05b-constitutional-codes.md 100-row sample): 헌마 86% · 헌바 8% · 헌아 4% · 헌가 2%
+      나머지 4개(헌나/헌다/헌라/헌사)는 위헌 keyword에서는 미surface — MVP 30건 fixture 시 헌마/헌바 위주.
+    added: 2026-05-04
+    revised: 2026-05-04
+    revised_note: |
+      v3: Q5-B 헌재 8부호 검증 완료(direct DRF). 4계층 매핑으로 확장.
+      절차 분류 추가(위헌제청/탄핵/정당해산/권한쟁의/§68①·②/가처분/재심).
+
+  - name: library_id_format_holding
+    status: active
+    source: design/gdd/legal-reference-library.md
+    referenced_by:
+      - design/gdd/legal-reference-library.md
+    value: "[case-id]/holding-[N]"
+    unit: id_format
+    notes: |
+      판시 단락 ID 형식. case ID 뒤에 /holding-N 접미. N은 1부터.
+      한 판결문이 여러 판시사항을 담을 때 단락별로 분리된 항목.
+      예: case:2019do1234/holding-1.
+    added: 2026-05-04
+    revised: ""
+
+  - name: library_court_grades
+    status: active
+    source: design/gdd/legal-reference-library.md
+    referenced_by:
+      - design/gdd/legal-reference-library.md
+    value: "[constitutional, supreme_panel, supreme_division, lower]"
+    unit: enum
+    notes: |
+      판례 항목의 court_grade 필드 enum. 4계층 — 헌법재판소 /
+      대법원 전원합의체 / 대법원 소부 / 하급심(고법+지법). Art Bible
+      Section 6의 3계층 보더 체계는 4계층으로 확장 필요 (전합 배지 추가).
+    added: 2026-05-04
+    revised: ""
+
+  - name: library_law_types
+    status: active
+    source: design/gdd/legal-reference-library.md
+    referenced_by:
+      - design/gdd/legal-reference-library.md
+    value: "[법률, 시행령, 시행규칙, 조례]"
+    unit: enum
+    notes: |
+      법령 항목의 law_type 필드 enum. 한국 법령 위계 4종.
+      법령 종류 필터(검색·필터 UI) 기준.
+    added: 2026-05-04
+    revised: ""
+
+  - name: library_dispositions_court
+    status: active
+    source: design/gdd/legal-reference-library.md
+    referenced_by:
+      - design/gdd/legal-reference-library.md
+      - design/gdd/case-data-schema.md
+      - design/gdd/submission-evaluation.md
+      - docs/architecture/adr-0001-amend-1-schema-refinement.md
+    # 2026-05-04 v4 — renamed from `library_dispositions` per ADR-0001 Amendment 1.
+    # Old name (v3): library_dispositions — covered all courts.
+    # v4 split: court (대법원·하급심) vs constitutional (헌재) — DRF가 supreme 미반환 + 헌재 enum 별도.
+    value: "[파기, 기각, 각하, 파기환송]"
+    unit: enum
+    applies_when: "court_grade in [supreme_panel, supreme_division, lower]"
+    notes: |
+      판례 항목의 disposition(주문) 필드 enum — *법원 트랙*. 게임 제목과 직결되는
+      "파기"가 카타르시스 모먼트 (#10 Verdict Reveal Sequence)의
+      핵심 결과 표기. v1+에 부분 파기, 환송 변형 등 확장 가능.
+      DRF에서 supreme 판례 disposition을 반환하지 않을 수 있음 — 빈 문자열 허용.
+    added: 2026-05-04
+    revised: 2026-05-04
+    revised_note: |
+      v4: ADR-0001 Amendment 1로 rename (library_dispositions → library_dispositions_court).
+      applies_when 추가 — 헌재 트랙은 library_dispositions_constitutional로 분리.
+
+  - name: library_dispositions_constitutional
+    status: active
+    source: design/gdd/legal-reference-library.md
+    referenced_by:
+      - design/gdd/legal-reference-library.md
+      - docs/architecture/adr-0001-amend-1-schema-refinement.md
+    value: "[기각, 인용, 각하, 위헌, 합헌, 한정합헌, 한정위헌]"
+    unit: enum
+    applies_when: "court_grade == constitutional"
+    notes: |
+      판례 항목의 disposition 필드 enum — *헌법재판소 트랙*. 헌재 결정의
+      종국 형태. 절차별 분포 (Q5-B 검증):
+        헌가(위헌제청)·헌바(§68②): 위헌/합헌/한정합헌/한정위헌
+        헌마(§68①): 인용/기각/각하
+        헌나(탄핵): 인용/기각/각하 (부분인용 시 절별 분리 — prec-002 surface)
+        헌다(정당해산): 인용/기각/각하
+        헌라(권한쟁의): 인용/기각/각하
+        헌사(가처분)·헌아(재심): 별도 처리 (각하/기각 위주)
+      탄핵·정당해산처럼 *부분인용*인 경우 disposition 필드는 종국 분류만 보유 —
+      절별 부분인용 정보는 holdings[].marker 단위로 표현.
+    added: 2026-05-04
+    revised: ""
+
+  - name: library_brief_cite_token
+    status: active
+    source: design/gdd/legal-reference-library.md
+    referenced_by:
+      - design/gdd/legal-reference-library.md
+    value: "{{cite:<library_id>}}"
+    unit: token_format
+    notes: |
+      상고이유서(#7 Brief Editor) 본문에 Library 인용을 임베드하는
+      인라인 토큰 형식. 렌더링 시 Library가 카드 데이터를 인라인
+      인용 블록으로 제공. 토큰 형식 안정성은 Library가 보장 —
+      향후 ID 형식 변경 시 마이그레이션 책임도 Library.
+    added: 2026-05-04
+    revised: ""
+
+  - name: case_data_id_format
+    status: active
+    source: design/gdd/case-data-schema.md
+    referenced_by:
+      - design/gdd/case-data-schema.md
+      - docs/architecture/adr-0003-case-data-storage-format.md
+    value: "case_data:[year]-[seq]"
+    unit: id_format
+    notes: |
+      게임 풀 케이스(플레이어가 푸는 사건) ID 형식. Library의 `case:` (실제
+      한국 판례)와 명시적으로 구별 — case_data: 11자 prefix, case: 5자 prefix.
+      year는 4자리 (예: 2026), seq는 3자리 zero-pad (001-999).
+      예: case_data:2026-001
+      ADR-0003 §Implementation Guideline #2.
+    added: 2026-05-05
+    revised: ""
+
+  - name: case_court_tracks
+    status: active
+    source: design/gdd/case-data-schema.md
+    referenced_by:
+      - design/gdd/case-data-schema.md
+      - design/gdd/case-file-browser.md
+      - docs/architecture/adr-0003-case-data-storage-format.md
+    value: "[supreme_division, supreme_panel, lower]"
+    unit: enum
+    notes: |
+      케이스의 court_track 필드 enum (MVP 범위). v1+ constitutional 추가 (OQ-4).
+      Library library_court_grades와 의미적 mirror — 케이스 측은 헌재 케이스 부재(MVP),
+      Library 측은 모든 4계층 보유. Case File Browser §3.5 카테고리 필터 토글이
+      이 enum에 1:1 매핑 (3 토글 + 다중 선택).
+    added: 2026-05-05
+    revised: 2026-05-05
+    revised_note: "Case File Browser referenced_by 추가."
+
+  - name: case_required_scoring_keys
+    status: active
+    source: design/gdd/case-data-schema.md
+    referenced_by:
+      - design/gdd/case-data-schema.md
+      - design/gdd/submission-evaluation.md
+      - docs/architecture/adr-0003-case-data-storage-format.md
+    value: "[disposition_match, core_citation_coverage, chain_coherence]"
+    unit: enum
+    notes: |
+      모든 케이스의 scoring_weights Dictionary가 반드시 보유해야 하는 키 셋.
+      EC-3 검증 입력. 추가 키(redundant_citation_penalty, precedent_seniority_bonus)는
+      optional — 부재 시 0.0 default. CaseService._validate_and_register()가 강제.
+      Submission & Evaluation §3.1.3는 5 키 모두 알고리즘에 구현 — chain/seniority는 MVP w=0 잠금.
+    added: 2026-05-05
+    revised: 2026-05-05
+    revised_note: "Submission & Evaluation referenced_by 추가."
+
+  - name: case_disposition_match_minimum_weight
+    status: active
+    source: design/gdd/case-data-schema.md
+    referenced_by:
+      - design/gdd/case-data-schema.md
+      - design/gdd/submission-evaluation.md
+      - docs/architecture/adr-0003-case-data-storage-format.md
+    value: 0.4
+    unit: weight
+    notes: |
+      Pillar 1 (Truth Is Weighted) 가드. 모든 케이스는 disposition_match 가중치
+      >= 0.4 보유 (case-data-schema §AC-9). 미충족 시 케이스 비활성화.
+      디자인 의도: 정답 처분 자체의 비중이 inference chain coherence보다 약하지
+      않게 — pillar 보호. Submission & Evaluation §AC-19·20에서 이 잠금이
+      "처분만으로 파기 카타르시스 차단" Pillar 가드의 수학적 기반.
+    added: 2026-05-05
+    revised: 2026-05-05
+    revised_note: "Submission & Evaluation referenced_by 추가."
+
+  - name: case_browser_states
+    status: active
+    source: design/gdd/case-file-browser.md
+    referenced_by:
+      - design/gdd/case-file-browser.md
+      - design/gdd/case-data-schema.md
+      - design/gdd/submission-evaluation.md
+    value: "[CatalogIdle, EnvelopeOpening, BriefOpen, FactsOpen, WorkspaceHandoff, SubmissionPending, VerdictArrived, CatalogFiltered]"
+    unit: state_machine
+    notes: |
+      Case File Browser의 *화면 상태 머신* — case-data-schema §3.2의 *케이스
+      lifecycle 상태*(Catalog/LowerCourtBrief/FactsLoaded/InProgress/Submitted/Resolved)
+      와 별개. Browser 상태가 *플레이어가 지금 무엇을 보고 있는가*라면 케이스
+      lifecycle은 *데이터 측 진행도*. case-file-browser §3.2 + 8.2가 두 머신의
+      매핑을 명시.
+        Browser CatalogIdle ↔ 케이스 lifecycle Catalog
+        Browser BriefOpen   ↔ 케이스 LowerCourtBrief
+        Browser FactsOpen   ↔ 케이스 FactsLoaded
+        Browser WorkspaceHandoff ↔ 케이스 InProgress (#6 위임)
+        Browser SubmissionPending ↔ 케이스 Submitted (#9 위임)
+        Browser VerdictArrived → 케이스 Resolved (Catalog 갱신 후 CatalogIdle 복귀)
+    added: 2026-05-05
+    revised: ""
+
+  - name: case_browser_pane_widths_px
+    status: active
+    source: design/gdd/case-file-browser.md
+    referenced_by:
+      - design/gdd/case-file-browser.md
+    value: "{catalog: 480, library_max: 470, library_min: 320, viewport_min: 1280}"
+    unit: pixels
+    notes: |
+      Case File Browser 3-Pane 레이아웃의 가로 px. 1920w 기준 CatalogPane 480 +
+      LibraryPane 470 (DeskPane 잔여 ~970). 1280w 기준 LibraryPane은 320으로
+      클램프 (DeskPane ~472). 미만 viewport는 EC-8 발동 (#2 UI Foundation v1+).
+      MVP 잠금 — 변경 시 case-file-browser §4.4 + AC-1·AC-2 동시 갱신.
+    added: 2026-05-05
+    revised: ""
+
+  - name: case_browser_envelope_animation_ms
+    status: active
+    source: design/gdd/case-file-browser.md
+    referenced_by:
+      - design/gdd/case-file-browser.md
+      - design/art/art-bible.md
+    value: 400
+    unit: milliseconds
+    notes: |
+      봉투 개봉 애니메이션 길이 (case-file-browser §3.2 EnvelopeOpening 상태
+      + Art Bible §6 문서 1 — 0.4s 종이 플랩). 안전 범위 350-500. 너무 짧으면
+      종이 질감 상실, 너무 길면 진입 압박 (Pillar 4 가드). 애니메이션 락 시간
+      =이 값 — LibraryPane 입력 무시 (case-file-browser AC-12).
+    added: 2026-05-05
+    revised: ""
+
+  - name: submission_verdict_thresholds
+    status: active
+    source: design/gdd/submission-evaluation.md
+    referenced_by:
+      - design/gdd/submission-evaluation.md
+      - docs/architecture/adr-0007-submission-evaluation-algorithm.md
+    # Old value (v1, 2026-05-05): "{pagi: 0.7, pagi_hwansong: 0.5, gigak: 0.3}" — 3 thresholds
+    # 2026-05-07 v2 — submission-evaluation lean review BLOCKING #1 closure (2026-05-06): 파기환송 임계값 0.5→0.3 (disp_match 시) 잠금. §7.1 thresholds 표 3행→2행 통합 (verdict_threshold_low 0.3 — 파기환송·기각 공유). 학습 곡선 보존 + Pillar 1 가드 유지 + Anti-Pillar 가드(관대 정책). consistency-check 2026-05-07 cycle 2에서 staleness 검출 + autonomous patch 적용.
+    value: "{pagi: 0.7, low: 0.3}"
+    unit: thresholds
+    notes: |
+      Submission & Evaluation §3.1.4 verdict 결정 임계값. 글로벌 잠금
+      — 모든 케이스가 동일 평가 룰 (Pillar 1 가드). final_score [0.0, 1.0]
+      범위에서 4 verdict 매핑 (lean review 2026-05-06 후):
+        player_disp == correct AND score >= 0.7 → 파기
+        player_disp == correct AND 0.3 <= score < 0.7 → 파기환송 (관대 정책 — 학습 곡선 보존)
+        player_disp != correct AND score >= 0.3 → 기각
+        otherwise → 각하
+      MVP playtest 5인에서 4 verdict 모두 surface 되는지 측정 후 보정 (OQ-7).
+      안전 범위: pagi 0.6-0.8, low 0.2-0.4. 두 threshold만 — pagi_hwansong 폐기.
+    added: 2026-05-05
+    revised: 2026-05-07
+    revised_note: |
+      v2: lean review BLOCKING #1 closure (2026-05-06) 후 registry staleness가 consistency-check
+      cycle 2 (2026-05-07)에서 검출 + autonomous patch 적용. pagi_hwansong: 0.5 폐기 → low: 0.3
+      단일 임계값으로 통합. ADR-0007 referenced_by 추가 (entities.yaml constants를 이 ADR이 EvaluationService autoload에서 로드).
+
+  - name: submission_redundant_penalty_cap
+    status: active
+    source: design/gdd/submission-evaluation.md
+    referenced_by:
+      - design/gdd/submission-evaluation.md
+    value: "{cap: -0.3, ratio_multiplier: 0.5}"
+    unit: penalty_cap
+    notes: |
+      Submission & Evaluation §4.3 redundant_citation_penalty 계산 파라미터.
+        penalty = -min(cap, redundant_ratio × ratio_multiplier)
+      cap=-0.3 — 무관 인용 다수여도 평가 자체가 무력화되지 않도록 (50% 무관
+      = -0.25). Anti-Pillar 가드 + Pillar 3 (사고 만이 압박이다) 가드 — 스팸
+      인용 회피. 안전 범위: cap -0.5 ~ -0.2, multiplier 0.3-0.8.
+    added: 2026-05-05
+    revised: ""
+
+  - name: submission_state_machine
+    status: active
+    source: design/gdd/submission-evaluation.md
+    referenced_by:
+      - design/gdd/submission-evaluation.md
+    value: "[Idle, Validating, Computing, Reporting, Done]"
+    unit: state_machine
+    notes: |
+      EvaluationService autoload의 5-state 머신 (Submission & Evaluation §3.2).
+      case lifecycle (Submitted→Resolved) + Browser 상태 (SubmissionPending→
+      VerdictArrived)와 별개 — *평가 진행* 측 상태. 정상 흐름:
+        Idle → Validating → Computing → Reporting → Done → Idle
+      검증 실패 시 Validating → Idle (submission_rejected 시그널 + EvaluationResult
+      미생성). 이중 제출(EC-7)은 두 번째 호출 거부. Browser SubmissionPending
+      ↔ {Validating, Computing, Reporting} 매핑 / Browser VerdictArrived ←
+      Done 직전 evaluation_completed 시그널.
+    added: 2026-05-05
+    revised: ""
+
+  - name: workspace_max_tree_depth
+    status: active
+    source: design/gdd/reasoning-workspace.md
+    referenced_by:
+      - design/gdd/reasoning-workspace.md
+      - design/gdd/submission-evaluation.md
+    value: 3
+    unit: levels
+    notes: |
+      Reasoning Workspace 가설 트리의 MVP 최대 깊이 (§3.1 Rule 2 + §7.1).
+      루트=0 / 자식=1 / 손자=2 / 증손자=3. "상고이유 → 쟁점 → 판례 근거"
+      3계층 표현 허용. chain_data `max_depth_reached` 상한.
+      안전 범위: 2-5. <2: 가설 트리 무력화 (Pillar 1 가중치 신호 빈약);
+      >5: 인지 과부하 + chain_data 직렬화 비용 선형 확대.
+      v1+ chain_coherence subscore가 normalized_depth 항으로 소비
+      (Reasoning Workspace §4.3 forward declaration).
+    added: 2026-05-06
+    revised: ""
+
+  - name: workspace_evidence_per_node_cap
+    status: active
+    source: design/gdd/reasoning-workspace.md
+    referenced_by:
+      - design/gdd/reasoning-workspace.md
+      - design/gdd/submission-evaluation.md
+    value: 5
+    unit: count
+    notes: |
+      Reasoning Workspace 노드당 최대 evidence 수 (§3.1 Rule 4 + §7.1).
+      `total_evidence_count` 상한 = max_depth_reached × cap × node_count
+      범위. CitationDrop 6번째 거부 — "이 노드에는 인용을 5개까지만
+      첨부할 수 있습니다" hint. evidence_density(node) = len(evidence)/cap
+      (§4.4) 도 이 값을 분모로 사용 — bottom evidence rule (Channel B,
+      Pillar 1 가시화 채널, §8.1.1.b) 길이 ρ × node_inner_width.
+      안전 범위: 3-8. <3: 인용 전략 폭 협소; >8: 인용 희석 + bottom rule
+      6단계 ≫ 9단계로 이산 인지성 저하 (40px 단계 → 25px 미만).
+    added: 2026-05-06
+    revised: 2026-05-07 (bottom evidence rule 채널 도입 — Gate ② decisions-2026-05-07)
+
+  - name: workspace_node_label_char_limit
+    status: active
+    source: design/gdd/reasoning-workspace.md
+    referenced_by:
+      - design/gdd/reasoning-workspace.md
+    value: 60
+    unit: characters
+    notes: |
+      Reasoning Workspace HypothesisNode 레이블 길이 cap (§3.1 Rule 1·3 + §7.1).
+      노드 시각 200×48px 카드의 텍스트 영역에 본명조 SemiBold 16pt 기준
+      최대 한글 ~30자, Pretendard 14pt ~60자 (Art Bible §3.1).
+      안전 범위: 30-120. <30: 가설 문장 절단 불가피;
+      >120: 카드 레이아웃 붕괴 (200×48px 제약 충돌).
+    added: 2026-05-06
+    revised: ""
+
+  - name: workspace_node_memo_char_limit
+    status: active
+    source: design/gdd/reasoning-workspace.md
+    referenced_by:
+      - design/gdd/reasoning-workspace.md
+    value: 500
+    unit: characters
+    notes: |
+      Reasoning Workspace HypothesisNode 메모 길이 cap (§3.1 Rule 5 + §7.1).
+      `RichTextLabel scroll_active=true` 활성화 임계 (10+ 라인 본문). chain_data
+      `memo_length` 필드는 이 값까지의 character count (UTF-8 codepoint 기준,
+      AC-9). **메모 본문은 chain_data 미포함** (Pillar 1 guard — 평가는 인용·구조,
+      글쓰기 실력 X). 안전 범위: 200-2000. <200: 사고 보조 무력화;
+      >2000: #7 Brief Editor 역할 침범.
+    added: 2026-05-06
+    revised: ""
+
+  - name: workspace_delete_confirmation_subtree_threshold
+    status: active
+    source: design/gdd/reasoning-workspace.md
+    referenced_by:
+      - design/gdd/reasoning-workspace.md
+    value: 0
+    unit: count
+    notes: |
+      Reasoning Workspace 노드 삭제 확인 다이얼로그 발동 임계 (§3.1 Rule 3 + §7.4).
+      Default 0 = 모든 삭제에서 확인 다이얼로그 강제 — Pillar 3 ("사고 만이
+      압박이다") *cut* 앵커 보존. 시간 압박 0의 게임에서 확인 다이얼로그가
+      유일한 마찰 포인트. 변경 전 game-designer 검토 의무. 안전 범위: 0-5.
+      >5: 깊은 서브트리 삭제도 즉시 실행 — Pillar 3 약화.
+    added: 2026-05-06
+    revised: ""
 
 # Example:
 #
