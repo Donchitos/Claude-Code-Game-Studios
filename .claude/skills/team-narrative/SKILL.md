@@ -1,7 +1,7 @@
 ---
 name: team-narrative
 description: "Orchestrate the narrative team: coordinates narrative-director, writer, world-builder, and level-designer to create cohesive story content, world lore, and narrative-driven level design."
-argument-hint: "[narrative content description]"
+argument-hint: "[narrative content description] [--review full|lean|solo]"
 user-invocable: true
 allowed-tools: Read, Glob, Grep, Write, Edit, Task, AskUserQuestion, TodoWrite
 model: sonnet
