@@ -427,6 +427,8 @@ Use `AskUserQuestion`:
   - "Run /project-stage-detect for a broader health check"
   - "Done — I'll work through the plan at my own pace"
 
+> **Adoption plan saved to `docs/adoption-plan-[date].md`.** Re-run `/adopt` at any time to re-check remaining gaps as you complete them.
+
 ---
 
 ## Collaborative Protocol

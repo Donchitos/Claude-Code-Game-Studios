@@ -167,6 +167,22 @@ The user needs creative exploration before anything else.
 
 ---
 
+## Phase 3c: Write Initial Stage File
+
+After confirming the starting path (and before asking about review mode), write the initial stage to `production/stage.txt`. Create the `production/` directory if it does not exist.
+
+Stage mapping:
+- **Path A, B, or C (starting from scratch)**: write `Concept`
+- **Path D, existing project, engine not configured or only a game concept exists**: write `Concept`
+- **Path D, existing project with GDDs but no architecture documents**: write `Systems Design`
+- **Path D, existing project with full architecture (ADRs, architecture doc)**: write `Technical Setup`
+
+Do this silently — no "May I write?" needed for this single-line file.
+
+Say: "I've set `production/stage.txt` to `[stage]` — this anchors your status line and stage detection."
+
+---
+
 ## Phase 3b: Set Review Mode
 
 Check if `production/review-mode.txt` already exists.

@@ -55,6 +55,9 @@ If the player journey file does not exist, note the gap and proceed:
 > means we'll be making assumptions about player context. Consider running a player
 > journey session after this spec is drafted."
 
+Also add to the UX spec's Open Questions section:
+> "Player journey map not yet created. Template available at `.claude/docs/templates/player-journey.md`. Run `/ux-design` Phase 2b or create it manually to establish player context for this screen."
+
 ### 2c: GDD UI Requirements
 
 Glob `design/gdd/*.md` and grep for `UI Requirements` sections. Read any GDD whose
@@ -638,9 +641,9 @@ Walk through the ux-designer agent's standard checklist for this screen:
 - Screen reader considerations for any non-text elements
 - Any motion or animation that needs a reduced-motion alternative
 
-Use `AskUserQuestion` to surface any open questions on accessibility tier:
-- "Has the accessibility tier been committed to for this project?"
-  - Options: "Yes, read from requirements doc", "Not yet — let's flag it as a question", "Skip accessibility section for now"
+If no accessibility tier has been defined for this project, note the gap in the UX spec's Open Questions section:
+> "Accessibility tier not yet defined — consider WCAG-AA as a baseline. Run `/gate-check` to see whether this blocks any phase gates."
+Then continue to the next section without stopping.
 
 ---
 

@@ -3,10 +3,8 @@ name: retrospective
 description: "Generates a sprint or milestone retrospective by analyzing completed work, velocity, blockers, and patterns. Produces actionable insights for the next iteration."
 argument-hint: "[sprint-N|milestone-name]"
 user-invocable: true
-allowed-tools: Read, Glob, Grep, Write, AskUserQuestion
+allowed-tools: Read, Glob, Grep, Write, Bash, AskUserQuestion
 model: sonnet
-context: |
-  !git log --oneline --since="2 weeks ago" 2>/dev/null
 ---
 
 ## Phase 1: Parse Arguments
@@ -41,6 +39,8 @@ Read the sprint or milestone plan from the appropriate location:
 - Sprint plans: `production/sprints/`
 - Milestone definitions: `production/milestones/`
 
+**Also check for `production/sprint-status.yaml`**: if it exists, read it alongside the sprint plan. It is the authoritative source for actual story completion status (status: done, completed dates, blockers). Use it as the primary source for completion metrics in Phase 3. Fall back to markdown scanning only if the yaml does not exist. Note discrepancies between the yaml and the sprint plan (e.g., stories in yaml not in plan, or vice versa).
+
 **If the file does not exist or is empty**, output:
 
 > "No sprint data found for [sprint/milestone]. Run `/sprint-status` to generate
@@ -57,7 +57,13 @@ If the user chooses [B], stop here.
 
 Extract: planned tasks, estimated effort, owners, and goals.
 
-Read the git log for the period covered by the sprint or milestone to understand what was actually committed and when.
+Run git log for the sprint period to understand what was actually committed and when. Use the Bash tool (which uses Git Bash on Windows — the `2>/dev/null` is bash syntax, not PowerShell):
+
+```
+Bash: git log --oneline --since="4 weeks ago" 2>/dev/null || git log --oneline -20
+```
+
+Adjust the `--since` date to match the sprint duration if known from the sprint plan.
 
 ---
 
@@ -77,7 +83,7 @@ Scan the codebase for TODO/FIXME trends:
 - Compare to previous sprint counts if available (check previous retrospectives)
 - Note whether technical debt is growing or shrinking
 
-Read previous retrospectives (if any) from `production/sprints/` or `production/milestones/` to check:
+Read previous retrospectives (if any) from `production/retrospectives/` to check:
 
 - Were previous action items addressed?
 - Are the same problems recurring?
@@ -185,9 +191,9 @@ the single most important thing to change going forward?]
 
 Present the retrospective and top findings to the user (completion rate, velocity trend, top blocker, most important action item).
 
-Ask: "May I write this to `production/sprints/sprint-[N]-retrospective.md`?" (or the milestone path if applicable)
+Ask: "May I write this to `production/retrospectives/retro-sprint-[N]-[date].md`?" (or `production/retrospectives/retro-[milestone-name]-[date].md` for milestone retrospectives)
 
-If yes, write the file, creating the directory if needed. Verdict: **COMPLETE** — retrospective saved.
+If yes, write the file, creating the `production/retrospectives/` directory if needed. Verdict: **COMPLETE** — retrospective saved.
 
 If no, stop here. Verdict: **BLOCKED** — user declined write.
 
@@ -195,7 +201,14 @@ If no, stop here. Verdict: **BLOCKED** — user declined write.
 
 ## Phase 6: Next Steps
 
-- Run `/sprint-plan` to incorporate the action items and velocity data into the next sprint.
+Use `AskUserQuestion`:
+- Prompt: "Retrospective complete. The action items and velocity data are ready. Would you like to start sprint planning now with this data pre-loaded?"
+- Options:
+  - `[A] Yes — open sprint planning with retro action items and velocity delta pre-populated`
+  - `[B] No — I'll reference the retrospective file manually when I'm ready`
+
+If the user selects [A]: Proceed to invoke `/sprint-plan new`, passing the retrospective file path and a summary of the action items and velocity change so the sprint planner can reference them.
+
 - If this was a milestone retrospective, run `/gate-check` to formally assess readiness for the next phase.
 
 ### Guidelines

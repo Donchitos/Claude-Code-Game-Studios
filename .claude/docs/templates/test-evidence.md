@@ -65,9 +65,13 @@ If nothing notable: *No significant observations.*
 
 ## Sign-Off
 
-All three sign-offs are required before the story can be marked COMPLETE via
-`/story-done`. Visual/Feel stories require the designer or art-lead sign-off.
-UI stories require the UX lead or designer sign-off.
+All roles must sign off before the story can be marked COMPLETE via `/story-done`.
+Visual/Feel stories require the designer or art-lead sign-off. UI stories require
+the UX lead or designer sign-off.
+
+**Solo developers**: all sign-offs may be by the same person in each role. The
+intent is that someone deliberately reviews the evidence before marking complete —
+not that three separate people must participate.
 
 | Role | Name | Date | Signature |
 |------|------|------|-----------|

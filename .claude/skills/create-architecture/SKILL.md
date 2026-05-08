@@ -118,8 +118,12 @@ Post-Cutoff Versions: [list]
 - [GDD system name] → [domain] → [risk level]
 ```
 
-Ask: "This inventory identifies [N] systems in HIGH RISK engine domains. Shall I
-continue building the architecture with these warnings flagged throughout?"
+Use `AskUserQuestion`:
+- Prompt: "One or more engine domains are HIGH RISK — the LLM's knowledge may be unreliable for these areas. Architectural recommendations in these domains should be cross-referenced with the engine docs before being acted on. How would you like to proceed?"
+- Options:
+  - `[A] Proceed — flag HIGH RISK domains throughout the output`
+  - `[B] Let me check the engine reference first — pause here`
+  - `[C] Show me which domains are HIGH RISK and why`
 
 ---
 
@@ -457,6 +461,7 @@ unsure, present 2-4 options with pros/cons before asking them to decide.
 ## Recommended Next Steps
 
 - Run `/architecture-decision [title]` for each required ADR listed in Phase 6 — Foundation layer ADRs first
+- Run `/architecture-review` — bootstraps the Requirements Traceability Matrix and TR registry from the ADRs just written. Required before the Pre-Production gate.
 - Run `/test-setup` to scaffold `tests/unit/`, `tests/integration/`, CI workflow, and an example test (required for gate-check)
 - Run `/ux-design` to initialize `design/ux/interaction-patterns.md` and `design/accessibility-requirements.md` (required for gate-check)
 - Run `/create-control-manifest` once the required ADRs are written to produce the layer rules manifest

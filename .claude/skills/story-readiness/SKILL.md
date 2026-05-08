@@ -4,7 +4,7 @@ description: "Validate that a story file is implementation-ready. Checks for emb
 argument-hint: "[story-file-path or 'all' or 'sprint']"
 user-invocable: true
 allowed-tools: Read, Glob, Grep, AskUserQuestion, Task
-model: haiku
+model: sonnet
 ---
 
 # Story Readiness
@@ -92,10 +92,14 @@ items pass or are explicitly marked N/A with a stated reason.
   observable condition — not "implement X" or "the system works correctly".
   Bad example: "Implement the jump mechanic." Good example: "Jump reaches
   max height of 5 units within 0.3 seconds when jump is held."
-- [ ] **No acceptance criteria require judgment calls**: Criteria like
+- [ ] **No acceptance criteria require judgment calls** *(auto-pass for `Type: Visual/Feel`)*: Criteria like
   "feels responsive" or "looks good" are not testable without a defined
-  benchmark. These must be replaced with specific observable conditions or
-  playtest protocols.
+  benchmark. For Logic, Integration, UI, and Config/Data stories, these must be
+  replaced with specific observable conditions. For Visual/Feel stories, subjective
+  criteria are expected and this check auto-passes — instead verify that each
+  subjective criterion has a paired playtest protocol or evidence requirement
+  (e.g., "evidence doc required at `production/qa/evidence/[slug]-evidence.md`").
+  PASS if the acceptance criterion ends with or is accompanied by an explicit reference to a file path such as `production/qa/evidence/[slug]-evidence.md`. NEEDS WORK if the criterion is purely subjective with no evidence file path specified.
 
 ### Architecture Completeness
 
@@ -176,8 +180,11 @@ items pass or are explicitly marked N/A with a stated reason.
 
 ### Definition of Done
 
-- [ ] **At least 3 testable acceptance criteria**: Fewer than 3 suggests
-  the story is either trivially small (should it be a story?) or under-specified.
+- [ ] **Minimum testable acceptance criteria by story type**:
+  - Logic / Integration stories: at least 3
+  - Visual/Feel and UI stories: at least 2
+  - Config/Data stories: at least 1
+  Apply the threshold matching the story's `Type:` field. If the story has fewer than the minimum, mark as NEEDS WORK.
 - [ ] **Performance budget noted if applicable**: If this story touches any
   part of the gameplay loop, rendering, or physics, a performance budget or
   a "no performance impact expected — [reason]" note is present.

@@ -53,11 +53,11 @@ Examples:
 Before spawning gate [GATE-ID]:
 1. If skill was called with --review [mode], use that
 2. Else read production/review-mode.txt
-3. Else default to full
+3. Else default to lean
 
 Apply the resolved mode:
 - solo → skip all gates. Note: "[GATE-ID] skipped — Solo mode"
-- lean → skip unless this is a PHASE-GATE (CD-PHASE-GATE, TD-PHASE-GATE, PR-PHASE-GATE)
+- lean → skip unless this is a PHASE-GATE (CD-PHASE-GATE, TD-PHASE-GATE, PR-PHASE-GATE, AD-PHASE-GATE)
          Note: "[GATE-ID] skipped — Lean mode"
 - full → spawn as normal
 ```
@@ -744,7 +744,7 @@ authored, or when a design decision has narrative implications
 introduced, or when a tech art decision affects visual style
 
 **Context to pass**:
-- Art bible path (if exists at `design/art-bible.md`)
+- Art bible path (if exists at `design/art/art-bible.md`)
 - The specific asset type, style decision, or visual direction being reviewed
 - Reference images or style descriptions
 - Platform and performance constraints
@@ -786,7 +786,7 @@ When a new gate is needed for a new skill or workflow:
 
 1. Assign a gate ID: `[DIRECTOR-PREFIX]-[DESCRIPTIVE-SLUG]`
    - Prefixes: `CD-` `TD-` `PR-` `LP-` `QL-` `ND-` `AD-`
-   - Add new prefixes for new agents: `AudioDirector` → `AU-`, `UX` → `UX-`
+   - Add new prefixes for new agents: `audio-director` → `AU-`, `ux-designer` → `UX-`
 2. Add the gate under the appropriate director section with all five fields:
    Trigger, Context to pass, Prompt, Verdicts, and any special handling notes
 3. Reference it in skills by ID only — never copy the prompt text into the skill
@@ -801,6 +801,6 @@ When a new gate is needed for a new skill or workflow:
 | **Systems Design** | TD-SYSTEM-BOUNDARY, CD-SYSTEMS, PR-SCOPE, CD-GDD-ALIGN (per GDD) | ND-CONSISTENCY, AD-VISUAL |
 | **Technical Setup** | TD-ARCHITECTURE, TD-ADR (per ADR), LP-FEASIBILITY, AD-ART-BIBLE | TD-ENGINE-RISK |
 | **Pre-Production** | PR-EPIC, QL-STORY-READY (per story), PR-SPRINT, all four PHASE-GATEs (via gate-check) | CD-PLAYTEST |
-| **Production** | LP-CODE-REVIEW (per story), QL-STORY-READY, PR-SPRINT (per sprint) | PR-MILESTONE, QL-TEST-COVERAGE, AD-VISUAL |
+| **Production** | LP-CODE-REVIEW (per story), QL-STORY-READY, PR-SPRINT (per sprint), QL-TEST-COVERAGE (per sprint close-out) | PR-MILESTONE, AD-VISUAL |
 | **Polish** | QL-TEST-COVERAGE, CD-PLAYTEST, PR-MILESTONE | AD-VISUAL |
 | **Release** | All four PHASE-GATEs (via gate-check) | QL-TEST-COVERAGE |

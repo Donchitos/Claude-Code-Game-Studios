@@ -68,11 +68,20 @@ If yes, write the file, creating the directory if needed.
 
 ## Phase 3: Create Hotfix Branch
 
-If git is initialized, create the hotfix branch:
+Check whether this is a git repository:
 
-```
-git checkout -b hotfix/[short-name] [release-tag-or-main]
-```
+`Bash: git rev-parse --is-inside-work-tree 2>/dev/null`
+
+If this command fails or returns empty: note "Not a git repository — create the branch manually." and skip branch creation.
+
+If the check passes, use `AskUserQuestion` before creating the branch:
+- Prompt: "Ready to create hotfix branch 'hotfix/[short-name]' from [base-ref]?"
+- Options:
+  - `[A] Yes — create branch`
+  - `[B] Use a different base ref — I'll specify it`
+  - `[C] Skip — I'll create the branch myself`
+
+Only run `git checkout -b hotfix/[short-name] [base-ref]` if user selects [A]. If [B]: ask the user for the base ref, then run the command with that ref. If [C]: skip branch creation and proceed to Phase 4.
 
 ---
 
@@ -162,3 +171,10 @@ If VERIFIED FIXED: run `/bug-report close [BUG-ID]` to formally close it.
 If STILL PRESENT: the hotfix failed — immediately re-open, assess rollback, and escalate.
 
 Schedule a post-incident review within 48 hours using `/retrospective hotfix`.
+
+Use `AskUserQuestion`:
+- Prompt: "Hotfix complete. What's the next step?"
+- Options:
+  - `[A] Run /smoke-check to verify the fix`
+  - `[B] Run /patch-notes to document this hotfix`
+  - `[C] Stop here`
