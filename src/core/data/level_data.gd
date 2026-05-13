@@ -36,6 +36,11 @@ static func validate_schema_data(schema_data: Dictionary, level_data: Dictionary
 			continue
 		if not _matches_type(level_data[key], expected_type):
 			errors.append("type mismatch: %s" % key)
+			continue
+		if expected_type == "integer" or expected_type == "number":
+			var minimum := properties[key].get("minimum", null)
+			if minimum != null and float(level_data[key]) < float(minimum):
+				errors.append("below minimum: %s" % key)
 
 	return {"is_valid": errors.is_empty(), "errors": errors}
 

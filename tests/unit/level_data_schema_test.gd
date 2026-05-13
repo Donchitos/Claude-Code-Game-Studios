@@ -9,7 +9,7 @@ func test_level_schema_validates_example():
 			"id": {"type": "string"},
 			"name": {"type": "string"},
 			"waves": {"type": "array"},
-			"waiting_slots": {"type": "integer"}
+			"waiting_slots": {"type": "integer", "minimum": 0}
 		}
 	}
 	var level_data := {
