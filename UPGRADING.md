@@ -14,6 +14,7 @@ Or check `README.md` for the version badge.
 ## Table of Contents
 
 - [Upgrade Strategies](#upgrade-strategies)
+- [v1.0.0-beta → v1.0](#v100-beta--v10)
 - [v0.4.x → v1.0](#v04x--v10)
 - [v0.4.0 → v0.4.1](#v040--v041)
 - [v0.3.0 → v0.4.0](#v030--v040)
@@ -119,6 +120,48 @@ Best when: you didn't use git to set up the template (just downloaded a zip).
 README.md
 UPGRADING.md
 ```
+
+### Files: Merge Carefully
+
+None — all changes are to infrastructure files with no user content.
+
+---
+
+## v1.0.0-beta → v1.0
+
+**Released:** 2026-05-13
+**Commit range:** `49d1e45..HEAD`
+**Key themes:** New `/vertical-slice` gate, skill polish & bug fixes, contributor docs
+
+### What Changed
+
+| Category | Changes |
+|----------|---------|
+| **New skill** | `/vertical-slice` — Pre-Production gate that validates the full game loop with a production-quality end-to-end build before Production. Pairs with the overhauled `/prototype` (concept validation right after `/brainstorm`). |
+| **New flow** | Entity inventory step in `/map-systems` — surfaces all named entities up front for cleaner downstream GDD authoring. |
+| **UX polish** | Added missing `AskUserQuestion` widgets to 7 skills; comprehensive skill audit for consistency, prompts, and flow gaps; exposed `--review` flag in `argument-hints` for all `team-*` skills. |
+| **Bug fixes** | `#21` log-agent hooks logged "unknown" `agent_type`; `#36` missing `allowed-tools` in `/architecture-decision` and `/story-done`; `#42` `rg --type gdscript` is invalid (now uses `--glob *.gd`); `#43` session-start preview showed oldest state instead of newest; `#45` duplicate `## 0.` heading and broken step numbering in `/architecture-decision`. |
+| **Project docs** | Added `CONTRIBUTING.md` (framework contribution guidelines) and `SECURITY.md` (coordinated disclosure policy). |
+| **Counts/refs** | Synced agent/skill/hook counts across `WORKFLOW-GUIDE.md`, `README.md`, and agent rosters; fixed stale agent names and skill model-tier fields. |
+
+---
+
+### Files: Safe to Overwrite
+
+**New files to add:**
+```
+.claude/skills/vertical-slice/SKILL.md
+CONTRIBUTING.md
+SECURITY.md
+```
+
+**Existing files to overwrite (no user content):**
+- All files under `.claude/skills/` modified in the commit range (skill audit + AskUserQuestion widgets + `--review` argument-hints)
+- `.claude/hooks/log-agent.sh` (fix #21)
+- `README.md`, `docs/WORKFLOW-GUIDE.md`, `docs/examples/skill-flow-diagrams.md`
+- `UPGRADING.md`
+
+---
 
 ### Files: Merge Carefully
 
