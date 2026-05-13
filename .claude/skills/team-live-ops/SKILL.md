@@ -1,9 +1,10 @@
 ---
 name: team-live-ops
 description: "Orchestrate the live-ops team for post-launch content planning: coordinates live-ops-designer, economy-designer, analytics-engineer, community-manager, writer, and narrative-director to design and plan a season, event, or live content update."
-argument-hint: "[season name or event description]"
+argument-hint: "[season name or event description] [--review full|lean|solo]"
 user-invocable: true
 allowed-tools: Read, Glob, Grep, Write, Edit, Bash, Task, AskUserQuestion, TodoWrite
+model: sonnet
 ---
 **Argument check:** If no season name or event description is provided, output:
 > "Usage: `/team-live-ops [season name or event description]` — Provide the name or description of the season or live event to plan."
@@ -15,6 +16,19 @@ When this skill is invoked with a valid argument, orchestrate the live-ops team 
 the user with the subagent's proposals as selectable options. Write the agent's
 full analysis in conversation, then capture the decision with concise labels.
 The user must approve before moving to the next phase.
+
+## Phase 0: Resolve Review Mode
+
+1. If `--review [mode]` was passed as an argument, use that mode.
+2. Else read `production/review-mode.txt` — use whatever is written there.
+3. Else default to `lean`.
+
+Modes:
+- `full` — spawn all director and lead gates as described
+- `lean` — skip director gates unless they are PHASE-GATE type (CD-PHASE-GATE, TD-PHASE-GATE, PR-PHASE-GATE, AD-PHASE-GATE)
+- `solo` — skip all director gate spawning entirely; run the skill without any agent gates
+
+Store the resolved mode for use in all subsequent phases.
 
 ## Team Composition
 - **live-ops-designer** — Season structure, event cadence, retention mechanics, battle pass
@@ -100,7 +114,7 @@ Present a summary to the user with:
 - **Analytics readiness**: are success criteria defined and instrumented?
 - **Ethics review**: check the Phase 3 economy design against `design/live-ops/ethics-policy.md`
   - If the file does not exist: flag "ETHICS REVIEW SKIPPED: `design/live-ops/ethics-policy.md` not found. Economy design was not reviewed against an ethics policy. Recommend creating one before production begins." Include this flag in the season design output document. Add to next steps: create `design/live-ops/ethics-policy.md`.
-  - If the file exists and a violation is found: flag "ETHICS FLAG: [element] in Phase 3 economy design violates [policy rule]. Approval is blocked until this is resolved." Do NOT issue a COMPLETE verdict or write output documents. Use `AskUserQuestion` with options: revise economy design / override with documented rationale / cancel. If user chooses to revise: re-spawn economy-designer to produce a corrected design, then return to Phase 7 review.
+  - If the file exists and a violation is found: flag "ETHICS FLAG: [element] in Phase 3 economy design violates [policy rule]. Approval is blocked until this is resolved." Do NOT issue a COMPLETE verdict or write output documents. Use `AskUserQuestion` with options: revise economy design / override with documented rationale / cancel. If user chooses to revise: re-spawn economy-designer to produce a corrected design, then return to Phase 7 review. If user selects Cancel: end with Verdict: BLOCKED — "Live ops design cancelled due to unresolved ethics violation. Resolve the flagged issues and re-run /team-live-ops."
 - **Open questions**: decisions still needed before production begins
 
 Ask the user to approve the season plan before delegating to production teams. Issue the COMPLETE verdict only after the user approves and no unresolved ethics violations remain. If an ethics violation is unresolved, end with Verdict: **BLOCKED**.

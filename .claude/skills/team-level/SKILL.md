@@ -1,9 +1,10 @@
 ---
 name: team-level
 description: "Orchestrate level design team: level-designer + narrative-director + world-builder + art-director + systems-designer + qa-tester for complete area/level creation."
-argument-hint: "[level name or area to design]"
+argument-hint: "[level name or area to design] [--review full|lean|solo]"
 user-invocable: true
 allowed-tools: Read, Glob, Grep, Write, Edit, Bash, Task, AskUserQuestion, TodoWrite
+model: sonnet
 ---
 
 When this skill is invoked:
@@ -12,6 +13,19 @@ When this skill is invoked:
 the user with the subagent's proposals as selectable options. Write the agent's
 full analysis in conversation, then capture the decision with concise labels.
 The user must approve before moving to the next step.
+
+## Phase 0: Resolve Review Mode
+
+1. If `--review [mode]` was passed as an argument, use that mode.
+2. Else read `production/review-mode.txt` — use whatever is written there.
+3. Else default to `lean`.
+
+Modes:
+- `full` — spawn all director and lead gates as described
+- `lean` — skip director gates unless they are PHASE-GATE type (CD-PHASE-GATE, TD-PHASE-GATE, PR-PHASE-GATE, AD-PHASE-GATE)
+- `solo` — skip all director gate spawning entirely; run the skill without any agent gates
+
+Store the resolved mode for use in all subsequent phases.
 
 1. **Read the argument** for the target level or area (e.g., `tutorial`,
    `forest dungeon`, `hub town`, `final boss arena`).
@@ -134,7 +148,12 @@ Spawn the `qa-tester` agent to:
 4. **Compile the level design document** combining all team outputs into the
    level design template format.
 
-5. **Save to** `design/levels/[level-name].md`.
+After all subagent outputs are collected, spawn `level-designer` via Task to compile and write the final document:
+- Pass: all subagent outputs (verbatim), the level brief, game pillars, relevant GDD sections
+- Ask level-designer to: compile into the level design document format, then request user approval before writing ("May I write the compiled level design to design/levels/[level-name].md?")
+- The orchestrator does NOT call Write directly for the final document.
+
+5. **Save to** `design/levels/[level-name].md` (handled by the level-designer subagent after user approval — see above).
 
 6. **Output a summary** with: area overview, encounter count, estimated asset
    list, narrative beats, any cross-team dependencies or open questions, open

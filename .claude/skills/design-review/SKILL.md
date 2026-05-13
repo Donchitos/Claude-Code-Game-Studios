@@ -4,6 +4,7 @@ description: "Reviews a game design document for completeness, internal consiste
 argument-hint: "[path-to-design-doc] [--depth full|lean|solo]"
 user-invocable: true
 allowed-tools: Read, Glob, Grep, Write, Edit, Task, AskUserQuestion
+model: sonnet
 ---
 
 ## Phase 0: Parse Arguments
@@ -95,7 +96,9 @@ Read the GDD and identify every domain present. A GDD can touch multiple domains
 | Data schema, resource structure | `systems-designer` |
 | Any gameplay system | `game-designer` (always) |
 
-**Always spawn `game-designer` and `systems-designer` as a baseline minimum.** Every GDD touches their domain.
+Spawn `game-designer` for all GDDs that describe gameplay mechanics or player-facing rules.
+Spawn `systems-designer` for all GDDs that contain formulas or system interaction rules.
+These are the most common baselines — but not required for pure UI specs, audio specs, or lore documents. Use the domain table above to determine which specialists are truly relevant.
 
 ### Step 2 — Spawn all relevant specialists in parallel
 
@@ -212,13 +215,21 @@ After all revisions are complete, show a summary table (blocker → fix applied)
 
 Never end the revision flow with plain text. Always close with this widget.
 
-**Second widget — systems index update (always show this separately):**
+**Second widget — tracking records (combined, for APPROVED path):**
+
+When the verdict is APPROVED, use a single `AskUserQuestion` with `multiSelect: true` to batch the two tracking updates:
+- Prompt: "Verdict: APPROVED. I can update the tracking records now. Select any you'd like me to complete:"
+- Options:
+  - `Update systems-index.md status to 'Approved' for [system]`
+  - `Append approval entry to design/gdd/reviews/[doc-name]-review-log.md`
+
+If the review-log option is selected, append the same format as below. Execute both selected actions before showing the final closing widget.
+
+When the verdict is NEEDS REVISION or MAJOR REVISION NEEDED, use separate widgets as before:
 
 Use a second `AskUserQuestion`:
 - Prompt: "May I update `design/gdd/systems-index.md` to mark [system] as [In Review / Approved]?"
 - Options: `[A] Yes — update it` / `[B] No — leave it as-is`
-
-**Third widget — review log (always offer):**
 
 Use a third `AskUserQuestion`:
 - Prompt: "May I append this review summary to `design/gdd/reviews/[doc-name]-review-log.md`? This creates a revision history so future re-reviews can track what changed."

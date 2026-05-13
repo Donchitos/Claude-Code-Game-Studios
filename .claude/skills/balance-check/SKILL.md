@@ -3,7 +3,8 @@ name: balance-check
 description: "Analyzes game balance data files, formulas, and configuration to identify outliers, broken progressions, degenerate strategies, and economy imbalances. Use after modifying any balance-related data or design. Use when user says 'balance report', 'check game balance', 'run a balance check'."
 argument-hint: "[system-name|path-to-data-file]"
 user-invocable: true
-allowed-tools: Read, Glob, Grep
+allowed-tools: Read, Glob, Grep, Write, AskUserQuestion
+model: sonnet
 agent: economy-designer
 ---
 
@@ -100,19 +101,23 @@ Run domain-specific checks:
 
 ## Phase 6: Fix & Verify Cycle
 
-After presenting the report, ask:
+After presenting the report, use `AskUserQuestion`:
+- Prompt: "Balance check complete. What would you like to do next?"
+- Options:
+  - `[A] Fix highest-priority issue now — walk me through it`
+  - `[B] Save report to design/balance/balance-check-[system]-[date].md`
+  - `[C] Stop here — I'll review the findings manually`
 
-> "Would you like to fix any of these balance issues now?"
-
-If yes:
+If [A]:
 - Ask which issue to address first (refer to the Recommendations table by priority row)
 - Guide the user to update the relevant data file in `assets/data/` or formula in `design/balance/`
 - After each fix, offer to re-run the relevant balance checks to verify no new outliers were introduced
 - If the fix changes a tuning knob defined in a GDD or referenced by an ADR, remind the user:
   > "This value is defined in a design document. Run `/propagate-design-change [path]` on the affected GDD to find downstream impacts before committing."
 
-If no:
-- Summarize open issues and suggest saving the report to `design/balance/balance-check-[system]-[date].md` for later
+If [B]:
+- Write the report to `design/balance/balance-check-[system]-[date].md` (create the directory if needed). Use the current date for [date] in YYYY-MM-DD format.
+- Confirm the file was written, then end with: "Re-run `/balance-check` after fixes to verify."
 
-End with:
-> "Re-run `/balance-check` after fixes to verify."
+If [C]:
+- Summarize open issues and end with: "Re-run `/balance-check` after fixes to verify."

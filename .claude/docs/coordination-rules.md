@@ -61,7 +61,7 @@ Requires `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1` environment variable.
 - The task fits in a single session's context (use subagents instead)
 - Cost is a concern — each team member burns tokens independently
 
-**Current status**: Not yet used in this project. Document usage here when first adopted.
+**Current status**: Opt-in via `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1`. Document first usage here when adopted.
 
 ## Parallel Task Protocol
 

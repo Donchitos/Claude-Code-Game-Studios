@@ -1,9 +1,10 @@
 ---
 name: team-polish
 description: "Orchestrate the polish team: coordinates performance-analyst, technical-artist, sound-designer, and qa-tester to optimize, polish, and harden a feature or area for release quality."
-argument-hint: "[feature or area to polish]"
+argument-hint: "[feature or area to polish] [--review full|lean|solo]"
 user-invocable: true
 allowed-tools: Read, Glob, Grep, Write, Edit, Bash, Task, AskUserQuestion, TodoWrite
+model: sonnet
 ---
 If no argument is provided, output usage guidance and exit without spawning any agents:
 > Usage: `/team-polish [feature or area]` — specify the feature or area to polish (e.g., `combat`, `main menu`, `inventory system`, `level-1`). Do not use `AskUserQuestion` here; output the guidance directly.
@@ -14,6 +15,21 @@ When this skill is invoked with an argument, orchestrate the polish team through
 the user with the subagent's proposals as selectable options. Write the agent's
 full analysis in conversation, then capture the decision with concise labels.
 The user must approve before moving to the next phase.
+
+## Phase 0: Resolve Review Mode
+
+1. If `--review [mode]` was passed as an argument, use that mode.
+2. Else read `production/review-mode.txt` — use whatever is written there.
+3. Else default to `lean`.
+
+Modes:
+- `full` — spawn all director and lead gates as described
+- `lean` — skip director gates unless they are PHASE-GATE type (CD-PHASE-GATE, TD-PHASE-GATE, PR-PHASE-GATE, AD-PHASE-GATE)
+- `solo` — skip all director gate spawning entirely; run the skill without any agent gates
+
+Store the resolved mode for use in all subsequent phases.
+
+**Director gate skip rule**: Before spawning any Tier 1 director or lead for review (outside of PHASE-GATE triggers), apply the resolved mode: skip if solo mode; skip if lean mode and this is not a PHASE-GATE.
 
 ## Team Composition
 - **performance-analyst** — Profiling, optimization, memory analysis, frame budget

@@ -4,6 +4,7 @@ description: "Translate approved GDDs + architecture into epics — one epic per
 argument-hint: "[system-name | layer: foundation|core|feature|presentation | all] [--review full|lean|solo]"
 user-invocable: true
 allowed-tools: Read, Glob, Grep, Write, Task, AskUserQuestion
+model: sonnet
 agent: technical-director
 ---
 
@@ -115,8 +116,12 @@ If there are untraced requirements:
 > stories for these requirements will be marked Blocked until ADRs exist.
 > Run `/architecture-decision` first, or proceed with placeholders."
 
-Ask: "Shall I create Epic: [name]?"
-Options: "Yes, create it", "Skip", "Pause — I need to write ADRs first"
+Use `AskUserQuestion`:
+- Prompt: "Shall I create Epic: [name]?"
+- Options:
+  - `[A] Yes, create it`
+  - `[B] Skip this epic`
+  - `[C] Pause — I need to write ADRs first`
 
 ---
 
@@ -131,7 +136,22 @@ After all epics for the current layer are defined (Step 4 completed for all in-s
 
 Pass: the full epic structure summary (all epics, their scope summaries, governing ADR counts), the layer being processed, milestone timeline and team capacity.
 
-Present the producer's assessment. If UNREALISTIC, offer to revise epic boundaries (split overscoped or merge underscoped epics) before writing. If CONCERNS, surface them and let the user decide. Do not write epic files until the producer gate resolves.
+Present the producer's assessment.
+
+If UNREALISTIC: offer to revise epic boundaries (split overscoped or merge underscoped epics). Revise and re-run the gate before writing.
+
+If CONCERNS, use `AskUserQuestion`:
+- Prompt: "Producer raised concerns about the epic structure. How do you want to proceed?"
+- Options:
+  - `[A] Proceed as planned — I accept the producer's concerns`
+  - `[B] Revise epic boundaries — split or merge as recommended`
+  - `[C] Stop — I want to reconsider the scope`
+
+If [A]: proceed to Step 5.
+If [B]: revise epic definitions from Step 4 and re-run the producer gate.
+If [C]: stop. Verdict: **BLOCKED** — user wants to reconsider epic scope.
+
+Do not write epic files until the producer gate resolves.
 
 ---
 

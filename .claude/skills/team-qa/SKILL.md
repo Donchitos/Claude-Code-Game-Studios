@@ -1,9 +1,10 @@
 ---
 name: team-qa
 description: "Orchestrate the QA team through a full testing cycle. Coordinates qa-lead (strategy + test plan) and qa-tester (test case writing + bug reporting) to produce a complete QA package for a sprint or feature. Covers: test plan generation, test case writing, smoke check gate, manual QA execution, and sign-off report."
-argument-hint: "[sprint | feature: system-name]"
+argument-hint: "[sprint | feature: system-name] [--review full|lean|solo]"
 user-invocable: true
 allowed-tools: Read, Glob, Grep, Write, Task, AskUserQuestion
+model: sonnet
 agent: qa-lead
 ---
 
@@ -13,6 +14,19 @@ When this skill is invoked, orchestrate the QA team through a structured testing
 the user with the subagent's proposals as selectable options. Write the agent's
 full analysis in conversation, then capture the decision with concise labels.
 The user must approve before moving to the next phase.
+
+## Phase 0: Resolve Review Mode
+
+1. If `--review [mode]` was passed as an argument, use that mode.
+2. Else read `production/review-mode.txt` — use whatever is written there.
+3. Else default to `lean`.
+
+Modes:
+- `full` — spawn all director and lead gates as described
+- `lean` — skip director gates unless they are PHASE-GATE type (CD-PHASE-GATE, TD-PHASE-GATE, PR-PHASE-GATE, AD-PHASE-GATE)
+- `solo` — skip all director gate spawning entirely; run the skill without any agent gates
+
+Store the resolved mode for use in all subsequent phases.
 
 ## Team Composition
 
@@ -34,7 +48,7 @@ Always provide full context in each agent's prompt (story file paths, QA plan pa
 Before doing anything else, gather the full scope:
 
 1. Detect the current sprint or feature scope from the argument:
-   - If argument is a sprint identifier (e.g., `sprint-03`): read all story files in `production/sprints/[sprint]/`
+   - If argument is a sprint identifier (e.g., `sprint-03`): Glob `production/sprints/` for files matching `*[sprint-identifier]*.md`. Read the matched file. If multiple match, use the most recently modified.
    - If argument is `feature: [system-name]`: glob story files tagged for that system
    - If no argument: read `production/session-state/active.md` and `production/sprint-status.yaml` (if present) to infer the active sprint
 
@@ -53,13 +67,13 @@ Prompt the qa-lead to:
 - Identify which stories require automated test evidence vs. manual QA
 - Flag any stories with missing acceptance criteria or missing test evidence that would block QA
 - Estimate manual QA effort (number of test sessions needed)
-- Check `tests/smoke/` for smoke test scenarios; for each, assess whether it can be verified given the current build. Produce a smoke check verdict: **PASS** / **PASS WITH WARNINGS [list]** / **FAIL [list of failures]**
+- **Before assessing smoke status, check for an existing smoke check report**: Glob `production/qa/smoke-*.md` and read the most recently modified file (if found). If a report exists, use its verdict and findings directly — do not re-interview the user. If no report exists, note: "No prior smoke check report found — run `/smoke-check sprint` before proceeding." and set smoke check status to UNKNOWN (treat as PASS WITH WARNINGS for the purpose of continuing). Produce a smoke check verdict: **PASS** / **PASS WITH WARNINGS [list]** / **FAIL [list of failures]** / **UNKNOWN (no report found)**
 - Produce a strategy summary table and smoke check result:
 
   | Story | Type | Automated Required | Manual Required | Blocker? |
   |-------|------|--------------------|-----------------|----------|
 
-  **Smoke Check**: [PASS / PASS WITH WARNINGS / FAIL] — [details if not PASS]
+  **Smoke Check**: [PASS / PASS WITH WARNINGS / FAIL / UNKNOWN] — [source: `production/qa/smoke-[date].md` or "no report found"] — [details if not PASS]
 
 If the smoke check result is **FAIL**, the qa-lead must list the failures prominently. QA cannot proceed past the strategy phase with a failed smoke check.
 
@@ -75,7 +89,8 @@ options:
   - "Cancel — resolve blockers first"
 ```
 
-If smoke check **FAIL**: do not proceed to Phase 3. Surface the failures and stop. The user must fix them and re-run `/team-qa`.
+If smoke check **FAIL**: do not proceed to Phase 3. Surface the failures from the smoke check report and stop. The user must fix them, re-run `/smoke-check sprint`, and then re-run `/team-qa`.
+If smoke check **UNKNOWN**: surface a warning — "No smoke check report found. Recommend running `/smoke-check sprint` before QA. Proceeding with caution."
 If smoke check **PASS WITH WARNINGS**: note the warnings for the sign-off report and continue.
 If blockers are present: list them explicitly. The user may choose to skip blocked stories or cancel the cycle.
 
@@ -89,7 +104,7 @@ The test plan should cover:
 - **Automated Test Requirements**: which stories need test files, expected paths in `tests/`
 - **Manual QA Scope**: which stories need manual walkthrough and what to validate
 - **Out of Scope**: what is explicitly not being tested this cycle and why
-- **Entry Criteria**: what must be true before QA can begin (smoke check pass, build stable)
+- **Entry Criteria**: what must be true before QA can begin. Always include: (1) Smoke check PASS or PASS WITH WARNINGS report exists at `production/qa/smoke-*.md`, (2) build is stable (no crashes on launch), (3) all Must Have stories have Status: in-progress or done in `production/sprint-status.yaml`. Add any sprint-specific criteria beyond these.
 - **Exit Criteria**: what constitutes a completed QA cycle (all stories PASS or FAIL with bugs filed)
 
 Ask: "May I write the QA plan to `production/qa/qa-plan-[sprint]-[date].md`?"
@@ -98,7 +113,7 @@ Write only after receiving approval.
 
 ### Phase 4: Test Case Writing (qa-tester)
 
-> **Smoke check** is performed as part of Phase 2 (QA Strategy). If the smoke check returned FAIL in Phase 2, the cycle was stopped there. This phase only runs when the Phase 2 smoke check was PASS or PASS WITH WARNINGS.
+> **Smoke check** is performed as part of Phase 2 (QA Strategy). If the smoke check returned FAIL in Phase 2, the cycle was stopped there. This phase only runs when the Phase 2 smoke check was PASS, PASS WITH WARNINGS, or UNKNOWN.
 
 For each story requiring manual QA (Visual/Feel, UI, Integration without automated tests):
 
@@ -127,7 +142,7 @@ options:
   - "Skip manual QA for [story name] — not ready"
 ```
 
-### Phase 6: Manual QA Execution
+### Phase 5: Manual QA Execution
 
 Walk through each story in the approved manual QA list.
 
@@ -152,7 +167,7 @@ After collecting all results, summarize:
 - Stories FAIL: [count] — bugs filed: [IDs]
 - Stories BLOCKED: [count]
 
-### Phase 7: QA Sign-Off Report
+### Phase 6: QA Sign-Off Report
 
 Spawn `qa-lead` via Task to produce the sign-off report using all results from Phases 4–6.
 
@@ -161,7 +176,6 @@ The sign-off report format:
 ```markdown
 ## QA Sign-Off Report: [Sprint/Feature]
 **Date**: [date]
-**QA Lead sign-off**: [pending]
 
 ### Test Coverage Summary
 | Story | Type | Auto Test | Manual QA | Result |
@@ -220,3 +234,11 @@ A summary covering: stories in scope, smoke check result, manual QA results, bug
 
 Verdict: **COMPLETE** — QA cycle finished.
 Verdict: **BLOCKED** — smoke check failed or critical blocker prevented cycle completion; partial report produced.
+
+## Session State Update
+
+After the final phase completes (sign-off report written or BLOCKED verdict reached), silently append to `production/session-state/active.md`:
+
+```
+<!-- QA RUN: [date] | Sprint: [sprint identifier or "ad-hoc"] | Verdict: [PASS/FAIL/CONCERNS] | Report: production/qa/qa-[date].md -->
+```

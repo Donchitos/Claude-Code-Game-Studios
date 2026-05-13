@@ -3,7 +3,8 @@ name: consistency-check
 description: "Scan all GDDs against the entity registry to detect cross-document inconsistencies: same entity with different stats, same item with different values, same formula with different variables. Grep-first approach — reads registry then targets only conflicting GDD sections rather than full document reads."
 argument-hint: "[full | since-last-review | entity:<name> | item:<name>]"
 user-invocable: true
-allowed-tools: Read, Glob, Grep, Write, Edit, Bash
+allowed-tools: Read, Glob, Grep, Write, Edit, Bash, AskUserQuestion
+model: sonnet
 ---
 
 # Consistency Check
@@ -259,12 +260,44 @@ append an entry to `docs/consistency-failures.md` for each conflict:
 referenced in economy GDD before authoring — always check entities.yaml first"]
 ```
 
-Only append if `docs/consistency-failures.md` exists. If the file is missing,
-skip this step silently — do not create the file from this skill.
+If `docs/consistency-failures.md` does not exist, create it with this header before appending:
+
+```markdown
+# Consistency Failure Log
+
+<!-- Auto-maintained by /consistency-check. Do not edit manually. -->
+<!-- One entry per detected conflict, in chronological order. -->
+
+| Date | GDD A | GDD B | Conflict Type | Status |
+|------|-------|-------|---------------|--------|
+```
+
+Then append the new conflict entries. Never skip logging — a missing file is not a reason to lose conflict history.
 
 ---
 
-## Next Steps
+## Phase 7: Session State and Closing
+
+Silently append to `production/session-state/active.md` (create the file if it does not exist):
+
+```
+<!-- CONSISTENCY-CHECK: [date] | GDDs checked: [N] | Conflicts found: [N] | Report: docs/consistency-report-[date].md -->
+```
+
+Then close with an `AskUserQuestion` widget:
+
+- **Prompt**: "Consistency check complete — [N] conflicts found. What next?"
+- **Options**:
+  - `[A] Fix the highest-priority conflict now`
+  - `[B] Save full report and stop`
+  - `[C] Run /design-review on the most conflicted GDD`
+  - `[D] Stop here`
+
+Never end the skill with plain text. Always close with this widget.
+
+---
+
+## Recovery / Reference
 
 - **If PASS**: Run `/review-all-gdds` for holistic design-theory review, or
   `/create-architecture` if all MVP GDDs are complete.

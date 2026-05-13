@@ -143,4 +143,4 @@ These should be prototyped early regardless of priority tier.]
 - [ ] Design MVP-tier systems first (use `/design-system [system-name]`)
 - [ ] Run `/design-review` on each completed GDD
 - [ ] Run `/gate-check pre-production` when MVP systems are designed
-- [ ] Prototype the highest-risk system early (`/prototype [system]`)
+- [ ] Validate the highest-risk systems with `/vertical-slice` before committing to Production

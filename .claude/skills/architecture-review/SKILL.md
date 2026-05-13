@@ -369,12 +369,17 @@ The GDD should be revised before its system enters implementation.
 If no revision flags are found, write: "No GDD revision flags — all GDD assumptions
 are consistent with verified engine behaviour."
 
-Ask: "Should I flag these GDDs for revision in the systems index?"
-- If yes: update the relevant systems' Status field to "Needs Revision"
-  and add a short inline note in the adjacent Notes/Description column explaining the conflict.
-  Ask for approval before writing.
-  (Do NOT use parentheticals like "Needs Revision (Architecture Feedback)" — other skills
-  match the exact string "Needs Revision" and parentheticals break that match.)
+Before asking, display the proposed change inline — show the current systems-index row for each flagged GDD and the proposed updated row side by side so the user can see exactly what will change.
+
+Then use `AskUserQuestion`:
+- "I found [N] GDD revision flag(s). May I update the systems index?"
+  - [A] Yes — apply all [N] updates to the systems index now
+  - [B] Show me the full diff first, then ask again
+  - [C] No — leave the systems index unchanged for now
+
+If [A]: apply the updates. Status field must be exactly `Needs Revision` — no parentheticals
+(other skills match that exact string and parentheticals break the match).
+If [B]: display the complete proposed systems-index section, then re-ask with `AskUserQuestion`.
 
 ---
 
@@ -459,8 +464,10 @@ Use `AskUserQuestion` for the write approval:
 
 ### RTM Output (rtm mode only)
 
-For `rtm` mode, additionally ask: "May I write the full Requirements Traceability
-Matrix to `docs/architecture/requirements-traceability.md`?"
+For `rtm` mode, use `AskUserQuestion`:
+- "May I write the full Requirements Traceability Matrix?"
+  - [A] Yes — write to `docs/architecture/requirements-traceability.md`
+  - [B] Not yet — show me the full RTM data first, then ask again
 
 RTM file format:
 
@@ -600,16 +607,28 @@ After completing the review and writing approved files, present:
 
 1. **Immediate actions**: List the top 3 ADRs to create (highest-impact gaps first,
    Foundation layer before Feature layer)
-2. **Gate guidance**: "When all blocking issues are resolved, run `/gate-check
-   pre-production` to advance"
+2. **Pre-gate checklist**: Check whether these exist via Glob and mark each ✅ or ❌:
+   - `tests/unit/` and `tests/integration/` directories — if ❌: run `/test-setup`
+   - `.github/workflows/tests.yml` — if ❌: run `/test-setup`
+   - `design/accessibility-requirements.md` — if ❌: run `/ux-design`
+   - `design/ux/interaction-patterns.md` — if ❌: run `/ux-design`
+   Present ❌ items as required steps before gate-check. Do not offer `/gate-check`
+   as an option if any item is ❌ — offer the missing skill to run instead.
 3. **Rerun trigger**: "Re-run `/architecture-review` after each new ADR is written
    to verify coverage improves"
 
-Then close with `AskUserQuestion`:
-- "Architecture review complete. What would you like to do next?"
-  - [A] Write a missing ADR — open a fresh session and run `/architecture-decision [system]`
-  - [B] Run `/gate-check pre-production` — if all blocking gaps are resolved
-  - [C] Stop here for this session
+Then close with `AskUserQuestion` tailored to the pre-gate checklist state:
+- If ADR gaps remain or any pre-gate item is ❌:
+  - "Architecture review complete. What would you like to do next?"
+    - [A] Write a missing ADR — open a fresh session and run `/architecture-decision [system]`
+    - [B] Run `/test-setup` — required before gate-check (only show if test infrastructure is ❌)
+    - [C] Run `/ux-design` — required before gate-check (only show if UX/accessibility files are ❌)
+    - [D] Stop here for this session
+- If all pre-gate checklist items are ✅ and no blocking ADR gaps remain:
+  - "Architecture review complete. All pre-gate items confirmed. What would you like to do next?"
+    - [A] Run `/gate-check pre-production`
+    - [B] Write a missing ADR — open a fresh session and run `/architecture-decision [system]`
+    - [C] Stop here for this session
 
 ---
 
@@ -634,6 +653,13 @@ If any spawned agent returns BLOCKED, errors, or fails to complete:
    anything; let the user see the state
 3. **Don't guess** — if a requirement is ambiguous, ask: "Is [X] a technical
    requirement or a design preference?"
-4. **Ask before writing** — always confirm before writing the report file
-5. **Non-blocking** — the verdict is advisory; the user decides whether to continue
+4. **Draft before approval** — always show the content that will be written (the
+   report, the updated ADR section, the systems-index row) inline in the conversation
+   before requesting approval. Never ask to write something the user has not yet seen.
+5. **Use `AskUserQuestion` for write approvals** — plain text "May I?" is not
+   sufficient. Use the structured tool with labeled options [A]/[B]/[C] so the
+   user can choose between "write now", "show full draft first", and "not yet".
+   Multi-file changesets must list every file and what changes, then ask once
+   with grouped options — not a separate plain-text question per file.
+6. **Non-blocking** — the verdict is advisory; the user decides whether to continue
    despite CONCERNS or even FAIL findings

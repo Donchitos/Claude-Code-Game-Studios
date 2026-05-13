@@ -1,9 +1,10 @@
 ---
 name: team-narrative
 description: "Orchestrate the narrative team: coordinates narrative-director, writer, world-builder, and level-designer to create cohesive story content, world lore, and narrative-driven level design."
-argument-hint: "[narrative content description]"
+argument-hint: "[narrative content description] [--review full|lean|solo]"
 user-invocable: true
 allowed-tools: Read, Glob, Grep, Write, Edit, Task, AskUserQuestion, TodoWrite
+model: sonnet
 ---
 If no argument is provided, output usage guidance and exit without spawning any agents:
 > Usage: `/team-narrative [narrative content description]` — describe the story content, scene, or narrative area to work on (e.g., `boss encounter cutscene`, `faction intro dialogue`, `tutorial narrative`). Do not use `AskUserQuestion` here; output the guidance directly.
@@ -15,12 +16,26 @@ the user with the subagent's proposals as selectable options. Write the agent's
 full analysis in conversation, then capture the decision with concise labels.
 The user must approve before moving to the next phase.
 
+## Phase 0: Resolve Review Mode
+
+1. If `--review [mode]` was passed as an argument, use that mode.
+2. Else read `production/review-mode.txt` — use whatever is written there.
+3. Else default to `lean`.
+
+Modes:
+- `full` — spawn all director and lead gates as described
+- `lean` — skip director gates unless they are PHASE-GATE type (CD-PHASE-GATE, TD-PHASE-GATE, PR-PHASE-GATE, AD-PHASE-GATE)
+- `solo` — skip all director gate spawning entirely; run the skill without any agent gates
+
+Store the resolved mode for use in all subsequent phases.
+
 ## Team Composition
 - **narrative-director** — Story arcs, character design, dialogue strategy, narrative vision
 - **writer** — Dialogue writing, lore entries, item descriptions, in-game text
 - **world-builder** — World rules, faction design, history, geography, environmental storytelling
 - **art-director** — Character visual design, environmental visual storytelling, cutscene/cinematic tone
 - **level-designer** — Level layouts that serve the narrative, pacing, environmental storytelling beats
+- **localization-lead** — Localization readiness — flags non-localizable strings, cultural assumptions, and i18n gaps
 
 ## How to Delegate
 
@@ -30,7 +45,7 @@ Use the Task tool to spawn each team member as a subagent:
 - `subagent_type: world-builder` — World rules, faction design, history, geography
 - `subagent_type: art-director` — Character visual profiles, environmental visual storytelling, cinematic tone
 - `subagent_type: level-designer` — Level layouts that serve the narrative, pacing
-- `subagent_type: localization-lead` — i18n validation, string key compliance, translation headroom
+- `subagent_type: localization-lead` — Localization readiness — flags non-localizable strings, cultural assumptions, and i18n gaps
 
 Always provide full context in each agent's prompt (narrative brief, lore dependencies, character profiles). Launch independent agents in parallel where the pipeline allows it (e.g., Phase 2 agents can run simultaneously).
 

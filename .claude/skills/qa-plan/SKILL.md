@@ -4,6 +4,7 @@ description: "Generate a QA test plan for a sprint or feature. Reads GDDs and st
 argument-hint: "[sprint | feature: system-name | story: path]"
 user-invocable: true
 allowed-tools: Read, Glob, Grep, Write, AskUserQuestion
+model: sonnet
 agent: qa-lead
 ---
 
@@ -68,9 +69,12 @@ After reading stories, load supporting context once (not per story):
 
 - `design/gdd/systems-index.md` — to understand system priorities and which
   GDDs are approved
-- For each unique GDD referenced across all stories: read only the
-  **Acceptance Criteria** and **Formulas** sections. Do not load full GDD text —
-  these two sections contain the testable requirements and the math to verify.
+- For each unique GDD referenced across all stories: read the
+  **Acceptance Criteria**, **Formulas**, and **Edge Cases** sections. Do not load
+  the full GDD text. These three sections contain the testable requirements, the math
+  to verify, and the boundary conditions that tests must cover. If an Edge Cases
+  section is absent from the GDD, note it per GDD: "No Edge Cases section found — edge
+  case coverage will be inferred from acceptance criteria only."
 - `docs/architecture/control-manifest.md` — scan for forbidden patterns that
   automated tests should guard against (if the file exists)
 
@@ -81,9 +85,10 @@ The story will be classified using acceptance criteria alone.
 
 ## Phase 3: Classify Each Story
 
-For each story, assign a Story Type. If the story already has a `Type:` field
-in its header, use that value and validate it against the criteria below. If the
-field is missing or ambiguous, infer the type from the acceptance criteria.
+For each story, assign a Story Type:
+
+- **If the story already has a `Type:` field in its header**: accept it as-is. Do NOT re-classify or validate against the criteria below — the Type was set by lead-programmer at story creation and is authoritative. Record it as-is.
+- **If the `Type:` field is missing**: infer the type from the acceptance criteria using the table below, and note in the report that the type was inferred (not declared). Flag this as a gap — the story should have its Type declared explicitly before implementation begins.
 
 | Story Type | Classification Indicators |
 |---|---|
@@ -226,11 +231,19 @@ test entry should reflect the real requirements of these specific stories.
 ## Phase 5: Write Output
 
 Show the complete plan in conversation (or a summary if the plan is very long),
-then ask:
+then ask two questions together using `AskUserQuestion`:
 
-"May I write this QA plan to `production/qa/qa-plan-[sprint-slug]-[date].md`?"
+```
+question: "Ready to write the QA plan. Choose output options:"
+multiSelect: true
+options:
+  - "Write QA plan to production/qa/qa-plan-[sprint-slug]-[date].md"
+  - "Also back-fill test case specs into each story file's ## QA Test Cases section (Recommended — enables /dev-story and /code-review traceability)"
+```
 
-Write the plan exactly as generated — do not truncate.
+If "Write QA plan" is selected: write the plan file exactly as generated — do not truncate.
+
+If "Also back-fill story files" is selected: for each Logic and Integration story in scope, edit the story file at its path. Find the `## QA Test Cases` section and replace its content with the test case specs generated in Phase 4 for that story. If a story has no `## QA Test Cases` section, append it before `## Test Evidence`. For Visual/Feel and UI stories, write the manual verification steps instead of test specs.
 
 After writing:
 
@@ -238,9 +251,15 @@ After writing:
 
 Next steps:
 - Share this plan with the team before sprint implementation begins
-- Run `/smoke-check sprint` after all stories are implemented to gate QA hand-off
+- Once all sprint stories are implemented, run `/smoke-check sprint` to gate QA hand-off — not yet, only after implementation is complete
 - For Logic/Integration stories, create the test files at the listed paths
   before marking stories done — `/story-done` checks for them"
+
+Silently append to `production/session-state/active.md` (create the file if it does not exist):
+
+```
+<!-- QA-PLAN: [date] | System: [system/sprint identifier] | Plan written: production/qa/qa-plan-[identifier]-[date].md -->
+```
 
 ---
 

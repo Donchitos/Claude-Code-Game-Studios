@@ -4,6 +4,7 @@ description: "Guided game concept ideation — from zero idea to a structured ga
 argument-hint: "[genre or theme hint, or 'open'] [--review full|lean|solo]"
 user-invocable: true
 allowed-tools: Read, Glob, Grep, Write, WebSearch, Task, AskUserQuestion
+model: sonnet
 ---
 
 When this skill is invoked:
@@ -308,18 +309,25 @@ If yes, generate the document using the template at `.claude/docs/templates/game
 
 6. **Suggest next steps** (in this order — this is the professional studio
    pre-production pipeline). List ALL steps — do not abbreviate or truncate:
+
+**Path A — Design-First** (recommended if the concept is well-defined):
    1. "Run `/setup-engine` to configure the engine and populate version-aware reference docs"
-   2. "Run `/art-bible` to create the visual identity specification — do this BEFORE writing GDDs. The art bible gates asset production and shapes technical architecture decisions (rendering, VFX, UI systems)."
+   2. "Run `/art-bible` to create the visual identity specification — do this BEFORE writing GDDs. **The art bible is required before the Technical Setup gate.** It gates asset production and shapes technical architecture decisions (rendering, VFX, UI systems)."
    3. "Use `/design-review design/gdd/game-concept.md` to validate concept completeness before going downstream"
    4. "Discuss vision with the `creative-director` agent for pillar refinement"
    5. "Decompose the concept into individual systems with `/map-systems` — maps dependencies, assigns priorities, and creates the systems index"
-   5. "Author per-system GDDs with `/design-system` — guided, section-by-section GDD writing for each system identified in step 4"
-   6. "Plan the technical architecture with `/create-architecture` — produces the master architecture blueprint and Required ADR list"
-   7. "Record key architectural decisions with `/architecture-decision (×N)` — write one ADR per decision in the Required ADR list from `/create-architecture`"
-   8. "Validate readiness to advance with `/gate-check` — phase gate before committing to production"
-   9. "Prototype the riskiest system with `/prototype [core-mechanic]` — validate the core loop before full implementation"
-   10. "Run `/playtest-report` after the prototype to validate the core hypothesis"
-   11. "If validated, plan the first sprint with `/sprint-plan new`"
+   6. "Author per-system GDDs with `/design-system` — guided, section-by-section GDD writing for each system identified in step 5"
+   7. "Plan the technical architecture with `/create-architecture` — produces the master architecture blueprint and Required ADR list"
+   8. "Record key architectural decisions with `/architecture-decision (×N)` — write one ADR per decision in the Required ADR list from `/create-architecture`"
+   9. "Run `/architecture-review` — bootstraps the TR registry and Requirements Traceability Matrix from your GDDs and ADRs (required before the Pre-Production gate)"
+   10. "Validate readiness to advance with `/gate-check` — phase gate before committing to production"
+
+**Path B — Prototype-First** (use if the core mechanic is unproven or the concept needs validation):
+   1. "Run `/setup-engine` to configure the engine"
+   2. "Run `/prototype [core-mechanic]` — validate the core idea is fun before writing any GDDs (1–3 days throwaway code)"
+   3. "If prototype PROCEEDS: run `/art-bible`, then continue with Path A steps 5–10 above, using prototype learnings to inform your GDDs"
+   4. "If prototype PIVOTS: return to `/brainstorm` with the learnings and reshape the concept"
+   5. "After full design and architecture, build the `/vertical-slice` to validate production readiness before committing to sprints"
 
 7. **Output a summary** with the chosen concept's elevator pitch, pillars,
    primary player type, engine recommendation, biggest risk, and file path.
@@ -347,4 +355,5 @@ After the game concept is written, follow the pre-production pipeline in order:
 3. `/map-systems` — decompose the concept into individual systems with dependencies
 4. `/design-system [first-system]` — author per-system GDDs in dependency order
 5. `/create-architecture` — produce the master architecture blueprint
-6. `/gate-check pre-production` — validate readiness before committing to production
+6. `/architecture-review` — bootstrap TR registry and Requirements Traceability Matrix
+7. `/gate-check pre-production` — validate readiness before committing to production

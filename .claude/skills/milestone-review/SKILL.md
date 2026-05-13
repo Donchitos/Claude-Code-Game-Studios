@@ -4,6 +4,7 @@ description: "Generates a comprehensive milestone progress review including feat
 argument-hint: "[milestone-name|current] [--review full|lean|solo]"
 user-invocable: true
 allowed-tools: Read, Glob, Grep, Write, Task, AskUserQuestion
+model: sonnet
 ---
 
 ## Phase 0: Parse Arguments
@@ -117,7 +118,23 @@ Before generating the Go/No-Go recommendation, spawn `producer` via Task using g
 
 Pass: milestone name and target date, current completion percentage, blocked story count, velocity data from sprint reports (if available), list of cut candidates.
 
-Present the producer's assessment inline within the Go/No-Go section. The producer's verdict (ON TRACK / AT RISK / OFF TRACK) informs the overall recommendation — do not issue a GO against an OFF TRACK producer verdict without explicit user acknowledgement.
+Present the producer's assessment inline within the Go/No-Go section. The producer's verdict (ON TRACK / AT RISK / OFF TRACK) informs the overall recommendation.
+
+If OFF TRACK, use `AskUserQuestion` before generating the recommendation:
+- Prompt: "Producer verdict: OFF TRACK. The milestone is in jeopardy. This review will recommend NO-GO. How do you want to proceed?"
+- Options:
+  - `[A] Accept NO-GO — generate the full review with that recommendation`
+  - `[B] Override to CONDITIONAL GO — I'll document the accepted risks myself`
+  - `[C] Stop — I want to address blockers before generating the review`
+
+If AT RISK, use `AskUserQuestion`:
+- Prompt: "Producer verdict: AT RISK. Milestone may slip. How should the Go/No-Go section be framed?"
+- Options:
+  - `[A] CONDITIONAL GO — include producer's conditions in the review`
+  - `[B] NO-GO — conditions cannot be met in time`
+  - `[C] GO — I accept the risk and want to proceed`
+
+Do not issue a GO against an OFF TRACK verdict unless the user explicitly selects [B] above.
 
 ---
 

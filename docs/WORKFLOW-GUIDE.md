@@ -3,7 +3,7 @@
 > **How to go from zero to a shipped game using the Agent Architecture.**
 >
 > This guide walks you through every phase of game development using the
-> 48-agent system, 68 slash commands, and 12 automated hooks. It assumes you
+> 49-agent system, 73 slash commands, and 12 automated hooks. It assumes you
 > have Claude Code installed and are working from the project root.
 >
 > The pipeline has 7 phases. Each phase has a formal gate (`/gate-check`)
@@ -159,6 +159,11 @@ with defined pillars and a player journey. This is where you figure out
   Player motiv.   core loop, USP         document
                                                                    |
                                                                    v
+                                                             /prototype
+                                                       (concept prototype — 1-3 days)
+                                                        PROCEED ↓     PIVOT → /brainstorm
+                                                                   |
+                                                                   v (PROCEED)
                                                              /map-systems
                                                                    |
                                                                    v
@@ -558,28 +563,23 @@ Vertical Slice that proves the core loop is fun.
 ### Phase 4 Pipeline
 
 ```
-/ux-design  -->  /prototype  -->  /create-epics  -->  /create-stories  -->  /sprint-plan
-    |                |                  |                   |                       |
-    v                v                  v                   v                       v
-  UX specs       Throwaway       Epic files in       Story files in          First sprint with
-  design/ux/     prototypes      production/         production/             prioritized stories
-                 in prototypes/  epics/*/EPIC.md     epics/*/story-*.md      production/sprints/
-                                 (one per module)    (one per behaviour)     sprint-*.md
-    |                                                      |
-    v                                                      v
- /ux-review                                          /story-readiness
- (validates specs                                    (validates each story
-  before epics)                                       before pickup)
-                                                           |
-                                                           v
-                                                       /dev-story
-                                                     (implements the story,
-                                                      routes to right agent)
-                         |
-                         v
-                   Vertical Slice
-                   (playable build,
-                    3 unguided sessions)
+/ux-design  -->  /vertical-slice  -->  /create-epics  -->  /create-stories  -->  /sprint-plan
+    |                   |                   |                   |                       |
+    v                   v                   v                   v                       v
+  UX specs       Production-quality   Epic files in       Story files in          First sprint with
+  design/ux/     end-to-end build     production/         production/             prioritized stories
+                 in prototypes/       epics/*/EPIC.md     epics/*/story-*.md      production/sprints/
+                 PROCEED/PIVOT/KILL   (one per module)    (one per behaviour)     sprint-*.md
+    |                                                          |
+    v                                                          v
+ /ux-review                                             /story-readiness
+ (validates specs                                       (validates each story
+  before epics)                                          before pickup)
+                                                               |
+                                                               v
+                                                           /dev-story
+                                                         (implements the story,
+                                                          routes to right agent)
 ```
 
 ### Step 4.1: UX Specs for Key Screens
@@ -624,25 +624,34 @@ etc.) with animation and sound standards.
 Validates UX specs for GDD alignment and accessibility tier compliance.
 Produces APPROVED / NEEDS REVISION / MAJOR REVISION NEEDED verdict.
 
-### Step 4.2: Prototype Risky Mechanics
+### Step 4.2: Build the Vertical Slice
 
-Not everything needs a prototype. Prototype when:
-- A mechanic is novel and you are not sure it is fun
-- A technical approach is risky and you are not sure it is feasible
-- Two design options both seem viable and you need to feel the difference
+The vertical slice is the production-quality proof that you can build the full
+game loop end-to-end before committing to full Production.
 
 ```
-/prototype "grappling hook movement with momentum"
+/vertical-slice
 ```
 
-**What happens:** The skill collaborates with you to define a hypothesis,
-success criteria, and minimal scope. The `prototyper` agent works in an
-isolated git worktree (`isolation: worktree`) so throwaway code never
-pollutes `src/`.
+**What it proves:** Does a player, starting from nothing, experience the core
+fantasy within a few minutes, without developer guidance?
 
-**Key rule:** The `prototype-code` rule intentionally relaxes coding standards --
-hardcoded values OK, no tests required -- but a README with hypothesis and
-findings is mandatory.
+**What it builds:** A near-production-quality playable build covering at least
+one complete [start → challenge → resolution] cycle. Uses real architecture
+layers, real naming conventions, no hardcoded values — but not final art or
+audio. This is not a throwaway like the concept prototype; it demonstrates
+production pipeline feasibility.
+
+**Note on concept prototyping:** If you ran `/prototype` in Phase 1 (Concept),
+you already validated the core idea is fun. The vertical slice now validates
+you can build it properly. They answer different questions. If you skipped the
+concept prototype, now is a reasonable time to run one first before investing
+in the full slice.
+
+**Verdict:** The vertical slice produces a PROCEED / PIVOT / KILL verdict.
+- **PROCEED** → move to Step 4.3 (epics and stories)
+- **PIVOT** → revise affected GDDs with `/design-system [mechanic]`, then re-run `/vertical-slice`
+- **KILL** → return to `/brainstorm` with what you learned
 
 ### Step 4.3: Create Epics and Stories From Design Artifacts
 
@@ -668,7 +677,7 @@ automatically to the correct programmer agent.
 ### Step 4.4: Validate Stories Before Pickup
 
 ```
-/story-readiness production/stories/combat-damage-calc.md
+/story-readiness production/epics/combat/story-combat-damage-calc.md
 ```
 
 Checks: Design completeness, Architecture coverage, Scope clarity, Definition
@@ -677,7 +686,7 @@ of Done. Verdict: READY / NEEDS WORK / BLOCKED.
 ### Step 4.5: Effort Estimation
 
 ```
-/estimate production/stories/combat-damage-calc.md
+/estimate production/epics/combat/story-combat-damage-calc.md
 ```
 
 Provides effort estimates with risk assessment.
@@ -718,7 +727,7 @@ played the build unguided.
 - At least 1 UX spec reviewed in `design/ux/`
 - UX review completed (APPROVED or NEEDS REVISION with documented risks)
 - At least 1 prototype with README
-- Story files exist in `production/stories/`
+- Story files exist in `production/epics/[epic-slug]/`
 - At least 1 sprint plan exists
 - At least 1 playtest report exists (Vertical Slice played in 3+ sessions)
 
@@ -762,7 +771,7 @@ The production phase centers on the **story lifecycle**:
 **1. Story Readiness:** Before picking up a story, validate it:
 
 ```
-/story-readiness production/stories/combat-damage-calc.md
+/story-readiness production/epics/combat/story-combat-damage-calc.md
 ```
 
 This checks design completeness, architecture coverage, ADR status (blocks
@@ -785,7 +794,7 @@ implement.
 **3. Story Completion:** When a story is done:
 
 ```
-/story-done production/stories/combat-damage-calc.md
+/story-done production/epics/combat/story-combat-damage-calc.md
 ```
 
 This runs an 8-phase completion review:
@@ -1213,9 +1222,12 @@ Tier 3 (Specialists):  gameplay-programmer, engine-programmer,
                        live-ops-designer, prototyper, security-engineer,
                        community-manager, godot-specialist,
                        godot-gdscript-specialist, godot-shader-specialist,
-                       unity-specialist, unity-csharp-specialist,
-                       unreal-specialist, unreal-blueprint-specialist,
-                       unreal-cpp-specialist
+                       godot-csharp-specialist, godot-gdextension-specialist,
+                       unity-specialist, unity-dots-specialist,
+                       unity-shader-specialist, unity-addressables-specialist,
+                       unity-ui-specialist, unreal-specialist,
+                       ue-blueprint-specialist, ue-gas-specialist,
+                       ue-replication-specialist, ue-umg-specialist
 ```
 
 **Coordination rules:**
@@ -1410,9 +1422,9 @@ conflicts go to `producer`.
 
 ## Appendix B: Slash Command Quick-Reference
 
-### All 66 Commands by Category
+### All 73 Commands by Category
 
-#### Onboarding and Navigation (5)
+#### Onboarding and Navigation (6)
 
 | Command | Purpose | Phase |
 |---------|---------|-------|
@@ -1421,6 +1433,7 @@ conflicts go to `producer`.
 | `/project-stage-detect` | Full project audit to determine current phase | Any |
 | `/setup-engine` | Configure engine, pin version, set preferences | 1 |
 | `/adopt` | Brownfield audit and migration plan | Any (existing projects) |
+| `/skill-improve` | Improve a skill via test-fix-retest loop | Any |
 
 #### Game Design (6)
 
@@ -1462,7 +1475,7 @@ conflicts go to `producer`.
 | `/story-done` | 8-phase story completion review | 5 |
 | `/estimate` | Effort estimation with risk assessment | 4-5 |
 
-#### Reviews and Analysis (10)
+#### Reviews and Analysis (13)
 
 | Command | Purpose | Phase |
 |---------|---------|-------|
@@ -1470,12 +1483,15 @@ conflicts go to `producer`.
 | `/code-review` | Architectural code review | 5+ |
 | `/balance-check` | Game balance formula analysis | 5-6 |
 | `/asset-audit` | Asset naming, format, size verification | 6 |
+| `/asset-spec` | Per-asset visual specs and AI generation prompts | 5-6 |
 | `/content-audit` | GDD-specified content vs. implemented | 5 |
+| `/consistency-check` | Cross-GDD entity and formula inconsistency scan | 2+ |
 | `/scope-check` | Scope creep detection | 5 |
 | `/perf-profile` | Performance profiling workflow | 6 |
 | `/tech-debt` | Tech debt scanning and prioritization | 6 |
 | `/gate-check` | Formal phase gate with PASS/CONCERNS/FAIL | All transitions |
 | `/reverse-document` | Generate design docs from existing code | Any |
+| `/security-audit` | Security vulnerability audit (save, network, input) | 6-7 |
 
 #### QA and Testing (9)
 
@@ -1502,7 +1518,7 @@ conflicts go to `producer`.
 | `/playtest-report` | Structured playtest session report | 4-6 |
 | `/onboard` | Onboard a new team member | Any |
 
-#### Release (5)
+#### Release (6)
 
 | Command | Purpose | Phase |
 |---------|---------|-------|
@@ -1511,12 +1527,15 @@ conflicts go to `producer`.
 | `/changelog` | Auto-generate internal changelog | 7 |
 | `/patch-notes` | Player-facing patch notes | 7 |
 | `/hotfix` | Emergency fix workflow | 7+ |
+| `/day-one-patch` | Scoped patch for issues found after gold master | 7+ |
 
-#### Creative (2)
+#### Creative (4)
 
 | Command | Purpose | Phase |
 |---------|---------|-------|
-| `/prototype` | Throwaway prototype in isolated worktree | 4 |
+| `/prototype` | Concept prototype — validate core idea before GDDs | 1 |
+| `/art-bible` | Guided Art Bible authoring — visual identity spec | 1-2 |
+| `/vertical-slice` | Production-quality end-to-end build before Production | 4 |
 | `/localize` | String extraction and validation | 6-7 |
 
 #### Team Orchestration (9)

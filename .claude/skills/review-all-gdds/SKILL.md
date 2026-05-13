@@ -105,6 +105,14 @@ the same GDD inputs but produce separate reports. Spawn both as parallel Task
 agents simultaneously rather than waiting for Phase 2 to complete before
 starting Phase 3. Collect both results before writing the combined report.
 
+**When spawning parallel Task agents for Phase 2 and Phase 3, always pass:**
+- The complete list of GDD file paths loaded in Phase 1 (explicit paths, not just counts)
+- The full TR registry contents if loaded in Phase 1b (paste the registry text, not just a file path)
+- The specific checklist items assigned to that agent's phase (Phase 2 gets 2a–2f; Phase 3 gets 3a–3g)
+- The engine name and version from `.claude/docs/technical-preferences.md` and `docs/engine-reference/[engine]/VERSION.md`
+
+Do not rely on the subagent to re-read these files — it has its own context window and cannot access Phase 1 results unless they are explicitly passed in the Task prompt.
+
 ---
 
 ## Phase 2: Cross-GDD Consistency
@@ -566,7 +574,10 @@ append to `production/session-state/active.md`:
     - Flagged for revision: [comma-separated list, or "None"]
     - Blocking issues: [N — brief one-line descriptions, or "None"]
     - Recommended next: [the Phase 7 handoff action, condensed to one line]
-    - Report: design/gdd/gdd-cross-review-[date].md
+    - Report: design/gdd/gdd-cross-review-[date].md   ← only if user approved the write
+    - Report: (not written — user declined at [date])  ← only if user declined the write
+
+Use the appropriate line based on the user's response to the write-permission widget in Phase 6.
 
 If `active.md` does not exist, create it with this block as the initial content.
 Confirm in conversation: "Session state updated."

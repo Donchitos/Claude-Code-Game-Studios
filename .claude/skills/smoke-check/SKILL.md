@@ -4,6 +4,7 @@ description: "Run the critical path smoke test gate before QA hand-off. Executes
 argument-hint: "[sprint | quick | --platform pc|console|mobile|all]"
 user-invocable: true
 allowed-tools: Read, Glob, Grep, Bash, Write, AskUserQuestion
+model: sonnet
 ---
 
 # Smoke Check
@@ -92,7 +93,9 @@ path for your test framework."
 Unity tests require the editor and cannot be run headlessly via shell in most
 environments. Check for recent test result artifacts:
 ```bash
-ls -t test-results/ 2>/dev/null | head -5
+# List most recent test results (bash) — on Windows PowerShell use the fallback below
+ls -t test-results/ 2>/dev/null | head -5 \
+  || powershell -Command "Get-ChildItem test-results/ -ErrorAction SilentlyContinue | Sort-Object LastWriteTime -Descending | Select-Object -First 5 -ExpandProperty Name"
 ```
 If test result files exist (XML or JSON), read the most recent one and parse
 PASS/FAIL counts. If no artifacts exist: "Unity tests must be run from the
@@ -100,7 +103,9 @@ editor or CI pipeline. Please confirm test status manually before proceeding."
 
 **Unreal Engine:**
 ```bash
-ls -t Saved/Logs/ 2>/dev/null | grep -i "test\|automation" | head -5
+# List most recent Unreal automation logs (bash) — on Windows PowerShell use the fallback below
+ls -t Saved/Logs/ 2>/dev/null | grep -i "test\|automation" | head -5 \
+  || powershell -Command "Get-ChildItem Saved/Logs/ -ErrorAction SilentlyContinue | Where-Object { $_.Name -match 'test|automation' } | Sort-Object LastWriteTime -Descending | Select-Object -First 5 -ExpandProperty Name"
 ```
 If no matching log found: "UE automation tests must be run via the Session
 Frontend or CI pipeline. Please confirm test status manually."
@@ -181,39 +186,42 @@ Use `AskUserQuestion` to batch-verify. Keep to at most 3 calls.
 
 **Batch 1 — Core stability (always run):**
 ```
-question: "Smoke check — Batch 1: Core stability. Please verify each:"
+question: "Core stability — select any items that FAILED (leave all unselected if everything passed):"
+multiSelect: true
 options:
-  - "Game launches to main menu without crash — PASS"
-  - "Game launches to main menu without crash — FAIL"
-  - "New game / session starts successfully — PASS"
-  - "New game / session starts successfully — FAIL"
-  - "Main menu responds to all inputs — PASS"
-  - "Main menu responds to all inputs — FAIL"
+  - "Game does not launch or crashes before reaching the main menu"
+  - "New game / session fails to start"
+  - "Main menu does not respond to inputs"
+  - "Crash or hang observed during basic navigation"
 ```
 
-**Batch 2 — Sprint mechanic and regression (always run):**
+For any selected item, ask the user to briefly describe what failed before generating the report.
+
+**Batch 2 — Sprint changes and regression (always run):**
 ```
-question: "Smoke check — Batch 2: This sprint's changes and regression check:"
+question: "Sprint changes and regression — select any items that FAILED (leave all unselected if everything passed):"
+multiSelect: true
 options:
-  - "[Primary mechanic this sprint] — PASS"
-  - "[Primary mechanic this sprint] — FAIL: [describe what broke]"
-  - "[Second notable change this sprint, if any] — PASS"
-  - "[Second notable change this sprint] — FAIL"
-  - "Previous sprint's features still work (no regressions) — PASS"
-  - "Previous sprint's features — regression found: [brief description]"
+  - "[Primary mechanic this sprint] — FAILED"
+  - "[Second notable change this sprint, if any] — FAILED"
+  - "Regression in a previous sprint's feature — FAILED"
+  - "Other unexpected breakage observed — FAILED"
 ```
+
+For any selected item, ask the user to briefly describe what broke before generating the report.
 
 **Batch 3 — Data integrity and performance (run unless `quick` argument):**
 ```
-question: "Smoke check — Batch 3: Data integrity and performance:"
+question: "Data integrity and performance — select any items that FAILED or were skipped (leave all unselected if everything passed):"
+multiSelect: true
 options:
-  - "Save / load completes without data loss — PASS"
-  - "Save / load — FAIL: [describe what broke]"
+  - "Save / load — FAILED (data loss or corruption observed)"
   - "Save / load — N/A (save system not yet implemented)"
-  - "No new frame rate drops or hitches observed — PASS"
-  - "Frame rate drops or hitches found — FAIL: [where]"
-  - "Performance — not checked in this session"
+  - "Frame rate drops or hitches observed — FAILED"
+  - "Performance not checked this session"
 ```
+
+For any FAILED item selected, ask the user to describe what broke before generating the report.
 
 Record each response verbatim for the Phase 5 report.
 
@@ -221,45 +229,42 @@ Record each response verbatim for the Phase 5 report.
 
 **PC platform** (`--platform pc` or `--platform all`):
 ```
-question: "Smoke check — PC Platform: Verify platform-specific behaviour:"
+question: "PC Platform — select any items that FAILED (leave all unselected if everything passed):"
+multiSelect: true
 options:
-  - "Keyboard controls work correctly across all menus and gameplay — PASS"
-  - "Keyboard controls — FAIL: [describe issue]"
-  - "Mouse input and cursor visibility correct in all states — PASS"
-  - "Mouse input — FAIL: [describe issue]"
-  - "Windowed and fullscreen modes function without graphical issues — PASS"
-  - "Windowed/fullscreen — FAIL: [describe issue]"
-  - "Resolution changes apply correctly — PASS"
-  - "Resolution changes — FAIL: [describe issue]"
+  - "Keyboard controls — FAILED (describe issue after)"
+  - "Mouse input or cursor visibility — FAILED (describe issue after)"
+  - "Windowed / fullscreen mode — FAILED (describe issue after)"
+  - "Resolution change — FAILED (describe issue after)"
 ```
+
+For any selected item, ask the user to briefly describe what failed before generating the report.
 
 **Console platform** (`--platform console` or `--platform all`):
 ```
-question: "Smoke check — Console Platform: Verify platform-specific behaviour:"
+question: "Console Platform — select any items that FAILED (leave all unselected if everything passed):"
+multiSelect: true
 options:
-  - "Gamepad input works correctly for all actions — PASS"
-  - "Gamepad input — FAIL: [describe issue]"
-  - "UI fits within TV safe zone margins (no text clipped) — PASS"
-  - "TV safe zone — FAIL: [describe what is clipped]"
-  - "No keyboard/mouse-only fallbacks shown to gamepad user — PASS"
-  - "Input prompt inconsistency — FAIL: [describe]"
-  - "Game boots correctly from cold start (no prior save) — PASS"
-  - "Cold start — FAIL: [describe issue]"
+  - "Gamepad input — FAILED (describe issue after)"
+  - "UI outside TV safe zone / text clipped — FAILED (describe what is clipped after)"
+  - "Keyboard/mouse fallback shown to gamepad user — FAILED (describe after)"
+  - "Cold start (no prior save) — FAILED (describe issue after)"
 ```
+
+For any selected item, ask the user to briefly describe what failed before generating the report.
 
 **Mobile platform** (`--platform mobile` or `--platform all`):
 ```
-question: "Smoke check — Mobile Platform: Verify platform-specific behaviour:"
+question: "Mobile Platform — select any items that FAILED (leave all unselected if everything passed):"
+multiSelect: true
 options:
-  - "Touch controls work correctly for all primary actions — PASS"
-  - "Touch controls — FAIL: [describe issue]"
-  - "Game handles orientation change (portrait ↔ landscape) correctly — PASS"
-  - "Orientation change — FAIL: [describe what breaks]"
-  - "Background / foreground transitions (home button) handled gracefully — PASS"
-  - "Background/foreground — FAIL: [describe issue]"
-  - "No visible performance issues on target device (no thermal throttling signs) — PASS"
-  - "Mobile performance — FAIL: [describe issue]"
+  - "Touch controls — FAILED (describe issue after)"
+  - "Orientation change (portrait ↔ landscape) — FAILED (describe what breaks after)"
+  - "Background / foreground transition (home button) — FAILED (describe issue after)"
+  - "Performance / thermal throttling on target device — FAILED (describe after)"
 ```
+
+For any selected item, ask the user to briefly describe what failed before generating the report.
 
 ---
 

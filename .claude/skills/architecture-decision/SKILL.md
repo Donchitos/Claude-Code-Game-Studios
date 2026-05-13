@@ -4,6 +4,7 @@ description: "Creates an Architecture Decision Record (ADR) documenting a signif
 argument-hint: "[title] [--review full|lean|solo]"
 user-invocable: true
 allowed-tools: Read, Glob, Grep, Write, Edit, Task, AskUserQuestion
+model: sonnet
 ---
 
 When this skill is invoked:

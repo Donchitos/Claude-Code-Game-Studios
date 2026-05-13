@@ -4,6 +4,7 @@ description: "Read a story file and implement it. Loads the full context (story,
 argument-hint: "[story-path]"
 user-invocable: true
 allowed-tools: Read, Glob, Grep, Write, Bash, Task, AskUserQuestion
+model: sonnet
 ---
 
 # Dev Story
@@ -44,7 +45,7 @@ If not found, ask: "Which story are we implementing?" Glob
 
 | File | Path | If missing |
 |------|------|------------|
-| TR registry | `docs/architecture/tr-registry.yaml` | **STOP** — "TR registry not found. Run `/create-epics` to generate it." |
+| TR registry | `docs/architecture/tr-registry.yaml` | **STOP** — "TR registry not found at `docs/architecture/tr-registry.yaml`. Run `/architecture-review` to bootstrap the registry from your GDDs and ADRs." |
 | Governing ADR | path from story's ADR field | **STOP** — "ADR file [path] not found. Run `/architecture-decision` to create it, or correct the filename in the story's ADR field." |
 | Control manifest | `docs/architecture/control-manifest.md` | **WARN and continue** — "Control manifest not found — layer rules cannot be checked. Run `/create-control-manifest`." |
 
@@ -91,7 +92,7 @@ If they differ, use `AskUserQuestion` before proceeding:
   - `[C] Stop here — I want to review the manifest diff first`
 
 If [A]: edit the story file's `Manifest Version:` field to the current manifest date before spawning the programmer. Then read the manifest carefully for new rules.
-If [B]: read the manifest carefully for new rules anyway, and note the version mismatch in the Phase 6 summary under "Deviations".
+If [B]: edit the story file's `Manifest Version:` field to the current manifest date AND add a `Manifest-Note: Proceeded with old manifest rules on [date] — non-compliance risk accepted.` line to the story header. Read the manifest for new rules anyway. Note the decision in the Phase 6 summary under "Deviations". `/story-done` will include the Manifest-Note in its deviations section without re-checking staleness.
 If [C]: stop. Do not spawn any agent. Let the user review and re-run `/dev-story`.
 
 ### Dependency validation
@@ -121,6 +122,14 @@ Read `.claude/docs/technical-preferences.md`:
 - Naming conventions (class names, file names, signal/event names)
 - Performance budgets (frame budget, memory ceiling)
 - Forbidden patterns
+
+### Mark Story In Progress
+
+Silently update two things before spawning any agent:
+
+1. **`production/sprint-status.yaml`** (if it exists): find the entry matching this story's file path and set `status: in_progress`. Update the top-level `updated` field to today's date. If the file does not exist, skip silently.
+
+2. **The story file itself**: edit the `Last Updated:` field in the story header to today's date (format: `YYYY-MM-DD`). If the field does not exist in the story header, add it after the `Status:` line. This enables sprint-status staleness detection for this story.
 
 ---
 
@@ -167,15 +176,16 @@ assumptions about post-cutoff engine APIs that need expert verification.
 
 Spawn the chosen programmer agent(s) via Task with the full context package:
 
-Provide the agent with:
-1. The complete story file content
-2. The current GDD requirement text (from TR registry)
-3. The ADR Decision + Implementation Guidelines (verbatim — do not summarise)
-4. The control manifest rules for this layer
-5. The engine naming conventions and performance budgets
-6. Any engine-specific notes from the ADR Engine Compatibility section
-7. The test file path that must be created
-8. Explicit instruction: **implement this story and write the test**
+Brief the agent with file paths and targeted reading instructions — do not serialize document content into the Task prompt. The agent reads what it needs directly:
+
+1. **Story file**: `[story-path]` — read in full
+2. **GDD requirement**: look up TR-ID `[TR-XXX-NNN]` in `docs/architecture/tr-registry.yaml` — use the `requirement` field as source of truth
+3. **ADR**: `docs/architecture/[adr-file].md` — read the **Decision** and **Implementation Guidelines** sections only
+4. **Control manifest**: `docs/architecture/control-manifest.md` — read rules for the **[layer]** layer only
+5. **Engine preferences**: `.claude/docs/technical-preferences.md` — read naming conventions and performance budgets
+6. **Test file path**: `[path from story's Test Evidence section]` — this file must be created as part of implementation
+7. **Test requirement** (Logic and Integration stories only): The test file MUST be created at `[path from the story's Test Evidence section]`. Write the test alongside the implementation — do not defer it. The story cannot be closed via `/story-done` without this file present. Each acceptance criterion must have at least one test function covering it. Test file naming: `[system]_[feature]_test.[ext]`. Function naming: `test_[scenario]_[expected_outcome]`. No random seeds, no time-dependent assertions, no external I/O.
+8. **Explicit instruction**: implement this story following the ADR guidelines, respect the manifest rules, stay within the story's Out of Scope boundaries. Write clean, doc-commented public APIs.
 
 The agent should:
 - Create or modify files in `src/` following the ADR guidelines
@@ -198,29 +208,19 @@ check happens in `/story-done` via manual confirmation.
 
 ---
 
-## Phase 5: Write the Test
+## Phase 5: Test Evidence Requirements
 
-For **Logic** and **Integration** stories, the test must be written as part of
-this implementation — not deferred to later.
+The test requirement was included in the Phase 4 programmer agent brief (item 7). This phase summarizes what evidence each story type requires — used when collecting the Phase 6 summary.
 
-Remind the programmer agent:
+| Story Type | Required Evidence | Notes |
+|---|---|---|
+| **Logic** | Automated unit test at path from story's Test Evidence section | BLOCKING — included in Phase 4 agent brief |
+| **Integration** | Integration test OR documented playtest record | BLOCKING — included in Phase 4 agent brief |
+| **Visual/Feel** | Evidence doc at `production/qa/evidence/[slug]-evidence.md` | ADVISORY — note in Phase 6 summary |
+| **UI** | Manual walkthrough doc or interaction test | ADVISORY — note in Phase 6 summary |
+| **Config/Data** | None — smoke check serves as evidence | N/A |
 
-> "The test file for this story is required at: `[path from Test Evidence section]`.
-> The story cannot be closed via `/story-done` without it. Write the test
-> alongside the implementation, not after."
-
-Test requirements (from coding-standards.md):
-- File name: `[system]_[feature]_test.[ext]`
-- Function names: `test_[scenario]_[expected_outcome]`
-- Each acceptance criterion must have at least one test function covering it
-- No random seeds, no time-dependent assertions, no external I/O
-- Test the formula bounds from the GDD Formulas section
-
-For **Visual/Feel** and **UI** stories: no automated test. Remind the agent to
-note in the implementation summary what manual evidence will be needed:
-"Evidence doc required at `production/qa/evidence/[slug]-evidence.md`."
-
-For **Config/Data** stories: no test file. A smoke check will serve as evidence.
+For Visual/Feel and UI stories, include in the Phase 6 summary: "Manual evidence required at `production/qa/evidence/[slug]-evidence.md` before this story can be fully closed."
 
 ---
 
@@ -251,6 +251,8 @@ Present a concise implementation summary:
 **Deviations from scope**: [None] or [list files touched outside story boundary]
 **Engine risks flagged**: [None] or [specialist finding]
 **Blockers**: [None] or [describe]
+
+**Before running `/story-done`:** run your test suite locally and confirm the tests you wrote pass. `/story-done` will re-run them automatically, but a failing test discovered there means returning to implementation context.
 
 Ready for: `/code-review [file1] [file2]` then `/story-done [story-path]`
 ```

@@ -3,7 +3,8 @@ name: tech-debt
 description: "Track, categorize, and prioritize technical debt across the codebase. Scans for debt indicators, maintains a debt register, and recommends repayment scheduling."
 argument-hint: "[scan|add|prioritize|report]"
 user-invocable: true
-allowed-tools: Read, Glob, Grep, Write
+allowed-tools: Read, Glob, Grep, Write, AskUserQuestion
+model: sonnet
 ---
 
 ## Phase 1: Parse Subcommand
@@ -52,9 +53,27 @@ If no, stop here. Verdict: **BLOCKED** — user declined write.
 
 ## Phase 2B: Add Mode
 
-Prompt for: description, category, affected files, estimated fix effort, impact if left unfixed.
+Ask the user for the description, affected files, and impact if left unfixed (plain text prompts).
 
-Present the new entry to the user.
+Then use `AskUserQuestion` to collect the **category**:
+- Prompt: "What category does this tech debt belong to?"
+- Options:
+  - `[A] Architecture Debt — wrong abstractions, missing patterns, coupling issues`
+  - `[B] Code Quality Debt — duplication, complexity, naming, missing types`
+  - `[C] Test Debt — missing tests, flaky tests, untested edge cases`
+  - `[D] Documentation Debt — missing/outdated docs, undocumented APIs`
+  - `[E] Dependency Debt — outdated packages, deprecated APIs, version conflicts`
+  - `[F] Performance Debt — known slow paths, memory issues, unoptimized queries`
+
+Then use `AskUserQuestion` to collect the **estimated fix effort**:
+- Prompt: "What is the estimated effort to fix this item?"
+- Options:
+  - `[A] S — Small (under 1 day)`
+  - `[B] M — Medium (1–3 days)`
+  - `[C] L — Large (3–7 days)`
+  - `[D] XL — Extra Large (over 1 week)`
+
+Present the complete new entry to the user.
 
 Ask: "May I append this entry to `docs/tech-debt-register.md`?"
 

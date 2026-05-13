@@ -4,6 +4,7 @@ description: "Prepare a day-one patch for a game launch. Scopes, prioritises, im
 argument-hint: "[scope: known-bugs | cert-feedback | all]"
 user-invocable: true
 allowed-tools: Read, Glob, Grep, Write, Edit, Bash, Task, AskUserQuestion
+model: sonnet
 ---
 
 # Day-One Patch
@@ -207,6 +208,13 @@ After the patch record is written:
 
 **If any S1 bugs remain open after the patch:**
 > "⚠️ S1 bugs remain open and were not patched. These are accepted risks. Document them in the rollback plan trigger conditions — if they occur at scale, rollback may be preferable to a follow-up patch."
+
+Use `AskUserQuestion`:
+- Prompt: "Day-one patch complete. What's next?"
+- Options:
+  - `[A] Run /patch-notes — generate player-facing patch notes`
+  - `[B] Run /bug-report to log any issues found post-deploy`
+  - `[C] Stop here`
 
 ---
 

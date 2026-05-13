@@ -45,6 +45,7 @@
 
     godot-specialist   -- Godot 4 lead: GDScript, node/scene, signals, resources
       godot-gdscript-specialist    -- GDScript: static typing, patterns, signals, performance
+      godot-csharp-specialist      -- C#: .NET patterns, [Signal] delegates, async, type-safe node access
       godot-shader-specialist      -- Shaders: Godot shading language, visual shaders, VFX
       godot-gdextension-specialist -- Native: C++/Rust bindings, GDExtension, build systems
 ```
@@ -200,16 +201,27 @@ art-dir = art-director
 10. producer            -- Marks release complete
 ```
 
-### Pattern 8: Rapid Prototype
+### Pattern 8: Concept Prototype (early — before GDDs)
 
 ```text
 1. game-designer        -- Defines the hypothesis and success criteria
-2. prototyper           -- Scaffolds prototype with /prototype
-3. prototyper           -- Builds minimal implementation (hours, not days)
+2. prototyper           -- Scaffolds concept prototype with /prototype
+3. prototyper           -- Builds minimal implementation (1-3 days)
 4. game-designer        -- Evaluates prototype against criteria
-5. prototyper           -- Documents findings report
-6. creative-director    -- Go/no-go decision on proceeding to production
-7. producer             -- Schedules production work if approved
+5. prototyper           -- Documents findings in REPORT.md
+6. creative-director    -- PROCEED / PIVOT / KILL decision (full mode only)
+7. game-designer        -- Informs GDD writing with prototype learnings if PROCEED
+```
+
+### Pattern 8b: Vertical Slice (pre-production — after GDDs and architecture)
+
+```text
+1. game-designer        -- Confirms slice scope against GDDs
+2. prototyper           -- Builds production-quality end-to-end build with /vertical-slice
+3. prototyper           -- Conducts internal playtest sessions (minimum 1)
+4. prototyper           -- Documents findings in REPORT.md
+5. creative-director    -- Go/no-go decision on proceeding to Production (full mode)
+6. producer             -- Schedules Production epics/sprints if PROCEED
 ```
 
 ### Pattern 9: Live Event / Season Launch

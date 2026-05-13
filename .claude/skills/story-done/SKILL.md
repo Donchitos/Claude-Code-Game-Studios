@@ -4,6 +4,7 @@ description: "End-of-story completion review. Reads the story file, verifies eac
 argument-hint: "[story-file-path] [--review full|lean|solo]"
 user-invocable: true
 allowed-tools: Read, Glob, Grep, Bash, Write, Edit, AskUserQuestion, Task
+model: sonnet
 ---
 
 # Story Done
@@ -168,9 +169,10 @@ playtest record referencing this story.
 If none found: flag as **BLOCKING** (same rule as Logic).
 
 **For Visual/Feel and UI stories**: glob `production/qa/evidence/` for a file
-referencing this story. If none: flag as **ADVISORY** —
-"No manual test evidence found. Create `production/qa/evidence/[story-slug]-evidence.md`
-using the test-evidence template and obtain sign-off before final closure."
+referencing this story.
+- If none: flag as **ADVISORY** — "No manual test evidence found. Create `production/qa/evidence/[story-slug]-evidence.md` using the test-evidence template and obtain sign-off before final closure."
+- If found: read the file and check the sign-off table for unchecked boxes. Grep for lines matching `| .* | .* | .* | \[ \] Approved` (a sign-off row with an unchecked checkbox). If any unchecked sign-off rows are found: flag as **ADVISORY** — "Evidence file found at `[path]` but [N] sign-off(s) are still pending (shown as `[ ] Approved` in the sign-off table). Obtain required sign-offs before final closure. Note: for solo developers, all roles may be signed off by the same person."
+- If all sign-off rows show `[x] Approved` or equivalent: note "Evidence file found and all sign-offs complete — ADVISORY passed."
 
 **For Config/Data stories**: check for any `production/qa/smoke-*.md` file.
 If none: flag as **ADVISORY** — "No smoke check report found. Run `/smoke-check`."
@@ -255,7 +257,13 @@ Skip this phase for Config/Data stories (no code tests required).
 
 **Review mode check** — apply before spawning LP-CODE-REVIEW:
 - `solo` → skip. Note: "LP-CODE-REVIEW skipped — Solo mode." Proceed to Phase 6 (completion report).
-- `lean` → skip (not a PHASE-GATE). Note: "LP-CODE-REVIEW skipped — Lean mode." Proceed to Phase 6 (completion report).
+- `lean` → use `AskUserQuestion` before proceeding:
+  - Prompt: "Code review is skipped in lean mode. Did you run `/code-review` on the implemented files?"
+  - Options:
+    - `Yes — /code-review passed or was approved with suggestions`
+    - `No — skipping code review for this story`
+    - `No — I'll run /code-review before the sprint close-out`
+  - Record the answer in the completion notes (Phase 7). All three options proceed to Phase 6.
 - `full` → spawn as normal.
 
 Spawn `lead-programmer` via Task using gate **LP-CODE-REVIEW** (`.claude/docs/director-gates.md`).
@@ -321,13 +329,21 @@ fixed. Offer to help fix the blocking items.
 
 ## Phase 7: Update Story Status
 
-Ask before writing: "May I update the story file to mark it Complete and log
-the completion notes?"
+Use `AskUserQuestion` before writing anything:
+- Prompt: "Verification complete. How do you want to proceed?"
+- Options:
+  - `Close the story — update file, mark Complete, log notes (Recommended)`
+  - `Close and log advisory deviations as tech debt in docs/tech-debt-register.md`
+  - `There are issues I want to fix first — don't close yet`
+  - `Accept deviations as-is and close anyway`
 
-If yes, edit the story file:
+If "Close", "Close and log tech debt", or "Accept deviations": edit the story file.
+If "Close and log tech debt": after updating the story file, also append the advisory deviations to `docs/tech-debt-register.md` (create the file if it does not exist).
+If "Fix first": stop here and list what the user flagged. Do not write any files.
 
 1. Update the status field: `Status: Complete`
-2. Add a `## Completion Notes` section at the bottom:
+2. Update the `Last Updated:` field in the story header to today's date (format: `YYYY-MM-DD`). If the field does not exist, add it after the `Status:` line.
+3. Add a `## Completion Notes` section at the bottom:
 
 ```markdown
 ## Completion Notes
@@ -338,14 +354,27 @@ If yes, edit the story file:
 **Code Review**: [Pending / Complete / Skipped]
 ```
 
-3. If advisory deviations exist, ask: "Should I log these as tech debt in
-   `docs/tech-debt-register.md`?"
+4. If the user chose "Close and log tech debt": append each advisory deviation to `docs/tech-debt-register.md` in this format:
+   ```
+   - **[date]** ([story title]): [deviation description] — tracked from [story file path]
+   ```
+   Create the file with a `# Tech Debt Register` heading if it does not exist.
 
-4. **Update `production/sprint-status.yaml`** (if it exists):
+5. **Update `production/sprint-status.yaml`** (if it exists):
    - Find the entry matching this story's file path or ID
    - Set `status: done` and `completed: [today's date]`
    - Update the top-level `updated` field
    - This is a silent update — no extra approval needed (already approved in step above)
+
+6. **Suggest a git commit**: Output a ready-to-use commit command covering the implementation files from the dev-story summary and the updated story file:
+
+```
+Suggested commit:
+git add [src/ and tests/ files changed during implementation] [story-file-path]
+git commit -m "feat: [story title] ([TR-ID])"
+```
+
+The `validate-commit.sh` hook will verify design doc references and check for hardcoded values automatically.
 
 ### Session State Update
 
@@ -395,7 +424,9 @@ Run these in order:
 
 1. `/smoke-check sprint` — verify the critical path still works end-to-end
 2. `/team-qa sprint` — full QA cycle: test case execution, bug triage, sign-off report
-3. `/gate-check` — advance to the next phase once QA approves
+3. `/retrospective` — capture what went well, what didn't, and action items for the next sprint
+4. `/gate-check` — advance to the next phase once QA approves (only if advancing a phase)
+5. `/sprint-plan new` — plan the next sprint, incorporating velocity data and retrospective action items
 
 Do not run `/gate-check` until `/team-qa` returns APPROVED or APPROVED WITH CONDITIONS.
 ```

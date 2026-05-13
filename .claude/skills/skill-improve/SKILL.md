@@ -4,6 +4,7 @@ description: "Improve a skill using a test-fix-retest loop. Runs static checks, 
 argument-hint: "[skill-name]"
 user-invocable: true
 allowed-tools: Read, Glob, Grep, Write, Bash
+model: sonnet
 ---
 
 # Skill Improve

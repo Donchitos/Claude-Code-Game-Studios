@@ -4,6 +4,7 @@ description: "Guided, section-by-section GDD authoring for a single game system.
 argument-hint: "<system-name> [--review full|lean|solo]"
 user-invocable: true
 allowed-tools: Read, Glob, Grep, Write, Edit, Task, AskUserQuestion, TodoWrite
+model: sonnet
 ---
 
 When this skill is invoked:
@@ -281,6 +282,10 @@ Use the template structure from `.claude/docs/templates/game-design-document.md`
 
 Ask: "May I create the skeleton file at `design/gdd/[system-name].md`?"
 
+If the user declines: Stop with the following message:
+> "Verdict: **BLOCKED** — skeleton creation declined. The design session cannot proceed without the skeleton file, as all subsequent phases use it as the base. Re-run `/design-system [system]` when ready to create the file."
+Do not proceed to Section A.
+
 After writing, update `production/session-state/active.md`:
 - Use Glob to check if the file exists.
 - If it **does not exist**: use the **Write** tool to create it. Never attempt Edit on a file that may not exist.
@@ -419,6 +424,11 @@ Use the answer to frame the Player Fantasy section appropriately. Do NOT assume 
 **Cross-reference**: Must align with the game pillars. If the system serves a pillar,
 quote the relevant pillar text.
 
+**Review mode check** (apply before spawning):
+- `solo` → skip this agent spawn. Draft the section without the specialist. Add a note: "`creative-director` not consulted — Solo mode. Review manually before production."
+- `lean` → skip unless this is a section with HIGH implementation risk (Sections D and H only). For other sections, draft without the agent.
+- `full` → spawn as described below.
+
 **Agent delegation (MANDATORY)**: After the framing answer is given but before drafting,
 spawn `creative-director` via Task:
 - Provide: system name, framing answer (direct/indirect/both), game pillars, any reference games the user mentioned, the game concept summary
@@ -448,6 +458,11 @@ This is usually the largest section. Break it into sub-sections:
 - Walk me through a typical use of this system, step by step
 - What are the decision points the player faces?
 - What can the player NOT do? (Constraints are as important as capabilities)
+
+**Review mode check** (apply before spawning):
+- `solo` → skip this agent spawn. Draft the section without the specialist. Add a note: "Specialist agents not consulted — Solo mode. Review manually before production."
+- `lean` → skip unless this is a section with HIGH implementation risk (Sections D and H only). For other sections, draft without the agent.
+- `full` → spawn as described below.
 
 **Agent delegation (MANDATORY)**: Before drafting Section C, spawn specialist agents via Task in parallel:
 - Look up the system category in the routing table (Section 6 of this skill)
@@ -494,6 +509,11 @@ table. A formula without defined variables cannot be implemented without guesswo
 - Should scaling be linear, logarithmic, or stepped?
 - What should the output ranges be at early/mid/late game?
 
+**Review mode check** (apply before spawning):
+- `solo` → skip this agent spawn. Draft the section without the specialist. Add a note: "`systems-designer` not consulted — Solo mode. Review manually before production."
+- `lean` → skip unless this is a section with HIGH implementation risk (Sections D and H only). For other sections, draft without the agent.
+- `full` → spawn as described below.
+
 **Agent delegation (MANDATORY)**: Before proposing any formulas or balance values, spawn specialist agents via Task in parallel:
 - **Always spawn `systems-designer`**: provide Core Rules from Section C, tuning goals from user, balance context from dependency GDDs. Ask them to propose formulas with variable tables and output ranges.
 - **For economy/cost systems, also spawn `economy-designer`**: provide placement costs, upgrade cost intent, and progression goals. Ask them to validate cost curves and ratios.
@@ -525,6 +545,11 @@ design question, not a specification.
 - What happens at zero? At maximum? At out-of-range values?
 - What happens when two rules apply at the same time?
 - What happens if a player finds an unintended interaction? (Identify degenerate strategies)
+
+**Review mode check** (apply before spawning):
+- `solo` → skip this agent spawn. Draft the section without the specialist. Add a note: "`systems-designer` not consulted — Solo mode. Review manually before production."
+- `lean` → skip unless this is a section with HIGH implementation risk (Sections D and H only). For other sections, draft without the agent.
+- `full` → spawn as described below.
 
 **Agent delegation (MANDATORY)**: Spawn `systems-designer` via Task before finalising edge cases. Provide: the completed Sections C and D, and ask them to identify edge cases from the formula and rule space that the main session may have missed. For narrative systems, also spawn `narrative-director`. Present their findings and ask the user which to include.
 
@@ -581,6 +606,11 @@ Example (adapt terminology to the game's domain):
 Include at least: one criterion per core rule from Section C, and one per formula
 from Section D. Do NOT write "the system works as designed" — every criterion must
 be independently verifiable by a QA tester without reading the GDD.
+
+**Review mode check** (apply before spawning):
+- `solo` → skip this agent spawn. Draft the section without the specialist. Add a note: "`qa-lead` not consulted — Solo mode. Review manually before production."
+- `lean` → skip unless this is a section with HIGH implementation risk (Sections D and H only). For other sections, draft without the agent.
+- `full` → spawn as described below.
 
 **Agent delegation (MANDATORY)**: Spawn `qa-lead` via Task before finalising acceptance criteria. Provide: the completed GDD sections C, D, E, and ask them to validate that the criteria are independently testable and cover all core rules and formulas. Surface any gaps or untestable criteria to the user.
 
@@ -731,7 +761,7 @@ After the GDD is complete (and optionally reviewed):
 
 Ask: "May I update the systems index at `design/gdd/systems-index.md`?"
 
-### 5d: Update Session State
+### 5e: Update Session State
 
 Update `production/session-state/active.md` with:
 - Task: [system-name] GDD
@@ -740,7 +770,7 @@ Update `production/session-state/active.md` with:
 - Sections: All 8 written
 - Next: [suggest next system from design order]
 
-### 5e: Suggest Next Steps
+### 5f: Suggest Next Steps
 
 Use `AskUserQuestion`:
 - "What's next?"

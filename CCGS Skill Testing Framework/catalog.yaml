@@ -1,5 +1,5 @@
 version: 2
-last_updated: ""
+last_updated: "2026-06-27 — added Cocos Creator engine support"
 skills:
   # Critical — gate skills that control phase transitions
   - name: gate-check
@@ -1028,6 +1028,31 @@ agents:
 
   - name: ue-replication-specialist
     spec: CCGS Skill Testing Framework/agents/engine/unreal/ue-replication-specialist.md
+    last_spec: ""
+    last_spec_result: ""
+    category: engine
+
+  # Engine Specialists — Cocos Creator
+  - name: cocos-specialist
+    spec: CCGS Skill Testing Framework/agents/engine/cocos/cocos-specialist.md
+    last_spec: ""
+    last_spec_result: ""
+    category: engine
+
+  - name: cocos-ts-specialist
+    spec: CCGS Skill Testing Framework/agents/engine/cocos/cocos-ts-specialist.md
+    last_spec: ""
+    last_spec_result: ""
+    category: engine
+
+  - name: cocos-shader-specialist
+    spec: CCGS Skill Testing Framework/agents/engine/cocos/cocos-shader-specialist.md
+    last_spec: ""
+    last_spec_result: ""
+    category: engine
+
+  - name: cocos-ui-specialist
+    spec: CCGS Skill Testing Framework/agents/engine/cocos/cocos-ui-specialist.md
     last_spec: ""
     last_spec_result: ""
     category: engine

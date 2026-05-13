@@ -7,7 +7,7 @@ framework. It is self-contained and separate from any game project.
 
 | File | Purpose |
 |------|---------|
-| `catalog.yaml` | Master registry for all 72 skills and 49 agents. Contains category, spec path, and last-test tracking fields. Always read this first when running any test command. |
+| `catalog.yaml` | Master registry for all 73 skills and 49 agents. Contains category, spec path, and last-test tracking fields. Always read this first when running any test command. |
 | `quality-rubric.md` | Category-specific pass/fail metrics. Read the matching `###` section for the skill's category when running `/skill-test category`. |
 | `skills/[category]/[name].md` | Behavioral spec for a skill — 5 test cases + protocol compliance assertions. |
 | `agents/[tier]/[name].md` | Behavioral spec for an agent — 5 test cases + protocol compliance assertions. |

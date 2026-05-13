@@ -15,8 +15,8 @@ you'll lose validation features.
 
 | Tool | Used By | Purpose | Install |
 | ---- | ---- | ---- | ---- |
-| **jq** | Hooks (4 of 8) | JSON parsing in commit/push/asset/agent hooks | See below |
-| **Python 3** | Hooks (2 of 8) | JSON validation for data files | [python.org](https://www.python.org/) |
+| **jq** | Hooks (7 of 12) | JSON parsing in commit/push/asset/agent hooks | See below |
+| **Python 3** | Hooks (2 of 12) | JSON validation for data files | [python.org](https://www.python.org/) |
 | **Bash** | All hooks | Shell script execution | Included with Git for Windows |
 
 ### Installing jq

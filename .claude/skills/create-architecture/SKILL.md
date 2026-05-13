@@ -4,6 +4,7 @@ description: "Guided, section-by-section authoring of the master architecture do
 argument-hint: "[focus-area: full | layers | data-flow | api-boundaries | adr-audit] [--review full|lean|solo]"
 user-invocable: true
 allowed-tools: Read, Glob, Grep, Write, Bash, AskUserQuestion, Task
+model: sonnet
 agent: technical-director
 ---
 
@@ -117,8 +118,12 @@ Post-Cutoff Versions: [list]
 - [GDD system name] → [domain] → [risk level]
 ```
 
-Ask: "This inventory identifies [N] systems in HIGH RISK engine domains. Shall I
-continue building the architecture with these warnings flagged throughout?"
+Use `AskUserQuestion`:
+- Prompt: "One or more engine domains are HIGH RISK — the LLM's knowledge may be unreliable for these areas. Architectural recommendations in these domains should be cross-referenced with the engine docs before being acted on. How would you like to proceed?"
+- Options:
+  - `[A] Proceed — flag HIGH RISK domains throughout the output`
+  - `[B] Let me check the engine reference first — pause here`
+  - `[C] Show me which domains are HIGH RISK and why`
 
 ---
 
@@ -286,7 +291,11 @@ but don't yet. Group by priority:
 Once all sections are approved, write the complete document to
 `docs/architecture/architecture.md`.
 
-Ask: "May I write the master architecture document to `docs/architecture/architecture.md`?"
+Display a one-paragraph summary of what the document will contain (layers, modules, data flows, ADR gaps). Then use `AskUserQuestion`:
+- "All sections approved. May I write the master architecture document?"
+  - [A] Yes — write to `docs/architecture/architecture.md` now
+  - [B] Show me the full draft inline first, then ask again
+  - [C] Not yet — I have more changes to discuss
 
 The document structure:
 
@@ -363,18 +372,68 @@ Update the Document Status section:
 - Lead Programmer Feasibility: FEASIBLE / CONCERNS ACCEPTED / REVISED
 ```
 
-Ask: "May I update the Document Status section in `docs/architecture/architecture.md` with the sign-off?"
+Show the proposed Document Status block inline, then use `AskUserQuestion`:
+- "May I update the Document Status section with the sign-off results?"
+  - [A] Yes — apply to `docs/architecture/architecture.md`
+  - [B] Not yet — I want to revisit the concerns first
 
 ---
 
 ## Phase 8: Handoff
 
-After writing the document, provide a clear handoff:
+**Step 1 — Update session state**: Write a summary to `production/session-state/active.md` covering: artifact written, TD/LP sign-off verdicts, any blockers, required ADRs remaining, and next step.
 
-1. **Run these ADRs next** (from Phase 6, prioritised): list the top 3
-2. **Gate check**: "The master architecture document is complete. Run `/gate-check
-   pre-production` when all required ADRs are also written."
-3. **Update session state**: Write a summary to `production/session-state/active.md`
+**Step 2 — Output the handoff** using exactly this template (no freeform prose, no rephrasing of section titles):
+
+---
+
+## Architecture Complete
+
+`docs/architecture/architecture.md` v1.0 — [TD verdict: APPROVED / APPROVED WITH CONCERNS / CONCERNS]. [One sentence on what the architecture covers.]
+
+---
+
+## Run These ADRs Next
+
+**1. `/architecture-decision "[Title]"` → ADR-[XXXX]**
+[One sentence: what it defines and what it unblocks.]
+
+**2. `/architecture-decision "[Title]"` → ADR-[XXXX]**
+[One sentence.]
+
+**3. `/architecture-decision "[Title]"` → ADR-[XXXX]**
+[One sentence.]
+
+List top 3 from Phase 6 in priority order. If fewer than 3 remain, list only what's outstanding.
+
+---
+
+## Gate-Check Readiness
+
+> **Required before `/gate-check [stage]`:**
+> - [ ] Accept ADRs: [list Proposed ADR IDs that must be Accepted]
+> - [ ] Write ADRs: [list ADR IDs that must still be written]
+> - [ ] Run `/test-setup` — scaffolds `tests/unit/`, `tests/integration/`, CI workflow, and an example test file
+> - [ ] Run `/ux-design` — creates `design/ux/interaction-patterns.md` and `design/accessibility-requirements.md`
+>
+> Run `/gate-check [stage]` when all boxes are checked.
+
+If nothing is blocking, write instead:
+> No blockers — run `/gate-check [stage]` now.
+
+---
+
+## Open Questions to Watch
+
+| ID | Summary | Priority | Resolution Path |
+|----|---------|----------|-----------------|
+| QQ-XX | [short description] | High / Medium / Low | [ADR or system that resolves it] |
+
+Omit this section entirely if there are no open QQs.
+
+---
+
+(End of handoff. Do not add trailing commentary after the closing rule.)
 
 ---
 
@@ -385,9 +444,13 @@ This skill follows the collaborative design principle at every phase:
 1. **Load context silently** — do not narrate file reads
 2. **Present findings** — show the knowledge gap inventory and layer proposals
 3. **Ask before deciding** — present options for each architectural choice
-4. **Get approval before writing** — each phase section is written only after
-   user approves the content
-5. **Incremental writing** — write each approved section immediately; do not
+4. **Draft before approval** — show the content inline before asking to write it.
+   Never ask approval for a section the user has not yet seen.
+5. **Use `AskUserQuestion` for write approvals** — plain text "May I?" is not
+   sufficient. Use the structured tool with labeled options [A]/[B]/[C] (write now /
+   show full draft first / not yet). For multi-file changesets, list every file
+   and what changes, then ask once grouped — not separate plain-text asks per file.
+6. **Incremental writing** — write each approved section immediately; do not
    accumulate everything and write at the end. This survives session crashes.
 
 Never make a binding architectural decision without user input. If the user is
@@ -398,5 +461,8 @@ unsure, present 2-4 options with pros/cons before asking them to decide.
 ## Recommended Next Steps
 
 - Run `/architecture-decision [title]` for each required ADR listed in Phase 6 — Foundation layer ADRs first
+- Run `/architecture-review` — bootstraps the Requirements Traceability Matrix and TR registry from the ADRs just written. Required before the Pre-Production gate.
+- Run `/test-setup` to scaffold `tests/unit/`, `tests/integration/`, CI workflow, and an example test (required for gate-check)
+- Run `/ux-design` to initialize `design/ux/interaction-patterns.md` and `design/accessibility-requirements.md` (required for gate-check)
 - Run `/create-control-manifest` once the required ADRs are written to produce the layer rules manifest
-- Run `/gate-check pre-production` when all required ADRs are written and the architecture is signed off
+- Run `/gate-check pre-production` when all required ADRs, `/test-setup`, and `/ux-design` are complete

@@ -4,6 +4,7 @@ description: "After architecture is complete, produces a flat actionable rules s
 argument-hint: "[update — regenerate from current ADRs]"
 user-invocable: true
 allowed-tools: Read, Glob, Grep, Write, Task
+model: sonnet
 agent: technical-director
 ---
 
@@ -112,7 +113,13 @@ Total rules extracted:
   - Global: [N] naming conventions, [M] forbidden APIs, [P] approved libraries
 ```
 
-Ask: "Does this look complete? Any rules to add or remove before I write the manifest?"
+Use `AskUserQuestion`:
+- Prompt: "Does this rule summary look complete?"
+- Options:
+  - `[A] Yes — looks good, run the director review and write the manifest`
+  - `[B] Add rules — I have additional rules to include before writing`
+  - `[C] Remove rules — some extracted rules should be dropped`
+  - `[D] Stop here — I need to review the ADRs first`
 
 ---
 
@@ -142,7 +149,12 @@ Apply the verdict:
 
 ## 5. Write the Control Manifest
 
-Ask: "May I write this to `docs/architecture/control-manifest.md`?"
+Use `AskUserQuestion`:
+- Prompt: "May I write the Control Manifest?"
+- Options:
+  - `[A] Yes — write to docs/architecture/control-manifest.md`
+  - `[B] Show me the full draft first, then ask again`
+  - `[C] Not yet — I want to make more changes`
 
 Format:
 

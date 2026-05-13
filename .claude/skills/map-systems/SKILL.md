@@ -4,6 +4,7 @@ description: "Decompose a game concept into individual systems, map dependencies
 argument-hint: "[next | system-name] [--review full|lean|solo]"
 user-invocable: true
 allowed-tools: Read, Glob, Grep, Write, Edit, AskUserQuestion, TodoWrite, Task
+model: sonnet
 ---
 
 When this skill is invoked:
@@ -312,10 +313,10 @@ After the systems index is created (or after designing some systems), present ne
 
 - "Systems index is written. What would you like to do next?"
   - [A] Start designing GDDs — run `/design-system [first-system-in-order]`
-  - [B] Ask a director to review the index first — ask `creative-director` or `technical-director` to validate the system set before committing to 10+ GDD sessions
+  - [B] Run `/gate-check systems-design` — triggers the CD-SYSTEMS and TD-SYSTEM-BOUNDARY gates automatically for a formal director sign-off on the system set
   - [C] Stop here for this session
 
-**The director review option ([B]) is worth highlighting**: having a Creative Director or Technical Director review the completed systems index before starting GDD authoring catches scope issues, missing systems, and boundary problems before they're locked in across many documents. It is optional but recommended for new projects.
+**The gate-check option ([B]) is worth highlighting**: running `/gate-check systems-design` triggers both the CD-SYSTEMS and TD-SYSTEM-BOUNDARY gates, catching scope issues, missing systems, and boundary problems before they're locked in across many documents. It is optional but recommended for new projects.
 
 After any individual GDD is completed:
 - "Run `/design-review design/gdd/[system].md` in a fresh session to validate quality"

@@ -4,6 +4,7 @@ description: "Generates a comprehensive pre-release validation checklist coverin
 argument-hint: "[platform: pc|console|mobile|all]"
 user-invocable: true
 allowed-tools: Read, Glob, Grep, Write
+model: sonnet
 ---
 
 > **Explicit invocation only**: This skill should only run when the user explicitly requests it with `/release-checklist`. Do not auto-invoke based on context matching.
