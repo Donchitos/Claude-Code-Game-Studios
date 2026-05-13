@@ -62,12 +62,10 @@ func get_available_units() -> Array:
 			if not consumed.has(start_key):
 				break
 			start_index += 1
-		var end_index := min(start_index + front_rows_visible, units.size())
-		for i in range(start_index, end_index):
-			var key := _make_queue_key(column_id, i)
-			if consumed.has(key):
-				continue
-			available.append({"column_id": column_id, "index": i, "unit": units[i]})
+		if start_index < units.size():
+			var key := _make_queue_key(column_id, start_index)
+			if not consumed.has(key):
+				available.append({"column_id": column_id, "index": start_index, "unit": units[start_index]})
 	return available
 
 func _make_queue_key(column_id: String, index: int) -> String:
