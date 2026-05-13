@@ -19,6 +19,19 @@ static func validate_schema(schema_path: String, level_path: String) -> Dictiona
 static func load(path: String) -> Dictionary:
 	return _load_json(path)
 
+## Saves level JSON data to disk.
+static func save(path: String, level: Dictionary) -> void:
+	var base_dir := path.get_base_dir()
+	if base_dir != "":
+		DirAccess.make_dir_recursive_absolute(base_dir)
+
+	var file := FileAccess.open(path, FileAccess.WRITE)
+	if file == null:
+		return
+
+	var text := JSON.stringify(level, "\t")
+	file.store_string(text)
+
 ## Validates schema and level data without file I/O.
 static func validate_schema_data(schema_data: Dictionary, level_data: Dictionary) -> Dictionary:
 	var errors: Array = []
