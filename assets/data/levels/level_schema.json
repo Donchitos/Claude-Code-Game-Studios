@@ -41,8 +41,28 @@
         "required": ["id", "units"],
         "additionalProperties": false
       }
+    },
+    "buildings": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "color": {
+            "type": "string"
+          },
+          "layer_depth": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "position": {
+            "type": "object"
+          }
+        },
+        "required": ["color", "layer_depth"],
+        "additionalProperties": false
+      }
     }
   },
-  "required": ["id", "name", "waves", "waiting_slots", "front_rows_visible", "columns"],
+  "required": ["id", "name", "waves", "waiting_slots", "front_rows_visible", "columns", "buildings"],
   "additionalProperties": false
 }

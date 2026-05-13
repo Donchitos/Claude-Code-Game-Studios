@@ -17,6 +17,9 @@ var front_rows_visible: int = 0
 ## Column definitions loaded from level data.
 var columns: Array = []
 
+## Building definitions loaded from level data.
+var buildings: Array = []
+
 ## Loads level data into the simulation state.
 func load_level(level: Dictionary) -> void:
 	waiting_slots.clear()
@@ -26,6 +29,9 @@ func load_level(level: Dictionary) -> void:
 	columns = level.get("columns", [])
 	if typeof(columns) != TYPE_ARRAY:
 		columns = []
+	buildings = level.get("buildings", [])
+	if typeof(buildings) != TYPE_ARRAY:
+		buildings = []
 
 ## Enqueues a unit into the simulation state.
 func enqueue_unit(column_id: String, index: int) -> void:
@@ -67,6 +73,29 @@ func get_available_units() -> Array:
 			if not consumed.has(key):
 				available.append({"column_id": column_id, "index": start_index, "unit": units[start_index]})
 	return available
+
+## Returns attackable buildings for a given color, respecting layer blocking.
+func get_attackable_buildings(color: String) -> Array:
+	var candidates: Array = []
+	var min_layer_depth: int = -1
+	for entry in buildings:
+		if typeof(entry) != TYPE_DICTIONARY:
+			continue
+		if str(entry.get("color", "")) != color:
+			continue
+		var layer_depth := int(entry.get("layer_depth", 0))
+		if layer_depth <= 0:
+			continue
+		if min_layer_depth == -1 or layer_depth < min_layer_depth:
+			min_layer_depth = layer_depth
+		candidates.append(entry)
+	if min_layer_depth == -1:
+		return []
+	var attackable: Array = []
+	for entry in candidates:
+		if int(entry.get("layer_depth", 0)) == min_layer_depth:
+			attackable.append(entry)
+	return attackable
 
 func _make_queue_key(column_id: String, index: int) -> String:
 	return "%s:%d" % [column_id, index]

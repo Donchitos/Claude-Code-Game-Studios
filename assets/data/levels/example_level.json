@@ -13,5 +13,19 @@
       "id": "B",
       "units": ["B1", "B2", "B3", "B4"]
     }
+  ],
+  "buildings": [
+    {
+      "color": "B",
+      "layer_depth": 1
+    },
+    {
+      "color": "B",
+      "layer_depth": 2
+    },
+    {
+      "color": "A",
+      "layer_depth": 1
+    }
   ]
 }
