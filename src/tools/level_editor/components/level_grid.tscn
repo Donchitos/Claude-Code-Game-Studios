@@ -1,0 +1,180 @@
+[gd_scene load_steps=1 format=3]
+
+[node name="LevelGrid" type="PanelContainer"]
+custom_minimum_size = Vector2(320, 0)
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="Margin" type="MarginContainer" parent="."]
+theme_override_constants/margin_left = 12
+theme_override_constants/margin_right = 12
+theme_override_constants/margin_top = 12
+theme_override_constants/margin_bottom = 12
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="Content" type="VBoxContainer" parent="Margin"]
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_constants/separation = 12
+
+[node name="Title" type="Label" parent="Margin/Content"]
+text = "Level Grid"
+theme_override_font_sizes/font_size = 18
+
+[node name="Grid" type="GridContainer" parent="Margin/Content"]
+columns = 5
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_constants/h_separation = 6
+theme_override_constants/v_separation = 6
+
+[node name="Cell1" type="Button" parent="Margin/Content/Grid"]
+custom_minimum_size = Vector2(48, 48)
+size_flags_horizontal = 3
+size_flags_vertical = 3
+text = ""
+
+[node name="Cell2" type="Button" parent="Margin/Content/Grid"]
+custom_minimum_size = Vector2(48, 48)
+size_flags_horizontal = 3
+size_flags_vertical = 3
+text = ""
+
+[node name="Cell3" type="Button" parent="Margin/Content/Grid"]
+custom_minimum_size = Vector2(48, 48)
+size_flags_horizontal = 3
+size_flags_vertical = 3
+text = ""
+
+[node name="Cell4" type="Button" parent="Margin/Content/Grid"]
+custom_minimum_size = Vector2(48, 48)
+size_flags_horizontal = 3
+size_flags_vertical = 3
+text = ""
+
+[node name="Cell5" type="Button" parent="Margin/Content/Grid"]
+custom_minimum_size = Vector2(48, 48)
+size_flags_horizontal = 3
+size_flags_vertical = 3
+text = ""
+
+[node name="Cell6" type="Button" parent="Margin/Content/Grid"]
+custom_minimum_size = Vector2(48, 48)
+size_flags_horizontal = 3
+size_flags_vertical = 3
+text = ""
+
+[node name="Cell7" type="Button" parent="Margin/Content/Grid"]
+custom_minimum_size = Vector2(48, 48)
+size_flags_horizontal = 3
+size_flags_vertical = 3
+text = ""
+
+[node name="Cell8" type="Button" parent="Margin/Content/Grid"]
+custom_minimum_size = Vector2(48, 48)
+size_flags_horizontal = 3
+size_flags_vertical = 3
+text = ""
+
+[node name="Cell9" type="Button" parent="Margin/Content/Grid"]
+custom_minimum_size = Vector2(48, 48)
+size_flags_horizontal = 3
+size_flags_vertical = 3
+text = ""
+
+[node name="Cell10" type="Button" parent="Margin/Content/Grid"]
+custom_minimum_size = Vector2(48, 48)
+size_flags_horizontal = 3
+size_flags_vertical = 3
+text = ""
+
+[node name="Cell11" type="Button" parent="Margin/Content/Grid"]
+custom_minimum_size = Vector2(48, 48)
+size_flags_horizontal = 3
+size_flags_vertical = 3
+text = ""
+
+[node name="Cell12" type="Button" parent="Margin/Content/Grid"]
+custom_minimum_size = Vector2(48, 48)
+size_flags_horizontal = 3
+size_flags_vertical = 3
+text = ""
+
+[node name="Cell13" type="Button" parent="Margin/Content/Grid"]
+custom_minimum_size = Vector2(48, 48)
+size_flags_horizontal = 3
+size_flags_vertical = 3
+text = ""
+
+[node name="Cell14" type="Button" parent="Margin/Content/Grid"]
+custom_minimum_size = Vector2(48, 48)
+size_flags_horizontal = 3
+size_flags_vertical = 3
+text = ""
+
+[node name="Cell15" type="Button" parent="Margin/Content/Grid"]
+custom_minimum_size = Vector2(48, 48)
+size_flags_horizontal = 3
+size_flags_vertical = 3
+text = ""
+
+[node name="Cell16" type="Button" parent="Margin/Content/Grid"]
+custom_minimum_size = Vector2(48, 48)
+size_flags_horizontal = 3
+size_flags_vertical = 3
+text = ""
+
+[node name="Cell17" type="Button" parent="Margin/Content/Grid"]
+custom_minimum_size = Vector2(48, 48)
+size_flags_horizontal = 3
+size_flags_vertical = 3
+text = ""
+
+[node name="Cell18" type="Button" parent="Margin/Content/Grid"]
+custom_minimum_size = Vector2(48, 48)
+size_flags_horizontal = 3
+size_flags_vertical = 3
+text = ""
+
+[node name="Cell19" type="Button" parent="Margin/Content/Grid"]
+custom_minimum_size = Vector2(48, 48)
+size_flags_horizontal = 3
+size_flags_vertical = 3
+text = ""
+
+[node name="Cell20" type="Button" parent="Margin/Content/Grid"]
+custom_minimum_size = Vector2(48, 48)
+size_flags_horizontal = 3
+size_flags_vertical = 3
+text = ""
+
+[node name="Cell21" type="Button" parent="Margin/Content/Grid"]
+custom_minimum_size = Vector2(48, 48)
+size_flags_horizontal = 3
+size_flags_vertical = 3
+text = ""
+
+[node name="Cell22" type="Button" parent="Margin/Content/Grid"]
+custom_minimum_size = Vector2(48, 48)
+size_flags_horizontal = 3
+size_flags_vertical = 3
+text = ""
+
+[node name="Cell23" type="Button" parent="Margin/Content/Grid"]
+custom_minimum_size = Vector2(48, 48)
+size_flags_horizontal = 3
+size_flags_vertical = 3
+text = ""
+
+[node name="Cell24" type="Button" parent="Margin/Content/Grid"]
+custom_minimum_size = Vector2(48, 48)
+size_flags_horizontal = 3
+size_flags_vertical = 3
+text = ""
+
+[node name="Cell25" type="Button" parent="Margin/Content/Grid"]
+custom_minimum_size = Vector2(48, 48)
+size_flags_horizontal = 3
+size_flags_vertical = 3
+text = ""

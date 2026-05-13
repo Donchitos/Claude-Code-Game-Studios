@@ -1,0 +1,79 @@
+[gd_scene load_steps=1 format=3]
+
+[node name="QueueEditor" type="PanelContainer"]
+custom_minimum_size = Vector2(240, 0)
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="Margin" type="MarginContainer" parent="."]
+theme_override_constants/margin_left = 12
+theme_override_constants/margin_right = 12
+theme_override_constants/margin_top = 12
+theme_override_constants/margin_bottom = 12
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="Content" type="VBoxContainer" parent="Margin"]
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_constants/separation = 12
+
+[node name="Title" type="Label" parent="Margin/Content"]
+text = "Queue Editor"
+theme_override_font_sizes/font_size = 18
+
+[node name="ColumnsRow" type="HBoxContainer" parent="Margin/Content"]
+size_flags_horizontal = 3
+theme_override_constants/separation = 8
+
+[node name="ColumnsLabel" type="Label" parent="Margin/Content/ColumnsRow"]
+text = "Columns"
+
+[node name="ColumnsSpin" type="SpinBox" parent="Margin/Content/ColumnsRow"]
+min_value = 1.0
+max_value = 6.0
+value = 3.0
+step = 1.0
+
+[node name="Grid" type="GridContainer" parent="Margin/Content"]
+columns = 3
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_constants/h_separation = 8
+theme_override_constants/v_separation = 8
+
+[node name="Slot1" type="Button" parent="Margin/Content/Grid"]
+custom_minimum_size = Vector2(80, 80)
+size_flags_horizontal = 3
+size_flags_vertical = 3
+text = ""
+
+[node name="Slot2" type="Button" parent="Margin/Content/Grid"]
+custom_minimum_size = Vector2(80, 80)
+size_flags_horizontal = 3
+size_flags_vertical = 3
+text = ""
+
+[node name="Slot3" type="Button" parent="Margin/Content/Grid"]
+custom_minimum_size = Vector2(80, 80)
+size_flags_horizontal = 3
+size_flags_vertical = 3
+text = ""
+
+[node name="Slot4" type="Button" parent="Margin/Content/Grid"]
+custom_minimum_size = Vector2(80, 80)
+size_flags_horizontal = 3
+size_flags_vertical = 3
+text = ""
+
+[node name="Slot5" type="Button" parent="Margin/Content/Grid"]
+custom_minimum_size = Vector2(80, 80)
+size_flags_horizontal = 3
+size_flags_vertical = 3
+text = ""
+
+[node name="Slot6" type="Button" parent="Margin/Content/Grid"]
+custom_minimum_size = Vector2(80, 80)
+size_flags_horizontal = 3
+size_flags_vertical = 3
+text = ""

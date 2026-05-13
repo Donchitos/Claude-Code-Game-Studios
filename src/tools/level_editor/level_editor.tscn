@@ -1,0 +1,45 @@
+[gd_scene load_steps=5 format=3]
+
+[ext_resource type="Script" path="res://src/tools/level_editor/level_editor.gd" id=1]
+[ext_resource type="PackedScene" path="res://src/tools/level_editor/components/level_grid.tscn" id=2]
+[ext_resource type="PackedScene" path="res://src/tools/level_editor/components/queue_editor.tscn" id=3]
+[ext_resource type="PackedScene" path="res://src/tools/level_editor/components/sim_controls.tscn" id=4]
+
+[node name="LevelEditor" type="Control"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_right = 0.0
+offset_bottom = 0.0
+size_flags_horizontal = 3
+size_flags_vertical = 3
+script = ExtResource(1)
+
+[node name="RootMargin" type="MarginContainer" parent="."]
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_right = 0.0
+offset_bottom = 0.0
+theme_override_constants/margin_left = 16
+theme_override_constants/margin_right = 16
+theme_override_constants/margin_top = 16
+theme_override_constants/margin_bottom = 16
+
+[node name="Layout" type="VBoxContainer" parent="RootMargin"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_right = 0.0
+offset_bottom = 0.0
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_constants/separation = 16
+
+[node name="SimControls" parent="RootMargin/Layout" instance=ExtResource(4)]
+
+[node name="ContentRow" type="HBoxContainer" parent="RootMargin/Layout"]
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_constants/separation = 24
+
+[node name="LevelGrid" parent="RootMargin/Layout/ContentRow" instance=ExtResource(2)]
+
+[node name="QueueEditor" parent="RootMargin/Layout/ContentRow" instance=ExtResource(3)]

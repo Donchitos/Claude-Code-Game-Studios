@@ -1,0 +1,39 @@
+[gd_scene load_steps=1 format=3]
+
+[node name="SimControls" type="PanelContainer"]
+size_flags_horizontal = 3
+
+[node name="Margin" type="MarginContainer" parent="."]
+theme_override_constants/margin_left = 12
+theme_override_constants/margin_right = 12
+theme_override_constants/margin_top = 12
+theme_override_constants/margin_bottom = 12
+size_flags_horizontal = 3
+
+[node name="Content" type="VBoxContainer" parent="Margin"]
+size_flags_horizontal = 3
+theme_override_constants/separation = 12
+
+[node name="Title" type="Label" parent="Margin/Content"]
+text = "Simulation"
+theme_override_font_sizes/font_size = 18
+
+[node name="ControlsRow" type="HBoxContainer" parent="Margin/Content"]
+size_flags_horizontal = 3
+theme_override_constants/separation = 8
+
+[node name="StepButton" type="Button" parent="Margin/Content/ControlsRow"]
+text = "Step"
+
+[node name="RunButton" type="Button" parent="Margin/Content/ControlsRow"]
+text = "Run"
+
+[node name="ResetButton" type="Button" parent="Margin/Content/ControlsRow"]
+text = "Reset"
+
+[node name="StatusRow" type="HBoxContainer" parent="Margin/Content"]
+size_flags_horizontal = 3
+theme_override_constants/separation = 8
+
+[node name="WaitingLabel" type="Label" parent="Margin/Content/StatusRow"]
+text = "Waiting Slots: 0"
