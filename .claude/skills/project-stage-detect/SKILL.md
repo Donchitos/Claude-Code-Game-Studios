@@ -25,6 +25,12 @@ of artifacts, and gaps that need attention. It's especially useful when:
 
 Analyze project structure and content:
 
+**Tooling Project** (`tools/`):
+- Check for scripts (`*.py`, `*.js`, `*.ts`, `*.cs`, `*.rs`, `*.sh`)
+- Check for `tools/TOOL_SPEC.md`
+- If scripts exist but no engine is configured and no game concept exists,
+  classify this as a **Tooling Project** immediately (skip game stage detection)
+
 **Design Documentation** (`design/`):
 - Count GDD files in `design/gdd/*.md`
 - Check for game-concept.md, game-pillars.md, systems-index.md
@@ -65,6 +71,7 @@ auto-detect using these heuristics (check from most-advanced backward):
 
 | Stage | Indicators |
 |-------|-----------|
+| **Tooling Project** | Scripts in `tools/`, no engine configured, no game concept — this is a pipeline/tool project, not a game. Skip game stage detection entirely and use the Tooling Gap Analysis below. |
 | **Concept** | No game concept doc, brainstorming phase |
 | **Systems Design** | Game concept exists, systems index missing or incomplete |
 | **Technical Setup** | Systems index exists, engine not configured |
@@ -72,6 +79,22 @@ auto-detect using these heuristics (check from most-advanced backward):
 | **Production** | `src/` has 10+ source files, active development |
 | **Polish** | Explicit only (set by `/gate-check` Production → Polish gate) |
 | **Release** | Explicit only (set by `/gate-check` Polish → Release gate) |
+
+#### Tooling Gap Analysis (only when stage = Tooling Project)
+
+Skip the game-specific completeness checks. Instead analyse:
+
+- **Spec**: Does `tools/TOOL_SPEC.md` exist and cover purpose, I/O, and tech stack?
+- **README**: Is there a `README.md` with usage instructions?
+- **Dependencies**: Are dependencies documented and bundled or installable?
+- **Tests / Examples**: Are there example inputs and expected outputs?
+- **Design decisions**: Are significant algorithmic or format choices recorded?
+
+Generate targeted questions and gaps for these areas only. Recommend:
+- `/setup-tool` — if spec is missing
+- `/reverse-document` — if spec should be generated from existing code
+- `/code-review tools/` — if code quality hasn't been reviewed
+- `/architecture-decision` — if key design choices are undocumented
 
 ### 3. Collaborative Gap Identification
 
