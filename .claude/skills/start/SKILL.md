@@ -9,7 +9,7 @@ model: sonnet
 
 # Guided Onboarding
 
-This skill writes one file: `production/review-mode.txt` (Phase 3b).
+This skill writes one file: `production/review-mode.txt` (review mode config set in Phase 3b).
 
 This skill is the entry point for new users. It does NOT assume you have a game idea, an engine preference, or any prior experience. It asks first, then routes you to the right workflow.
 
@@ -25,8 +25,7 @@ Check:
 - **Source code exists?** Glob for source files in `src/` (`*.gd`, `*.cs`, `*.cpp`, `*.h`, `*.rs`, `*.py`, `*.js`, `*.ts`).
 - **Prototypes exist?** Check for subdirectories in `prototypes/`.
 - **Design docs exist?** Count markdown files in `design/gdd/`.
-- **Production artifacts?** Check for files in `production/sprints/` or
-  `production/milestones/`.
+- **Production artifacts?** Check for files in `production/sprints/` or  `production/milestones/`.
 - **Tooling project?** Check for scripts in `tools/` (`*.py`, `*.js`, `*.ts`,
   `*.cs`, `*.rs`) and for `tools/TOOL_SPEC.md`. If scripts exist in `tools/`
   but no engine is configured and no game concept exists, flag this internally
