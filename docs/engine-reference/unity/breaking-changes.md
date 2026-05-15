@@ -1,6 +1,6 @@
 # Unity 6.3 LTS — Breaking Changes
 
-**Last verified:** 2026-02-13
+**Last verified:** 2026-05-15
 
 This document tracks breaking API changes and behavioral differences between Unity 2022 LTS
 (likely in model training) and Unity 6.3 LTS (current version). Organized by risk level.
@@ -63,6 +63,81 @@ public override void RecordRenderGraph(RenderGraph renderGraph, ContextContainer
 ```
 
 **Migration:** Update custom render passes to use RenderGraph API.
+
+---
+
+### Object Finding APIs — RENAMED (Unity 6.0+)
+**Impact**: Any code calling `FindObjectsOfType` or `FindObjectOfType` — HIGH for Hive Mind scene scanning
+
+```csharp
+// ❌ OLD (deprecated)
+Object.FindObjectsOfType<Enemy>();
+Object.FindObjectOfType<Player>();
+
+// ✅ NEW
+Object.FindObjectsByType<Enemy>(FindObjectsSortMode.None);   // use None for performance
+Object.FindFirstObjectByType<Player>();   // deterministic
+Object.FindAnyObjectByType<Player>();     // faster, non-deterministic
+```
+
+---
+
+### Netcode for GameObjects — 1.X Deprecated (Unity 6.3)
+**Impact**: **CRITICAL for SYNTHFALL** — NGO 1.X is deprecated, upgrade to 2.X required.
+Multiplay Hosting shuts down March 31, 2026.
+
+```csharp
+// ❌ OLD (NGO 1.X)
+public override void OnUpdate() { }  // via NetworkTransform base
+
+// ✅ NEW (NGO 2.X)
+public override void OnNetworkUpdate() { }
+```
+
+**Action**: Pin NGO 2.X from project start. Do not use NGO 1.X.
+
+---
+
+### [SerializeField] Restricted to Fields Only (Unity 6.3)
+
+```csharp
+// ❌ OLD (was silently ignored on properties — now compile error)
+[SerializeField] public float Speed { get; set; }
+
+// ✅ NEW
+[SerializeField] private float _speed;
+public float Speed => _speed;
+```
+
+---
+
+### Lighting — Enlighten Baked GI Discontinued (Unity 6.0+)
+
+- Projects auto-convert to Progressive Lightmapper on upgrade
+- Auto-generated lighting removed — must call `Lightmapping.Bake()` or `Lightmapping.BakeAsync()` explicitly
+- Light Probe brightness changed: now 100% (was 94%)
+
+---
+
+### DirectX 12 Default Graphics API (Unity 6.1+)
+
+DirectX 12 replaces DirectX 11 as the default. Projects relying on DX11-specific
+rendering behavior may see differences. Override via `PlayerSettings.SetGraphicsAPIs()` if needed.
+
+---
+
+### USS Strict Parsing — UI Toolkit (Unity 6.3)
+
+Previously ignored invalid CSS syntax in `.uss` files now causes errors.
+Audit all USS files before upgrading if using UI Toolkit.
+
+---
+
+### Android — UnityPlayer Renamed (Unity 6.0+)
+
+`UnityPlayer` Java class renamed to `UnityPlayerForActivityOrService`.
+No longer extends `FrameLayout`. Any native Android plugin referencing
+`UnityPlayer` directly must update — not relevant for PC-only SYNTHFALL.
 
 ---
 
