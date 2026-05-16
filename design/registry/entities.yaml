@@ -37,7 +37,7 @@
 #   Each entry: name, status, source, referenced_by[], attributes{}, added, revised
 
 version: 1
-last_updated: ""
+last_updated: "2026-05-15"  # Updated: added 3 Synth entities (crawler, stalker, pulse_drone), 2 H&D formulas, 6 H&D constants; updated TEAMMATE_DOWNED_WEIGHT referenced_by
 
 # ─── ENTITIES ────────────────────────────────────────────────────────────────
 # Named game-world objects: enemies, NPCs, characters, factions, bosses.
@@ -48,7 +48,51 @@ last_updated: ""
 # Attribute fields: any key stats that could appear in another GDD
 #   (health, damage, drops, faction, etc.)
 
-entities: []
+entities:
+  - name: crawler
+    status: active
+    source: design/gdd/health-damage.md
+    referenced_by:
+      - design/gdd/health-damage.md
+      - design/gdd/synth-unit-roster.md   # Roster defines AI, spawn rules, behavior
+      - design/gdd/reclaimer-combat.md    # Combat calculates TTK based on HP
+    health: 40
+    faction: synth
+    armor_states: none
+    death_threshold: 0
+    notes: "Fragile swarm unit. 40 HP — designed to die in 1-2 Ballistic hits. No armor state progression. See Synth Unit Roster GDD (#13) for AI and spawn behavior."
+    added: 2026-05-15
+    revised: ""
+
+  - name: stalker
+    status: active
+    source: design/gdd/health-damage.md
+    referenced_by:
+      - design/gdd/health-damage.md
+      - design/gdd/synth-unit-roster.md
+      - design/gdd/reclaimer-combat.md
+    health: 250
+    faction: synth
+    armor_states: none
+    death_threshold: 0
+    notes: "Tanky single-target. 250 HP — requires sustained squad focus fire. No armor state. Follows heat signatures through walls. See Synth Unit Roster GDD (#13)."
+    added: 2026-05-15
+    revised: ""
+
+  - name: pulse_drone
+    status: active
+    source: design/gdd/health-damage.md
+    referenced_by:
+      - design/gdd/health-damage.md
+      - design/gdd/synth-unit-roster.md
+      - design/gdd/reclaimer-combat.md
+    health: 75
+    faction: synth
+    armor_states: none
+    death_threshold: 0
+    notes: "Aerial unit. 75 HP — moderate durability. Disrupts electronics, reveals Reclaimer positions. No armor state. See Synth Unit Roster GDD (#13)."
+    added: 2026-05-15
+    revised: ""
 
 # Example (remove when first real entry is added):
 #
@@ -106,7 +150,116 @@ items: []
 #   output_range[min, max], added
 # Optional: expression (the actual formula), notes
 
-formulas: []
+formulas:
+  - name: corruption_passive_tick
+    status: active
+    source: design/gdd/corruption-meter.md
+    referenced_by:
+      - design/gdd/corruption-meter.md
+    variables:
+      - PASSIVE_RATE
+      - STATE_MULTIPLIER
+      - TICK_RATE
+    output_range: [0.0, 100.0]
+    expression: "clamp(C_prev + (PASSIVE_RATE * STATE_MULTIPLIER / TICK_RATE), 0.0, 100.0)"
+    notes: "Applied each server tick. PASSIVE_RATE default 1.0%/min. STATE_MULTIPLIER is 1.0/1.25/1.5/1.75 for CALM/ALERT/HOSTILE/CRITICAL. TICK_RATE default 60 (ticks/min)."
+    added: 2026-05-15
+    revised: ""
+
+  - name: corruption_event_application
+    status: active
+    source: design/gdd/corruption-meter.md
+    referenced_by:
+      - design/gdd/corruption-meter.md
+    variables:
+      - C_prev
+      - EVENT_WEIGHT
+    output_range: [0.0, 100.0]
+    expression: "clamp(C_prev + EVENT_WEIGHT, 0.0, 100.0)"
+    notes: "Applied immediately on the server when a CorruptionInputEvent fires. EVENT_WEIGHT is positive (increase) or negative (decrease). See Input Event Table in GDD for all weights."
+    added: 2026-05-15
+    revised: ""
+
+  - name: corruption_sector_carry
+    status: active
+    source: design/gdd/corruption-meter.md
+    referenced_by:
+      - design/gdd/corruption-meter.md
+    variables:
+      - C_sector_end
+      - SECTOR_CARRY_FACTOR
+    output_range: [0.0, 50.0]
+    expression: "C_sector_end * SECTOR_CARRY_FACTOR"
+    notes: "Applied on sector transition. SECTOR_CARRY_FACTOR default 0.5. Output is the starting corruption value for the next sector. Threshold flags reset after carry is applied."
+    added: 2026-05-15
+    revised: ""
+
+  - name: movement_effective_speed
+    status: active
+    source: design/gdd/reclaimer-movement.md
+    referenced_by:
+      - design/gdd/reclaimer-movement.md
+      - design/gdd/reclaimer-combat.md    # Combat reads V_effective for accuracy modifiers
+      - design/gdd/reclaimer-class-abilities.md  # Class Abilities modifies MOVE_SPEED_MULT
+    variables:
+      - BASE_SPEED
+      - MOVE_SPEED_MULT
+    output_range: [0.0, 6.6]
+    expression: "V_effective = BASE_SPEED[stance] * MOVE_SPEED_MULT[class]"
+    notes: "Applied each frame via CharacterController.Move(). BASE_SPEED per stance: IDLE 0.0, WALK 3.5, SPRINT 6.0, SPRINT_EXHAUSTED 4.5, CROUCH 2.0 m/s. MOVE_SPEED_MULT per class: Breacher 0.90, Medic 1.00, Ghost 1.10, Engineer 0.95. Max output is Ghost SPRINT (6.6 m/s)."
+    added: 2026-05-15
+    revised: ""
+
+  - name: movement_noise_output
+    status: active
+    source: design/gdd/reclaimer-movement.md
+    referenced_by:
+      - design/gdd/reclaimer-movement.md
+      - design/gdd/reclaimer-class-abilities.md  # Class Abilities modifies NOISE_MULT at runtime
+    variables:
+      - BASE_NOISE
+      - NOISE_MULT
+    output_range: [0.0, 1.0]
+    expression: "NOISE_OUT = clamp(BASE_NOISE[stance] * NOISE_MULT[class], 0.0, 1.0)"
+    notes: "Emitted as FootstepEvent(noiseLevel, position) every FOOTSTEP_INTERVAL meters. Sensor Grid GDD (#7) defines zone acoustic thresholds that compare against NOISE_OUT to determine corruption input. BASE_NOISE per stance: IDLE 0.05, WALK 0.40, SPRINT/SPRINT_EXHAUSTED 0.90, CROUCH 0.15, MANTLE 0.40. NOISE_MULT per class: Ghost 0.70, Medic 1.00, Breacher 1.20, Engineer 0.95."
+    added: 2026-05-15
+    revised: ""
+
+  - name: reclaimer_damage_application
+    status: active
+    source: design/gdd/health-damage.md
+    referenced_by:
+      - design/gdd/health-damage.md
+      - design/gdd/reclaimer-combat.md     # Combat supplies BASE_DAMAGE for Ballistic hits
+      - design/gdd/environmental-controls.md  # Environmental Controls supplies BASE_DAMAGE for hazard ticks
+      - design/gdd/synth-unit-roster.md    # Synth units supply BASE_DAMAGE for Synth hits
+    variables:
+      - HP_prev
+      - HP_MAX
+      - BASE_DAMAGE
+      - ARMOR_MULT
+    output_range: [0.0, 100.0]
+    expression: "HP_new = clamp(HP_prev - (BASE_DAMAGE * ARMOR_MULT[damageType][armorState]), 0.0, HP_MAX)"
+    notes: "ARMOR_MULT lookup: Ballistic[Operational]=0.80, Ballistic[Compromised]=1.00, Ballistic[Critical]=1.10. Environmental and Synth always 1.00 regardless of ArmorState. Applied server-side via IDamageable.TakeDamage()."
+    added: 2026-05-15
+    revised: ""
+
+  - name: fall_damage
+    status: active
+    source: design/gdd/health-damage.md
+    referenced_by:
+      - design/gdd/health-damage.md
+      - design/gdd/level-sector-system.md  # Level design must know safe fall distances for vertical level design
+    variables:
+      - fall_distance
+      - FALL_SAFE_DISTANCE
+      - FALL_DAMAGE_RATE
+      - FALL_DAMAGE_CAP
+    output_range: [0.0, 100.0]
+    expression: "FALL_DAMAGE = clamp(max(0, fall_distance - FALL_SAFE_DISTANCE) * FALL_DAMAGE_RATE, 0, FALL_DAMAGE_CAP)"
+    notes: "Applied as TakeDamage(FALL_DAMAGE, Environmental) on landing. FALL_SAFE_DISTANCE default 3.0m, FALL_DAMAGE_RATE default 10 HP/m, FALL_DAMAGE_CAP default 100 HP (= HP_MAX, instant Downed)."
+    added: 2026-05-15
+    revised: ""
 
 # Example:
 #
@@ -139,7 +292,192 @@ formulas: []
 #
 # Required fields: name, status, source, referenced_by, value, unit, added
 
-constants: []
+constants:
+  - name: PASSIVE_RATE
+    status: active
+    source: design/gdd/corruption-meter.md
+    referenced_by:
+      - design/gdd/corruption-meter.md
+    value: 1.0
+    unit: "%/min"
+    notes: "Baseline corruption rise rate per minute. Safe range 0.5–2.0. Used in corruption_passive_tick formula."
+    added: 2026-05-15
+    revised: ""
+
+  - name: SECTOR_CARRY_FACTOR
+    status: active
+    source: design/gdd/corruption-meter.md
+    referenced_by:
+      - design/gdd/corruption-meter.md
+    value: 0.5
+    unit: fraction
+    notes: "Fraction of end-of-sector corruption carried into the next sector. Safe range 0.0–0.8. 0.0 = full reset, 1.0 = full carry."
+    added: 2026-05-15
+    revised: ""
+
+  - name: OBJECTIVE_REDUCTION
+    status: active
+    source: design/gdd/corruption-meter.md
+    referenced_by:
+      - design/gdd/corruption-meter.md
+    value: 5.0
+    unit: "%"
+    notes: "Corruption reduction applied on objective completion. Safe range 3.0–10.0. Negative EVENT_WEIGHT in corruption_event_application."
+    added: 2026-05-15
+    revised: ""
+
+  - name: GUNFIRE_WEIGHT
+    status: active
+    source: design/gdd/corruption-meter.md
+    referenced_by:
+      - design/gdd/corruption-meter.md
+    value: 0.15
+    unit: "%"
+    notes: "Corruption added per single Reclaimer shot. Safe range 0.05–0.5. Auto burst uses this weight per 3-shot tick."
+    added: 2026-05-15
+    revised: ""
+
+  - name: TEAMMATE_DOWNED_WEIGHT
+    status: active
+    source: design/gdd/corruption-meter.md
+    referenced_by:
+      - design/gdd/corruption-meter.md
+      - design/gdd/health-damage.md       # H&D fires CorruptionInputEvent(+5.0%) on Downed transition
+    value: 5.0
+    unit: "%"
+    notes: "Corruption added when any Reclaimer enters downed state. Safe range 2.0–10.0. Highest single-event weight in the system."
+    added: 2026-05-15
+    revised: ""
+
+  - name: FOOTSTEP_INTERVAL_WALK
+    status: active
+    source: design/gdd/reclaimer-movement.md
+    referenced_by:
+      - design/gdd/reclaimer-movement.md
+    value: 0.8
+    unit: m
+    notes: "Distance traveled between FootstepEvent firings while walking. Safe range 0.4–1.5 m. Sensor Grid GDD must know this to size acoustic zone coverage correctly."
+    added: 2026-05-15
+    revised: ""
+
+  - name: FOOTSTEP_INTERVAL_SPRINT
+    status: active
+    source: design/gdd/reclaimer-movement.md
+    referenced_by:
+      - design/gdd/reclaimer-movement.md
+    value: 0.6
+    unit: m
+    notes: "Distance traveled between FootstepEvent firings while sprinting. Safe range 0.3–1.0 m. Higher event frequency than walk — more corruption exposure per meter."
+    added: 2026-05-15
+    revised: ""
+
+  - name: FOOTSTEP_INTERVAL_CROUCH
+    status: active
+    source: design/gdd/reclaimer-movement.md
+    referenced_by:
+      - design/gdd/reclaimer-movement.md
+    value: 1.2
+    unit: m
+    notes: "Distance traveled between FootstepEvent firings while crouched. Safe range 0.6–2.0 m. Lower event frequency rewards stealth posture."
+    added: 2026-05-15
+    revised: ""
+
+  - name: SPRINT_DRAIN_RATE
+    status: active
+    source: design/gdd/reclaimer-movement.md
+    referenced_by:
+      - design/gdd/reclaimer-movement.md
+    value: 20.0
+    unit: stamina/sec
+    notes: "Stamina drained per second while sprinting. Safe range 10–40. Produces 5-second sprint window at default. Class Abilities GDD may reference if any ability modifies drain rate."
+    added: 2026-05-15
+    revised: ""
+
+  - name: SPRINT_RECOVERY_THRESHOLD
+    status: active
+    source: design/gdd/reclaimer-movement.md
+    referenced_by:
+      - design/gdd/reclaimer-movement.md
+    value: 30.0
+    unit: stamina
+    notes: "Minimum stamina required to re-enter SPRINT from SPRINT_EXHAUSTED. Safe range 10–50. Prevents sprint micro-recovery gaming. Class Abilities GDD may reference if any ability modifies this threshold."
+    added: 2026-05-15
+    revised: ""
+
+  - name: HP_MAX
+    status: active
+    source: design/gdd/health-damage.md
+    referenced_by:
+      - design/gdd/health-damage.md
+      - design/gdd/reclaimer-combat.md    # Combat uses HP_MAX for TTK calculations
+      - design/gdd/knockdown-revival.md   # K&R uses HP_MAX for revival restore fraction
+      - design/gdd/reclaimer-hud.md       # HUD displays HP as fraction of HP_MAX
+    value: 100.0
+    unit: HP
+    notes: "Maximum Reclaimer HP. All classes share this value. Safe range 60–150. Changes cascade to COMPROMISED_THRESHOLD and CRITICAL_THRESHOLD calculations."
+    added: 2026-05-15
+    revised: ""
+
+  - name: COMPROMISED_THRESHOLD
+    status: active
+    source: design/gdd/health-damage.md
+    referenced_by:
+      - design/gdd/health-damage.md
+      - design/gdd/reclaimer-hud.md       # HUD changes color at this threshold
+      - design/gdd/reclaimer-class-abilities.md  # Medic may check armor state for ability conditions
+    value: 60.0
+    unit: HP
+    notes: "HP threshold below which ArmorState = Compromised. Must remain > CRITICAL_THRESHOLD and < HP_MAX. Safe range 40–80."
+    added: 2026-05-15
+    revised: ""
+
+  - name: CRITICAL_THRESHOLD
+    status: active
+    source: design/gdd/health-damage.md
+    referenced_by:
+      - design/gdd/health-damage.md
+      - design/gdd/reclaimer-hud.md       # HUD enters critical pulse at this threshold
+      - design/gdd/knockdown-revival.md   # K&R may use critical state for triage priority
+    value: 30.0
+    unit: HP
+    notes: "HP threshold below which ArmorState = Critical. Must remain < COMPROMISED_THRESHOLD. Safe range 10–50."
+    added: 2026-05-15
+    revised: ""
+
+  - name: TEAMMATE_ELIMINATED_WEIGHT
+    status: active
+    source: design/gdd/corruption-meter.md
+    referenced_by:
+      - design/gdd/corruption-meter.md
+      - design/gdd/health-damage.md       # H&D fires this event on Elimination
+    value: 3.0
+    unit: "%"
+    notes: "Corruption added when a Reclaimer is Eliminated (bleedout timer expires without revival). Safe range 1.0–8.0. Source GDD is corruption-meter.md (defined in event table); registered here when H&D first implemented the firing logic."
+    added: 2026-05-15
+    revised: ""
+
+  - name: FALL_SAFE_DISTANCE
+    status: active
+    source: design/gdd/health-damage.md
+    referenced_by:
+      - design/gdd/health-damage.md
+      - design/gdd/level-sector-system.md  # Level design uses this to calibrate vertical traversal
+    value: 3.0
+    unit: m
+    notes: "Minimum fall height (meters) before damage is applied. Falls below this deal no damage. Safe range 1.0–5.0 m."
+    added: 2026-05-15
+    revised: ""
+
+  - name: FALL_DAMAGE_RATE
+    status: active
+    source: design/gdd/health-damage.md
+    referenced_by:
+      - design/gdd/health-damage.md
+    value: 10.0
+    unit: HP/m
+    notes: "HP damage per meter of fall above FALL_SAFE_DISTANCE. Safe range 5–30 HP/m. At default, 5m fall = 20 HP; 13m fall = 100 HP (instant Downed)."
+    added: 2026-05-15
+    revised: ""
 
 # Example:
 #
