@@ -22,147 +22,235 @@
 #             /consistency-check (primary input — grep-first, GDD-second)
 #             /review-all-gdds (Phase 1 — baseline for Phase 2 checks)
 #             /architecture-review (data structure and interface validation)
-#
-# SEARCH PATTERNS (for skills using Grep):
-#   All entity names:        Grep pattern="^  - name:" path="design/registry/entities.yaml"
-#   Specific entity:         Grep pattern="  - name: goblin" path="design/registry/entities.yaml"
-#   All items:               Grep pattern="^  - name:" path="design/registry/entities.yaml" (items section)
-#   What combat.md owns:     Grep pattern="source: design/gdd/combat.md"
-#   What inventory.md uses:  Grep pattern="referenced_by.*inventory"
-#   All gold values:          Grep pattern="value_gold:"
-#   Deprecated entries:      Grep pattern="status: deprecated"
-#
-# FORMAT: YAML. Consistent indentation is critical for grep reliability.
-#   Sections: entities | items | formulas | constants
-#   Each entry: name, status, source, referenced_by[], attributes{}, added, revised
 
 version: 1
-last_updated: ""
+last_updated: "2026-05-16"
 
 # ─── ENTITIES ────────────────────────────────────────────────────────────────
-# Named game-world objects: enemies, NPCs, characters, factions, bosses.
-# Register an entity here when it appears in more than one GDD — e.g., an
-# enemy defined in combat.md that also drops items listed in inventory.md.
-#
-# Required fields: name, status, source, referenced_by, added
-# Attribute fields: any key stats that could appear in another GDD
-#   (health, damage, drops, faction, etc.)
 
-entities: []
+entities:
+  - name: blind_listener
+    status: active
+    source: design/gdd/enemy-design.md
+    referenced_by:
+      - design/gdd/enemy-design.md
+      - design/gdd/noise-system.md
+    hearing_threshold: 2
+    sight_range: 0
+    speed: 1
+    killable: true
+    class: normal
+    added: 2026-05-16
+    revised: ""
 
-# Example (remove when first real entry is added):
-#
-# entities:
-#   - name: goblin
-#     status: active              # active | deprecated
-#     source: design/gdd/combat.md
-#     referenced_by:
-#       - design/gdd/combat.md
-#       - design/gdd/inventory.md
-#     health: 40
-#     damage: 8
-#     drops:
-#       - item: goblin_arm        # must match an entry in items section
-#         qty: 1
-#         drop_rate: 0.8          # 0.0–1.0
-#     added: 2026-03-26
-#     revised: ""
+  - name: coffin_thing
+    status: active
+    source: design/gdd/enemy-design.md
+    referenced_by:
+      - design/gdd/enemy-design.md
+    hearing_threshold: 10
+    sight_range: 3
+    speed: 0.5
+    killable: true
+    class: dangerous
+    added: 2026-05-16
+    revised: ""
+
+  - name: choir_ghost
+    status: active
+    source: design/gdd/enemy-design.md
+    referenced_by:
+      - design/gdd/enemy-design.md
+      - design/gdd/sonar-system.md
+      - design/gdd/ritual-system.md
+    hearing_threshold: 4
+    sight_range: 6
+    speed: 1.5
+    killable: false
+    class: presence
+    ritual_breaker: true
+    added: 2026-05-16
+    revised: ""
+
+  - name: heavy_presence
+    status: active
+    source: design/gdd/enemy-design.md
+    referenced_by:
+      - design/gdd/enemy-design.md
+      - design/gdd/chase-system.md
+      - design/gdd/sonar-system.md
+    hearing_threshold: 20
+    sight_range: 2
+    speed: 1.5
+    killable: false
+    class: presence
+    ritual_breaker: true
+    added: 2026-05-16
+    revised: ""
+
+  - name: static_apparition
+    status: active
+    source: design/gdd/enemy-design.md
+    referenced_by:
+      - design/gdd/enemy-design.md
+      - design/gdd/sonar-system.md
+      - design/gdd/fear-corruption-system.md
+    hearing_threshold: 0
+    sight_range: 0
+    speed: 0
+    killable: false
+    class: echo
+    ritual_breaker: false
+    added: 2026-05-16
+    revised: ""
+
+  - name: masked_cultist
+    status: active
+    source: design/gdd/enemy-design.md
+    referenced_by:
+      - design/gdd/enemy-design.md
+      - design/gdd/ritual-system.md
+    hearing_threshold: 6
+    sight_range: 6
+    speed: 1
+    killable: true
+    class: normal
+    ritual_breaker: false
+    added: 2026-05-16
+    revised: ""
 
 
 # ─── ITEMS ───────────────────────────────────────────────────────────────────
-# Named collectables, equipment, consumables, crafting materials, currency.
-# Register an item when its name or value appears in more than one GDD.
-#
-# Required fields: name, status, source, referenced_by, added
-# Attribute fields: value_gold, weight, stackable, category, and any stat
-#   modifiers that another system (e.g., economy, crafting) might reference.
 
 items: []
 
-# Example:
-#
-# items:
-#   - name: goblin_arm
-#     status: active
-#     source: design/gdd/combat.md   # drop defined in combat GDD
-#     referenced_by:
-#       - design/gdd/combat.md
-#       - design/gdd/inventory.md    # inventory GDD lists its weight/stack rules
-#       - design/gdd/economy.md      # economy GDD references its sell price
-#     value_gold: 5
-#     weight: 1
-#     stackable: true
-#     category: crafting_material
-#     added: 2026-03-26
-#     revised: ""
-
 
 # ─── FORMULAS ────────────────────────────────────────────────────────────────
-# Named calculations with defined variables and output ranges.
-# Register a formula when its output feeds into another system's input,
-# or when another GDD references it by name.
-#
-# Required fields: name, status, source, referenced_by, variables[],
-#   output_range[min, max], added
-# Optional: expression (the actual formula), notes
 
-formulas: []
+formulas:
+  - name: noise_at_target
+    status: active
+    source: design/gdd/noise-system.md
+    referenced_by:
+      - design/gdd/noise-system.md
+      - design/gdd/sonar-system.md
+      - design/gdd/chase-system.md
+    variables:
+      - action_noise
+      - tile_multiplier
+      - path_attenuation
+      - wall_attenuation
+      - wall_count
+    output_range: [0, 999]
+    expression: "action_noise × tile_multiplier × path_attenuation"
+    notes: "path_attenuation = Π(1 - tile.absorbs_sound) × wall_attenuation^wall_count"
+    added: 2026-05-16
+    revised: ""
 
-# Example:
-#
-# formulas:
-#   - name: damage_formula
-#     status: active
-#     source: design/gdd/combat.md
-#     referenced_by:
-#       - design/gdd/combat.md
-#       - design/gdd/progression.md   # progression GDD scales attack variable
-#     variables:
-#       - attack
-#       - defense
-#       - crit_chance
-#       - crit_multiplier
-#     output_range: [0, 999]
-#     expression: "max(0, attack - defense) * (1 + crit_chance * crit_multiplier)"
-#     notes: "Output feeds into health-system damage intake. Min is 0 (armour
-#       can absorb all damage). Max is uncapped in formula but tuning knob
-#       damage_cap in combat.md clamps at 999."
-#     added: 2026-03-26
-#     revised: ""
+  - name: sonar_tier
+    status: active
+    source: design/gdd/sonar-system.md
+    referenced_by:
+      - design/gdd/sonar-system.md
+      - design/gdd/equipment-system.md
+      - design/gdd/fear-corruption-system.md
+    variables:
+      - sonar_range
+      - distance_to_target
+      - resonator_bonus
+      - amplifier_bonus
+      - fear_penalty
+      - corruption_penalty
+      - anechoic_penalty
+    output_range: [0, 5]
+    expression: "clamp(floor((sonar_range - distance) / sonar_range × 5) + bonuses - penalties, 0, 5)"
+    added: 2026-05-16
+    revised: ""
+
+  - name: sight_radius
+    status: active
+    source: design/gdd/vision-system.md
+    referenced_by:
+      - design/gdd/vision-system.md
+      - design/gdd/fear-corruption-system.md
+    variables:
+      - base_radius
+      - light_bonus
+      - fear_penalty
+      - darkness_penalty
+    output_range: [2, 9]
+    expression: "max(cursed_dark_cap, base_radius + light_bonus - fear_penalty - darkness_penalty)"
+    notes: "cursed_dark_cap = 2 and overrides all other modifiers when active"
+    added: 2026-05-16
+    revised: ""
 
 
 # ─── CONSTANTS ───────────────────────────────────────────────────────────────
-# Named numerical values referenced across multiple systems.
-# Register a constant when it is defined in one GDD but another GDD must
-# agree with it (e.g., gold carry limit defined in economy but checked in
-# inventory, or base inventory slots defined in inventory but displayed in HUD).
-#
-# Required fields: name, status, source, referenced_by, value, unit, added
 
-constants: []
+constants:
+  - name: base_sight_radius
+    status: active
+    source: design/gdd/vision-system.md
+    referenced_by:
+      - design/gdd/vision-system.md
+      - design/gdd/fear-corruption-system.md
+    value: 4
+    unit: tiles
+    added: 2026-05-16
+    revised: ""
 
-# Example:
-#
-# constants:
-#   - name: gold_carry_limit
-#     status: active
-#     source: design/gdd/economy.md
-#     referenced_by:
-#       - design/gdd/economy.md
-#       - design/gdd/inventory.md   # inventory enforces the carry limit
-#       - design/gdd/ui.md          # HUD displays current gold vs limit
-#     value: 9999
-#     unit: gold
-#     added: 2026-03-26
-#     revised: ""
-#
-#   - name: base_inventory_slots
-#     status: active
-#     source: design/gdd/inventory.md
-#     referenced_by:
-#       - design/gdd/inventory.md
-#       - design/gdd/progression.md  # progression unlocks additional slots
-#     value: 20
-#     unit: slots
-#     added: 2026-03-26
-#     revised: ""
+  - name: base_hearing_radius
+    status: active
+    source: design/gdd/audio-perception-system.md
+    referenced_by:
+      - design/gdd/audio-perception-system.md
+      - design/gdd/noise-system.md
+    value: 10
+    unit: tiles
+    added: 2026-05-16
+    revised: ""
+
+  - name: corruption_max
+    status: active
+    source: design/gdd/fear-corruption-system.md
+    referenced_by:
+      - design/gdd/fear-corruption-system.md
+      - design/gdd/ritual-system.md
+      - design/gdd/equipment-system.md
+    value: 50
+    unit: points
+    added: 2026-05-16
+    revised: ""
+
+  - name: fear_max
+    status: active
+    source: design/gdd/fear-corruption-system.md
+    referenced_by:
+      - design/gdd/fear-corruption-system.md
+    value: 100
+    unit: points
+    added: 2026-05-16
+    revised: ""
+
+  - name: noise_decay_rate
+    status: active
+    source: design/gdd/noise-system.md
+    referenced_by:
+      - design/gdd/noise-system.md
+      - design/gdd/chase-system.md
+    value: 0.35
+    unit: fraction_per_turn
+    added: 2026-05-16
+    revised: ""
+
+  - name: wall_attenuation
+    status: active
+    source: design/gdd/audio-perception-system.md
+    referenced_by:
+      - design/gdd/audio-perception-system.md
+      - design/gdd/noise-system.md
+      - design/gdd/sonar-system.md
+    value: 0.6
+    unit: fraction_per_wall_tile
+    added: 2026-05-16
+    revised: ""
