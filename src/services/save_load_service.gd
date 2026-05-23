@@ -336,7 +336,9 @@ func _casebook_has(case_id: String) -> bool:
 ## AC-3. The [param result] is duck-typed (`case_id` / `verdict` / `final_score`) because
 ## the `EvaluationResult` class lives in the Submission/Evaluation epic. This handler is
 ## the subscriber for `EvaluationService.evaluation_completed`; that subscription is
-## DEFERRED until EvaluationService exists (TD-001 — submit signature must reconcile first).
+## DEFERRED until EvaluationService is implemented. (TD-001 RESOLVED 2026-05-23: the
+## EvaluationService entry point is `submit(submission: PlayerSubmission)` per ADR-0007 —
+## the control-manifest was corrected to match.)
 func _on_evaluation_completed(result: Object) -> void:
 	if _casebook == null:
 		_casebook = Casebook.new()

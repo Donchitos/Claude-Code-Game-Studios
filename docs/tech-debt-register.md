@@ -13,13 +13,6 @@ description, origin, and recommended repayment trigger. Maintained via `/tech-de
 
 ## Open
 
-### TD-001 — EvaluationService.submit() signature conflict (ADR-0007 vs control-manifest)
-- **Logged**: 2026-05-23
-- **Severity**: HIGH (blocks story #9 / submission-evaluation epic)
-- **Description**: `ADR-0007 §Decision` specifies `EvaluationService.submit(submission: PlayerSubmission)` where `PlayerSubmission` is a typed Resource carrying `case_id` / `player_disposition` / `player_citations` / `chain_data` / `submission_time_ms`. The `control-manifest.md` Feature Layer rule specifies `submit(chain_data: Dictionary)`. These signatures are incompatible.
-- **Origin**: Surfaced during story-007 data-layer implementation (2026-05-23). EvaluationService does not exist yet, so the conflict is currently harmless. A forward-claim comment in `src/data/workspace_data.gd` `submit()` flags it.
-- **Repayment trigger**: MUST reconcile before story #9 (submission-evaluation) begins. Resolution requires an explicit decision (ADR-0007 amendment OR control-manifest correction) — do not resolve by guessing. PlayerSubmission's `player_disposition` + `player_citations` come from the Brief Editor submit dialog, which informs which signature is correct.
-
 ### TD-002 — Untyped `Array` in WorkspaceData (static-typing standard)
 - **Logged**: 2026-05-23
 - **Severity**: LOW (standards hygiene; no runtime correctness impact)
@@ -52,4 +45,7 @@ description, origin, and recommended repayment trigger. Maintained via `/tech-de
 
 ## Resolved
 
-_(none yet)_
+### TD-001 — EvaluationService.submit() signature conflict (ADR-0007 vs control-manifest) — RESOLVED 2026-05-23
+- **Was**: `ADR-0007 §Decision` specifies `submit(submission: PlayerSubmission)` (Resource carrying `case_id` / `player_disposition` / `player_citations` / `chain_data` / `submission_time_ms`); `control-manifest.md` said `submit(chain_data: Dictionary)`. Incompatible.
+- **Resolution**: `submit(submission: PlayerSubmission)` is canonical. Decisive grounds: ADR-0007's grading algorithm scores `player_disposition` + `player_citations` (Set ops vs correct/missed/redundant sets — ADR-0007 §Performance line 279), neither of which is in `chain_data` (which is MVP-empty; chain_coherence subscore is v1+). `submit(chain_data: Dictionary)` literally cannot evaluate. The control-manifest had misquoted its own cited source (ADR-0007 §Decision). Not a trade-off — one option was simply wrong.
+- **Actions taken**: corrected control-manifest line 135 to `submit(submission: PlayerSubmission)` with a dated TD-001 note (no version bump — correction to match source, not a new rule); updated forward-claim comments in `src/data/workspace_data.gd` `submit()` and `src/services/save_load_service.gd` `_on_evaluation_completed`. EvaluationService implementation (Submission/Evaluation epic) can now proceed against the clear contract.

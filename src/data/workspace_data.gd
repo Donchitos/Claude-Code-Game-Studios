@@ -228,9 +228,9 @@ func submit() -> bool:
 	# DEFERRED (story #9 / Brief Editor epic): EvaluationService.submit(PlayerSubmission)
 	# handoff. PlayerSubmission requires player_disposition + player_citations from the
 	# Brief Editor submit dialog (not yet built). See ADR-0007 §Decision.
-	# NOTE: ADR-0007 specifies submit(PlayerSubmission) while the control-manifest
-	# specifies submit(chain_data: Dictionary) — this discrepancy must be reconciled
-	# when EvaluationService is implemented.
+	# TD-001 RESOLVED 2026-05-23: the entry point is submit(submission: PlayerSubmission)
+	# per ADR-0007 (the grading algorithm scores disposition + citations, which are NOT in
+	# chain_data). The control-manifest was corrected to match.
 	return true
 
 
