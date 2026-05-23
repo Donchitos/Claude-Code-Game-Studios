@@ -57,7 +57,7 @@ This epic is complete when:
 | 001 | [Resource tree + autoload + threshold load](story-001-resource-tree-autoload-thresholds.md) | Logic | Complete | ADR-0007 |
 | 002 | [Scoring — 5 subscores + weighted final_score](story-002-scoring-subscores-final-score.md) | Logic | Complete | ADR-0007 |
 | 003 | [Verdict function (파기/파기환송/기각/각하)](story-003-verdict-function.md) | Logic | Complete | ADR-0007 |
-| 004 | [submit() 5-state machine + Validating gate + evaluation_completed](story-004-state-machine-submit-pipeline.md) | Integration | Ready | ADR-0007 |
+| 004 | [submit() 5-state machine + Validating gate + evaluation_completed](story-004-state-machine-submit-pipeline.md) | Integration | Complete | ADR-0007 |
 | 005 | [Comment-template decision tree + per-case-override guard](story-005-comment-templates-decision-tree.md) | Logic | Ready | ADR-0007 |
 
 **Implementation order**: 001 (Resources/autoload/thresholds) → 002 (scoring) → 003 (verdict) → 004 (state machine wires 002/003 + Library/Case integration) → 005 (comments). 001-003 are the deterministic gradable core; 004 wires the pipeline + cross-system integration; 005 adds comment selection.

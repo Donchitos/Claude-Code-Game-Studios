@@ -1,7 +1,7 @@
 # Story 004: submit() 5-state machine + Validating gate + evaluation_completed
 
 > **Epic**: Submission & Evaluation
-> **Status**: Ready
+> **Status**: Complete (2026-05-23)
 > **Layer**: Feature (Gameplay) / Core
 > **Type**: Integration
 > **Manifest Version**: 2026-05-18
@@ -38,3 +38,10 @@ Per ADR-0007: state transitions guard current_state; CaseService.get_case(submis
 ## Dependencies
 - Depends on: Story 001 (Resources/autoload), 002 (scoring), 003 (verdict); LibraryService.validate_citations + CaseService.get_case (exist)
 - Unlocks: Save/Load sl-005/006 end-to-end, reasoning-workspace 007/008 submit hand-off, #10 Verdict Reveal
+
+## Completion Notes
+**Completed**: 2026-05-23. 3/3 ACs (double-submit reject AC-18, empty/invalid citation gate AC-1/2, happy-path emit AC-4/5).
+**Files**: `src/services/evaluation_service.gd` — `submit(submission: PlayerSubmission)` (IDLE→VALIDATING→COMPUTING→REPORTING→DONE→IDLE; guarded /root LibraryService.validate_citations + CaseService.get_case lookups) + `_reject` + pure `evaluate(submission, case_file)` (subscores+final_score+verdict+correct/missed/redundant sets) + set helpers. `tests/integration/submission_evaluation/submit_pipeline_test.gd` 5 tests (Library+Case fixtures loaded into autoloads).
+**Test Evidence**: submit_pipeline 5/5 PASS; full suite **425 cases / 408 executed / 17 skipped / 0 failures, exit 0**.
+**Keystone**: `EvaluationService.submit(PlayerSubmission)` now works end-to-end → unblocks the deferred Save/Load sl-005 (evaluation_completed→casebook) + sl-006 (auto-resubmit) subscriptions and reasoning-workspace 007/008 submit hand-off (those subscriber wirings live in their own stories).
+**Reviewed by orchestrator.** Remaining EvaluationService: story-005 (comment-template decision tree).

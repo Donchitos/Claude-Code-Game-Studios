@@ -142,3 +142,108 @@ func _citation_similarity(p: String, c: String) -> float:
 	if p_whole != c_whole:
 		return 0.5
 	return 0.0
+
+
+# ─── submit() pipeline + state machine — story 004 ────────────────────────────
+
+## Entry point (TD-001: PlayerSubmission). Runs the 5-state pipeline:
+## IDLE → VALIDATING (empty/invalid citation gate) → COMPUTING ([method evaluate]) →
+## REPORTING ([signal evaluation_completed]) → DONE → IDLE.
+##
+## AC-18: re-submit while not IDLE → push_warning + ignored (no second pipeline in flight).
+## AC-1/EC-1: empty player_citations → submission_rejected("empty_citations").
+## AC-2/EC-2: a citation failing LibraryService.validate_citations → submission_rejected("invalid_citation").
+## Missing case → submission_rejected("case_not_found"). Services looked up at /root (guarded).
+func submit(submission: PlayerSubmission) -> void:
+	if current_state != State.IDLE:
+		push_warning("EvaluationService.submit: evaluation in progress — re-submit ignored")
+		return
+	current_state = State.VALIDATING
+	if submission.player_citations.size() < 1:
+		_reject("empty_citations")
+		return
+	var library: Node = get_node_or_null("/root/LibraryService")
+	if library != null:
+		var invalid: Array = library.validate_citations(submission.player_citations)
+		if not invalid.is_empty():
+			_reject("invalid_citation")
+			return
+	var case_service: Node = get_node_or_null("/root/CaseService")
+	var case_file: CaseFile = case_service.get_case(submission.case_id) if case_service != null else null
+	if case_file == null:
+		_reject("case_not_found")
+		return
+	current_state = State.COMPUTING
+	var result: EvaluationResult = evaluate(submission, case_file)
+	current_state = State.REPORTING
+	evaluation_completed.emit(result)
+	current_state = State.DONE
+	current_state = State.IDLE
+
+## Emits submission_rejected and returns the machine to IDLE.
+func _reject(reason: String) -> void:
+	submission_rejected.emit(reason)
+	current_state = State.IDLE
+
+## Pure COMPUTING step: grades [param submission] against [param case_file] and builds the
+## EvaluationResult (subscores + weighted contributions + final_score + verdict + citation sets).
+## Deterministic except [member EvaluationResult.evaluated_at] (timestamp — AC-23 excluded).
+func evaluate(submission: PlayerSubmission, case_file: CaseFile) -> EvaluationResult:
+	var correct_disp: String = case_file.correct_disposition
+	var correct_cites: Array = case_file.correct_citations
+	var weights: Dictionary = case_file.scoring_weights
+	var subs: Dictionary = {
+		"disposition_match": compute_disposition_match(submission.player_disposition, correct_disp),
+		"core_citation_coverage": compute_core_citation_coverage(submission.player_citations, correct_cites),
+		"redundant_citation_penalty": compute_redundant_citation_penalty(submission.player_citations, correct_cites),
+		"chain_coherence": 0.0,            # v1+ (weight-0 in MVP)
+		"precedent_seniority_bonus": 0.0,  # v1+ (weight-0 in MVP)
+	}
+	var final_score: float = compute_final_score(subs, weights)
+	var result := EvaluationResult.new()
+	result.case_id = submission.case_id
+	result.subscores = subs
+	result.weighted_contributions = compute_weighted_contributions(subs, weights)
+	result.final_score = final_score
+	result.verdict = determine_verdict(submission.player_disposition, correct_disp, final_score)
+	result.correct_set = _matched_citations(submission.player_citations, correct_cites)
+	result.missed_set = _missed_citations(submission.player_citations, correct_cites)
+	result.redundant_set = _redundant_citations(submission.player_citations, correct_cites)
+	result.evaluated_at = int(Time.get_unix_time_from_system() * 1000.0)
+	return result
+
+## Player citations that matched a correct citation (similarity > 0).
+func _matched_citations(player_citations: Array, correct_citations: Array) -> Array[String]:
+	var out: Array[String] = []
+	for p: String in player_citations:
+		for c: String in correct_citations:
+			if _citation_similarity(p, c) > 0.0:
+				out.append(p)
+				break
+	return out
+
+## Correct citations the player did not cover (no player citation matched them).
+func _missed_citations(player_citations: Array, correct_citations: Array) -> Array[String]:
+	var out: Array[String] = []
+	for c: String in correct_citations:
+		var covered: bool = false
+		for p: String in player_citations:
+			if _citation_similarity(p, c) > 0.0:
+				covered = true
+				break
+		if not covered:
+			out.append(c)
+	return out
+
+## Player citations that matched nothing correct (irrelevant).
+func _redundant_citations(player_citations: Array, correct_citations: Array) -> Array[String]:
+	var out: Array[String] = []
+	for p: String in player_citations:
+		var matched: bool = false
+		for c: String in correct_citations:
+			if _citation_similarity(p, c) > 0.0:
+				matched = true
+				break
+		if not matched:
+			out.append(p)
+	return out
