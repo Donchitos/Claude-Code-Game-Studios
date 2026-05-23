@@ -1,0 +1,26 @@
+; Engine configuration file.
+; It's best edited using the editor UI and not directly,
+; since the parameters that go here are not all obvious.
+;
+; Format:
+;   [section] ; section goes between []
+;   param=value ; assign values to parameters
+
+config_version=5
+
+[application]
+
+config/name="파기"
+run/main_scene="uid://d10jap5a2mlws"
+config/features=PackedStringArray("4.6", "Forward Plus")
+
+[autoload]
+
+LibraryService="*res://src/data/library_service.gd"
+UIService="*res://src/ui/ui_service.gd"
+CaseService="*res://src/data/case_service.gd"
+SaveLoadService="*res://src/services/save_load_service.gd"
+
+[editor_plugins]
+
+enabled=PackedStringArray("res://addons/gdUnit4/plugin.cfg")
