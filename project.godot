@@ -19,6 +19,7 @@ config/features=PackedStringArray("4.6", "Forward Plus")
 LibraryService="*res://src/data/library_service.gd"
 UIService="*res://src/ui/ui_service.gd"
 CaseService="*res://src/data/case_service.gd"
+EvaluationService="*res://src/services/evaluation_service.gd"
 SaveLoadService="*res://src/services/save_load_service.gd"
 
 [editor_plugins]
