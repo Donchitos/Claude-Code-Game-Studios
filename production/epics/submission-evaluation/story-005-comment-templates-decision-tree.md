@@ -1,7 +1,7 @@
 # Story 005: Comment-template decision tree + per-case-override guard
 
 > **Epic**: Submission & Evaluation
-> **Status**: Ready
+> **Status**: Complete (2026-05-23)
 > **Layer**: Feature (Gameplay) / Core
 > **Type**: Logic
 > **Manifest Version**: 2026-05-18
@@ -37,3 +37,6 @@ Per ADR-0007 + GDD §3.1.5: comment key selection is a pure decision tree per su
 ## Dependencies
 - Depends on: Story 001 (CommentTemplates), 002 (subscores drive keys)
 - Unlocks: #10 Verdict Reveal (displays comments)
+
+## Completion Notes
+**Completed**: 2026-05-23. 3/3 ACs. `EvaluationService.compute_comment_keys` (per-subscore decision tree → 7-key set, GDD §3.1.5 boundaries: disp match/miss, core high≥0.8/mid≥0.4/low, redund clean≥-0.05/bloat) + `select_comments` (key→body via CommentTemplates, absent/null graceful) + wired into `evaluate()`. `_comment_templates` empty default (assets/data/evaluation/comment_templates.tres Korean content is a separate content task). per_case_verdict_threshold_override registered (architecture.yaml line 1133). `comment_generation_test.gd` 9/9. Full suite 434/0-fail. Reviewed by orchestrator.

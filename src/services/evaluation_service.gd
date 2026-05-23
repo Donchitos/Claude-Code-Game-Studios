@@ -52,6 +52,14 @@ signal evaluation_completed(result: EvaluationResult)
 signal submission_rejected(reason: String)
 
 
+# ─── Comment templates (story 005) ────────────────────────────────────────────
+
+## Externalized comment bodies (assets/data/evaluation/comment_templates.tres — content
+## task). Empty default: [method select_comments] then yields no comments (graceful).
+## The algorithm decides WHICH key per subscore; content lives here.
+var _comment_templates: CommentTemplates = CommentTemplates.new()
+
+
 # ─── Scoring — story 002 (pure functions) ─────────────────────────────────────
 
 ## AC §8.2 — discrete 1.0 (disposition matches) or 0.0.
@@ -209,8 +217,42 @@ func evaluate(submission: PlayerSubmission, case_file: CaseFile) -> EvaluationRe
 	result.correct_set = _matched_citations(submission.player_citations, correct_cites)
 	result.missed_set = _missed_citations(submission.player_citations, correct_cites)
 	result.redundant_set = _redundant_citations(submission.player_citations, correct_cites)
+	result.comments = select_comments(compute_comment_keys(subs), _comment_templates)
 	result.evaluated_at = int(Time.get_unix_time_from_system() * 1000.0)
 	return result
+
+
+# ─── Comment decision tree + selection — story 005 ────────────────────────────
+
+## Per-subscore decision tree → one template key each (GDD §3.1.5, 7-key set).
+## disposition_match: 1.0→comment.disp.match / 0.0→comment.disp.miss.
+## core_citation_coverage: ≥0.8→high / 0.4–0.8→mid / <0.4→low.
+## redundant_citation_penalty: ≥-0.05→clean / <-0.05→bloat.
+func compute_comment_keys(subscores: Dictionary) -> Array[String]:
+	var keys: Array[String] = []
+	keys.append("comment.disp.match" if float(subscores.get("disposition_match", 0.0)) >= 1.0 else "comment.disp.miss")
+	var cov: float = float(subscores.get("core_citation_coverage", 0.0))
+	if cov >= 0.8:
+		keys.append("comment.core.high")
+	elif cov >= 0.4:
+		keys.append("comment.core.mid")
+	else:
+		keys.append("comment.core.low")
+	var pen: float = float(subscores.get("redundant_citation_penalty", 0.0))
+	keys.append("comment.redund.clean" if pen >= -0.05 else "comment.redund.bloat")
+	return keys
+
+## Maps selected template keys to their Korean bodies via [param templates]. A key with no
+## body is skipped gracefully (no crash) — the comment_templates.tres content is authored
+## separately, so MVP without it simply yields no comments.
+func select_comments(keys: Array, templates: CommentTemplates) -> Array[String]:
+	var out: Array[String] = []
+	if templates == null:
+		return out
+	for key: String in keys:
+		if templates.templates.has(key):
+			out.append(String(templates.templates[key]))
+	return out
 
 ## Player citations that matched a correct citation (similarity > 0).
 func _matched_citations(player_citations: Array, correct_citations: Array) -> Array[String]:
