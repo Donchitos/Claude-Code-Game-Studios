@@ -61,10 +61,10 @@ This epic is complete when:
 | 002 | [Save-data Resource classes + schema versioning + migration](story-002-save-data-resources-schema-versioning.md) | Logic | Complete | ADR-0011 | AC-10/11 |
 | 003 | [Signal-triggered autosave + 250ms debounce](story-003-signal-triggered-autosave-debounce.md) | Integration | Complete | ADR-0011 | AC-2 |
 | 004 | [Boot load + corruption→backup recovery + casebook/session-meta](story-004-boot-load-corruption-recovery.md) | Integration | Complete | ADR-0011 | AC-7/15/16 |
-| 005 | [Resolution cascade — evaluation→casebook + revert guard](story-005-resolution-cascade-revert-guard.md) | Integration | Ready (AC-3 trigger deferred — EvaluationService/TD-001) | ADR-0011 | AC-3/4 |
-| 006 | [Crash-recovery auto-resubmit cascade (active_case_recovered)](story-006-crash-recovery-auto-resubmit.md) | Integration | Ready (end-to-end deferred — controllers + EvaluationService) | ADR-0011 | AC-5/6 |
+| 005 | [Resolution cascade — evaluation→casebook + revert guard](story-005-resolution-cascade-revert-guard.md) | Integration | Complete (core; evaluation_completed subscription deferred — TD-001) | ADR-0011 | AC-3/4 |
+| 006 | [Crash-recovery auto-resubmit cascade (active_case_recovered)](story-006-crash-recovery-auto-resubmit.md) | Integration | Complete (decision contract; end-to-end resubmit deferred — controllers + EvaluationService) | ADR-0011 | AC-5/6 |
 | 007 | [Anti-Pillar serialization guards](story-007-anti-pillar-serialization-guards.md) | Logic | Complete | ADR-0011 | AC-12/13 |
-| 008 | [Close-request forced flush + full-session persistence](story-008-close-request-flush-session-persistence.md) | Integration | Ready | ADR-0011 | AC-14 |
+| 008 | [Close-request forced flush + full-session persistence](story-008-close-request-flush-session-persistence.md) | Integration | Complete | ADR-0011 | AC-14 |
 
 **Implementation order**: 001 (atomic write foundation) → 002 (Resource classes) → 003 (autosave) → 004 (boot load) → 007 (guards) → 005/006 (cross-service cascades — partially deferred on EvaluationService/controllers, TD-001) → 008 (close flush + full round-trip). Stories 005/006 lock + unit-test their decision/guard logic now; end-to-end resubmit re-opens when EvaluationService + Workspace/Brief controllers land.
 

@@ -1,7 +1,7 @@
 # Story 006: Crash-recovery auto-resubmit cascade (active_case_recovered)
 
 > **Epic**: Save/Load
-> **Status**: Ready
+> **Status**: Complete (decision contract, 2026-05-23) / end-to-end auto-resubmit deferred (controllers + EvaluationService)
 > **Layer**: Core / Feature
 > **Type**: Integration
 > **Manifest Version**: 2026-05-18
@@ -30,7 +30,8 @@
 
 - [ ] AC-5 (Integration) — Workspace freeze (state=FROZEN) → quit → restart, When `active_case_recovered` emit, Then Workspace controller auto-calls `EvaluationService.submit()` + recovery banner. **DEFERRED end-to-end** (needs Workspace controller + EvaluationService); this story tests the recovery-decision contract: given a recovered `workspace_data.state == FROZEN`, the cascade selects the workspace-resubmit branch.
 - [ ] AC-6 (Integration) — Brief Editor SUBMITTING → quit → restart, When `active_case_recovered` emit, Then Brief controller auto-calls `EvaluationService.submit(brief_editor_data.pending_submission)`. **DEFERRED end-to-end**; this story tests: given recovered `brief_editor_data.state == SUBMITTING`, the cascade selects the brief-resubmit branch.
-- [ ] Single entry point — both cascades dispatch from one `active_case_recovered` signal (no second recovery signal).
+- [x] **Decision contract DONE** — `recovery_branch_for(workspace_data, brief_editor_data)` selects `workspace_resubmit` (FROZEN) / `brief_resubmit` (SUBMITTING) / `none`, FROZEN precedence (`crash_recovery_cascade_test.gd`). AC-5/6 end-to-end resubmit DEFERRED (Workspace/Brief controllers + EvaluationService).
+- [x] Single entry point — recovery dispatches from one `active_case_recovered` signal (no duplicate recovery signal) — **DONE** (`test_active_case_recovered_is_a_single_signal`)
 
 ---
 
@@ -88,3 +89,15 @@ func recovery_branch_for(workspace_data, brief_editor_data) -> String:
 
 - Depends on: Story 004 (`active_case_recovered` emit)
 - Unlocks: workspace story-008 (Workspace-side subscriber), Brief Editor epic (Brief-side subscriber)
+
+---
+
+## Completion Notes
+**Completed (decision contract)**: 2026-05-23
+**Criteria**: recovery-branch contract + single-entry-point passing. End-to-end AC-5/6 auto-resubmit DEFERRED (Workspace/Brief controllers + EvaluationService unimplemented; TD-001).
+**Files**:
+- `src/services/save_load_service.gd` — `recovery_branch_for(workspace_data, brief_editor_data) -> String` (FROZEN→workspace_resubmit, SUBMITTING→brief_resubmit, FROZEN precedence) + `BRIEF_SUBMITTING` const (mirrors Brief enum until that class lands). (`active_case_recovered` single-emit is in story 004.)
+- `tests/integration/save_load/crash_recovery_cascade_test.gd` — 7 tests.
+**Test Evidence**: crash_recovery_cascade 7/7 PASS; full suite **394 cases / 377 executed / 17 skipped / 0 failures, exit 0**.
+**Deferred**: the actual subscribers — Workspace controller `_on_active_case_recovered` → `EvaluationService.submit` (workspace story-008) and Brief controller (Brief epic). Both need EvaluationService (TD-001). Forward-claim documented; the decision helper is locked + tested now.
+**Code Review**: Implemented + reviewed directly by orchestrator.

@@ -1,7 +1,7 @@
 # Story 005: Resolution cascade — evaluation_completed → casebook + revert guard
 
 > **Epic**: Save/Load
-> **Status**: Ready
+> **Status**: Complete (core logic, 2026-05-23) / evaluation_completed subscription deferred (EvaluationService — TD-001)
 > **Layer**: Core / Feature
 > **Type**: Integration
 > **Manifest Version**: 2026-05-18
@@ -28,8 +28,8 @@
 
 ## Acceptance Criteria
 
-- [ ] AC-3 (Logic) — `evaluation_completed` received, When Rule 4 cascade, Then `Casebook.entries.append` + `casebook.tres` immediate serialize + `active_case.tres` deleted + `casebook_entry_added` emitted. Test: `test_save_load_service_evaluation_completed_cascade`.
-- [ ] AC-4 (Logic) — `save_active_case()` with case_id already in Casebook, When Rule 4.3 guard, Then `push_error` + return false + `active_case.tres` unchanged (EC-5). Test: `test_save_load_service_revert_resolved_blocked`.
+- [x] AC-3 (Logic) — `evaluation_completed` cascade: casebook append + immediate write + active_case delete + `casebook_entry_added` emit — **DONE (handler)** (`test_evaluation_completed_archives_and_deletes_active`); the EvaluationService SUBSCRIPTION is DEFERRED (TD-001) — handler tested directly via duck-typed result
+- [x] AC-4 (Logic) — `save_active_case()` on a Resolved case → push_error + false + active_case unchanged (EC-5, `save_load_revert_resolved`) — **DONE** (`test_save_active_case_blocked_when_resolved` + allowed-when-not-resolved)
 
 ---
 
@@ -88,3 +88,15 @@ func save_active_case() -> bool:
 
 - Depends on: Story 001 (atomic write), Story 002 (Casebook/CasebookEntry), Story 004 (casebook loaded)
 - Unlocks: #11 Career, #14 Retrospective Replay (consume casebook entries)
+
+---
+
+## Completion Notes
+**Completed (core)**: 2026-05-23
+**Criteria**: AC-3 (handler) + AC-4 passing. AC-3 EvaluationService subscription DEFERRED (TD-001 — submit signature must reconcile before EvaluationService exists).
+**Files**:
+- `src/services/save_load_service.gd` — `casebook_entry_added` signal; `_casebook_has(case_id)`; `_on_evaluation_completed(result)` (casebook append → immediate write → active_case delete → emit; result duck-typed since EvaluationResult is the Submission/Evaluation epic); `save_active_case()` revert guard.
+- `tests/integration/save_load/resolution_cascade_test.gd` — 4 tests.
+**Test Evidence**: resolution_cascade 4/4 PASS; full suite **394 cases / 377 executed / 17 skipped / 0 failures, exit 0**.
+**Deferred**: `EvaluationService.evaluation_completed` → `_on_evaluation_completed` connection (forward-claim) — EvaluationService unimplemented; TD-001 signature conflict to reconcile first. Handler + guard logic tested in isolation.
+**Code Review**: Implemented + reviewed directly by orchestrator. `save_load_revert_resolved` registered (architecture.yaml line 1782).

@@ -42,6 +42,9 @@ signal save_corrupted(category: String)
 ## stories 006 / Brief epic) decide whether to auto-resubmit based on the recovered state.
 signal active_case_recovered(workspace_data: WorkspaceData, brief_editor_data: Resource)
 
+## Emitted after a Resolved case is archived to the casebook (story 005 resolution cascade).
+signal casebook_entry_added(entry: CasebookEntry)
+
 
 # ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -79,7 +82,17 @@ const DEBOUNCE_MS: Dictionary = {
 ## crash-recovery entry point. Per-category autosave timers are created lazily (story 003).
 func _ready() -> void:
 	_ensure_saves_dir()
+	# Intercept the window-close so a pending (debounced) save is flushed before quit.
+	# Only affects WM_CLOSE_REQUEST; explicit get_tree().quit() (e.g. test runner) still works.
+	get_tree().set_auto_accept_quit(false)
 	await _boot_load()
+
+
+## Flushes any pending save on window close, then quits (story 008 / ADR-0011 §3.4).
+func _notification(what: int) -> void:
+	if what == NOTIFICATION_WM_CLOSE_REQUEST:
+		_flush_pending_save()
+		get_tree().quit()
 
 
 # ─── Public / internal methods ──────────────────────────────────────────────────
@@ -289,3 +302,89 @@ func _validate_active_case(active: ActiveCaseSaveData) -> bool:
 	if active == null or active.workspace_data == null:
 		return true   # nothing to validate
 	return active.workspace_data.validate_chain_data(active.workspace_data.chain_data_snapshot)
+
+
+# ─── Close-request forced flush (story 008) ───────────────────────────────────
+
+## Drains any pending debounced save synchronously (EC-10) so the final edits are not
+## lost when the app is closing. For every running per-category debounce timer, the save
+## is performed immediately instead of waiting for its timeout. A no-op when nothing is
+## pending (no dirty timer).
+func _flush_pending_save() -> void:
+	for category: String in _debounce_timers:
+		var timer: Timer = _debounce_timers[category]
+		if timer != null and not timer.is_stopped():
+			timer.stop()
+			_perform_save(category)
+
+
+# ─── Resolution cascade + revert guard (story 005) ────────────────────────────
+
+## Returns true if a case with [param case_id] is already archived in the casebook
+## (i.e. Resolved). Used by the anti-save-scumming revert guard.
+func _casebook_has(case_id: String) -> bool:
+	if _casebook == null:
+		return false
+	for entry: CasebookEntry in _casebook.entries:
+		if entry.case_id == case_id:
+			return true
+	return false
+
+## Resolution cascade: archive the Resolved case to the casebook (immediate write),
+## delete the active case (anti-save-scumming), and announce the new entry.
+##
+## AC-3. The [param result] is duck-typed (`case_id` / `verdict` / `final_score`) because
+## the `EvaluationResult` class lives in the Submission/Evaluation epic. This handler is
+## the subscriber for `EvaluationService.evaluation_completed`; that subscription is
+## DEFERRED until EvaluationService exists (TD-001 — submit signature must reconcile first).
+func _on_evaluation_completed(result: Object) -> void:
+	if _casebook == null:
+		_casebook = Casebook.new()
+	var entry := CasebookEntry.new()
+	entry.case_id = result.get("case_id")
+	entry.verdict = result.get("verdict")
+	entry.final_score = result.get("final_score")
+	_casebook.entries.append(entry)
+	_save_resource_atomic(_casebook, CASEBOOK_FILE)   # immediate (0ms) — write casebook BEFORE deleting active
+	if FileAccess.file_exists(ACTIVE_CASE_FILE):
+		DirAccess.remove_absolute(ProjectSettings.globalize_path(ACTIVE_CASE_FILE))
+	_active_case = null
+	casebook_entry_added.emit(entry)
+
+## Persists the active case, UNLESS its case_id is already Resolved (in the casebook).
+##
+## AC-4 / EC-5: a Resolved case cannot be re-saved (anti-save-scumming,
+## `save_load_revert_resolved`, Pillar 1 irreversibility). Returns false + push_error
+## without touching `active_case.tres` in that case.
+func save_active_case() -> bool:
+	if _active_case == null:
+		return false
+	if _casebook_has(_active_case.case_id):
+		push_error(
+			"save_load_revert_resolved: case '%s' is Resolved — cannot re-save" \
+			% _active_case.case_id
+		)
+		return false
+	return _save_resource_atomic(_active_case, ACTIVE_CASE_FILE)
+
+
+# ─── Crash-recovery branch contract (story 006) ───────────────────────────────
+
+## Decides which auto-resubmit branch a recovered case takes (ADR-0011 recovery cascade).
+## The actual resubmit (calling EvaluationService.submit) is performed by the Workspace /
+## Brief controllers subscribing to [signal active_case_recovered] — DEFERRED until those
+## controllers + EvaluationService exist. This pure helper locks + tests the decision.
+##
+## Precedence: a FROZEN workspace (committed submission awaiting evaluation) wins over a
+## SUBMITTING brief. Returns "workspace_resubmit" / "brief_resubmit" / "none".
+func recovery_branch_for(workspace_data: WorkspaceData, brief_editor_data: Object) -> String:
+	if workspace_data != null and workspace_data.state == WorkspaceData.WorkspaceState.FROZEN:
+		return "workspace_resubmit"
+	if brief_editor_data != null and brief_editor_data.get("state") == BRIEF_SUBMITTING:
+		return "brief_resubmit"
+	return "none"
+
+## BriefEditorData SUBMITTING state value. The BriefEditorData enum lives in the Brief
+## Editor epic; this mirrors its SUBMITTING ordinal until that class exists. (Brief
+## lifecycle per ADR-0001 amend-2.)
+const BRIEF_SUBMITTING: int = 3
