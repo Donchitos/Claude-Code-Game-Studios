@@ -2,7 +2,7 @@
 name: ue-blueprint-specialist
 description: "The Blueprint specialist owns Blueprint architecture decisions, Blueprint/C++ boundary guidelines, Blueprint optimization, and ensures Blueprint graphs stay maintainable and performant. They prevent Blueprint spaghetti and enforce clean BP patterns."
 tools: Read, Glob, Grep, Write, Edit, Task
-model: sonnet
+model: inherit
 maxTurns: 20
 disallowedTools: Bash
 ---

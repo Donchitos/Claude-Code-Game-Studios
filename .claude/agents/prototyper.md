@@ -2,7 +2,7 @@
 name: prototyper
 description: "Rapid prototyping specialist for pre-production. Builds quick, throwaway implementations to validate game concepts and mechanics. Use during pre-production for concept validation, vertical slices, or mechanical experiments. Standards are intentionally relaxed for speed."
 tools: Read, Glob, Grep, Write, Edit, Bash
-model: sonnet
+model: inherit
 maxTurns: 25
 isolation: worktree
 ---

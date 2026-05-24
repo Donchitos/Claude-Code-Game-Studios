@@ -2,7 +2,7 @@
 name: localization-lead
 description: "Owns internationalization architecture, string management, locale testing, and translation pipeline. Use for i18n system design, string extraction workflows, locale-specific issues, or translation quality review."
 tools: Read, Glob, Grep, Write, Edit, Bash
-model: sonnet
+model: inherit
 maxTurns: 20
 memory: project
 ---

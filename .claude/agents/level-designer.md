@@ -2,7 +2,7 @@
 name: level-designer
 description: "The Level Designer creates spatial designs, encounter layouts, pacing plans, and environmental storytelling guides for game levels and areas. Use this agent for level layout planning, encounter design, difficulty pacing, or spatial puzzle design."
 tools: Read, Glob, Grep, Write, Edit
-model: sonnet
+model: inherit
 maxTurns: 20
 disallowedTools: Bash
 memory: project
