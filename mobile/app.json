@@ -43,7 +43,8 @@
       },
       "eas": {
         "projectId": "0507d12f-fe29-4632-991b-cc62424a271d"
-      }
+      },
+      "serverUrl": "https://brawlzone-production.up.railway.app"
     },
     "owner": "xmalizia"
   }

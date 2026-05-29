@@ -8,6 +8,7 @@ export const config = {
   supabase: {
     url:        process.env.SUPABASE_URL ?? '',
     serviceKey: process.env.SUPABASE_SERVICE_KEY ?? '',
+    jwtSecret:  process.env.SUPABASE_JWT_SECRET ?? '',
   },
   isDev: process.env.NODE_ENV !== 'production',
   tick: {
