@@ -1,7 +1,7 @@
 # Story 004: Server-Side Character Selection Validation
 
 > **Epic**: Character System
-> **Status**: Ready
+> **Status**: Complete
 > **Layer**: Foundation
 > **Type**: Logic
 > **Estimate**: XS
@@ -22,11 +22,11 @@
 
 ## Acceptance Criteria
 
-- [ ] Valid character + valid deck → `character_confirmed` accepted; player recorded in session
-- [ ] Character not in player's entitlements → `CHARACTER_NOT_OWNED` validation error returned
-- [ ] Character not in active roster (excluded at startup) → selection rejected
-- [ ] Slot 2 ability requires XP unlock; if not unlocked → `SLOT2_LOCKED` error returned
-- [ ] Player can re-submit `character_confirmed` with corrected selection within the 30-second window
+- [x] Valid character + valid deck → `character_confirmed` accepted; player recorded in session
+- [x] Character not in player's entitlements → `CHARACTER_NOT_OWNED` validation error returned
+- [x] Character not in active roster (excluded at startup) → selection rejected
+- [x] Slot 2 ability requires XP unlock; if not unlocked → `SLOT2_LOCKED` error returned
+- [x] Player can re-submit `character_confirmed` with corrected selection within the 30-second window
 
 ---
 

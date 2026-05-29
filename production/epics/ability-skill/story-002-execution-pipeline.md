@@ -1,7 +1,7 @@
 # Story 002: Ability Execution Pipeline
 
 > **Epic**: Ability / Skill System
-> **Status**: Ready
+> **Status**: Complete
 > **Layer**: Foundation
 > **Type**: Logic
 > **Estimate**: M
@@ -22,13 +22,13 @@
 
 ## Acceptance Criteria
 
-- [ ] **AC-2.1**: Ability on cooldown → `AbilityRejected { reason: "COOLDOWN" }`
-- [ ] **AC-2.2**: STUNNED player → `AbilityRejected { reason: "INELIGIBLE" }`
-- [ ] **AC-2.3**: Dead player → `AbilityRejected { reason: "INELIGIBLE" }`
-- [ ] **AC-2.4**: `castTimeMs > 0` → player move speed -50% during cast duration
-- [ ] **AC-2.5**: Cannot activate second ability slot while cast in progress
-- [ ] **AC-2.6**: Cooldown begins at `castCompleteTime + cooldownSec` (not at cast start)
-- [ ] **AC-2.7**: `AbilityConfirmed { abilityId, cooldownExpiresAt }` sent to caster on success
+- [x] **AC-2.1**: Ability on cooldown → `AbilityRejected { reason: "COOLDOWN" }`
+- [x] **AC-2.2**: STUNNED player → `AbilityRejected { reason: "INELIGIBLE" }`
+- [x] **AC-2.3**: Dead player → `AbilityRejected { reason: "INELIGIBLE" }`
+- [x] **AC-2.4**: `castTimeMs > 0` → player move speed -50% during cast duration
+- [x] **AC-2.5**: Cannot activate second ability slot while cast in progress
+- [x] **AC-2.6**: Cooldown begins at `castCompleteTime + cooldownSec` (not at cast start)
+- [x] **AC-2.7**: `AbilityConfirmed { abilityId, cooldownExpiresAt }` sent to caster on success
 
 ---
 

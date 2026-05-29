@@ -4,7 +4,7 @@
 > **GDD**: design/gdd/character-system.md
 > **Architecture Module**: Character System (server data + client display)
 > **Status**: Ready
-> **Stories**: 4 stories created
+> **Stories**: 4/4 Complete
 
 ## Overview
 

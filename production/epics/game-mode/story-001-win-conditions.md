@@ -1,7 +1,7 @@
 # Story 001: Win Conditions — All Three Modes
 
 > **Epic**: Game Mode System
-> **Status**: Ready
+> **Status**: Complete
 > **Layer**: Foundation
 > **Type**: Logic
 > **Estimate**: M
@@ -22,17 +22,17 @@
 
 ## Acceptance Criteria
 
-- [ ] **WC-01**: 1v1 Duel — one player eliminated → alive player wins immediately
-- [ ] **WC-02**: 1v1 Duel — both eliminated same tick → draw
-- [ ] **WC-03**: 1v1 Duel timer expiry → player with higher HP% wins
-- [ ] **WC-04**: 1v1 Duel timer expiry, equal HP% (2dp) → draw
-- [ ] **WC-05**: 3v3 Squad Brawl — all 3 players on one team eliminated → other team wins
-- [ ] **WC-06**: 3v3 timer expiry → team with more survivors wins
-- [ ] **WC-07**: 3v3 timer expiry, equal survivors → team with higher total HP% wins
-- [ ] **WC-08**: 3v3 timer expiry, equal survivors and equal HP% → draw
-- [ ] **WC-09**: FFA — only one player remaining → winner declared immediately
-- [ ] **WC-10**: FFA timer expiry, multiple alive → highest total score wins
-- [ ] **WC-11**: FFA timer expiry, tied scores among alive → draw
+- [x] **WC-01**: 1v1 Duel — one player eliminated → alive player wins immediately
+- [x] **WC-02**: 1v1 Duel — both eliminated same tick → draw
+- [x] **WC-03**: 1v1 Duel timer expiry → player with higher HP% wins
+- [x] **WC-04**: 1v1 Duel timer expiry, equal HP% (2dp) → draw
+- [x] **WC-05**: 3v3 Squad Brawl — all 3 players on one team eliminated → other team wins
+- [x] **WC-06**: 3v3 timer expiry → team with more survivors wins
+- [x] **WC-07**: 3v3 timer expiry, equal survivors → team with higher total HP% wins
+- [x] **WC-08**: 3v3 timer expiry, equal survivors and equal HP% → draw
+- [x] **WC-09**: FFA — only one player remaining → winner declared immediately
+- [x] **WC-10**: FFA timer expiry, multiple alive → highest total score wins
+- [x] **WC-11**: FFA timer expiry, tied scores among alive → draw
 
 ---
 

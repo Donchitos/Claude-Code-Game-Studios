@@ -1,7 +1,7 @@
 # Story 002: Character Availability Check
 
 > **Epic**: Character System
-> **Status**: Ready
+> **Status**: Complete
 > **Layer**: Foundation
 > **Type**: Logic
 > **Estimate**: S
@@ -22,13 +22,13 @@
 
 ## Acceptance Criteria
 
-- [ ] **AC-AVAIL-001**: New player (zero XP, zero wins) → Vex, Zook, Sera all return `available: true`
-- [ ] **AC-AVAIL-002**: Player with no entitlement for Grim → Grim returns `available: false`
-- [ ] **AC-AVAIL-003**: Player with active entitlement for Grim → Grim returns `available: true`
-- [ ] **AC-AVAIL-004**: Player owns Fen and Grim but not Dash → Fen/Grim `true`, Dash `false`
-- [ ] **AC-AVAIL-005**: Premium character Nyx with active entitlement → `available: true`
-- [ ] **AC-AVAIL-006**: Nyx with inactive entitlement → `available: false`
-- [ ] **AC-AVAIL-007**: Nyx with no entitlement → `available: false`
+- [x] **AC-AVAIL-001**: New player (zero XP, zero wins) → Vex, Zook, Sera all return `available: true`
+- [x] **AC-AVAIL-002**: Player with no entitlement for Grim → Grim returns `available: false`
+- [x] **AC-AVAIL-003**: Player with active entitlement for Grim → Grim returns `available: true`
+- [x] **AC-AVAIL-004**: Player owns Fen and Grim but not Dash → Fen/Grim `true`, Dash `false`
+- [x] **AC-AVAIL-005**: Premium character Nyx with active entitlement → `available: true`
+- [x] **AC-AVAIL-006**: Nyx with inactive entitlement → `available: false`
+- [x] **AC-AVAIL-007**: Nyx with no entitlement → `available: false`
 
 ---
 

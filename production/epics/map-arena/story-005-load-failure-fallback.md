@@ -1,7 +1,7 @@
 # Story 005: Map Load Failure & Fallback
 
 > **Epic**: Map / Arena System
-> **Status**: Ready
+> **Status**: Complete
 > **Layer**: Foundation
 > **Type**: Logic
 > **Estimate**: S
@@ -22,9 +22,9 @@
 
 ## Acceptance Criteria
 
-- [ ] **AC-14**: Catalog returns 500 for map fetch → server retries 3 times → fallback bundled map loaded; ERROR logged; match proceeds normally; no player notification
-- [ ] **AC-15**: Both catalog fetch AND bundled fallback fail → match aborted; all clients receive `match_error { code: 'MAP_LOAD_FAILURE' }`; no loss recorded; players returned to lobby
-- [ ] **AC-17**: Player position computed 0.3 LGU from edge; `safe_boundary_inset=0.5 LGU` → position clamped to 0.5 LGU from edge
+- [x] **AC-14**: Catalog returns 500 for map fetch → server retries 3 times → fallback bundled map loaded; ERROR logged; match proceeds normally; no player notification
+- [x] **AC-15**: Both catalog fetch AND bundled fallback fail → match aborted; all clients receive `match_error { code: 'MAP_LOAD_FAILURE' }`; no loss recorded; players returned to lobby
+- [x] **AC-17**: Player position computed 0.3 LGU from edge; `safe_boundary_inset=0.5 LGU` → position clamped to 0.5 LGU from edge
 
 ---
 

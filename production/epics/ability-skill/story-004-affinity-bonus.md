@@ -1,7 +1,7 @@
 # Story 004: Affinity Bonus Calculation
 
 > **Epic**: Ability / Skill System
-> **Status**: Ready
+> **Status**: Complete
 > **Layer**: Foundation
 > **Type**: Logic
 > **Estimate**: XS
@@ -22,9 +22,9 @@
 
 ## Acceptance Criteria
 
-- [ ] **AC-4.1**: Character in `affinityCharacterIds` fires ability → `resolvedMagnitude = baseMagnitude × 1.10`
-- [ ] **AC-4.2**: Character NOT in `affinityCharacterIds` fires same ability → `resolvedMagnitude = baseMagnitude`
-- [ ] **AC-4.3**: Affinity bonus applies ONLY to `effectMagnitude`; `effectDuration_ms` and `aoeRadius_units` unchanged
+- [x] **AC-4.1**: Character in `affinityCharacterIds` fires ability → `resolvedMagnitude = baseMagnitude × 1.10`
+- [x] **AC-4.2**: Character NOT in `affinityCharacterIds` fires same ability → `resolvedMagnitude = baseMagnitude`
+- [x] **AC-4.3**: Affinity bonus applies ONLY to `effectMagnitude`; `effectDuration_ms` and `aoeRadius_units` unchanged
 
 ---
 

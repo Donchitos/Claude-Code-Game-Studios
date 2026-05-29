@@ -1,7 +1,7 @@
 # Story 004: Zone Shrink Mechanics (FFA)
 
 > **Epic**: Map / Arena System
-> **Status**: Ready
+> **Status**: Complete
 > **Layer**: Foundation
 > **Type**: Logic
 > **Estimate**: M
@@ -22,11 +22,11 @@
 
 ## Acceptance Criteria
 
-- [ ] **AC-10**: FFA; `start_delay_sec=60`; at T=59s → zone radius = `initial_radius` (no shrink)
-- [ ] **AC-11**: FFA phase 1 begins T=60s; `initial_radius=60`, `end_radius=36` over 60s → at T=90s (30s into phase): `radius = 48.0 LGU (±0.1)`
-- [ ] **AC-12**: Player 5 LGU outside zone; `damage_per_sec=15`; tick 50ms → `0.75 HP damage` (15 × 0.05)
-- [ ] **AC-13**: Player inside zone → zero zone damage that tick
-- [ ] **AC-16**: FFA zone boundary visible on minimap as circle overlay updating in real time
+- [x] **AC-10**: FFA; `start_delay_sec=60`; at T=59s → zone radius = `initial_radius` (no shrink)
+- [x] **AC-11**: FFA phase 1 begins T=60s; `initial_radius=60`, `end_radius=36` over 60s → at T=90s (30s into phase): `radius = 48.0 LGU (±0.1)`
+- [x] **AC-12**: Player 5 LGU outside zone; `damage_per_sec=15`; tick 50ms → `0.75 HP damage` (15 × 0.05)
+- [x] **AC-13**: Player inside zone → zero zone damage that tick
+- [x] **AC-16**: FFA zone boundary visible on minimap as circle overlay updating in real time
 
 ---
 

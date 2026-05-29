@@ -1,7 +1,7 @@
 # Story 001: Map Schema Validation & Mode-Based Selection
 
 > **Epic**: Map / Arena System
-> **Status**: Ready
+> **Status**: Complete
 > **Layer**: Foundation
 > **Type**: Logic
 > **Estimate**: S
@@ -22,10 +22,10 @@
 
 ## Acceptance Criteria
 
-- [ ] **AC-01**: Map with missing required field, invalid spawn distances, or obstacle outside safe boundary → rejected by schema validator; structured error listing each violation
-- [ ] **AC-02**: Duel match → only maps with `"duel_1v1"` in `mode_compatibility` considered; selected within 50ms
-- [ ] **AC-03**: Most-recently-played Squad Brawl map → weight 0 (not selected) when other eligible maps exist
-- [ ] **AC-04**: Single-map pool → server logs warning and selects that map anyway (weight suppression lifted)
+- [x] **AC-01**: Map with missing required field, invalid spawn distances, or obstacle outside safe boundary → rejected by schema validator; structured error listing each violation
+- [x] **AC-02**: Duel match → only maps with `"duel_1v1"` in `mode_compatibility` considered; selected within 50ms
+- [x] **AC-03**: Most-recently-played Squad Brawl map → weight 0 (not selected) when other eligible maps exist
+- [x] **AC-04**: Single-map pool → server logs warning and selects that map anyway (weight suppression lifted)
 
 ---
 

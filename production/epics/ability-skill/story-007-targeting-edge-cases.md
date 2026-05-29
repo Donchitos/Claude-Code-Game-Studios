@@ -1,7 +1,7 @@
 # Story 007: Targeting Models & Edge Cases
 
 > **Epic**: Ability / Skill System
-> **Status**: Ready
+> **Status**: Complete
 > **Layer**: Foundation
 > **Type**: Logic
 > **Estimate**: S
@@ -22,13 +22,13 @@
 
 ## Acceptance Criteria
 
-- [ ] **AC-8.1**: Projectile ability resolves on first enemy collision OR at `range_units` (despawn, no effect)
-- [ ] **AC-8.2**: Targeted ability misses and consumes cooldown if target moved outside `range_units` by resolution time
-- [ ] **AC-8.3**: AoE ability affects ALL valid targets within radius at resolution time simultaneously
-- [ ] **AC-8.4**: AoE projectile travels to placement point then resolves AoE; all targets in radius at arrival affected
-- [ ] **AC-7.1**: Ability request at exactly `currentTime == cooldownExpiresAt` → accepted (boundary inclusive)
-- [ ] **AC-7.2**: Player disconnects during cast → cast cancelled; cooldown NOT consumed; move speed penalty removed
-- [ ] **AC-7.4**: Target dies before `castCompleteAt` → effect doesn't apply; cooldown IS consumed
+- [x] **AC-8.1**: Projectile ability resolves on first enemy collision OR at `range_units` (despawn, no effect)
+- [x] **AC-8.2**: Targeted ability misses and consumes cooldown if target moved outside `range_units` by resolution time
+- [x] **AC-8.3**: AoE ability affects ALL valid targets within radius at resolution time simultaneously
+- [x] **AC-8.4**: AoE projectile travels to placement point then resolves AoE; all targets in radius at arrival affected
+- [x] **AC-7.1**: Ability request at exactly `currentTime == cooldownExpiresAt` → accepted (boundary inclusive)
+- [x] **AC-7.2**: Player disconnects during cast → cast cancelled; cooldown NOT consumed; move speed penalty removed
+- [x] **AC-7.4**: Target dies before `castCompleteAt` → effect doesn't apply; cooldown IS consumed
 
 ---
 

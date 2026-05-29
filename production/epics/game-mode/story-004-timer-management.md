@@ -1,7 +1,7 @@
 # Story 004: Match Timer Management
 
 > **Epic**: Game Mode System
-> **Status**: Ready
+> **Status**: Complete
 > **Layer**: Foundation
 > **Type**: Logic
 > **Estimate**: XS
@@ -22,10 +22,10 @@
 
 ## Acceptance Criteria
 
-- [ ] **TM-01**: Timer state present in every `state_snapshot` payload as `timerRemainingMs`
-- [ ] **TM-02**: Timer counts down from `effectiveMaxDurationSec` at 20Hz (−50ms per tick)
-- [ ] **TM-03**: At `timerRemainingMs = 0` → `WinConditionEvaluator` called with timeout trigger
-- [ ] **TM-04**: Timer does NOT pause when a player disconnects
+- [x] **TM-01**: Timer state present in every `state_snapshot` payload as `timerRemainingMs`
+- [x] **TM-02**: Timer counts down from `effectiveMaxDurationSec` at 20Hz (−50ms per tick)
+- [x] **TM-03**: At `timerRemainingMs = 0` → `WinConditionEvaluator` called with timeout trigger
+- [x] **TM-04**: Timer does NOT pause when a player disconnects
 
 ---
 

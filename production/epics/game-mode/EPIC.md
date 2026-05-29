@@ -4,7 +4,7 @@
 > **GDD**: design/gdd/game-mode.md
 > **Architecture Module**: Game Mode Config
 > **Status**: Ready
-> **Stories**: 5 stories created
+> **Stories**: 5/5 Complete
 
 ## Overview
 

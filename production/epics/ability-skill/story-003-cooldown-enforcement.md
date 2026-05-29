@@ -1,7 +1,7 @@
 # Story 003: Cooldown Enforcement & Persistence
 
 > **Epic**: Ability / Skill System
-> **Status**: Ready
+> **Status**: Complete
 > **Layer**: Foundation
 > **Type**: Logic
 > **Estimate**: S
@@ -22,9 +22,9 @@
 
 ## Acceptance Criteria
 
-- [ ] **AC-3.1**: After firing, ability cannot be fired again until `currentTime >= cooldownExpiresAt`
-- [ ] **AC-3.2**: Cooldown state persists across brief packet loss (server state authoritative)
-- [ ] **AC-3.3**: Client with stale-ready cooldown display → server returns `AbilityRejected { reason: "COOLDOWN", cooldownRemainingMs }`
+- [x] **AC-3.1**: After firing, ability cannot be fired again until `currentTime >= cooldownExpiresAt`
+- [x] **AC-3.2**: Cooldown state persists across brief packet loss (server state authoritative)
+- [x] **AC-3.3**: Client with stale-ready cooldown display → server returns `AbilityRejected { reason: "COOLDOWN", cooldownRemainingMs }`
 
 ---
 

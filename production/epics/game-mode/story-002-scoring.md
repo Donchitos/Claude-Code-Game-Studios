@@ -1,7 +1,7 @@
 # Story 002: Scoring System
 
 > **Epic**: Game Mode System
-> **Status**: Ready
+> **Status**: Complete
 > **Layer**: Foundation
 > **Type**: Logic
 > **Estimate**: S
@@ -22,12 +22,12 @@
 
 ## Acceptance Criteria
 
-- [ ] **SC-01**: Killer receives `eliminationPoints` (10) when elimination fires
-- [ ] **SC-02**: Each eligible assisting player receives `assistPoints` (3) on elimination
-- [ ] **SC-03**: Dead players do not receive assist credit
-- [ ] **SC-04**: Survival bonus applied at match end, not incrementally during play
-- [ ] **SC-05**: Survival bonus = `floor(survivalTimeSec / 10) × 1` (default settings); player alive 73s → bonus = 7
-- [ ] **SC-06**: Eliminated player's survival time stops at time of elimination
+- [x] **SC-01**: Killer receives `eliminationPoints` (10) when elimination fires
+- [x] **SC-02**: Each eligible assisting player receives `assistPoints` (3) on elimination
+- [x] **SC-03**: Dead players do not receive assist credit
+- [x] **SC-04**: Survival bonus applied at match end, not incrementally during play
+- [x] **SC-05**: Survival bonus = `floor(survivalTimeSec / 10) × 1` (default settings); player alive 73s → bonus = 7
+- [x] **SC-06**: Eliminated player's survival time stops at time of elimination
 
 ---
 

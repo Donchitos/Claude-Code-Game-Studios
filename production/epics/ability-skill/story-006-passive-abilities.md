@@ -1,7 +1,7 @@
 # Story 006: All 8 Passive Ability Implementations
 
 > **Epic**: Ability / Skill System
-> **Status**: Ready
+> **Status**: Complete
 > **Layer**: Foundation
 > **Type**: Logic
 > **Estimate**: L
@@ -23,14 +23,14 @@
 ## Acceptance Criteria
 
 All from GDD AC-6:
-- [ ] **Vex (AC-6.1)**: Hit streak (same target) increments up to 3; switch target resets; damage × 1.00/1.05/1.10/1.15 at 0/1/2/3 stacks
-- [ ] **Zook (AC-6.2)**: Attack from >60% of maxRange → `baseDamage × 1.20`; at/below 60% → `baseDamage × 1.00`
-- [ ] **Sera (AC-6.3)**: On any active ability use → heal `0.05 × maxHP`
-- [ ] **Fen (AC-6.4)**: On active ability use → `trickShotActiveUntil = now + 2000ms`; next basic attack in window → `baseDamage × 1.15`; proc closes window
-- [ ] **Grim (AC-6.5)**: Stone Skin activates once per match when `hp < 30% maxHP`; active 5s; never activates again even if HP recovers
-- [ ] **Dash (AC-6.6)**: On active ability use → `afterburnActiveUntil = now + 2000ms`; move speed × 1.15 in window
-- [ ] **Colt (AC-6.7)**: Active ability objects have lifetime × 1.20 when cast by Colt
-- [ ] **Nyx (AC-6.8)**: First ability cast this match → `effectiveCooldown = baseCooldown × 0.50`; subsequent: base cooldown; `openerUsed` flag not reset within match
+- [x] **Vex (AC-6.1)**: Hit streak (same target) increments up to 3; switch target resets; damage × 1.00/1.05/1.10/1.15 at 0/1/2/3 stacks
+- [x] **Zook (AC-6.2)**: Attack from >60% of maxRange → `baseDamage × 1.20`; at/below 60% → `baseDamage × 1.00`
+- [x] **Sera (AC-6.3)**: On any active ability use → heal `0.05 × maxHP`
+- [x] **Fen (AC-6.4)**: On active ability use → `trickShotActiveUntil = now + 2000ms`; next basic attack in window → `baseDamage × 1.15`; proc closes window
+- [x] **Grim (AC-6.5)**: Stone Skin activates once per match when `hp < 30% maxHP`; active 5s; never activates again even if HP recovers
+- [x] **Dash (AC-6.6)**: On active ability use → `afterburnActiveUntil = now + 2000ms`; move speed × 1.15 in window
+- [x] **Colt (AC-6.7)**: Active ability objects have lifetime × 1.20 when cast by Colt
+- [x] **Nyx (AC-6.8)**: First ability cast this match → `effectiveCooldown = baseCooldown × 0.50`; subsequent: base cooldown; `openerUsed` flag not reset within match
 
 ---
 

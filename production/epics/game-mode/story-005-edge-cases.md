@@ -1,7 +1,7 @@
 # Story 005: Game Mode Edge Cases
 
 > **Epic**: Game Mode System
-> **Status**: Ready
+> **Status**: Complete
 > **Layer**: Foundation
 > **Type**: Logic
 > **Estimate**: S
@@ -22,10 +22,10 @@
 
 ## Acceptance Criteria
 
-- [ ] **EC-01**: FFA simultaneous final elimination → draw result; all players get draw MMR delta
-- [ ] **EC-02**: 3v3 with 2 disconnects on one team → match continues; no force-balance
-- [ ] **EC-03**: FFA timer expiry with exactly 1 alive → winner (not draw); `result = 'timeout'`
-- [ ] **EC-04**: Event mode config missing → mode unavailable; ERROR logged; no exception propagates to callers
+- [x] **EC-01**: FFA simultaneous final elimination → draw result; all players get draw MMR delta
+- [x] **EC-02**: 3v3 with 2 disconnects on one team → match continues; no force-balance
+- [x] **EC-03**: FFA timer expiry with exactly 1 alive → winner (not draw); `result = 'timeout'`
+- [x] **EC-04**: Event mode config missing → mode unavailable; ERROR logged; no exception propagates to callers
 
 ---
 

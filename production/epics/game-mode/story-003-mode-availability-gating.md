@@ -1,7 +1,7 @@
 # Story 003: Mode Availability Gating & Hot Config
 
 > **Epic**: Game Mode System
-> **Status**: Ready
+> **Status**: Complete
 > **Layer**: Foundation
 > **Type**: Logic
 > **Estimate**: S
@@ -22,13 +22,13 @@
 
 ## Acceptance Criteria
 
-- [ ] **MA-01**: Queue attempt for mode not in `availableModes` → rejected with `MODE_UNAVAILABLE`
-- [ ] **MA-02**: Hot push removes a mode → all queued players for that mode dequeued
-- [ ] **MA-03**: Dequeued players receive `MODE_DISABLED` notification
-- [ ] **MA-04**: Active matches in a disabled mode continue to completion
-- [ ] **MA-05**: Event mode added to pool when `eventModeActive=true` and config exists
-- [ ] **MA-06**: Event mode config missing → ERROR logged; standard modes unaffected
-- [ ] **MA-07**: `matchDurationCapSec` (600) applied as hard cap on all mode durations
+- [x] **MA-01**: Queue attempt for mode not in `availableModes` → rejected with `MODE_UNAVAILABLE`
+- [x] **MA-02**: Hot push removes a mode → all queued players for that mode dequeued
+- [x] **MA-03**: Dequeued players receive `MODE_DISABLED` notification
+- [x] **MA-04**: Active matches in a disabled mode continue to completion
+- [x] **MA-05**: Event mode added to pool when `eventModeActive=true` and config exists
+- [x] **MA-06**: Event mode config missing → ERROR logged; standard modes unaffected
+- [x] **MA-07**: `matchDurationCapSec` (600) applied as hard cap on all mode durations
 
 ---
 

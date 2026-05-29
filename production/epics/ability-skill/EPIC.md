@@ -4,7 +4,7 @@
 > **GDD**: design/gdd/ability-skill.md
 > **Architecture Module**: Ability Registry
 > **Status**: Ready
-> **Stories**: 7 stories created
+> **Stories**: 7/7 Complete
 
 ## Overview
 

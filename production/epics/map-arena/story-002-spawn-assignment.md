@@ -1,7 +1,7 @@
 # Story 002: Spawn Point Assignment
 
 > **Epic**: Map / Arena System
-> **Status**: Ready
+> **Status**: Complete
 > **Layer**: Foundation
 > **Type**: Logic
 > **Estimate**: S
@@ -22,8 +22,8 @@
 
 ## Acceptance Criteria
 
-- [ ] **AC-05**: 1v1 on Slag Pit → player 0 and 1 get distinct spawn indices; distance between spawns ≥12 LGU; both within safe boundaries
-- [ ] **AC-06**: FFA 8-player on Neon Sprawl → all 8 get distinct spawn indices; no two spawns closer than 10 LGU from each other
+- [x] **AC-05**: 1v1 on Slag Pit → player 0 and 1 get distinct spawn indices; distance between spawns ≥12 LGU; both within safe boundaries
+- [x] **AC-06**: FFA 8-player on Neon Sprawl → all 8 get distinct spawn indices; no two spawns closer than 10 LGU from each other
 
 ---
 

@@ -1,7 +1,7 @@
 # Story 001: Character Startup Loading & Validation
 
 > **Epic**: Character System
-> **Status**: Ready
+> **Status**: Complete
 > **Layer**: Foundation
 > **Type**: Logic
 > **Estimate**: S
@@ -22,10 +22,10 @@
 
 ## Acceptance Criteria
 
-- [ ] **AC-CHAR-001**: Content Catalog has valid definitions for all 8 characters → startup log `ROSTER_LOADED: 8 characters validated`
-- [ ] **AC-CHAR-002**: Character with `passive_ability_id` that doesn't resolve → excluded from roster; `CHAR_VALIDATION_FAILED` logged with character ID and reason; remaining valid characters load normally
-- [ ] **AC-CHAR-003**: Character with `ability_slot_count: 3` → validation fails; excluded from roster; error logged
-- [ ] `CharacterSystem.getAvailableRoster()` returns only valid characters
+- [x] **AC-CHAR-001**: Content Catalog has valid definitions for all 8 characters → startup log `ROSTER_LOADED: 8 characters validated`
+- [x] **AC-CHAR-002**: Character with `passive_ability_id` that doesn't resolve → excluded from roster; `CHAR_VALIDATION_FAILED` logged with character ID and reason; remaining valid characters load normally
+- [x] **AC-CHAR-003**: Character with `ability_slot_count: 3` → validation fails; excluded from roster; error logged
+- [x] `CharacterSystem.getAvailableRoster()` returns only valid characters
 
 ---
 

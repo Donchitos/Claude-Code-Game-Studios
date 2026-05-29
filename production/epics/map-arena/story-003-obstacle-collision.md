@@ -1,7 +1,7 @@
 # Story 003: Obstacle Collision — Static & Destructible
 
 > **Epic**: Map / Arena System
-> **Status**: Ready
+> **Status**: Complete
 > **Layer**: Foundation
 > **Type**: Integration
 > **Estimate**: M
@@ -22,9 +22,9 @@
 
 ## Acceptance Criteria
 
-- [ ] **AC-07**: Player moves through static obstacle → server corrects position to nearest point outside boundary; position correction event sent to client
-- [ ] **AC-08**: Destructible obstacle (100 HP); ability with `obstacle_damage=50` hits twice → HP=0 after second hit; `obstacle_destroyed` broadcast; excluded from future collision checks
-- [ ] **AC-09**: Player reconnects after obstacle destroyed → `match_state_snapshot` includes destroyed obstacle ID in `destroyed_obstacles[]`; client renders as destroyed within one render frame
+- [x] **AC-07**: Player moves through static obstacle → server corrects position to nearest point outside boundary; position correction event sent to client
+- [x] **AC-08**: Destructible obstacle (100 HP); ability with `obstacle_damage=50` hits twice → HP=0 after second hit; `obstacle_destroyed` broadcast; excluded from future collision checks
+- [x] **AC-09**: Player reconnects after obstacle destroyed → `match_state_snapshot` includes destroyed obstacle ID in `destroyed_obstacles[]`; client renders as destroyed within one render frame
 
 ---
 

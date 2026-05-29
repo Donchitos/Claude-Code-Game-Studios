@@ -1,7 +1,7 @@
 # Story 001: Ability Schema Validation — 18 Canonical Abilities
 
 > **Epic**: Ability / Skill System
-> **Status**: Ready
+> **Status**: Complete
 > **Layer**: Foundation
 > **Type**: Logic
 > **Estimate**: S
@@ -22,12 +22,12 @@
 
 ## Acceptance Criteria
 
-- [ ] **AC-1.1**: Every ability has unique canonical ID matching `loadout_item:ability_{slug}`
-- [ ] **AC-1.2**: Every active ability has `cooldownSec > 0`
-- [ ] **AC-1.3**: Every projectile ability has `range_units > 0`
-- [ ] **AC-1.4**: Every ability with `aoeRadius_units > 0` has `range_units >= 0`
-- [ ] **AC-1.5**: No ability has `affinityBonus` outside [0, 1]
-- [ ] **AC-1.6**: Each `affinityCharacterIds` entry is a valid `character:{slug}` canonical ID
+- [x] **AC-1.1**: Every ability has unique canonical ID matching `loadout_item:ability_{slug}`
+- [x] **AC-1.2**: Every active ability has `cooldownSec > 0`
+- [x] **AC-1.3**: Every projectile ability has `range_units > 0`
+- [x] **AC-1.4**: Every ability with `aoeRadius_units > 0` has `range_units >= 0`
+- [x] **AC-1.5**: No ability has `affinityBonus` outside [0, 1]
+- [x] **AC-1.6**: Each `affinityCharacterIds` entry is a valid `character:{slug}` canonical ID
 
 ---
 

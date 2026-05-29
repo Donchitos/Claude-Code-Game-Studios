@@ -4,7 +4,7 @@
 > **GDD**: design/gdd/map-arena.md
 > **Architecture Module**: Map Config (server), Map Renderer (client)
 > **Status**: Ready
-> **Stories**: 5 stories created
+> **Stories**: 5/5 Complete
 
 ## Overview
 

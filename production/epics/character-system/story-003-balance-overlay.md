@@ -1,7 +1,7 @@
 # Story 003: Balance Overlay Application & Clamping
 
 > **Epic**: Character System
-> **Status**: Ready
+> **Status**: Complete
 > **Layer**: Foundation
 > **Type**: Logic
 > **Estimate**: S
@@ -22,12 +22,12 @@
 
 ## Acceptance Criteria
 
-- [ ] **AC-OVERLAY-001**: Vex `attack_damage` overlay = 1.10; base = 10 → `effective_attack_damage = 11.0` at match init
-- [ ] **AC-OVERLAY-002**: No overlay for Grim → all effective_stats equal base values exactly
-- [ ] **AC-OVERLAY-003**: Dash `move_speed` overlay = 2.0 (exceeds OVERLAY_MAX 1.5) → clamped to 1.5; `effective_move_speed = base * 1.5`; `OVERLAY_CLAMP_WARNING` logged
-- [ ] **AC-OVERLAY-004**: Colt `attack_damage` overlay = 0.0 (below OVERLAY_MIN 0.5) → clamped to 0.5; `OVERLAY_CLAMP_WARNING` logged
-- [ ] **AC-OVERLAY-005**: Overlay for unknown `character:ghost` → silently dropped; `OVERLAY_UNKNOWN_CHARACTER` warning logged; no existing character affected
-- [ ] **AC-OVERLAY-006**: Overlay updated mid-match → existing match's stats unchanged; new overlay applies only to subsequently initialized matches
+- [x] **AC-OVERLAY-001**: Vex `attack_damage` overlay = 1.10; base = 10 → `effective_attack_damage = 11.0` at match init
+- [x] **AC-OVERLAY-002**: No overlay for Grim → all effective_stats equal base values exactly
+- [x] **AC-OVERLAY-003**: Dash `move_speed` overlay = 2.0 (exceeds OVERLAY_MAX 1.5) → clamped to 1.5; `effective_move_speed = base * 1.5`; `OVERLAY_CLAMP_WARNING` logged
+- [x] **AC-OVERLAY-004**: Colt `attack_damage` overlay = 0.0 (below OVERLAY_MIN 0.5) → clamped to 0.5; `OVERLAY_CLAMP_WARNING` logged
+- [x] **AC-OVERLAY-005**: Overlay for unknown `character:ghost` → silently dropped; `OVERLAY_UNKNOWN_CHARACTER` warning logged; no existing character affected
+- [x] **AC-OVERLAY-006**: Overlay updated mid-match → existing match's stats unchanged; new overlay applies only to subsequently initialized matches
 
 ---
 

@@ -1,7 +1,7 @@
 # Story 005: Status Effects — Interactions & Stacking Rules
 
 > **Epic**: Ability / Skill System
-> **Status**: Ready
+> **Status**: Complete
 > **Layer**: Foundation
 > **Type**: Logic
 > **Estimate**: M
@@ -22,15 +22,15 @@
 
 ## Acceptance Criteria
 
-- [ ] **AC-5.1**: STUNNED → `AbilityRejected INELIGIBLE` for both slots for stun duration
-- [ ] **AC-5.2**: STUNNED → movement inputs ignored for stun duration
-- [ ] **AC-5.3**: SLOWED → `effectiveMoveSpeed = baseMoveSpeed × (1 - magnitudePct/100)`, floored at 10% of base
-- [ ] **AC-5.4**: SHIELDED → incoming damage depletes shield HP; overflow to player HP
-- [ ] **AC-5.5**: BURNING damage bypasses SHIELDED → applies directly to player HP
-- [ ] **AC-5.6**: INVISIBLE → absent from opponent state snapshots for duration
-- [ ] **AC-5.7**: INVISIBLE → using any active ability removes INVISIBLE immediately
-- [ ] **AC-5.8**: BURNING → `magnitude` HP damage every 500ms for duration
-- [ ] **AC-5.9**: No stacking — re-application refreshes duration; highest magnitude wins
+- [x] **AC-5.1**: STUNNED → `AbilityRejected INELIGIBLE` for both slots for stun duration
+- [x] **AC-5.2**: STUNNED → movement inputs ignored for stun duration
+- [x] **AC-5.3**: SLOWED → `effectiveMoveSpeed = baseMoveSpeed × (1 - magnitudePct/100)`, floored at 10% of base
+- [x] **AC-5.4**: SHIELDED → incoming damage depletes shield HP; overflow to player HP
+- [x] **AC-5.5**: BURNING damage bypasses SHIELDED → applies directly to player HP
+- [x] **AC-5.6**: INVISIBLE → absent from opponent state snapshots for duration
+- [x] **AC-5.7**: INVISIBLE → using any active ability removes INVISIBLE immediately
+- [x] **AC-5.8**: BURNING → `magnitude` HP damage every 500ms for duration
+- [x] **AC-5.9**: No stacking — re-application refreshes duration; highest magnitude wins
 
 ---
 
