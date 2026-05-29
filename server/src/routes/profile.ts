@@ -40,6 +40,7 @@ function buildMockProfile(userId: string) {
     has_play_pass: false,
     xp: 0,
     level: 1,
+    coin_balance: 0,
     unlocked_character_ids: ['character:vex', 'character:zook', 'character:sera'],
     analytics_consent: true,
   };

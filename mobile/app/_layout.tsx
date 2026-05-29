@@ -1,4 +1,4 @@
-import { Stack } from 'expo-router';
+import { Stack, router } from 'expo-router';
 import { useEffect } from 'react';
 import { StatusBar } from 'expo-status-bar';
 import * as SplashScreen from 'expo-splash-screen';
@@ -8,10 +8,28 @@ SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
   const initialize = useGameStore(s => s.initialize);
+  const userId = useGameStore(s => s.userId);
 
   useEffect(() => {
-    initialize().finally(() => SplashScreen.hideAsync());
+    initialize().finally(() => {
+      SplashScreen.hideAsync();
+      // Redirect to login if not authenticated after init
+      if (!useGameStore.getState().userId) {
+        router.replace('/login');
+      }
+    });
   }, [initialize]);
+
+  // If auth state changes to null mid-session, redirect to login
+  useEffect(() => {
+    if (userId === null) {
+      // Small delay to let the store settle on first mount
+      const t = setTimeout(() => {
+        if (!useGameStore.getState().userId) router.replace('/login');
+      }, 500);
+      return () => clearTimeout(t);
+    }
+  }, [userId]);
 
   return (
     <>
