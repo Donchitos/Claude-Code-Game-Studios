@@ -1,7 +1,7 @@
 # Story 001: Connection Lifecycle & JWT Authentication
 
 > **Epic**: Real-time Transport
-> **Status**: Ready
+> **Status**: Complete
 > **Layer**: Foundation
 > **Type**: Logic
 > **Estimate**: M
@@ -22,11 +22,11 @@
 
 ## Acceptance Criteria
 
-- [ ] **AC-RT-01**: Valid JWT → connection reaches IN_LOBBY state within 500ms; no `auth_error` emitted
-- [ ] **AC-RT-02**: Tampered/invalid JWT → `auth_error { reason: "TOKEN_INVALID" }` emitted; socket closed within 200ms
-- [ ] **AC-RT-03**: Expired JWT → `auth_error { reason: "TOKEN_EXPIRED" }` emitted; socket closed
-- [ ] Unauthenticated socket (no token in handshake) → `auth_error { reason: "TOKEN_MISSING" }` + disconnect within 5s
-- [ ] `socket.data.userId` correctly set from JWT `sub` claim after successful auth
+- [x] **AC-RT-01**: Valid JWT → connection reaches IN_LOBBY state within 500ms; no `auth_error` emitted
+- [x] **AC-RT-02**: Tampered/invalid JWT → `auth_error { reason: "TOKEN_INVALID" }` emitted; socket closed within 200ms
+- [x] **AC-RT-03**: Expired JWT → `auth_error { reason: "TOKEN_EXPIRED" }` emitted; socket closed
+- [x] Unauthenticated socket (no token in handshake) → `auth_error { reason: "TOKEN_MISSING" }` + disconnect within 5s
+- [x] `socket.data.userId` correctly set from JWT `sub` claim after successful auth
 
 ---
 

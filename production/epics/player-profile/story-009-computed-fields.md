@@ -1,7 +1,7 @@
 # Story 009: Computed Fields, Provisional Status & Public Payload
 
 > **Epic**: Player Profile
-> **Status**: Ready
+> **Status**: Complete
 > **Layer**: Foundation
 > **Type**: Logic
 > **Estimate**: S
@@ -22,9 +22,9 @@
 
 ## Acceptance Criteria
 
-- [ ] **AC-PP-15**: Player `wins=37`, `total_matches=63` → `win_rate = 0.587` in profile response; no `win_rate` column in DB
-- [ ] **AC-PP-16**: Player `provisional_match_count=29`; one match processed → `provisional_match_count=30`, `is_provisional=false`; both in same transaction
-- [ ] **AC-PP-17**: `GET /profile/{player_b}/public` → includes `user_id, display_name, avatar_id, level, mmr, peak_mmr, total_matches, wins, losses, kills, preferred_character_id`; excludes `diamond_balance, has_no_ads, has_play_pass, analytics_consent, region, created_at, last_seen_at, is_provisional, unlocked_character_ids`
+- [x] **AC-PP-15**: Player `wins=37`, `total_matches=63` → `win_rate = 0.587` in profile response; no `win_rate` column in DB
+- [x] **AC-PP-16**: Player `provisional_match_count=29`; one match processed → `provisional_match_count=30`, `is_provisional=false`; both in same transaction
+- [x] **AC-PP-17**: `GET /profile/{player_b}/public` → includes `user_id, display_name, avatar_id, level, mmr, peak_mmr, total_matches, wins, losses, kills, preferred_character_id`; excludes `diamond_balance, has_no_ads, has_play_pass, analytics_consent, region, created_at, last_seen_at, is_provisional, unlocked_character_ids`
 
 ---
 

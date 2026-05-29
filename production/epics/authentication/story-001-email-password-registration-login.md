@@ -1,7 +1,7 @@
 # Story 001: Email/Password Registration & Login
 
 > **Epic**: Authentication
-> **Status**: Ready
+> **Status**: Complete
 > **Layer**: Foundation
 > **Type**: Logic
 > **Estimate**: S
@@ -30,12 +30,12 @@
 
 *From GDD `design/gdd/authentication.md`, scoped to this story:*
 
-- [ ] A new email/password account can be created successfully on a clean install, and the player reaches the authenticated home flow without unnecessary delay
-- [ ] Attempting to register with an email already in use does not create a second account; client displays an appropriate message
-- [ ] Submitting invalid credentials (wrong password) does not authenticate the user and surfaces an error
-- [ ] `supabase.auth.signUp()` + `supabase.auth.signInWithPassword()` are the implementation paths — no custom auth server
-- [ ] JWT stored in Expo SecureStore after successful authentication
-- [ ] `POST /v1/auth/register` and `POST /v1/auth/login` return `{ userId, jwt }` on success
+- [x] A new email/password account can be created successfully on a clean install, and the player reaches the authenticated home flow without unnecessary delay
+- [x] Attempting to register with an email already in use does not create a second account; client displays an appropriate message
+- [x] Submitting invalid credentials (wrong password) does not authenticate the user and surfaces an error
+- [x] `supabase.auth.signUp()` + `supabase.auth.signInWithPassword()` are the implementation paths — no custom auth server
+- [x] JWT stored in Expo SecureStore after successful authentication
+- [x] `POST /v1/auth/register` and `POST /v1/auth/login` return `{ userId, jwt }` on success
 
 ---
 

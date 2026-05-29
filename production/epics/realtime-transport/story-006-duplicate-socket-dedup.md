@@ -1,7 +1,7 @@
 # Story 006: Duplicate Socket Deduplication
 
 > **Epic**: Real-time Transport
-> **Status**: Ready
+> **Status**: Complete
 > **Layer**: Foundation
 > **Type**: Logic
 > **Estimate**: XS
@@ -22,9 +22,9 @@
 
 ## Acceptance Criteria
 
-- [ ] **AC-RT-11**: Player has active socket in IN_LOBBY; same player opens second socket with same JWT → first socket receives `auth_error { reason: "DUPLICATE_SESSION" }` and disconnects; second socket proceeds to IN_LOBBY
-- [ ] If first socket was in a match room, room membership transfers to new socket; `state_snapshot` emitted to new socket
-- [ ] Race condition prevention: Redis lock on `userId` during auth middleware serializes concurrent auth attempts from same `userId`
+- [x] **AC-RT-11**: Player has active socket in IN_LOBBY; same player opens second socket with same JWT → first socket receives `auth_error { reason: "DUPLICATE_SESSION" }` and disconnects; second socket proceeds to IN_LOBBY
+- [x] If first socket was in a match room, room membership transfers to new socket; `state_snapshot` emitted to new socket
+- [x] Race condition prevention: Redis lock on `userId` during auth middleware serializes concurrent auth attempts from same `userId`
 
 ---
 

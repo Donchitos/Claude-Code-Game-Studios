@@ -1,7 +1,7 @@
 # Story 002: Profile Read Path — Cache Hit / Miss / Redis Down
 
 > **Epic**: Player Profile
-> **Status**: Ready
+> **Status**: Complete
 > **Layer**: Foundation
 > **Type**: Integration
 > **Estimate**: S
@@ -22,9 +22,9 @@
 
 ## Acceptance Criteria
 
-- [ ] **AC-PP-03**: Cache hit → served from Redis; no PostgreSQL query; response <50ms p95; server-only fields absent from response
-- [ ] **AC-PP-04**: Cache miss → PostgreSQL queried; profile re-cached in Redis (TTL=300s); HTTP 200 with correct data
-- [ ] **AC-PP-05**: Redis unreachable → served from PostgreSQL; HTTP 200 (no error to client); `WARN: Redis unavailable` log entry
+- [x] **AC-PP-03**: Cache hit → served from Redis; no PostgreSQL query; response <50ms p95; server-only fields absent from response
+- [x] **AC-PP-04**: Cache miss → PostgreSQL queried; profile re-cached in Redis (TTL=300s); HTTP 200 with correct data
+- [x] **AC-PP-05**: Redis unreachable → served from PostgreSQL; HTTP 200 (no error to client); `WARN: Redis unavailable` log entry
 
 ---
 

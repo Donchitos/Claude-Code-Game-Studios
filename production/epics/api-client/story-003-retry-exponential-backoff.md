@@ -1,7 +1,7 @@
 # Story 003: Retry Policy with Exponential Backoff
 
 > **Epic**: API Client
-> **Status**: Ready
+> **Status**: Complete
 > **Layer**: Foundation
 > **Type**: Logic
 > **Estimate**: S
@@ -22,11 +22,11 @@
 
 ## Acceptance Criteria
 
-- [ ] **AC-06**: Mock returns 500 × 3 then 200; `MAX_RETRY_ATTEMPTS = 3` → resolves; 4 HTTP calls; waits ≥500ms, ≥1000ms, ≥2000ms between attempts (±200ms jitter)
-- [ ] **AC-07**: Mock always returns 500; `MAX_RETRY_ATTEMPTS = 3` → rejects `code "SERVER_ERROR"`, `httpStatus 500`; 4 HTTP calls total
-- [ ] **AC-08**: Mock hangs; `REQUEST_TIMEOUT_MS = 1000`; `MAX_RETRY_ATTEMPTS = 0` → rejects `code "TIMEOUT"` within 1200ms; 1 HTTP call
-- [ ] Non-retryable errors (4xx except 401/429, malformed response) → NOT retried; 1 HTTP call
-- [ ] Each retry gets a fresh timeout window (not shared with original attempt)
+- [x] **AC-06**: Mock returns 500 × 3 then 200; `MAX_RETRY_ATTEMPTS = 3` → resolves; 4 HTTP calls; waits ≥500ms, ≥1000ms, ≥2000ms between attempts (±200ms jitter)
+- [x] **AC-07**: Mock always returns 500; `MAX_RETRY_ATTEMPTS = 3` → rejects `code "SERVER_ERROR"`, `httpStatus 500`; 4 HTTP calls total
+- [x] **AC-08**: Mock hangs; `REQUEST_TIMEOUT_MS = 1000`; `MAX_RETRY_ATTEMPTS = 0` → rejects `code "TIMEOUT"` within 1200ms; 1 HTTP call
+- [x] Non-retryable errors (4xx except 401/429, malformed response) → NOT retried; 1 HTTP call
+- [x] Each retry gets a fresh timeout window (not shared with original attempt)
 
 ---
 

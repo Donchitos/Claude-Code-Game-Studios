@@ -1,7 +1,7 @@
 # Story 004: Field Ownership Enforcement
 
 > **Epic**: Player Profile
-> **Status**: Ready
+> **Status**: Complete
 > **Layer**: Foundation
 > **Type**: Logic
 > **Estimate**: XS
@@ -22,9 +22,9 @@
 
 ## Acceptance Criteria
 
-- [ ] **AC-PP-10**: Client-side request attempting to directly set `diamond_balance` or `wins` → HTTP 403; no DB mutation; no Redis invalidation
-- [ ] Only listed owning authority (per GDD §3.5 Field Ownership Table) can mutate each field
-- [ ] API route middleware enforces field-level ownership; owned fields are whitelisted per endpoint
+- [x] **AC-PP-10**: Client-side request attempting to directly set `diamond_balance` or `wins` → HTTP 403; no DB mutation; no Redis invalidation
+- [x] Only listed owning authority (per GDD §3.5 Field Ownership Table) can mutate each field
+- [x] API route middleware enforces field-level ownership; owned fields are whitelisted per endpoint
 
 ---
 

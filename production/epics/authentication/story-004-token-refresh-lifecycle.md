@@ -1,7 +1,7 @@
 # Story 004: Token Refresh Lifecycle
 
 > **Epic**: Authentication
-> **Status**: Ready
+> **Status**: Complete
 > **Layer**: Foundation
 > **Type**: Logic
 > **Estimate**: S
@@ -22,11 +22,11 @@
 
 ## Acceptance Criteria
 
-- [ ] With `REFRESH_LEAD_SECONDS = 60`, a background refresh fires before the access token expires, with no UI interruption
-- [ ] If the device is taken offline during refresh, the session remains usable until the access token expires; once expired, Session Expired modal appears
-- [ ] A token-related 401 response triggers one refresh attempt and, if refresh succeeds, retries the original privileged request once
-- [ ] `REFRESH_LEAD_SECONDS` set to 0 → client falls back to 60s default; config error is logged
-- [ ] Concurrent 401 responses trigger exactly one refresh attempt (not N parallel refreshes)
+- [x] With `REFRESH_LEAD_SECONDS = 60`, a background refresh fires before the access token expires, with no UI interruption
+- [x] If the device is taken offline during refresh, the session remains usable until the access token expires; once expired, Session Expired modal appears
+- [x] A token-related 401 response triggers one refresh attempt and, if refresh succeeds, retries the original privileged request once
+- [x] `REFRESH_LEAD_SECONDS` set to 0 → client falls back to 60s default; config error is logged
+- [x] Concurrent 401 responses trigger exactly one refresh attempt (not N parallel refreshes)
 
 ---
 

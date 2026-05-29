@@ -1,7 +1,7 @@
 # Story 003: Session Persistence & Cold Start
 
 > **Epic**: Authentication
-> **Status**: Ready
+> **Status**: Complete
 > **Layer**: Foundation
 > **Type**: Logic
 > **Estimate**: S
@@ -22,10 +22,10 @@
 
 ## Acceptance Criteria
 
-- [ ] Closing and reopening the app while a valid session exists returns the player to the home screen without re-entering credentials
-- [ ] After a session has been revoked (logout or server-side revocation), reopening the app does not restore gameplay access and redirects to the unauthenticated flow
-- [ ] If secure on-device auth state is corrupted or unreadable on launch, the app clears local auth state safely and enters the unauthenticated flow without crashing
-- [ ] Cold start reads stored refresh token via `supabase.auth.getSession()` before any authenticated API call is made
+- [x] Closing and reopening the app while a valid session exists returns the player to the home screen without re-entering credentials
+- [x] After a session has been revoked (logout or server-side revocation), reopening the app does not restore gameplay access and redirects to the unauthenticated flow
+- [x] If secure on-device auth state is corrupted or unreadable on launch, the app clears local auth state safely and enters the unauthenticated flow without crashing
+- [x] Cold start reads stored refresh token via `supabase.auth.getSession()` before any authenticated API call is made
 
 ---
 

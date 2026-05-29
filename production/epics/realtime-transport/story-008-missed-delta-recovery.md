@@ -1,7 +1,7 @@
 # Story 008: Missed Delta Dead-Reckoning & Match End Cleanup
 
 > **Epic**: Real-time Transport
-> **Status**: Ready
+> **Status**: Complete
 > **Layer**: Foundation
 > **Type**: Logic
 > **Estimate**: S
@@ -22,9 +22,9 @@
 
 ## Acceptance Criteria
 
-- [ ] **AC-RT-14**: Client receives tick 38 and 40 (tick 39 missing) → dead-reckoning applied for the gap; client transitions smoothly to tick 40; no error thrown; no resync request for single missed tick
-- [ ] After 3+ consecutive missed ticks → client emits `state_resync_request { matchId, lastReceivedTick }`; server responds with full `state_snapshot`
-- [ ] **AC-RT-15**: `match_end` emitted → 10s later, room `match:{matchId}` has zero members; no further `match_state` events emitted
+- [x] **AC-RT-14**: Client receives tick 38 and 40 (tick 39 missing) → dead-reckoning applied for the gap; client transitions smoothly to tick 40; no error thrown; no resync request for single missed tick
+- [x] After 3+ consecutive missed ticks → client emits `state_resync_request { matchId, lastReceivedTick }`; server responds with full `state_snapshot`
+- [x] **AC-RT-15**: `match_end` emitted → 10s later, room `match:{matchId}` has zero members; no further `match_state` events emitted
 
 ---
 

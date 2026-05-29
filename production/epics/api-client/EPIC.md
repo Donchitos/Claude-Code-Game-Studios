@@ -4,7 +4,7 @@
 > **GDD**: design/gdd/api-client.md
 > **Architecture Module**: API Client (HTTP + retry + JWT injection)
 > **Status**: Ready
-> **Stories**: 5 stories created
+> **Stories**: 5/5 Complete
 
 ## Overview
 

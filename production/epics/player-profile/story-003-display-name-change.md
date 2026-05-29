@@ -1,7 +1,7 @@
 # Story 003: Display Name Change & Validation
 
 > **Epic**: Player Profile
-> **Status**: Ready
+> **Status**: Complete
 > **Layer**: Foundation
 > **Type**: Logic
 > **Estimate**: S
@@ -22,11 +22,11 @@
 
 ## Acceptance Criteria
 
-- [ ] **AC-PP-06**: Valid name; last change >30 days ago → updated in DB + Redis invalidated; HTTP 200 with updated `display_name`
-- [ ] **AC-PP-07**: Name changed 10 days ago → HTTP 429, `DISPLAY_NAME_COOLDOWN`, `retry_after` (remaining seconds ≈20 days in seconds); `display_name` unchanged
-- [ ] **AC-PP-08**: Name already taken → HTTP 409, `DISPLAY_NAME_TAKEN`; cooldown NOT consumed; requestor's name unchanged
-- [ ] **AC-PP-09**: Validation errors: length <3 → 400 `TOO_SHORT`; >20 → 400 `TOO_LONG`; invalid chars → 400 `INVALID_CHARS`; profanity → 400 `PROFANITY`
-- [ ] First rename (default name, `display_name_last_changed_at = null`) always permitted regardless of account age
+- [x] **AC-PP-06**: Valid name; last change >30 days ago → updated in DB + Redis invalidated; HTTP 200 with updated `display_name`
+- [x] **AC-PP-07**: Name changed 10 days ago → HTTP 429, `DISPLAY_NAME_COOLDOWN`, `retry_after` (remaining seconds ≈20 days in seconds); `display_name` unchanged
+- [x] **AC-PP-08**: Name already taken → HTTP 409, `DISPLAY_NAME_TAKEN`; cooldown NOT consumed; requestor's name unchanged
+- [x] **AC-PP-09**: Validation errors: length <3 → 400 `TOO_SHORT`; >20 → 400 `TOO_LONG`; invalid chars → 400 `INVALID_CHARS`; profanity → 400 `PROFANITY`
+- [x] First rename (default name, `display_name_last_changed_at = null`) always permitted regardless of account age
 
 ---
 

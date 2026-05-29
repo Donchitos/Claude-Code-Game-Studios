@@ -1,7 +1,7 @@
 # Story 004: Offline Queue — Request Persistence & Drain
 
 > **Epic**: API Client
-> **Status**: Ready
+> **Status**: Complete
 > **Layer**: Foundation
 > **Type**: Logic
 > **Estimate**: S
@@ -23,11 +23,11 @@
 
 ## Acceptance Criteria
 
-- [ ] **AC-09**: Device offline at call time; mock returns 200 after reconnection → resolves with 200; 1 HTTP call (after reconnect)
-- [ ] **AC-10**: Offline + queue at `MAX_QUEUE_SIZE` (50); 51st request → oldest rejects with `code "QUEUE_FULL"`; queue stays at 50; new request enqueued
-- [ ] **AC-11**: Offline; `QUEUE_ENTRY_TTL_MS = 5000`; 6000ms pass → expired entry rejects with `code "QUEUE_EXPIRED"`; no HTTP call made for it
-- [ ] Queue drains sequentially on reconnect (not parallel)
-- [ ] Pre-flight online check happens before every HTTP call (not just at module init)
+- [x] **AC-09**: Device offline at call time; mock returns 200 after reconnection → resolves with 200; 1 HTTP call (after reconnect)
+- [x] **AC-10**: Offline + queue at `MAX_QUEUE_SIZE` (50); 51st request → oldest rejects with `code "QUEUE_FULL"`; queue stays at 50; new request enqueued
+- [x] **AC-11**: Offline; `QUEUE_ENTRY_TTL_MS = 5000`; 6000ms pass → expired entry rejects with `code "QUEUE_EXPIRED"`; no HTTP call made for it
+- [x] Queue drains sequentially on reconnect (not parallel)
+- [x] Pre-flight online check happens before every HTTP call (not just at module init)
 
 ---
 

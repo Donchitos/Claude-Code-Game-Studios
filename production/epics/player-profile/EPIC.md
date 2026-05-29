@@ -4,7 +4,7 @@
 > **GDD**: design/gdd/player-profile.md
 > **Architecture Module**: Player Profile Service (server) + Profile Store (client)
 > **Status**: Ready
-> **Stories**: 9 stories created
+> **Stories**: 9/9 Complete
 
 ## Overview
 

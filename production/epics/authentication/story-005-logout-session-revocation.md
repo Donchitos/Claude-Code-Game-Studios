@@ -1,7 +1,7 @@
 # Story 005: Logout & Session Revocation
 
 > **Epic**: Authentication
-> **Status**: Ready
+> **Status**: Complete
 > **Layer**: Foundation
 > **Type**: Logic
 > **Estimate**: S
@@ -22,11 +22,11 @@
 
 ## Acceptance Criteria
 
-- [ ] Tapping logout revokes the session server-side, clears all local tokens, and returns the player to the login screen
-- [ ] After logout, back gesture / Android back button cannot navigate to the home screen — player is blocked at the login screen
-- [ ] All Zustand stores (ProfileStore, InventoryStore) are cleared on logout
-- [ ] Active Socket.io connection is closed on logout
-- [ ] Logout while a match is active: session revoked immediately; match treated as disconnect server-side
+- [x] Tapping logout revokes the session server-side, clears all local tokens, and returns the player to the login screen
+- [x] After logout, back gesture / Android back button cannot navigate to the home screen — player is blocked at the login screen
+- [x] All Zustand stores (ProfileStore, InventoryStore) are cleared on logout
+- [x] Active Socket.io connection is closed on logout
+- [x] Logout while a match is active: session revoked immediately; match treated as disconnect server-side
 
 ---
 

@@ -1,7 +1,7 @@
 # Story 007: Client-Side Prediction & Reconciliation
 
 > **Epic**: Real-time Transport
-> **Status**: Ready
+> **Status**: Complete
 > **Layer**: Foundation
 > **Type**: Logic
 > **Estimate**: L
@@ -22,10 +22,10 @@
 
 ## Acceptance Criteria
 
-- [ ] **AC-RT-12**: Match at 20Hz tick rate; opponent moving at constant velocity → opponent rendered visually smooth at 60fps with no stutter under <100ms RTT conditions [Manual QA]
-- [ ] **AC-RT-13**: Client predicted position diverges from server authoritative by > `PREDICTION_CORRECTION_THRESHOLD` → client hard-snaps to authoritative position; re-simulates pending inputs with seq > delta tick; no inputs with seq ≤ delta tick remain in pending buffer
-- [ ] State interpolation: alpha = `(renderTime - tick_A.timestamp) / (tick_B.timestamp - tick_A.timestamp)` clamped [0, 1]
-- [ ] Interpolation buffer holds last 2 received authoritative ticks; renders interpolated position between them at 60fps
+- [x] **AC-RT-12**: Match at 20Hz tick rate; opponent moving at constant velocity → opponent rendered visually smooth at 60fps with no stutter under <100ms RTT conditions [Manual QA]
+- [x] **AC-RT-13**: Client predicted position diverges from server authoritative by > `PREDICTION_CORRECTION_THRESHOLD` → client hard-snaps to authoritative position; re-simulates pending inputs with seq > delta tick; no inputs with seq ≤ delta tick remain in pending buffer
+- [x] State interpolation: alpha = `(renderTime - tick_A.timestamp) / (tick_B.timestamp - tick_A.timestamp)` clamped [0, 1]
+- [x] Interpolation buffer holds last 2 received authoritative ticks; renders interpolated position between them at 60fps
 
 ---
 

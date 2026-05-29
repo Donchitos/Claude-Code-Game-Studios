@@ -1,7 +1,7 @@
 # Story 002: 401 Token Refresh & Session Expiry Handling
 
 > **Epic**: API Client
-> **Status**: Ready
+> **Status**: Complete
 > **Layer**: Foundation
 > **Type**: Logic
 > **Estimate**: S
@@ -22,10 +22,10 @@
 
 ## Acceptance Criteria
 
-- [ ] **AC-04**: Mock returns 401 then 200; refresh succeeds → resolves with 200 payload; two HTTP calls; retry carries new token; `AUTH_SESSION_EXPIRED` not emitted
-- [ ] **AC-05**: Mock always returns 401; refresh fails → rejects with `code "SESSION_EXPIRED"`; `AUTH_SESSION_EXPIRED` emitted exactly once
-- [ ] Concurrent 401 responses share a single in-flight refresh (not N parallel refresh calls)
-- [ ] The refresh replay does not count against `MAX_RETRY_ATTEMPTS`
+- [x] **AC-04**: Mock returns 401 then 200; refresh succeeds → resolves with 200 payload; two HTTP calls; retry carries new token; `AUTH_SESSION_EXPIRED` not emitted
+- [x] **AC-05**: Mock always returns 401; refresh fails → rejects with `code "SESSION_EXPIRED"`; `AUTH_SESSION_EXPIRED` emitted exactly once
+- [x] Concurrent 401 responses share a single in-flight refresh (not N parallel refresh calls)
+- [x] The refresh replay does not count against `MAX_RETRY_ATTEMPTS`
 
 ---
 

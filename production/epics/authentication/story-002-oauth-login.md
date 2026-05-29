@@ -1,7 +1,7 @@
 # Story 002: OAuth Login (Google + Sign in with Apple)
 
 > **Epic**: Authentication
-> **Status**: Ready
+> **Status**: Complete
 > **Layer**: Foundation
 > **Type**: Logic
 > **Estimate**: M
@@ -23,12 +23,12 @@
 
 ## Acceptance Criteria
 
-- [ ] Google OAuth login successfully authenticates the player on first use and returns them to the authenticated home flow
-- [ ] Sign in with Apple login successfully authenticates the player on first use and returns them to the authenticated home flow
-- [ ] Cancelling an OAuth flow mid-redirect returns the player to the login screen with no error shown
-- [ ] Sign in with Apple button uses Apple-compliant styling and is at least as prominent as the Google button on iOS
-- [ ] During the OAuth Authenticating state, login buttons are disabled to prevent duplicate submissions
-- [ ] OAuth email matching an existing account from a different provider does not auto-merge; player is prompted to use their original method
+- [x] Google OAuth login successfully authenticates the player on first use and returns them to the authenticated home flow
+- [x] Sign in with Apple login successfully authenticates the player on first use and returns them to the authenticated home flow
+- [x] Cancelling an OAuth flow mid-redirect returns the player to the login screen with no error shown
+- [x] Sign in with Apple button uses Apple-compliant styling and is at least as prominent as the Google button on iOS
+- [x] During the OAuth Authenticating state, login buttons are disabled to prevent duplicate submissions
+- [x] OAuth email matching an existing account from a different provider does not auto-merge; player is prompted to use their original method
 
 ---
 

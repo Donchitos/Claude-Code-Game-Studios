@@ -1,7 +1,7 @@
 # Story 009: Serialization Integrity
 
 > **Epic**: Real-time Transport
-> **Status**: Ready
+> **Status**: Complete
 > **Layer**: Foundation
 > **Type**: Logic
 > **Estimate**: XS
@@ -22,9 +22,9 @@
 
 ## Acceptance Criteria
 
-- [ ] **AC-RT-17**: Any event payload emitted from server → client deserializes JSON → all declared fields present with correct types; no extra undeclared fields; no `undefined` values serialized
-- [ ] `EntityState` schema: `{ id: string, type: string, x: number, y: number, vx: number, vy: number, hp: number, facing: number, state: string }` — all fields present in every `state_snapshot` entity
-- [ ] `EntityDelta` schema: only changed fields present (optional); `id` always present; `destroyed` only present when true
+- [x] **AC-RT-17**: Any event payload emitted from server → client deserializes JSON → all declared fields present with correct types; no extra undeclared fields; no `undefined` values serialized
+- [x] `EntityState` schema: `{ id: string, type: string, x: number, y: number, vx: number, vy: number, hp: number, facing: number, state: string }` — all fields present in every `state_snapshot` entity
+- [x] `EntityDelta` schema: only changed fields present (optional); `id` always present; `destroyed` only present when true
 
 ---
 

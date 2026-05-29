@@ -1,7 +1,7 @@
 # Story 002: Room Model & Match State Broadcast
 
 > **Epic**: Real-time Transport
-> **Status**: Ready
+> **Status**: Complete
 > **Layer**: Foundation
 > **Type**: Integration
 > **Estimate**: M
@@ -22,11 +22,11 @@
 
 ## Acceptance Criteria
 
-- [ ] **AC-RT-04**: 2 authenticated sockets assigned to a match → both members of `match:<matchId>` room; `state_delta` received by both and ONLY both
-- [ ] **AC-RT-05**: Tick loop runs for 1 second → exactly 20 `state_delta` events emitted (±1 for timing tolerance)
-- [ ] **AC-RT-15**: After `match_end` emitted + 10s elapsed → room `match:<matchId>` has zero members; no further events emitted
-- [ ] Server NEVER emits match state to individual sockets — only to `io.to(roomId).emit()`
-- [ ] Players cannot self-join rooms — only server can call `socket.join()`
+- [x] **AC-RT-04**: 2 authenticated sockets assigned to a match → both members of `match:<matchId>` room; `state_delta` received by both and ONLY both
+- [x] **AC-RT-05**: Tick loop runs for 1 second → exactly 20 `state_delta` events emitted (±1 for timing tolerance)
+- [x] **AC-RT-15**: After `match_end` emitted + 10s elapsed → room `match:<matchId>` has zero members; no further events emitted
+- [x] Server NEVER emits match state to individual sockets — only to `io.to(roomId).emit()`
+- [x] Players cannot self-join rooms — only server can call `socket.join()`
 
 ---
 

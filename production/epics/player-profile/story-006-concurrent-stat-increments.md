@@ -1,7 +1,7 @@
 # Story 006: Concurrent Stat Increments
 
 > **Epic**: Player Profile
-> **Status**: Ready
+> **Status**: Complete
 > **Layer**: Foundation
 > **Type**: Logic
 > **Estimate**: XS
@@ -22,10 +22,10 @@
 
 ## Acceptance Criteria
 
-- [ ] **AC-PP-12**: Two simultaneous match results for same `userId` → `wins` and `total_matches` each reflect exactly 2 increments; no lost update; no constraint error
-- [ ] Stat increments use `UPDATE player_profiles SET wins = wins + 1, total_matches = total_matches + 1 WHERE user_id = $1` (never read-modify-write)
-- [ ] `wins` and `total_matches` updated in the same SQL statement (atomic)
-- [ ] `mmr` and `peak_mmr` updated with `SELECT ... FOR UPDATE` to serialize concurrent MMR writes
+- [x] **AC-PP-12**: Two simultaneous match results for same `userId` → `wins` and `total_matches` each reflect exactly 2 increments; no lost update; no constraint error
+- [x] Stat increments use `UPDATE player_profiles SET wins = wins + 1, total_matches = total_matches + 1 WHERE user_id = $1` (never read-modify-write)
+- [x] `wins` and `total_matches` updated in the same SQL statement (atomic)
+- [x] `mmr` and `peak_mmr` updated with `SELECT ... FOR UPDATE` to serialize concurrent MMR writes
 
 ---
 

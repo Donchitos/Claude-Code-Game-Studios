@@ -1,7 +1,7 @@
 # Story 007: Profile Not Found Recovery
 
 > **Epic**: Player Profile
-> **Status**: Ready
+> **Status**: Complete
 > **Layer**: Foundation
 > **Type**: Logic
 > **Estimate**: XS
@@ -22,9 +22,9 @@
 
 ## Acceptance Criteria
 
-- [ ] **AC-PP-13**: Valid JWT + missing profile row → server confirms userId in Supabase Auth → triggers profile creation recovery → HTTP 200 with new default profile; `WARN: Profile missing for valid auth user` log emitted
-- [ ] Supabase Auth confirms user exists but profile creation fails → HTTP 503, `PROFILE_CREATION_FAILED`
-- [ ] Supabase Auth cannot confirm user → HTTP 401, `AUTH_USER_NOT_FOUND`
+- [x] **AC-PP-13**: Valid JWT + missing profile row → server confirms userId in Supabase Auth → triggers profile creation recovery → HTTP 200 with new default profile; `WARN: Profile missing for valid auth user` log emitted
+- [x] Supabase Auth confirms user exists but profile creation fails → HTTP 503, `PROFILE_CREATION_FAILED`
+- [x] Supabase Auth cannot confirm user → HTTP 401, `AUTH_USER_NOT_FOUND`
 
 ---
 

@@ -1,7 +1,7 @@
 # Story 005: Economy Field Write & profile:refresh Push
 
 > **Epic**: Player Profile
-> **Status**: Ready
+> **Status**: Complete
 > **Layer**: Foundation
 > **Type**: Integration
 > **Estimate**: S
@@ -22,10 +22,10 @@
 
 ## Acceptance Criteria
 
-- [ ] **AC-PP-11**: Diamond balance change → client does NOT display updated balance until server-confirmed write complete; `profile:refresh` Socket.io event emitted after PostgreSQL commit; client updates displayed balance ONLY on receiving this event
-- [ ] If PostgreSQL commit fails → client balance remains at pre-transaction value; no `profile:refresh` emitted
-- [ ] Redis cache for profile invalidated (`DEL profile:{userId}`) after every economy write (success)
-- [ ] `profile:refresh` emitted to `user:{userId}` socket room — not to the player's match room
+- [x] **AC-PP-11**: Diamond balance change → client does NOT display updated balance until server-confirmed write complete; `profile:refresh` Socket.io event emitted after PostgreSQL commit; client updates displayed balance ONLY on receiving this event
+- [x] If PostgreSQL commit fails → client balance remains at pre-transaction value; no `profile:refresh` emitted
+- [x] Redis cache for profile invalidated (`DEL profile:{userId}`) after every economy write (success)
+- [x] `profile:refresh` emitted to `user:{userId}` socket room — not to the player's match room
 
 ---
 

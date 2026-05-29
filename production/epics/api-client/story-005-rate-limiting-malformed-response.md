@@ -1,7 +1,7 @@
 # Story 005: Rate Limiting & Malformed Response Handling
 
 > **Epic**: API Client
-> **Status**: Ready
+> **Status**: Complete
 > **Layer**: Foundation
 > **Type**: Logic
 > **Estimate**: XS
@@ -22,10 +22,10 @@
 
 ## Acceptance Criteria
 
-- [ ] **AC-12**: Mock returns 429 with `Retry-After: 2` then 200 → resolves; 2 HTTP calls; wait ≥2000ms and ≤2500ms
-- [ ] **AC-13**: Mock returns 200 with non-JSON body → rejects immediately with `code "MALFORMED_RESPONSE"`; exactly 1 HTTP call
-- [ ] 429 without `Retry-After` header → waits `RATE_LIMIT_DEFAULT_WAIT_MS` (5000ms) then retries
-- [ ] 429 retry counts against `MAX_RETRY_ATTEMPTS`; on exhaustion → `RateLimitError`
+- [x] **AC-12**: Mock returns 429 with `Retry-After: 2` then 200 → resolves; 2 HTTP calls; wait ≥2000ms and ≤2500ms
+- [x] **AC-13**: Mock returns 200 with non-JSON body → rejects immediately with `code "MALFORMED_RESPONSE"`; exactly 1 HTTP call
+- [x] 429 without `Retry-After` header → waits `RATE_LIMIT_DEFAULT_WAIT_MS` (5000ms) then retries
+- [x] 429 retry counts against `MAX_RETRY_ATTEMPTS`; on exhaustion → `RateLimitError`
 
 ---
 

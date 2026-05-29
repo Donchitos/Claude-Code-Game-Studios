@@ -1,7 +1,7 @@
 # Story 004: Ping/Pong RTT Measurement & Connection Quality
 
 > **Epic**: Real-time Transport
-> **Status**: Ready
+> **Status**: Complete
 > **Layer**: Foundation
 > **Type**: Logic
 > **Estimate**: S
@@ -22,11 +22,11 @@
 
 ## Acceptance Criteria
 
-- [ ] **AC-RT-07**: Client emits `ping { clientTimestamp: T }` → server responds with `pong { clientTimestamp: T, serverTimestamp: S }` within 50ms; client computes `RTT = now() - T`
-- [ ] **AC-RT-08**: 5 RTT samples [80, 90, 100, 110, 120]ms → `avgRTT = 100ms` (exact)
-- [ ] **AC-RT-16**: `avgRTT = 160ms` → `connectionQuality.quality === "poor"` and `connectionQuality.avgRttMs === 160`
-- [ ] Quality thresholds: good <100ms, fair 100-150ms, poor 150-200ms, critical >200ms
-- [ ] `connectionQuality` is a reactive object consumed by HUD; updates after every pong
+- [x] **AC-RT-07**: Client emits `ping { clientTimestamp: T }` → server responds with `pong { clientTimestamp: T, serverTimestamp: S }` within 50ms; client computes `RTT = now() - T`
+- [x] **AC-RT-08**: 5 RTT samples [80, 90, 100, 110, 120]ms → `avgRTT = 100ms` (exact)
+- [x] **AC-RT-16**: `avgRTT = 160ms` → `connectionQuality.quality === "poor"` and `connectionQuality.avgRttMs === 160`
+- [x] Quality thresholds: good <100ms, fair 100-150ms, poor 150-200ms, critical >200ms
+- [x] `connectionQuality` is a reactive object consumed by HUD; updates after every pong
 
 ---
 

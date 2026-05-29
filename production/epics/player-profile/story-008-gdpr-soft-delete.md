@@ -1,7 +1,7 @@
 # Story 008: GDPR Soft Delete (Account Deletion Request)
 
 > **Epic**: Player Profile
-> **Status**: Ready
+> **Status**: Complete
 > **Layer**: Foundation
 > **Type**: Logic
 > **Estimate**: M
@@ -22,7 +22,7 @@
 
 ## Acceptance Criteria
 
-- [ ] **AC-PP-14**: Deletion request → `is_deleted=true`, `deleted_at=NOW()`, `deletion_scheduled_at=NOW()+30days`; `display_name="[deleted]"`, `avatar_id="default_avatar"`; Redis keys deleted; Supabase Auth account disabled; deleted userId excluded from matchmaking queries; player cannot authenticate; HTTP 200 returned
+- [x] **AC-PP-14**: Deletion request → `is_deleted=true`, `deleted_at=NOW()`, `deletion_scheduled_at=NOW()+30days`; `display_name="[deleted]"`, `avatar_id="default_avatar"`; Redis keys deleted; Supabase Auth account disabled; deleted userId excluded from matchmaking queries; player cannot authenticate; HTTP 200 returned
 
 ---
 

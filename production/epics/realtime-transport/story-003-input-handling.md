@@ -1,7 +1,7 @@
 # Story 003: Input Handling & Server Application
 
 > **Epic**: Real-time Transport
-> **Status**: Ready
+> **Status**: Complete
 > **Layer**: Foundation
 > **Type**: Integration
 > **Estimate**: S
@@ -22,10 +22,10 @@
 
 ## Acceptance Criteria
 
-- [ ] **AC-RT-06**: Player emits `input_move { seq: 1, dx: 1.0, dy: 0.0 }` → next `state_delta` reflects position change consistent with rightward movement
-- [ ] Inputs received after the tick boundary for their timestamp are processed in the next tick (late inputs do not cause tick budget overrun)
-- [ ] Inputs older than 3 ticks (150ms) are discarded; server logs discarded inputs
-- [ ] Client cannot inject game state via input events — only `BASIC_ATTACK`, `USE_ABILITY`, `input_move`, `input_ability` events accepted; others ignored
+- [x] **AC-RT-06**: Player emits `input_move { seq: 1, dx: 1.0, dy: 0.0 }` → next `state_delta` reflects position change consistent with rightward movement
+- [x] Inputs received after the tick boundary for their timestamp are processed in the next tick (late inputs do not cause tick budget overrun)
+- [x] Inputs older than 3 ticks (150ms) are discarded; server logs discarded inputs
+- [x] Client cannot inject game state via input events — only `BASIC_ATTACK`, `USE_ABILITY`, `input_move`, `input_ability` events accepted; others ignored
 
 ---
 

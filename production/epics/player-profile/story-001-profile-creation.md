@@ -1,7 +1,7 @@
 # Story 001: Profile Creation on First Login
 
 > **Epic**: Player Profile
-> **Status**: Ready
+> **Status**: Complete
 > **Layer**: Foundation
 > **Type**: Integration
 > **Estimate**: S
@@ -22,8 +22,8 @@
 
 ## Acceptance Criteria
 
-- [ ] **AC-PP-01**: New Supabase Auth user; no existing profile → `GET /profile` → new row with all defaults; `unlocked_character_ids = ["character:vex","character:zook","character:sera"]`; `display_name` matches `"Player_[A-Z0-9]{6}"`; `diamond_balance = 0`, `mmr = 1000`, `level = 1`, `xp = 0`, `is_provisional = true`; HTTP 200; profile cached in Redis
-- [ ] **AC-PP-02**: Two simultaneous first-login requests for same `userId` → exactly one `player_profiles` row; both requests return HTTP 200 with same profile data; no error to either client
+- [x] **AC-PP-01**: New Supabase Auth user; no existing profile → `GET /profile` → new row with all defaults; `unlocked_character_ids = ["character:vex","character:zook","character:sera"]`; `display_name` matches `"Player_[A-Z0-9]{6}"`; `diamond_balance = 0`, `mmr = 1000`, `level = 1`, `xp = 0`, `is_provisional = true`; HTTP 200; profile cached in Redis
+- [x] **AC-PP-02**: Two simultaneous first-login requests for same `userId` → exactly one `player_profiles` row; both requests return HTTP 200 with same profile data; no error to either client
 
 ---
 

@@ -1,7 +1,7 @@
 # Story 005: Reconnection Logic
 
 > **Epic**: Real-time Transport
-> **Status**: Ready
+> **Status**: Complete
 > **Layer**: Foundation
 > **Type**: Integration
 > **Estimate**: M
@@ -22,11 +22,11 @@
 
 ## Acceptance Criteria
 
-- [ ] **AC-RT-09**: Network interrupted 10s then restored → client reconnects; receives `state_snapshot`; gameplay resumes without manual intervention [Manual QA]
-- [ ] **AC-RT-10**: Network interrupted >30s → client shows "Connection Lost" overlay; stops reconnecting; server removes player after `RECONNECT_GRACE_PERIOD_S` [Manual QA]
-- [ ] Reconnect attempts use exponential backoff: 500ms, 1000ms, 2000ms, 4000ms, 8000ms (±200ms jitter)
-- [ ] Token expiry during disconnect → client refreshes token via HTTP before retrying socket connect
-- [ ] `RECONNECT_GRACE_PERIOD_S` constant equals `RECONNECT_WINDOW_S` (invariant enforced in code)
+- [x] **AC-RT-09**: Network interrupted 10s then restored → client reconnects; receives `state_snapshot`; gameplay resumes without manual intervention [Manual QA]
+- [x] **AC-RT-10**: Network interrupted >30s → client shows "Connection Lost" overlay; stops reconnecting; server removes player after `RECONNECT_GRACE_PERIOD_S` [Manual QA]
+- [x] Reconnect attempts use exponential backoff: 500ms, 1000ms, 2000ms, 4000ms, 8000ms (±200ms jitter)
+- [x] Token expiry during disconnect → client refreshes token via HTTP before retrying socket connect
+- [x] `RECONNECT_GRACE_PERIOD_S` constant equals `RECONNECT_WINDOW_S` (invariant enforced in code)
 
 ---
 

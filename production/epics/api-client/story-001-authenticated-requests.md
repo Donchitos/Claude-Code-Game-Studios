@@ -1,7 +1,7 @@
 # Story 001: Authenticated HTTP Requests & Header Injection
 
 > **Epic**: API Client
-> **Status**: Ready
+> **Status**: Complete
 > **Layer**: Foundation
 > **Type**: Logic
 > **Estimate**: S
@@ -22,12 +22,12 @@
 
 ## Acceptance Criteria
 
-- [ ] **AC-01**: `GET /v1/player/profile` with valid JWT and mock 200 → resolves with correct payload; `Authorization: Bearer <jwt>` header present
-- [ ] **AC-02**: `requiresAuth: false` endpoint → outbound request has NO `Authorization` header
-- [ ] **AC-03**: `requiresAuth: true` with no session → rejects with `code "AUTH_REQUIRED"`, zero HTTP calls made
-- [ ] **AC-14**: Base URL read from `EXPO_PUBLIC_API_BASE_URL`; all outbound URLs begin with that value
-- [ ] **AC-15**: Every outbound request carries `Content-Type: application/json`, `Accept: application/json`, and `X-App-Version: <non-empty>`
-- [ ] No screen or store makes a raw `fetch()` call — all HTTP goes through `apiClient`
+- [x] **AC-01**: `GET /v1/player/profile` with valid JWT and mock 200 → resolves with correct payload; `Authorization: Bearer <jwt>` header present
+- [x] **AC-02**: `requiresAuth: false` endpoint → outbound request has NO `Authorization` header
+- [x] **AC-03**: `requiresAuth: true` with no session → rejects with `code "AUTH_REQUIRED"`, zero HTTP calls made
+- [x] **AC-14**: Base URL read from `EXPO_PUBLIC_API_BASE_URL`; all outbound URLs begin with that value
+- [x] **AC-15**: Every outbound request carries `Content-Type: application/json`, `Accept: application/json`, and `X-App-Version: <non-empty>`
+- [x] No screen or store makes a raw `fetch()` call — all HTTP goes through `apiClient`
 
 ---
 

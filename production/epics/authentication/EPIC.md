@@ -4,7 +4,7 @@
 > **GDD**: design/gdd/authentication.md
 > **Architecture Module**: JWT Validator + REST Auth Routes + Supabase Auth Client
 > **Status**: Ready
-> **Stories**: 6 stories created
+> **Stories**: 6/6 Complete
 
 ## Overview
 

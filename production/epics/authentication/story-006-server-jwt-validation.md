@@ -1,7 +1,7 @@
 # Story 006: Server-Side JWT Validation
 
 > **Epic**: Authentication
-> **Status**: Ready
+> **Status**: Complete
 > **Layer**: Foundation
 > **Type**: Integration
 > **Estimate**: S
@@ -23,11 +23,11 @@
 
 ## Acceptance Criteria
 
-- [ ] A request sent with a forged or expired JWT is rejected with 401 and does not execute the privileged operation
-- [ ] The server never processes a `userId` from the request body — identity is always extracted from the validated JWT
-- [ ] Unauthenticated Socket.io socket is disconnected within 5 seconds of connecting
-- [ ] `socket.data.userId` is set from validated JWT; never from any client-supplied payload
-- [ ] JWT validation adds ≤1ms overhead (benchmarked under load)
+- [x] A request sent with a forged or expired JWT is rejected with 401 and does not execute the privileged operation
+- [x] The server never processes a `userId` from the request body — identity is always extracted from the validated JWT
+- [x] Unauthenticated Socket.io socket is disconnected within 5 seconds of connecting
+- [x] `socket.data.userId` is set from validated JWT; never from any client-supplied payload
+- [x] JWT validation adds ≤1ms overhead (benchmarked under load)
 
 ---
 
