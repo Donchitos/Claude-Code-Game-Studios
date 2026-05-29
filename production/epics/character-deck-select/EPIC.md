@@ -4,7 +4,7 @@
 > **GDD**: design/gdd/character-deck-select.md
 > **Architecture Module**: Character / Deck Select (Presentation) + Loadout Builder UI (Feature client)
 > **Status**: Ready
-> **Stories**: Not yet created — run `/create-stories character-deck-select`
+> **Stories**: 2/2 Complete
 
 ## Overview
 

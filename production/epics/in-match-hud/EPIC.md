@@ -4,7 +4,7 @@
 > **GDD**: design/gdd/in-match-hud.md
 > **Architecture Module**: In-Match HUD (Presentation) + Match State Consumer (Feature client)
 > **Status**: Ready
-> **Stories**: Not yet created — run `/create-stories in-match-hud`
+> **Stories**: 2/2 Complete
 
 ## Overview
 

@@ -4,7 +4,7 @@
 > **GDD**: design/gdd/match-results.md
 > **Architecture Module**: Match Results Screen (Presentation)
 > **Status**: Ready
-> **Stories**: Not yet created — run `/create-stories match-results`
+> **Stories**: 2/2 Complete
 
 ## Overview
 

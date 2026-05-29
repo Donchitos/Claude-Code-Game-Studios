@@ -4,7 +4,7 @@
 > **GDD**: design/gdd/main-menu.md
 > **Architecture Module**: Main Menu (Presentation Layer — React Native Expo Router)
 > **Status**: Ready
-> **Stories**: Not yet created — run `/create-stories main-menu`
+> **Stories**: 2/2 Complete
 
 ## Overview
 

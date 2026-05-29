@@ -4,7 +4,7 @@
 > **GDD**: design/gdd/shop-offers-screen.md
 > **Architecture Module**: Shop & Offers Screen (Presentation)
 > **Status**: Ready
-> **Stories**: Not yet created — run `/create-stories shop-offers-screen`
+> **Stories**: 2/2 Complete
 
 ## Overview
 

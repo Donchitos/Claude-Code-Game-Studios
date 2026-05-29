@@ -4,7 +4,7 @@
 > **GDD**: design/gdd/lobby.md
 > **Architecture Module**: Lobby & Team Formation (Presentation)
 > **Status**: Ready
-> **Stories**: Not yet created — run `/create-stories lobby`
+> **Stories**: 2/2 Complete
 
 ## Overview
 

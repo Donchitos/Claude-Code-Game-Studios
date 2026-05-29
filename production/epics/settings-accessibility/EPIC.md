@@ -4,7 +4,7 @@
 > **GDD**: design/gdd/settings-accessibility.md
 > **Architecture Module**: Settings & Accessibility (Presentation)
 > **Status**: Ready
-> **Stories**: Not yet created — run `/create-stories settings-accessibility`
+> **Stories**: 2/2 Complete
 
 ## Overview
 

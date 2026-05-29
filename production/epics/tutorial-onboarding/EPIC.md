@@ -4,7 +4,7 @@
 > **GDD**: design/gdd/tutorial-onboarding.md
 > **Architecture Module**: Tutorial / Onboarding (Presentation client + Feature server state)
 > **Status**: Ready
-> **Stories**: Not yet created — run `/create-stories tutorial-onboarding`
+> **Stories**: 2/2 Complete
 
 ## Overview
 
