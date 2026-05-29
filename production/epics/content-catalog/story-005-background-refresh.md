@@ -1,7 +1,7 @@
 # Story 005: Periodic Background Refresh
 
 > **Epic**: Content Catalog
-> **Status**: Ready
+> **Status**: Complete
 > **Layer**: Foundation
 > **Type**: Logic
 > **Estimate**: XS
@@ -22,9 +22,9 @@
 
 ## Acceptance Criteria
 
-- [ ] After refresh interval elapses during active session → background overlay fetch triggered; no UI blocking; no match interruption
-- [ ] If background refresh succeeds with higher `overlay_version` → in-memory catalog and cached overlay both updated; downstream reads after refresh receive new values
-- [ ] Background refresh failures logged; game continues with current overlay; no player-facing error
+- [x] After refresh interval elapses during active session → background overlay fetch triggered; no UI blocking; no match interruption
+- [x] If background refresh succeeds with higher `overlay_version` → in-memory catalog and cached overlay both updated; downstream reads after refresh receive new values
+- [x] Background refresh failures logged; game continues with current overlay; no player-facing error
 
 ---
 

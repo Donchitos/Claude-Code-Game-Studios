@@ -1,7 +1,7 @@
 # Story 001: Cold Start & Bundled Baseline
 
 > **Epic**: Content Catalog
-> **Status**: Ready
+> **Status**: Complete
 > **Layer**: Foundation
 > **Type**: Logic
 > **Estimate**: S
@@ -22,11 +22,11 @@
 
 ## Acceptance Criteria
 
-- [ ] On clean install with no cached overlay → game boots to playable state using bundled baseline; no network required
-- [ ] Server startup throws (fail-fast) if any required character, ability, or mode record is missing from `content-catalog.json`
-- [ ] `catalog.get('unknown:id')` returns null; does not throw
-- [ ] Server init step 4 (`ContentCatalogService.init()`) completes before step 9 (REST API + Socket.io accepts connections)
-- [ ] All 8 characters, 18 abilities, 3 modes, 6 maps present in initial catalog JSON
+- [x] On clean install with no cached overlay → game boots to playable state using bundled baseline; no network required
+- [x] Server startup throws (fail-fast) if any required character, ability, or mode record is missing from `content-catalog.json`
+- [x] `catalog.get('unknown:id')` returns null; does not throw
+- [x] Server init step 4 (`ContentCatalogService.init()`) completes before step 9 (REST API + Socket.io accepts connections)
+- [x] All 8 characters, 18 abilities, 3 modes, 6 maps present in initial catalog JSON
 
 ---
 

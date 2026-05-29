@@ -1,7 +1,7 @@
 # Story 004: Build-Time Catalog Validation
 
 > **Epic**: Content Catalog
-> **Status**: Ready
+> **Status**: Complete
 > **Layer**: Foundation
 > **Type**: Config/Data
 > **Estimate**: S
@@ -22,10 +22,10 @@
 
 ## Acceptance Criteria
 
-- [ ] Bundled catalog build fails if any two records share the same canonical ID
-- [ ] Bundled catalog build fails if any record field violates the allow-list schema
-- [ ] CI script confirms all GDD-referenced IDs exist in `content-catalog.json`
-- [ ] A fetched overlay with malformed or partial payload is discarded as a whole; no partial merge applied
+- [x] Bundled catalog build fails if any two records share the same canonical ID
+- [x] Bundled catalog build fails if any record field violates the allow-list schema
+- [x] CI script confirms all GDD-referenced IDs exist in `content-catalog.json`
+- [x] A fetched overlay with malformed or partial payload is discarded as a whole; no partial merge applied
 
 ---
 

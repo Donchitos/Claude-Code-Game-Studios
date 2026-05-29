@@ -1,7 +1,7 @@
 # Story 003: Record Contract — Lookup, Inactive, Not-Found
 
 > **Epic**: Content Catalog
-> **Status**: Ready
+> **Status**: Complete
 > **Layer**: Foundation
 > **Type**: Logic
 > **Estimate**: XS
@@ -22,12 +22,12 @@
 
 ## Acceptance Criteria
 
-- [ ] Every active record has a canonical ID matching `{type}:{slug}` format (validated at startup)
-- [ ] `catalog.get('character:vex')` for an active record → returns the merged record (bundled + overlay)
-- [ ] `catalog.get('character:limited_skin')` for an inactive record → returns the record for history/entitlement, but it is excluded from gameplay selection, shop display, and tutorial flows
-- [ ] `catalog.get('character:ghost')` (not found) → returns null; no error
-- [ ] `catalog.getAll('character')` → returns all active character records as typed array
-- [ ] `GET /v1/catalog` → client receives full snapshot of all records (for display)
+- [x] Every active record has a canonical ID matching `{type}:{slug}` format (validated at startup)
+- [x] `catalog.get('character:vex')` for an active record → returns the merged record (bundled + overlay)
+- [x] `catalog.get('character:limited_skin')` for an inactive record → returns the record for history/entitlement, but it is excluded from gameplay selection, shop display, and tutorial flows
+- [x] `catalog.get('character:ghost')` (not found) → returns null; no error
+- [x] `catalog.getAll('character')` → returns all active character records as typed array
+- [x] `GET /v1/catalog` → client receives full snapshot of all records (for display)
 
 ---
 

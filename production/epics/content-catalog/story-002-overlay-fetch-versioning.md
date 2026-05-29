@@ -1,7 +1,7 @@
 # Story 002: Overlay Fetch, Application & Versioning
 
 > **Epic**: Content Catalog
-> **Status**: Ready
+> **Status**: Complete
 > **Layer**: Foundation
 > **Type**: Logic
 > **Estimate**: M
@@ -22,12 +22,12 @@
 
 ## Acceptance Criteria
 
-- [ ] Remote overlay with higher `overlay_version` → applied; cached version updated
-- [ ] Remote overlay with equal or lower `overlay_version` → not applied (no-op)
-- [ ] Remote overlay field targeting a bundled-only field → silently discarded; bundled value served
-- [ ] `applyOverlay({ 'mm:maxSkillSpreadMMR': 300 })` → live value updates within 100ms
-- [ ] Malformed or partial overlay payload → discarded as a whole; cached/bundled used; no partial merge
-- [ ] `CATALOG_FORCE_REFRESH_ON_START = true` → startup fetch before home screen renders
+- [x] Remote overlay with higher `overlay_version` → applied; cached version updated
+- [x] Remote overlay with equal or lower `overlay_version` → not applied (no-op)
+- [x] Remote overlay field targeting a bundled-only field → silently discarded; bundled value served
+- [x] `applyOverlay({ 'mm:maxSkillSpreadMMR': 300 })` → live value updates within 100ms
+- [x] Malformed or partial overlay payload → discarded as a whole; cached/bundled used; no partial merge
+- [x] `CATALOG_FORCE_REFRESH_ON_START = true` → startup fetch before home screen renders
 
 ---
 
