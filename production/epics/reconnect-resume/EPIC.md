@@ -4,7 +4,7 @@
 > **GDD**: design/gdd/reconnect-resume.md
 > **Architecture Module**: Reconnect / Resume
 > **Status**: Ready
-> **Stories**: Not yet created — run `/create-stories reconnect-resume`
+> **Stories**: 2/2 Complete
 
 ## Overview
 

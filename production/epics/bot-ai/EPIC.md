@@ -4,7 +4,7 @@
 > **GDD**: design/gdd/bot-ai.md
 > **Architecture Module**: Bot AI
 > **Status**: Ready
-> **Stories**: Not yet created — run `/create-stories bot-ai`
+> **Stories**: 2/2 Complete
 
 ## Overview
 

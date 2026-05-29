@@ -4,7 +4,7 @@
 > **GDD**: design/gdd/matchmaking-engine.md
 > **Architecture Module**: Matchmaking Engine
 > **Status**: Ready
-> **Stories**: Not yet created — run `/create-stories matchmaking-engine`
+> **Stories**: 3/3 Complete
 
 ## Overview
 

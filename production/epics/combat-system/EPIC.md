@@ -4,7 +4,7 @@
 > **GDD**: design/gdd/combat-system.md
 > **Architecture Module**: Combat Resolver
 > **Status**: Ready
-> **Stories**: Not yet created — run `/create-stories combat-system`
+> **Stories**: 3/3 Complete
 
 ## Overview
 

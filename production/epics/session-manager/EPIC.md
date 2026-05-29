@@ -4,7 +4,7 @@
 > **GDD**: design/gdd/session-manager.md
 > **Architecture Module**: Session Manager
 > **Status**: Ready
-> **Stories**: Not yet created — run `/create-stories session-manager`
+> **Stories**: 3/3 Complete
 
 ## Overview
 

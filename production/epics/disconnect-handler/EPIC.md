@@ -4,7 +4,7 @@
 > **GDD**: design/gdd/disconnect-handler.md
 > **Architecture Module**: Disconnect Handler
 > **Status**: Ready
-> **Stories**: Not yet created — run `/create-stories disconnect-handler`
+> **Stories**: 2/2 Complete
 
 ## Overview
 

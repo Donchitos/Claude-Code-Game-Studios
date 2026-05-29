@@ -4,7 +4,7 @@
 > **GDD**: design/gdd/match-server.md
 > **Architecture Module**: Match Server (GameRoom)
 > **Status**: Ready
-> **Stories**: Not yet created — run `/create-stories match-server`
+> **Stories**: 3/3 Complete
 
 ## Overview
 

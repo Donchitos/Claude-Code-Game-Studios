@@ -4,7 +4,7 @@
 > **GDD**: design/gdd/deck-loadout.md
 > **Architecture Module**: Deck / Loadout Validator (server) + Loadout Builder UI (client)
 > **Status**: Ready
-> **Stories**: Not yet created — run `/create-stories deck-loadout`
+> **Stories**: 2/2 Complete
 
 ## Overview
 
