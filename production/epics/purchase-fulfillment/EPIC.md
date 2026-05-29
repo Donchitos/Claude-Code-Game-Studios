@@ -4,7 +4,7 @@
 > **GDD**: design/gdd/purchase-fulfillment.md
 > **Architecture Module**: Purchase Fulfillment
 > **Status**: Ready
-> **Stories**: Not yet created — run `/create-stories purchase-fulfillment`
+> **Stories**: 2/2 Complete
 
 ## Overview
 

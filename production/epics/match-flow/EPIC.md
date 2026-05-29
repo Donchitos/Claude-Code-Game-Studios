@@ -4,7 +4,7 @@
 > **GDD**: design/gdd/match-flow.md
 > **Architecture Module**: Match Flow (fan-out orchestrator)
 > **Status**: Ready
-> **Stories**: Not yet created — run `/create-stories match-flow`
+> **Stories**: 3/3 Complete
 
 ## Overview
 

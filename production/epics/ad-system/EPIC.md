@@ -4,7 +4,7 @@
 > **GDD**: design/gdd/ad-system.md
 > **Architecture Module**: Ad System (client SDK gate + server reward validation)
 > **Status**: Ready
-> **Stories**: Not yet created — run `/create-stories ad-system`
+> **Stories**: 2/2 Complete
 
 ## Overview
 

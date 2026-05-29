@@ -4,7 +4,7 @@
 > **GDD**: design/gdd/reward-system.md
 > **Architecture Module**: Reward System
 > **Status**: Ready
-> **Stories**: Not yet created — run `/create-stories reward-system`
+> **Stories**: 2/2 Complete
 
 ## Overview
 

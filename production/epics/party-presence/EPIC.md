@@ -4,7 +4,7 @@
 > **GDD**: design/gdd/party-presence.md
 > **Architecture Module**: Party / Presence
 > **Status**: Ready
-> **Stories**: Not yet created — run `/create-stories party-presence`
+> **Stories**: 2/2 Complete
 
 ## Overview
 

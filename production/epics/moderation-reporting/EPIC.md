@@ -4,7 +4,7 @@
 > **GDD**: design/gdd/moderation-reporting.md
 > **Architecture Module**: Moderation / Reporting
 > **Status**: Ready
-> **Stories**: Not yet created — run `/create-stories moderation-reporting`
+> **Stories**: 2/2 Complete
 
 ## Overview
 

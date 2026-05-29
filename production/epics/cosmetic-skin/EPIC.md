@@ -4,7 +4,7 @@
 > **GDD**: design/gdd/cosmetic-skin.md
 > **Architecture Module**: Cosmetic / Skin System
 > **Status**: Ready
-> **Stories**: Not yet created — run `/create-stories cosmetic-skin`
+> **Stories**: 2/2 Complete
 
 ## Overview
 

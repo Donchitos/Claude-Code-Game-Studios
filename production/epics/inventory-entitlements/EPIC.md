@@ -4,7 +4,7 @@
 > **GDD**: design/gdd/inventory-entitlements.md
 > **Architecture Module**: Inventory / Entitlements
 > **Status**: Ready
-> **Stories**: Not yet created — run `/create-stories inventory-entitlements`
+> **Stories**: 3/3 Complete
 
 ## Overview
 

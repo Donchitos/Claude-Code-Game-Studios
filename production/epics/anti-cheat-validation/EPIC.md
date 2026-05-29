@@ -4,7 +4,7 @@
 > **GDD**: design/gdd/anti-cheat-validation.md
 > **Architecture Module**: Anti-Cheat / Validation (Ops — Full Vision)
 > **Status**: Ready (deferred — Full Vision milestone)
-> **Stories**: Not yet created — run `/create-stories anti-cheat-validation`
+> **Stories**: 1/1 Complete
 
 ## Overview
 

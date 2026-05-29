@@ -4,7 +4,7 @@
 > **GDD**: design/gdd/battle-pass.md
 > **Architecture Module**: Battle Pass System
 > **Status**: Ready
-> **Stories**: Not yet created — run `/create-stories battle-pass`
+> **Stories**: 2/2 Complete
 
 ## Overview
 

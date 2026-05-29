@@ -4,7 +4,7 @@
 > **GDD**: design/gdd/xp-progression.md
 > **Architecture Module**: XP System
 > **Status**: Ready
-> **Stories**: Not yet created — run `/create-stories xp-progression`
+> **Stories**: 2/2 Complete
 
 ## Overview
 

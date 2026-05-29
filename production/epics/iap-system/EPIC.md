@@ -4,7 +4,7 @@
 > **GDD**: design/gdd/iap-system.md
 > **Architecture Module**: IAP System + Purchase Fulfillment
 > **Status**: Ready
-> **Stories**: Not yet created — run `/create-stories iap-system`
+> **Stories**: 2/2 Complete
 
 ## Overview
 

@@ -4,7 +4,7 @@
 > **GDD**: design/gdd/currency-system.md
 > **Architecture Module**: Currency System
 > **Status**: Ready
-> **Stories**: Not yet created — run `/create-stories currency-system`
+> **Stories**: 3/3 Complete
 
 ## Overview
 

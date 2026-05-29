@@ -4,7 +4,7 @@
 > **GDD**: design/gdd/mmr-ranked.md
 > **Architecture Module**: MMR / Ranked
 > **Status**: Ready
-> **Stories**: Not yet created — run `/create-stories mmr-ranked`
+> **Stories**: 2/2 Complete
 
 ## Overview
 

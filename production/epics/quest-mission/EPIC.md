@@ -4,7 +4,7 @@
 > **GDD**: design/gdd/quest-mission.md
 > **Architecture Module**: Quest System
 > **Status**: Ready
-> **Stories**: Not yet created — run `/create-stories quest-mission`
+> **Stories**: 2/2 Complete
 
 ## Overview
 

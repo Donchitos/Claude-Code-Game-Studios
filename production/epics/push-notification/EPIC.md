@@ -4,7 +4,7 @@
 > **GDD**: design/gdd/push-notification.md
 > **Architecture Module**: Push Notification Service
 > **Status**: Ready
-> **Stories**: Not yet created — run `/create-stories push-notification`
+> **Stories**: 2/2 Complete
 
 ## Overview
 
