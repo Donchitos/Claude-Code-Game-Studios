@@ -5,44 +5,44 @@
 
 ## Engine & Language
 
-- **Engine**: [TO BE CONFIGURED — run /setup-engine]
-- **Language**: [TO BE CONFIGURED]
-- **Rendering**: [TO BE CONFIGURED]
-- **Physics**: [TO BE CONFIGURED]
+- **Engine**: React Native (Expo SDK) + Node.js game server
+- **Language**: TypeScript (client + server)
+- **Rendering**: React Native renderer (Skia / Canvas TBD per graphics needs)
+- **Physics**: Custom server-authoritative game logic (no engine physics)
 
 ## Input & Platform
 
 <!-- Written by /setup-engine. Read by /ux-design, /ux-review, /test-setup, /team-ui, and /dev-story -->
 <!-- to scope interaction specs, test helpers, and implementation to the correct input methods. -->
 
-- **Target Platforms**: [TO BE CONFIGURED — e.g., PC, Console, Mobile, Web]
-- **Input Methods**: [TO BE CONFIGURED — e.g., Keyboard/Mouse, Gamepad, Touch, Mixed]
-- **Primary Input**: [TO BE CONFIGURED — the dominant input for this game]
-- **Gamepad Support**: [TO BE CONFIGURED — Full / Partial / None]
-- **Touch Support**: [TO BE CONFIGURED — Full / Partial / None]
-- **Platform Notes**: [TO BE CONFIGURED — any platform-specific UX constraints]
+- **Target Platforms**: iOS + Android
+- **Input Methods**: Touch
+- **Primary Input**: Touch
+- **Gamepad Support**: None
+- **Touch Support**: Full
+- **Platform Notes**: All UI must handle safe area insets (notch, home indicator). No hover-only interactions. Test on both iOS and Android physical devices before marking UI stories done.
 
 ## Naming Conventions
 
-- **Classes**: [TO BE CONFIGURED]
-- **Variables**: [TO BE CONFIGURED]
-- **Signals/Events**: [TO BE CONFIGURED]
-- **Files**: [TO BE CONFIGURED]
-- **Scenes/Prefabs**: [TO BE CONFIGURED]
-- **Constants**: [TO BE CONFIGURED]
+- **Classes/Components**: PascalCase (e.g., `PlayerCard`, `MatchScreen`)
+- **Variables**: camelCase (e.g., `moveSpeed`, `currentHealth`)
+- **Events/Callbacks**: camelCase with `on` prefix (e.g., `onMatchEnd`, `onPlayerJoin`)
+- **Files**: PascalCase for React components (`MatchScreen.tsx`), camelCase for utilities (`matchUtils.ts`)
+- **Scenes/Prefabs**: N/A — React Native screens use PascalCase component directories
+- **Constants**: UPPER_SNAKE_CASE (e.g., `MAX_HEALTH`, `TICK_RATE_MS`)
 
 ## Performance Budgets
 
-- **Target Framerate**: [TO BE CONFIGURED]
-- **Frame Budget**: [TO BE CONFIGURED]
-- **Draw Calls**: [TO BE CONFIGURED]
-- **Memory Ceiling**: [TO BE CONFIGURED]
+- **Target Framerate**: 60fps
+- **Frame Budget**: 16.6ms (JS thread; monitor with Flipper or React Native Perf Monitor)
+- **Draw Calls**: N/A — React Native renderer; monitor JS thread frame time instead
+- **Memory Ceiling**: 200MB (mid-range mobile device target)
 
 ## Testing
 
-- **Framework**: [TO BE CONFIGURED]
-- **Minimum Coverage**: [TO BE CONFIGURED]
-- **Required Tests**: Balance formulas, gameplay systems, networking (if applicable)
+- **Framework**: Jest + React Native Testing Library
+- **Minimum Coverage**: 70% for game logic (matchmaking, MMR, reward calculation); advisory for UI components
+- **Required Tests**: Balance formulas, matchmaking logic, MMR calculation, reward distribution, game state transitions
 
 ## Forbidden Patterns
 
@@ -51,7 +51,7 @@
 
 ## Allowed Libraries / Addons
 
-<!-- Add approved third-party dependencies here -->
+<!-- Add approved third-party dependencies here when actively integrating, not speculatively -->
 - [None configured yet — add as dependencies are approved]
 
 ## Architecture Decisions Log
@@ -63,25 +63,24 @@
 
 <!-- Written by /setup-engine when engine is configured. -->
 <!-- Read by /code-review, /architecture-decision, /architecture-review, and team skills -->
-<!-- to know which specialist to spawn for engine-specific validation. -->
+<!-- to know which specialist to spawn for code-area-specific validation. -->
 
-- **Primary**: [TO BE CONFIGURED — run /setup-engine]
-- **Language/Code Specialist**: [TO BE CONFIGURED]
-- **Shader Specialist**: [TO BE CONFIGURED]
-- **UI Specialist**: [TO BE CONFIGURED]
-- **Additional Specialists**: [TO BE CONFIGURED]
-- **Routing Notes**: [TO BE CONFIGURED]
+- **Primary**: lead-programmer
+- **Game Logic Specialist**: gameplay-programmer (match mechanics, character abilities, game state)
+- **Networking Specialist**: network-programmer (Socket.io real-time sync, matchmaking, lag compensation)
+- **UI Specialist**: ui-programmer (React Native screens, HUD, menus, animations)
+- **Security Specialist**: security-engineer (Supabase auth, RevenueCat IAP validation, anti-cheat)
+- **Routing Notes**: This is a React Native / Node.js project — game engine specialists (Godot, Unity, Unreal) do not apply. Route by functional area using the table below.
 
 ### File Extension Routing
 
 <!-- Skills use this table to select the right specialist per file type. -->
-<!-- If a row says [TO BE CONFIGURED], fall back to Primary for that file type. -->
 
 | File Extension / Type | Specialist to Spawn |
 |-----------------------|---------------------|
-| Game code (primary language) | [TO BE CONFIGURED] |
-| Shader / material files | [TO BE CONFIGURED] |
-| UI / screen files | [TO BE CONFIGURED] |
-| Scene / prefab / level files | [TO BE CONFIGURED] |
-| Native extension / plugin files | [TO BE CONFIGURED] |
-| General architecture review | Primary |
+| Game mechanics (.ts in game logic modules) | gameplay-programmer |
+| React Native UI screens (.tsx) | ui-programmer |
+| Real-time server code (.ts in server/) | network-programmer |
+| Auth / IAP / security code | security-engineer |
+| Native modules (.m, .java, .kt) | lead-programmer |
+| General architecture review | lead-programmer |

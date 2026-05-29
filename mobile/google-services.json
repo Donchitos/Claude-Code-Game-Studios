@@ -1,0 +1,20 @@
+{
+  "project_info": {
+    "project_number": "REPLACE_WITH_PROJECT_NUMBER",
+    "project_id": "brawlzone-app",
+    "storage_bucket": "brawlzone-app.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "REPLACE_WITH_APP_ID",
+        "android_client_info": {
+          "package_name": "com.brawlzone.app"
+        }
+      },
+      "api_key": [{ "current_key": "REPLACE_WITH_API_KEY" }],
+      "services": { "appinvite_service": { "other_platform_oauth_client": [] } }
+    }
+  ],
+  "configuration_version": "1"
+}

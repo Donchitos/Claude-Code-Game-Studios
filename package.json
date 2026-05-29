@@ -1,0 +1,13 @@
+{
+  "name": "brawlzone",
+  "private": true,
+  "workspaces": ["mobile", "server", "shared"],
+  "scripts": {
+    "mobile": "npm run start --workspace=mobile",
+    "server": "npm run dev --workspace=server",
+    "dev": "concurrently \"npm run server\" \"npm run mobile\""
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  }
+}

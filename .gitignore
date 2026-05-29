@@ -91,6 +91,20 @@ Saved/
 *.cso
 *.dxbc
 
+# === React Native / Expo ===
+.expo/
+ios/
+android/
+*.jks
+*.keystore
+mobile/.expo/
+mobile/ios/
+mobile/android/
+
+# === Node.js / Server ===
+server/dist/
+*.tsbuildinfo
+
 # === Temporary and Cache ===
 *.tmp
 *.temp
@@ -111,10 +125,18 @@ node_modules/
 .env
 .env.local
 .env.*.local
+.env.production
+.env.staging
 *.pem
 *.key
 credentials.json
 secrets.json
+
+# === IDE: Obsidian ===
+.obsidian/
+
+# === Scratch / Unnamed files ===
+Unbenannt*
 
 # === Large Binary Assets (use Git LFS instead) ===
 # Uncomment and configure with Git LFS for your project:

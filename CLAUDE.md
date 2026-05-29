@@ -5,14 +5,14 @@ Each agent owns a specific domain, enforcing separation of concerns and quality.
 
 ## Technology Stack
 
-- **Engine**: [CHOOSE: Godot 4 / Unity / Unreal Engine 5]
-- **Language**: [CHOOSE: GDScript / C# / C++ / Blueprint]
+- **Engine**: React Native (Expo SDK) + Node.js game server
+- **Language**: TypeScript (client + server)
 - **Version Control**: Git with trunk-based development
-- **Build System**: [SPECIFY after choosing engine]
-- **Asset Pipeline**: [SPECIFY after choosing engine]
+- **Build System**: Expo EAS Build (mobile), npm/Node.js (server)
+- **Asset Pipeline**: Expo asset system + manual optimization pipeline
 
-> **Note**: Engine-specialist agents exist for Godot, Unity, and Unreal with
-> dedicated sub-specialists. Use the set matching your engine.
+> **Note**: This project uses React Native/Expo, not a traditional game engine.
+> Route code review by functional area — see Engine Specialists in technical-preferences.md.
 
 ## Project Structure
 
@@ -20,7 +20,7 @@ Each agent owns a specific domain, enforcing separation of concerns and quality.
 
 ## Engine Version Reference
 
-@docs/engine-reference/godot/VERSION.md
+@docs/engine-reference/react-native/VERSION.md
 
 ## Technical Preferences
 
