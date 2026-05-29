@@ -4,7 +4,7 @@
 > **GDD**: design/gdd/remote-config.md
 > **Architecture Module**: Remote Config Reader (server + client)
 > **Status**: Ready
-> **Stories**: 4 stories created
+> **Stories**: 4/4 Complete
 
 ## Overview
 

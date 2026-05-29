@@ -1,7 +1,7 @@
 # Story 002: Version Compatibility Enforcement
 
 > **Epic**: Remote Config
-> **Status**: Ready
+> **Status**: Complete
 > **Layer**: Foundation (Ops)
 > **Type**: Logic
 > **Estimate**: S
@@ -11,20 +11,21 @@
 ## Context
 
 **GDD**: `design/gdd/remote-config.md`
-**Requirement**: `TR-ops-???`
+**Requirement**: `TR-ops-???` *(pending `/architecture-review`)*
 
 **ADR Governing Implementation**: ADR-0007: Content Catalog Architecture
 **ADR Decision Summary**: Client sends `schema_version` to server; server returns 409 if `minCompatibleSchemaVersion` not met; force-update modal blocks all navigation.
 
 **Engine**: React Native (Expo SDK) + Node.js | **Risk**: LOW
+**Engine Notes**: N/A — pure TypeScript with injected adapters. No game engine API involved.
 
 ---
 
 ## Acceptance Criteria
 
-- [ ] Client `schema_version=1` + server `minCompatibleSchemaVersion=2` → 409 `config_incompatible` response
-- [ ] On `config_incompatible`: force-update modal appears; back gesture, Android back button, swipe-to-dismiss all blocked
-- [ ] If `config_incompatible` + server unreachable simultaneously → falls back to hardcoded defaults; proceeds to main menu WITHOUT showing force-update modal (valid server response required)
+- [x] Client `schema_version=1` + server `minCompatibleSchemaVersion=2` → 409 `config_incompatible` response
+- [x] On `config_incompatible`: force-update modal appears; back gesture, Android back button, swipe-to-dismiss all blocked
+- [x] If `config_incompatible` + server unreachable simultaneously → falls back to hardcoded defaults; proceeds to main menu WITHOUT showing force-update modal (valid server response required)
 
 ---
 

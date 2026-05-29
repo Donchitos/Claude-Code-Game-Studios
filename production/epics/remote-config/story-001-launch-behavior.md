@@ -1,7 +1,7 @@
 # Story 001: Launch Behavior — Cold/Warm Start
 
 > **Epic**: Remote Config
-> **Status**: Ready
+> **Status**: Complete
 > **Layer**: Foundation (Ops)
 > **Type**: Logic
 > **Estimate**: M
@@ -11,21 +11,22 @@
 ## Context
 
 **GDD**: `design/gdd/remote-config.md`
-**Requirement**: `TR-ops-???`
+**Requirement**: `TR-ops-???` *(pending `/architecture-review`)*
 
 **ADR Governing Implementation**: ADR-0007: Content Catalog Architecture
 **ADR Decision Summary**: `CATALOG_FORCE_REFRESH_ON_START=true` blocks home screen until fetch resolves; fallback to cached values; hardcoded defaults if no cache.
 
 **Engine**: React Native (Expo SDK) + Node.js | **Risk**: LOW
+**Engine Notes**: N/A — pure TypeScript with injected adapters. No game engine API involved.
 
 ---
 
 ## Acceptance Criteria
 
-- [ ] `CATALOG_FORCE_REFRESH_ON_START=true` + reachable config server → main menu does not render until successful config response parsed and stored
-- [ ] First launch with unreachable server + no cache → falls back to hardcoded defaults; renders main menu without crashing; all gameplay systems initialize without runtime errors
-- [ ] Launch with existing AsyncStorage cache + unreachable server → uses cached values; main menu renders; cached values are active config values read by downstream systems
-- [ ] Existing cache with `schema_version` lower than `CLIENT_SCHEMA_VERSION` → cache discarded; hardcoded defaults used
+- [x] `CATALOG_FORCE_REFRESH_ON_START=true` + reachable config server → main menu does not render until successful config response parsed and stored
+- [x] First launch with unreachable server + no cache → falls back to hardcoded defaults; renders main menu without crashing; all gameplay systems initialize without runtime errors
+- [x] Launch with existing AsyncStorage cache + unreachable server → uses cached values; main menu renders; cached values are active config values read by downstream systems
+- [x] Existing cache with `schema_version` lower than `CLIENT_SCHEMA_VERSION` → cache discarded; hardcoded defaults used
 
 ---
 

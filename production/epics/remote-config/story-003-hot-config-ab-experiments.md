@@ -1,7 +1,7 @@
 # Story 003: Hot Config Push & A/B Experiments
 
 > **Epic**: Remote Config
-> **Status**: Ready
+> **Status**: Complete
 > **Layer**: Foundation (Ops)
 > **Type**: Logic
 > **Estimate**: M
@@ -11,23 +11,24 @@
 ## Context
 
 **GDD**: `design/gdd/remote-config.md`
-**Requirement**: `TR-ops-???`
+**Requirement**: `TR-ops-???` *(pending `/architecture-review`)*
 
 **ADR Governing Implementation**: ADR-0002: Real-Time Transport Protocol; ADR-0007: Content Catalog Architecture
 **ADR Decision Summary**: `config_update` Socket.io event triggers hot update for Hot keys within `hotPushDebounceMs`; Cold keys ignored; A/B bucket assignments stable across sessions.
 
 **Engine**: React Native (Expo SDK) + Node.js | **Risk**: LOW
+**Engine Notes**: N/A — pure TypeScript with injected adapters. No game engine API involved.
 
 ---
 
 ## Acceptance Criteria
 
-- [ ] `config_update` event with valid Hot keys → active config updated within `hotPushDebounceMs + 50ms`
-- [ ] `config_update` includes a Cold key → that key's value not updated; `hot_push_cold_key_ignored` warn logged
-- [ ] `config_update` includes type-mismatched value → key not updated; `hot_push_type_mismatch` warn logged
-- [ ] `server.maintenanceModeEnabled=true` via hot push → maintenance banner appears within `hotPushDebounceMs + 50ms`; queue entry points disabled
-- [ ] A/B experiment bucket stable: same `userId` gets same bucket across 10 consecutive app launches
-- [ ] A/B assignment doesn't change mid-session even if server allocation changes
+- [x] `config_update` event with valid Hot keys → active config updated within `hotPushDebounceMs + 50ms`
+- [x] `config_update` includes a Cold key → that key's value not updated; `hot_push_cold_key_ignored` warn logged
+- [x] `config_update` includes type-mismatched value → key not updated; `hot_push_type_mismatch` warn logged
+- [x] `server.maintenanceModeEnabled=true` via hot push → maintenance banner appears within `hotPushDebounceMs + 50ms`; queue entry points disabled
+- [x] A/B experiment bucket stable: same `userId` gets same bucket across 10 consecutive app launches
+- [x] A/B assignment doesn't change mid-session even if server allocation changes
 
 ---
 

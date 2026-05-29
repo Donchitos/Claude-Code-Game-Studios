@@ -1,7 +1,7 @@
 # Story 004: Downstream System Isolation & Performance
 
 > **Epic**: Remote Config
-> **Status**: Ready
+> **Status**: Complete
 > **Layer**: Foundation (Ops)
 > **Type**: Logic
 > **Estimate**: S
@@ -11,22 +11,23 @@
 ## Context
 
 **GDD**: `design/gdd/remote-config.md`
-**Requirement**: `TR-ops-???`
+**Requirement**: `TR-ops-???` *(pending `/architecture-review`)*
 
 **ADR Governing Implementation**: ADR-0007: Content Catalog Architecture
 **ADR Decision Summary**: All config keys have hardcoded defaults; `configService.get(key)` is synchronous and sub-1ms; unlisted keys are a build-time lint error.
 
 **Engine**: React Native (Expo SDK) + Node.js | **Risk**: LOW
+**Engine Notes**: N/A — pure TypeScript with injected adapters. No game engine API involved.
 
 ---
 
 ## Acceptance Criteria
 
-- [ ] All config keys in registry have hardcoded default values; no key has `undefined` or `null` default
-- [ ] Every downstream system in GDD §6.2 initializes successfully using hardcoded defaults alone (config server blocked, no cache)
-- [ ] No downstream system reads a config key not listed in registry; unlisted keys = build-time lint error
-- [ ] Config fetch, parse, and AsyncStorage write completes within 200ms on fast connection
-- [ ] `configService.get(key)` completes in under 1ms (synchronous in-memory read)
+- [x] All config keys in registry have hardcoded default values; no key has `undefined` or `null` default
+- [x] Every downstream system in GDD §6.2 initializes successfully using hardcoded defaults alone (config server blocked, no cache)
+- [x] No downstream system reads a config key not listed in registry; unlisted keys = build-time lint error
+- [x] Config fetch, parse, and AsyncStorage write completes within 200ms on fast connection
+- [x] `configService.get(key)` completes in under 1ms (synchronous in-memory read)
 
 ---
 
