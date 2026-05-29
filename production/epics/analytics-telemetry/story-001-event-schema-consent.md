@@ -1,7 +1,7 @@
 # Story 001: Event Schema & Consent Filtering
 
 > **Epic**: Analytics / Telemetry
-> **Status**: Ready
+> **Status**: Complete
 > **Layer**: Foundation (Ops — Horizontal)
 > **Type**: Logic
 > **Estimate**: S
@@ -11,20 +11,21 @@
 ## Context
 
 **GDD**: `design/gdd/analytics-telemetry.md`
-**Requirement**: `TR-ops-???`
+**Requirement**: `TR-ops-???` *(pending `/architecture-review`)*
 
 **ADR Governing Implementation**: ADR-0015: Analytics Event Architecture
 **ADR Decision Summary**: Fire-and-forget via setImmediate; no await in hot path; 10 required base fields; Tier 0 events always collected; Tier 1 dropped without consent.
 
 **Engine**: React Native (Expo SDK) + Node.js | **Risk**: LOW
+**Engine Notes**: N/A — pure TypeScript with injected adapters. No game engine API involved.
 
 ---
 
 ## Acceptance Criteria
 
-- [ ] **AC-01**: Any `analytics.track()` call → persisted record contains all 10 required base fields with non-null values
-- [ ] **AC-02**: Player `analyticsConsent=false`; Tier 1 event (`ECONOMY_DIAMOND_SPENT`) emitted → no event in DB for that userId; zero HTTP calls for that event
-- [ ] **AC-03**: Player `analyticsConsent=false`; Tier 0 event (`MATCH_ENDED`) emitted → event persisted with correct properties
+- [x] **AC-01**: Any `analytics.track()` call → persisted record contains all 10 required base fields with non-null values
+- [x] **AC-02**: Player `analyticsConsent=false`; Tier 1 event (`ECONOMY_DIAMOND_SPENT`) emitted → no event in DB for that userId; zero HTTP calls for that event
+- [x] **AC-03**: Player `analyticsConsent=false`; Tier 0 event (`MATCH_ENDED`) emitted → event persisted with correct properties
 
 ---
 
@@ -53,6 +54,15 @@
   - Given: `player.analyticsConsent = false`
   - When: `analytics.track('MATCH_ENDED', { ... })`
   - Then: Event persisted; `userId` and match properties present
+
+---
+
+## Out of Scope
+
+- Story 002: batch flushing to server (queue + AsyncStorage + triggers)
+- Story 003: retry logic and consent revocation
+- Story 004: clock skew detection and malformed event handling
+- Server-side analytics endpoint (receives and logs events)
 
 ---
 
