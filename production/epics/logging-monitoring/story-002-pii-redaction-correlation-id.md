@@ -11,7 +11,10 @@
 ## Context
 
 **GDD**: `design/gdd/logging-monitoring.md`
-**Requirement**: `TR-ops-???` *(pending `/architecture-review` — registry not yet populated)*
+**Requirements**:
+- `TR-ops-001` — "PII sanitizer middleware scans outbound log records for known PII field names and redacts their values, replacing them with `[REDACTED]` and emitting a WARN" (§3.7)
+- `TR-ops-002` — "Correlation ID generated at Socket.io connection time; client attaches as `X-Correlation-ID` on all HTTP requests; server attaches to every log line for end-to-end tracing" (§3.5)
+- `TR-ops-003` — "Request without `X-Correlation-ID` receives a `fallback-`-prefixed UUID; WARN logged noting missing header; request continues normally" (§5.3)
 
 **ADR Governing Implementation**: ADR-0001: Client-Server Architecture; ADR-0004: Authentication Architecture
 **ADR Decision Summary**: PII fields auto-redacted in log pipeline; correlationId propagated across HTTP and Socket.io connections for distributed tracing.
