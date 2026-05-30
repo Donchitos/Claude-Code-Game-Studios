@@ -25,32 +25,32 @@
 # STATUS VALUES: active | deprecated | superseded-by: TR-[system]-NNN
 
 version: 1
-last_updated: ""
+last_updated: "2026-05-30"
 
-requirements: []
+requirements:
 
-# --- EXAMPLE ENTRIES (remove when first real entries are added) ---
-#
-# - id: TR-combat-001
-#   system: combat
-#   gdd: design/gdd/combat-system.md
-#   requirement: "Player takes damage from enemies based on attack power minus defence"
-#   created: 2026-03-10
-#   revised: ""
-#   status: active
-#
-# - id: TR-combat-002
-#   system: combat
-#   gdd: design/gdd/combat-system.md
-#   requirement: "Combo window timing is 0.4 seconds between hits"
-#   created: 2026-03-10
-#   revised: "2026-04-01"
-#   status: active
-#
-# - id: TR-combat-003
-#   system: combat
-#   gdd: design/gdd/combat-system.md
-#   requirement: "Old damage formula using raw stats"
-#   created: 2026-03-10
-#   revised: ""
-#   status: superseded-by: TR-combat-001
+  # --- ops (Logging / Monitoring) ---
+
+  - id: TR-ops-001
+    system: ops
+    gdd: design/gdd/logging-monitoring.md
+    requirement: "PII sanitizer middleware scans outbound log records for known PII field names (email, password, token, displayName, ip, name) and redacts their values, replacing them with [REDACTED] and emitting a WARN (§3.7)"
+    created: 2026-05-29
+    revised: ""
+    status: active
+
+  - id: TR-ops-002
+    system: ops
+    gdd: design/gdd/logging-monitoring.md
+    requirement: "A correlation ID (UUID v4) is generated server-side at Socket.io connection time; client attaches it as X-Correlation-ID on all subsequent HTTP requests; server attaches it to every log line emitted during that session for end-to-end tracing (§3.5)"
+    created: 2026-05-29
+    revised: ""
+    status: active
+
+  - id: TR-ops-003
+    system: ops
+    gdd: design/gdd/logging-monitoring.md
+    requirement: "If a request arrives without X-Correlation-ID, the server generates a fallback-prefixed UUID, logs a WARN noting the missing header, and continues the request normally (§5.3)"
+    created: 2026-05-29
+    revised: ""
+    status: active
