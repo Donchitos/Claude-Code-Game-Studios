@@ -1,5 +1,7 @@
 import subprocess
 import os
+import glob
+import re
 
 def tool_bash(command: str) -> str:
     """Executes a bash command and returns the output."""
@@ -33,6 +35,34 @@ def tool_write(filepath: str, content: str) -> str:
         return f"Successfully wrote to {filepath}"
     except Exception as e:
         return f"Error writing to file {filepath}: {e}"
+
+def tool_glob(pattern: str) -> str:
+    """Find files matching a glob pattern."""
+    try:
+        matches = glob.glob(pattern, recursive=True)
+        if not matches:
+            return "No files found matching pattern."
+        return "\n".join(matches)
+    except Exception as e:
+        return f"Error executing glob: {e}"
+
+def tool_grep(pattern: str, filepath: str) -> str:
+    """Search for a regex pattern within a specific file."""
+    try:
+        with open(filepath, 'r', encoding='utf-8') as f:
+            lines = f.readlines()
+
+        compiled_pattern = re.compile(pattern)
+        matches = []
+        for i, line in enumerate(lines):
+            if compiled_pattern.search(line):
+                matches.append(f"{i+1}: {line.strip()}")
+
+        if not matches:
+            return "No matches found."
+        return "\n".join(matches)
+    except Exception as e:
+        return f"Error executing grep: {e}"
 
 # Tool registry maps string names to Python functions and JSON schema for Ollama
 TOOL_REGISTRY = {
@@ -84,6 +114,41 @@ TOOL_REGISTRY = {
                         "content": {"type": "string", "description": "The content to write."}
                     },
                     "required": ["filepath", "content"]
+                }
+            }
+        }
+    },
+    "Glob": {
+        "function": tool_glob,
+        "schema": {
+            "type": "function",
+            "function": {
+                "name": "Glob",
+                "description": "Find files matching a glob pattern.",
+                "parameters": {
+                    "type": "object",
+                    "properties": {
+                        "pattern": {"type": "string", "description": "The glob pattern (e.g. src/**/*.py)."}
+                    },
+                    "required": ["pattern"]
+                }
+            }
+        }
+    },
+    "Grep": {
+        "function": tool_grep,
+        "schema": {
+            "type": "function",
+            "function": {
+                "name": "Grep",
+                "description": "Search for a regex pattern within a specific file.",
+                "parameters": {
+                    "type": "object",
+                    "properties": {
+                        "pattern": {"type": "string", "description": "The regex pattern to search for."},
+                        "filepath": {"type": "string", "description": "The file to search in."}
+                    },
+                    "required": ["pattern", "filepath"]
                 }
             }
         }
