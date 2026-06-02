@@ -1,6 +1,17 @@
 import sys
 import os
 import argparse
+
+# Get the absolute path to the directory containing main.py
+current_dir = os.path.dirname(os.path.abspath(__file__))
+# Get the absolute path to the parent directory (repository root)
+repo_root = os.path.abspath(os.path.join(current_dir, '..'))
+
+# Insert the repository root into sys.path so 'py_orchestrator' can be imported
+sys.path.insert(0, repo_root)
+# Change the working directory to the repo root so relative paths (like .claude/agents) work
+os.chdir(repo_root)
+
 from py_orchestrator.orchestrator import Orchestrator
 
 def load_skill(skill_name, skills_dir=".claude/skills"):
