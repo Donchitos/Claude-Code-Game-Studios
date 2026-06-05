@@ -98,6 +98,7 @@ For each story, determine:
   - `Status: Proposed` → set story `Status: Blocked` with note: "BLOCKED: ADR-NNNN is Proposed — run `/architecture-decision` to advance it"
   - **Multiple ADRs apply**: List all governing ADRs in the story's `Governing ADRs:` field. Designate the one most directly controlling the implementation pattern as primary (first in the list). Others are listed as secondary references.
   - **No ADR applies at all**: Write `ADR: N/A — [brief reason, e.g. "pure data configuration, no architectural pattern required"]` in the story's ADR field. Do NOT leave the field blank — a blank ADR field means "not checked", not "not applicable".
+- **ADR Version**: for the primary governing ADR, embed the ADR file's last commit date next to the ADR reference. Use `git log -1 --format=%cs -- docs/architecture/[adr-file].md`. If the ADR has no git history yet, write `ADR Version: uncommitted` and note that `/dev-story` will fall back to targeted ADR section reads.
 - **Story Type**: from Step 3 classification
 - **Engine risk**: from the ADR's Knowledge Risk field
 
@@ -199,6 +200,7 @@ For each story, write `production/epics/[epic-slug]/story-[NNN]-[slug].md`:
 *(Requirement text lives in `docs/architecture/tr-registry.yaml` — read fresh at review time)*
 
 **ADR Governing Implementation**: [ADR-NNNN: title]
+**ADR Version**: [last commit date from `git log -1 --format=%cs -- docs/architecture/[adr-file].md`, or `uncommitted`]
 **ADR Decision Summary**: [1-2 sentence summary of what the ADR decided]
 
 **Engine**: [name + version] | **Risk**: [LOW / MEDIUM / HIGH]

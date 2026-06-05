@@ -1,6 +1,6 @@
 ---
 name: dev-story
-description: "Read a story file and implement it. Loads the full context (story, GDD requirement, ADR guidelines, control manifest), routes to the right programmer agent for the system and engine, implements the code and test, and confirms each acceptance criterion. The core implementation skill — run after /story-readiness, before /code-review and /story-done."
+description: "Read a story file and implement it. Loads the implementation context (story, GDD requirement, story-embedded ADR guidance, control manifest), routes to the right programmer agent for the system and engine, implements the code and test, and confirms each acceptance criterion. The core implementation skill — run after /story-readiness, before /code-review and /story-done."
 argument-hint: "[story-path]"
 user-invocable: true
 allowed-tools: Read, Glob, Grep, Write, Bash, Task, AskUserQuestion
@@ -39,7 +39,7 @@ If not found, ask: "Which story are we implementing?" Glob
 
 ---
 
-## Phase 2: Load Full Context
+## Phase 2: Load Implementation Context
 
 **Before loading any context, verify required files exist.** Extract the ADR path from the story's `ADR Governing Implementation` field, then check:
 
@@ -51,7 +51,7 @@ If not found, ask: "Which story are we implementing?" Glob
 
 If the TR registry or governing ADR is missing, set the story status to **BLOCKED** in the session state and do not spawn any programmer agent.
 
-Read all of the following simultaneously — these are independent reads. Do not start implementation until all context is loaded:
+Read all of the following simultaneously — these are independent reads. Do not start implementation until all required context is loaded:
 
 ### The story file
 Extract and hold:
@@ -59,8 +59,10 @@ Extract and hold:
 - **TR-ID** — the GDD requirement identifier
 - **Governing ADR** reference
 - **Manifest Version** embedded in story header
+- **ADR Version** embedded beside the governing ADR, if present
 - **Acceptance Criteria** — every checkbox item, verbatim
-- **Implementation Notes** — the ADR guidance section in the story
+- **ADR Decision Summary** — the distilled decision embedded by `/create-stories`
+- **Implementation Notes** — the ADR guidance section embedded by `/create-stories`
 - **Out of Scope** boundaries
 - **Test Evidence** — the required test file path
 - **Dependencies** — what must be DONE before this story
@@ -71,11 +73,44 @@ Read the current `requirement` text — this is the source of truth for what the
 GDD requires now. Do not rely on any inline text in the story file (may be stale).
 
 ### The governing ADR
-Read `docs/architecture/[adr-file].md`. Extract:
-- The full Decision section
-- The Implementation Guidelines section (this is what the programmer follows)
-- The Engine Compatibility section (post-cutoff APIs, known risks)
-- The ADR Dependencies section
+Do **not** read the full ADR by default. `/create-stories` already embeds the
+ADR Decision Summary and Implementation Notes into the story; those embedded
+sections are the primary implementation brief for the programmer.
+
+Use targeted ADR reads only for validation and gap filling:
+
+1. Check the ADR header/status first. If `Status:` is not `Accepted`, output
+   **BLOCKED** and recommend `/architecture-decision`.
+2. Check the ADR version if the story includes `ADR Version:`. Compute the
+   current ADR version with `git log -1 --format=%cs -- docs/architecture/[adr-file].md`.
+   - **Match**: proceed to the embedded-guidance check below.
+   - **Mismatch**: use `AskUserQuestion` before implementation:
+     - Prompt: "Story was written against ADR v[story-adr-version]. Current ADR is v[current-adr-version]. Embedded ADR guidance may be stale. How do you want to proceed?"
+     - Options:
+       - `[A] Refresh embedded ADR guidance from targeted ADR section reads (Recommended)`
+       - `[B] Proceed with existing embedded guidance - I accept the ADR staleness risk`
+       - `[C] Stop here - I want to review the ADR diff first`
+     - If [A]: read only the smallest needed ADR sections (`Decision`,
+       `Implementation Guidelines`, `Engine Compatibility`, or
+       `ADR Dependencies`), update `ADR Version:`, `ADR Decision Summary`, and
+       `Implementation Notes` in the story before spawning the programmer.
+     - If [B]: leave the stale `ADR Version:` unchanged and add
+       `ADR-Version-Note: Proceeded with stale embedded ADR guidance on [date] - staleness risk accepted for ADR v[current-adr-version].` to the story header. Note this under "Deviations" in the Phase 6 summary.
+     - If [C]: stop. Do not spawn any agent.
+   - **Absent or `uncommitted`**: treat as a legacy/unversioned story and fall
+     back to targeted ADR section reads if the embedded guidance could be stale.
+3. If the story has a non-empty `ADR Decision Summary` and non-empty
+   `Implementation Notes`, treat them as the ADR-derived implementation
+   guidance. Do not re-read the full Decision or Implementation Guidelines.
+4. If either embedded section is missing, clearly stale, or ambiguous, read only
+   the smallest relevant ADR section(s): `Decision`, `Implementation
+   Guidelines`, `Engine Compatibility`, or `ADR Dependencies`.
+5. For large ADRs that exceed the Read tool limit, use `Grep`/heading searches
+   and offset/limit reads around the needed headings. Do not retry full-file
+   reads.
+
+Only pass full ADR content to a sub-agent when the story's embedded guidance is
+insufficient and you can explain exactly which section was needed.
 
 ### The control manifest
 Read `docs/architecture/control-manifest.md`. Extract the rules for this story's layer:
@@ -180,7 +215,7 @@ Brief the agent with file paths and targeted reading instructions — do not ser
 
 1. **Story file**: `[story-path]` — read in full
 2. **GDD requirement**: look up TR-ID `[TR-XXX-NNN]` in `docs/architecture/tr-registry.yaml` — use the `requirement` field as source of truth
-3. **ADR**: `docs/architecture/[adr-file].md` — read the **Decision** and **Implementation Guidelines** sections only
+3. **ADR guidance**: verify the story's **ADR Version** against the current ADR commit date, then use the embedded **ADR Decision Summary** and **Implementation Notes** first when the version matches. Read `docs/architecture/[adr-file].md` only for status validation, version-mismatch refresh, or targeted missing sections; do not read the full ADR by default.
 4. **Control manifest**: `docs/architecture/control-manifest.md` — read rules for the **[layer]** layer only
 5. **Engine preferences**: `.claude/docs/technical-preferences.md` — read naming conventions and performance budgets
 6. **Test file path**: `[path from story's Test Evidence section]` — this file must be created as part of implementation

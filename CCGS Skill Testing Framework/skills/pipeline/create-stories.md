@@ -27,6 +27,7 @@ Verified automatically by `/skill-test static` — no fixture needed.
 - [ ] Has a next-step handoff at the end (`/story-readiness`, `/dev-story`)
 - [ ] Documents story Status: Blocked when governing ADR is Proposed
 - [ ] Documents QL-STORY-READY gate: active in full mode, skipped in lean/solo
+- [ ] Embeds ADR Version from the governing ADR's last commit date so `/dev-story` can detect stale story guidance deterministically
 
 ---
 
@@ -59,13 +60,13 @@ In `solo` mode: QL-STORY-READY is skipped with equivalent notes.
 **Expected behavior:**
 1. Skill reads EPIC.md, GDD, governing ADRs, control manifest, and TR registry
 2. Classifies each requirement into a story type (Logic / Integration / Visual/Feel / UI / Config/Data)
-3. Drafts 3 story files with correct frontmatter schema
+3. Drafts 3 story files with correct frontmatter schema, including ADR Version beside the governing ADR
 4. QL-STORY-READY is skipped (lean mode) — noted in output
 5. Asks "May I write" before writing each story file
 6. Writes all 3 story files after approval
 
 **Assertions:**
-- [ ] Each story's frontmatter contains: Title, Epic, Layer, Priority, Status, TR-ID, ADR reference, Acceptance Criteria, DoD
+- [ ] Each story's frontmatter contains: Title, Epic, Layer, Priority, Status, TR-ID, ADR reference, ADR Version, Acceptance Criteria, DoD
 - [ ] Story types are correctly classified (at least one Logic type in fixture)
 - [ ] "May I write" is asked per story (not once for the entire batch)
 - [ ] QL-STORY-READY skip is noted in output
@@ -176,6 +177,7 @@ In `solo` mode: QL-STORY-READY is skipped with equivalent notes.
 - [ ] "May I write" asked per story (not once for the entire batch)
 - [ ] Blocked stories flagged before write approval — not discovered after writing
 - [ ] TR-IDs reference the registry — requirement text is not embedded inline in story files
+- [ ] ADR Version is embedded from `git log -1 --format=%cs -- [adr-file]` when an ADR governs the story
 - [ ] Control manifest rules quoted per-story from the manifest, not invented
 - [ ] Ends with next-step handoff: `/story-readiness` → `/dev-story`
 
