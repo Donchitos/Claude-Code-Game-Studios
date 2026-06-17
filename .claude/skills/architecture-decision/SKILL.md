@@ -7,6 +7,8 @@ allowed-tools: Read, Glob, Grep, Write, Edit, Task, AskUserQuestion
 model: sonnet
 ---
 
+# architecture-decision: write an Architecture Decision Record (ADR)
+
 When this skill is invoked:
 
 ## 0. Parse Arguments — Detect Retrofit Mode
