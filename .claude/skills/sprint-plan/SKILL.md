@@ -49,7 +49,7 @@ See `.claude/docs/director-gates.md` for the full check pattern.
 
 For `new`:
 
-**Generate a sprint plan** following this format and present it to the user. Do NOT ask to write yet — the producer feasibility gate (Phase 4) runs first and may require revisions before the file is written.
+**Generate a sprint plan** following this format and present it to the user. Do NOT ask to write yet. If the resolved review mode is `full`, the producer feasibility gate (Phase 4) runs first and may require revisions before the file is written. If the mode is `lean` or `solo`, Phase 4 is skipped (see Phase 4) and the QA plan gate (Phase 5) becomes the next checkpoint — the user takes on the feasibility-review responsibility themselves at the write-approval step.
 
 ```markdown
 # Sprint [N] — [Start Date] to [End Date]
