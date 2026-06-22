@@ -65,6 +65,8 @@ Delegate in parallel — issue all three Task calls simultaneously before waitin
 - **writer**: Draft character dialogue using voice profiles. Ensure all lines are under 120 characters, use named placeholders for variables, and are localization-ready.
 - **art-director**: Define character visual design direction for key characters appearing in this content (silhouette, visual archetype, distinguishing features). Specify environmental visual storytelling elements for each key space (prop composition, lighting notes, spatial arrangement). Define tone palette and cinematic direction for any cutscenes or scripted sequences.
 
+After all three Phase 2 agents return, summarise their proposals and use `AskUserQuestion` to capture the user's approval before continuing to Phase 3 (per **Decision Points** above).
+
 ### Phase 3: Level Narrative Integration
 Delegate to **level-designer**:
 - Review the narrative brief and lore foundation
