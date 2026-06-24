@@ -48,6 +48,11 @@
       godot-csharp-specialist      -- C#: .NET patterns, [Signal] delegates, async, type-safe node access
       godot-shader-specialist      -- Shaders: Godot shading language, visual shaders, VFX
       godot-gdextension-specialist -- Native: C++/Rust bindings, GDExtension, build systems
+
+    flame-specialist   -- Flutter+Flame lead: component system, game loop, camera, collision, Dart patterns
+      flame-widget-specialist  -- Flutter layer: GameWidget, overlays, HUD, state mgmt (Riverpod/Bloc)
+      flame-shader-specialist  -- Rendering: fragment shaders (.frag), SpriteBatch, CustomPainter, particles
+      flame-audio-specialist   -- Audio: flame_audio, BGM/SFX lifecycle, pooling, iOS/web platform quirks
 ```
 
 ### Legend

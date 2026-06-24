@@ -37,7 +37,7 @@ If no engine is specified, run an interactive engine selection process:
 
 **Question 1 — Prior experience** (ask this first, always, via `AskUserQuestion`):
 - Prompt: "Have you worked in any of these engines before?"
-- Options: `Godot` / `Unity` / `Unreal Engine 5` / `Multiple — I'll explain` / `None of them`
+- Options: `Godot` / `Unity` / `Unreal Engine 5` / `Flutter + Flame` / `Multiple — I'll explain` / `None of them`
 - If they pick a specific engine → recommend that engine. Prior experience outweighs all other factors. Confirm with them and skip the matrix.
 - If "None" or "Multiple" → continue to the questions below.
 
@@ -47,11 +47,11 @@ If no engine is specified, run an interactive engine selection process:
 - Prompt: "What platforms are you targeting for this game?"
 - Options: `PC (Steam / Epic)` / `Mobile (iOS / Android)` / `Console` / `Web / Browser` / `Multiple platforms`
 - Platform rules that feed directly into the recommendation:
-  - Mobile → Unity strongly preferred; Unreal is a poor fit; Godot is viable for simple mobile
-  - Console → Unity or Unreal; Godot console support requires third-party publishers or significant extra work
-  - Web → Godot exports cleanly to web; Unity WebGL is functional; Unreal has poor web support
-  - PC only → all engines viable; other factors decide
-  - Multiple → Unity is the most portable across PC/mobile/console
+  - Mobile → Flutter+Flame or Unity; Unreal is a poor fit; Godot is viable for simple mobile
+  - Console → Unity or Unreal; Godot and Flutter+Flame console support require significant extra work
+  - Web → Flutter+Flame (CanvasKit) and Godot export cleanly to web; Unity WebGL is functional; Unreal has poor web support
+  - PC only → Godot, Unity, or Unreal are strongest; Flutter+Flame is viable for 2D PC games
+  - Multiple (mobile + web) → Flutter+Flame is the strongest choice; Unity is the most portable across PC/mobile/console
 
 1. **What kind of game?** (2D, 3D, or both?)
 2. **Primary input method?** (keyboard/mouse, gamepad, touch, or mixed?)
@@ -83,17 +83,25 @@ Do NOT use a simple scoring matrix that eliminates engines. Instead, reason thro
 - Licensing reality: 5% royalty only applies AFTER $1M gross revenue per title. For a first game or any game that doesn't reach $1M, it costs nothing. This threshold is high enough that most indie developers will never pay it.
 - Best fit: AAA-quality 3D; large open-world games; photorealistic visuals; developers with C++ experience or willing to use Blueprint; games targeting high-end PC/console where visual fidelity is a core selling point
 
+**Flutter + Flame**
+- Genuine strengths: Best-in-class mobile deployment (single codebase for iOS, Android, Web, Desktop); Dart is approachable and fast to iterate in; Flutter's widget layer provides professional-quality UI with no extra framework; Flame's component system is clean and minimal; zero licensing cost (MIT); excellent for developers coming from mobile or web backgrounds
+- Real limitations: 2D only — Flutter's rendering pipeline has no 3D scene graph; limited shader support (fragment shaders only, no vertex shaders, no FBOs); smaller game-development community than Unity/Godot; fewer ready-made game assets; no dedicated level editor; console support requires significant extra work
+- Licensing reality: Completely free, MIT license. No revenue thresholds, no royalties, no licensing fees ever.
+- Best fit: 2D mobile games (iOS/Android/Web); cross-platform 2D games; developers with mobile or web backgrounds; small-scope stylized 2D games; any game where Flutter's widget system for UI is a strong advantage; teams targeting mobile-first with web as a secondary platform
+
 **Genre-specific guidance** (factor this into the recommendation):
-- 2D any style → Godot strongly preferred
+- 2D any style → Godot strongly preferred; Flutter+Flame if mobile-first
+- 2D mobile casual / hypercasual → Flutter+Flame strongly preferred
+- 2D game targeting iOS/Android/Web → Flutter+Flame or Unity
 - 3D stylized / atmospheric / contained world → Godot viable, Unity solid alternative
 - 3D open world (large, seamless) → Unity or Unreal; Godot is not production-proven for this
 - 3D photorealistic / AAA-quality → Unreal
-- Mobile-first → Unity strongly preferred
-- Console-first → Unity or Unreal; Godot console support requires extra work
+- Mobile-first → Flutter+Flame (2D) or Unity (2D or 3D)
+- Console-first → Unity or Unreal; Godot and Flutter+Flame console support require extra work
 - Horror / narrative / walking sim → any engine; match to art style and team experience
 - Action RPG / Soulslike → Unity or Unreal for 3D; community support and assets matter here
-- Platformer 2D → Godot
-- Strategy / top-down / RTS → Godot or Unity depending on 2D vs 3D
+- Platformer 2D → Godot (PC-first) or Flutter+Flame (mobile-first)
+- Strategy / top-down / RTS → Godot or Unity depending on 2D vs 3D; Flutter+Flame for 2D mobile strategy
 
 **Recommendation format:**
 1. Show a comparison table with the user's specific factors as rows
@@ -168,6 +176,14 @@ Update the Technology Stack section, replacing the `[CHOOSE]` placeholders with 
 - **Asset Pipeline**: Unreal Content Pipeline
 ```
 
+**For Flutter + Flame:**
+```markdown
+- **Engine**: Flutter + Flame [flame-version] (Flutter SDK [flutter-version])
+- **Language**: Dart
+- **Build System**: Flutter build system (flutter build apk/ios/web/linux/windows/macos)
+- **Asset Pipeline**: Flutter asset pipeline (pubspec.yaml assets section)
+```
+
 ---
 
 ## 5. Populate Technical Preferences
@@ -196,6 +212,14 @@ engine-appropriate defaults. Read the existing template first, then fill in:
 - Functions: PascalCase (e.g., `TakeDamage()`)
 - Booleans: `b` prefix (e.g., `bIsAlive`)
 - Files: Match class without prefix (e.g., `PlayerController.h`)
+
+**For Flutter + Flame (Dart):**
+- Classes / Components: PascalCase (e.g., `PlayerComponent`, `EnemySpawner`)
+- Variables / functions: camelCase (e.g., `moveSpeed`, `takeDamage()`)
+- Constants: camelCase preferred per Dart style (e.g., `maxHealth`); `SCREAMING_SNAKE_CASE` acceptable for compile-time constants
+- Files: snake_case matching the primary class (e.g., `player_component.dart`)
+- Directories: snake_case (e.g., `lib/game/components/`)
+- Assets: snake_case (e.g., `player_idle.png`, `theme_music.mp3`)
 
 ### Input & Platform Section
 
@@ -292,6 +316,28 @@ Also populate the `## Engine Specialists` section in `technical-preferences.md` 
 | General architecture review | unreal-specialist |
 ```
 
+**For Flutter + Flame:**
+```markdown
+## Engine Specialists
+- **Primary**: flame-specialist
+- **Language/Code Specialist**: flame-specialist (Dart — primary covers all game code review)
+- **Shader Specialist**: flame-shader-specialist (.frag GLSL files, FragmentProgram, SpriteBatch, particles)
+- **UI Specialist**: flame-widget-specialist (Flutter widget layer, GameWidget overlays, HUD, state management)
+- **Additional Specialists**: flame-audio-specialist (flame_audio, BGM/SFX systems, audio lifecycle, platform quirks)
+- **Routing Notes**: Invoke primary for Flame architecture decisions, component hierarchy, game loop, camera, and collision systems. Invoke widget specialist for Flutter overlay UI, HUD, menus, and state management (Riverpod/Bloc). Invoke shader specialist for fragment shaders, SpriteBatch, and custom Canvas rendering. Invoke audio specialist for all sound and music implementation.
+
+### File Extension Routing
+
+| File Extension / Type | Specialist to Spawn |
+|-----------------------|---------------------|
+| Game code (.dart files — Flame components, FlameGame) | flame-specialist |
+| Flutter UI / overlay files (.dart — widgets, screens) | flame-widget-specialist |
+| Fragment shader files (.frag) | flame-shader-specialist |
+| Asset config / pubspec.yaml (assets, shaders) | flame-specialist |
+| Audio implementation (.dart — flame_audio, audioplayers) | flame-audio-specialist |
+| General architecture review | flame-specialist |
+```
+
 ### Collaborative Step
 Present the filled-in preferences to the user. For Godot, include the chosen language and note where the full naming conventions and routing tables live:
 > "Here are the default technical preferences for [engine] ([language if Godot]). The naming conventions and specialist routing are in Appendix A of this skill — I'll apply the [GDScript/C#/Both] variant. Want to customize any of these, or shall I save the defaults?"
@@ -311,6 +357,8 @@ Check whether the engine version is likely beyond the LLM's training data.
 - Godot: training data likely covers up to ~4.3
 - Unity: training data likely covers up to ~2023.x / early 6000.x
 - Unreal: training data likely covers up to ~5.3 / early 5.4
+- Flutter: training data likely covers up to Flutter 3.19 / Dart 3.3
+- Flame: training data likely covers up to Flame 1.14 (verify current stable via WebSearch)
 
 Compare the user's chosen version against these baselines:
 
@@ -550,7 +598,7 @@ After setup is complete, output:
 Engine Setup Complete
 =====================
 Engine:          [name] [version]
-Language:        [GDScript | C# | GDScript + C# | C# | C++ + Blueprint]
+Language:        [GDScript | C# | GDScript + C# | C# | C++ + Blueprint | Dart]
 Knowledge Risk:  [LOW/MEDIUM/HIGH]
 Reference Docs:  [created/skipped]
 CLAUDE.md:       [updated]
