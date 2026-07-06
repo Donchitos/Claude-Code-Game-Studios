@@ -14,6 +14,7 @@ Or check `README.md` for the version badge.
 ## Table of Contents
 
 - [Upgrade Strategies](#upgrade-strategies)
+- [v1.0 → v1.1](#v10--v11)
 - [v1.0.0-beta → v1.0](#v100-beta--v10)
 - [v0.4.x → v1.0](#v04x--v10)
 - [v0.4.0 → v0.4.1](#v040--v041)
@@ -78,6 +79,97 @@ Best when: you didn't use git to set up the template (just downloaded a zip).
 2. Copy the files listed under **"Safe to overwrite"** directly.
 3. For files under **"Merge carefully"**, open both versions side-by-side
    and manually merge the structural changes while keeping your content.
+
+---
+
+## v1.0 → v1.1
+
+**Released:** 2026-06-27
+**Key themes:** Cocos Creator engine support (4th engine alongside Unreal / Unity / Godot)
+
+### What Changed
+
+| Category | Changes |
+|----------|---------|
+| **New agents (4)** | `cocos-specialist`, `cocos-ts-specialist`, `cocos-shader-specialist`, `cocos-ui-specialist` — full engine team for Cocos Creator 3.8.6. Lead + 3 sub-specialists (TypeScript, Effects, UI), matching the Godot/Unity/Unreal team shape. |
+| **Engine reference docs** | New `docs/engine-reference/cocos/` section: `VERSION.md` (3.0 → 3.8.6 history), `breaking-changes.md`, `deprecated-apis.md`, `current-best-practices.md`, and 8 module files (animation, audio, input, navigation, networking, physics, rendering, ui). Each module is ~150 lines, follows the same depth bar as the godot/unity/unreal modules. |
+| **Skill update** | `/setup-engine` — added Cocos Creator as an engine option, added TypeScript as a language option, added 3.8.6 mini-game-specific setup steps (WeChat / ByteDance / Honor / HarmonyOS Next). |
+| **Test specs (CCGS)** | 4 agent test specs in `CCGS Skill Testing Framework/agents/engine/cocos/`: `cocos-specialist`, `cocos-ts-specialist`, `cocos-shader-specialist`, `cocos-ui-specialist`. Each spec has 5 in-domain cases + 5+ protocol compliance items, verifying 3.8+ knowledge and out-of-domain redirect behavior. |
+| **Routing sync** | `agent-roster.md`, `agent-coordination-map.md`, `quick-start.md` "Pick the Right Agent" table, and `CCGS CLAUDE.md` agent-tiers block — all four updated to include the cocos sub-specialists. |
+| **Counts/refs** | Agent count 49 → 53 (4 new cocos agents). Updated everywhere it appeared: `README.md` header / badge / prose / count table / project-structure comment, `CCGS README.md`, `CCGS CLAUDE.md`. |
+
+### Files: Safe to Overwrite
+
+**New files to add:**
+```
+.claude/agents/cocos-specialist.md
+.claude/agents/cocos-ts-specialist.md
+.claude/agents/cocos-shader-specialist.md
+.claude/agents/cocos-ui-specialist.md
+docs/engine-reference/cocos/VERSION.md
+docs/engine-reference/cocos/breaking-changes.md
+docs/engine-reference/cocos/deprecated-apis.md
+docs/engine-reference/cocos/current-best-practices.md
+docs/engine-reference/cocos/modules/animation.md
+docs/engine-reference/cocos/modules/audio.md
+docs/engine-reference/cocos/modules/input.md
+docs/engine-reference/cocos/modules/navigation.md
+docs/engine-reference/cocos/modules/networking.md
+docs/engine-reference/cocos/modules/physics.md
+docs/engine-reference/cocos/modules/rendering.md
+docs/engine-reference/cocos/modules/ui.md
+CCGS Skill Testing Framework/agents/engine/cocos/cocos-specialist.md
+CCGS Skill Testing Framework/agents/engine/cocos/cocos-ts-specialist.md
+CCGS Skill Testing Framework/agents/engine/cocos/cocos-shader-specialist.md
+CCGS Skill Testing Framework/agents/engine/cocos/cocos-ui-specialist.md
+```
+
+**Existing files to overwrite (no user content):**
+```
+.claude/skills/setup-engine/SKILL.md
+.claude/docs/agent-roster.md
+.claude/docs/agent-coordination-map.md
+.claude/docs/quick-start.md
+.claude/docs/engine-reference/README.md
+CCGS Skill Testing Framework/CLAUDE.md
+CCGS Skill Testing Framework/README.md
+CCGS Skill Testing Framework/catalog.yaml
+README.md
+UPGRADING.md
+```
+
+### Files: Merge Carefully
+
+None — all changes are to infrastructure files with no user content. If you've customized any of the docs above (e.g., `engine-reference/README.md` to add a private engine section), do a diff and keep your content.
+
+### New Features
+
+#### Cocos Creator Engine Team
+
+The Cocos team follows the same lead + 3-subs shape as the Godot team:
+
+- **`cocos-specialist`** (lead) — engine-wide advice: node/component architecture, Asset Manager, mini-game targeting, performance budgets
+- **`cocos-ts-specialist`** — TypeScript: `@ccclass` / `@property` decorators, async asset loading, type-safe event systems, lifecycle hooks
+- **`cocos-shader-specialist`** — Effect files: CCEffect / CCProgram, Material / RenderMaterial, custom render pipeline (3.8+)
+- **`cocos-ui-specialist`** — UI: UITransform, Layout, Widget, Canvas, multi-resolution, mini-game UI quirks
+
+When `/setup-engine` is run on a Cocos project, the routing table, setup checklist, and `/test-setup` recommendation all reflect the 3.8+ reality (WebGPU, Box2D JSB, Spine 4.2, UISkew, etc.) and the mini-game / native split.
+
+#### Mini-Game Deployment Coverage
+
+Cocos Creator is the dominant 2D mini-game engine on WeChat, ByteDance, Alipay, and Honor. The v1.1 docs include concrete guidance for each:
+
+- **WeChat** — safe-area handling, `wx.onTouchStart` input bridge, `wx.getSystemInfoSync()` for resolution probing
+- **ByteDance** — entry point differences vs WeChat, performance caps
+- **Alipay** — same engine build, slightly different packaging
+- **Honor / HarmonyOS Next** — ArkTS-side communication stubs, 3.8.6 platform target
+- **Web** — WebGPU (3.8.6 strengthened) vs WebGL 1/2 fallback matrix
+
+### After Upgrading
+
+1. **Run `/setup-engine` again** (or just confirm the existing config) so the engine-aware skills pick up the cocos routing entries. No content changes — the project tree is unchanged.
+2. **Run `/skill-test catalog`** to verify the new cocos agent specs are indexed in `CCGS Skill Testing Framework/catalog.yaml`.
+3. **Spot-check the routing table** in `quick-start.md` — confirm the 4 new cocos rows are present.
 
 ---
 

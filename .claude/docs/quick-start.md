@@ -3,13 +3,14 @@
 ## What Is This?
 
 This is a complete Claude Code agent architecture for game development. It
-organizes 49 specialized AI agents into a studio hierarchy that mirrors
+organizes 53 specialized AI agents into a studio hierarchy that mirrors
 real game development teams, with defined responsibilities, delegation
 rules, and coordination protocols. It includes engine-specialist agents
-for Godot, Unity, and Unreal — each with dedicated sub-specialists for
-major engine subsystems. All design agents and templates are grounded in
-established game design theory (MDA Framework, Self-Determination Theory,
-Flow State, Bartle Player Types). Use whichever engine set matches your project.
+for Godot, Unity, Unreal, and Cocos Creator — each with dedicated
+sub-specialists for major engine subsystems. All design agents and
+templates are grounded in established game design theory (MDA
+Framework, Self-Determination Theory, Flow State, Bartle Player Types).
+Use whichever engine set matches your project.
 
 ## How to Use
 
@@ -68,6 +69,10 @@ Ask yourself: "What department would handle this in a real studio?"
 | Write Godot C# code | `godot-csharp-specialist` |
 | Create Godot shaders | `godot-shader-specialist` |
 | Build GDExtension modules | `godot-gdextension-specialist` |
+| Get Cocos Creator advice | `cocos-specialist` |
+| Write Cocos Creator TypeScript components | `cocos-ts-specialist` |
+| Author Cocos Effect / shader files | `cocos-shader-specialist` |
+| Build Cocos UI / screen adaptation | `cocos-ui-specialist` |
 | Plan live events and seasons | `live-ops-designer` |
 | Write patch notes for players | `community-manager` |
 | Brainstorm a new game idea | Use `/brainstorm` skill |
@@ -273,7 +278,7 @@ If you have design docs, prototypes, or code already:
 CLAUDE.md                          -- Master config (read this first, ~60 lines)
 .claude/
   settings.json                    -- Claude Code hooks and project settings
-  agents/                          -- 49 agent definitions (YAML frontmatter)
+  agents/                          -- 53 agent definitions (YAML frontmatter)
   skills/                          -- 73 slash command definitions (YAML frontmatter)
   hooks/                           -- 12 hook scripts (.sh) wired by settings.json
   rules/                           -- 11 path-specific rule files

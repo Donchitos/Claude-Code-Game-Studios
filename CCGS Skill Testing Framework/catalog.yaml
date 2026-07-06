@@ -1,5 +1,5 @@
 version: 2
-last_updated: "2026-06-27 — added Cocos Creator engine support"
+last_updated: "2026-06-27 — v1.1: added Cocos Creator engine support (4 specialists: cocos-specialist, cocos-ts-specialist, cocos-shader-specialist, cocos-ui-specialist; 4 corresponding agent test specs under agents/engine/cocos/); synced 73 skills and 53 agents across all docs"
 skills:
   # Critical — gate skills that control phase transitions
   - name: gate-check
