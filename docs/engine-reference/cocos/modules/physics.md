@@ -107,3 +107,85 @@ Choose in **Project Settings → Physics → 2D Physics**:
 - Not setting `body.linearDamping` — objects slide forever on flat ground
 - Multiple `BoxCollider` on one node (3D) — use compound colliders via child nodes
 - Forgetting `RigidBody.useGravity` for floating enemies — they fall
+
+## 2D Raycasting
+
+```typescript
+import { PhysicsSystem2D, Vec2 } from 'cc';
+
+// Single hit
+const hit = PhysicsSystem2D.instance.raycast(
+    new Vec2(0, 0),      // from
+    new Vec2(100, 100),  // to
+    PhysicsSystem2D.PhysicsGroup.DEFAULT,
+);
+if (hit) {
+    console.log('hit collider', hit.collider.node.name, 'at', hit.point);
+}
+
+// All hits (sorted by distance)
+const results: any[] = [];
+const count = PhysicsSystem2D.instance.raycastAll(
+    new Vec2(0, 0), new Vec2(100, 100),
+    PhysicsSystem2D.PhysicsGroup.DEFAULT,
+    results,
+);
+```
+
+## Joints (2D & 3D)
+
+For rope chains, ragdolls, swinging doors, vehicle suspensions:
+
+```typescript
+import { DistanceJoint2D, Joint2D } from 'cc';
+
+const joint = this.node.addComponent(DistanceJoint2D)!;
+joint.connectedBody = otherBody;     // target RigidBody
+joint.distance = 2.0;
+joint.frequency = 4.0;              // spring stiffness
+joint.damping = 0.5;
+```
+
+Available 2D joints: `DistanceJoint2D`, `RevoluteJoint2D`, `PrismaticJoint2D`,
+`WeldJoint2D`, `WheelJoint2D`, `RopeJoint2D`, `MotorJoint2D`.
+Available 3D joints: `HingeConstraint`, `PointToPointConstraint`, `FixedConstraint`.
+
+## Contact Filtering (2D)
+
+For layer-mask based collision filtering (player bullets hit enemies but
+not other players):
+
+```typescript
+// Define groups in `Project Settings → Physics → 2D Physics → Groups`
+enum CollisionGroup {
+    PLAYER     = 1 << 0,
+    ENEMY      = 1 << 1,
+    PLAYER_BULLET = 1 << 2,
+    GROUND     = 1 << 3,
+}
+
+collider.group = CollisionGroup.PLAYER_BULLET;
+collider.categoryBits = CollisionGroup.PLAYER_BULLET;  // what we ARE
+collider.maskBits = CollisionGroup.ENEMY | CollisionGroup.GROUND;  // what we HIT
+```
+
+## 3D Physics: Bullet vs PhysX
+
+| Aspect | **Bullet** | **PhysX** (3.4+) |
+|--------|-----------|------------------|
+| Default in 3.8.6 | ✓ | opt-in |
+| Vehicle / character controllers | Better (built-in `btRaycastVehicle`) | Better (PhysX PxVehicle) |
+| Continuous collision detection (CCD) | ✓ | ✓ (more accurate) |
+| Native perf | C++ | C++ (often faster on mobile) |
+| Editor tooling | Less polished | More polished |
+| Recommended for | Generic 3D, simulation | Production mobile 3D, vehicle games |
+
+Switch in `Project Settings → Physics → 3D Physics → Physics Engine`.
+**Don't switch mid-project** — collider / joint assets are not
+portable; re-author them after a switch.
+
+## CharacterController (3.8+)
+
+Use **`CharacterController`** for player avatars instead of `RigidBody`:
+kinematic, exact position control, built-in slope / stair handling.
+See the `CharacterController.move()` example earlier in this file.

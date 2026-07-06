@@ -205,6 +205,43 @@ export class MyPipelineBuilder extends CustomRenderPipelineBuilder {
 - Loading full-res textures for UI — UI textures should never have mipmaps and should be in atlas
 - Custom Effect without `batching: true` → breaks sprite batching, perf cliff
 
+## Effect Templates: 3D / 2D / UI / Particle
+
+Cocos has **distinct Effect templates** for different draw contexts. A
+shader written for one will not work for another without template
+adjustment:
+
+| Context | Template | Use |
+|---------|----------|-----|
+| 3D mesh | `unlit` / `lit` / `shadow` | World-space, lit or unlit surfaces |
+| 2D sprite | `sprite` | Flat 2D, no lighting, no shadow |
+| UI | `ui-sprite` / `ui-text` | UI canvas, no lighting, no depth, no shadow |
+| Particle (2D) | `particle-2d` / `particle-2d-add` | Particle rendering with per-vertex / per-particle attributes |
+| Particle (3D) | `particle-gpu` | GPU-driven particles |
+| Post-process | `post-process` | Full-screen passes, sample backbuffer |
+| Sky | `skybox` | Skybox / cubemap rendering |
+
+When creating a new Effect in the editor, pick the **closest matching
+template** as the starting point. The template pre-declares the
+correct varyings (`v_uv` vs `v_uv0`), the correct render state (depth
+test off for UI, on for 3D), and the correct color space (sRGB for
+sprites/UI, linear for 3D).
+
+**Particle shaders** need a different vertex structure: they receive
+per-particle attributes (size, rotation, color, frame) and the engine
+expects specific output semantics. Don't reuse a 3D `lit` template for
+particles — use `particle-2d` or `particle-gpu`.
+
+**UI shaders** must declare `blend: { enabled: true, ... }` with
+premultiplied alpha if the texture has premultiplied alpha; otherwise
+edge fringing on anti-aliased fonts and rounded corners.
+
+**3.8.6 WebGPU backend**: WGSL (WebGPU Shading Language) is not yet
+supported in 3.8.6 Effect files — the Effect compiler still targets
+GLSL. Targeting WebGPU runs the same GLSL via the SPIR-V cross-compile
+step. No code changes needed; just be aware that "WGSL authoring" is
+not available yet.
+
 ## Coordination
 - Work with **cocos-specialist** for overall Cocos Creator rendering decisions
 - Work with **art-director** for visual direction, material standards, and color palette

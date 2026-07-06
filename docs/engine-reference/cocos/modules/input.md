@@ -94,6 +94,51 @@ import { macro } from 'cc';
 macro.ENABLE_MULTI_TOUCH = true;  // Enable in onLoad of first scene
 ```
 
+### Accelerometer (3.8+)
+```typescript
+import { input, Input } from 'cc';
+
+input.setAccelerometerEnabled(true);
+input.on(Input.EventType.DEVICEMOTION, (event) => {
+    // event.acc.x, .y, .z — gravity vector components
+    // for tilt control, use event.acc.x (left/right) and .y (forward/back)
+    const tiltX = event.acc.x;
+});
+```
+
+Call `setAccelerometerEnabled(false)` on `onDestroy` to release the
+hardware listener — otherwise battery drain on mobile.
+
+### Compass / Gyroscope (mobile, limited availability)
+```typescript
+import { input, Input } from 'cc';
+
+input.setCompassEnabled(true);
+input.on(Input.EventType.DEVICEROTATION, (event) => {
+    // event.compass — 0-360 (heading from magnetic north)
+});
+```
+
+Compass is **iOS / Android only** — wraps in a platform check before
+subscribing. Web and mini-game platforms do not expose compass.
+
+### 3D Node Input (mouse-pick)
+For 3D scene interactions (clicking a 3D object):
+
+```typescript
+this.node.on(Node.EventType.MOUSE_DOWN, (event: EventMouse) => {
+    const ray = this.camera.screenPointToRay(event.getLocationX(), event.getLocationY());
+    const hit = physicsSystem.raycast(ray, 100);
+    if (hit) {
+        // hit.collider.node — picked 3D object
+    }
+}, this);
+```
+
+Returns a `Ray` from the camera through the screen point; pass it to
+`PhysicsSystem.raycast` for 3D or to your own screen-projection logic
+for 2D.
+
 ## Platform Quirks
 
 | Platform | Touch | Mouse | Gamepad | Multi-touch | Keyboard |

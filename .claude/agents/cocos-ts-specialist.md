@@ -123,6 +123,34 @@ export class GameManager extends Component { ... }
 - Negative numbers run first (managers), positive run last (dependents)
 - Document every `@executionOrder` use in the file header comment
 
+### Editor-Runtime Decorators
+For components that should run in the editor (gizmos, tool
+components) or be auto-paired with another component:
+
+```typescript
+@ccclass('HeroController')
+@executeInEditMode(true)            // lifecycle methods run in the editor
+@requireComponent(Sprite)             // editor auto-adds Sprite if missing
+@disallowMultiple                    // only one instance per node
+@menu('Game/Hero Controller')         // grouping in Add Component menu
+export class HeroController extends Component { /* ... */ }
+```
+
+- `@executeInEditMode` — required for any component with `update()` /
+  `onLoad()` that should be visible in the editor preview. Guard
+  `update()` work — the editor runs it on every redraw.
+- `@requireComponent` — for components that **cannot function**
+  without another. The editor enforces it; runtime can still query.
+- `@disallowMultiple` — for state containers, controllers. UI pieces
+  usually don't need it.
+- `@menu` — group the component in the editor Add Component menu.
+  Default location is the top level; use a path like `'Game/Hero'`
+  to nest.
+
+For custom inspector UIs (e.g. a HeroController that needs a dropdown
+of valid hero IDs), use the editor extension API under
+`extensions/`, not the decorator surface.
+
 ## Async Loading Patterns
 
 ### resources.load — Small configs, one-off loads

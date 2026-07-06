@@ -34,7 +34,8 @@ A test framework installed at sprint four costs 3 sprints.
    - Glob `tests/unit/` and `tests/integration/` — do subdirectories exist?
    - Glob `.github/workflows/` — does a CI workflow file exist?
    - Glob `tests/gdunit4_runner.gd` (Godot) or `tests/EditMode/` (Unity) or
-     `Source/Tests/` (Unreal) for engine-specific artifacts.
+      `Source/Tests/` (Unreal) or `assets/tests/` (Cocos) for engine-specific
+      artifacts.
 
 3. **Report findings**:
    - "Engine: [engine]. Test directory: [found / not found]. CI workflow: [found / not found]."
@@ -340,6 +341,111 @@ jobs:
 
 Note: UE CI requires a self-hosted runner with Unreal Editor installed.
 Set the `UE_EDITOR_PATH` environment variable on the runner.
+
+### Cocos Creator
+
+Create `.github/workflows/tests.yml`:
+
+```yaml
+name: Automated Tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  logic-tests:
+    name: Jest Logic Tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with: { lfs: true }
+      - uses: actions/setup-node@v4
+        with: { node-version: '20' }
+      - run: npm ci
+      - run: npx jest --config assets/tests/jest.config.js --ci --reporters=default --reporters=jest-junit
+      - if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: reports/
+
+  engine-tests:
+    name: Cocos Engine Runtime Tests
+    runs-on: macos-latest  # or self-hosted with Cocos Creator installed
+    steps:
+      - uses: actions/checkout@v4
+        with: { lfs: true }
+      - name: Build for headless runtime test
+        run: |
+          "$COCOS_CREATOR_PATH" --path . \
+            --build "platform=h5;debug=true" \
+            --build-path build/h5-test
+      - name: Run engine tests via headless Chrome
+        run: |
+          npx playwright install --with-deps chromium
+          npx playwright test assets/tests/integration/
+      - if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: engine-test-results
+          path: reports/
+```
+
+Note: Cocos Creator CI requires either a self-hosted runner with
+the editor installed, or the macOS GitHub-hosted runner (slower;
+limited by disk and time). Set `COCOS_CREATOR_PATH` to the
+editor executable on the runner.
+
+#### Cocos Creator 3.x (`Engine: Cocos`)
+
+Create `assets/tests/README.md`:
+```markdown
+# Cocos Creator Test Suite
+
+Tests live under `assets/tests/` so they are bundled with the project
+and picked up by the engine test runner.
+
+## Frameworks
+
+Cocos does not ship a built-in test framework. Recommended options:
+
+- **Jest** with `ts-jest` for pure logic tests (state machines, formulas,
+  data validation). No engine runtime needed.
+- **Cocos native runner** (3.8.6+) for tests that need a scene
+  (`cc.game` lifecycle, `director`, scene loading). Slower but
+  exercises real engine paths.
+
+## Running Tests
+
+```bash
+# Logic tests (Jest)
+npx jest --config assets/tests/jest.config.js
+
+# Engine-runtime tests (Cocos CLI)
+"CocosCreator" --path . --build platform=h5;debug=true   # then run headless
+# OR use a community runner; see docs/engine-reference/cocos/VERSION.md
+```
+
+## Test File Convention
+
+- Pure logic: `assets/tests/unit/[system]/[file]_test.ts`
+- Engine tests: `assets/tests/integration/[system]/[file]_test.ts`
+- Test functions: `test_[scenario]_[expected]()`
+```
+
+Note in the main README: **Choosing a test framework**
+```
+Cocos Creator 3.8.6 has no first-party test framework. Pick:
+
+- **Jest** for ~80% of tests (pure logic, state, formulas) — fast, no engine
+- **Cocos native runner** for the remaining ~20% (scene lifecycle, async asset
+  loading, animation playback) — slow, requires the editor
+
+If you only have time for one, ship Jest. The native runner is only needed
+for tests that depend on `cc.game`, `director`, or engine subsystems.
+```
 
 ---
 

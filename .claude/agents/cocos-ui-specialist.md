@@ -189,6 +189,37 @@ this.node.on(Node.EventType.MOUSE_DOWN, (event: EventMouse) => {
 - Using `screen.mouseX` (deprecated) instead of `event.getLocation()` or `event.getUILocation()`
 - Mixing touch and mouse events — touch events fire on mouse-only builds and vice versa; check platform
 
+## Common UI Components (Quick Ref)
+
+| Component | Purpose | Key API |
+|-----------|---------|---------|
+| `Button` | Tappable element | `node.on(Button.EventType.CLICK, ...)` |
+| `Toggle` | On/Off state | `toggle.isChecked`, `toggle.checkEvents` |
+| `Slider` | Continuous value | `slider.progress` (0..1) |
+| `EditBox` | Text input | `editbox.string`, `EditBox.EventType.EDITING_DID_ENDED` |
+| `ProgressBar` | Bar / radial fill | `bar.progress` (use `Sprite.Type.FILLED`) |
+| `ScrollView` | Scrollable region | `scrollView.scrollToBottom()` etc. |
+| `PageView` | Horizontal swipes | `pageView.setCurrentPageIndex(i)` |
+| `ToggleContainer` | Group of toggles (radio) | `container.toggleItems` array |
+
+**ScrollView** with long lists — instantiate only visible items + buffer;
+pool item Prefabs and swap data on scroll. For lists > 20 items this is
+essential; full-instantiate scroll views leak memory and have janky
+scroll on mobile.
+
+**PageView** — the standard pattern for horizontal swipeable screens
+(character select, hero gacha, tutorial pages). Wire
+`pageView.setCurrentPageIndex(i)` and `PageView.EventType.PAGE_ENDED`
+events to drive transitions.
+
+**ToggleContainer** — use for radio-style groups (settings, multi-choice
+options) instead of managing N individual `Toggle` references.
+
+**EditBox** — must be a node + component, not created programmatically
+from a script. Mount it in a Prefab and `instantiate()`. On mini-game
+platforms, the platform's native IME is shown — handles Chinese / emoji
+input automatically.
+
 ## Performance Optimization
 
 ### Recycling Lists (Long Lists)

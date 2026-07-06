@@ -153,3 +153,48 @@ Configure in **Asset Import Settings → Texture Compression → Platform Overri
 - Using `discard` for cutout effects on mini-game (WebGL 1) — kills early-z
 - Forgetting to set `camera.priority` for multi-camera setups — wrong render order
 - Texture compression not configured per platform → defaults to uncompressed PNG, huge bundles
+
+## Pipeline Selection (2D / 3D / Forward+)
+
+| Project Type | Use |
+|--------------|-----|
+| 2D only (UI-heavy, no 3D meshes) | **Built-in 2D pipeline** — disable 3D modules in Feature Cropping |
+| Mobile 3D, ≤ few hundred lights | **Forward** |
+| Mid-range 3D, many lights | **Forward+** (tiled / clustered) — 3.8+ |
+| High-end PC / console 3D | **Deferred** (limited; check 3.8.6 release notes) |
+
+Set in `Project Settings → Engine → Render Pipeline`. Switching
+pipelines on an existing project is a non-trivial migration — material
+bindings and pass order change.
+
+## RenderTexture & Off-Screen Targets
+
+```typescript
+import { RenderTexture, Camera } from 'cc';
+
+const rt = new RenderTexture();
+rt.reset({ width: 512, height: 512 });
+const cam = this.getComponent(Camera)!;
+cam.targetTexture = rt;
+// Use rt as a sprite / material texture
+this.sprite.spriteFrame.setTexture(rt);
+```
+
+Use cases: portrait backgrounds, minimap, screen-space distortion, water
+reflection, post-processing.
+
+## Post-Processing
+
+Post-processing in 3.8.6 is done via a `CustomRenderPipeline` with a
+`post-process` stage. Use it for Bloom, color grading, FXAA, vignette.
+Simpler color filters can use a per-camera `postProcess` material
+without authoring a full custom pipeline.
+
+## WebGPU Backend (3.8.6+)
+
+Cocos Creator 3.8.6 strengthened **WebGPU** support on web platforms
+(experimental). To enable: `Project Settings → Engine → Graphics
+Backend → WebGPU`. Requires Chrome / Edge with the
+`--enable-unsafe-webgpu` flag. Fallback to WebGL 2 is automatic.
+**Production web builds should still target WebGL 2** — WebGPU is not
+yet stable.
