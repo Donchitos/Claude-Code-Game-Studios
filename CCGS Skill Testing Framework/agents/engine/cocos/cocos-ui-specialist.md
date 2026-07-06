@@ -1,8 +1,8 @@
 # Agent Test Spec: cocos-ui-specialist
 
 ## Agent Summary
-Domain: Cocos Creator UI system — UITransform (mandatory on all UI nodes), Layout (Horizontal / Vertical / Grid), Widget (anchored positioning), Canvas configuration, multi-resolution adaptation, Mask, RichText, ScrollView recycling, safe area handling, and mini-game UI quirks.
-Does NOT own: gameplay code, shader / Effect files, TypeScript component patterns (delegates to cocos-ts-specialist).
+Domain: Cocos Creator UI subsystem — UITransform / Layout / Widget / Mask / RichText / Sprite & SpriteAtlas / Label / ScrollView, screen adaptation via Canvas, multi-resolution strategy, cross-platform input (touch, mouse, gamepad), UI batching, and mini-game-specific UI quirks (safe area, notch, virtual button).
+Does NOT own: TypeScript-side non-UI game logic (delegates to cocos-ts-specialist), Effect / Material authored for a UI element (delegates to cocos-shader-specialist), high-level rendering or asset pipeline architecture (delegates to cocos-specialist).
 Model tier: Sonnet (default).
 No gate IDs assigned.
 
@@ -11,98 +11,85 @@ No gate IDs assigned.
 ## Static Assertions (Structural)
 
 - [ ] `description:` field is present and domain-specific (references UITransform / Layout / Widget / Canvas / multi-resolution / mini-game UI)
-- [ ] `allowed-tools:` list includes Read, Write, Edit, Glob, Grep
+- [ ] `allowed-tools:` list includes Read, Write, Edit, Bash, Glob, Grep
 - [ ] Model tier is Sonnet (default for specialists)
-- [ ] Agent definition does not claim authority over gameplay code or shader authoring
+- [ ] Agent definition does not claim authority over TypeScript game logic, shader authoring, or engine architecture
+- [ ] Agent definition references `docs/engine-reference/cocos/VERSION.md` for version awareness
+- [ ] Agent definition references `docs/engine-reference/cocos/modules/ui.md` for Canvas / multi-resolution API
 
 ---
 
 ## Test Cases
 
 ### Case 1: In-domain request — appropriate output
-**Input:** "Create a HUD layout with a top bar (player health, score) and a bottom navigation bar, anchored to screen edges."
+**Input:** "I need a screen-adapted HUD with a top-bar pinned to screen top and a chat panel that fills the bottom safe area. Target: iOS + WeChat Mini Game."
 **Expected behavior:**
-- Produces a node hierarchy:
-  ```
-  Canvas (root)
-  ├── SafeAreaContainer (Widget: align all to safe area)
-  │   ├── TopBar (Widget: top=50, left=0, right=0)
-  │   │   ├── HealthLabel (Label component)
-  │   │   └── ScoreLabel (Label component)
-  │   └── BottomNav (Widget: bottom=50, left=0, right=0)
-  │       ├── Button1
-  │       └── Button2
-  ```
-- Notes that every UI node requires a `UITransform` component (mandatory since v3.0)
-- Uses `Widget` for anchored positioning (not `setPosition()`)
-- Wraps content in a `SafeAreaContainer` with Widget aligned to all edges — handles notch / cutout
-- Does NOT use `cc.Widget` (removed in v3.0) — uses `Widget` ES module import
+- Recommends a `Canvas` root with `Fit Height` or `Fit Width` policy (not just `No Scale`)
+- Uses `Widget` for top-bar pinning (target: top, left, right, with top = 0 offset)
+- Uses `safeAreaInsets` via `view.getSafeAreaRect()` (3.8+ stable API) for the chat panel bottom
+- Calls out iOS notch / dynamic island implication
+- Calls out WeChat Mini Game safe-area behavior (may report zero on some devices; recommend manual margin fallback)
+- Mentions `Layout` for the chat panel's children, not absolute positions
+- Notes that `UITransform` (not `Node.size`) is the correct way to read/set dimensions
+- Does NOT produce the full ChatPanel.ts implementation — defers TS to `cocos-ts-specialist`
 
 ### Case 2: Out-of-domain redirect
-**Input:** "Implement the player movement script with WASD controls."
+**Input:** "Write a TypeScript component that loads SpriteFrames asynchronously and assigns them to a Sprite."
 **Expected behavior:**
-- Does NOT produce gameplay movement code
-- Explicitly states that gameplay / character controller implementation belongs to `cocos-ts-specialist` or `gameplay-programmer`
-- May note that UI-side touch / button input for virtual joysticks IS within its domain
-- Redirects the request appropriately
+- Identifies that runtime asset loading + component wiring is `cocos-ts-specialist` territory
+- May note the *UI-side* contract: "the Sprite expects a `SpriteFrame`, and the caller should pass it via `sprite.spriteFrame = frame`"
+- May name the asset-bundle recommendation (e.g., `resources/ui_bundle/`) so the TS specialist can wire it
+- Does NOT produce the `await assetManager.loadBundle(...)` chain itself
+- Redirects appropriately
 
-### Case 3: UITransform missing — silent failure
-**Input:** "I added a touch handler on a UI node but `TOUCH_START` events aren't firing."
+### Case 3: UI batching anti-pattern
+**Input:** "I have a ScrollView with 200 list items, each with a Label and a Sprite. Frame time is 16ms just on the list."
 **Expected behavior:**
-- Identifies the most common cause: missing `UITransform` component on the node
-- Explains that UI nodes auto-receive touch events only when:
-  1. They have a `UITransform` (defines hit area bounding box)
-  2. The touch point falls within the bounding box
-  3. No higher-priority node has captured the event
-- Provides the fix: `this.node.getComponent(UITransform) ?? this.node.addComponent(UITransform)`
-- Notes that the node must have non-zero width / height for hit detection
-- Lists other common causes: parent has `Mask` with `GRAPHICS_STENCIL` blocking events, node is `active = false`, or `UITransform` content size is zero
+- Diagnoses UI batching failure: every Label uses a different bitmap font / every Sprite is in a different atlas
+- Recommends `SpriteAtlas` for all UI icons and a single shared `.fnt` for all Labels
+- Recommends `Label.useSDF = true` for runtime-tinted labels (3.x default)
+- Mentions `ScrollView.content` + `Layout` for view recycling, with `item.children[i]` re-skinning (avoiding `instantiate`)
+- Notes that `UI` static-batching is gated by `setStatic(true)` on the Canvas root
+- References the `docs/engine-reference/cocos/modules/ui.md` performance table
+- Does NOT recommend switching to a different engine (out of scope)
 
-### Case 4: Multi-resolution adaptation
-**Input:** "The game looks correct on 16:9 devices but stretches on 18:9 / 21:9 phones. How do I fix this?"
+### Case 4: Mini-game UI quirk
+**Input:** "On WeChat Mini Game my safe area is wrong on iPhone 15 Pro — the bottom controls get hidden by the home indicator."
 **Expected behavior:**
-- Identifies this as a screen adaptation issue
-- Explains the Canvas configuration:
-  - **Fit Width**: scales to fill width, letterbox / crop height (best for portrait)
-  - **Fit Height**: scales to fill height, letterbox / crop width (best for landscape)
-  - **Both**: fills screen completely, may crop content (use SafeArea for safe content)
-- Recommends based on game orientation:
-  - Landscape 16:9 game on 18:9 / 21:9 phones → use **Fit Height**, design for 16:9 baseline, add edge content for wider screens
-  - Portrait game → use **Fit Width**
-- Shows `view.setDesignResolutionSize()` configuration
-- Recommends using `Widget` with relative offsets (not absolute pixels) for responsive layout
-- Notes mini-game platform differences: WeChat provides `wx.getSystemInfoSync().safeArea` for notch handling
+- Identifies that `view.getSafeAreaRect()` in 3.8.6 reports device safe area, but the home indicator overlay is sometimes not included
+- Recommends a `getVisibleSize()` + `getFrameSize()` fallback that explicitly adds bottom margin on iOS X+ devices
+- References the `safeAreaInsets` example in `docs/engine-reference/cocos/modules/ui.md`
+- Suggests testing with `wx.getSystemInfoSync().safeArea` for cross-check during development
+- Does NOT suggest disabling the safe area (would break App Store guidelines)
+- May mention `view.setDesignResolutionSize` and the implications of `Show All` vs `Fit Width` for safe-area math
 
-### Case 5: ScrollView recycling for long lists
-**Input:** "I have a 1000-item inventory list. Instantiating all items destroys performance."
+### Case 5: Context pass — multi-resolution + 2D character customization screen
+**Input:** Project context: Cocos Creator 3.8.6. Request: "I need a character preview screen with a background, equipment slots, and a 'Done' button. Must work on iPhone SE (small) and iPad Pro 12.9 (large), plus 1080×1920 Android phone."
 **Expected behavior:**
-- Identifies this as a recycling pattern requirement
-- Produces a recycling approach:
-  - Pool item Prefabs (use `ObjectPool` pattern)
-  - Track visible items based on scroll position
-  - Recycle items that scroll out of view
-  - Update content on item reuse (don't destroy / instantiate)
-- Notes that Cocos Creator has no built-in recycling ListView (community packages exist)
-- Provides a sketch implementation using `ScrollView.scrollTop` and item height calculation
-- Warns against `Mask` with `GRAPHICS_STENCIL` for the list container (breaks batching for the whole subtree — use `GRAPHICS_RECT` instead)
-- Recommends pooling every Prefab instantiated > 5 times per session
+- Suggests `Canvas` with `Fit Width` policy (keeps width fixed, scales height — best for portrait mobile)
+- Recommends `Widget` anchoring for the Done button (bottom-right inset, NOT a fixed Y position)
+- Recommends `Layout` (Type: VERTICAL) for the equipment slots row, with `ResizeMode: Container` so slot spacing scales
+- Notes that 2D character preview should be a separate `UIRenderTexture` to avoid re-rendering on every equipment change
+- Flags that iPad Pro 12.9 wide aspect ratio means `Fit Width` will leave big top/bottom bars — recommend `Show All` with extra "letterbox" art layer for the iPad case
+- Asks whether the project is mini-game first or native first (different safe-area behaviors)
+- Does NOT produce full component code — defers TS to `cocos-ts-specialist`
 
 ---
 
 ## Protocol Compliance
 
-- [ ] Stays within declared domain (UI system: UITransform, Layout, Widget, Canvas, multi-resolution, Mask, mini-game UI)
-- [ ] Redirects gameplay code to cocos-ts-specialist or gameplay-programmer
-- [ ] Redirects shader / visual effects to cocos-shader-specialist
-- [ ] Never produces code without `UITransform` on UI nodes (mandatory since v3.0)
-- [ ] Uses `Widget` for anchored positioning, never `setPosition()` for responsive UI
-- [ ] Distinguishes between `GRAPHICS_RECT` Mask (cheap) and `GRAPHICS_STENCIL` Mask (expensive, breaks batching)
-- [ ] Handles safe area for notch / cutout devices on mobile and mini-game platforms
+- [ ] Stays within declared domain (UITransform / Layout / Widget / Mask / RichText / Sprite / Label / ScrollView / Canvas / multi-resolution / input)
+- [ ] Redirects TypeScript-side non-UI logic to cocos-ts-specialist
+- [ ] Redirects UI Material / Effect work to cocos-shader-specialist
+- [ ] Redirects high-level rendering / asset pipeline architecture to cocos-specialist
+- [ ] Always uses `UITransform` (not deprecated `Node.size` / `setContentSize`) in 3.x examples
+- [ ] Always treats `Canvas` + `Widget` as the screen-adaptation primitive, not fixed `setPosition`
+- [ ] Always considers safe area on iOS / WeChat / ByteDance mini-game targets
+- [ ] Flags Cocos Creator version-gated UI features (`safeAreaInsets` stable in 3.8+, `UISkew` 3.8.6+, 2D Assembler refactor 3.7.x) and confirms version before suggesting them
 
 ---
 
 ## Coverage Notes
-- HUD layout (Case 1) verifies the agent produces correct v3.0+ UI hierarchy with UITransform and Widget
-- Missing UITransform (Case 3) confirms the agent catches the most common v3.0+ UI bug
-- Multi-resolution (Case 4) verifies the agent understands Canvas adaptation modes and platform differences
-- Recycling (Case 5) confirms the agent applies performance patterns for long lists, not naive instantiation
+- UI batching failure (Case 3) is the single most common UI performance bug — verifies the agent catches it and gives a concrete fix path
+- Mini-game safe-area (Case 4) ensures the agent handles the platform-specific edge cases (WeChat safe area not matching iOS home indicator)
+- Multi-resolution context (Case 5) verifies the agent applies Canvas policy + Widget + Layout primitives correctly and stays within its lane (UI structure, not full TS implementation)

@@ -120,7 +120,7 @@ None. `/skill-test` is a meta-utility skill. No director gates apply.
 
 **Fixture:**
 - `.claude/skills/` contains 72+ skill directories
-- `.claude/agents/` contains 49+ agent files
+- `.claude/agents/` contains 53+ agent files
 - `tests/skills/` contains spec files for a subset of skills
 
 **Input:** `/skill-test audit`
