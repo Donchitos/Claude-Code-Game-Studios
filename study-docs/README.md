@@ -51,6 +51,7 @@
 | 13 | [术语对照表](file:///workspace/study-docs/13-术语对照表.md) | TD-ENGINE-RISK 是什么？ADR Approve 是什么？ | 门禁 ID 体系、游戏开发流程术语、智能体编排术语、25 个门禁速查 |
 | 14 | [四大机制协作工作流](file:///workspace/study-docs/14-四大机制协作工作流.md) | Agent/skill/门禁/hook 怎么配合？大模型怎么触发它们？ | 用 /dev-story 例子串起四机制、触发方式、返回原节点、流程定位 |
 | 18 | [会话状态保存与选项澄清机制](file:///workspace/study-docs/18-会话状态保存与选项澄清机制.md) | 中断后怎么接着干？选项 + 澄清循环怎么转？ | active.md 状态环、4 个 hook、Question→Options→Approval 循环、Explain→Capture 三步法 |
+| 19 | [Claude Code 工具系统详解](file:///workspace/study-docs/19-Claude-Code工具系统详解.md) | AskUserQuestion 怎么用？还有哪些工具？ | 工具 vs Skill vs Hook vs Rules、AskUserQuestion 三步法、Read/Write/Edit/Glob/Grep/Bash/Task/TodoWrite/Web 工具、5 种组合模式 |
 
 ---
 
