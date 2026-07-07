@@ -71,25 +71,7 @@ w.alignMode = Widget.AlignMode.ON_WINDOW_RESIZE;  // when to re-align
 ```
 
 ### ScrollView with recycling (long lists)
-- For lists > 20 items, use a recycling pattern:
-  - Track visible items based on scroll position
-  - Pool item Prefabs
-  - Update item content on reuse
-
-```typescript
-// Sketch — use community package or implement manually
-class RecyclingListView extends Component {
-    private _items: Node[] = [];          // visible item pool
-    private _data: ListItemData[] = [];   // full data set
-    private _itemHeight = 80;
-
-    update() {
-        const scrollTop = this.scrollView.scrollTop;
-        const visibleStart = Math.floor(scrollTop / this._itemHeight);
-        // ... recycle items in/out of view
-    }
-}
-```
+- For lists > 20 items, use a recycling pattern (pool item Prefabs, swap data on scroll). See community packages or implement manually — instantiate only visible items + buffer.
 
 ### RichText (stylized text)
 ```typescript
@@ -107,25 +89,20 @@ import { Mask } from 'cc';
 
 const mask = this.getComponent(Mask)!;
 mask.type = Mask.Type.GRAPHICS_RECT;  // cheapest — rect clip
-// mask.type = Mask.Type.GRAPHICS_ELLIPSE;  // ellipse
-// mask.type = Mask.Type.GRAPHICS_STENCIL;  // expensive — full stencil
+// mask.type = Mask.Type.GRAPHICS_ELLIPSE;
+// mask.type = Mask.Type.GRAPHICS_STENCIL;  // expensive — breaks batching
 ```
-
-> **Performance warning**: `GRAPHICS_STENCIL` breaks draw call batching for the entire masked subtree. Use only when needed.
 
 ### Touch input on UI nodes
 ```typescript
-import { Node, EventTouch } from 'cc';
-
 this.node.on(Node.EventType.TOUCH_START, (event: EventTouch) => {
     const uiPos = event.getUILocation();  // UI-space coordinates
 }, this);
 ```
 
-UI nodes auto-receive touch events when:
-1. They have a `UITransform`
-2. The touch point falls within the bounding box
-3. No higher-priority node has captured the event
+UI nodes auto-receive touch events when they have a `UITransform`, the
+touch point is within the bounding box, and no higher-priority node
+has captured the event.
 
 ## Screen Adaptation (Multi-Resolution)
 
@@ -143,15 +120,21 @@ const safeArea = sys.getSafeAreaRect();  // Rect in design resolution
 // Apply to top-level UI container via Widget or manual positioning
 ```
 
-Mini-game platforms:
-```typescript
-import { sys } from 'cc';
+Mini-game platforms: `wx.getSystemInfoSync().safeArea` exposes the same
+rect; wire it through a platform shim rather than scattering `wx` calls.
 
-if (sys.platform === sys.WECHAT_GAME) {
-    const info = wx.getSystemInfoSync();
-    const safeArea = info.safeArea;  // { left, right, top, bottom, width, height }
-}
-```
+## Common Interactive Components
+
+| Component | Purpose | Key API |
+|-----------|---------|---------|
+| `Button` | Tappable element | `node.on(Button.EventType.CLICK, ...)` |
+| `Toggle` | On/Off state | `toggle.isChecked`, `toggle.checkEvents` |
+| `Slider` | Continuous value | `slider.progress` (0..1) |
+| `EditBox` | Text input | `editbox.string`, `EditBox.EventType.EDITING_DID_ENDED` |
+| `ProgressBar` | Bar / radial fill | `bar.progress` (use `Sprite.Type.FILLED`) |
+| `ScrollView` | Scrollable region | `scrollView.scrollToBottom()` etc. |
+| `PageView` | Horizontal swipes | `pageView.setCurrentPageIndex(i)` |
+| `ToggleContainer` | Group of toggles (radio) | `container.toggleItems` array |
 
 ## Common Mistakes
 - Missing `UITransform` on a UI node — input and layout silently fail
@@ -164,3 +147,4 @@ if (sys.platform === sys.WECHAT_GAME) {
 - Subscribing to `TOUCH_*` on parent node without `UITransform` — no events fire
 - Using `Label.cacheMode = NONE` for large text — slow per-frame rasterization
 - Forgetting to `releaseAsset()` UI prefabs when their screen destroys — memory grows
+- Adding `EditBox` programmatically — must be a prefab node + component

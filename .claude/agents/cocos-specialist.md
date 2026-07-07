@@ -129,6 +129,62 @@ Before writing any code:
 - Configure texture compression per platform: ASTC for iOS, ETC2 for Android, PVRTC fallback
 - For mini-game platforms (WeChat, ByteDance, Alipay), enable the engine separation plugin (`engine.js`) to keep bundle under size limits
 
+### Hot Update (Cocos-Specific, 3.8.6)
+Cocos ships a first-party hot-update flow (`AssetsManager` + manifest)
+that no other engine has built-in. Use for mobile content patches and
+mini-game live ops — **not** for shipping executable code on iOS/Android
+(App Store policy violation). Update **assets**, not logic. See
+[`docs/engine-reference/cocos/plugins/hot-update.md`](file:///workspace/docs/engine-reference/cocos/plugins/hot-update.md) for the full flow,
+manifest format, and reconnection helper. Always:
+- Compare versions as semver tuples (string compare fails on `"1.10.0"`)
+- Set `AssetsManager.setMaxConcurrentTask(4)` to avoid saturating cellular networks
+- Hash the manifest itself to detect corruption
+
+### Editor Extensions (Custom Inspector / Menu Items)
+3.8.6+ allows extending the editor with TypeScript:
+
+```typescript
+@ccclass('MyComponent')
+@executeInEditMode(true)         // run in editor, not just runtime
+@requireComponent(Sprite)         // auto-add dependency
+@disallowMultiple                 // only one per node
+@menu('Game/Hero')                // group in Add Component menu
+export class MyComponent extends Component { /* ... */ }
+```
+
+For custom inspector panels or menu commands, scaffold a
+`extensions/` folder in the project root with a `package.json`
+declaring a `@cocos/extension` main entry. See the editor extension
+guide linked from the docs hub.
+
+### HarmonyOS Next (3.8.6 New Platform)
+3.8.6 adds **Honor / HarmonyOS Next** support. ArkTS interop is
+exposed via the `@cocos/ohos` native binding. Native package size
+starts at ~6MB without feature cropping; enable Feature Cropping
+aggressively for the HarmonyOS preset. WebSocket and 2D physics work
+without changes; 3D physics needs verification per target SDK.
+WebGPU is **not** available on HarmonyOS Next in 3.8.6 — use Vulkan.
+
+### Cocos 2.x → 3.x Migration
+Most active projects are on 3.x; the few on 2.x should plan migration.
+Key breaking changes (full list in `breaking-changes.md`):
+- `cc.Class({...})` → `@ccclass` decorators
+- `cc.eventManager` → per-node `node.on()` or `input.on()` global
+- `cc.loader.loadRes()` → `resources.load()` or `assetManager`
+- `cc.tween` API is now `tween().to().start()` (chainable)
+- Coordinate system is right-handed in 3.x (was left-handed in 2.x)
+- Asset paths are case-sensitive in 3.x
+
+### Cocos Creator CLI (CI / CD)
+For headless builds, use the Cocos Dashboard CLI:
+```bash
+# Build a specific platform
+"CocosCreator" --path . --build platform=wechatgame;configPath=./build-configs/wechat.json
+# Other platforms: android, ios, h5, harmonyos, bytedance, alipay
+```
+Pair with the `devops-engineer` to wire this into GitHub Actions /
+GitLab CI. The CLI is the only supported way to ship unattended builds.
+
 ### Common Pitfalls to Flag
 - Using `cc.loader` (deprecated since 2.4, removed in 3.x) instead of `cc.assetManager` / `resources`
 - Calling `getComponent()` in `update()` every frame

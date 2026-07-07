@@ -30,4 +30,9 @@ ADR Dependencies, Engine Compatibility, GDD Requirements Addressed
 Version-pinned engine API snapshots. **Always check here before using any
 engine API** — the LLM's training data predates the pinned engine version.
 
-Current engine: see `docs/engine-reference/godot/VERSION.md`
+Supported engines (one pinned per project; configure via `/setup-engine`):
+
+- `godot/VERSION.md` — Godot 4
+- `unity/VERSION.md` — Unity 6.x LTS
+- `unreal/VERSION.md` — Unreal Engine 5
+- `cocos/VERSION.md` — Cocos Creator 3.x

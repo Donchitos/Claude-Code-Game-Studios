@@ -70,3 +70,52 @@ audioSource.play();
 - Forgetting to release audio clips after level change — memory grows
 - Loading large BGM via `resources.load()` — use streaming or bundle preload
 - Setting `audioSource.volume = 0` instead of `audioSource.mute = true` — volume state lost
+- Using `.mp3` for SFX — `.ogg` or `.wav` is smaller, more efficient
+- Not preloading SFX on boot — first play has audio glitch
+
+## AudioMixer (3.8+)
+
+For multi-channel routing (separate BGM / SFX / UI / Voice buses with
+per-bus volume and mute), create an `AudioMixer` asset and bind it via
+`AudioMixerController`:
+
+1. `Project → New → AudioMixer` to create the asset
+2. In the mixer, add groups: BGM, SFX, UI, Voice
+3. Add a `AudioMixerController` component to a scene node
+4. Load the mixer asset and route `AudioSource` plays through it
+
+```typescript
+import { AudioMixerController, AudioMixer } from 'cc';
+
+@ccclass('AudioManager')
+export class AudioManager extends Component {
+    @property(AudioMixerController) mixerCtrl: AudioMixerController | null = null;
+    @property(AudioMixer) mixerAsset: AudioMixer | null = null;
+
+    onLoad() {
+        this.mixerCtrl!.loadMixer(this.mixerAsset!);
+    }
+
+    playBGM(clip: AudioClip) {
+        this.mixerCtrl!.setCategoryVolume('BGM', 0.8);
+        audioEngine.play(clip, true, 1, this.mixerCtrl!.audioID);
+    }
+}
+```
+
+Crossfade between BGM tracks:
+
+```typescript
+tween(this.mixerCtrl!)
+    .to(1.0, { 'bgmVolume': 0 })     // group property name
+    .call(() => this.playBGM(newClip))
+    .start();
+```
+
+## Streaming vs Decoded Loading
+
+| File size | Use |
+|-----------|-----|
+| < 200KB, SFX | Decoded into memory (default) — instant playback, low CPU |
+| 200KB - 1MB, ambient loops | Decoded — fine on most platforms |
+| > 1MB, music | **Streaming** — `loadMode: STREAMING` — minimal memory, ~50ms seek latency |
