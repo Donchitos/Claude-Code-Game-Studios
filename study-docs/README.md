@@ -50,6 +50,7 @@
 | 12 | [从零编排智能体协作](file:///workspace/study-docs/12-从零编排智能体协作.md) | 主会话怎么触发智能体？工作室怎么从零搭？ | `Task` 工具、三层规则源、调用流程、8 步搭建、9 种编排模式 |
 | 13 | [术语对照表](file:///workspace/study-docs/13-术语对照表.md) | TD-ENGINE-RISK 是什么？ADR Approve 是什么？ | 门禁 ID 体系、游戏开发流程术语、智能体编排术语、25 个门禁速查 |
 | 14 | [四大机制协作工作流](file:///workspace/study-docs/14-四大机制协作工作流.md) | Agent/skill/门禁/hook 怎么配合？大模型怎么触发它们？ | 用 /dev-story 例子串起四机制、触发方式、返回原节点、流程定位 |
+| 18 | [会话状态保存与选项澄清机制](file:///workspace/study-docs/18-会话状态保存与选项澄清机制.md) | 中断后怎么接着干？选项 + 澄清循环怎么转？ | active.md 状态环、4 个 hook、Question→Options→Approval 循环、Explain→Capture 三步法 |
 
 ---
 
