@@ -406,6 +406,487 @@ GDD 必须包含 **8 个必填章节**，且顺序固定：
 
 **重点检查**：Cross-References 表双向一致 / entities.yaml 无冲突 / 接口契约对齐 / 循环依赖识别。
 
+---
+
+## 深入：GDD 文件是怎么从无到有的
+
+上面讲了 `design/gdd/` 下会放哪些文档。这一节回答几个初学者最常问的问题：
+
+- 这些文件是**怎么生成**的？我手动写吗？
+- 设计阶段的文档**都放这里**吗？
+- 文件的**骨架**哪来的？
+- AI 怎么**一步一步引导**我填充这个骨架？
+- 流程**是怎样的**？有哪些**机制**在引导？
+- 文件**结构**为什么是这个样子？这是**标准流程**吗？
+
+### `design/gdd/` 放哪些文档、不放哪些
+
+先澄清一个容易混淆的点：`design/gdd/` 不是"所有设计文档都丢这里"。它是一个**混合目录**，放三类东西：
+
+| 类型 | 例子 | 遵循 8 章节规则？ |
+|------|------|-----------------|
+| **系统 GDD**（核心） | `combat-system.md`、`movement-system.md` | ✅ 强制遵循 |
+| **元文档**（立项级） | `game-concept.md`、`game-pillars.md`、`systems-index.md` | ❌ 各有专用模板 |
+| **审查产物** | `gdd-cross-review-[date].md`、`reviews/[doc]-review-log.md` | ❌ 是报告不是 GDD |
+
+**不放这里的**：
+
+- `quick-specs/`（小改动规格）→ 放 `design/quick-specs/`
+- `balance/`（平衡数据/报告）→ 放 `design/balance/`
+- `difficulty-curve.md` → 放 `design/` 根目录（注意：不在 gdd 子目录里）
+- UX 规范 → 放 `design/ux/`
+- 美术圣经 → 放 `design/art/`
+- 叙事内容 → 放 `design/narrative/`
+- 关卡文档 → 放 `design/levels/`
+
+> ⚠️ **重要**：规则文件 [`.claude/rules/design-docs.md`](file:///workspace/.claude/rules/design-docs.md) 的作用域是 `design/gdd/**`，看起来覆盖整个 gdd 目录。但它"8 个必填章节"的硬性要求**实际只针对系统 GDD**（`[system-slug].md`）。`game-concept.md` 和 `systems-index.md` 虽然物理上在 gdd 目录，但用各自专用模板，不要按 8 章节改写它们。
+
+### GDD 文件不是手动写的，是 `/design-system` 技能引导产出的
+
+你**不需要**手动创建 GDD 文件、也不需要手动填 8 个章节。这一切由 [`/design-system`](file:///workspace/.claude/skills/design-system/SKILL.md) 技能（slash command）引导完成。
+
+整个机制可以用一句话概括：
+
+> **`/design-system` 先建一个"空骨架文件"（所有章节标题 + 占位符），然后逐节带你走"问问题→给选项→你决定→起草→你批准→写入"的循环，直到 8 个章节填满。**
+
+下面把这句话拆开讲。
+
+### 机制 1：文件骨架哪来的——Skeleton-first（骨架先行）
+
+#### 骨架来源
+
+骨架来自一个**模板文件**：[`.claude/docs/templates/game-design-document.md`](file:///workspace/.claude/docs/templates/game-design-document.md)。
+
+但有个**重要细节**：`/design-system` 实际写入磁盘的骨架是模板的**简化版**——它从模板取结构，但只写必填章节的 header + 占位符。完整模板还含 `Summary`、`Game Feel`、`Cross-References` 等额外章节，这些在写完 8 个必填章节后按需补。
+
+#### 骨架长什么样
+
+当你跑 `/design-system combat-system` 并批准创建后，磁盘上会立刻出现这个文件：
+
+```markdown
+# Combat System
+
+> **Status**: In Design
+> **Author**: [user + agents]
+> **Last Updated**: [today's date]
+> **Implements Pillar**: [from context]
+
+## Overview
+[To be designed]
+## Player Fantasy
+[To be designed]
+## Detailed Design
+### Core Rules
+[To be designed]
+### States and Transitions
+[To be designed]
+### Interactions with Other Systems
+[To be designed]
+## Formulas
+[To be designed]
+## Edge Cases
+[To be designed]
+## Dependencies
+[To be designed]
+## Tuning Knobs
+[To be designed]
+## Visual/Audio Requirements
+[To be designed]
+## UI Requirements
+[To be designed]
+## Acceptance Criteria
+[To be designed]
+## Open Questions
+[To be designed]
+```
+
+**关键点**：
+
+- 每个章节都**已存在**（标题写好了），但内容是占位符 `[To be designed]`
+- 这样文件"一出生就完整"——后续只是把占位符**替换**成真实内容，不会"凭空加章节"
+- `Detailed Design` 含 3 个子节（Core Rules / States and Transitions / Interactions），都先占位
+
+#### 创建前的强制询问
+
+骨架**不是偷偷创建的**。`/design-system` 会先问你：
+
+> "May I create the skeleton file at `design/gdd/combat-system.md`?"
+
+你说"可以"才创建。如果你拒绝，技能会判 `BLOCKED`（阻塞）并停下——因为没有骨架文件，后续所有步骤都无从谈起。
+
+#### 创建后立即记录进度
+
+骨架一写入磁盘，技能立刻更新一个进度文件：`production/session-state/active.md`，记三件事：
+
+- Task: Designing combat-system GDD
+- Current section: Starting (skeleton created)
+- File: design/gdd/combat-system.md
+
+这个文件是**崩溃恢复的命脉**（后面讲）。
+
+#### 为什么用骨架先行而不是写完一整篇再存
+
+来自 [`.claude/rules/design-docs.md`](file:///workspace/.claude/rules/design-docs.md) 第 9 条硬性规定：
+
+> "Design documents MUST be written incrementally: create skeleton first, then fill each section one at a time with user approval between sections. Write each approved section to the file immediately to persist decisions and manage context"
+
+三个原因：
+
+1. **崩溃不丢成果**——每节批准后立即写盘，会话崩溃只丢"当前正在讨论的那一节"，已批准的全在文件里
+2. **上下文不爆**——8 节加 2-3 轮修改可能累积 30-50k token 对话。增量写入让实时上下文保持 3-5k（只有当前节的讨论），完成的节"在文件里"不在对话里
+3. **决策有据可查**——每节写进文件就是"定稿"，后续节引用它时是引用文件而非模糊的记忆
+
+### 机制 2：逐节填充——Section Cycle（章节循环）
+
+骨架建好后，`/design-system` 对**每个章节**重复一个 7 步循环：
+
+```
+Context → Questions → Options → Decision → Draft → Approval → Write
+```
+
+| 步骤 | 做什么 | 谁来做 |
+|------|--------|--------|
+| **Context** | 陈述这一节要写什么；呈现依赖 GDD 中会约束本节的已有决策 | AI |
+| **Questions** | 问澄清问题（带约束的选项式问题用 AskUserQuestion 工具，开放式探索用对话） | AI 问，你答 |
+| **Options** | 给 2-4 个设计方案 + 各自优缺点 + 参考游戏 + pillar 对齐 | AI |
+| **Decision** | 你选一个方案或给自定义方向 | **你** |
+| **Draft** | AI 按你的决定起草这一节内容，标注任何临时假设 | AI |
+| **Approval** | AI 在**同一响应**里弹出"批准/修改/重来"三选项让你选 | **你** |
+| **Write** | 你批准后，AI 用 Edit 工具把占位符替换成真实内容 | AI |
+
+#### 为什么 Draft 和 Approval 必须在同一个响应里
+
+这是**硬性协议**，[SKILL.md 第 332-334 行](file:///workspace/.claude/skills/design-system/SKILL.md)原文：
+
+> "The draft and the approval widget MUST appear together in one response. If the draft appears without the widget, the user is left at a blank prompt with no path forward — this is a protocol violation."
+
+翻译：如果 Draft 单独出现不带批准按钮，你会面对一个空白提示符、无路可走——这是协议违规。所以 AI 起草完必须**立刻**在同一回复里给你批准按钮。
+
+#### 写入时的唯一性约束
+
+每节写入用 Edit 工具替换占位符。但所有节的占位符都是 `[To be designed]`，Edit 要求 `old_string` 唯一匹配。所以必须带上**章节标题**保证唯一：
+
+```
+old_string: "## Overview\n\n[To be designed]"
+new_string: "## Overview\n\n[批准的内容]"
+```
+
+#### 每节写完后
+
+- 更新 `production/session-state/active.md` 记录"刚完成 Overview"
+- 检查上下文是否 ≥70%，若是，提示你"进度已存盘，开新会话跑 `/design-system combat-system` 可续写"
+
+### 机制 3：专家路由——Specialist Agent Routing
+
+写不同章节时，`/design-system` 会按**系统类别**叫不同专家（agent）参与。你不用记叫谁，技能自动路由。
+
+#### 路由表（来自 [SKILL.md 第 791-805 行](file:///workspace/.claude/skills/design-system/SKILL.md)）
+
+| 系统类别 | Primary Agent | Supporting Agent(s) |
+|---------|---------------|---------------------|
+| Foundation/Infrastructure | systems-designer | gameplay-programmer（可行性）、engine-programmer（引擎集成） |
+| Combat / damage / health | game-designer | systems-designer（公式）、ai-programmer（敌人 AI）、art-director（受击 VFX） |
+| Economy / loot / crafting | economy-designer | systems-designer（曲线）、game-designer（循环） |
+| Progression / XP / skills | game-designer | systems-designer（曲线）、economy-designer（sink） |
+| Dialogue / quests / lore | game-designer | narrative-director（故事）、writer（内容）、art-director（角色视觉） |
+| UI systems | game-designer | ux-designer（流程）、ui-programmer（可行性）、art-director（视觉）、technical-artist（渲染） |
+| Audio systems | game-designer | audio-director（方向）、sound-designer（规格） |
+| AI / pathfinding | game-designer | ai-programmer（实现）、systems-designer（评分） |
+| Level/world systems | game-designer | level-designer（空间）、world-builder（背景） |
+| Camera / input / controls | game-designer | ux-designer（手感）、gameplay-programmer（可行性） |
+| Animation / character movement | game-designer | art-director（动画风格）、technical-artist（rig/blend）、gameplay-programmer（手感） |
+| VFX / particles / shaders | game-designer | art-director（VFX 方向）、technical-artist（性能/shader）、systems-designer（触发集成） |
+| Character systems | game-designer | art-director（视觉原型）、narrative-director（角色弧）、systems-designer（属性公式） |
+
+#### 各章节叫谁
+
+| 章节 | 强制 spawn 的 agent |
+|------|-------------------|
+| Overview | 无强制（有 framing 问题） |
+| Player Fantasy | **creative-director**（给 2-3 候选 framing） |
+| Detailed Design | **按上表路由 Primary + Supporting** |
+| Formulas | **systems-designer**；经济系统额外加 economy-designer |
+| Edge Cases | systems-designer；叙事系统额外加 narrative-director |
+| Tuning Knobs | 若公式复杂，delegate systems-designer 推导 |
+| Acceptance Criteria | **qa-lead**（强制） |
+| Visual/Audio（条件性） | 视觉相关系统强制 art-director |
+
+#### Review Mode 影响 agent 是否被叫
+
+| 模式 | agent 行为 |
+|------|-----------|
+| **full** | 按上表 spawn 所有 agent |
+| **lean** | 跳过大部分 agent，**除非**该节是 HIGH risk（Formulas 和 Acceptance Criteria 仍 spawn） |
+| **solo** | 全跳过，AI 直接起草，加注"XX agent not consulted — Solo mode" |
+
+#### 专家返回什么、谁写文件
+
+- 专家返回**分析/提案**给主会话（不直接写文件）
+- 主会话用 AskUserQuestion 把专家意见呈现给你
+- **你决定**，主会话写入文件
+- **所有文件写入由主会话独占**——专家只动嘴不动手
+
+### 机制 4：技术可行性预检——Technical Feasibility Pre-Check
+
+在开始写任何章节**之前**，`/design-system` 会做一次技术可行性预检（Phase 2e），防止你设计出引擎做不到的东西。
+
+#### 检查什么
+
+1. **引擎域映射**：把系统类别映射到引擎域（Combat→Physics、UI→UI、Audio→Audio 等）
+2. **读引擎上下文**：读 `technical-preferences.md` 识别引擎版本 → 读 `docs/engine-reference/[engine]/VERSION.md` → 读对应域的 modules 文档 → 读 breaking-changes → 读相关 ADR
+3. **呈现 Feasibility Brief**：列出"引擎已知能力 / 会约束设计的引擎限制 / 知识缺口（标 HIGH/MEDIUM risk）/ 约束本系统的已有 ADR"
+
+#### 不阻塞但标记缺口
+
+预检**不会阻止**你继续设计——它只是把"这里有知识缺口，写之前确认一下"浮出来。如果引擎还没配置，它会跳过并提示"先跑 `/setup-engine`"。
+
+### 机制 5：实体注册表集成——entities.yaml 冲突检测
+
+[`design/registry/entities.yaml`](file:///workspace/design/registry/entities.yaml) 是跨 GDD 共享事实的"户籍系统"。`/design-system` 在三个时机和它交互：
+
+| 时机 | 做什么 |
+|------|--------|
+| **Phase 2a（开始前读）** | grep 出 referenced_by/source 含本系统的条目，作为"known facts"——这些值是其他 GDD 已锁定的，本 GDD 不能用不同的数 |
+| **Section C/D 写完后（主动检测）** | 扫描刚写入的 Detailed Design 和 Formulas，如果出现已注册的 entity/item/formula/constant 名且**值不同**，立即浮出冲突："Registry conflict: 哥布林血量在 combat.md 注册为 40，你这节写了 35，哪个对？"——不能继续直到解决 |
+| **Phase 5b（写完后批量注册）** | 扫描完整 GDD 找新出现的跨系统事实，问你"可以更新 entities.yaml 吗"，同意后追加新条目 + 更新 referenced_by |
+
+**铁律**：绝不静默用不同的数。绝不修改已注册的 value 字段（必须作为冲突浮出）。
+
+### 机制 6：改装模式——Retrofit Mode
+
+如果你已经有一个 GDD 文件（可能是手动写的、或上次没写完），`/design-system` 会进入 **retrofit 模式**而不是重建。
+
+#### 触发条件
+
+- 参数以 `retrofit` 开头：`/design-system retrofit design/gdd/combat-system.md`
+- 或参数是 `design/gdd/` 下已存在的 .md 文件路径
+
+#### retrofit 怎么工作
+
+1. 读取已存在的 GDD
+2. 扫描 8 个必填章节，识别哪些**已写**（有真实内容）、哪些**缺失**、哪些**只是占位符** `[To be designed]`
+3. 呈现 Section Status Table：
+
+```
+## Retrofit: Combat System
+File: design/gdd/combat-system.md
+
+Sections already written (will not be touched):
+✓ Overview
+✓ Player Fantasy
+
+Missing or incomplete sections (will be authored):
+✗ Detailed Design — missing
+✗ Formulas — placeholder only
+✗ Edge Cases — missing
+```
+
+4. 问你："Shall I fill the [N] missing sections? I will not modify any existing content."
+5. 你同意后，**跳过骨架创建**（文件已存在），**只对缺失/占位的章节**走 Section Cycle
+
+#### retrofit 的铁律
+
+> "Never overwrite existing section content. Use Edit tool to replace only `[To be designed]` placeholders or empty section bodies."
+
+只能替换占位符或空 body，**绝不覆盖已写好的内容**。这是防止"AI 自作主张改你的设计"。
+
+### 机制 7：崩溃恢复——Crash Recovery
+
+会话崩溃、上下文压缩、或你关掉重开——`/design-system` 都能从断点续写。
+
+#### 恢复流程
+
+1. 读 `production/session-state/active.md`——它记了"在写哪个系统、已完成哪些节"
+2. 读 `design/gdd/[system-name].md`——含真实内容的节是完成的，含 `[To be designed]` 的还要写
+3. 从**第一个未完成节**恢复，跳过已完成的——无需重新讨论
+
+#### 为什么能恢复
+
+[SKILL.md 第 827-828 行](file:///workspace/.claude/skills/design-system/SKILL.md)原文：
+
+> "This is why incremental writing matters: every approved section survives any disruption."
+
+增量写入是崩溃恢复的根基——每批准一节就立即写盘，任何中断都不丢已批准内容。
+
+### 机制 8：总监门禁——Director Gate
+
+8 个章节都写完后，`/design-system` 会触发一个**创意总监审查门**：**CD-GDD-ALIGN**（GDD 与支柱对齐检查）。
+
+#### 模式区别
+
+| 模式 | CD-GDD-ALIGN |
+|------|--------------|
+| **full** | spawn creative-director，审"GDD 是否符合游戏 pillars 和 MDA 目标"，给 APPROVED/CONCERNS/REJECT |
+| **lean** | 跳过（不是阻塞性门） |
+| **solo** | 跳过 |
+
+#### 审查结果记入 GDD
+
+审查完后，GDD 文件头部的 Status 区域会多一行：
+
+```
+> **Creative Director Review (CD-GDD-ALIGN)**: APPROVED 2026-06-30
+```
+
+### 机制 9：设计评审的独立性——/design-review
+
+GDD 写完后必须跑 [`/design-review`](file:///workspace/.claude/skills/design-review/SKILL.md) 验证。但有个铁律：
+
+> **绝不能和 `/design-system` 在同一个会话跑。**
+
+[SKILL.md 第 740-747 行](file:///workspace/.claude/skills/design-system/SKILL.md)原文：
+
+> "The reviewing agent must be independent of the authoring context. Running it here would inherit the full design history, making independent critique impossible."
+
+同会话会继承完整设计历史，使独立批判不可能。必须**开新会话**跑 `/design-review design/gdd/[system-name].md`。
+
+#### /design-review 检查什么
+
+- **8 章节完整性**：逐项打勾 `[X/8 sections present]`
+- **内部一致性**：公式输出匹配描述、edge cases 不矛盾主规则、依赖双向
+- **可实现性**：规则精确到程序员无需猜测、无 hand-wave、考虑性能
+- **跨系统一致性**：不与既有机制冲突、与 pillars/基调一致
+- **判决**：APPROVED / NEEDS REVISION / MAJOR REVISION NEEDED
+
+### 机制 10：下一个系统——/map-systems next
+
+写完一个 GDD 后，`/design-system` 会问你下一步干啥。如果你想继续写下一个系统的 GDD，用 `/map-systems next`。
+
+#### 它怎么决定下一个写谁
+
+读 [`design/gdd/systems-index.md`](file:///workspace/design/gdd/systems-index.md) 的 **Recommended Design Order**（推荐设计顺序），这个顺序是 `/map-systems` 按"依赖排序 + 优先级"双重排出来的：
+
+1. MVP 的 Foundation 系统优先（事件总线、save/load）
+2. MVP 的 Core 系统次之（移动、战斗、背包）
+3. MVP 的 Feature 系统第三（进度、经济）
+4. Vertical Slice 的系统...
+5. 以此类推
+
+`/map-systems next` 挑这个顺序里**最高优先级的"未设计"系统**（Status = Not Started），交给 `/design-system`。
+
+### 完整流程时序：从 `/design-system combat-system` 到 GDD 写完
+
+把上面 10 个机制串起来，完整流程是这样的：
+
+```
+你输入: /design-system combat-system
+         │
+         ▼
+┌─ Phase 1: 解析参数 ─────────────────────────────────┐
+│ 检测 retrofit? 规范化 system name 为 kebab-case    │
+│ 读 review-mode (full/lean/solo)                    │
+└─────────────────────────────────────────────────────┘
+         │
+         ▼
+┌─ Phase 2: 收集上下文 ──────────────────────────────┐
+│ 2a 读 game-concept.md (缺失→fail: 先跑 /brainstorm)│
+│    读 systems-index.md (缺失→fail: 先跑 /map-systems)│
+│    读 entities.yaml → 提取 known facts (锁定值)    │
+│    读 consistency-failures.md → 提取历史教训        │
+│ 2b 读依赖 GDD (upstream/downstream)                │
+│ 2c 可选读 pillars、已有 GDD (resume)               │
+│ 2d 呈现 Context Summary (依赖/约束/锁定值/pillar)  │
+│ 2e 技术可行性预检 (引擎域→读引擎文档→Feasibility Brief)│
+│    问你 "Ready to start designing combat-system?"  │
+└─────────────────────────────────────────────────────┘
+         │ 你说 Yes
+         ▼
+┌─ Phase 3: 创建骨架 ────────────────────────────────┐
+│ 问 "May I create skeleton at design/gdd/combat-system.md?"│
+│ 你拒绝 → BLOCKED, 停                              │
+│ 你同意 → Write 骨架文件 (11 节标题 + [To be designed])│
+│ 更新 production/session-state/active.md           │
+└─────────────────────────────────────────────────────┘
+         │
+         ▼
+┌─ Phase 4: 逐节设计 (Section Cycle × 8+) ───────────┐
+│                                                    │
+│  Section A: Overview                               │
+│    Context→Questions→Options→Decision→Draft→Approval│
+│    你批准 → Write 替换占位符 → 更新 active.md      │
+│                                                    │
+│  Section B: Player Fantasy                         │
+│    (full 模式 spawn creative-director)             │
+│    Cycle... → Write → 更新 active.md               │
+│                                                    │
+│  Section C: Detailed Design                        │
+│    (按路由表 spawn game-designer + systems-designer │
+│     + ai-programmer + art-director)                │
+│    Cycle... → Write → entities 冲突检测 → 更新      │
+│                                                    │
+│  Section D: Formulas                               │
+│    (spawn systems-designer; 经济系统加 economy-designer)│
+│    Cycle... → Write → entities 冲突检测 → 更新      │
+│                                                    │
+│  Section E: Edge Cases                             │
+│    (spawn systems-designer; 叙事加 narrative-director)│
+│    Cycle... → Write → 与依赖 GDD 交叉验证 → 更新    │
+│                                                    │
+│  Section F: Dependencies                           │
+│    (部分预填自 Phase 2)                            │
+│    Cycle... → Write → 双向一致性检查 → 更新         │
+│                                                    │
+│  Section G: Tuning Knobs                           │
+│    (公式复杂则 delegate systems-designer)          │
+│    Cycle... → Write → 与依赖 GDD 交叉引用 → 更新    │
+│                                                    │
+│  Section H: Acceptance Criteria                    │
+│    (强制 spawn qa-lead)                            │
+│    Cycle... → Write → 跨系统验证 → 更新             │
+│                                                    │
+│  Optional: Visual/Audio (视觉系统强制 art-director) │
+│  Optional: UI Requirements (触发 UX Flag)          │
+│  Optional: Open Questions                          │
+│                                                    │
+│  每节后检查 context ≥70% → 提示续写               │
+└─────────────────────────────────────────────────────┘
+         │
+         ▼
+┌─ Phase 5: 写后验证 ────────────────────────────────┐
+│ 5a Self-Check: 从文件读回完整 GDD, 验证 8 节有内容 │
+│ 5a-bis CD-GDD-ALIGN (full 模式 spawn creative-director)│
+│       记录判决到 GDD Status header                 │
+│ 5b Update entities.yaml: 扫描新事实→问你→追加      │
+│ 5c Offer Design Review: 指引开新会话跑 /design-review│
+│ 5d Update systems-index: 改 Status (Approved/In Review)│
+│ 5e Update session-state: 标记完成                  │
+│ 5f Suggest Next: 问你下一步 (consistency-check /   │
+│    design next system / fix review findings / stop)│
+└─────────────────────────────────────────────────────┘
+```
+
+### 文件结构为什么是这个样子——这是标准流程吗
+
+#### 8 个必填章节的设计依据
+
+这 8 个章节不是随意定的，每章防一类坑：
+
+| 章节 | 防什么坑 | 如果没有会怎样 |
+|------|---------|---------------|
+| **Overview** | 没全局观，写到跑题 | 20 个 GDD 没法快速扫描，AI 读 GDD 要全读 |
+| **Player Fantasy** | 只写机制不写体验 | 做出来的系统"对但没感觉"，不符支柱 |
+| **Detailed Design** | 规则含糊、状态遗漏、接口不清 | 程序员实现时靠猜，集成时才发现接口对不上 |
+| **Formulas** | 公式没法实现、变量没范围 | 程序员不知道变量取值范围，平衡师无法调参 |
+| **Edge Cases** | 罕见情况没考虑 | 上线后玩家发现"血量为 0 还能行动"等 bug |
+| **Dependencies** | 集成时才发现接口对不上 | 系统 A 期望信号、系统 B 期望直接调用 = 集成 bug |
+| **Tuning Knobs** | 数值硬编码、调参无边界 | 想调伤害找不到在哪改，改了不知道影响什么 |
+| **Acceptance Criteria** | 没法验收"做没做完" | "做完了吗"靠主观判断，QA 无法测 |
+
+#### 这是标准流程吗
+
+**是，但是是"本框架的标准"**，不是行业唯一标准。它的设计融合了：
+
+- **游戏设计行业经验**：8 章节对应行业 GDD 常见要素（Overview/Fantasy/Rules/Formulas/Edge Cases/Dependencies/Tuning/AC）
+- **软件工程实践**：Acceptance Criteria 用 Given-When-Then（BDD 风格）；Dependencies 双向一致（类似接口契约）
+- **MDA 设计框架**：Player Fantasy 显式要求写"目标 Aesthetics"，从感受倒推机制
+- **增量写入 + 上下文管理**：针对 AI 协作场景特有——传统 GDD 没有骨架先行和增量写入，因为人类不需要担心"上下文爆"
+
+> 💡 传统游戏行业的 GDD 往往是"一份大文档随便写"，没有强制 8 章节、没有骨架先行、没有 entities 注册表。这套框架的"标准"是**为 AI 协作场景优化过的**——结构化才能被技能解析、增量写入才能防上下文爆、注册表才能防跨文档冲突。
+
+#### 一处需要注意的命名差异
+
+规则文件 [`.claude/rules/design-docs.md`](file:///workspace/.claude/rules/design-docs.md) 写的是 "Detailed **Rules**"，而模板 [game-design-document.md](file:///workspace/.claude/docs/templates/game-design-document.md) 的实际 header 是 "Detailed **Design**"（其下含 Core Rules / States and Transitions / Interactions 三个子节）。**这是同一节**，只是规则和模板用了不同的名字。初学者别误以为是两节。
+
 ### B. `design/quick-specs/` —— 轻量规范
 
 #### B1. `[kebab-title]-[YYYY-MM-DD].md` —— 快速设计规格
@@ -935,6 +1416,67 @@ PIVOT 意味着"改设计或架构后再切片"。具体步骤：
 
 </details>
 
+**Q9**：你跑 `/design-system combat-system`，AI 直接写了 8 个章节的完整内容存盘，全程没问你。这违反了什么？
+
+<details>
+<summary>答案</summary>
+
+违反了多条：
+
+1. **协作五步**（Question→Options→Decision→Draft→Approval）：没有问问题、没有给选项、没有等你决定和批准
+2. **"May-I-write" 协议**：创建骨架文件前没问"可以创建吗"，每节写入前没问"可以写吗"
+3. **Section Cycle**：每节必须走 Context→Questions→Options→Decision→Draft→Approval→Write，不能跳过
+4. **[.claude/rules/design-docs.md](file:///workspace/.claude/rules/design-docs.md) 第 9 条**："create skeleton first, then fill each section one at a time **with user approval between sections**"
+
+这是典型的 **Autonomous Generator**（自主生成器）行为，被 [COLLABORATIVE-DESIGN-PRINCIPLE.md](file:///workspace/docs/COLLABORATIVE-DESIGN-PRINCIPLE.md) 明令禁止。
+
+</details>
+
+**Q10**：你的 combat GDD 写到 Formulas 章节时，AI 发现你写的"哥布林血量 35"和 entities.yaml 里注册的"哥布林血量 40"冲突。AI 该怎么做？
+
+<details>
+<summary>答案</summary>
+
+**立即浮出冲突，不能继续到下一节**。AI 应该说："Registry conflict: 哥布林血量在 combat.md 注册为 40（source: design/gdd/combat.md），你这节写了 35。哪个对？"
+
+- 如果你确认 35 对 → 需要更新 entities.yaml 的值（设 revised 日期、注释保留旧值）
+- 如果 40 才对 → 改你这节的内容
+- **绝不能静默用不同的数继续往下写**
+
+这是 entities.yaml 的铁律：绝不静默用不同的数，绝不修改已注册的 value 字段而不作为冲突浮出。
+
+</details>
+
+**Q11**：你有个半成品 GDD（Overview 和 Player Fantasy 已写，其余是 `[To be designed]`）。你想继续写完它。该用什么命令？AI 会怎么处理已写的两节？
+
+<details>
+<summary>答案</summary>
+
+用 `/design-system retrofit design/gdd/[system].md`（或直接传文件路径，技能会检测已存在文件自动进入 retrofit 模式）。
+
+AI 会：
+1. 读取文件，扫描 8 个必填章节
+2. 呈现 Section Status Table：✓ Overview、✓ Player Fantasy（已写，**不会碰**）；✗ 其余 6 节（缺失或占位符）
+3. 问你"Shall I fill the 6 missing sections? I will not modify any existing content."
+4. 你同意后，**跳过骨架创建**，只对 6 个缺失节走 Section Cycle
+
+**铁律**：retrofit 绝不覆盖已写内容，只能替换 `[To be designed]` 占位符或空 body。
+
+</details>
+
+**Q12**：你跑完 `/design-system` 写完 GDD，想紧接着在同一会话跑 `/design-review` 验证。这行吗？
+
+<details>
+<summary>答案</summary>
+
+**不行**。[SKILL.md 第 740-747 行](file:///workspace/.claude/skills/design-system/SKILL.md)明确："Never run `/design-review` in the same session as `/design-system`. The reviewing agent must be independent of the authoring context."
+
+同会话会继承完整的设计历史上下文，使独立批判不可能——评审智能体"既当运动员又当裁判"。必须**开新会话**跑 `/design-review design/gdd/[system-name].md`。
+
+`/design-system` 在 Phase 5c 会明确指引用户开新会话，绝不在线运行 `/design-review`。
+
+</details>
+
 ---
 
 ## 动手
@@ -944,12 +1486,16 @@ PIVOT 意味着"改设计或架构后再切片"。具体步骤：
 3. 对比 [design/registry/entities.yaml](file:///workspace/design/registry/entities.yaml) 和 [docs/registry/architecture.yaml](file:///workspace/docs/registry/architecture.yaml)——看它们的注释结构有多像，体会"设计事实"和"技术约束"的分工。
 4. 翻 [docs/WORKFLOW-GUIDE.md](file:///workspace/docs/WORKFLOW-GUIDE.md) 的 Phase 2 部分，看 `/design-system` 怎么一节一节产出 GDD 并更新 entities 注册表。
 5. 打开 [.claude/docs/templates/game-concept.md](file:///workspace/.claude/docs/templates/game-concept.md)，看概念文档的 16 个章节，特别是 Core Loop（嵌套循环）和 MVP Definition（Scope Tiers）。
-6. 打开 [.claude/docs/templates/game-design-document.md](file:///workspace/.claude/docs/templates/game-design-document.md)，对照 8 个必填章节的详细要求，注意 Formulas 章节强制四要素（表达式 + 变量表 + 输出范围 + Worked Example）。
+6. 打开 [.claude/docs/templates/game-design-document.md](file:///workspace/.claude/docs/templates/game-design-document.md)，对照 8 个必填章节的详细要求，注意 Formulas 章节强制四要素（表达式 + 变量表 + 输出范围 + Worked Example）。对比实际写入的简化骨架（本文档"骨架长什么样"那一节），理解为什么简化。
 7. 读 [docs/examples/session-design-system-skill.md](file:///workspace/docs/examples/session-design-system-skill.md)，看一个真实的 GDD 产出会话——验证 skeleton-first、section cycle、崩溃恢复怎么落地。
 8. 读 [docs/examples/session-ux-pipeline.md](file:///workspace/docs/examples/session-ux-pipeline.md)，看 `/ux-design` → `/ux-review` → `/team-ui` 三段式流程，理解"BLOCKING vs ADVISORY"区分。
+9. 打开 [.claude/skills/design-system/SKILL.md](file:///workspace/.claude/skills/design-system/SKILL.md) 的 Phase 3（创建骨架，约第 213-298 行）和 Phase 4 Section Cycle（约第 301-344 行），对照本文档的"机制 1"和"机制 2"，验证骨架内容和 7 步循环的精确条文。
+10. 读 [.claude/rules/design-docs.md](file:///workspace/.claude/rules/design-docs.md) 的 9 条规则，特别注意第 9 条"create skeleton first, then fill each section one at a time with user approval between sections"——这是骨架先行 + 增量写入的法律依据。
 
 ---
 
 ## 一句话带走
 
 > **`design/` = 游戏的"设计大脑"。现在只有写作规范（CLAUDE.md）和实体登记册（entities.yaml）两个骨架文件，将来会按需长出 GDD、UX 规范、quick-specs、叙事、关卡、平衡等子目录。规范先行、内容后填——规则立好了，技能产出内容时才不会跑偏。实际做游戏时，Phase 1 产概念和系统索引，Phase 2 集中产 GDD（最密集），Phase 4 产 UX 和垂直切片，Phase 5-6 产关卡/平衡/叙事并持续修订。所有文档有严格依赖链——从 game-concept 一路倒推到关卡和平衡数据。**
+>
+> **GDD 文件不是手动写的，是 `/design-system` 技能引导产出的：先建空骨架（所有章节标题 + `[To be designed]` 占位符），再对每节走"问问题→给选项→你决定→起草→你批准→写入"的 Section Cycle，配合专家路由、entities 冲突检测、技术可行性预检、崩溃恢复、retrofit 改装等 10 大机制，直到 8 个必填章节填满。这套流程是"为 AI 协作场景优化过的标准"——结构化才能被技能解析、增量写入才能防上下文爆、注册表才能防跨文档冲突。**
