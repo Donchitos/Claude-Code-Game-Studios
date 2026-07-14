@@ -52,6 +52,8 @@
 | 14 | [四大机制协作工作流](file:///workspace/study-docs/14-四大机制协作工作流.md) | Agent/skill/门禁/hook 怎么配合？大模型怎么触发它们？ | 用 /dev-story 例子串起四机制、触发方式、返回原节点、流程定位 |
 | 18 | [会话状态保存与选项澄清机制](file:///workspace/study-docs/18-会话状态保存与选项澄清机制.md) | 中断后怎么接着干？选项 + 澄清循环怎么转？ | active.md 状态环、4 个 hook、Question→Options→Approval 循环、Explain→Capture 三步法 |
 | 19 | [Claude Code 工具系统详解](file:///workspace/study-docs/19-Claude-Code工具系统详解.md) | AskUserQuestion 怎么用？还有哪些工具？ | 工具 vs Skill vs Hook vs Rules、AskUserQuestion 三步法、Read/Write/Edit/Glob/Grep/Bash/Task/TodoWrite/Web 工具、5 种组合模式 |
+| 20 | [.claude/docs 目录指南](file:///workspace/study-docs/20-claude-docs目录指南.md) | `.claude/docs/` 里每个文件干什么？ | 17 个主文件 + 2 子目录逐个讲、6 大分组、术语速查、开发流程映射 |
+| 21 | [游戏开发流程与软件工程实践](file:///workspace/study-docs/21-游戏开发流程与软件工程实践.md) | 游戏开发完整流程？每个实践解决什么问题、原理是什么？ | 7 阶段流程、15 个软件工程实践（GDD/ADR/门禁/单一事实源/数据驱动/验证驱动等）每个的问题与原理 |
 
 ---
 
