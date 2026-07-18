@@ -1,6 +1,6 @@
 # Epics Index
 
-Last Updated: 2026-07-17 (Seed Buffer epic Complete — 3/3 stories)
+Last Updated: 2026-07-18 (Parent Approval epic stories complete — 2/2)
 Engine: Flutter 3.44.4 / Flame 1.37.0 / Dart 3.12.2
 
 | Epic | Layer | System | GDD | Stories | Status |
@@ -15,3 +15,4 @@ Engine: Flutter 3.44.4 / Flame 1.37.0 / Dart 3.12.2
 | [task-library](task-library/EPIC.md) | Core | Task Library (#8) | design/gdd/task-library.md | 4 stories | Complete |
 | [push-notification](push-notification/EPIC.md) | Core | Push Notification (#9) | design/gdd/push-notification.md | 2/2 stories complete | Blocked on TestFlight hardware |
 | [seed-buffer](seed-buffer/EPIC.md) | Feature | Seed Buffer Mechanic (#10) | design/gdd/seed-buffer.md | 3 stories | Complete |
+| [parent-approval](parent-approval/EPIC.md) | Feature | Parent Approval System (#11) | design/gdd/parent-approval.md | 2/2 stories complete | Blocked on Parent Dashboard UI (#21) |

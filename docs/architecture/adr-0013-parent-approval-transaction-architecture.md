@@ -1,7 +1,7 @@
 # ADR-0013: Parent Approval Transaction Architecture
 
 ## Status
-Proposed
+Accepted
 
 ## Date
 2026-07-18
