@@ -1,0 +1,3 @@
+# Unit tests go here — one subdirectory per system (e.g. tests/unit/currency/,
+# tests/unit/pet_state_machine/). See tests/README.md for naming + determinism rules.
+# example_test.dart in this directory is a framework smoke test; replace with real tests.

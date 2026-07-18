@@ -24,33 +24,783 @@
 #
 # STATUS VALUES: active | deprecated | superseded-by: TR-[system]-NNN
 
-version: 1
-last_updated: ""
+version: 2
+last_updated: "2026-07-17"
 
-requirements: []
+requirements:
+  # --- Auth & Account (ADR-0002) ---
+  - id: TR-auth-account-001
+    system: auth-account
+    gdd: design/gdd/auth-account.md
+    requirement: "Max 4 child profiles per family; PIN is a parent-controlled child-access boundary"
+    created: 2026-07-11
+    revised: ""
+    status: active
+  - id: TR-auth-account-002
+    system: auth-account
+    gdd: design/gdd/auth-account.md
+    requirement: "Parent-only Firebase Auth identity; child is a Firestore document, not a Firebase Auth user"
+    created: 2026-07-11
+    revised: ""
+    status: active
+  - id: TR-auth-account-003
+    system: auth-account
+    gdd: design/gdd/auth-account.md
+    requirement: "PIN hashed with PBKDF2-HMAC-SHA256, 100k iterations, 16-byte per-child salt; never bare SHA-256"
+    created: 2026-07-11
+    revised: ""
+    status: active
+  - id: TR-auth-account-004
+    system: auth-account
+    gdd: design/gdd/auth-account.md
+    requirement: "PIN fail-lockout (3 attempts -> 60s) stored in flutter_secure_storage, survives force-close"
+    created: 2026-07-11
+    revised: ""
+    status: active
+  - id: TR-auth-account-005
+    system: auth-account
+    gdd: design/gdd/auth-account.md
+    requirement: "sessionStateProvider is a derived 4-state enum and the sole routing source of truth"
+    created: 2026-07-11
+    revised: ""
+    status: active
+  - id: TR-auth-account-006
+    system: auth-account
+    gdd: design/gdd/auth-account.md
+    requirement: "Parent override reauthenticates via reauthenticateWithCredential without disposing the child session"
+    created: 2026-07-11
+    revised: ""
+    status: active
+  - id: TR-auth-account-007
+    system: auth-account
+    gdd: design/gdd/auth-account.md
+    requirement: "Cloud Function onChildProfileDelete performs recursive Admin-SDK delete"
+    created: 2026-07-11
+    revised: ""
+    status: active
+  - id: TR-auth-account-008
+    system: auth-account
+    gdd: design/gdd/auth-account.md
+    requirement: "FCM onTokenRefresh writes to families/{parentId}.fcmToken"
+    created: 2026-07-11
+    revised: ""
+    status: active
+  - id: TR-auth-account-009
+    system: auth-account
+    gdd: design/gdd/auth-account.md
+    requirement: "resetChildPin() generates a fresh salt/hash, resets failCount, does not kick the active session"
+    created: 2026-07-11
+    revised: ""
+    status: active
+  - id: TR-auth-account-010
+    system: auth-account
+    gdd: design/gdd/auth-account.md
+    requirement: "signUp() creates a Firebase Auth account and bootstraps families/{parentId} (email, displayName, createdAt) — Core Rule 2a"
+    created: 2026-07-16
+    revised: ""
+    status: active
 
-# --- EXAMPLE ENTRIES (remove when first real entries are added) ---
-#
-# - id: TR-combat-001
-#   system: combat
-#   gdd: design/gdd/combat-system.md
-#   requirement: "Player takes damage from enemies based on attack power minus defence"
-#   created: 2026-03-10
-#   revised: ""
-#   status: active
-#
-# - id: TR-combat-002
-#   system: combat
-#   gdd: design/gdd/combat-system.md
-#   requirement: "Combo window timing is 0.4 seconds between hits"
-#   created: 2026-03-10
-#   revised: "2026-04-01"
-#   status: active
-#
-# - id: TR-combat-003
-#   system: combat
-#   gdd: design/gdd/combat-system.md
-#   requirement: "Old damage formula using raw stats"
-#   created: 2026-03-10
-#   revised: ""
-#   status: superseded-by: TR-combat-001
+  # --- Time & Decay (ADR-0005) ---
+  - id: TR-time-decay-001
+    system: time-decay
+    gdd: design/gdd/time-decay.md
+    requirement: "Energy is computed on app-foreground only; no background timer"
+    created: 2026-07-11
+    revised: ""
+    status: active
+  - id: TR-time-decay-002
+    system: time-decay
+    gdd: design/gdd/time-decay.md
+    requirement: "Decay = f(now - lastApprovedAt), no per-second recompute, pure function"
+    created: 2026-07-11
+    revised: ""
+    status: active
+  - id: TR-time-decay-003
+    system: time-decay
+    gdd: design/gdd/time-decay.md
+    requirement: "Clock-manipulation guard: clamp hoursElapsed to [0, 168]"
+    created: 2026-07-11
+    revised: ""
+    status: active
+  - id: TR-time-decay-004
+    system: time-decay
+    gdd: design/gdd/time-decay.md
+    requirement: "Pure calculation, zero Firestore writes, exposes energyProvider"
+    created: 2026-07-11
+    revised: ""
+    status: active
+
+  # --- Item Database (ADR-0006) ---
+  - id: TR-item-database-001
+    system: item-database
+    gdd: design/gdd/item-database.md
+    requirement: "Global top-level items/{itemId} collection, not family-scoped"
+    created: 2026-07-11
+    revised: ""
+    status: active
+  - id: TR-item-database-002
+    system: item-database
+    gdd: design/gdd/item-database.md
+    requirement: "One-time get() plus session-lifetime FutureProvider (not .autoDispose, not snapshots())"
+    created: 2026-07-11
+    revised: ""
+    status: active
+  - id: TR-item-database-003
+    system: item-database
+    gdd: design/gdd/item-database.md
+    requirement: "Read-only Security Rule (allow read; write: if false)"
+    created: 2026-07-11
+    revised: ""
+    status: active
+  - id: TR-item-database-004
+    system: item-database
+    gdd: design/gdd/item-database.md
+    requirement: "Catalog hard cap of 500 items (MVP ships 30) before pagination is required"
+    created: 2026-07-11
+    revised: ""
+    status: active
+
+  # --- Data Persistence Layer (ADR-0003) ---
+  - id: TR-data-persistence-001
+    system: data-persistence
+    gdd: design/gdd/data-persistence-layer.md
+    requirement: "Offline persistence and unlimited cache set once in main() via PersistentCacheSettings"
+    created: 2026-07-11
+    revised: ""
+    status: active
+  - id: TR-data-persistence-002
+    system: data-persistence
+    gdd: design/gdd/data-persistence-layer.md
+    requirement: "Complete schema: families / children / tasks / customTasks / inventory"
+    created: 2026-07-11
+    revised: ""
+    status: active
+  - id: TR-data-persistence-003
+    system: data-persistence
+    gdd: design/gdd/data-persistence-layer.md
+    requirement: "Atomic write contracts: approve = runTransaction, buy = WriteBatch"
+    created: 2026-07-11
+    revised: ""
+    status: active
+  - id: TR-data-persistence-004
+    system: data-persistence
+    gdd: design/gdd/data-persistence-layer.md
+    requirement: "All balance/counter mutation via FieldValue.increment(), never absolute set()"
+    created: 2026-07-11
+    revised: ""
+    status: active
+  - id: TR-data-persistence-005
+    system: data-persistence
+    gdd: design/gdd/data-persistence-layer.md
+    requirement: "Cloud Function onTaskApproved enforces storedEnergy cap of 100"
+    created: 2026-07-11
+    revised: ""
+    status: active
+  - id: TR-data-persistence-006
+    system: data-persistence
+    gdd: design/gdd/data-persistence-layer.md
+    requirement: "Cloud Function onChildProfileDelete performs recursive delete"
+    created: 2026-07-11
+    revised: ""
+    status: active
+  - id: TR-data-persistence-007
+    system: data-persistence
+    gdd: design/gdd/data-persistence-layer.md
+    requirement: "Security Rules scoped to request.auth.uid == parentId"
+    created: 2026-07-11
+    revised: ""
+    status: active
+  - id: TR-data-persistence-008
+    system: data-persistence
+    gdd: design/gdd/data-persistence-layer.md
+    requirement: "Document size budget under 1MB"
+    created: 2026-07-11
+    revised: ""
+    status: active
+
+  # --- Flutter-Flame State Bridge (ADR-0004) ---
+  - id: TR-bridge-001
+    system: bridge
+    gdd: design/gdd/flutter-flame-state-bridge.md
+    requirement: "GameEventBus is a pure-Dart broadcast singleton, app-lifetime"
+    created: 2026-07-11
+    revised: ""
+    status: active
+  - id: TR-bridge-002
+    system: bridge
+    gdd: design/gdd/flutter-flame-state-bridge.md
+    requirement: "GameEvent is typed per event type; communication is one-way Flutter to Flame"
+    created: 2026-07-11
+    revised: ""
+    status: active
+  - id: TR-bridge-003
+    system: bridge
+    gdd: design/gdd/flutter-flame-state-bridge.md
+    requirement: "ref.listen is the sanctioned bridge adapter from Riverpod into Flame"
+    created: 2026-07-11
+    revised: ""
+    status: active
+  - id: TR-bridge-004
+    system: bridge
+    gdd: design/gdd/flutter-flame-state-bridge.md
+    requirement: "Flame subscriber uses an isMounted guard and cancels its subscription in onRemove()"
+    created: 2026-07-11
+    revised: ""
+    status: active
+  - id: TR-bridge-005
+    system: bridge
+    gdd: design/gdd/flutter-flame-state-bridge.md
+    requirement: "Background-to-foreground replays last known state per event type, not full history"
+    created: 2026-07-11
+    revised: ""
+    status: active
+  - id: TR-bridge-006
+    system: bridge
+    gdd: design/gdd/flutter-flame-state-bridge.md
+    requirement: "Measured end-to-end latency avg 151ms / max 439ms (spike-validated)"
+    created: 2026-07-11
+    revised: ""
+    status: active
+
+  # --- Pet State Machine (ADR-0007) ---
+  - id: TR-petstate-001
+    system: petstate
+    gdd: design/gdd/pet-state-machine.md
+    requirement: "Two-layer model: persistent Base Mood plus transient Triggered State"
+    created: 2026-07-11
+    revised: ""
+    status: active
+  - id: TR-petstate-002
+    system: petstate
+    gdd: design/gdd/pet-state-machine.md
+    requirement: "Base Mood is a pure lookup on the energy float (energy owned by Time & Decay)"
+    created: 2026-07-11
+    revised: ""
+    status: active
+  - id: TR-petstate-003
+    system: petstate
+    gdd: design/gdd/pet-state-machine.md
+    requirement: "Triggered-state priority ordering, with non-interruptible LEVELING_UP"
+    created: 2026-07-11
+    revised: ""
+    status: active
+  - id: TR-petstate-004
+    system: petstate
+    gdd: design/gdd/pet-state-machine.md
+    requirement: "Triggered-state timers pause and resume correctly across app backgrounding"
+    created: 2026-07-11
+    revised: ""
+    status: active
+
+  # --- Currency System (ADR-0008) ---
+  - id: TR-currency-001
+    system: currency
+    gdd: design/gdd/currency-system.md
+    requirement: "Single currency (xu); no dual-currency, IAP, or ad-reward paths"
+    created: 2026-07-11
+    revised: ""
+    status: active
+  - id: TR-currency-002
+    system: currency
+    gdd: design/gdd/currency-system.md
+    requirement: "All balance mutation via FieldValue.increment()"
+    created: 2026-07-11
+    revised: ""
+    status: active
+  - id: TR-currency-003
+    system: currency
+    gdd: design/gdd/currency-system.md
+    requirement: "Balance floor of >=0 enforced pre-write by the consumer, plus a screen-level single-flight guard"
+    created: 2026-07-11
+    revised: ""
+    status: active
+  - id: TR-currency-004
+    system: currency
+    gdd: design/gdd/currency-system.md
+    requirement: "xuBalanceProvider is a realtime stream scoped to the active child"
+    created: 2026-07-11
+    revised: ""
+    status: active
+
+  # --- Task Library (ADR-0009) ---
+  - id: TR-tasklib-001
+    system: tasklib
+    gdd: design/gdd/task-library.md
+    requirement: "Lifecycle is pending to approved/rejected; no cancelled state"
+    created: 2026-07-11
+    revised: ""
+    status: active
+  - id: TR-tasklib-002
+    system: tasklib
+    gdd: design/gdd/task-library.md
+    requirement: "Reward-integrity guard: Security Rule validates reward fields against the category table at create-time"
+    created: 2026-07-11
+    revised: ""
+    status: active
+  - id: TR-tasklib-003
+    system: tasklib
+    gdd: design/gdd/task-library.md
+    requirement: "customTasks templates are structurally distinct from task instances"
+    created: 2026-07-11
+    revised: ""
+    status: active
+  - id: TR-tasklib-004
+    system: tasklib
+    gdd: design/gdd/task-library.md
+    requirement: "pendingTasksProvider and taskHistoryProvider are composite-indexed queries"
+    created: 2026-07-11
+    revised: ""
+    status: active
+  - id: TR-tasklib-005
+    system: tasklib
+    gdd: design/gdd/task-library.md
+    requirement: "Reward values are data-driven and never client-settable"
+    created: 2026-07-11
+    revised: ""
+    status: active
+
+  # --- Push Notification System (ADR-0010) ---
+  - id: TR-pushnotif-001
+    system: pushnotif
+    gdd: design/gdd/push-notification.md
+    requirement: "Create-only Firestore trigger (2nd-gen onDocumentCreated)"
+    created: 2026-07-11
+    revised: ""
+    status: active
+  - id: TR-pushnotif-002
+    system: pushnotif
+    gdd: design/gdd/push-notification.md
+    requirement: "FCM payload includes notification, data, and platform-priority fields"
+    created: 2026-07-11
+    revised: ""
+    status: active
+  - id: TR-pushnotif-003
+    system: pushnotif
+    gdd: design/gdd/push-notification.md
+    requirement: "iOS one-shot permission request; reminder deep-links to Settings rather than re-prompting"
+    created: 2026-07-11
+    revised: ""
+    status: active
+  - id: TR-pushnotif-004
+    system: pushnotif
+    gdd: design/gdd/push-notification.md
+    requirement: "No dedup/idempotency infrastructure; accepted duplicate-notification tradeoff for MVP"
+    created: 2026-07-11
+    revised: ""
+    status: active
+  - id: TR-pushnotif-005
+    system: pushnotif
+    gdd: design/gdd/push-notification.md
+    requirement: "Deep-link URI contract petquest://parent/tasks/pending"
+    created: 2026-07-11
+    revised: ""
+    status: active
+  - id: TR-pushnotif-006
+    system: pushnotif
+    gdd: design/gdd/push-notification.md
+    requirement: "Delivery latency target <10s typical / <60s hard threshold; fire-and-forget, no attempt-count retry"
+    created: 2026-07-11
+    revised: ""
+    status: active
+
+  # --- Parent Approval System (ADR-0004 partial; rest gap) ---
+  - id: TR-parentapproval-001
+    system: parentapproval
+    gdd: design/gdd/parent-approval.md
+    requirement: "A single runTransaction assembles all reward writes atomically on approve"
+    created: 2026-07-11
+    revised: ""
+    status: active
+  - id: TR-parentapproval-002
+    system: parentapproval
+    gdd: design/gdd/parent-approval.md
+    requirement: "Idempotency read (status == 'pending') happens first, inside the transaction"
+    created: 2026-07-11
+    revised: ""
+    status: active
+  - id: TR-parentapproval-003
+    system: parentapproval
+    gdd: design/gdd/parent-approval.md
+    requirement: "One transaction per task; no Approve-All batch operation"
+    created: 2026-07-11
+    revised: ""
+    status: active
+  - id: TR-parentapproval-004
+    system: parentapproval
+    gdd: design/gdd/parent-approval.md
+    requirement: "lastApprovedAt = serverTimestamp() is written on approve"
+    created: 2026-07-11
+    revised: ""
+    status: active
+  - id: TR-parentapproval-005
+    system: parentapproval
+    gdd: design/gdd/parent-approval.md
+    requirement: "chestDelta combines level-up-chest and gacha-milestone-chest additively, never suppressing one for the other"
+    created: 2026-07-11
+    revised: ""
+    status: active
+  - id: TR-parentapproval-006
+    system: parentapproval
+    gdd: design/gdd/parent-approval.md
+    requirement: "Reject uses the same idempotency guard as approve, and writes its own rejectedAt field"
+    created: 2026-07-11
+    revised: ""
+    status: active
+  - id: TR-parentapproval-007
+    system: parentapproval
+    gdd: design/gdd/parent-approval.md
+    requirement: "taskApproved is its own GameEventType with a payload distinct from petMoodChanged"
+    created: 2026-07-11
+    revised: ""
+    status: active
+  - id: TR-parentapproval-008
+    system: parentapproval
+    gdd: design/gdd/parent-approval.md
+    requirement: "Transaction failure handling is unified (single error path), no invented auto-retry loop"
+    created: 2026-07-11
+    revised: ""
+    status: active
+
+  # --- Gacha / Loot System (gap, no ADR yet) ---
+  - id: TR-gacha-001
+    system: gacha
+    gdd: design/gdd/gacha-loot.md
+    requirement: "Free chest awarded when approvedTaskCount % 5 == 0"
+    created: 2026-07-11
+    revised: ""
+    status: active
+  - id: TR-gacha-002
+    system: gacha
+    gdd: design/gdd/gacha-loot.md
+    requirement: "Loot roll is 70% item / 30% xu, with an injectable RNG for testability"
+    created: 2026-07-11
+    revised: ""
+    status: active
+  - id: TR-gacha-003
+    system: gacha
+    gdd: design/gdd/gacha-loot.md
+    requirement: "Duplicate-item result re-rolls once, then falls back to a 10 xu consolation"
+    created: 2026-07-11
+    revised: ""
+    status: active
+  - id: TR-gacha-004
+    system: gacha
+    gdd: design/gdd/gacha-loot.md
+    requirement: "chestCount decrements via FieldValue.increment(-1), shared-field safe with Parent Approval's writes"
+    created: 2026-07-11
+    revised: ""
+    status: active
+  - id: TR-gacha-005
+    system: gacha
+    gdd: design/gdd/gacha-loot.md
+    requirement: "Client-side roll is accepted for MVP; no server-side Cloud Function"
+    created: 2026-07-11
+    revised: ""
+    status: active
+
+  # --- Shop System (gap, no ADR yet) ---
+  - id: TR-shop-001
+    system: shop
+    gdd: design/gdd/shop-system.md
+    requirement: "Catalog filter by source (shop|both); owned-item badge on already-purchased entries"
+    created: 2026-07-11
+    revised: ""
+    status: active
+  - id: TR-shop-002
+    system: shop
+    gdd: design/gdd/shop-system.md
+    requirement: "Affordability check followed by an atomic batch purchase write"
+    created: 2026-07-11
+    revised: ""
+    status: active
+  - id: TR-shop-003
+    system: shop
+    gdd: design/gdd/shop-system.md
+    requirement: "Purchase idempotency: WriteBatch is not idempotent on xuBalance under a concurrent duplicate purchase; needs runTransaction (tracked as QQ-01; see architecture-review-2026-07-11.md C1)"
+    created: 2026-07-11
+    revised: ""
+    status: active
+  - id: TR-shop-004
+    system: shop
+    gdd: design/gdd/shop-system.md
+    requirement: "Paid Chest purchase hands off to the ceremony via an onAnimationComplete callback"
+    created: 2026-07-11
+    revised: ""
+    status: active
+
+  # --- Pet Interaction System (ADR-0004 SS3b partial; rest gap) ---
+  - id: TR-petinteraction-001
+    system: petinteraction
+    gdd: design/gdd/pet-interaction.md
+    requirement: "TapCallbacks/DragCallbacks on the Mochi sprite emit petInteracted directly (Flame to Bus to Flame, sanctioned reverse-direction case)"
+    created: 2026-07-11
+    revised: ""
+    status: active
+  - id: TR-petinteraction-002
+    system: petinteraction
+    gdd: design/gdd/pet-interaction.md
+    requirement: "Per-interaction-type cooldown: tap 1.0s, swipe 2.0s"
+    created: 2026-07-11
+    revised: ""
+    status: active
+  - id: TR-petinteraction-003
+    system: petinteraction
+    gdd: design/gdd/pet-interaction.md
+    requirement: "Swipe detection thresholds: >=40dp distance, <=300ms duration"
+    created: 2026-07-11
+    revised: ""
+    status: active
+  - id: TR-petinteraction-004
+    system: petinteraction
+    gdd: design/gdd/pet-interaction.md
+    requirement: "No persistent-data mutation from interaction; minimum 80x80dp hit area regardless of visual sprite size"
+    created: 2026-07-11
+    revised: ""
+    status: active
+
+  # --- Pet Equipment System (gap, no ADR yet) ---
+  - id: TR-petequip-001
+    system: petequip
+    gdd: design/gdd/pet-equipment.md
+    requirement: "equippedItems is a Map<slot,itemId>; slot is never null (default base items fill unequipped slots)"
+    created: 2026-07-11
+    revised: ""
+    status: active
+  - id: TR-petequip-002
+    system: petequip
+    gdd: design/gdd/pet-equipment.md
+    requirement: "One SpriteComponent overlay per slot; z-index order base < body < accessory < hat"
+    created: 2026-07-11
+    revised: ""
+    status: active
+  - id: TR-petequip-003
+    system: petequip
+    gdd: design/gdd/pet-equipment.md
+    requirement: "Ownership check (inventoryProvider.contains) is the caller's obligation before equip"
+    created: 2026-07-11
+    revised: ""
+    status: active
+  - id: TR-petequip-004
+    system: petequip
+    gdd: design/gdd/pet-equipment.md
+    requirement: "itemEquipped event triggers the SHOWING_OFF triggered state"
+    created: 2026-07-11
+    revised: ""
+    status: active
+
+  # --- Pet Leveling & Evolution (gap, no ADR yet) ---
+  - id: TR-leveling-001
+    system: leveling
+    gdd: design/gdd/pet-leveling-evolution.md
+    requirement: "totalXuEarned is an increment-only counter"
+    created: 2026-07-11
+    revised: ""
+    status: active
+  - id: TR-leveling-002
+    system: leveling
+    gdd: design/gdd/pet-leveling-evolution.md
+    requirement: "5 levels across 3 evolution stages; level thresholds 150/400/900/1800"
+    created: 2026-07-11
+    revised: ""
+    status: active
+  - id: TR-leveling-003
+    system: leveling
+    gdd: design/gdd/pet-leveling-evolution.md
+    requirement: "xuBonus is granted per level-up (GDD IS CURRENTLY SELF-CONTRADICTORY: Core Rule table says +50/+80/+120/+200, Formula/Tuning Knob say +75/+100/+125/+150 via level*25+25, AC uses +75 -- see architecture-review-2026-07-11.md Blocking Issue B1, must be reconciled before implementation)"
+    created: 2026-07-11
+    revised: ""
+    status: active
+  - id: TR-leveling-004
+    system: leveling
+    gdd: design/gdd/pet-leveling-evolution.md
+    requirement: "chestCount += 1 per level-up, a shared field also written by Gacha/Loot"
+    created: 2026-07-11
+    revised: ""
+    status: active
+  - id: TR-leveling-005
+    system: leveling
+    gdd: design/gdd/pet-leveling-evolution.md
+    requirement: "evolutionStage is recomputed as a pure function of petLevel on every load, not a one-shot side effect of witnessing the transition event"
+    created: 2026-07-11
+    revised: ""
+    status: active
+
+  # --- Main Navigation Shell (gap, no ADR yet) ---
+  - id: TR-navshell-001
+    system: navshell
+    gdd: design/gdd/main-navigation-shell.md
+    requirement: "GoRouter root with a StatefulShellRoute of 2 branches (child / parent)"
+    created: 2026-07-11
+    revised: ""
+    status: active
+  - id: TR-navshell-002
+    system: navshell
+    gdd: design/gdd/main-navigation-shell.md
+    requirement: "Route guard reads sessionStateProvider only; never re-derives session state independently"
+    created: 2026-07-11
+    revised: ""
+    status: active
+  - id: TR-navshell-003
+    system: navshell
+    gdd: design/gdd/main-navigation-shell.md
+    requirement: "activeChildBranchIndexProvider is the sole 'is this tab currently active' signal"
+    created: 2026-07-11
+    revised: ""
+    status: active
+  - id: TR-navshell-004
+    system: navshell
+    gdd: design/gdd/main-navigation-shell.md
+    requirement: "Root-navigator push is required for non-dismissible full-screen overlays (e.g. Chest ceremony)"
+    created: 2026-07-11
+    revised: ""
+    status: active
+
+  # --- Pet Room Screen UI (ADR-0001 partial; rest gap) ---
+  - id: TR-petroom-001
+    system: petroom
+    gdd: design/gdd/pet-room-screen-ui.md
+    requirement: "Screen composition z-order; GameWidget hosts exactly one FlameGame"
+    created: 2026-07-11
+    revised: ""
+    status: active
+  - id: TR-petroom-002
+    system: petroom
+    gdd: design/gdd/pet-room-screen-ui.md
+    requirement: "Flame draw-call budget contract of 5 draw calls, 2.5% of the project-wide 200 budget"
+    created: 2026-07-11
+    revised: ""
+    status: active
+  - id: TR-petroom-003
+    system: petroom
+    gdd: design/gdd/pet-room-screen-ui.md
+    requirement: "Tap hit-area padding formula guarantees hitBoxSize >= 80dp regardless of visual sprite size"
+    created: 2026-07-11
+    revised: ""
+    status: active
+  - id: TR-petroom-004
+    system: petroom
+    gdd: design/gdd/pet-room-screen-ui.md
+    requirement: "Modal defer when Wardrobe is open or a competing GameEvent arrives"
+    created: 2026-07-11
+    revised: ""
+    status: active
+  - id: TR-petroom-005
+    system: petroom
+    gdd: design/gdd/pet-room-screen-ui.md
+    requirement: "Never call FlameGame init/reset on tab return, since StatefulShellRoute keeps tabs mounted"
+    created: 2026-07-11
+    revised: ""
+    status: active
+
+  # --- Task Management UI (gap, no ADR yet) ---
+  - id: TR-taskui-001
+    system: taskui
+    gdd: design/gdd/task-management-ui.md
+    requirement: "Pending list is reversed client-side to oldest-first (source query is newest-first); display capped at 10"
+    created: 2026-07-11
+    revised: ""
+    status: active
+  - id: TR-taskui-002
+    system: taskui
+    gdd: design/gdd/task-management-ui.md
+    requirement: "Staggered catch-up animation total_duration formula, symmetric for approve and reject"
+    created: 2026-07-11
+    revised: ""
+    status: active
+  - id: TR-taskui-003
+    system: taskui
+    gdd: design/gdd/task-management-ui.md
+    requirement: "Tab-switch interrupt detection via activeChildBranchIndexProvider, not widget lifecycle"
+    created: 2026-07-11
+    revised: ""
+    status: active
+  - id: TR-taskui-004
+    system: taskui
+    gdd: design/gdd/task-management-ui.md
+    requirement: "Task-creation reward is derived from the category table and never child-settable"
+    created: 2026-07-11
+    revised: ""
+    status: active
+
+  # --- Shop & Reward UI (gap, no ADR yet) ---
+  - id: TR-shopui-001
+    system: shopui
+    gdd: design/gdd/shop-reward-ui.md
+    requirement: "Composition layer over Shop, Gacha, and Currency on one route; header always visible"
+    created: 2026-07-11
+    revised: ""
+    status: active
+  - id: TR-shopui-002
+    system: shopui
+    gdd: design/gdd/shop-reward-ui.md
+    requirement: "navLocked guard is driven by an onAnimationComplete callback, with a timer only as fallback ceiling"
+    created: 2026-07-11
+    revised: ""
+    status: active
+  - id: TR-shopui-003
+    system: shopui
+    gdd: design/gdd/shop-reward-ui.md
+    requirement: "Chest ceremony is a non-dismissible full-screen modal pushed via the root navigator"
+    created: 2026-07-11
+    revised: ""
+    status: active
+  - id: TR-shopui-004
+    system: shopui
+    gdd: design/gdd/shop-reward-ui.md
+    requirement: "Purchase-to-ceremony (2800/3600ms) and ceremony-to-equip-prompt (250ms) handoff timing"
+    created: 2026-07-11
+    revised: ""
+    status: active
+
+  # --- Parent Dashboard UI (gap, no ADR yet) ---
+  - id: TR-parentdash-001
+    system: parentdash
+    gdd: design/gdd/parent-dashboard-ui.md
+    requirement: "Pending list is uncapped; Approve/Reject button state machine matches Parent Approval exactly"
+    created: 2026-07-11
+    revised: ""
+    status: active
+  - id: TR-parentdash-002
+    system: parentdash
+    gdd: design/gdd/parent-dashboard-ui.md
+    requirement: "FCM banner defers while a modal is open, and coalesces via an unseenCount state machine"
+    created: 2026-07-11
+    revised: ""
+    status: active
+  - id: TR-parentdash-003
+    system: parentdash
+    gdd: design/gdd/parent-dashboard-ui.md
+    requirement: "targetChildId auto-assigns for single-child families"
+    created: 2026-07-11
+    revised: ""
+    status: active
+  - id: TR-parentdash-004
+    system: parentdash
+    gdd: design/gdd/parent-dashboard-ui.md
+    requirement: "Reset PIN dialog calls resetChildPin() and includes a real PIN-entry field, not a bare confirm"
+    created: 2026-07-11
+    revised: ""
+    status: active
+
+  # --- Seed Buffer (ADR-0012) ---
+  - id: TR-seedbuffer-001
+    system: seedbuffer
+    gdd: design/gdd/seed-buffer.md
+    requirement: "seedCount invariant (== COUNT(pending tasks)) maintained via increment(+1) on submit and increment(-1) on approve/reject — never an absolute set() from a client"
+    created: 2026-07-17
+    revised: ""
+    status: active
+  - id: TR-seedbuffer-002
+    system: seedbuffer
+    gdd: design/gdd/seed-buffer.md
+    requirement: "seedCountProvider never displays a negative value (AC-4) via a pure read-side clamp"
+    created: 2026-07-17
+    revised: ""
+    status: active
+  - id: TR-seedbuffer-003
+    system: seedbuffer
+    gdd: design/gdd/seed-buffer.md
+    requirement: "Drift between seedCount and actual pending-task count is detected and corrected server-side, transactionally (AC-8)"
+    created: 2026-07-17
+    revised: ""
+    status: active

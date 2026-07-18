@@ -1,0 +1,5 @@
+- [Two-tone visual identity](project_two-tone-visual-identity.md) — child-facing "Cozy Chibi" vs parent-facing "calm professional" is intentional, not inconsistency.
+- [VFX echo, not duplicate](feedback_vfx-echo-not-duplicate.md) — simplified local VFX should reuse source effect's timing/color and say so explicitly.
+- [Task Library category colors](reference_task-library-category-colors.md) — 5 category→color mapping lives in task-library.md, not art bible.
+- [Honey Gold hex inconsistency](project_honey-gold-hex-inconsistency.md) — RESOLVED 2026-07-06, fixed across 7 files, consistency-check confirmed clean.
+- [Shop #20 muted badge wording](project_shop-reward-ui-muted-badge-wording.md) — RESOLVED 2026-07-06, Core Rule 3 now cites `#C0A898` directly.

@@ -1,0 +1,98 @@
+<!-- PROTOTYPE - NOT FOR PRODUCTION -->
+<!-- Question: Firebase multi-device real-time sync spike -->
+<!-- Date: 2026-07-03 -->
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8" />
+<title>SPIKE — Parent Device</title>
+<style>
+  body { font-family: -apple-system, sans-serif; background: #1a1a2e; color: #eee; padding: 2rem; max-width: 640px; margin: 0 auto; }
+  h1 { color: #f9c74f; }
+  button { font-size: 1.1rem; padding: 0.8rem 1.4rem; border-radius: 10px; border: none; cursor: pointer; margin: 0.4rem 0.4rem 0.4rem 0; }
+  #approveBtn { background: #f9c74f; font-weight: bold; }
+  #offlineBtn { background: #577590; color: white; }
+  #resetBtn { background: #43302b; color: #ccc; }
+  #status { font-size: 0.9rem; color: #90be6d; margin: 0.5rem 0 1rem; }
+  #status.offline { color: #f94144; }
+  #log { background: #111; border-radius: 8px; padding: 1rem; height: 240px; overflow-y: auto; font-family: monospace; font-size: 0.85rem; white-space: pre-wrap; }
+  .row { margin-bottom: 4px; }
+</style>
+</head>
+<body>
+  <h1>👨‍👩‍👧 Parent Device (simulated)</h1>
+  <div id="status">connecting…</div>
+  <button id="approveBtn">✅ Approve Task (+20 xu)</button>
+  <button id="offlineBtn">📴 Go offline</button>
+  <button id="resetBtn">🔄 Reset xuBalance to 0</button>
+  <div id="log"></div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
+    import {
+      getFirestore, doc, setDoc, increment,
+      enableNetwork, disableNetwork
+    } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
+    import { firebaseConfig } from "./firebase-config.js";
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const ref = doc(db, "spike", "sharedState");
+
+    const logEl = document.getElementById("log");
+    const statusEl = document.getElementById("status");
+    function log(msg) {
+      const row = document.createElement("div");
+      row.className = "row";
+      row.textContent = `[${new Date().toLocaleTimeString()}] ${msg}`;
+      logEl.prepend(row);
+    }
+
+    let offline = false;
+
+    document.getElementById("approveBtn").onclick = async () => {
+      const t0 = Date.now();
+      const approveId = crypto.randomUUID().slice(0, 8);
+      log(`→ sending approve #${approveId} (xuBalance += 20) t0=${t0}`);
+      try {
+        // setDoc + merge instead of updateDoc: works whether or not the doc
+        // exists yet, so clicking Approve before ever clicking Reset doesn't
+        // silently fail with "No document to update".
+        await setDoc(ref, {
+          xuBalance: increment(20),
+          lastApprovedAt: t0,
+          lastApproveId: approveId,
+        }, { merge: true });
+        log(`✓ write acked locally for #${approveId} (${Date.now() - t0}ms local round-trip to SDK ack)`);
+      } catch (e) {
+        log(`✗ write queued/failed for #${approveId}: ${e.message} (will flush on reconnect if offline)`);
+      }
+    };
+
+    document.getElementById("offlineBtn").onclick = async () => {
+      offline = !offline;
+      if (offline) {
+        await disableNetwork(db);
+        statusEl.textContent = "OFFLINE (simulated) — writes will queue locally";
+        statusEl.className = "offline";
+        document.getElementById("offlineBtn").textContent = "📶 Go back online";
+        log("⚠ simulated offline — network disabled");
+      } else {
+        await enableNetwork(db);
+        statusEl.textContent = "online";
+        statusEl.className = "";
+        document.getElementById("offlineBtn").textContent = "📴 Go offline";
+        log("✓ back online — queued writes should now flush");
+      }
+    };
+
+    document.getElementById("resetBtn").onclick = async () => {
+      await setDoc(ref, { xuBalance: 0, lastApprovedAt: Date.now(), lastApproveId: "reset" });
+      log("🔄 reset xuBalance to 0");
+    };
+
+    statusEl.textContent = "online (Firestore initialized)";
+    log("Parent device ready. Open child.html in another tab/window/device now.");
+  </script>
+</body>
+</html>

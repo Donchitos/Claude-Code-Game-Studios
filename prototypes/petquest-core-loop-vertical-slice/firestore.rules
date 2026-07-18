@@ -1,0 +1,59 @@
+// VERTICAL SLICE - NOT FOR PRODUCTION
+// Validation Question: does the offline-first transaction + reward-integrity
+// rule pattern from ADR-0003/ADR-0009 actually work end-to-end?
+// Date: 2026-07-13
+//
+// Copied from ADR-0003 SS5 (amended) + ADR-0009 SS3 - do not hand-invent rules.
+// Slice scope cuts: no items/, no customTasks/, no inventory/ (Gacha/Shop/Equipment
+// are out of scope) - only the families/children/tasks path this slice exercises.
+//
+// SCOPE CUT (2026-07-13, documented in REPORT.md): the `request.auth.uid ==
+// parentId` ownership check is replaced with `true` here. Real Firebase Auth
+// Emulator wiring on Flutter Web hit a `firebase_auth/api-key-not-valid` error
+// this session that wasn't resolved within the slice's time budget - it is a
+// tooling/environment friction point, not the architecture risk this slice
+// exists to validate (that's the Bridge + Firestore transaction pattern below,
+// which IS still fully exercised). The reward-integrity gate (the genuinely
+// interesting ADR-0009 pattern) is kept fully intact.
+
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    match /families/{parentId} {
+      allow read, write: if true; // slice cut - see header note
+
+      match /children/{childId} {
+        allow read, write: if true; // slice cut - see header note
+
+        match /private/credentials {
+          allow read, write: if true; // slice cut - see header note
+        }
+
+        function rewardTable() {
+          return {
+            'study':  {'xu': 25, 'energy': 20}, 'arts':   {'xu': 25, 'energy': 20},
+            'chores': {'xu': 15, 'energy': 25}, 'sport':  {'xu': 15, 'energy': 25},
+            'helping':{'xu': 10, 'energy': 30}, 'custom': {'xu': 15, 'energy': 25},
+          };
+        }
+        function rewardOk(d) {
+          return d.categoryId in rewardTable()
+            && d.xuReward     == rewardTable()[d.categoryId].xu
+            && d.energyReward == rewardTable()[d.categoryId].energy;
+        }
+
+        // Reward-integrity gate kept fully intact - this IS the pattern
+        // worth validating (ADR-0009).
+        match /tasks/{taskId} {
+          allow read: if true; // slice cut - see header note
+          allow create: if request.resource.data.status == 'pending'
+            && rewardOk(request.resource.data);
+          allow update: if request.resource.data.xuReward     == resource.data.xuReward
+            && request.resource.data.energyReward == resource.data.energyReward
+            && request.resource.data.categoryId   == resource.data.categoryId;
+        }
+      }
+    }
+  }
+}

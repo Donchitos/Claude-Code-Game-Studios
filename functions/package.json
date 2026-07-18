@@ -1,0 +1,27 @@
+{
+  "name": "pet-quest-functions",
+  "version": "1.0.0",
+  "private": true,
+  "description": "PetQuest Cloud Functions — 2nd-gen Firestore-triggered functions (Admin SDK, TypeScript). Separate runtime from the Flutter/Flame client in src/ — see docs/architecture/adr-0002-auth-pin-security-architecture.md Decision §8.",
+  "engines": {
+    "node": "22"
+  },
+  "main": "lib/index.js",
+  "scripts": {
+    "build": "tsc",
+    "build:watch": "tsc --watch",
+    "test": "jest",
+    "lint": "tsc --noEmit"
+  },
+  "dependencies": {
+    "firebase-admin": "^13.10.0",
+    "firebase-functions": "^7.2.5"
+  },
+  "devDependencies": {
+    "@types/jest": "^30.0.0",
+    "firebase-functions-test": "^3.5.0",
+    "jest": "^30.4.2",
+    "ts-jest": "^29.4.11",
+    "typescript": "^6.0.3"
+  }
+}

@@ -30,7 +30,7 @@
 #   Superseded entries:     Grep pattern="status: superseded"
 
 version: 1
-last_updated: ""
+last_updated: "2026-07-11"
 
 # ─── STATE OWNERSHIP ─────────────────────────────────────────────────────────
 # Who is the authoritative owner of each piece of shared game state.
@@ -43,7 +43,234 @@ last_updated: ""
 # interface: how other systems access this state (read-only property, method call,
 #   signal, shared resource, etc.) — this is the contract other ADRs depend on.
 
-state_ownership: []
+state_ownership:
+  - state: session_state
+    status: active
+    owner_system: auth-account
+    adr: docs/architecture/adr-0002-auth-pin-security-architecture.md
+    interface: "sessionStateProvider (read-only Provider<SessionState>; enum:
+      unauthenticated | parentAuthed | childSelected | parentView). Derived from
+      authStateProvider + activeChildProvider + parentOverrideProvider."
+    write_access: auth-account-only   # derived provider; no system re-implements it
+    referenced_by:
+      - docs/architecture/adr-0002-auth-pin-security-architecture.md
+      - design/gdd/auth-account.md
+      - design/gdd/main-navigation-shell.md   # route guard reads it, does not re-derive
+    added: 2026-07-07
+    revised: ""
+
+  - state: active_child
+    status: active
+    owner_system: auth-account
+    adr: docs/architecture/adr-0002-auth-pin-security-architecture.md
+    interface: "activeChildProvider (StateProvider<ChildProfile?>). The childId scope
+      key every child-scoped system reads to load/save its own data."
+    write_access: auth-account-only
+    referenced_by:
+      - docs/architecture/adr-0002-auth-pin-security-architecture.md
+      - design/gdd/auth-account.md
+      - design/gdd/currency-system.md
+      - design/gdd/task-library.md
+      - design/gdd/flutter-flame-state-bridge.md
+    added: 2026-07-07
+    revised: ""
+
+  - state: firestore_schema
+    status: active
+    owner_system: data-persistence-layer
+    adr: docs/architecture/adr-0003-firestore-schema-persistence-strategy.md
+    interface: "PersistenceRepository (buyItem/approveTask/rejectTask/submitTask/
+      equipItem) + centralized Firestore path constants. Defines the complete schema:
+      families/{parentId}/children/{childId}[/private/credentials | /tasks | /inventory],
+      families/{parentId}/customTasks. No system builds Firestore paths by hand."
+    write_access: all-mutations-via-repository   # individual FIELDS are owned by their
+      # systems (xuBalance→Currency, petLevel→Pet Leveling, etc.); the SCHEMA/paths are
+      # owned here and every read/write goes through the repository contract.
+    referenced_by:
+      - docs/architecture/adr-0003-firestore-schema-persistence-strategy.md
+      - design/gdd/data-persistence-layer.md
+    added: 2026-07-07
+    revised: ""
+
+  - state: current_energy
+    status: active
+    owner_system: time-decay
+    adr: docs/architecture/adr-0005-time-decay-calculation-strategy.md
+    interface: "energyProvider (read-only double, range 10–100). Pure on-foreground calc via
+      computeEnergy(storedEnergy, lastApprovedAt, createdAt, now) scoped to activeChild.
+      Recomputes on app resume (resumeTickProvider) + on the child-doc stream changing."
+    write_access: none   # Time & Decay computes but persists NOTHING. The backing fields
+      # storedEnergy (increment) + lastApprovedAt (serverTimestamp) are written by Parent
+      # Approval's transaction per ADR-0003; the energy→mood lookup is owned by Pet State Machine (#6).
+    referenced_by:
+      - docs/architecture/adr-0005-time-decay-calculation-strategy.md
+      - design/gdd/time-decay.md
+      - design/gdd/pet-state-machine.md
+    added: 2026-07-07
+    revised: ""
+
+  - state: item_catalog
+    status: active
+    owner_system: item-database
+    adr: docs/architecture/adr-0006-item-catalog-data-access-pattern.md
+    interface: "itemCatalogProvider (read-only FutureProvider<List<ItemModel>>, session-cached,
+      NOT autoDispose) + lookupById(itemId)→ItemModel?. Global top-level items/{itemId} collection."
+    write_access: admin-seed-only   # allow write: if false — clients never write; seeded via Admin SDK/console
+    referenced_by:
+      - docs/architecture/adr-0006-item-catalog-data-access-pattern.md
+      - design/gdd/item-database.md
+      - design/gdd/shop-system.md
+      - design/gdd/gacha-loot.md
+      - design/gdd/pet-equipment.md
+    added: 2026-07-07
+    revised: ""
+
+  - state: pet_base_mood
+    status: active
+    owner_system: pet-state-machine
+    adr: docs/architecture/adr-0007-pet-state-machine-architecture.md
+    interface: "petMoodProvider (derived read-only Provider<MoodState> = _moodForEnergy(energyProvider)).
+      Pet State Machine owns the authoritative energy→mood lookup (delegated by ADR-0005). Emits
+      petMoodChanged via the Bridge only on mood-BAND change. Triggered State (EXCITED/PLEASED/etc.)
+      is Flame-side ephemeral inside MochiComponent — NOT shared state, not registered."
+    write_access: derived-only   # pure function of energy; never set directly (see settable_pet_mood_state)
+    referenced_by:
+      - docs/architecture/adr-0007-pet-state-machine-architecture.md
+      - design/gdd/pet-state-machine.md
+      - design/gdd/time-decay.md
+    added: 2026-07-07
+    revised: ""
+
+  - state: xu_balance
+    status: active
+    owner_system: currency-system
+    adr: docs/architecture/adr-0008-currency-balance-mutation-rules.md
+    interface: "xuBalanceProvider (read, StreamProvider<int>, scoped to activeChild, display clamps <0 to 0).
+      Write ONLY via the repository increment contract (ADR-0003) — FieldValue.increment(±N), never set().
+      ≥0 floor enforced by Shop pre-write + single-flight guard (NOT by Currency, NOT by Security Rules)."
+    write_access: increment-only-via-repository   # earn: Parent Approval txn + Gacha batch; spend: Shop batch
+    referenced_by:
+      - docs/architecture/adr-0008-currency-balance-mutation-rules.md
+      - docs/architecture/adr-0013-parent-approval-transaction-architecture.md
+      - design/gdd/currency-system.md
+      - design/gdd/shop-system.md
+      - design/gdd/gacha-loot.md
+      - design/gdd/parent-approval.md
+    added: 2026-07-07
+    revised: ""
+
+  - state: task_reward_table
+    status: active
+    owner_system: task-library
+    adr: docs/architecture/adr-0009-task-lifecycle-reward-integrity.md
+    interface: "Authoritative category→(xu,energy) reward table — study/arts 25/20, chores/sport/custom
+      15/25, helping 10/30. Access: rewardFor(categoryId) (unknown→custom). Also owns task lifecycle
+      (pending→approved/rejected, no cancel) + pendingTasksProvider/taskHistoryProvider. Currency (#7)
+      and Time & Decay (#2) DEFER their reward values here — this is the single source."
+    write_access: data-driven-lookup-only   # mirrored in app + Security Rules + registry; must stay in sync
+    referenced_by:
+      - docs/architecture/adr-0009-task-lifecycle-reward-integrity.md
+      - design/gdd/task-library.md
+      - design/gdd/currency-system.md
+      - design/gdd/time-decay.md
+      - design/gdd/parent-approval.md
+    added: 2026-07-08
+    revised: ""
+
+  - state: seed_count
+    status: active
+    owner_system: seed-buffer
+    adr: docs/architecture/adr-0012-seed-buffer-derivation-strategy.md
+    interface: "seedCountProvider (StreamProvider<int>, clamped to ≥0 on read).
+      Denormalized cache on children/{childId}.seedCount; invariant
+      seedCount == COUNT(tasks WHERE status == 'pending'). Write contract:
+      FieldValue.increment only (+1 on submit, -1 on approve/reject) — never
+      an absolute set, except the CF-side transactional drift-correction
+      carve-out (see api_decisions: seedcount_drift_correction)."
+    write_access: increment-only-except-cf-drift-correction   # +1: task submission flow (Task Library #8's
+      # WriteBatch); -1: Parent Approval (#11)'s own batch; absolute-set correction: Parent Approval's
+      # Cloud Function only, inside a runTransaction, never client-triggered
+    referenced_by:
+      - docs/architecture/adr-0012-seed-buffer-derivation-strategy.md
+      - docs/architecture/adr-0013-parent-approval-transaction-architecture.md   # fulfills the -1 contract
+      - design/gdd/seed-buffer.md
+      - design/gdd/main-navigation-shell.md   # Seed Badge tab-icon count
+      - design/gdd/task-management-ui.md   # pending seeds list + count badge
+    added: 2026-07-17
+    revised: ""
+
+  - state: total_xu_earned
+    status: active
+    owner_system: parent-approval   # INTERIM — formally owned by pet-leveling-evolution's GDD, but that
+      # system has no ADR/epic of its own yet; Parent Approval is the sole writer in MVP and registers the
+      # write mechanism now rather than blocking on an epic that doesn't exist (ADR-0013 Ordering Note).
+    adr: docs/architecture/adr-0013-parent-approval-transaction-architecture.md
+    interface: "Lifetime effort counter on children/{childId}.totalXuEarned. Written only inside
+      ParentApprovalRepository.approveTask()'s runTransaction, via FieldValue.increment(task.xuReward).
+      Read (in the same transaction) to compute leveledUp against nextLevelThreshold(petLevel)."
+    write_access: increment-only-via-parent-approval-transaction
+    referenced_by:
+      - docs/architecture/adr-0013-parent-approval-transaction-architecture.md
+      - design/gdd/parent-approval.md
+      - design/gdd/pet-leveling-evolution.md
+    added: 2026-07-18
+    revised: ""
+
+  - state: pet_level
+    status: active
+    owner_system: parent-approval   # INTERIM — see total_xu_earned above; same ordering rationale
+    adr: docs/architecture/adr-0013-parent-approval-transaction-architecture.md
+    interface: "children/{childId}.petLevel (1-5) + the denormalized children/{childId}.nextLevelThreshold
+      cache field (ADR-0003 schema), kept in sync in the SAME write as petLevel — null at max level (5).
+      Written only inside ParentApprovalRepository.approveTask()'s runTransaction, via
+      FieldValue.increment(1) when leveledUp. nextLevelThreshold(currentLevel) is a pure lookup function
+      (150/400/900/1800, throws outside 1-4) sourced from design/registry/entities.yaml, not invented."
+    write_access: increment-only-via-parent-approval-transaction   # petLevel never absolute-set;
+      # nextLevelThreshold IS an absolute set but is a pure cache mirror, not a balance/counter
+    referenced_by:
+      - docs/architecture/adr-0013-parent-approval-transaction-architecture.md
+      - docs/architecture/adr-0003-firestore-schema-persistence-strategy.md   # schema field origin
+      - design/gdd/parent-approval.md
+      - design/gdd/pet-leveling-evolution.md
+    added: 2026-07-18
+    revised: ""
+
+  - state: approved_task_count
+    status: active
+    owner_system: parent-approval   # INTERIM — formally owned by gacha-loot's GDD, which has no ADR/epic
+      # of its own yet; same ordering rationale as total_xu_earned/pet_level above
+    adr: docs/architecture/adr-0013-parent-approval-transaction-architecture.md
+    interface: "children/{childId}.approvedTaskCount. Written only inside
+      ParentApprovalRepository.approveTask()'s runTransaction, via FieldValue.increment(1). Read (in the
+      same transaction) to compute hitChestMilestone = newApprovedTaskCount % gachaFreeChestMilestone == 0
+      (gachaFreeChestMilestone = 5, design/registry/entities.yaml)."
+    write_access: increment-only-via-parent-approval-transaction
+    referenced_by:
+      - docs/architecture/adr-0013-parent-approval-transaction-architecture.md
+      - design/gdd/parent-approval.md
+      - design/gdd/gacha-loot.md
+    added: 2026-07-18
+    revised: ""
+
+  - state: chest_count
+    status: active
+    owner_system: parent-approval   # INTERIM, write path only — formally owned by gacha-loot's GDD (which
+      # also owns the -1 chest-open decrement, not implemented by ADR-0013 or any epic yet)
+    adr: docs/architecture/adr-0013-parent-approval-transaction-architecture.md
+    interface: "children/{childId}.chestCount. The +chestDelta write (0-2, per Contract 1:
+      chestDelta = [leveledUp] + [hitChestMilestone], both stack rather than suppress) is written only
+      inside ParentApprovalRepository.approveTask()'s runTransaction, via
+      FieldValue.increment(chestDelta), skipped entirely when chestDelta == 0. The chest-OPEN -1
+      decrement is Gacha/Loot's own future write, not implemented here — composes safely with this
+      write since both are independent FieldValue.increment() operations on the same field."
+    write_access: increment-only   # +delta: Parent Approval's transaction (this ADR); -1 on open: Gacha/Loot,
+      # not yet implemented — both increment-only, no absolute set from either side
+    referenced_by:
+      - docs/architecture/adr-0013-parent-approval-transaction-architecture.md
+      - design/gdd/parent-approval.md
+      - design/gdd/gacha-loot.md
+    added: 2026-07-18
+    revised: ""
 
 # Example:
 #
@@ -71,7 +298,91 @@ state_ownership: []
 #
 # pattern options: signal | direct_call | event_bus | shared_resource | rpc | none
 
-interfaces: []
+interfaces:
+  - contract: auth_providers
+    status: active
+    pattern: shared_resource   # a single canonical provider module every system imports
+    producer: auth-account
+    consumers:
+      - data-persistence-layer
+      - flutter-flame-state-bridge
+      - currency-system
+      - task-library
+      - push-notification
+      - main-navigation-shell
+      - parent-dashboard-ui
+    adr: docs/architecture/adr-0002-auth-pin-security-architecture.md
+    signal_signature: "lib/providers/auth_providers.dart exports authStateProvider,
+      activeChildProvider, parentOverrideProvider, sessionStateProvider,
+      parentProfileProvider, resetChildPin(), verifyChildPin(). Downstream systems
+      import these — they MUST NOT define their own auth/session providers."
+    referenced_by:
+      - docs/architecture/adr-0002-auth-pin-security-architecture.md
+      - design/gdd/auth-account.md
+    added: 2026-07-07
+    revised: ""
+
+  - contract: game_event_bus
+    status: active
+    pattern: event_bus
+    producer: flutter-flame-state-bridge
+    consumers:
+      - pet-state-machine        # subscribes: petMoodChanged, petInteracted, taskApproved, petLeveledUp
+      - seed-buffer              # subscribes: seedReceived
+      - pet-equipment            # subscribes: itemEquipped
+      - pet-leveling-evolution   # emits (via ref.listen adapter): petLeveledUp
+      - pet-room-screen-ui       # subscribes: multiple
+      - pet-interaction          # EMITS directly from a Flame component: petInteracted
+    adr: docs/architecture/adr-0004-flutter-flame-event-bridge-architecture.md
+    signal_signature: "GameEventBus() -> pure-Dart broadcast singleton; GameEvent(GameEventType type, dynamic data);
+      GameEventType { petMoodChanged→PetMood, seedReceived→SeedData, itemEquipped→String,
+      energyChanged→double, petLeveledUp→int, petInteracted→InteractionType, taskApproved→null }.
+      Two sanctioned adapters: (a) ref.listen in ConsumerWidget → emit(); (b) Flame component emit()
+      direct (#14 only, Flame→Bus→Flame). Subscribers MUST subscribe in onMount(), guard with isMounted,
+      cancel() in onRemove(). One-way only: never Flame→Flutter."
+    referenced_by:
+      - docs/architecture/adr-0004-flutter-flame-event-bridge-architecture.md
+      - design/gdd/flutter-flame-state-bridge.md
+    added: 2026-07-07
+    revised: ""
+
+  - contract: fcm_notification_payload
+    status: active
+    pattern: rpc   # server → device push message with a machine-readable data block
+    producer: push-notification
+    consumers:
+      - parent-dashboard-ui   # foreground onMessage banner
+      - main-navigation-shell # deep-link routing + OS scheme registration
+    adr: docs/architecture/adr-0010-push-notification-delivery-architecture.md
+    signal_signature: "FCM message: notification{title,body} + data{ type:'task_submitted', taskId,
+      childId, deepLink:'petquest://parent/tasks/pending' } (all data values STRINGS) +
+      android.priority:'high' + apns.headers['apns-priority']:'10'. Deep-link URI scheme owned here;
+      go_router route resolution owned by Nav Shell #17."
+    referenced_by:
+      - docs/architecture/adr-0010-push-notification-delivery-architecture.md
+      - design/gdd/push-notification.md
+    added: 2026-07-08
+    revised: ""
+
+  - contract: purchase_animation_complete
+    status: active
+    pattern: direct_call   # plain Dart callback, not an event bus — no Flame component involved
+    producer: shop-system
+    consumers:
+      - shop-reward-ui   # navLocked guard (Formula 1) unlocks + auto-navigates on this callback
+    adr: docs/architecture/adr-0011-shop-purchase-pipeline-idempotency-fix.md
+    signal_signature: "typedef PurchaseAnimationCompleteCallback = void Function(); exposed as
+      PaidChestCard.onAnimationComplete. Fired exactly once, only on a fresh
+      PurchaseResult.success (never on alreadyProcessed/insufficientFunds/failure), from the
+      local AnimationController's forward().whenComplete(...) AFTER the purchase transaction
+      has already committed. Paid Chest path only — regular item purchases have no ceremony
+      handoff and do not use this callback."
+    referenced_by:
+      - docs/architecture/adr-0011-shop-purchase-pipeline-idempotency-fix.md
+      - design/gdd/shop-system.md
+      - design/gdd/shop-reward-ui.md
+    added: 2026-07-11
+    revised: ""
 
 # Example:
 #
@@ -100,7 +411,22 @@ interfaces: []
 # Register a budget when an ADR explicitly claims a frame time allocation.
 # The registry lets /architecture-review verify the total doesn't exceed the target.
 
-performance_budgets: []
+performance_budgets:
+  - system: flame_canvas_rendering
+    status: active
+    budget_draw_calls: 200
+    platform: Mobile   # iOS + Android
+    adr: docs/architecture/adr-0001-draw-call-budget-scope.md
+    notes: "Applies ONLY to Flame-canvas rendering (renderable components — SpriteComponent
+      etc. — post-SpriteBatch). Does NOT include Flutter widget compositing (GameWidget
+      overlays, bottom sheets, app bars) — that is governed separately by frame
+      build/raster time, held to the same 16.6ms/frame budget but NOT summed into
+      this draw-call count. See api_decisions and forbidden_patterns entries below."
+    referenced_by:
+      - docs/architecture/adr-0001-draw-call-budget-scope.md
+      - design/gdd/pet-room-screen-ui.md   # Formula 1, drawCalls_sceneFlame = 5
+    added: 2026-07-07
+    revised: ""
 
 # Example:
 #
@@ -131,7 +457,204 @@ performance_budgets: []
 # Register an API decision when the choice is non-obvious and other ADRs might
 # make a different choice for the same purpose without knowing this was decided.
 
-api_decisions: []
+api_decisions:
+  - purpose: rendering_cost_measurement_for_flame_canvas_screens
+    status: active
+    api: "Manual, design-time component tally (Flame side) + Flutter DevTools frame
+      build/raster time (Flutter side) — two separate metrics, checked independently"
+    not: "A single unified draw-call count spanning both Flame canvas and Flutter
+      widget compositing — Flame 1.37 has no runtime draw-call counter to produce
+      such a number, and Flutter's retained-mode layer tree doesn't expose one either"
+    adr: docs/architecture/adr-0001-draw-call-budget-scope.md
+    reason: "Flame components paint via ordinary Canvas calls, same as Flutter
+      widgets — there is no built-in instrumentation to count them at runtime.
+      The only checkable metric at GDD-authoring time is a manual tally of
+      renderable components in the tree, per screen. Flutter-side cost is
+      measured via DevTools instead, since that's what's actually available."
+    referenced_by:
+      - docs/architecture/adr-0001-draw-call-budget-scope.md
+    added: 2026-07-07
+    revised: ""
+
+  - purpose: child_pin_verification
+    status: active
+    api: "Client-side PBKDF2-HMAC-SHA256 (pointycastle ^3.9.0), 100k iterations,
+      16-byte per-child salt, keyLength 32, run off the main isolate (Isolate.run/
+      compute). Verification reads pinHash+pinSalt to the device and compares locally
+      — offline-capable, no server round-trip."
+    not: "Server-side PIN verification via Cloud Function (breaks offline-first for
+      zero security gain — Firestore rules already grant any shared-device session
+      full child-data access); and bare SHA-256 (rainbow-table / cross-child compare)."
+    adr: docs/architecture/adr-0002-auth-pin-security-architecture.md
+    reason: "Offline-first daily-ritual pillar + COPPA no-child-identity constraint.
+      PBKDF2+salt is retained for correct reasons (beats SHA-256, blocks rainbow/
+      cross-child) but the real anti-guessing defense is the online lockout, not the
+      KDF — a 4-digit PIN's 10,000 keyspace is not protected by iteration count."
+    referenced_by:
+      - docs/architecture/adr-0002-auth-pin-security-architecture.md
+      - design/gdd/auth-account.md
+    added: 2026-07-07
+    revised: ""
+
+  - purpose: firestore_offline_persistence
+    status: active
+    api: "Settings(cacheSettings: PersistentCacheSettings(sizeBytes: Settings.CACHE_SIZE_UNLIMITED)),
+      set once in main() before any Firestore call. 50MB fallback = PersistentCacheSettings(sizeBytes: 50*1024*1024)."
+    not: "Settings(persistenceEnabled: true, cacheSizeBytes: ...) — @Deprecated in cloud_firestore ^5.x
+      (confirmed by flame-specialist 2026-07-07). Do not pass both cacheSizeBytes and cacheSettings."
+    adr: docs/architecture/adr-0003-firestore-schema-persistence-strategy.md
+    reason: "Offline-first is Pillar 1 (no effort lost). The ^5.x unified cache-settings API
+      replaced the older persistenceEnabled/cacheSizeBytes pair across all Firestore SDKs."
+    referenced_by:
+      - docs/architecture/adr-0003-firestore-schema-persistence-strategy.md
+      - design/gdd/data-persistence-layer.md
+      - docs/engine-reference/flutter-flame/current-best-practices.md
+    added: 2026-07-07
+    revised: ""
+
+  - purpose: atomic_write_mechanism
+    status: active
+    api: "runTransaction for read-dependent writes (approve/reject task — idempotency read
+      first, level-up calc; buy-item/buy-Paid-Chest — idempotency read first, ADR-0011);
+      WriteBatch for independent multi-field atomic writes with no idempotency read needed.
+      FieldValue.increment() for all balance/counter mutation."
+    not: "WriteBatch for read-dependent writes (can't read-before-write safely);
+      absolute set() on counters (see forbidden_patterns absolute_set_on_balance_or_counters)."
+    adr: docs/architecture/adr-0003-firestore-schema-persistence-strategy.md
+    reason: "Read-before-write invariants (idempotency, level-up) require a transaction;
+      independent field writes only need atomicity (batch); increment() is server-side
+      atomic and avoids last-write-wins races on multi-device offline sync."
+    referenced_by:
+      - docs/architecture/adr-0003-firestore-schema-persistence-strategy.md
+      - docs/architecture/adr-0011-shop-purchase-pipeline-idempotency-fix.md
+      - docs/architecture/adr-0013-parent-approval-transaction-architecture.md
+      - design/gdd/data-persistence-layer.md
+    added: 2026-07-07
+    revised: "2026-07-11"
+    # revision note: buy-item moved OUT of the WriteBatch example and into the runTransaction
+    # example (ADR-0011) — the original entry listed "WriteBatch for independent multi-field
+    # atomic writes (buy-item)"; buy-item needed a read-before-write idempotency check
+    # (TR-shop-003/QQ-01) that WriteBatch cannot provide, so it now uses runTransaction like
+    # approve/reject. Paid Chest purchase (no natural document key) also moved to
+    # runTransaction, gated on a client-generated idempotency token instead of a natural key.
+
+  - purpose: shop_purchase_idempotency_mechanism
+    status: active
+    api: "Regular item purchase: runTransaction reading inventory/{itemId} first — if it
+      exists, no-op (PurchaseResult.alreadyOwned), no re-decrement. The item ID is the
+      natural idempotency key, correct under any retry count/device count with zero new
+      state. Paid Chest purchase (no natural per-purchase document): runTransaction reading
+      a client-generated purchaseId (UUID v4) against purchaseLog/{purchaseId} first — same
+      no-op-if-exists pattern, using a token instead of a natural key. Both re-check
+      xuBalance server-side inside the same transaction before applying the decrement."
+    not: "WriteBatch for either purchase path (no read-before-write, cannot self-detect a
+      duplicate commit — this was the TR-shop-003/QQ-01 gap). A single uniform
+      idempotency-token mechanism for BOTH items and Paid Chest (items already have a free,
+      unconditionally-correct natural key and don't need the extra purchaseLog machinery)."
+    adr: docs/architecture/adr-0011-shop-purchase-pipeline-idempotency-fix.md
+    reason: "No-Refund Rule (shop-system.md) means a duplicate charge cannot be corrected
+      after the fact — it must be prevented at write time. Firestore transactions'
+      optimistic-concurrency + auto-retry-on-contention make a read-before-write existence
+      check race-safe even for genuinely simultaneous commits, not just sequential retries."
+    referenced_by:
+      - docs/architecture/adr-0011-shop-purchase-pipeline-idempotency-fix.md
+      - design/gdd/shop-system.md
+    added: 2026-07-11
+    revised: ""
+
+  - purpose: item_catalog_access
+    status: active
+    api: "One-time get() (.collection(items).orderBy(sortOrder).get(), default Source.serverAndCache)
+      cached in a NON-autoDispose FutureProvider<List<ItemModel>>. Session-lifetime cache; lookupById O(1)."
+    not: "snapshots() realtime listener (wasteful for static data); .autoDispose FutureProvider
+      (would re-fetch on remount, breaking one-read-per-session); routing through the family-tree
+      mutation repository."
+    adr: docs/architecture/adr-0006-item-catalog-data-access-pattern.md
+    reason: "Catalog is global, read-only, static within a session. SCOPED CARVE-OUT from
+      systems_building_own_firestore_paths (ADR-0003): that rule governs family-tree MUTATIONS
+      through the atomic repository; the items/ path constant stays centralized but this
+      read-only global catalog reads via its own provider, not the mutation repository."
+    referenced_by:
+      - docs/architecture/adr-0006-item-catalog-data-access-pattern.md
+      - docs/architecture/adr-0003-firestore-schema-persistence-strategy.md
+      - design/gdd/item-database.md
+    added: 2026-07-07
+    revised: ""
+
+  - purpose: realtime_read_stream_path_access
+    status: active
+    api: "Realtime read StreamProviders (xuBalanceProvider, and future child-doc/inventory/task
+      streams) build .doc(...)/.collection(...).snapshots() from centralized FirestorePaths
+      constants. Use .doc() for a single document (returns DocumentSnapshot with .data()),
+      NOT .collection() (returns QuerySnapshot, no .data())."
+    not: "Inline path strings; routing realtime reads through the mutation repository."
+    adr: docs/architecture/adr-0008-currency-balance-mutation-rules.md
+    reason: "Generalizes the item-catalog carve-out: ADR-0003's systems_building_own_firestore_paths
+      governs atomic WRITES through the repository; realtime reads are the read layer. They honor
+      the no-inline-strings intent via path constants but are not repository mutations."
+    referenced_by:
+      - docs/architecture/adr-0008-currency-balance-mutation-rules.md
+      - docs/architecture/adr-0003-firestore-schema-persistence-strategy.md
+      - docs/architecture/adr-0006-item-catalog-data-access-pattern.md
+      - design/gdd/currency-system.md
+    added: 2026-07-07
+    revised: ""
+
+  - purpose: reward_integrity_enforcement
+    status: active
+    api: "Synchronous Firestore Security Rule on tasks create — reject unless xuReward/energyReward ==
+      rewardTable[categoryId] (quoted-CEL-key map literal), reward/categoryId immutable on update.
+      PLUS onTaskApproved Cloud Function reconciliation (defense-in-depth). Reward table mirrored in
+      app + rules + registry."
+    not: "Cloud-Function-only validation (async — a parent can approve, granting the client-written
+      reward via the offline transaction, before the function runs). Trusting client reward without a gate."
+    adr: docs/architecture/adr-0009-task-lifecycle-reward-integrity.md
+    reason: "Approve is a client-side offline runTransaction that reads task.xuReward and grants it, so
+      the stored reward must be made trustworthy AT WRITE TIME (synchronous rule) — a post-write CF is
+      too late. The rule is the gate; the CF is the backstop."
+    referenced_by:
+      - docs/architecture/adr-0009-task-lifecycle-reward-integrity.md
+      - docs/architecture/adr-0003-firestore-schema-persistence-strategy.md
+      - design/gdd/task-library.md
+    added: 2026-07-08
+    revised: ""
+
+  - purpose: push_notification_delivery
+    status: active
+    api: "Server-side 2nd-gen onDocumentCreated Cloud Function (firebase-functions/v2/firestore) on the
+      tasks path + Admin SDK messaging().send(). MVP ships with retry DISABLED."
+    not: "Client-side FCM send (server-key exposure); polling; 1st-gen onWrite+manual-condition;
+      enabling retry:true without an event.time staleness guard (2nd-gen retry is TIME-window-bounded,
+      not attempt-count-bounded — no 'max 3' knob exists)."
+    adr: docs/architecture/adr-0010-push-notification-delivery-architecture.md
+    reason: "Sends must be server-trusted and work when the submitting device is the child's / offline.
+      onDocumentCreated is create-only by definition (no manual before==null guard). Retry off for MVP
+      because unbounded-window retry could produce many duplicate pushes on a systematic failure."
+    referenced_by:
+      - docs/architecture/adr-0010-push-notification-delivery-architecture.md
+      - design/gdd/push-notification.md
+    added: 2026-07-08
+    revised: ""
+
+  - purpose: seedcount_drift_correction
+    status: active
+    api: "runTransaction, executed ONLY server-side inside the existing onTaskApproved
+      Cloud Function (ADR-0003 §6 — onDocumentUpdated trigger on the child document;
+      never client-triggered): read actual pending-task count (tasks where status ==
+      'pending') and current seedCount in the same transaction; if they differ, write
+      the corrected value within that transaction."
+    not: "Client-triggered absolute set() on seedCount in any form; a non-transactional
+      read-then-set (races under concurrent CF invocations)."
+    adr: docs/architecture/adr-0012-seed-buffer-derivation-strategy.md
+    reason: "Scoped exception to absolute_set_on_balance_or_counters (ADR-0003) — that
+      rule's rationale is multi-device CLIENT races (last-write-wins clobbering offline
+      sync), which do not apply to a server-only, transactional, idempotent correction.
+      Same shape as the item_catalog_access carve-out from systems_building_own_firestore_paths."
+    referenced_by:
+      - docs/architecture/adr-0012-seed-buffer-derivation-strategy.md
+      - design/gdd/seed-buffer.md
+    added: 2026-07-17
+    revised: "2026-07-17"
 
 # Example:
 #
@@ -157,7 +680,315 @@ api_decisions: []
 # Register a pattern when an ADR explicitly bans it AND other ADRs might
 # unknowingly use it (i.e., it's a tempting but wrong approach for this project).
 
-forbidden_patterns: []
+forbidden_patterns:
+  - pattern: folding_flutter_widget_cost_into_flame_draw_call_count
+    status: active
+    description: "A GDD or ADR must not add Flutter widget compositing cost (overlays,
+      bottom sheets, app bars, etc.) into the same number used to track the
+      ≤200 Flame-canvas draw-call budget. The two are measured by different
+      tools (manual tally vs. DevTools frame time) and must stay reported separately."
+    why: "Flame-canvas draw calls and Flutter widget compositing are fundamentally
+      different rendering models (immediate-mode component tree vs. retained-mode
+      layer tree) with no shared countable unit. Merging them into one number
+      would produce a figure nobody could act on, and would make it impossible
+      to tell which layer needs optimization when a screen regresses."
+    adr: docs/architecture/adr-0001-draw-call-budget-scope.md
+    referenced_by:
+      - docs/architecture/adr-0001-draw-call-budget-scope.md
+    added: 2026-07-07
+
+  - pattern: re_deriving_session_state
+    status: active
+    description: "No system may re-implement the 4-state session derivation. The
+      only source of truth is auth-account's sessionStateProvider. Route guards and
+      any state-dependent logic must READ that provider, not recompute it from
+      authStateProvider/activeChildProvider themselves."
+    why: "Two derivations of the same routing state will drift and produce
+      contradictory navigation. Main Navigation Shell #17 already assumed a
+      sessionStateProvider that didn't exist; centralizing it prevents recurrence."
+    adr: docs/architecture/adr-0002-auth-pin-security-architecture.md
+    referenced_by:
+      - docs/architecture/adr-0002-auth-pin-security-architecture.md
+      - design/gdd/auth-account.md
+      - design/gdd/main-navigation-shell.md
+    added: 2026-07-07
+
+  - pattern: per_child_firebase_auth_identity
+    status: active
+    description: "Children must NOT have their own Firebase Auth account (anonymous,
+      custom-token, or otherwise). A child is a Firestore document under the parent's
+      account; only the parent is a Firebase Auth principal."
+    why: "COPPA — children under 13 must not have separate accounts. This constraint
+      also determines the PIN's security ceiling (see treating_pin_as_data_access_boundary)."
+    adr: docs/architecture/adr-0002-auth-pin-security-architecture.md
+    referenced_by:
+      - docs/architecture/adr-0002-auth-pin-security-architecture.md
+      - design/gdd/auth-account.md
+    added: 2026-07-07
+
+  - pattern: treating_pin_as_data_access_boundary
+    status: active
+    description: "No system may rely on the child PIN as a data-access control. The
+      PIN gates only the shipped app UI. Child data is protected solely by the parent
+      Firebase Auth identity + Firestore rules scoped on request.auth.uid == parentId.
+      Any shared-device session can read all sibling data at the data layer."
+    why: "Firestore rules cannot distinguish parent-holding-device from child-holding-
+      device under one shared auth identity (a direct consequence of the COPPA
+      no-child-identity rule). Assuming the PIN protects data would build systems on
+      a boundary that does not exist. See ADR-0002 Non-Goals."
+    adr: docs/architecture/adr-0002-auth-pin-security-architecture.md
+    referenced_by:
+      - docs/architecture/adr-0002-auth-pin-security-architecture.md
+      - design/gdd/auth-account.md
+    added: 2026-07-07
+
+  - pattern: absolute_set_on_balance_or_counters
+    status: active
+    description: "Never write an absolute value with set()/update() to a balance or counter
+      field (xuBalance, seedCount, chestCount, approvedTaskCount, storedEnergy, totalXuEarned).
+      Always use FieldValue.increment(delta)."
+    why: "Firestore resolves field conflicts last-write-wins. Two devices editing a balance
+      offline then syncing would clobber each other with absolute sets; increment() is
+      server-side atomic and additively correct regardless of sync order."
+    adr: docs/architecture/adr-0003-firestore-schema-persistence-strategy.md
+    referenced_by:
+      - docs/architecture/adr-0003-firestore-schema-persistence-strategy.md
+      - docs/architecture/adr-0013-parent-approval-transaction-architecture.md
+      - design/gdd/data-persistence-layer.md
+      - design/gdd/currency-system.md
+      - design/gdd/parent-approval.md
+    added: 2026-07-07
+    revised: "2026-07-17"
+    # revision note: scoped exception added for seedCount drift correction — see
+    # api_decisions: seedcount_drift_correction (ADR-0012). Server-only, transactional,
+    # idempotent CF reconciliation does not carry the client-race risk this pattern bans.
+
+  - pattern: systems_building_own_firestore_paths
+    status: active
+    description: "No system may construct Firestore collection/document paths inline. All
+      reads and writes go through PersistenceRepository and its centralized path constants."
+    why: "Ad-hoc paths drift from the schema and bypass the atomic-write contracts, producing
+      inconsistent data models and partial-write bugs. One repository = one schema authority."
+    adr: docs/architecture/adr-0003-firestore-schema-persistence-strategy.md
+    referenced_by:
+      - docs/architecture/adr-0003-firestore-schema-persistence-strategy.md
+      - design/gdd/data-persistence-layer.md
+    added: 2026-07-07
+
+  - pattern: storing_credentials_on_profile_document
+    status: active
+    description: "pinHash/pinSalt must live only in children/{childId}/private/credentials,
+      never on the children/{childId} profile document."
+    why: "The profile document is read to render the child-selection list; keeping PIN material
+      off it prevents credentials from being pulled into that working set on every render.
+      Fetched via get() only at PIN-entry time, never streamed. (ADR-0002 §7 / ADR-0003)"
+    adr: docs/architecture/adr-0003-firestore-schema-persistence-strategy.md
+    referenced_by:
+      - docs/architecture/adr-0003-firestore-schema-persistence-strategy.md
+      - docs/architecture/adr-0002-auth-pin-security-architecture.md
+      - design/gdd/data-persistence-layer.md
+      - design/gdd/auth-account.md
+    added: 2026-07-07
+
+  - pattern: flame_to_flutter_callback
+    status: active
+    description: "The Flame layer must never call back into Flutter/Riverpod — no provider
+      writes from a component, no callbacks into widgets. Cross-boundary data flow is one-way:
+      Flutter→Bus→Flame. (Pet Interaction #14 emitting petInteracted directly is allowed — that
+      is Flame→Bus→Flame, still never Flame→Flutter.)"
+    why: "Bidirectional flow destroys the single-source-of-truth model (Flutter state is truth,
+      Flame is display) and creates feedback loops / ordering ambiguity between the two runtimes."
+    adr: docs/architecture/adr-0004-flutter-flame-event-bridge-architecture.md
+    referenced_by:
+      - docs/architecture/adr-0004-flutter-flame-event-bridge-architecture.md
+      - design/gdd/flutter-flame-state-bridge.md
+    added: 2026-07-07
+
+  - pattern: subscribing_to_event_bus_in_onload
+    status: active
+    description: "Flame components must subscribe to GameEventBus in onMount(), NEVER onLoad().
+      Keep cancel() in onRemove()."
+    why: "isMounted is false throughout onLoad(), so the mandatory `if(!isMounted) return;` guard
+      silently drops every event during the load→mount window (not queued — gone). onMount is
+      guaranteed 1:1-paired with onRemove (onLoad is not → leak if removal races load), and onLoad
+      runs only once (a re-added component stops receiving events under an onLoad subscribe).
+      Verified against Flame 1.37.0 source, 2026-07-07."
+    adr: docs/architecture/adr-0004-flutter-flame-event-bridge-architecture.md
+    referenced_by:
+      - docs/architecture/adr-0004-flutter-flame-event-bridge-architecture.md
+      - design/gdd/flutter-flame-state-bridge.md
+    added: 2026-07-07
+
+  - pattern: sharing_gameevent_payload_types
+    status: active
+    description: "Each GameEventType owns a distinct payload type; never ship one type's payload
+      shape under a different type. Every _onEvent handler checks event.type before casting event.data."
+    why: "Reusing a payload across types caused a real runtime TypeError (a Triggered State enum
+      EXCITED shipped inside petMoodChanged, whose payload is the Base-Mood PetMood enum). Distinct
+      types = distinct payloads makes the mismatch impossible."
+    adr: docs/architecture/adr-0004-flutter-flame-event-bridge-architecture.md
+    referenced_by:
+      - docs/architecture/adr-0004-flutter-flame-event-bridge-architecture.md
+      - design/gdd/flutter-flame-state-bridge.md
+      - design/gdd/parent-approval.md
+    added: 2026-07-07
+
+  - pattern: background_timer_or_recompute_for_energy
+    status: active
+    description: "Energy decay is computed on-foreground only, by Time & Decay's pure
+      computeEnergy() function (recomputed on app resume + child-doc change). No background
+      timer, no scheduled job, no per-second recalculation, and no system other than
+      Time & Decay recomputes decay — everyone else reads energyProvider."
+    why: "A background timer drains battery and hits platform background-execution limits for
+      zero player-visible benefit (energy is only observed on foreground). A second computation
+      site would drift from the canonical one. Keeping one on-foreground calc keeps it offline,
+      testable (injected `now`), and race-free with Parent Approval's writes."
+    adr: docs/architecture/adr-0005-time-decay-calculation-strategy.md
+    referenced_by:
+      - docs/architecture/adr-0005-time-decay-calculation-strategy.md
+      - design/gdd/time-decay.md
+    added: 2026-07-07
+
+  - pattern: settable_pet_mood_state
+    status: active
+    description: "Base Mood must be a derived Provider<MoodState> (pure function of energy via the
+      energy→mood lookup). Never a settable StateProvider, never set directly by any system."
+    why: "Setting mood directly bypasses the energy→mood lookup — the single source of the mood value —
+      and lets mood drift out of sync with energy, defeating Pillar 2 (pet mood mirrors real effort)."
+    adr: docs/architecture/adr-0007-pet-state-machine-architecture.md
+    referenced_by:
+      - docs/architecture/adr-0007-pet-state-machine-architecture.md
+      - design/gdd/pet-state-machine.md
+    added: 2026-07-07
+
+  - pattern: wall_clock_timer_for_flame_triggered_state
+    status: active
+    description: "Triggered-state (and any pausable in-game) timers must be frame-ticked — Flame
+      TimerComponent/Timer/Effect advanced by update(dt) — never DateTime/Future.delayed/Stopwatch."
+    why: "Flame pauses the game loop on background (pauseWhenBackgrounded), so a frame-ticked timer
+      pauses and resumes correctly; a wall-clock timer keeps counting while backgrounded and the
+      animation appears to jump on foreground, breaking TR-petstate-004 (resume, don't restart/skip)."
+    adr: docs/architecture/adr-0007-pet-state-machine-architecture.md
+    referenced_by:
+      - docs/architecture/adr-0007-pet-state-machine-architecture.md
+      - design/gdd/pet-state-machine.md
+    added: 2026-07-07
+
+  - pattern: disabling_pause_when_backgrounded
+    status: active
+    description: "No code may set pauseWhenBackgrounded=false on the shared FlameGame, and any
+      override of FlameGame.lifecycleStateChange() MUST call super.lifecycleStateChange(state)."
+    why: "The frame-ticked-timer pause/resume guarantee (TR-petstate-004) depends entirely on
+      FlameGame auto-pausing the loop on background. Flipping the flag (e.g. to keep BGM playing
+      backgrounded) or swallowing the lifecycle callback silently breaks every pausable timer with
+      no visible link to this ADR. Constrains the audio ADR + whoever owns the root FlameGame (Pet Room UI)."
+    adr: docs/architecture/adr-0007-pet-state-machine-architecture.md
+    referenced_by:
+      - docs/architecture/adr-0007-pet-state-machine-architecture.md
+      - design/gdd/pet-state-machine.md
+    added: 2026-07-07
+
+  - pattern: dual_currency_or_iap
+    status: active
+    description: "xu is the ONLY currency. No premium/second currency, no in-app purchase, no
+      ad-reward xu, no daily-login xu bonus. xu is earned only from task approval + gacha reward."
+    why: "A second (purchasable) currency opens a pay-to-win path that directly violates Pillar 1
+      (xu only from real effort, never shortcuts) — the game's core message about earned reward."
+    adr: docs/architecture/adr-0008-currency-balance-mutation-rules.md
+    referenced_by:
+      - docs/architecture/adr-0008-currency-balance-mutation-rules.md
+      - design/gdd/currency-system.md
+    added: 2026-07-07
+
+  - pattern: purchase_without_single_flight_guard
+    status: active
+    description: "Any spend flow (Shop item, Paid Chest) MUST hold a screen-scoped single-flight
+      guard that disables ALL purchase buttons — not just the tapped one — while a purchase batch
+      is in flight, released on completion/failure."
+    why: "Affordability-check (read xuBalance from the stream) → decrement (WriteBatch) is a
+      read-then-write with a gap. Without the guard, an honest child double-tapping two different
+      item cards before the balance stream updates passes both checks against the stale balance,
+      fires both decrements, and receives BOTH items with a negative balance — real economy
+      corruption by a normal client, not a modified-client edge. Deeper server-side idempotency
+      is the QQ-01 / TR-shop-003 ADR's job; this guard is the honest-client floor."
+    adr: docs/architecture/adr-0008-currency-balance-mutation-rules.md
+    referenced_by:
+      - docs/architecture/adr-0008-currency-balance-mutation-rules.md
+      - design/gdd/currency-system.md
+      - design/gdd/shop-system.md
+    added: 2026-07-07
+
+  - pattern: client_settable_task_reward
+    status: active
+    description: "A task's xuReward/energyReward must equal the category reward table for its categoryId —
+      validated by Security Rule at create, immutable on update. Never client-chosen, never parent-overridable.
+      Custom tasks re-derive reward from categoryId; they do not carry their own reward values."
+    why: "Approve grants the stored reward via a client-side offline transaction — a client-settable reward is
+      a direct economy-forgery path (write inflated xuReward, then approve it). Data-driven table + write-time
+      rule keeps the granted reward honest."
+    adr: docs/architecture/adr-0009-task-lifecycle-reward-integrity.md
+    referenced_by:
+      - docs/architecture/adr-0009-task-lifecycle-reward-integrity.md
+      - design/gdd/task-library.md
+    added: 2026-07-08
+
+  - pattern: blanket_recursive_firestore_rule
+    status: active
+    description: "Do NOT use blanket recursive wildcard match blocks (match /{document=**} { allow write: ... })
+      that grant write across a whole subtree. Use explicit nested per-collection match blocks so stricter
+      per-collection rules are effective."
+    why: "Firestore Security Rules are OR'd across ALL matching match blocks (any allow = allowed; no
+      narrowest-wins). A blanket wildcard silently defeats any stricter per-collection rule added alongside it —
+      exactly what nearly made ADR-0009's tasks reward gate inert against ADR-0003's original blanket rule."
+    adr: docs/architecture/adr-0009-task-lifecycle-reward-integrity.md
+    referenced_by:
+      - docs/architecture/adr-0009-task-lifecycle-reward-integrity.md
+      - docs/architecture/adr-0003-firestore-schema-persistence-strategy.md
+    added: 2026-07-08
+
+  - pattern: client_side_fcm_send
+    status: active
+    description: "FCM push messages MUST be sent server-side (a Cloud Function via the Admin SDK), never
+      from the client app."
+    why: "A client send needs the server credential (a leak), and the device that triggers a notification
+      is often the child's — it cannot reliably notify the parent, and an offline submit couldn't send at all."
+    adr: docs/architecture/adr-0010-push-notification-delivery-architecture.md
+    referenced_by:
+      - docs/architecture/adr-0010-push-notification-delivery-architecture.md
+      - design/gdd/push-notification.md
+    added: 2026-07-08
+
+  - pattern: reprompt_ios_notification_permission
+    status: active
+    description: "On iOS, never re-call requestPermission() to re-show the permission dialog — it is
+      one-shot per install and a second call silently no-ops. Check getNotificationSettings().authorizationStatus;
+      for a declined state, deep-link to Settings (UIApplication.openSettingsURLString). Android may re-prompt."
+    why: "iOS UNUserNotificationCenter shows the system dialog once per install; a reminder that re-calls
+      requestPermission() does nothing visible, stranding the parent with no way to enable notifications."
+    adr: docs/architecture/adr-0010-push-notification-delivery-architecture.md
+    referenced_by:
+      - docs/architecture/adr-0010-push-notification-delivery-architecture.md
+      - design/gdd/push-notification.md
+      - design/gdd/parent-dashboard-ui.md
+    added: 2026-07-08
+
+  - pattern: regenerating_idempotency_token_on_retry
+    status: active
+    description: "A client-generated idempotency token (e.g. Paid Chest's purchaseId) must be
+      generated ONCE per logical action attempt and reused across every retry of that SAME
+      attempt (including a manual retry after a perceived failure). It must NOT be regenerated
+      on every user tap/call."
+    why: "The token's only job is to let the server recognize 'this exact request already
+      happened.' If a perceived-failure retry mints a fresh token, the transaction sees an
+      absent purchaseLog doc and proceeds normally — silently reproducing the exact
+      double-charge the token exists to prevent, with no error signal. A new token is only
+      correct after the PRIOR attempt has definitively resolved (success, or the user
+      abandons the flow entirely) — not merely after the guard/button re-enables."
+    adr: docs/architecture/adr-0011-shop-purchase-pipeline-idempotency-fix.md
+    referenced_by:
+      - docs/architecture/adr-0011-shop-purchase-pipeline-idempotency-fix.md
+      - design/gdd/shop-system.md
+    added: 2026-07-11
 
 # Example:
 #

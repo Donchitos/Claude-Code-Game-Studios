@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "petquest-web",
+      "runtimeExecutable": "sh",
+      "runtimeArgs": ["-c", "cd src && flutter run -d chrome --web-port 8765"],
+      "port": 8765
+    }
+  ]
+}

@@ -1,0 +1,103 @@
+<!-- PROTOTYPE - NOT FOR PRODUCTION -->
+<!-- Question: Firebase multi-device real-time sync spike -->
+<!-- Date: 2026-07-03 -->
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8" />
+<title>SPIKE — Child Device (Mochi)</title>
+<style>
+  body { font-family: -apple-system, sans-serif; background: #0b132b; color: #eee; padding: 2rem; max-width: 640px; margin: 0 auto; text-align: center; }
+  h1 { color: #90dbf4; }
+  #mochi {
+    font-size: 5rem; margin: 1rem 0; transition: transform 0.3s ease-out;
+  }
+  #mochi.pulse { animation: pulse 0.6s ease-out; }
+  @keyframes pulse {
+    0%   { transform: scale(1); filter: drop-shadow(0 0 0px #f9c74f); }
+    30%  { transform: scale(1.4); filter: drop-shadow(0 0 30px #f9c74f); }
+    100% { transform: scale(1); filter: drop-shadow(0 0 0px #f9c74f); }
+  }
+  #xuBalance { font-size: 2.5rem; font-weight: bold; color: #f9c74f; }
+  #latency { font-size: 1.2rem; margin-top: 0.5rem; }
+  #latency.good { color: #90be6d; }
+  #latency.meh { color: #f9c74f; }
+  #latency.bad { color: #f94144; }
+  #stats { font-size: 0.9rem; color: #aaa; margin-top: 1rem; }
+  #log { text-align: left; background: #111; border-radius: 8px; padding: 1rem; height: 200px; overflow-y: auto; font-family: monospace; font-size: 0.8rem; margin-top: 1.5rem; white-space: pre-wrap; }
+  .row { margin-bottom: 4px; }
+</style>
+</head>
+<body>
+  <h1>🐣 Child Device (Mochi's screen)</h1>
+  <div id="mochi">🐹</div>
+  <div id="xuBalance">— xu</div>
+  <div id="latency">waiting for first update…</div>
+  <div id="stats"></div>
+  <div id="log"></div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
+    import { getFirestore, doc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
+    import { firebaseConfig } from "./firebase-config.js";
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const ref = doc(db, "spike", "sharedState");
+
+    const logEl = document.getElementById("log");
+    function log(msg) {
+      const row = document.createElement("div");
+      row.className = "row";
+      row.textContent = `[${new Date().toLocaleTimeString()}] ${msg}`;
+      logEl.prepend(row);
+    }
+
+    const latencies = [];
+    let lastSeenApproveId = null;
+
+    onSnapshot(ref, { includeMetadataChanges: true }, (snap) => {
+      const data = snap.data();
+      if (!data) return;
+      const fromCache = snap.metadata.fromCache;
+      const pending = snap.metadata.hasPendingWrites;
+
+      document.getElementById("xuBalance").textContent = `${data.xuBalance ?? 0} xu`;
+
+      // Only measure latency for genuinely new approvals (not the initial load,
+      // not local echoes, not duplicate snapshot fires for the same write).
+      if (data.lastApproveId && data.lastApproveId !== lastSeenApproveId && data.lastApproveId !== "reset") {
+        lastSeenApproveId = data.lastApproveId;
+        const latency = Date.now() - data.lastApprovedAt;
+        latencies.push(latency);
+
+        const latEl = document.getElementById("latency");
+        latEl.textContent = `#${data.lastApproveId}: ${latency}ms ${fromCache ? "(from cache)" : "(from server)"}`;
+        latEl.className = latency < 400 ? "good" : latency < 1000 ? "meh" : "bad";
+
+        const mochi = document.getElementById("mochi");
+        mochi.classList.remove("pulse");
+        void mochi.offsetWidth; // restart animation
+        mochi.classList.add("pulse");
+
+        log(`⚡ update received for #${data.lastApproveId} — latency ${latency}ms — fromCache=${fromCache} pendingWrites=${pending}`);
+
+        const avg = (latencies.reduce((a, b) => a + b, 0) / latencies.length).toFixed(0);
+        const min = Math.min(...latencies);
+        const max = Math.max(...latencies);
+        document.getElementById("stats").textContent =
+          `n=${latencies.length} | avg=${avg}ms | min=${min}ms | max=${max}ms`;
+      } else if (data.lastApproveId === "reset") {
+        lastSeenApproveId = "reset";
+        log("🔄 saw reset");
+      } else {
+        log(`(snapshot fired, no new approveId — fromCache=${fromCache} pendingWrites=${pending})`);
+      }
+    }, (err) => {
+      log(`✗ listener error: ${err.message}`);
+    });
+
+    log("Child device ready, listening for parent approvals…");
+  </script>
+</body>
+</html>

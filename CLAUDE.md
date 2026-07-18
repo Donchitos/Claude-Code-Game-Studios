@@ -5,11 +5,11 @@ Each agent owns a specific domain, enforcing separation of concerns and quality.
 
 ## Technology Stack
 
-- **Engine**: [CHOOSE: Godot 4 / Unity / Unreal Engine 5 / Flutter + Flame]
-- **Language**: [CHOOSE: GDScript / C# / C++ / Blueprint / Dart]
+- **Engine**: Flutter + Flame 1.37.0 (Flutter SDK 3.44.4 / Dart 3.12.2)
+- **Language**: Dart
 - **Version Control**: Git with trunk-based development
-- **Build System**: [SPECIFY after choosing engine]
-- **Asset Pipeline**: [SPECIFY after choosing engine]
+- **Build System**: Flutter build system (flutter build apk/ios/web/linux/windows/macos)
+- **Asset Pipeline**: Flutter asset pipeline (pubspec.yaml assets section)
 
 > **Note**: Engine-specialist agents exist for Godot, Unity, Unreal, and Flutter+Flame with
 > dedicated sub-specialists. Use the set matching your engine.
@@ -20,7 +20,7 @@ Each agent owns a specific domain, enforcing separation of concerns and quality.
 
 ## Engine Version Reference
 
-@docs/engine-reference/godot/VERSION.md
+@docs/engine-reference/flutter-flame/VERSION.md
 
 ## Technical Preferences
 

@@ -1,0 +1,846 @@
+<!--
+  PROTOTYPE - NOT FOR PRODUCTION
+  Question: Does the "Hạt Giống Bí Ẩn" (Instant Seed) mechanic bridge the parent
+            latency gap while keeping kids motivated to submit tasks?
+  Date: 2026-06-25
+  Path: HTML
+  Hypothesis: If the child sees a reward seed appear instantly on task completion,
+              then parent-approves it later for real coins + gacha chest, the child
+              will want to submit more tasks. Evidence: tester asks "can I do more tasks?"
+              within 5 minutes.
+-->
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>PetQuest — Prototype</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    background: #FFF8F0;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    min-height: 100vh;
+    padding: 12px;
+  }
+
+  .phone {
+    width: 380px;
+    min-height: 700px;
+    background: #FFFDF8;
+    border-radius: 28px;
+    box-shadow: 0 8px 32px rgba(180,140,100,0.18);
+    overflow: hidden;
+    position: relative;
+  }
+
+  /* ─── HEADER ─── */
+  .header {
+    background: linear-gradient(135deg, #FFB5C8 0%, #FFCBA4 100%);
+    padding: 18px 20px 14px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .header h1 { font-size: 22px; color: #5A2D0C; font-weight: 800; letter-spacing: 1px; }
+  .header .coins {
+    background: #FFF3D0;
+    border-radius: 20px;
+    padding: 5px 12px;
+    font-size: 15px;
+    font-weight: 700;
+    color: #C07800;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+
+  /* ─── VIEWS ─── */
+  .view { display: none; padding: 16px; }
+  .view.active { display: block; }
+
+  /* ─── PET AREA ─── */
+  .pet-area {
+    background: linear-gradient(180deg, #E8F5FF 0%, #D4F0D4 100%);
+    border-radius: 20px;
+    padding: 16px;
+    text-align: center;
+    margin-bottom: 14px;
+    position: relative;
+  }
+  .pet-emoji {
+    font-size: 64px;
+    display: block;
+    line-height: 1;
+    transition: transform 0.3s;
+    cursor: pointer;
+    user-select: none;
+  }
+  .pet-emoji:active { transform: scale(1.2); }
+  .pet-mood {
+    font-size: 13px;
+    color: #4A7C59;
+    margin-top: 6px;
+    font-weight: 600;
+  }
+  .pet-name {
+    font-size: 16px;
+    font-weight: 800;
+    color: #2D5A3D;
+    margin-top: 2px;
+  }
+  .energy-bar-wrap {
+    background: #C5E8C5;
+    border-radius: 10px;
+    height: 10px;
+    margin: 8px 20px 0;
+    overflow: hidden;
+  }
+  .energy-bar {
+    height: 100%;
+    background: linear-gradient(90deg, #5BC878, #2EA84F);
+    border-radius: 10px;
+    transition: width 0.6s ease;
+  }
+  .energy-label { font-size: 11px; color: #4A7C59; margin-top: 3px; }
+
+  /* ─── SECTION TITLE ─── */
+  .section-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: #8B6A50;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 8px;
+  }
+
+  /* ─── TASK CARDS ─── */
+  .task-card {
+    background: white;
+    border-radius: 14px;
+    padding: 13px 14px;
+    margin-bottom: 9px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    transition: transform 0.15s, opacity 0.3s;
+  }
+  .task-card.done { opacity: 0.5; }
+  .task-icon { font-size: 28px; flex-shrink: 0; }
+  .task-info { flex: 1; }
+  .task-name { font-size: 15px; font-weight: 700; color: #3D2B1F; }
+  .task-quest { font-size: 11px; color: #B07850; margin-top: 1px; }
+  .task-reward { font-size: 11px; color: #E08000; font-weight: 600; margin-top: 2px; }
+  .btn-complete {
+    background: linear-gradient(135deg, #7ED87E, #4CAF50);
+    color: white;
+    border: none;
+    border-radius: 10px;
+    padding: 8px 13px;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: transform 0.1s, opacity 0.2s;
+    white-space: nowrap;
+  }
+  .btn-complete:active { transform: scale(0.93); }
+  .btn-complete:disabled { opacity: 0.4; cursor: default; }
+  .btn-complete.done-btn {
+    background: #D0EAD0;
+    color: #4A8A4A;
+  }
+
+  /* ─── SEED BAG ─── */
+  .seed-bag {
+    background: linear-gradient(135deg, #FFF3D0, #FFE4A0);
+    border: 2px dashed #FFB830;
+    border-radius: 16px;
+    padding: 12px 14px;
+    margin-top: 14px;
+    margin-bottom: 6px;
+  }
+  .seed-bag-title {
+    font-size: 12px;
+    font-weight: 700;
+    color: #A07000;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+  .seed-list { display: flex; flex-wrap: wrap; gap: 7px; min-height: 36px; }
+  .seed-item {
+    background: white;
+    border-radius: 20px;
+    padding: 4px 10px;
+    font-size: 13px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+    animation: seedPop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+  .seed-pending { border: 2px solid #FFB830; }
+  .seed-approved { border: 2px solid #4CAF50; background: #F0FFF0; }
+  @keyframes seedPop {
+    0% { transform: scale(0) rotate(-15deg); opacity: 0; }
+    100% { transform: scale(1) rotate(0); opacity: 1; }
+  }
+  .seed-empty { font-size: 12px; color: #C09050; font-style: italic; }
+  .waiting-note { font-size: 11px; color: #A07000; margin-top: 6px; font-style: italic; }
+
+  /* ─── SWITCH BUTTON ─── */
+  .switch-btn {
+    width: 100%;
+    background: linear-gradient(135deg, #C5A3E0, #9B6CC8);
+    color: white;
+    border: none;
+    border-radius: 14px;
+    padding: 13px;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    margin-top: 10px;
+    transition: transform 0.1s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+  }
+  .switch-btn:active { transform: scale(0.97); }
+
+  /* ─── PARENT VIEW ─── */
+  .parent-header {
+    background: linear-gradient(135deg, #9B6CC8, #6A4A9C);
+    padding: 14px 16px;
+    border-radius: 16px;
+    margin-bottom: 14px;
+    color: white;
+    text-align: center;
+  }
+  .parent-header h2 { font-size: 18px; font-weight: 800; }
+  .parent-header p { font-size: 12px; opacity: 0.85; margin-top: 3px; }
+
+  .approval-card {
+    background: white;
+    border-radius: 14px;
+    padding: 13px 14px;
+    margin-bottom: 9px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    animation: slideIn 0.3s ease;
+  }
+  @keyframes slideIn {
+    from { transform: translateX(30px); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+  }
+  .approval-icon { font-size: 28px; }
+  .approval-info { flex: 1; }
+  .approval-task { font-size: 14px; font-weight: 700; color: #3D2B1F; }
+  .approval-time { font-size: 11px; color: #999; margin-top: 1px; }
+  .btn-approve {
+    background: linear-gradient(135deg, #FFB830, #E08000);
+    color: white;
+    border: none;
+    border-radius: 10px;
+    padding: 9px 14px;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: transform 0.1s;
+    white-space: nowrap;
+  }
+  .btn-approve:active { transform: scale(0.92); }
+
+  .no-pending {
+    text-align: center;
+    padding: 30px 20px;
+    color: #AAA;
+    font-size: 14px;
+  }
+
+  /* ─── REWARD POPUP ─── */
+  .overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.5);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 100;
+    backdrop-filter: blur(3px);
+  }
+  .overlay.show { display: flex; }
+  .reward-popup {
+    background: linear-gradient(180deg, #FFF8E8, #FFF0C8);
+    border-radius: 24px;
+    padding: 28px 24px 24px;
+    width: 300px;
+    text-align: center;
+    box-shadow: 0 12px 40px rgba(0,0,0,0.3);
+    animation: popIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    position: relative;
+    overflow: hidden;
+  }
+  @keyframes popIn {
+    0% { transform: scale(0.5); opacity: 0; }
+    100% { transform: scale(1); opacity: 1; }
+  }
+  .reward-title {
+    font-size: 20px;
+    font-weight: 800;
+    color: #5A2D0C;
+    margin-bottom: 4px;
+  }
+  .reward-subtitle { font-size: 13px; color: #A07050; margin-bottom: 16px; }
+
+  .coins-animation {
+    font-size: 40px;
+    display: block;
+    margin: 0 auto 8px;
+    animation: bounce 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+  @keyframes bounce {
+    0% { transform: scale(0) rotate(-20deg); }
+    100% { transform: scale(1) rotate(0); }
+  }
+  .coins-amount {
+    font-size: 36px;
+    font-weight: 900;
+    color: #C07800;
+    display: block;
+    margin-bottom: 4px;
+  }
+  .coins-label { font-size: 13px; color: #A07000; margin-bottom: 16px; }
+
+  .chest-area { margin: 10px 0; }
+  .chest-btn {
+    font-size: 56px;
+    background: none;
+    border: 3px solid #FFB830;
+    border-radius: 20px;
+    padding: 10px 18px;
+    cursor: pointer;
+    transition: transform 0.15s;
+    display: inline-block;
+    background: linear-gradient(180deg, #FFF3D0, #FFE090);
+    box-shadow: 0 4px 12px rgba(200,140,0,0.3);
+  }
+  .chest-btn:hover { transform: scale(1.05) rotate(-3deg); }
+  .chest-btn:active { transform: scale(0.92); }
+  .chest-label { font-size: 12px; color: #A07000; margin-top: 5px; font-style: italic; }
+
+  .item-reveal {
+    display: none;
+    animation: popIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    margin: 8px 0;
+  }
+  .item-reveal.show { display: block; }
+  .item-emoji { font-size: 52px; display: block; margin-bottom: 4px; }
+  .item-name { font-size: 17px; font-weight: 800; color: #5A2D0C; }
+  .item-rarity {
+    font-size: 12px;
+    font-weight: 700;
+    border-radius: 12px;
+    padding: 2px 10px;
+    display: inline-block;
+    margin-top: 4px;
+  }
+  .rarity-common { background: #E8E8E8; color: #666; }
+  .rarity-rare { background: #D0E8FF; color: #1A6CB0; }
+  .rarity-epic { background: #ECD4FF; color: #7030A0; }
+
+  .btn-close {
+    background: linear-gradient(135deg, #FFB5C8, #FF8FAA);
+    color: white;
+    border: none;
+    border-radius: 14px;
+    padding: 12px 28px;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    margin-top: 14px;
+    width: 100%;
+    transition: transform 0.1s;
+  }
+  .btn-close:active { transform: scale(0.96); }
+
+  /* Confetti particles */
+  .confetti-container {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    overflow: hidden;
+  }
+  .confetti-dot {
+    position: absolute;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    animation: confettiFall linear forwards;
+  }
+  @keyframes confettiFall {
+    0% { transform: translateY(-10px) rotate(0deg); opacity: 1; }
+    100% { transform: translateY(200px) rotate(540deg); opacity: 0; }
+  }
+
+  /* ─── TABS ─── */
+  .view-tabs {
+    display: flex;
+    gap: 8px;
+    padding: 10px 16px 0;
+    background: #FFFDF8;
+  }
+  .tab-btn {
+    flex: 1;
+    padding: 8px;
+    border: none;
+    border-radius: 10px 10px 0 0;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    background: #EEE8E0;
+    color: #8B6A50;
+    transition: background 0.2s;
+  }
+  .tab-btn.active {
+    background: #FFB5C8;
+    color: #5A2D0C;
+  }
+
+  /* Particles spawned dynamically */
+  .float-coin {
+    position: fixed;
+    font-size: 22px;
+    pointer-events: none;
+    animation: floatUp 0.8s ease forwards;
+    z-index: 200;
+  }
+  @keyframes floatUp {
+    0% { transform: translateY(0) scale(1); opacity: 1; }
+    100% { transform: translateY(-80px) scale(0.5); opacity: 0; }
+  }
+</style>
+</head>
+<body>
+<div class="phone">
+
+  <!-- HEADER -->
+  <div class="header">
+    <h1>🐾 PetQuest</h1>
+    <div class="coins">🪙 <span id="coinCount">0</span></div>
+  </div>
+
+  <!-- TABS -->
+  <div class="view-tabs">
+    <button class="tab-btn active" onclick="switchView('child')">🧒 Của bé</button>
+    <button class="tab-btn" onclick="switchView('parent')">👨‍👩‍👧 Bố mẹ</button>
+  </div>
+
+  <!-- ═══════════════ CHILD VIEW ═══════════════ -->
+  <div class="view active" id="childView">
+
+    <!-- Pet -->
+    <div class="pet-area">
+      <span class="pet-emoji" id="petEmoji" onclick="petTap()">🐱</span>
+      <div class="pet-name">Mochi</div>
+      <div class="pet-mood" id="petMood">😊 Đang vui — cần thêm năng lượng!</div>
+      <div class="energy-bar-wrap">
+        <div class="energy-bar" id="energyBar" style="width: 25%"></div>
+      </div>
+      <div class="energy-label">Năng lượng: <span id="energyVal">25</span>/100</div>
+    </div>
+
+    <!-- Tasks -->
+    <div class="section-title">⚡ Nhiệm vụ hôm nay</div>
+
+    <div class="task-card" id="task0">
+      <div class="task-icon">📚</div>
+      <div class="task-info">
+        <div class="task-name">Làm bài tập toán</div>
+        <div class="task-quest">🛡️ Nạp Khiên Ma Thuật bằng 20 phút luyện toán</div>
+        <div class="task-reward">🌱 +1 Hạt Giống · 🪙 +15 xu khi bố mẹ duyệt</div>
+      </div>
+      <button class="btn-complete" onclick="completeTask(0)">Xong!</button>
+    </div>
+
+    <div class="task-card" id="task1">
+      <div class="task-icon">🧹</div>
+      <div class="task-info">
+        <div class="task-name">Quét nhà / dọn phòng</div>
+        <div class="task-quest">🏰 Thu thập Mảnh Lâu Đài bằng cách dọn dẹp</div>
+        <div class="task-reward">🌱 +1 Hạt Giống · 🪙 +10 xu khi bố mẹ duyệt</div>
+      </div>
+      <button class="btn-complete" onclick="completeTask(1)">Xong!</button>
+    </div>
+
+    <div class="task-card" id="task2">
+      <div class="task-icon">🎹</div>
+      <div class="task-info">
+        <div class="task-name">Luyện đàn 1 bản nhạc</div>
+        <div class="task-quest">🎵 Đánh thức Tinh Linh Âm Nhạc bằng 1 bản nhạc</div>
+        <div class="task-reward">🌱 +1 Hạt Giống · 🌟 Rương đặc biệt khi bố mẹ duyệt</div>
+      </div>
+      <button class="btn-complete" onclick="completeTask(2)">Xong!</button>
+    </div>
+
+    <!-- Seed Bag -->
+    <div class="seed-bag">
+      <div class="seed-bag-title">🌱 Túi Hạt Giống của bé <span id="seedCount">(0 hạt)</span></div>
+      <div class="seed-list" id="seedList">
+        <div class="seed-empty" id="seedEmpty">Chưa có hạt giống nào — hoàn thành nhiệm vụ nhé!</div>
+      </div>
+      <div class="waiting-note" id="waitingNote" style="display:none">⏳ Chờ bố/mẹ về duyệt để hạt nở thành xu nhé!</div>
+    </div>
+
+  </div>
+  <!-- END CHILD VIEW -->
+
+
+  <!-- ═══════════════ PARENT VIEW ═══════════════ -->
+  <div class="view" id="parentView">
+
+    <div class="parent-header">
+      <h2>👨‍👩‍👧 Xác nhận của Bố Mẹ</h2>
+      <p>Duyệt nhiệm vụ bé đã hoàn thành để nhận thưởng!</p>
+    </div>
+
+    <div class="section-title">⏳ Chờ duyệt</div>
+    <div id="approvalList">
+      <div class="no-pending" id="noPending">
+        🌸 Chưa có nhiệm vụ nào chờ duyệt.<br>
+        <small>Bé cần hoàn thành nhiệm vụ trước!</small>
+      </div>
+    </div>
+
+    <div id="approvedSection" style="display:none; margin-top:14px;">
+      <div class="section-title">✅ Đã duyệt hôm nay</div>
+      <div id="approvedList"></div>
+    </div>
+
+  </div>
+  <!-- END PARENT VIEW -->
+
+</div><!-- end .phone -->
+
+<!-- ═══════════════ REWARD OVERLAY ═══════════════ -->
+<div class="overlay" id="rewardOverlay">
+  <div class="reward-popup">
+    <div class="confetti-container" id="confettiContainer"></div>
+
+    <div id="rewardCoinsStep">
+      <div class="reward-title">🎉 Bố mẹ đã duyệt!</div>
+      <div class="reward-subtitle" id="rewardTaskName">Làm bài tập toán</div>
+
+      <span class="coins-animation">🪙</span>
+      <span class="coins-amount" id="rewardAmount">+15</span>
+      <div class="coins-label">xu đã vào túi!</div>
+
+      <div class="chest-area" id="chestArea" style="display:none">
+        <hr style="border:none;border-top:1px solid #EDD090;margin:10px 0">
+        <div class="section-title" style="text-transform:none;font-size:14px;color:#8B6A50;margin-bottom:8px">
+          🎁 Bé còn nhận được Rương Bí Ẩn!
+        </div>
+        <button class="chest-btn" onclick="openChest()" id="chestBtn">📦</button>
+        <div class="chest-label">Nhấn để mở!</div>
+      </div>
+
+      <div class="item-reveal" id="itemReveal">
+        <span class="item-emoji" id="itemEmoji">🎩</span>
+        <div class="item-name" id="itemName">Mũ Phù Thủy</div>
+        <div class="item-rarity rarity-rare" id="itemRarity">✨ Hiếm</div>
+      </div>
+
+      <button class="btn-close" id="closeBtn" onclick="closeReward()">Tuyệt vời! 🌟</button>
+    </div>
+  </div>
+</div>
+
+
+<script>
+// ─── GAME STATE ───────────────────────────────────────────────
+const state = {
+  coins: 0,
+  energy: 25,
+  seeds: [],        // { taskIndex, taskName, coins, hasChest }
+  approved: [],
+  tasksDone: [false, false, false],
+};
+
+const TASKS = [
+  { name: 'Làm bài tập toán',     icon: '📚', coins: 15, hasChest: false },
+  { name: 'Quét nhà / dọn phòng', icon: '🧹', coins: 10, hasChest: false },
+  { name: 'Luyện đàn 1 bản nhạc', icon: '🎹', coins: 20, hasChest: true  },
+];
+
+const PET_MOODS = [
+  { threshold: 0,  emoji: '🐱', mood: '😴 Mochi đang buồn ngủ — cần năng lượng!' },
+  { threshold: 30, emoji: '🐱', mood: '😊 Mochi đang vui — cần thêm năng lượng!' },
+  { threshold: 60, emoji: '😸', mood: '😄 Mochi tràn đầy năng lượng!' },
+  { threshold: 85, emoji: '🌟', mood: '🤩 Mochi SUPER HAPPY! Bé chăm quá!' },
+];
+
+// Gacha loot table
+const LOOT = [
+  { emoji: '🎩', name: 'Mũ Phù Thủy',       rarity: 'rare',   label: '✨ Hiếm',    rarityClass: 'rarity-rare',   weight: 20 },
+  { emoji: '🌺', name: 'Hoa Cài Đầu',        rarity: 'common', label: '⬜ Thường',  rarityClass: 'rarity-common', weight: 40 },
+  { emoji: '🦋', name: 'Bướm Phép Thuật',    rarity: 'rare',   label: '✨ Hiếm',    rarityClass: 'rarity-rare',   weight: 15 },
+  { emoji: '👑', name: 'Vương Miện Vàng',     rarity: 'epic',   label: '💜 Huyền thoại', rarityClass: 'rarity-epic', weight: 5 },
+  { emoji: '🎀', name: 'Nơ Hồng',            rarity: 'common', label: '⬜ Thường',  rarityClass: 'rarity-common', weight: 40 },
+  { emoji: '🌙', name: 'Mặt Trăng Bạc',      rarity: 'rare',   label: '✨ Hiếm',    rarityClass: 'rarity-rare',   weight: 15 },
+  { emoji: '🐟', name: 'Cá Vàng May Mắn',   rarity: 'common', label: '⬜ Thường',  rarityClass: 'rarity-common', weight: 35 },
+  { emoji: '🐉', name: 'Rồng Thu Nhỏ',      rarity: 'epic',   label: '💜 Huyền thoại', rarityClass: 'rarity-epic', weight: 3 },
+];
+
+// ─── UI HELPERS ───────────────────────────────────────────────
+function updatePetUI() {
+  const mood = [...PET_MOODS].reverse().find(m => state.energy >= m.threshold);
+  document.getElementById('petEmoji').textContent = mood.emoji;
+  document.getElementById('petMood').textContent = mood.mood;
+  document.getElementById('energyBar').style.width = state.energy + '%';
+  document.getElementById('energyVal').textContent = state.energy;
+}
+
+function updateCoinUI() {
+  document.getElementById('coinCount').textContent = state.coins;
+}
+
+function updateSeedBagUI() {
+  const list = document.getElementById('seedList');
+  const empty = document.getElementById('seedEmpty');
+  const waitingNote = document.getElementById('waitingNote');
+  const countEl = document.getElementById('seedCount');
+
+  list.innerHTML = '';
+  if (state.seeds.length === 0) {
+    empty.style.display = '';
+    waitingNote.style.display = 'none';
+    countEl.textContent = '(0 hạt)';
+    return;
+  }
+  empty.style.display = 'none';
+  waitingNote.style.display = '';
+  countEl.textContent = `(${state.seeds.length} hạt)`;
+
+  state.seeds.forEach(s => {
+    const el = document.createElement('div');
+    el.className = 'seed-item seed-pending';
+    el.innerHTML = `🌱 ${TASKS[s.taskIndex].icon} <small style="color:#888">${s.taskIndex === 2 ? '🌟' : '🪙'+s.coins}</small>`;
+    list.appendChild(el);
+  });
+}
+
+function updateApprovalUI() {
+  const list = document.getElementById('approvalList');
+  const noPending = document.getElementById('noPending');
+
+  // Clear existing approval cards (not noPending)
+  Array.from(list.children).forEach(c => {
+    if (c.id !== 'noPending') c.remove();
+  });
+
+  if (state.seeds.length === 0) {
+    noPending.style.display = '';
+    return;
+  }
+  noPending.style.display = 'none';
+
+  state.seeds.forEach((s, idx) => {
+    const card = document.createElement('div');
+    card.className = 'approval-card';
+    card.id = 'approvalCard_' + idx;
+    card.innerHTML = `
+      <div class="approval-icon">${TASKS[s.taskIndex].icon}</div>
+      <div class="approval-info">
+        <div class="approval-task">${s.taskName}</div>
+        <div class="approval-time">Hoàn thành vừa xong · ${s.hasChest ? '🎁 Kèm Rương Bí Ẩn' : '🪙 ' + s.coins + ' xu'}</div>
+      </div>
+      <button class="btn-approve" onclick="approveTask(${idx})">✅ Duyệt</button>
+    `;
+    list.appendChild(card);
+  });
+}
+
+// ─── ACTIONS ──────────────────────────────────────────────────
+function completeTask(idx) {
+  if (state.tasksDone[idx]) return;
+  state.tasksDone[idx] = true;
+
+  const task = TASKS[idx];
+  const card = document.getElementById('task' + idx);
+  card.classList.add('done');
+  const btn = card.querySelector('.btn-complete');
+  btn.disabled = true;
+  btn.textContent = '✓ Xong';
+  btn.classList.add('done-btn');
+
+  // Add to seed bag
+  state.seeds.push({ taskIndex: idx, taskName: task.name, coins: task.coins, hasChest: task.hasChest });
+  updateSeedBagUI();
+  updateApprovalUI();
+
+  // Spawn a small floating seed animation
+  spawnFloatEmoji('🌱', card);
+
+  // Tiny energy preview (before approval — teaser effect)
+  state.energy = Math.min(100, state.energy + 5);
+  updatePetUI();
+}
+
+function approveTask(seedIdx) {
+  if (seedIdx >= state.seeds.length) return;
+  const seed = state.seeds[seedIdx];
+  const task = TASKS[seed.taskIndex];
+
+  // Remove from seeds
+  state.seeds.splice(seedIdx, 1);
+
+  // Add to approved list
+  state.approved.push(seed);
+  const approvedSection = document.getElementById('approvedSection');
+  approvedSection.style.display = '';
+  const approvedList = document.getElementById('approvedList');
+  const approvedEntry = document.createElement('div');
+  approvedEntry.style = 'background:#F0FFF0;border:2px solid #A0DDA0;border-radius:12px;padding:9px 12px;margin-bottom:7px;font-size:13px;color:#2D7A3D;display:flex;align-items:center;gap:8px;';
+  approvedEntry.innerHTML = `<span>${task.icon}</span> <b>${seed.taskName}</b> <span style="margin-left:auto;color:#4CAF50">✅ Đã duyệt</span>`;
+  approvedList.appendChild(approvedEntry);
+
+  // Show reward
+  showReward(seed);
+
+  // Update approval list UI
+  updateApprovalUI();
+  updateSeedBagUI();
+}
+
+function showReward(seed) {
+  const task = TASKS[seed.taskIndex];
+
+  document.getElementById('rewardTaskName').textContent = task.icon + ' ' + seed.taskName;
+  document.getElementById('rewardAmount').textContent = '+' + seed.coins;
+
+  const chestArea = document.getElementById('chestArea');
+  const itemReveal = document.getElementById('itemReveal');
+  itemReveal.classList.remove('show');
+  document.getElementById('chestBtn').textContent = '📦';
+  document.getElementById('chestBtn').disabled = false;
+  document.getElementById('closeBtn').textContent = 'Tuyệt vời! 🌟';
+
+  if (seed.hasChest) {
+    chestArea.style.display = '';
+  } else {
+    chestArea.style.display = 'none';
+  }
+
+  document.getElementById('rewardOverlay').classList.add('show');
+
+  // Coins
+  state.coins += seed.coins;
+  state.energy = Math.min(100, state.energy + 20);
+  updateCoinUI();
+  updatePetUI();
+
+  // Confetti
+  spawnConfetti();
+}
+
+function openChest() {
+  const item = weightedRandom(LOOT);
+  document.getElementById('itemEmoji').textContent = item.emoji;
+  document.getElementById('itemName').textContent = item.name;
+  const rarityEl = document.getElementById('itemRarity');
+  rarityEl.textContent = item.label;
+  rarityEl.className = 'item-rarity ' + item.rarityClass;
+
+  document.getElementById('itemReveal').classList.add('show');
+  document.getElementById('chestBtn').textContent = '🎊';
+  document.getElementById('chestBtn').disabled = true;
+  document.getElementById('closeBtn').textContent = '🎉 Wow, ' + item.name + '!';
+
+  if (item.rarity === 'epic') spawnConfetti();
+}
+
+function closeReward() {
+  document.getElementById('rewardOverlay').classList.remove('show');
+  document.getElementById('confettiContainer').innerHTML = '';
+}
+
+// ─── VIEW SWITCHING ───────────────────────────────────────────
+function switchView(view) {
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+
+  document.getElementById(view + 'View').classList.add('active');
+  const tabs = document.querySelectorAll('.tab-btn');
+  if (view === 'child') tabs[0].classList.add('active');
+  else { tabs[1].classList.add('active'); updateApprovalUI(); }
+}
+
+// ─── PET TAP ──────────────────────────────────────────────────
+function petTap() {
+  const emoji = document.getElementById('petEmoji');
+  emoji.style.transform = 'scale(1.3) rotate(-10deg)';
+  setTimeout(() => emoji.style.transform = '', 300);
+
+  // Small heart
+  spawnFloatEmoji('💕', emoji);
+}
+
+// ─── GACHA HELPER ─────────────────────────────────────────────
+function weightedRandom(items) {
+  const total = items.reduce((s, i) => s + i.weight, 0);
+  let r = Math.random() * total;
+  for (const item of items) {
+    r -= item.weight;
+    if (r <= 0) return item;
+  }
+  return items[items.length - 1];
+}
+
+// ─── ANIMATIONS ───────────────────────────────────────────────
+function spawnFloatEmoji(emoji, relativeEl) {
+  const el = document.createElement('div');
+  el.className = 'float-coin';
+  el.textContent = emoji;
+
+  const rect = relativeEl.getBoundingClientRect
+    ? relativeEl.getBoundingClientRect()
+    : { left: window.innerWidth/2, top: window.innerHeight/2, width: 0, height: 0 };
+
+  el.style.left = (rect.left + rect.width/2) + 'px';
+  el.style.top  = (rect.top  + rect.height/2) + 'px';
+  document.body.appendChild(el);
+  setTimeout(() => el.remove(), 900);
+}
+
+function spawnConfetti() {
+  const container = document.getElementById('confettiContainer');
+  const colors = ['#FFB5C8','#FFD700','#A8D8EA','#C8F5C8','#E8A8FF','#FFB830'];
+  for (let i = 0; i < 20; i++) {
+    const dot = document.createElement('div');
+    dot.className = 'confetti-dot';
+    dot.style.background = colors[Math.floor(Math.random() * colors.length)];
+    dot.style.left = Math.random() * 100 + '%';
+    dot.style.top = '-10px';
+    dot.style.animationDuration = (0.7 + Math.random() * 0.8) + 's';
+    dot.style.animationDelay = (Math.random() * 0.3) + 's';
+    container.appendChild(dot);
+  }
+  setTimeout(() => container.innerHTML = '', 1500);
+}
+
+// ─── INIT ─────────────────────────────────────────────────────
+updatePetUI();
+updateCoinUI();
+updateSeedBagUI();
+</script>
+</body>
+</html>

@@ -1,0 +1,118 @@
+{
+  "roots": [
+    "flutter_flame_bridge_spike"
+  ],
+  "packages": [
+    {
+      "name": "flutter_flame_bridge_spike",
+      "version": "0.0.0",
+      "dependencies": [
+        "flame",
+        "flutter",
+        "flutter_riverpod"
+      ],
+      "devDependencies": []
+    },
+    {
+      "name": "flame",
+      "version": "1.37.0",
+      "dependencies": [
+        "collection",
+        "flutter",
+        "meta",
+        "ordered_set",
+        "vector_math"
+      ]
+    },
+    {
+      "name": "flutter",
+      "version": "0.0.0",
+      "dependencies": [
+        "characters",
+        "collection",
+        "material_color_utilities",
+        "meta",
+        "sky_engine",
+        "vector_math"
+      ]
+    },
+    {
+      "name": "vector_math",
+      "version": "2.2.0",
+      "dependencies": []
+    },
+    {
+      "name": "ordered_set",
+      "version": "8.0.0",
+      "dependencies": []
+    },
+    {
+      "name": "meta",
+      "version": "1.18.0",
+      "dependencies": []
+    },
+    {
+      "name": "collection",
+      "version": "1.19.1",
+      "dependencies": []
+    },
+    {
+      "name": "sky_engine",
+      "version": "0.0.0",
+      "dependencies": []
+    },
+    {
+      "name": "material_color_utilities",
+      "version": "0.13.0",
+      "dependencies": [
+        "collection"
+      ]
+    },
+    {
+      "name": "characters",
+      "version": "1.4.1",
+      "dependencies": []
+    },
+    {
+      "name": "flutter_riverpod",
+      "version": "2.6.1",
+      "dependencies": [
+        "collection",
+        "flutter",
+        "meta",
+        "riverpod",
+        "state_notifier"
+      ]
+    },
+    {
+      "name": "riverpod",
+      "version": "2.6.1",
+      "dependencies": [
+        "collection",
+        "meta",
+        "stack_trace",
+        "state_notifier"
+      ]
+    },
+    {
+      "name": "state_notifier",
+      "version": "1.0.0",
+      "dependencies": [
+        "meta"
+      ]
+    },
+    {
+      "name": "stack_trace",
+      "version": "1.12.1",
+      "dependencies": [
+        "path"
+      ]
+    },
+    {
+      "name": "path",
+      "version": "1.9.1",
+      "dependencies": []
+    }
+  ],
+  "configVersion": 1
+}

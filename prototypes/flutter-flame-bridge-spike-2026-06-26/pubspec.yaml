@@ -1,0 +1,20 @@
+# PROTOTYPE - NOT FOR PRODUCTION
+# Question: Can Riverpod state changes trigger Flame component animations
+#           without tight coupling? (Flutter-Flame State Bridge spike)
+# Date: 2026-06-26
+
+name: flutter_flame_bridge_spike
+description: Spike — validate Riverpod↔Flame event bridge pattern
+publish_to: 'none'
+
+environment:
+  sdk: '>=3.0.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flame: ^1.37.0
+  flutter_riverpod: ^2.5.1
+
+flutter:
+  uses-material-design: true

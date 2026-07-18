@@ -1,0 +1,5 @@
+- [PetQuest Overview & Art Bible Status](project_petquest_overview.md) — Cozy Chibi Neighborhood anchor, canonical palette hexes, art bible section 1-4/5-9 split.
+- [Honey Gold Hex Drift Pattern](feedback_honey_gold_hex_drift.md) — recurring wrong-gold-hex bug across GDDs; always grep `#FFD` and other canonical hexes, don't trust prose citations.
+- [User Review Expectations](user_review_expectations.md) — expects specific actionable findings, not rubber-stamps; team norm is explicit-flag-over-silent-assume for deferred decisions.
+- [Contrast audit overdue](project_contrast-audit-overdue.md) — pale-on-pale color audit flagged at 2 gates, still not run as of 2026-07-13
+- [Art Bible Section 5 dependency](project_art-bible-section5-dependency.md) — Sections 6-9 safely deferrable, but Section 5 blocks Pet Room UX finalization
