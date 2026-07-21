@@ -43,6 +43,23 @@ This repository does not currently publish a Codex marketplace entry, so there
 is no direct `codex plugin add` installation flow for it. The supported usage is
 to clone or copy the repository as a project template.
 
+## First-Time Setup
+
+1. Open the root `AGENTS.md` and replace the engine, language, build-system,
+   and asset-pipeline placeholders for your game.
+2. Read any nested `AGENTS.md` that applies before changing files in that area.
+   The nearest instruction file takes precedence.
+3. Start Codex from the repository root and use `$start` to select the right
+   workflow for a new idea or existing game project.
+
+```text
+$start
+```
+
+For an existing project, tell `$start` that you already have code or design
+documents. It will direct you to the appropriate adoption or continuation
+workflow instead of treating the project as new.
+
 ## Run A Skill
 
 Invoke skills by name with the Codex skill syntax:
@@ -57,6 +74,16 @@ $gate-check pre-production
 Use `$help` for a workflow-oriented skill index, or browse
 [`docs/studio/skills-reference.md`](docs/studio/skills-reference.md). Skill
 arguments are supplied as normal text after the skill name.
+
+### Common Starting Paths
+
+| Goal | Start with |
+| --- | --- |
+| Explore a new game concept | `$brainstorm [idea]` |
+| Set up an engine and language | `$setup-engine [engine] [language]` |
+| Continue existing code or documents | `$start` or `$adopt` |
+| Find the next workflow | `$help` |
+| Check a changed skill | `$skill-test static [skill-name]` |
 
 ## Use A Role Profile
 
@@ -131,11 +158,15 @@ for the detailed protocol.
 
 See [`CONTRIBUTING.md`](CONTRIBUTING.md) for contribution-specific checks.
 
-## Platform Notes
+## Learn More
 
-Hook scripts target POSIX-compatible Bash. Windows contributors should use Git
-Bash; macOS and Linux contributors can use their system Bash. Hooks must fail
-clearly or exit harmlessly when an optional tool is unavailable.
+- [`docs/studio/quick-start.md`](docs/studio/quick-start.md) for the complete
+  first-project walkthrough.
+- [`docs/studio/skills-reference.md`](docs/studio/skills-reference.md) for the
+  full skill catalog.
+- [`docs/WORKFLOW-GUIDE.md`](docs/WORKFLOW-GUIDE.md) for the studio lifecycle.
+- [`UPGRADING.md`](UPGRADING.md) for migration guidance from the older
+  Claude-oriented layout.
 
 ## License And History
 
