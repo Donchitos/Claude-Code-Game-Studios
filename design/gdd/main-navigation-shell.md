@@ -7,6 +7,8 @@
 
 > **Correction (2026-07-14 — HUD spec cross-reference check, `design/ux/hud.md`)**: mọi tham chiếu "Child app bar" trong GDD này đã được sửa thành "floating chip cluster" (Profile chip + Xu chip top-left, Contextual badge chip top-right) — HUD spec chọn layout floating-pill (Option A, không có thanh app-bar liên tục) thay vì 1 `AppBar` widget như bản gốc giả định. Hành vi/data contract (Rule 5/6, xuBalance contract, long-press gesture, AC-6/7/8) **không đổi** — chỉ đổi widget/rendering ownership: HUD spec sở hữu visual/animation spec của Xu chip + Contextual badge chip; GDD này vẫn sở hữu Profile chip's long-press-to-parent-override interaction logic.
 
+> **Correction (2026-07-18 — ADR-0014 authoring, GDD Sync Check)**: mọi tham chiếu `/child-selector` trong GDD này đã sửa thành `/select-child` — route path thật sự đã được code hóa trong Auth & Account epic (đã Complete) dùng `AppRoutes.selectChild = '/select-child'`, khác với path GDD gốc giả định. Phát hiện lần đầu khi implement Parent Dashboard UI's Story 001 (`/dev-story`, 2026-07-18), sau đó lan truyền sửa sang `design/ux/main-navigation-shell.md`, `design/ux/parent-dashboard-ui.md`, và ADR-0014. Hành vi/route logic không đổi — chỉ đổi path string.
+
 ## Overview
 
 Main Navigation Shell là Flutter widget bao bọc toàn bộ app — nó đọc session state từ Auth & Account và render đúng UI tree cho từng actor.
@@ -37,7 +39,7 @@ Shell phân tách hai trải nghiệm này hoàn toàn. Bé không bị distract
    - **Sửa 2026-07-06 (fix Scenario 3 blocker từ review-all-gdds)**: nếu overlay đó là **non-dismissible** (ví dụ #20's ceremony trong Phase 1-3), PHẢI dùng **ROOT navigator** (`Navigator.of(context, rootNavigator: true).push(...)`), KHÔNG phải branch-scoped Navigator — vì bottom nav bar sống ở tầng Scaffold, NGOÀI branch Navigator; push branch-scoped để lại bottom nav vẫn visible/tappable phía trên overlay, cho phép bé tap sang tab khác giữa lúc ceremony đang "non-dismissible" — mâu thuẫn trực tiếp với chính thiết kế đó. Root-navigator push che luôn bottom nav, chặn hoàn toàn tab-switch trong lúc overlay còn mở.
 2. Shell đọc `sessionStateProvider` (từ Auth & Account #1 — provider derive, KHÔNG PHẢI `authStateProvider` thô) mỗi khi rebuild. Route guard redirect tự động:
    - `unauthenticated` → `/login`
-   - `parentAuthed` (chưa chọn bé) → `/child-selector`
+   - `parentAuthed` (chưa chọn bé) → `/select-child`
    - `childSelected` → `/child/pet-room` (default tab)
    - `parentView` (bố mẹ override từ trong child session — xem #1's Core Rule 5): `/parent/dashboard`, KHÔNG dispose child session bên dưới
 3. **Child navigation tree** (3 tabs, bottom nav bar):
@@ -49,7 +51,7 @@ Shell phân tách hai trải nghiệm này hoàn toàn. Bé không bị distract
    - Tab 2: 👨‍👩‍👧 "Gia đình" → `/parent/family`
 5. **Sửa 2026-07-14 (reconcile với HUD spec `design/ux/hud.md`)**: Child screen hiển thị 3 floating chip độc lập — không phải 1 `AppBar` widget. Chip cluster top-left: **Profile chip** (avatar bé + tên bé, sở hữu bởi #17 — Rule 6) đặt cạnh **Xu chip** (icon xu + `xuBalance`, sở hữu bởi Currency System #7's data, rendering bởi HUD spec). Top-right riêng biệt: Contextual badge chip (Seed/Chest — HUD spec sở hữu, xem #10/#12). Cả 3 chip là các floating pill độc lập (Round-Over-Sharp, Art Bible §3), KHÔNG fuse thành 1 thanh liên tục — xem `design/ux/hud.md` Layout Zones cho spec đầy đủ.
 6. **Switch to parent mode (Parent Override)**: Long-press vào **Profile chip** (avatar bé, top-left floating chip — không còn là "app bar" theo Rule 5's sửa) → bottom sheet xác nhận "Chuyển sang tài khoản bố/mẹ?" → [Xác nhận] → yêu cầu parent password → set `parentOverrideProvider = true` (Auth #1) → navigate về `/parent/dashboard`. Child session KHÔNG bị logout/dispose.
-7. **Switch to child mode (thoát Parent Override)**: Từ Parent Dashboard (khi `sessionState == parentView`) → tap "Xong"/"Quay lại" → set `parentOverrideProvider = false` → navigate thẳng về `/child/pet-room`, KHÔNG qua `/child-selector`, KHÔNG cần bé gõ lại PIN (theo Auth #1's States/Transitions: `parent_view` → `done` → `child_selected` trực tiếp, session vẫn nguyên — sửa lỗi so với bản trước yêu cầu re-PIN, mâu thuẫn với #1's diagram).
+7. **Switch to child mode (thoát Parent Override)**: Từ Parent Dashboard (khi `sessionState == parentView`) → tap "Xong"/"Quay lại" → set `parentOverrideProvider = false` → navigate thẳng về `/child/pet-room`, KHÔNG qua `/select-child`, KHÔNG cần bé gõ lại PIN (theo Auth #1's States/Transitions: `parent_view` → `done` → `child_selected` trực tiếp, session vẫn nguyên — sửa lỗi so với bản trước yêu cầu re-PIN, mâu thuẫn với #1's diagram).
 8. Back button behavior: **Child tab root screens** (Pet Room, Tasks, Shop) → dialog "Thoát PetQuest?" theo Edge Cases (kid-styled). **Parent tab root screens** (Dashboard, Gia đình) → back button EXIT APP TRỰC TIẾP, không hiện dialog kid-styled ("Thoát PetQuest?" không phù hợp tone người lớn) — nếu `sessionState == parentView` (override từ child session), back button thay vào đó QUAY VỀ child session (`parentOverrideProvider = false` → `/child/pet-room`) thay vì exit app, vì app vẫn đang chạy dưới danh nghĩa bé. Sub-screens (cả 2 bên) → back về tab root.
 
 ### States and Transitions
@@ -59,7 +61,7 @@ Shell phân tách hai trải nghiệm này hoàn toàn. Bé không bị distract
 | Session State | Route shown | Nav bar |
 |---------------|-------------|---------|
 | `unauthenticated` | `/login` | Không có |
-| `parentAuthed` | `/child-selector` | Không có |
+| `parentAuthed` | `/select-child` | Không có |
 | `childSelected` | `/child/pet-room` (default) | Child bottom nav (3 tabs) |
 | `parentView` | `/parent/dashboard` | Parent bottom nav (2 tabs) — child session vẫn sống bên dưới, không dispose |
 
@@ -67,7 +69,7 @@ Shell phân tách hai trải nghiệm này hoàn toàn. Bé không bị distract
 
 ```
 /login
-/child-selector
+/select-child
 /child/
   pet-room          ← Tab 1 (default)
   tasks             ← Tab 2
@@ -106,7 +108,7 @@ System này không có công thức toán học phức tạp. Contracts dưới 
 
 ```
 if sessionState == unauthenticated → redirect("/login")
-else if sessionState == parentAuthed → redirect("/child-selector")
+else if sessionState == parentAuthed → redirect("/select-child")
 else if sessionState == childSelected → allow "/child/*", default "/child/pet-room"
 else if sessionState == parentView → allow "/parent/*", default "/parent/dashboard"
 ```
@@ -199,7 +201,7 @@ final activeChildBranchIndexProvider = StateProvider<int>((ref) => 0);
 **Test tier note**: Theo `coding-standards.md`'s Testing Standards, mọi criterion tag `[LOGIC]`/`[INTEGRATION]` là BLOCKING (automated test bắt buộc) — không có tier "advisory Logic/Integration". Chỉ `[UI]` là advisory.
 
 - **AC-1** `[INTEGRATION]` BLOCKING — GIVEN app khởi động với session `unauthenticated`, THEN GoRouter redirect về `/login` — không flash bất kỳ screen nào khác.
-- **AC-2** `[INTEGRATION]` BLOCKING — GIVEN bố mẹ login thành công, WHEN chưa chọn bé, THEN redirect về `/child-selector` tự động.
+- **AC-2** `[INTEGRATION]` BLOCKING — GIVEN bố mẹ login thành công, WHEN chưa chọn bé, THEN redirect về `/select-child` tự động.
 - **AC-3** `[INTEGRATION]` BLOCKING — GIVEN bé gõ PIN đúng trên Child Selector, THEN redirect về `/child/pet-room` và Child bottom nav (3 tabs) hiển thị.
 - **AC-4** `[UI]` — GIVEN bé ở `/child/pet-room`, WHEN tap tab "Nhiệm vụ", THEN navigate sang `/child/tasks` trong 200ms; tab "Nhà" không còn active.
 - **AC-5** `[INTEGRATION]` BLOCKING — GIVEN bé ở `/child/tasks`, WHEN tap tab "Nhà" quay lại, THEN Pet Room screen resume ngay — không rebuild, Flame game loop vẫn running (silent-failure risk: nếu game loop bị dispose nhầm, không có triệu chứng UI rõ ràng ngoài animation bị reset).
@@ -211,7 +213,7 @@ final activeChildBranchIndexProvider = StateProvider<int>((ref) => 0);
 - **AC-11** `[INTEGRATION]` BLOCKING — GIVEN session expire khi bé ở `/child/shop`, THEN GoRouter redirect về `/login` — không stuck ở `/child/shop`.
 - **AC-12** `[UI]` — GIVEN bé ở `/child/tasks/new` (sub-screen), WHEN back-press, THEN navigate về `/child/tasks` — không về Pet Room.
 - **AC-13** `[INTEGRATION]` BLOCKING — GIVEN `sessionState == parentView` (bố mẹ đang override), WHEN bố mẹ back-press trên `/parent/dashboard`, THEN quay về `/child/pet-room` (`parentOverrideProvider = false`) — KHÔNG exit app, KHÔNG hiện dialog "Thoát PetQuest?" kid-styled.
-- **AC-14** `[INTEGRATION]` BLOCKING — GIVEN bố mẹ ở `/parent/dashboard` sau khi override, WHEN tap "Xong"/"Quay lại", THEN quay thẳng về `/child/pet-room` KHÔNG qua `/child-selector`, bé KHÔNG cần nhập lại PIN — session vẫn nguyên.
+- **AC-14** `[INTEGRATION]` BLOCKING — GIVEN bố mẹ ở `/parent/dashboard` sau khi override, WHEN tap "Xong"/"Quay lại", THEN quay thẳng về `/child/pet-room` KHÔNG qua `/select-child`, bé KHÔNG cần nhập lại PIN — session vẫn nguyên.
 
 ## Open Questions
 

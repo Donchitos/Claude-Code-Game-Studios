@@ -30,7 +30,7 @@
 #   Superseded entries:     Grep pattern="status: superseded"
 
 version: 1
-last_updated: "2026-07-11"
+last_updated: "2026-07-18"
 
 # ─── STATE OWNERSHIP ─────────────────────────────────────────────────────────
 # Who is the authoritative owner of each piece of shared game state.
@@ -272,6 +272,23 @@ state_ownership:
     added: 2026-07-18
     revised: ""
 
+  - state: active_child_branch_index
+    status: active
+    owner_system: main-navigation-shell
+    adr: docs/architecture/adr-0014-navigation-shell-route-guard-architecture.md
+    interface: "activeChildBranchIndexProvider (StateProvider<int>, in-memory only, never persisted).
+      Index space is scoped per-shell (0-2 for Child Shell, 0-1 for Parent Shell), not global.
+      Written by each shell's bottom-nav onTap alongside StatefulNavigationShell.goBranch(index).
+      Any screen needing 'am I still the active tab' watches this instead of relying on widget
+      lifecycle — branches are never disposed on sibling-branch switch (StatefulShellRoute.indexedStack),
+      so dispose()/RouteObserver never fires for that case."
+    write_access: main-navigation-shell-only   # bottom-nav onTap handlers, both shells
+    referenced_by:
+      - docs/architecture/adr-0014-navigation-shell-route-guard-architecture.md
+      - design/gdd/main-navigation-shell.md
+    added: 2026-07-18
+    revised: ""
+
 # Example:
 #
 # state_ownership:
@@ -382,6 +399,29 @@ interfaces:
       - design/gdd/shop-system.md
       - design/gdd/shop-reward-ui.md
     added: 2026-07-11
+    revised: ""
+
+  - contract: router_provider
+    status: active
+    pattern: shared_resource   # single root GoRouter instance every screen renders inside
+    producer: main-navigation-shell
+    consumers:
+      - pet-room-screen-ui       # hosted at /child/pet-room, no epic yet
+      - task-management-ui       # hosted at /child/tasks (+ /child/tasks/new), no epic yet
+      - shop-reward-ui           # hosted at /child/shop, no epic yet
+      - parent-dashboard-ui      # hosted at /parent/dashboard + /parent/family
+    adr: docs/architecture/adr-0014-navigation-shell-route-guard-architecture.md
+    signal_signature: "lib/providers/router_provider.dart exports routerProvider (Provider<GoRouter>)
+      and AppRoutes path constants. Root redirect implements the 4-state sessionStateProvider guard
+      (unauthenticated/parentAuthed/childSelected/parentView) — READS sessionStateProvider only,
+      never re-derives it (see session_state's write_access: auth-account-only above). Two separate
+      StatefulShellRoute trees: Child (3 branches: pet-room/tasks/shop) and Parent (2 branches:
+      dashboard/family). Downstream screens register their content as a route builder inside the
+      relevant branch — they do not define their own top-level routes or redirect logic."
+    referenced_by:
+      - docs/architecture/adr-0014-navigation-shell-route-guard-architecture.md
+      - design/gdd/main-navigation-shell.md
+    added: 2026-07-18
     revised: ""
 
 # Example:
@@ -989,6 +1029,47 @@ forbidden_patterns:
       - docs/architecture/adr-0011-shop-purchase-pipeline-idempotency-fix.md
       - design/gdd/shop-system.md
     added: 2026-07-11
+
+  - pattern: ref_watch_on_session_state_inside_router_provider
+    status: active
+    description: "routerProvider (and any Provider<GoRouter> equivalent) must use ref.listen on
+      sessionStateProvider for its refresh bridge, never ref.watch."
+    why: "ref.watch would rebuild/recreate the entire Provider<GoRouter> — and therefore the
+      GoRouter instance — on every session-state change, tearing down BOTH StatefulShellRoute
+      trees and destroying the branch-preservation guarantee (and Pet Room's live FlameGame
+      instance) the whole navigation architecture exists to protect. Found in engine-specialist
+      validation of ADR-0014, 2026-07-18 — a very common mistake in Riverpod+go_router tutorials."
+    adr: docs/architecture/adr-0014-navigation-shell-route-guard-architecture.md
+    referenced_by:
+      - docs/architecture/adr-0014-navigation-shell-route-guard-architecture.md
+    added: 2026-07-18
+
+  - pattern: go_router_refresh_stream_usage
+    status: active
+    description: "Never import or reference GoRouterRefreshStream. Use a ValueNotifier bumped via
+      ref.listen(sessionStateProvider, ...) as the refreshListenable instead."
+    why: "GoRouterRefreshStream was removed from the go_router package itself in v5.0.0 and is not
+      re-exported by the pinned go_router ^17.3.0 (verified directly against installed package
+      source — it exists only in old CHANGELOG entries, not in lib/). Already found once during
+      ADR-0002/Story 003; registered here so ADR-0014 and future navigation work don't reintroduce it."
+    adr: docs/architecture/adr-0014-navigation-shell-route-guard-architecture.md
+    referenced_by:
+      - docs/architecture/adr-0002-auth-pin-security-architecture.md
+      - docs/architecture/adr-0014-navigation-shell-route-guard-architecture.md
+    added: 2026-07-18
+
+  - pattern: will_pop_scope_usage
+    status: active
+    description: "Never use WillPopScope for back-button handling. Use PopScope with
+      onPopInvokedWithResult (not the also-deprecated onPopInvoked)."
+    why: "WillPopScope was removed in Flutter 3.22+ (confirmed in docs/engine-reference/flutter-flame/
+      deprecated-apis.md and directly against the pinned Flutter 3.44.4 SDK source). This project's
+      back-button behavior (Main Navigation Shell's per-shell, per-override-state confirm dialogs)
+      depends on PopScope's real API shape."
+    adr: docs/architecture/adr-0014-navigation-shell-route-guard-architecture.md
+    referenced_by:
+      - docs/architecture/adr-0014-navigation-shell-route-guard-architecture.md
+    added: 2026-07-18
 
 # Example:
 #

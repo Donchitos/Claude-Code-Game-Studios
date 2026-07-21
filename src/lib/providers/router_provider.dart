@@ -54,8 +54,26 @@ abstract final class AppRoutes {
   /// [redirectForSessionState]'s `parentAuthed` case, which allows both this
   /// and [selectChild] as valid locations for that state.
   static const pinEntry = '/select-child/pin-entry';
-  static const petRoom = '/pet-room';
-  static const parentDashboard = '/parent-dashboard';
+
+  /// Child Shell default route (ADR-0014 Decision §1) — the `childSelected`
+  /// redirect branch (see [redirectForSessionState]) allows any `/child/*`
+  /// location and defaults here. Only a flat placeholder `GoRoute` exists for
+  /// this path so far (main-navigation-shell Story 001) — Story 002 replaces
+  /// it with the real `StatefulShellRoute` (Pet Room/Tasks/Shop tabs).
+  static const childPetRoom = '/child/pet-room';
+  static const childTasks = '/child/tasks';
+  static const childTasksNew = '/child/tasks/new';
+  static const childShop = '/child/shop';
+
+  /// Parent Shell default route (ADR-0014 Decision §1) — the `parentView`
+  /// redirect branch (see [redirectForSessionState]) allows any `/parent/*`
+  /// location and defaults here. MOVED from the flat `/parent-dashboard`
+  /// (pre-main-navigation-shell) to this branch-scoped path per ADR-0014's
+  /// Migration Plan (main-navigation-shell Story 001). Only a flat
+  /// placeholder `GoRoute` exists for this path so far — Story 003 replaces
+  /// it with the real `StatefulShellRoute` (Dashboard/Gia đình tabs).
+  static const parentDashboard = '/parent/dashboard';
+  static const parentFamily = '/parent/family';
 
   static String pinEntryFor(String childId) =>
       '$pinEntry?childId=${Uri.encodeQueryComponent(childId)}';
@@ -99,7 +117,7 @@ final routerProvider = Provider<GoRouter>((ref) {
         ),
       ),
       GoRoute(
-        path: AppRoutes.petRoom,
+        path: AppRoutes.childPetRoom,
         pageBuilder: (context, state) =>
             fadeTransitionPage(context, state, const _PlaceholderScreen(title: 'Pet Room')),
       ),
@@ -118,16 +136,19 @@ final routerProvider = Provider<GoRouter>((ref) {
 /// Pure [SessionState] → route mapping, exposed for direct unit testing
 /// alongside the integration test that exercises the real [GoRouter].
 ///
-/// `parentView` does not force `AppRoutes.parentDashboard`: per GDD Core Rule
-/// 5, the Parent Dashboard overlays the active child route rather than
-/// replacing it — it is reached via an explicit `context.push()` from the
-/// override UI (a later story), not by this redirect forcing a location
-/// change. It DOES still require `matchedLocation == petRoom` — `parentView`
-/// is only reachable from `childSelected`, so the child route must be the
-/// thing underneath the overlay; if some future flow (deep link, restored
-/// session) ever lands on `parentView` from elsewhere, this still lands the
-/// child route first rather than silently leaving the mismatched location in
-/// place (found in Story 003 code review — code-review 2026-07-15).
+/// `childSelected` and `parentView` are independent branches (ADR-0014
+/// Decision §1, main-navigation-shell Story 001) — `childSelected` allows any
+/// `/child/*` location, defaulting to [AppRoutes.childPetRoom]; `parentView`
+/// allows any `/parent/*` location, defaulting to [AppRoutes.parentDashboard].
+/// This supersedes this function's original (pre-main-navigation-shell)
+/// behavior, where both states collapsed into a single
+/// `matchedLocation == petRoom` check and `parentView` deliberately never
+/// forced a location change — that was Auth & Account's placeholder-era
+/// design, where GDD Core Rule 5 was read as "Parent Dashboard overlays the
+/// child route via `context.push()`". ADR-0014 replaces that overlay model
+/// with real `context.go()` navigation into `/parent/*`, picked up
+/// automatically by the `ref.listen` refresh bridge above (ADR-0014 Decision
+/// §5) — no manual navigation-plus-guard duplication needed.
 String? redirectForSessionState(SessionState sessionState, String matchedLocation) {
   switch (sessionState) {
     case SessionState.unauthenticated:
@@ -149,8 +170,18 @@ String? redirectForSessionState(SessionState sessionState, String matchedLocatio
           ? null
           : AppRoutes.selectChild;
     case SessionState.childSelected:
+      // Allows any /child/* location — Story 002's real StatefulShellRoute
+      // branches (Pet Room/Tasks/Shop) will all live under this prefix, but
+      // this story only wires the placeholder childPetRoom GoRoute against
+      // it (main-navigation-shell Story 001).
+      return matchedLocation.startsWith('/child/') ? null : AppRoutes.childPetRoom;
     case SessionState.parentView:
-      return matchedLocation == AppRoutes.petRoom ? null : AppRoutes.petRoom;
+      // Allows any /parent/* location — Story 003's real StatefulShellRoute
+      // branches (Dashboard/Gia đình) will all live under this prefix; this
+      // story only wires the placeholder parentDashboard GoRoute against it.
+      // Independent branch from childSelected above — verified separately
+      // per this story's own "parentView redirect" acceptance criterion.
+      return matchedLocation.startsWith('/parent/') ? null : AppRoutes.parentDashboard;
   }
 }
 

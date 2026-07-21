@@ -72,8 +72,12 @@ class _FakeFirestore implements FirebaseFirestore {
 void main() {
   group('redirectForSessionState (pure logic)', () {
     test('test_redirectForSessionState_unauthenticated_routes_to_login', () {
+      // '/some-arbitrary-route' stands in for "any non-login/register
+      // location" — NOT a reference to the old flat '/pet-room' route, which
+      // main-navigation-shell Story 001 removed (AppRoutes.petRoom no longer
+      // exists; found as a stale literal in code review, 2026-07-19).
       expect(
-        redirectForSessionState(SessionState.unauthenticated, '/pet-room'),
+        redirectForSessionState(SessionState.unauthenticated, '/some-arbitrary-route'),
         AppRoutes.login,
       );
     });
@@ -116,7 +120,7 @@ void main() {
         'test_redirectForSessionState_parentAuthed_still_redirects_unrelated_locations_to_select_child',
         () {
       expect(
-        redirectForSessionState(SessionState.parentAuthed, AppRoutes.petRoom),
+        redirectForSessionState(SessionState.parentAuthed, AppRoutes.childPetRoom),
         AppRoutes.selectChild,
       );
     });
@@ -124,17 +128,20 @@ void main() {
     test('test_redirectForSessionState_childSelected_routes_to_pet_room', () {
       expect(
         redirectForSessionState(SessionState.childSelected, '/select-child'),
-        AppRoutes.petRoom,
+        AppRoutes.childPetRoom,
       );
     });
 
     test(
-        'test_redirectForSessionState_parentView_returns_null_stays_on_current_route',
+        'test_redirectForSessionState_parentView_allows_parent_routes',
         () {
-      // GDD Core Rule 5: Parent Dashboard overlays the child route, it must
-      // not be reached by this redirect forcing a location change.
+      // main-navigation-shell Story 001 (ADR-0014 Decision §1) supersedes
+      // this file's original "Parent Dashboard overlays the child route, so
+      // parentView never forces a location change" reading of GDD Core Rule
+      // 5 — parentView now allows any /parent/* location, same shape as
+      // childSelected's /child/* allowance.
       expect(
-        redirectForSessionState(SessionState.parentView, '/pet-room'),
+        redirectForSessionState(SessionState.parentView, AppRoutes.parentDashboard),
         isNull,
       );
     });
@@ -143,22 +150,22 @@ void main() {
         'test_redirectForSessionState_already_at_target_location_returns_null',
         () {
       expect(
-        redirectForSessionState(SessionState.childSelected, '/pet-room'),
+        redirectForSessionState(SessionState.childSelected, AppRoutes.childPetRoom),
         isNull,
       );
     });
 
     test(
-        'test_redirectForSessionState_parentView_from_non_pet_room_location_still_lands_pet_room',
+        'test_redirectForSessionState_parentView_from_non_parent_location_lands_parent_dashboard',
         () {
-      // Regression case found in Story 003 code review: parentView is only
-      // reachable from childSelected, so if matchedLocation is ever anything
-      // other than pet-room when parentView is reached (deep link, restored
-      // session), the child route must still be forced underneath — GDD Core
-      // Rule 5 requires the child session intact, not just "don't redirect".
+      // Updated for main-navigation-shell Story 001 (ADR-0014 Decision §1):
+      // parentView now defaults to AppRoutes.parentDashboard, not the child
+      // route — superseding this file's original "still lands pet room"
+      // regression case (Story 003 code review, code-review 2026-07-15),
+      // which predates ADR-0014's overlay-model replacement.
       expect(
         redirectForSessionState(SessionState.parentView, '/login'),
-        AppRoutes.petRoom,
+        AppRoutes.parentDashboard,
       );
     });
   });
@@ -203,7 +210,7 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.byType(ChildProfileSelectionScreen), findsOneWidget);
 
-      // 3. select a child -> childSelected -> /pet-room
+      // 3. select a child -> childSelected -> /child/pet-room
       container.read(activeChildProvider.notifier).state = const ChildProfile(
         childId: 'child-1',
         name: 'Bé An',
@@ -213,15 +220,20 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.text('Pet Room'), findsOneWidget);
 
-      // 4. parent override -> parentView -> stays on Pet Room (GDD Core Rule 5:
-      //    the child session must remain intact underneath, not be navigated
-      //    away from by this redirect).
+      // 4. parent override -> parentView -> navigates to /parent/dashboard.
+      //    Updated for main-navigation-shell Story 001 (ADR-0014 Decision
+      //    §1): parentView now allows/defaults into /parent/* via a real
+      //    context.go(), superseding this file's original "stays on Pet
+      //    Room" overlay-model expectation.
       container.read(parentOverrideProvider.notifier).state = true;
       await tester.pumpAndSettle();
-      expect(find.text('Pet Room'), findsOneWidget);
-      expect(find.text('Parent Dashboard'), findsNothing);
+      expect(find.text('Parent Dashboard'), findsOneWidget);
+      expect(find.text('Pet Room'), findsNothing);
 
-      // 5. override ends -> childSelected again -> still Pet Room
+      // 5. override ends -> childSelected again -> back to /child/pet-room
+      //    (childSelected doesn't allow /parent/*, so the redirect forces it
+      //    back to the childPetRoom default — the child branch was never
+      //    disposed, per ADR-0014 Decision §5, so no re-PIN is needed).
       container.read(parentOverrideProvider.notifier).state = false;
       await tester.pumpAndSettle();
       expect(find.text('Pet Room'), findsOneWidget);

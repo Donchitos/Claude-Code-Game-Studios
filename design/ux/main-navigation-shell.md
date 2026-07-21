@@ -1,9 +1,10 @@
 # UX Spec: Main Navigation Shell
 
-> **Status**: Complete — all sections drafted, Cross-Reference Check done (1 real conflict found + resolved: Seed Badge tap-to-navigate contradicted `hud.md`'s display-only-at-MVP decision; `seed-buffer.md` corrected). Pending `/ux-review`.
+> **Status**: Complete — all sections drafted, Cross-Reference Check done (1 real conflict found + resolved: Seed Badge tap-to-navigate contradicted `hud.md`'s display-only-at-MVP decision; `seed-buffer.md` corrected). `/ux-review` 2026-07-18: NEEDS REVISION (2 blocking + 3 advisory) → all fixed inline → APPROVED.
 > **Author**: User + ux-designer
-> **Last Updated**: 2026-07-17
+> **Last Updated**: 2026-07-18
 > **Journey Phase(s)**: unknown — no `design/player-journey.md` yet
+> **Platform Target**: Mobile (iOS + Android), Touch only — from `technical-preferences.md`
 > **Template**: UX Spec
 
 ---
@@ -138,6 +139,7 @@ PARENT SHELL
 
 | State / Variant | Trigger | What Changes |
 |---|---|---|
+| Cold start / resolving *(added at `/ux-review`)* | App just launched, `sessionStateProvider`'s first value not yet emitted (Firebase Auth's async initial check) | Blank `Scaffold` in the app's base background color, no nav bar, no chips, no spinner — same "no flash" treatment as the Unauthenticated state below, just for the resolution gap itself. Not a distinct visual state a user should ever consciously perceive; this is a real state existing code must handle regardless (a `null`/loading `AsyncValue` on `sessionStateProvider`), and it must resolve to one of the states below in well under a second on any reasonable connection. |
 | Unauthenticated | No session / token expired | No nav bar, no chips — full-screen Login |
 | Parent authed, no child selected | Login success, no child chosen yet | No nav bar, no chips — full-screen Child Selector |
 | Child selected (default) | Correct PIN entered | Child bottom nav (3 tabs) + chip cluster appear; default tab = Pet Room |
@@ -215,6 +217,8 @@ No action in this shell writes persistent (Firestore) state — `parentOverrideP
 
 `chestCount`'s source provider isn't ADR-covered yet (Gacha/Loot Roll Architecture is still unwritten — same gap category Seed Buffer was in before ADR-0012); this spec can still reference it by name since the GDD does, but the read contract isn't locked down yet. `activeChildBranchIndexProvider` is genuinely owned here (not just consumed) — this shell's one piece of exported state that other screens depend on.
 
+**Loading/null handling** *(added at `/ux-review`)*: before `seedCountProvider`/`chestCount`'s first snapshot resolves, the Contextual badge chip treats the value the same as `0` (chip absent from layout) rather than showing a placeholder or spinner — consistent with the chip's own "removed at 0, not faded" rule, and avoiding a flash-then-appear on every cold start.
+
 ---
 
 ## Accessibility
@@ -254,7 +258,7 @@ Checked against the committed Kid-Touch Baseline (`design/accessibility-requirem
 Reused directly from the GDD's own 14 ACs (already well-formed and testable for this exact system), converted to checkbox format, plus one new accessibility criterion the GDD didn't have:
 
 - [ ] GIVEN app starts with session `unauthenticated`, THEN GoRouter redirects to `/login` — no other screen flashes. (AC-1)
-- [ ] GIVEN parent logs in successfully with no child selected yet, THEN auto-redirect to `/child-selector`. (AC-2)
+- [ ] GIVEN parent logs in successfully with no child selected yet, THEN auto-redirect to `/select-child`. (AC-2)
 - [ ] GIVEN child enters correct PIN on Child Selector, THEN redirect to `/child/pet-room` with Child bottom nav (3 tabs) visible. (AC-3)
 - [ ] GIVEN child is on `/child/pet-room`, WHEN tapping "Nhiệm vụ" tab, THEN navigate to `/child/tasks` within 200ms; "Nhà" tab no longer active. (AC-4)
 - [ ] GIVEN child is on `/child/tasks`, WHEN tapping "Nhà" tab back, THEN Pet Room resumes immediately — no rebuild, Flame game loop still running. (AC-5)
@@ -266,13 +270,15 @@ Reused directly from the GDD's own 14 ACs (already well-formed and testable for 
 - [ ] GIVEN session expires while child is on `/child/shop`, THEN redirect to `/login` — never stuck on `/child/shop`. (AC-11)
 - [ ] GIVEN child is on `/child/tasks/new` (sub-screen), WHEN back-pressing, THEN navigate to `/child/tasks` — not to Pet Room. (AC-12)
 - [ ] GIVEN `sessionState == parentView`, WHEN parent back-presses on `/parent/dashboard`, THEN return to `/child/pet-room` (`parentOverrideProvider = false`) — no app exit, no kid-styled dialog. (AC-13)
-- [ ] GIVEN parent is on `/parent/dashboard` post-override, WHEN tapping "Xong"/"Quay lại", THEN return directly to `/child/pet-room` without passing through `/child-selector` — no re-PIN required. (AC-14)
+- [ ] GIVEN parent is on `/parent/dashboard` post-override, WHEN tapping "Xong"/"Quay lại", THEN return directly to `/child/pet-room` without passing through `/select-child` — no re-PIN required. (AC-14)
 - [ ] **[NEW]** Every interactive element in both shells (nav tabs, Profile chip, dialog/sheet buttons) meets the 48×48dp minimum touch target, and re-tapping the already-active tab is a no-op (verified — no stacked navigation push).
+- [ ] **[NEW, added at `/ux-review`]** Bottom nav bars, floating chip cluster, and contextual badge render correctly without overlap or clipping on both small (iPhone SE, ~375dp width) and large (tablet-size Android, ~600dp+ width) screens.
 
 ---
 
 ## Open Questions
 
+- **RESOLVED at `/ux-review` (2026-07-18)**: this spec and the GDD both originally used `/child-selector` as the child-selection route path. The actually-built code (Auth & Account epic, Complete) defines `AppRoutes.selectChild = '/select-child'` instead — a real path-string mismatch, found while implementing Parent Dashboard UI's Story 001. Resolved by updating this spec to `/select-child` to match the already-shipped, already-tested code, rather than renaming the working code to match the doc. `design/gdd/main-navigation-shell.md`'s own Route Map still says `/child-selector` and should be corrected to match on its next touch, but is not blocking implementation of this spec.
 - Player journey map not yet created. Template available at `.claude/docs/templates/player-journey.md`. Run `/ux-design` Phase 2b or create it manually to establish player context for this screen.
 - **Shell-to-shell transition** (Child Shell ↔ Parent Shell on override toggle) has no specified route-transition animation — defaults to platform standard. Revisit if a future revision wants something more deliberate.
 - **Analytics event instrumentation** is entirely unspecified for this shell's interactions (tab switches, override toggles, exit dialog) — a gap, not a deliberate choice.

@@ -773,3 +773,118 @@ Since the 07-11 architecture review: **all 11 ADRs are now Accepted** (B2 resolv
 - **Parent Approval epic: 2/2 stories Complete, but epic itself left OPEN** (not marked fully Complete) — its own Definition of Done has 2 items (background→foreground replay verification, GameEventBus replay-risk acknowledgment) that literally cannot be satisfied by this epic's own stories, since neither approveTask() nor rejectTask() has a real caller yet (event emission deliberately deferred to a future Parent Dashboard UI #21 ConsumerWidget per ADR-0013 §2/§3). Closed with the same honest "Stories Complete — Blocked on [X]" pattern already established for the Push Notification epic, not silently declared fully Complete.
 - Tech debt logged: None (all review findings fixed inline). Carried-forward, not-yet-fixed: the missing createChildProfile() write path (flagged via spawn_task during epic creation, still pending).
 - Next recommended: Parent Dashboard UI (#21) — the natural next epic; it both closes Parent Approval's 2 remaining DoD items and is the actual consumer of approveTask()/rejectTask(). Alternatives: Shop System (#13) or Gacha/Loot (#12), both have existing GDDs/ADRs and no epic yet.
+
+## Session Extract — /ux-design parent-dashboard-ui (started) — 2026-07-18
+- Task: Designing Parent Dashboard UI UX spec (5 surfaces: Nhiệm vụ tab, create-custom-task bottom sheet, Gia đình tab, Reset PIN dialog, FCM foreground banner)
+- Reason: GDD's own UX Flag requires /ux-design before /create-epics for this system — user chose to follow it rather than skip.
+- Current section: Starting (skeleton created)
+- File: design/ux/parent-dashboard-ui.md
+- Context loaded: GDD (design/gdd/parent-dashboard-ui.md, full read), interaction-patterns.md (17 patterns, 4 directly pre-anticipate this screen: P1/P7/P10/P3), accessibility-requirements.md (Kid-Touch Baseline, already references this screen), art-bible.md (Parent Approval view mood row: Soft purple, Calm authority), main-navigation-shell.md (hosts the 2 parent tabs). No player-journey.md exists (flagged, not blocking).
+
+## Session Extract — /ux-design parent-dashboard-ui (complete) — 2026-07-18
+- Verdict: COMPLETE — all sections written and approved section-by-section
+- File: design/ux/parent-dashboard-ui.md — Status: In Review, awaiting /ux-review
+- Resolved 2 GDD Open Questions the GDD explicitly required resolving at this pass (not deferred further): (1) Reject reason — stays anonymous, no reason field/display, matches Pillar 4 "no friction"; (2) "Đã xử lý bởi người khác" race toast — not shown, card disappears silently, race is rare (150-439ms window) and a toast risks more confusion than it resolves.
+- Found and resolved 1 real gap the GDD didn't cover: banner-slot conflict when the permission-declined reminder banner and a real FCM message would both want to show — resolved as a single shared banner slot, FCM takes priority (matches Pillar 4's "no escalating alarm" framing).
+- Added 3 gaps not covered by GDD as explicit design decisions: error states for pendingTasksProvider/child-list load failure, custom-task Save failure, and Reset PIN failure — all use the same "inline error + no auto-close + re-enable" pattern already established by P1/Currency's graceful-degradation precedent.
+- New pattern added to design/ux/interaction-patterns.md: P18 (Conditional selector — hide when only one choice exists), extracted from the child-selector requirement. Also fixed a pre-existing gap in the pattern catalog table (P16/P17 existed in the detailed Patterns section but were missing from the summary table) while touching the file.
+- Flagged explicitly for the implementing epic: the Approve button's future ConsumerWidget is where GameEvent(taskApproved)/(petLeveledUp) get emitted for the FIRST time in the whole app — this is exactly the trigger point for the GameEventBus replay risk already flagged in Parent Approval epic's Known Risks (production/epics/parent-approval/EPIC.md). Cross-referenced explicitly in this spec's Events Fired section so a future story doesn't rediscover it.
+- Next: /ux-review design/ux/parent-dashboard-ui.md, then /create-epics parent-dashboard-ui
+
+## Session Extract — /ux-review parent-dashboard-ui — 2026-07-18
+- Verdict: NEEDS REVISION (1 blocking, 4 advisory) → all fixed inline → APPROVED
+- Blocking: spec's own Acceptance Criteria was missing the GDD's own explicitly-tagged BLOCKING requirement — targetChildId auto-assignment read-back verification for single-child families (GDD Core Rule 3: "sai ID silently corrupt data mà không có triệu chứng UI nào quan sát được"). Added the missing criterion verbatim from the GDD.
+- Advisory (all fixed): (1) header missing Platform Target field — systemic gap across all existing specs, fixed here and noted as a project-wide pattern to fix elsewhere; (2) no screen-size/resolution acceptance criterion — added one covering small (iPhone SE ~375dp) vs large (~600dp+) widths; (3) Data Requirements table's realtime stream entry didn't state what triggers updates — clarified; (4) Gia đình tab had no defensive empty state despite GDD assuming 1≤N≤4 children — added a defensive fallback given the currently-known gap that no createChildProfile() write path exists yet.
+- File: design/ux/parent-dashboard-ui.md — Status: Complete/APPROVED
+- Next: /create-epics parent-dashboard-ui
+
+## Session Extract — /create-epics parent-dashboard-ui — 2026-07-18
+- Verdict: COMPLETE — 1 epic written
+- Epic: production/epics/parent-dashboard-ui/EPIC.md — Presentation layer, GDD Approved, UX spec Complete/APPROVED
+- No ADR exists yet for this system (0/4 TR-parentdash requirements covered) — user chose to proceed rather than block on writing one now. Only TR-parentdash-002 (banner defer/coalesce, the GDD's one [LOGIC]-tier requirement) genuinely needs an ADR; the rest is [UI]-tier work calling already-defined functions from #11/#8/#1. That specific story will be Blocked until an ADR exists for it.
+- Epic's own Definition of Done explicitly inherits Parent Approval (#11)'s 2 remaining open DoD items (event emission, GameEventBus replay-risk acknowledgment) — this epic's Approve-button story is where those get closed.
+- PR-EPIC gate skipped — Solo mode.
+- Next: /create-stories parent-dashboard-ui
+
+## Session Extract — /create-stories parent-dashboard-ui — 2026-07-18
+- Verdict: COMPLETE — 4 stories written (2 Integration, 1 UI, 1 Logic/Blocked)
+- Story 001 (Pending List, Approve/Reject Wiring & Event Emission) — the critical story that closes Parent Approval epic's 2 remaining DoD items (event emission via ConsumerWidget, GameEventBus replay-risk acknowledgment).
+- Story 002 (Create Custom Task) — carries the GDD's own BLOCKING targetChildId read-back verification requirement forward from the UX spec.
+- Story 003 (Gia đình Tab & Reset PIN) — includes a defensive empty-state criterion added during /ux-review given the known missing-createChildProfile gap.
+- Story 004 (FCM Banner state machine) — Status: Blocked, no ADR exists for architecture.md's own flagged "Parent Dashboard Notification Banner State Machine" requirement. Story file fully speced (ACs, dependencies) but Implementation Notes deliberately left as "do not implement until ADR exists" rather than guessing at architecture.
+- QL-STORY-READY gate skipped — Solo mode. QA Test Cases transcribed directly from GDD's Given/When/Then, matching Parent Approval epic's established precedent.
+- Next: /story-readiness production/epics/parent-dashboard-ui/story-001-pending-list-approve-reject.md, then /dev-story. Story 004 needs /architecture-decision first, whenever picked up.
+
+## Session Extract — /dev-story parent-dashboard-ui story-001 (BLOCKED) — 2026-07-18
+- Verdict: BLOCKED — ui-programmer refused to write code after finding 3 real architectural gaps, independently verified before accepting the report:
+  1. **Main Navigation Shell (#17) has no real implementation** — router_provider.dart only has flat placeholder routes (/parent-dashboard → bare placeholder screen). No StatefulShellRoute, no tab branches, no /parent/dashboard, /parent/family, or /child-selector routes. No epic exists for it despite an Approved UX spec (design/ux/main-navigation-shell.md, authored earlier this session). This is the SAME "further along on paper than in code" pattern found twice already this session (Auth's missing child-creation flow, Task Library's missing submit flow) — now at the routing/shell layer every other UI epic assumes exists.
+  2. pendingTasksProvider is scoped to activeChildProvider (one child), not family-wide — breaks the primary "parent logs in directly" flow (returns empty, no active child session) and multi-child display (AC-2).
+  3. TaskModel lacks doc.id and childId — both required to wire Approve/Reject buttons.
+- Impact: this blocks ALL of Parent Dashboard UI's stories, not just Story 001 — Stories 002/003 also render inside the nonexistent /parent/dashboard and /parent/family routes.
+- User decision: pause Parent Dashboard UI entirely, build Main Navigation Shell as its own epic first, return to Parent Dashboard UI once real routes exist.
+- Story 001 marked Blocked with full findings in the story file. EPIC.md and epics/index.md updated to reflect epic-wide block.
+- Gaps 2-3 (Task Library's data layer) spawned as an independent background task (task_b9363119) — separable from the Main Nav Shell blocker, can proceed in parallel.
+- Next: /create-epics main-navigation-shell
+
+## Session Extract — /ux-review main-navigation-shell.md + hud.md — 2026-07-18
+- Prompted by discovering Main Navigation Shell (#17) has no real implementation while attempting Parent Dashboard Story 001 — before creating its epic, ran /ux-review on its 2 directly-owned UX specs (both existed, both Complete, neither previously reviewed).
+- main-navigation-shell.md: NEEDS REVISION (2 blocking + 3 advisory) → all fixed:
+  - BLOCKING: no cold-start/session-resolving loading state defined (every app launch hits this window) — added.
+  - BLOCKING: route path mismatch — spec/GDD used /child-selector, actual already-built Auth code uses /select-child (found during the same dev-story blocker). Resolved by updating the spec to match shipped code. Also propagated the same fix into parent-dashboard-ui.md (UX spec + story-001), which had the same stale references.
+  - Advisory (all fixed): Platform Target header field, no screen-size AC, seedCount/chestCount loading-state handling, and a genuine cross-spec gap — the "Xong"/"Quay lại" button is delegated to Parent Dashboard UI (#21) by this spec but was never actually added to parent-dashboard-ui.md's own Component Inventory/Interaction Map. Patched parent-dashboard-ui.md directly to close it.
+- hud.md: NEEDS REVISION (1 blocking + 4 advisory) → all fixed:
+  - BLOCKING: FCM banner Element 5 specified a 4s auto-dismiss timer, directly contradicting parent-dashboard-ui.md's GDD's own deliberate Tuning Knob decision ("Manual dismiss chỉ, không auto-dismiss... quyết định cố ý ở Core Rules 6") and this session's own already-approved parent-dashboard-ui.md UX spec. Corrected hud.md to match the authoritative decision (both the Element 5 spec and a matching Accessibility-table reference). Also fixed a pre-existing unrelated bug found in passing: a stale "Element 4" cross-reference that should have said "Element 5."
+  - Advisory (all fixed): Platform Target header, explicit N/A statements added for "HUD States by Gameplay Context" (genre has no combat/pause/cutscene) and "Tuning Knobs" (none at MVP), plus an explicit Visual Budget statement.
+- Both specs now APPROVED. Next: /create-epics main-navigation-shell
+
+## Session Extract — /architecture-decision Navigation Shell & Route Guard Architecture — 2026-07-18
+- ADR-0014 written: docs/architecture/adr-0014-navigation-shell-route-guard-architecture.md, Status: Proposed
+- Engine context verified directly against installed source (not training data, go_router 17.3.0 is well post-cutoff): StatefulShellRoute/.indexedStack/goBranch(index) constructor shapes, PopScope.onPopInvokedWithResult (WillPopScope removed since Flutter 3.22).
+- Decision: root GoRouter with single top-level redirect (4-state session guard), TWO separate StatefulShellRoute trees (Child: 3 branches, Parent: 2 branches) rather than one shared tree — avoids cross-actor index-space entanglement. ref.listen (not ref.watch) bridges sessionStateProvider to GoRouter's refreshListenable via a ValueNotifier, since GoRouterRefreshStream doesn't exist in the pinned version (same correction ADR-0002 already made once).
+- flame-specialist engine validation: NO BLOCKING issues — every API claim verified correct on independent re-check. Found and fixed 5 non-blocking items, most notably: the AC-5 "Flame game loop survives tab switch" claim is true but for a narrower reason than stated (Flame's GameLoop uses a raw Ticker bypassing TickerMode entirely, not because StatefulShellRoute guarantees it generally) — and a genuine adjacent gap: Riverpod Consumer/ConsumerWidget subscriptions DO pause on TickerMode(false), unlike Flame's own loop, which ADR-0004's future Flame↔Riverpod bridge implementer must account for. Also added a CPU-cost note (offstage Pet Room keeps paying per-frame update cost) and strengthened the two-trees-vs-one-tree rationale.
+- GDD Sync Check found real drift: design/gdd/main-navigation-shell.md's Route Map still used /child-selector (stale) vs. this ADR's /select-child (matching already-shipped Auth code) — fixed the GDD with a dated correction note, same session as the UX specs' fix.
+- TD-ADR gate skipped — Solo mode.
+- Architecture registry updated: 1 new state ownership (active_child_branch_index), 1 new interface contract (router_provider), 3 new forbidden patterns (ref.watch-on-sessionStateProvider footgun, GoRouterRefreshStream usage, WillPopScope usage).
+- Next: open a FRESH session and run /architecture-review before accepting/implementing (per skill's own mandatory notice — never run architecture-review in the same session as architecture-decision). Then /create-epics main-navigation-shell can proceed with this ADR as governing.
+
+## Session Extract — /create-epics main-navigation-shell — 2026-07-18
+- Verdict: COMPLETE — 1 epic written, production/epics/main-navigation-shell/EPIC.md
+- Full ADR coverage: 4/4 TR-navshell requirements covered by ADR-0014 (Accepted).
+- Epic's own Definition of Done inherits ADR-0014's flagged engine risks (Flame-survival mechanism narrower than it looks, Riverpod Consumer pause-on-offstage constraint for ADR-0004's bridge, CPU cost, 2 unverified edge cases) so they aren't rediscovered at story time.
+- PR-EPIC gate skipped — Solo mode.
+- Next: /create-stories main-navigation-shell
+
+## Session Extract — /create-stories main-navigation-shell — 2026-07-18
+- Verdict: COMPLETE — 6 stories written (5 Integration, 1 UI)
+- Story 001 (Root Redirect & Session Guard) — foundational, no dependencies, unlocks everything else.
+- Story 002 (Child Shell — 3-Tab StatefulShellRoute & Flame Preservation) — carries forward all of ADR-0014's Flame-survival engine-specialist findings explicitly (raw Ticker mechanism, Consumer pause caveat, CPU cost) so the implementer doesn't rediscover them.
+- Story 003 (Parent Shell — 2-Tab StatefulShellRoute) — simpler mirror of Story 002, no Flame concerns.
+- Story 004 (Parent Override) — the story where Stories 001+002's correctness becomes observable together for the first time (override transition + return-trip session preservation).
+- Story 005 (Child Back-Button + Root-Navigator Push) — UI type, explicitly distinguishes 3 different PopScope configurations across the epic (Child tab-root exit dialog / Parent-not-override direct-exit / Parent-in-override return-to-child) so they don't get conflated during implementation.
+- Story 006 (Floating Chip Cluster) — the one story with ADR: N/A (references hud.md instead), ties Profile chip's long-press gesture DETECTION to Story 004's HANDLER logic without duplicating.
+- QL-STORY-READY gate skipped — Solo mode. QA Test Cases transcribed directly from GDD's own Given/When/Then + hud.md's element specs.
+- Next: /story-readiness production/epics/main-navigation-shell/story-001-root-redirect-session-guard.md, then /dev-story — Story 001 first, it unblocks all others.
+
+## Session Extract — /dev-story main-navigation-shell story-001 — 2026-07-18/19
+- Story: production/epics/main-navigation-shell/story-001-root-redirect-session-guard.md — Root Redirect & Session Guard
+- Real discovery before finishing implementation: router_provider.dart was already substantially built (Auth & Account epic) with a working _RouterRefreshNotifier/ref.listen bridge, tested redirectForSessionState() pure function, and correct /select-child naming — contradicting the earlier session's "Blocker 1" framing that implied a bare placeholder file. Corrected the story's own Implementation Notes mid-flight before spawning the implementer, turning this into a targeted extension (split childSelected/parentView redirect cases, add new route constants) rather than a rewrite.
+- Agent hit a session-limit API error mid-task once, resumed via SendMessage — completed cleanly after resuming.
+- Files changed: src/lib/providers/router_provider.dart (modified), tests/integration/main-navigation-shell/root_redirect_test.dart (new, 11 tests), tests/integration/auth_account/router_redirect_test.dart (updated, 10 tests, fixed removed-constant reference).
+- Independently re-verified: 21/21 new+updated tests pass, 365/365 full suite (1 pre-existing skip), flutter analyze clean.
+- Cold-start finding: no code change needed — the async gap lives in auth-account's authStateProvider, out of this story's registry-locked scope.
+- Next: /code-review src/lib/providers/router_provider.dart tests/integration/main-navigation-shell/root_redirect_test.dart tests/integration/auth_account/router_redirect_test.dart, then /story-done
+
+## Session Extract — /code-review main-navigation-shell story-001 — 2026-07-19
+- Verdict: APPROVED WITH SUGGESTIONS (flame-specialist + qa-tester, parallel spawn)
+- 3 suggestions, all closed: stale `/pet-room` literal in the pre-existing auth_account test file (found independently by both reviewers — real corroboration), 3 new boundary tests added (bare `/child`, `/child-foo` prefix collision, bare `/parent` + `/parent-foo` collision), 2 intentional AC-traceability duplicate tests annotated with cross-references instead of left unexplained.
+- Re-verified after fixes: 24/24 tests passing (up from 21), full suite 368/368 (1 pre-existing skip), flutter analyze clean.
+- Next: /story-done production/epics/main-navigation-shell/story-001-root-redirect-session-guard.md
+
+## Session Extract — /story-done main-navigation-shell story-001 — 2026-07-20
+- Verdict: COMPLETE WITH NOTES
+- Story: production/epics/main-navigation-shell/story-001-root-redirect-session-guard.md — Root Redirect & Session Guard — Status → Complete
+- Deviation logged (advisory, not tech debt): scoping correction (targeted extension vs. rewrite), already fully documented in the story's own Completion Notes.
+- Epic file, epics/index.md updated: Main Navigation Shell now "In Progress (1/6 stories complete)".
+- Tech debt logged: None (user chose plain close, not tech-debt logging).
+- No git commit made yet — substantial uncommitted work across this epic (ADR-0014, epic/story files, router_provider.dart, 2 test files, UX specs, GDD fix, registry) still pending explicit user go-ahead.
+- Next recommended: /story-readiness production/epics/main-navigation-shell/story-002-child-shell-flame-preservation.md, then /dev-story — Story 002 (Child Shell) is next, unblocked, no dependencies beyond Story 001 now complete.

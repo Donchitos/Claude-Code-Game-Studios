@@ -1,8 +1,9 @@
 # HUD Design
 
-> **Status**: Complete — all sections drafted, Cross-Reference Check done (1 real conflict found + resolved: Profile chip added, `main-navigation-shell.md` amended). Pending `/ux-review`.
+> **Status**: Complete — all sections drafted, Cross-Reference Check done (1 real conflict found + resolved: Profile chip added, `main-navigation-shell.md` amended). `/ux-review` 2026-07-18: NEEDS REVISION (1 blocking + 4 advisory) → all fixed inline → APPROVED.
 > **Author**: user + ux-designer
-> **Last Updated**: 2026-07-14
+> **Last Updated**: 2026-07-18
+> **Platform Target**: Mobile (iOS + Android), Touch only — from `technical-preferences.md`
 > **Template**: HUD Design
 
 ---
@@ -131,11 +132,23 @@ Pulled from every GDD's UI Requirements section that names a persistent or semi-
 | Visual form | Full-width banner sliding down from the top safe area, Primary background, Primary-on-light text, replaces the (non-existent, for Parent Shell) top-right badge zone |
 | Update behavior | Appears on new FCM foreground message (Push Notification #9); tapping navigates to the relevant approval screen and dismisses the banner |
 | Contextual trigger | Only on a new notification event — never persistent |
-| Animation | Slide down (~250ms ease-out) on appear; auto-dismiss slide up after 4s if untapped, or immediate dismiss on tap |
+| Animation | Slide down (~250ms ease-out) on appear; dismiss ONLY on tap or manual swipe — **no auto-dismiss timer** (corrected at `/ux-review`, 2026-07-18: this element previously specified a 4s auto-dismiss, contradicting `parent-dashboard-ui.md`'s own deliberate Tuning Knob decision — "FCM banner behavior: Manual dismiss chỉ, không auto-dismiss... quyết định cố ý ở Core Rules 6," matching `accessibility-requirements.md`'s no-timing-pressure baseline more precisely too, since a disappearing-without-action banner would itself be a small timing pressure) |
 
 **Mood/energy is deliberately absent from this table** — per Information Architecture, it is Hidden by design and communicated entirely through Mochi's own animation, not through any HUD element.
 
 ---
+
+## HUD States by Gameplay Context
+
+**N/A for this game** *(explicit statement added at `/ux-review`, 2026-07-18)*: PetQuest has no combat, dialogue/cutscene, or paused gameplay states — its structure is tab-based screens (Pet Room / Tasks / Shop for the child, Dashboard / Gia đình for the parent), not a session with distinct gameplay modes. The closest analogues — Child Shell vs. Parent Shell, and the full-screen ceremony overlays that suspend the nav bar (Chest Open, level-up) — are already covered under Layout Zones and Dynamic Behaviors' Show/Hide Rules respectively. This section is intentionally empty, not forgotten.
+
+## Visual Budget
+
+*(added at `/ux-review`, 2026-07-18)* Maximum 3 simultaneous HUD elements on Child Shell (Profile chip + Xu chip + one Contextual badge — Seed and Chest are mutually exclusive per screen, never both), or 0 on Parent Shell outside of a transient FCM banner. No explicit "screen %" budget is set — the floating-chip footprint is small and fixed by the 48×48dp minimum touch target, not a proportional screen coverage rule. This is implicitly enforced by the existing mutual-exclusivity rules (Information Architecture, Dynamic Behaviors' Simultaneous Contextual Events) rather than a separately-tracked numeric budget.
+
+## Tuning Knobs
+
+**None at MVP** *(explicit statement added at `/ux-review`, 2026-07-18)*: no HUD element in this spec is player-adjustable — all timing/sizing values (count-up duration, pulse timing, touch target size) are fixed implementation constants, not exposed settings. `long_press_duration` is a real tuning knob but is owned and defined by `main-navigation-shell.md`, not this document (this spec only consumes the resulting gesture, per HUD Elements §1). If a future accessibility pass adds user-adjustable motion/size settings, this section is where they'd be documented.
 
 ## Dynamic Behaviors
 
@@ -144,7 +157,7 @@ Pulled from every GDD's UI Requirements section that names a persistent or semi-
 - **Xu chip**: never hidden on any Child Shell screen. Not present on Parent Shell (xu is a child-side economy concept).
 - **Contextual badge**: hidden whenever its bound count is 0; the chip is removed from layout entirely (not just faded/greyed) so it never occupies dead space — consistent with Minimal-but-Present.
 - **Nav bar**: never hidden while inside its owning shell. Hidden only during full-screen takeovers that intentionally suspend navigation (e.g. a modal reward-reveal ceremony) — that suppression is owned by the takeover screen's own UX spec, not by this document.
-- **FCM banner**: never hidden by default state; appears only on event, auto-dismisses per Element 4's timing.
+- **FCM banner**: never hidden by default state; appears only on event, dismisses only via tap or manual swipe per Element 5's timing (corrected element reference and auto-dismiss behavior at `/ux-review`, 2026-07-18 — was previously "Element 4" and "auto-dismisses," both wrong).
 
 ### Simultaneous Contextual Events
 
@@ -181,7 +194,7 @@ Cross-referenced against the committed **Kid-Touch Baseline** tier (`design/acce
 | §1 Touch target size (48×48dp min) | Both chips and every nav-bar tab meet 48×48dp (see Platform & Input Variants) — even non-interactive chips, for future-proofing. |
 | §2 Color is never the only signal | Every HUD element pairs an icon with its value (🪙 with the number, 🌱/🎁 with the badge count) — no chip communicates state through color alone. The Contextual badge deliberately does NOT use an alert/red color for a pending seed or chest (see HUD Elements §3) — positive-pending states stay in the Honey Gold palette, consistent with this rule's spirit (color never carries meaning alone; the icon does). |
 | §3 Text legibility (contrast, min size) | Xu and badge chip text use Primary text (`#3D2B1F`) on Honey Gold fill — passes WCAG AA per the 2026-07-13/07-14 contrast audit. No chip uses On-color/white text (resolved finding #2) or the pre-fix Secondary/Disabled hexes (resolved finding #3). Nav bar labels ≥11sp per baseline, always icon-paired. |
-| §4 No timing pressure | The FCM banner auto-dismisses after 4s, but this is informational, not action-forcing — dismissal does not lose access to the underlying notification (it remains actionable from the Parent Dashboard itself), so it does not create a "must act before it disappears" pressure state. |
+| §4 No timing pressure | The FCM banner has no auto-dismiss timer at all (corrected at `/ux-review` — see HUD Elements §5) — dismissal is entirely tap/swipe-driven, and the underlying notification remains actionable from the Parent Dashboard regardless, so there is no "must act before it disappears" pressure state of any kind. |
 | §5 Language & comprehension | HUD elements are numeric/iconographic only (no copy to read) except the FCM banner's one-line text — kept short and concrete per the baseline's simple-language rule. |
 | §6 Motion | All HUD animations (count-up, pulse, pop-in, tab-bounce, banner slide) have a reduced-motion fallback to instant state-change, per Dynamic Behaviors' Reduced Motion rule. |
 | §7 Interaction robustness | HUD elements are display-only at MVP (no tap targets to double-tap-guard on the chips themselves); nav-bar tab switching is idempotent (re-tapping the active tab is a no-op, not a stacked navigation push) — owned by Main Navigation Shell #17 but noted here as a HUD-adjacent robustness expectation. |

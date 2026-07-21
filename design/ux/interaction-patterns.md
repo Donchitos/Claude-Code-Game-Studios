@@ -33,6 +33,9 @@ Input context (from `technical-preferences.md`): **touch-only**, no hover, minim
 | P13 | Bottom-nav tab shell (branches never disposed) | Navigation | nav #17 |
 | P14 | Post-acquisition "Equip now?" prompt (reused) | Modal | shop #13, gacha #12, shop-reward #20 |
 | P15 | Deep-link entry → route to target | Navigation | push #10, nav #17 |
+| P16 | Long-press to enter privileged mode | Navigation | nav #17 |
+| P17 | Disruption-not-destruction confirm dialog | Modal | nav #17 |
+| P18 | Conditional selector (hide when only one choice exists) | Input | parent-dashboard #21 |
 
 ---
 
@@ -161,6 +164,14 @@ Input context (from `technical-preferences.md`): **touch-only**, no hover, minim
 **Specification**: Kid-styled copy and tone (short, friendly, no consequence-framing language like "cannot be undone" — because nothing is being undone). [Cancel/stay] always first or equally prominent, no red/alarming color (same Art Bible no-red rule as P2, but for a different reason — this isn't a warning, it's a friendly check-in). Only shown on tab-root screens, not on every back-press.
 **When to use**: exiting a flow that's easy to trigger accidentally (an app-level back-press) where the "cost" of the action is disruption (losing your place) rather than data loss.
 **When NOT to use**: anything that actually deletes, resets, or spends something — use P2 instead.
+
+### P18 — Conditional selector (hide when only one choice exists)
+
+**Category**: Input · **Used In**: Parent Dashboard create-custom-task sheet (child selector, parent-dashboard #21)
+**Description**: A selector control that is only rendered when there is more than one real choice — if the underlying set has exactly one member, the control is hidden entirely and that single value is auto-assigned, rather than showing a disabled or pre-filled single-option picker.
+**Specification**: Compute the candidate set's length first. If `length == 1`: hide the control, auto-assign that single value to the target field at save/commit time — do not render a disabled dropdown or a picker pre-set to the only option. If `length > 1`: render the full selector, no default pre-selection unless the GDD specifies one. Verify the auto-assigned value via a read-back check when it feeds a write path with no other validation (parent-dashboard #21 Core Rule 3 — a wrong auto-assigned ID silently corrupts data with zero observable UI symptom).
+**When to use**: any selector whose candidate set can legitimately be exactly one member in normal use (e.g. single-child families) — not for sets that are merely temporarily empty or loading.
+**When NOT to use**: sets that can be zero (need an empty state, not a hidden selector) or where showing the single option is itself informative (e.g. confirming *which* item you're about to act on).
 
 ---
 
