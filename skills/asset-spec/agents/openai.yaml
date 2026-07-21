@@ -1,0 +1,4 @@
+interface:
+  display_name: "Asset Spec"
+  short_description: "Create implementation-ready visual asset specifications"
+  default_prompt: "Use $asset-spec to create implementation-ready visual asset specifications."

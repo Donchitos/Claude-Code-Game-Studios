@@ -1,8 +1,8 @@
-# Skill Test Spec: /consistency-check
+# Skill Test Spec: $consistency-check
 
 ## Skill Summary
 
-`/consistency-check` scans all GDDs in `design/gdd/` and checks for internal
+`$consistency-check` scans all GDDs in `design/gdd/` and checks for internal
 conflicts across documents. It produces a structured findings table with columns:
 System A vs System B, Conflict Type, Severity (HIGH / MEDIUM / LOW). Conflict
 types include: formula mismatch, competing ownership, stale reference, and
@@ -16,9 +16,9 @@ user requests it, but the skill asks "May I write" before doing so.
 
 ## Static Assertions (Structural)
 
-Verified automatically by `/skill-test static` — no fixture needed.
+Verified automatically by `$skill-test static` — no fixture needed.
 
-- [ ] Has required frontmatter fields: `name`, `description`, `argument-hint`, `user-invocable`, `allowed-tools`
+- [ ] Has non-empty `name` and `description`; `agents/openai.yaml` has non-empty display name and short description
 - [ ] Has ≥2 phase headings
 - [ ] Contains verdict keywords: CONSISTENT, CONFLICTS FOUND, DEPENDENCY GAP
 - [ ] Does NOT require "May I write" language during analysis (read-only scan)
@@ -45,7 +45,7 @@ required as part of the scan itself.
 - No two GDDs claim ownership of the same game entity or mechanic
 - All dependency references point to GDDs that exist
 
-**Input:** `/consistency-check`
+**Input:** `$consistency-check`
 
 **Expected behavior:**
 1. Skill reads all 4 GDDs in `design/gdd/`
@@ -70,7 +70,7 @@ required as part of the scan itself.
 - GDD-B defines damage formula: `damage = attack * 2.0` for the same entity type
 - Both GDDs refer to the same "attack" variable
 
-**Input:** `/consistency-check`
+**Input:** `$consistency-check`
 
 **Expected behavior:**
 1. Skill reads all GDDs and detects the formula mismatch
@@ -95,7 +95,7 @@ required as part of the scan itself.
 - No GDD for system-B exists in `design/gdd/`
 - All other GDDs are consistent
 
-**Input:** `/consistency-check`
+**Input:** `$consistency-check`
 
 **Expected behavior:**
 1. Skill reads all GDDs and checks dependency references
@@ -107,7 +107,7 @@ required as part of the scan itself.
 - [ ] Verdict is DEPENDENCY GAP (distinct from CONSISTENT and CONFLICTS FOUND)
 - [ ] Findings entry names GDD-A and the missing system-B
 - [ ] Severity is MEDIUM for an unresolved dependency reference
-- [ ] Skill suggests running `/design-system system-B` to create the missing GDD
+- [ ] Skill suggests running `$design-system system-B` to create the missing GDD
 
 ---
 
@@ -116,19 +116,19 @@ required as part of the scan itself.
 **Fixture:**
 - `design/gdd/` directory is empty or does not exist
 
-**Input:** `/consistency-check`
+**Input:** `$consistency-check`
 
 **Expected behavior:**
 1. Skill attempts to read files in `design/gdd/`
 2. No GDD files found
-3. Skill outputs an error: "No GDDs found in `design/gdd/`. Run `/design-system` to create GDDs first."
+3. Skill outputs an error: "No GDDs found in `design/gdd/`. Run `$design-system` to create GDDs first."
 4. No findings table is produced
 5. No verdict is issued
 
 **Assertions:**
 - [ ] Skill outputs a clear error message when no GDDs are found
 - [ ] No verdict is produced (CONSISTENT / CONFLICTS FOUND / DEPENDENCY GAP)
-- [ ] Skill recommends the correct next action (`/design-system`)
+- [ ] Skill recommends the correct next action (`$design-system`)
 - [ ] Skill does NOT crash or produce a partial report
 
 ---
@@ -139,7 +139,7 @@ required as part of the scan itself.
 - `design/gdd/` contains ≥2 GDDs
 - `production/session-state/review-mode.txt` exists with `full`
 
-**Input:** `/consistency-check`
+**Input:** `$consistency-check`
 
 **Expected behavior:**
 1. Skill reads all GDDs and runs the consistency scan
@@ -169,7 +169,7 @@ required as part of the scan itself.
 ## Coverage Notes
 
 - This skill checks for structural consistency between GDDs. Deep design theory
-  analysis (pillar drift, dominant strategies) is handled by `/review-all-gdds`.
+  analysis (pillar drift, dominant strategies) is handled by `$review-all-gdds`.
 - Formula conflict detection relies on consistent formula notation across GDDs —
   informal descriptions of the same mechanic may not be detected.
 - The conflict severity rubric (HIGH / MEDIUM / LOW) is defined in the skill body

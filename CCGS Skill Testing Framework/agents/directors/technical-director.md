@@ -3,18 +3,18 @@
 ## Agent Summary
 **Domain owned:** System architecture decisions, technical feasibility assessment, ADR oversight and approval, engine risk evaluation, technical phase gate.
 **Does NOT own:** Game design decisions (creative-director / game-designer), creative direction, visual art style, production scheduling (producer).
-**Model tier:** Opus (multi-document synthesis, high-stakes architecture and phase gate verdicts).
+No fixed model routing is required; the caller selects the available Codex model.
 **Gate IDs handled:** TD-SYSTEM-BOUNDARY, TD-FEASIBILITY, TD-ARCHITECTURE, TD-ADR, TD-ENGINE-RISK, TD-PHASE-GATE.
 
 ---
 
 ## Static Assertions (Structural)
 
-Verified by reading the agent's `.claude/agents/technical-director.md` frontmatter:
+Verified by reading the agent's `roles/technical-director.md` frontmatter:
 
 - [ ] `description:` field is present and domain-specific (references architecture, feasibility, ADR — not generic)
-- [ ] `allowed-tools:` list may include Read for architecture documents; Bash only if required for technical checks
-- [ ] Model tier is `claude-opus-4-6` per coordination-rules.md (directors with gate synthesis = Opus)
+- [ ] Role boundaries and file ownership match the stated domain
+- [ ] Does not require fixed model routing; the calling Codex client selects the available model
 - [ ] Agent definition does not claim authority over game design decisions or creative direction
 
 ---
@@ -23,10 +23,10 @@ Verified by reading the agent's `.claude/agents/technical-director.md` frontmatt
 
 ### Case 1: In-domain request — appropriate output format
 **Scenario:** An architecture document for the "Combat System" is submitted. It describes a layered design: input layer → game logic layer → presentation layer, with clearly defined interfaces between each. Request is tagged TD-ARCHITECTURE.
-**Expected:** Returns `TD-ARCHITECTURE: APPROVE` with rationale confirming that system boundaries are correctly separated and interfaces are well-defined.
+**Expected:** Returns a documented domain-specific verdict with rationale confirming that system boundaries are correctly separated and interfaces are well-defined.
 **Assertions:**
 - [ ] Verdict is exactly one of APPROVE / CONCERNS / REJECT
-- [ ] Verdict token is formatted as `TD-ARCHITECTURE: APPROVE`
+- [ ] Verdict and rationale are clear and grounded in the supplied context
 - [ ] Rationale specifically references the layered structure and interface definitions — not generic architecture advice
 - [ ] Output stays within technical scope — does not comment on whether the mechanic is fun or fits the creative vision
 
@@ -40,10 +40,10 @@ Verified by reading the agent's `.claude/agents/technical-director.md` frontmatt
 
 ### Case 3: Gate verdict — correct vocabulary
 **Scenario:** A proposed multiplayer mechanic requires raycasting against all active entities every frame to detect line-of-sight. At expected player counts (1000 entities in a large zone), this is O(n²) per frame. Request is tagged TD-FEASIBILITY.
-**Expected:** Returns `TD-FEASIBILITY: CONCERNS` with specific citation of the O(n²) complexity and the entity count that makes this infeasible at target framerate.
+**Expected:** Returns a documented domain-specific verdict with specific citation of the O(n²) complexity and the entity count that makes this infeasible at target framerate.
 **Assertions:**
 - [ ] Verdict is exactly one of APPROVE / CONCERNS / REJECT — not freeform text
-- [ ] Verdict token is formatted as `TD-FEASIBILITY: CONCERNS`
+- [ ] Verdict and rationale are clear and grounded in the supplied context
 - [ ] Rationale includes the specific algorithmic complexity concern and the entity count threshold
 - [ ] Suggests at least one alternative approach (e.g., spatial partitioning, interest management) without mandating which to choose
 
@@ -72,13 +72,13 @@ Verified by reading the agent's `.claude/agents/technical-director.md` frontmatt
 - [ ] Returns verdicts using APPROVE / CONCERNS / REJECT vocabulary only
 - [ ] Stays within declared technical domain
 - [ ] Defers design priority conflicts to creative-director
-- [ ] Uses gate IDs in output (e.g., `TD-FEASIBILITY: CONCERNS`) not inline prose verdicts
+- [ ] Uses the provided task context when applicable; does not claim automatic role registration
 - [ ] Does not make binding game design or creative direction decisions
 
 ---
 
 ## Coverage Notes
-- TD-ADR (Architecture Decision Record approval) is not covered — a dedicated case should be added when the /architecture-decision skill produces ADR documents.
+- TD-ADR (Architecture Decision Record approval) is not covered — a dedicated case should be added when the $architecture-decision skill produces ADR documents.
 - TD-ENGINE-RISK assessment for specific engine versions (e.g., Godot 4.6 post-cutoff APIs) is not covered — deferred to engine-specialist integration tests.
 - TD-PHASE-GATE (full technical phase advancement) involving synthesis of multiple sub-gate results is deferred.
 - Multi-domain architecture reviews (e.g., touching both TD-ARCHITECTURE and TD-ENGINE-RISK simultaneously) are not covered here.

@@ -1,0 +1,4 @@
+interface:
+  display_name: "Project Stage Detect"
+  short_description: "Detect the current project stage and missing artifacts"
+  default_prompt: "Use $project-stage-detect to detect the current project stage and missing artifacts."

@@ -1,0 +1,4 @@
+interface:
+  display_name: "Test Setup"
+  short_description: "Set up the project's test framework and CI pipeline"
+  default_prompt: "Use $test-setup to set up the project's test framework and CI pipeline."

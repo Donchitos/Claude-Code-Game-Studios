@@ -1,8 +1,8 @@
-# Skill Test Spec: /localize
+# Skill Test Spec: $localize
 
 ## Skill Summary
 
-`/localize` manages the full localization pipeline: it extracts all player-facing
+`$localize` manages the full localization pipeline: it extracts all player-facing
 strings from source files, manages translation files in `assets/localization/`,
 and validates completeness across all locale files. For new languages, it creates
 a locale file skeleton with all current strings as keys and empty values. For
@@ -18,9 +18,9 @@ least one locale is missing string keys).
 
 ## Static Assertions (Structural)
 
-Verified automatically by `/skill-test static` — no fixture needed.
+Verified automatically by `$skill-test static` — no fixture needed.
 
-- [ ] Has required frontmatter fields: `name`, `description`, `argument-hint`, `user-invocable`, `allowed-tools`
+- [ ] Has non-empty `name` and `description`; `agents/openai.yaml` has non-empty display name and short description
 - [ ] Has ≥2 phase headings
 - [ ] Contains verdict keywords: LOCALIZATION COMPLETE, GAPS FOUND
 - [ ] Contains "May I write" collaborative protocol language before writing locale files
@@ -30,7 +30,7 @@ Verified automatically by `/skill-test static` — no fixture needed.
 
 ## Director Gate Checks
 
-None. `/localize` is a pipeline utility. No director gates apply. Localization
+None. `$localize` is a pipeline utility. No director gates apply. Localization
 lead agent may review separately but is not invoked within this skill.
 
 ---
@@ -44,7 +44,7 @@ lead agent may review separately but is not invoked within this skill.
 - Existing locale: `assets/localization/en.csv`
 - No French locale exists
 
-**Input:** `/localize fr`
+**Input:** `$localize fr`
 
 **Expected behavior:**
 1. Skill extracts all player-facing strings from source files
@@ -69,7 +69,7 @@ lead agent may review separately but is not invoked within this skill.
 - Source code has changed: 3 new strings added, 1 string removed, 2 strings
   with changed English source text
 
-**Input:** `/localize fr`
+**Input:** `$localize fr`
 
 **Expected behavior:**
 1. Skill extracts current strings from source
@@ -95,7 +95,7 @@ lead agent may review separately but is not invoked within this skill.
 - 3 locale files exist: `en.csv`, `fr.csv`, `de.csv`
 - `de.csv` is missing 4 keys that exist in both `en.csv` and `fr.csv`
 
-**Input:** `/localize`
+**Input:** `$localize`
 
 **Expected behavior:**
 1. Skill reads all 3 locale files and cross-references keys
@@ -119,14 +119,14 @@ lead agent may review separately but is not invoked within this skill.
 - `assets/localization/fr.csv` has a malformed line at line 47
   (missing quote closure)
 
-**Input:** `/localize fr`
+**Input:** `$localize fr`
 
 **Expected behavior:**
 1. Skill reads `fr.csv` and encounters a parse error at line 47
 2. Skill outputs: "Parse error in fr.csv at line 47: [error detail]"
 3. Skill cannot diff or validate the file until the error is fixed
 4. Skill does NOT attempt to overwrite or auto-fix the malformed file
-5. Skill suggests fixing the file manually and re-running `/localize`
+5. Skill suggests fixing the file manually and re-running `$localize`
 
 **Assertions:**
 - [ ] Error message includes line number (line 47)
@@ -141,7 +141,7 @@ lead agent may review separately but is not invoked within this skill.
 **Fixture:**
 - Source code with player-facing strings
 
-**Input:** `/localize fr`
+**Input:** `$localize fr`
 
 **Expected behavior:**
 1. Skill extracts strings and manages locale files

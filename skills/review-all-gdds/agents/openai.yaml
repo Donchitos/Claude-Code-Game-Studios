@@ -1,0 +1,4 @@
+interface:
+  display_name: "Review All GDDs"
+  short_description: "Review all GDDs for consistency and design health"
+  default_prompt: "Use $review-all-gdds to review all GDDs for consistency and design health."

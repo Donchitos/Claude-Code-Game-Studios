@@ -1,8 +1,8 @@
-# Skill Test Spec: /story-done
+# Skill Test Spec: $story-done
 
 ## Skill Summary
 
-`/story-done` closes the loop between design and implementation. Run at the
+`$story-done` closes the loop between design and implementation. Run at the
 end of implementing a story, it reads the story file and verifies each
 acceptance criterion against the implementation. It checks for GDD and ADR
 deviations, prompts a code review, updates the story status to `Complete`,
@@ -14,9 +14,9 @@ the story file and optionally to `docs/tech-debt-register.md`.
 
 ## Static Assertions (Structural)
 
-Verified automatically by `/skill-test static` — no fixture needed.
+Verified automatically by `$skill-test static` — no fixture needed.
 
-- [ ] Has required frontmatter fields: `name`, `description`, `argument-hint`, `user-invocable`, `allowed-tools`
+- [ ] Has non-empty `name` and `description`; `agents/openai.yaml` has non-empty display name and short description
 - [ ] Has ≥5 phase headings (complex skill warranting `context: fork` if applicable)
 - [ ] Contains verdict keywords: COMPLETE, BLOCKED
 - [ ] Contains "May I write" collaborative protocol language (writes to story file and tech-debt register)
@@ -38,7 +38,7 @@ Verified automatically by `/skill-test static` — no fixture needed.
 - GDD requirement text at TR-light-001 matches how the feature was implemented
 - ADR guidance was followed (no deviations)
 
-**Input:** `/story-done production/epics/core/story-light-pickup.md`
+**Input:** `$story-done production/epics/core/story-light-pickup.md`
 
 **Expected behavior:**
 1. Skill reads the story file and extracts all key fields
@@ -73,7 +73,7 @@ Verified automatically by `/skill-test static` — no fixture needed.
 - Manual verification has not been performed
 - All other criteria are met
 
-**Input:** `/story-done production/epics/core/story-light-pickup.md`
+**Input:** `$story-done production/epics/core/story-light-pickup.md`
 
 **Expected behavior:**
 1. Skill processes all acceptance criteria
@@ -99,7 +99,7 @@ Verified automatically by `/skill-test static` — no fixture needed.
 - Implementation in `src/` uses a variable `MAX_CARRIED_LIGHTS = 5`
 - This is a deliberate deviation from the GDD
 
-**Input:** `/story-done production/epics/core/story-light-pickup.md`
+**Input:** `$story-done production/epics/core/story-light-pickup.md`
 
 **Expected behavior:**
 1. Skill reads the GDD requirement text (max 3)
@@ -127,7 +127,7 @@ Verified automatically by `/skill-test static` — no fixture needed.
   `production/epics/core/story-oxygen-drain.md` as the active story
 - That story file exists with `Status: In Progress`
 
-**Input:** `/story-done` (no argument)
+**Input:** `$story-done` (no argument)
 
 **Expected behavior:**
 1. Skill reads `production/session-state/active.md`
@@ -154,7 +154,7 @@ Verified automatically by `/skill-test static` — no fixture needed.
 **Case 5a — full mode:**
 - `review-mode.txt` contains `full`
 
-**Input:** `/story-done production/epics/core/story-light-pickup.md` (full mode)
+**Input:** `$story-done production/epics/core/story-light-pickup.md` (full mode)
 
 **Expected behavior:**
 1. Skill reads review mode — determines `full`

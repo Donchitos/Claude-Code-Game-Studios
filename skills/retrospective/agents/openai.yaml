@@ -1,0 +1,4 @@
+interface:
+  display_name: "Retrospective"
+  short_description: "Analyze a sprint or milestone and capture improvements"
+  default_prompt: "Use $retrospective to analyze a sprint or milestone and capture improvements."

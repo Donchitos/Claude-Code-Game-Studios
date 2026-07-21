@@ -1,6 +1,6 @@
 ---
 name: Bug Report
-about: Something isn't working as expected
+about: Report incorrect framework behavior
 title: "[Bug] "
 labels: bug
 assignees: ''
@@ -8,42 +8,44 @@ assignees: ''
 
 ## Description
 
-A clear description of what the bug is.
+Describe the incorrect behavior and why it matters.
 
-## Steps to Reproduce
+## Steps To Reproduce
 
-1. Open Claude Code in a project using this template
-2. Run `/<skill>` or trigger `<agent>`
-3. ...
-4. See error
+1. Open Codex at the root of a project created from this template.
+2. If hooks are involved, state whether the project was trusted.
+3. Run `$skill-name`, request a role-profile delegation, or trigger the hook.
+4. Record the observed result.
 
 ## Expected Behavior
 
-What you expected to happen.
+What should have happened?
 
 ## Actual Behavior
 
-What actually happened. Include any error messages or unexpected output.
+Include relevant error output with secrets and private project data removed.
 
 ## Environment
 
-- **OS**: (e.g., Windows 10, macOS 14, Ubuntu 24.04)
-- **Shell**: (e.g., Git Bash, zsh, bash)
-- **Claude Code version**: (run `claude --version`)
-- **Node.js version**: (run `node --version`)
-- **jq installed?**: Yes / No
-- **Python installed?**: Yes / No
+- **OS**:
+- **Shell**:
+- **Codex CLI version** (`codex --version`):
+- **Git version** (`git --version`):
+- **Bash version** (`bash --version`, if hooks are affected):
+- **Project hooks trusted?**: Yes / No / Not applicable
 
 ## Affected Component
 
-- [ ] Agent (which one?):
-- [ ] Skill (which one?):
-- [ ] Hook (which one?):
-- [ ] Rule (which one?):
-- [ ] Template
-- [ ] Documentation
+- [ ] `skills/<name>/SKILL.md`
+- [ ] `skills/<name>/agents/openai.yaml`
+- [ ] `roles/<name>.md`
+- [ ] `.codex/hooks.json` or `hooks/`
+- [ ] `AGENTS.md` or nested instructions
+- [ ] Studio documentation or template
+- [ ] `.codex-plugin/plugin.json`
 - [ ] Other:
 
 ## Additional Context
 
-Any other context — screenshots, terminal output, or the session log if relevant.
+Provide the smallest reproducible repository state, screenshot, or sanitized
+hook payload that demonstrates the issue.

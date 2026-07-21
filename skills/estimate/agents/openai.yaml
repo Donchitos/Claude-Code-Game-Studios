@@ -1,0 +1,4 @@
+interface:
+  display_name: "Estimate"
+  short_description: "Estimate task effort, dependencies, risks, and uncertainty"
+  default_prompt: "Use $estimate to estimate task effort, dependencies, risks, and uncertainty."

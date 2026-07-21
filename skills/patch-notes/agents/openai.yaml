@@ -1,0 +1,4 @@
+interface:
+  display_name: "Patch Notes"
+  short_description: "Write player-facing patch notes from project changes"
+  default_prompt: "Use $patch-notes to write player-facing patch notes from project changes."

@@ -1,0 +1,4 @@
+interface:
+  display_name: "Content Audit"
+  short_description: "Compare planned game content with implemented content"
+  default_prompt: "Use $content-audit to compare planned game content with implemented content."

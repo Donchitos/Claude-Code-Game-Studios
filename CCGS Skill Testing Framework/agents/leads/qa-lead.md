@@ -1,20 +1,20 @@
 # Agent Test Spec: qa-lead
 
 ## Agent Summary
-**Domain owned:** Test strategy, QL-STORY-READY gate, QL-TEST-COVERAGE gate, bug severity triage, release quality gates.
+**Domain owned:** Test strategy, $story-readiness gate, $qa-plan gate, bug severity triage, release quality gates.
 **Does NOT own:** Feature implementation (programmers), game design decisions, creative direction, production scheduling.
-**Model tier:** Sonnet (individual system analysis — story readiness and coverage assessment).
-**Gate IDs handled:** QL-STORY-READY, QL-TEST-COVERAGE.
+No fixed model routing is required; the caller selects the available Codex model.
+**Gate IDs handled:** $story-readiness, $qa-plan.
 
 ---
 
 ## Static Assertions (Structural)
 
-Verified by reading the agent's `.claude/agents/qa-lead.md` frontmatter:
+Verified by reading the agent's `roles/qa-lead.md` frontmatter:
 
 - [ ] `description:` field is present and domain-specific (references test strategy, story readiness, coverage, bug triage — not generic)
-- [ ] `allowed-tools:` list is read-focused; may include Read for story files, test files, and coding-standards; Bash only if running test commands is required
-- [ ] Model tier is `claude-sonnet-4-6` per coordination-rules.md
+- [ ] Role boundaries and file ownership match the stated domain
+- [ ] Does not require fixed model routing; the calling Codex client selects the available model
 - [ ] Agent definition does not claim authority over implementation decisions or game design
 
 ---
@@ -22,11 +22,11 @@ Verified by reading the agent's `.claude/agents/qa-lead.md` frontmatter:
 ## Test Cases
 
 ### Case 1: In-domain request — appropriate output format
-**Scenario:** A story for "Player takes damage from hazard tiles" is submitted for readiness check. The story has three acceptance criteria: (1) Player health decreases by the hazard's damage value, (2) A damage visual feedback plays, (3) Player cannot take damage again for 0.5 seconds (invincibility window). All three ACs are measurable and specific. Request is tagged QL-STORY-READY.
-**Expected:** Returns `QL-STORY-READY: ADEQUATE` with rationale confirming that all three ACs are present, specific, and testable.
+**Scenario:** A story for "Player takes damage from hazard tiles" is submitted for readiness check. The story has three acceptance criteria: (1) Player health decreases by the hazard's damage value, (2) A damage visual feedback plays, (3) Player cannot take damage again for 0.5 seconds (invincibility window). All three ACs are measurable and specific. Request is tagged $story-readiness.
+**Expected:** Returns a documented domain-specific verdict with rationale confirming that all three ACs are present, specific, and testable.
 **Assertions:**
 - [ ] Verdict is exactly one of ADEQUATE / INADEQUATE
-- [ ] Verdict token is formatted as `QL-STORY-READY: ADEQUATE`
+- [ ] Verdict and rationale are clear and grounded in the supplied context
 - [ ] Rationale references the specific number of ACs (3) and confirms each is measurable
 - [ ] Output stays within QA scope — does not comment on whether the mechanic is designed well
 
@@ -39,11 +39,11 @@ Verified by reading the agent's `.claude/agents/qa-lead.md` frontmatter:
 - [ ] May define what the test should verify (test strategy), but defers the code writing to programmers
 
 ### Case 3: Gate verdict — correct vocabulary
-**Scenario:** A story for "Combat feels responsive and punchy" is submitted for readiness check. The single acceptance criterion reads: "Combat should feel good to the player." This is subjective and unmeasurable. Request is tagged QL-STORY-READY.
-**Expected:** Returns `QL-STORY-READY: INADEQUATE` with specific identification of the unmeasurable AC and guidance on what would make it testable (e.g., "input-to-hit-feedback latency ≤ 100ms").
+**Scenario:** A story for "Combat feels responsive and punchy" is submitted for readiness check. The single acceptance criterion reads: "Combat should feel good to the player." This is subjective and unmeasurable. Request is tagged $story-readiness.
+**Expected:** Returns a documented domain-specific verdict with specific identification of the unmeasurable AC and guidance on what would make it testable (e.g., "input-to-hit-feedback latency ≤ 100ms").
 **Assertions:**
 - [ ] Verdict is exactly one of ADEQUATE / INADEQUATE — not freeform text
-- [ ] Verdict token is formatted as `QL-STORY-READY: INADEQUATE`
+- [ ] Verdict and rationale are clear and grounded in the supplied context
 - [ ] Rationale identifies the specific AC that fails the measurability requirement
 - [ ] Provides actionable guidance on how to rewrite the AC to be testable
 
@@ -69,17 +69,17 @@ Verified by reading the agent's `.claude/agents/qa-lead.md` frontmatter:
 
 ## Protocol Compliance
 
-- [ ] Returns QL-STORY-READY verdicts using ADEQUATE / INADEQUATE vocabulary only
-- [ ] Returns QL-TEST-COVERAGE verdicts using ADEQUATE / INADEQUATE vocabulary only (or PASS / FAIL for release gates)
+- [ ] Uses the verdict vocabulary documented by the current workflow
+- [ ] Uses the verdict vocabulary documented by the current workflow
 - [ ] Stays within declared QA and test strategy domain
 - [ ] Escalates technical standards disputes to lead-programmer
-- [ ] Uses gate IDs in output (e.g., `QL-STORY-READY: INADEQUATE`) not inline prose verdicts
+- [ ] Uses the provided task context when applicable; does not claim automatic role registration
 - [ ] Does not make binding implementation or game design decisions
 
 ---
 
 ## Coverage Notes
-- QL-TEST-COVERAGE (overall coverage assessment for a sprint or milestone) is not covered — a dedicated case should be added when coverage reports are available.
-- Bug severity triage (P0/P1/P2 classification) is not covered here — deferred to /bug-triage skill integration.
+- $qa-plan (overall coverage assessment for a sprint or milestone) is not covered — a dedicated case should be added when coverage reports are available.
+- Bug severity triage (P0/P1/P2 classification) is not covered here — deferred to $bug-triage skill integration.
 - Release quality gate behavior (PASS / FAIL vocabulary variant) is not covered.
-- Interaction between QL-STORY-READY and story Done criteria (/story-done skill) is not covered.
+- Interaction between $story-readiness and story Done criteria ($story-done skill) is not covered.

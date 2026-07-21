@@ -3,7 +3,7 @@
 ## Agent Summary
 Domain: Addressable Asset System — groups, async loading/unloading, handle lifecycle management, memory budgeting, content catalogs, and remote content delivery.
 Does NOT own: rendering systems (engine-programmer), game logic that uses the loaded assets (gameplay-programmer).
-Model tier: Sonnet (default).
+No fixed model routing is required; the caller selects the available Codex model.
 No gate IDs assigned.
 
 ---
@@ -11,8 +11,8 @@ No gate IDs assigned.
 ## Static Assertions (Structural)
 
 - [ ] `description:` field is present and domain-specific (references Addressables / asset loading / content catalogs / remote delivery)
-- [ ] `allowed-tools:` list includes Read, Write, Edit, Bash, Glob, Grep
-- [ ] Model tier is Sonnet (default for specialists)
+- [ ] Role boundaries and file ownership match the stated domain
+- [ ] Does not require fixed model routing; the calling Codex client selects the available model
 - [ ] Agent definition does not claim authority over rendering systems or gameplay using the loaded assets
 
 ---

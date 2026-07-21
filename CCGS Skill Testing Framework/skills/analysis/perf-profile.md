@@ -1,8 +1,8 @@
-# Skill Test Spec: /perf-profile
+# Skill Test Spec: $perf-profile
 
 ## Skill Summary
 
-`/perf-profile` is a structured performance profiling workflow that identifies
+`$perf-profile` is a structured performance profiling workflow that identifies
 bottlenecks and recommends optimizations. If profiler data or performance logs
 are provided, it analyzes them directly. If not, it guides the user through a
 manual profiling checklist. No director gates are invoked. The skill asks
@@ -13,9 +13,9 @@ Verdicts: WITHIN BUDGET, CONCERNS, or OVER BUDGET.
 
 ## Static Assertions (Structural)
 
-Verified automatically by `/skill-test static` — no fixture needed.
+Verified automatically by `$skill-test static` — no fixture needed.
 
-- [ ] Has required frontmatter fields: `name`, `description`, `argument-hint`, `user-invocable`, `allowed-tools`
+- [ ] Has non-empty `name` and `description`; `agents/openai.yaml` has non-empty display name and short description
 - [ ] Has ≥2 phase headings
 - [ ] Contains verdict keywords: WITHIN BUDGET, CONCERNS, OVER BUDGET
 - [ ] Contains "May I write" language (skill writes perf report)
@@ -38,7 +38,7 @@ None. Performance profiling is an advisory analysis skill; no gates are invoked.
 - Data shows: average frame time 14ms (within 16.6ms budget), but frames 42–48 spike to 28ms
 - Spike correlates with a scene with 450 draw calls (budget: 200)
 
-**Input:** `/perf-profile production/qa/profiler-export-2026-03-15.json`
+**Input:** `$perf-profile production/qa/profiler-export-2026-03-15.json`
 
 **Expected behavior:**
 1. Skill reads profiler data
@@ -60,10 +60,10 @@ None. Performance profiling is an advisory analysis skill; no gates are invoked.
 ### Case 2: No Profiler Data — Manual checklist output
 
 **Fixture:**
-- User runs `/perf-profile` with no arguments
+- User runs `$perf-profile` with no arguments
 - No profiler data files exist in `production/qa/`
 
-**Input:** `/perf-profile`
+**Input:** `$perf-profile`
 
 **Expected behavior:**
 1. Skill finds no profiler data
@@ -89,7 +89,7 @@ None. Performance profiling is an advisory analysis skill; no gates are invoked.
 - All frames exceed budget; no single spike — systemic issue
 - `technical-preferences.md` specifies target platform: PC, 60fps
 
-**Input:** `/perf-profile production/qa/profiler-export-2026-03-20.json`
+**Input:** `$perf-profile production/qa/profiler-export-2026-03-20.json`
 
 **Expected behavior:**
 1. Skill reads profiler data and technical preferences for performance budget
@@ -113,7 +113,7 @@ None. Performance profiling is an advisory analysis skill; no gates are invoked.
 - New profiler export shows: avg 13ms, max 17ms
 - Both reports are for the same scene
 
-**Input:** `/perf-profile production/qa/profiler-export-2026-04-05.json`
+**Input:** `$perf-profile production/qa/profiler-export-2026-04-05.json`
 
 **Expected behavior:**
 1. Skill reads new profiler data
@@ -136,12 +136,12 @@ None. Performance profiling is an advisory analysis skill; no gates are invoked.
 - Profiler data shows CONCERNS-level findings (some spikes)
 - `review-mode.txt` contains `full`
 
-**Input:** `/perf-profile production/qa/profiler-export-2026-04-01.json`
+**Input:** `$perf-profile production/qa/profiler-export-2026-04-01.json`
 
 **Expected behavior:**
 1. Skill analyzes profiler data; verdict is CONCERNS
 2. No director gate is invoked regardless of review mode
-3. Output notes: "For in-depth analysis, consider running `/perf-profile` with the performance-analyst agent"
+3. Output notes: "For in-depth analysis, consider running `$perf-profile` with the performance-analyst agent"
 4. Skill asks "May I write" and writes report on user approval
 
 **Assertions:**

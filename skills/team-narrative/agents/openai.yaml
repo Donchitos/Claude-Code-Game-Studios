@@ -1,0 +1,4 @@
+interface:
+  display_name: "Team Narrative"
+  short_description: "Coordinate narrative, worldbuilding, writing, and review"
+  default_prompt: "Use $team-narrative to coordinate narrative, worldbuilding, writing, and review."

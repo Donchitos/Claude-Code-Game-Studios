@@ -1,4 +1,4 @@
-# Skill Test Spec: /team-live-ops
+# Skill Test Spec: $team-live-ops
 
 ## Skill Summary
 
@@ -12,12 +12,12 @@ season plan requiring user approval before handoff to production.
 
 ## Static Assertions (Structural)
 
-- [ ] Has required frontmatter fields: `name`, `description`, `argument-hint`, `user-invocable`, `allowed-tools`
+- [ ] Has non-empty `name` and `description`; `agents/openai.yaml` has non-empty display name and short description
 - [ ] Has ≥2 phase headings
 - [ ] Contains verdict keywords: COMPLETE, BLOCKED
 - [ ] Contains "May I write" language in the File Write Protocol section (delegated to sub-agents)
 - [ ] Has a File Write Protocol section stating that the orchestrator does not write files directly
-- [ ] Has a next-step handoff at the end referencing `/design-review`, `/sprint-plan`, and `/team-release`
+- [ ] Has a next-step handoff at the end referencing `$design-review`, `$sprint-plan`, and `$team-release`
 - [ ] Uses `AskUserQuestion` at phase transitions to capture user approval before proceeding
 - [ ] States explicitly that Phases 3 and 4 can run simultaneously (parallel spawning)
 - [ ] Error recovery section present (or implied through BLOCKED handling)
@@ -35,7 +35,7 @@ season plan requiring user approval before handoff to production.
 - Game concept document exists at its standard path
 - No existing season documents for the new season name being planned
 
-**Input:** `/team-live-ops "Season 2: The Frozen Wastes"`
+**Input:** `$team-live-ops "Season 2: The Frozen Wastes"`
 
 **Expected behavior:**
 1. Phase 1: Spawns `live-ops-designer` via Task; receives season brief with scope, content list, and retention mechanic; presents to user
@@ -56,7 +56,7 @@ season plan requiring user approval before handoff to production.
 - [ ] Three output documents written to `design/live-ops/seasons/` with correct naming convention
 - [ ] File writes are delegated to sub-agents — orchestrator does not write directly
 - [ ] Verdict: COMPLETE appears in final output
-- [ ] Next steps reference `/design-review`, `/sprint-plan`, and `/team-release`
+- [ ] Next steps reference `$design-review`, `$sprint-plan`, and `$team-release`
 
 ---
 
@@ -67,7 +67,7 @@ season plan requiring user approval before handoff to production.
 - `design/live-ops/ethics-policy.md` explicitly prohibits loot boxes targeting players under 18
 - economy-designer (Phase 3) proposes a "Mystery Chest" mechanic with randomized premium rewards and no pity timer
 
-**Input:** `/team-live-ops "Season 3: Shadow Tournament"`
+**Input:** `$team-live-ops "Season 3: Shadow Tournament"`
 
 **Expected behavior:**
 1. Phases 1–4 proceed normally; economy-designer proposes Mystery Chest mechanic
@@ -91,16 +91,16 @@ season plan requiring user approval before handoff to production.
 **Fixture:**
 - Any project state
 
-**Input:** `/team-live-ops` (no argument)
+**Input:** `$team-live-ops` (no argument)
 
 **Expected behavior:**
 1. Phase 1: No argument detected
-2. Outputs: "Usage: `/team-live-ops [season name or event description]` — Provide the name or description of the season or live event to plan."
+2. Outputs: "Usage: `$team-live-ops [season name or event description]` — Provide the name or description of the season or live event to plan."
 3. Skill exits immediately without spawning any subagents
 
 **Assertions:**
 - [ ] Skill does NOT guess a season name or fabricate a scope
-- [ ] Error message includes the correct usage format with the argument-hint
+- [ ] Error message includes the correct usage format with the canonical invocation syntax
 - [ ] No Task calls are issued before the argument check fails
 - [ ] No files are read or written
 
@@ -113,7 +113,7 @@ season plan requiring user approval before handoff to production.
 - Phase 1 (season brief) and Phase 2 (narrative framing) already approved
 - Phase 3 (economy-designer) and Phase 4 (analytics-engineer) inputs are independent of each other
 
-**Input:** `/team-live-ops "Season 1: The First Thaw"` (observed at Phase 3/4 transition)
+**Input:** `$team-live-ops "Season 1: The First Thaw"` (observed at Phase 3/4 transition)
 
 **Expected behavior:**
 1. After Phase 2 is approved by the user, the orchestrator issues both Task calls (economy-designer and analytics-engineer) before awaiting either result
@@ -137,7 +137,7 @@ season plan requiring user approval before handoff to production.
 - `design/live-ops/ethics-policy.md` does NOT exist
 - All other fixtures are present
 
-**Input:** `/team-live-ops "Season 4: Desert Heat"`
+**Input:** `$team-live-ops "Season 4: Desert Heat"`
 
 **Expected behavior:**
 1. Phases 1–4 proceed; economy-designer and analytics-engineer are given the ethics policy path but it is absent
@@ -166,7 +166,7 @@ season plan requiring user approval before handoff to production.
 - [ ] Error recovery: any BLOCKED agent is surfaced immediately with AskUserQuestion options (skip / retry / stop)
 - [ ] Partial reports are produced if any phase blocks — work is never discarded
 - [ ] Verdict: COMPLETE only after user approves the consolidated season plan; BLOCKED if any unresolved ethics violation exists
-- [ ] Next steps always include `/design-review`, `/sprint-plan`, and `/team-release`
+- [ ] Next steps always include `$design-review`, `$sprint-plan`, and `$team-release`
 
 ---
 

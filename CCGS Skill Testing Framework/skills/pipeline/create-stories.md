@@ -1,8 +1,8 @@
-# Skill Test Spec: /create-stories
+# Skill Test Spec: $create-stories
 
 ## Skill Summary
 
-`/create-stories` breaks a single epic into developer-ready story files. It reads
+`$create-stories` breaks a single epic into developer-ready story files. It reads
 the EPIC.md, the corresponding GDD, governing ADRs, the control manifest, and the
 TR registry. Each story gets structured frontmatter including: Title, Epic, Layer,
 Priority, Status, TR-ID, ADR references, Acceptance Criteria, and Definition of
@@ -12,19 +12,19 @@ Config/Data) which determines the required test evidence path.
 In `full` review mode, a QL-STORY-READY check runs per story after creation. In
 `lean` or `solo` mode, QL-STORY-READY is skipped. The skill asks "May I write"
 before writing each story file. Stories are written to
-`production/epics/[layer]/story-[name].md`.
+`production/epics/[layer]$story-[name].md`.
 
 ---
 
 ## Static Assertions (Structural)
 
-Verified automatically by `/skill-test static` — no fixture needed.
+Verified automatically by `$skill-test static` — no fixture needed.
 
-- [ ] Has required frontmatter fields: `name`, `description`, `argument-hint`, `user-invocable`, `allowed-tools`
+- [ ] Has non-empty `name` and `description`; `agents/openai.yaml` has non-empty display name and short description
 - [ ] Has ≥2 phase headings
 - [ ] Contains verdict keywords: COMPLETE, BLOCKED, NEEDS WORK
 - [ ] Contains "May I write" collaborative protocol language (per-story approval)
-- [ ] Has a next-step handoff at the end (`/story-readiness`, `/dev-story`)
+- [ ] Has a next-step handoff at the end (`$story-readiness`, `$dev-story`)
 - [ ] Documents story Status: Blocked when governing ADR is Proposed
 - [ ] Documents QL-STORY-READY gate: active in full mode, skipped in lean/solo
 
@@ -54,7 +54,7 @@ In `solo` mode: QL-STORY-READY is skipped with equivalent notes.
 - `docs/architecture/tr-registry.yaml` has TR-IDs for all 3 requirements
 - `production/session-state/review-mode.txt` contains `lean`
 
-**Input:** `/create-stories [epic-name]`
+**Input:** `$create-stories [epic-name]`
 
 **Expected behavior:**
 1. Skill reads EPIC.md, GDD, governing ADRs, control manifest, and TR registry
@@ -79,19 +79,19 @@ In `solo` mode: QL-STORY-READY is skipped with equivalent notes.
 **Fixture:**
 - The epic path provided does not exist in `production/epics/`
 
-**Input:** `/create-stories nonexistent-epic`
+**Input:** `$create-stories nonexistent-epic`
 
 **Expected behavior:**
 1. Skill attempts to read the EPIC.md file
 2. File not found
 3. Skill outputs a clear error with the path it searched
-4. Skill suggests checking `production/epics/` or running `/create-epics` first
+4. Skill suggests checking `production/epics/` or running `$create-epics` first
 5. No story files are created
 
 **Assertions:**
 - [ ] Skill outputs a clear error naming the missing file path
 - [ ] No story files are written
-- [ ] Skill recommends the correct next action (`/create-epics`)
+- [ ] Skill recommends the correct next action (`$create-epics`)
 - [ ] Skill does NOT create stories without a valid EPIC.md
 
 ---
@@ -103,7 +103,7 @@ In `solo` mode: QL-STORY-READY is skipped with equivalent notes.
 - Requirement 1 is covered by an Accepted ADR
 - Requirement 2 is covered by an ADR with `Status: Proposed`
 
-**Input:** `/create-stories [epic-name]`
+**Input:** `$create-stories [epic-name]`
 
 **Expected behavior:**
 1. Skill reads the ADR for Requirement 2 and finds Status: Proposed
@@ -114,7 +114,7 @@ In `solo` mode: QL-STORY-READY is skipped with equivalent notes.
 
 **Assertions:**
 - [ ] Story 2 has `Status: Blocked` in its frontmatter
-- [ ] Blocking note names the specific ADR number and recommends `/architecture-decision`
+- [ ] Blocking note names the specific ADR number and recommends `$architecture-decision`
 - [ ] Story 1 has `Status: Ready` — blocked status does not affect non-blocked stories
 - [ ] Blocked status is shown in the draft preview before writing
 - [ ] Both story files are written (blocked stories are still written — just flagged)
@@ -126,11 +126,11 @@ In `solo` mode: QL-STORY-READY is skipped with equivalent notes.
 **Fixture:**
 - `production/epics/` directory exists with ≥2 epic subdirectories
 
-**Input:** `/create-stories` (no argument)
+**Input:** `$create-stories` (no argument)
 
 **Expected behavior:**
 1. Skill detects no argument is provided
-2. Outputs a usage error: "No epic specified. Usage: /create-stories [epic-name]"
+2. Outputs a usage error: "No epic specified. Usage: $create-stories [epic-name]"
 3. Skill lists available epics from `production/epics/`
 4. No story files are created
 
@@ -150,7 +150,7 @@ In `solo` mode: QL-STORY-READY is skipped with equivalent notes.
 - `production/session-state/review-mode.txt` contains `full`
 - QL-STORY-READY check finds one story has ambiguous acceptance criteria
 
-**Input:** `/create-stories [epic-name]`
+**Input:** `$create-stories [epic-name]`
 
 **Expected behavior:**
 1. Both stories are drafted
@@ -177,7 +177,7 @@ In `solo` mode: QL-STORY-READY is skipped with equivalent notes.
 - [ ] Blocked stories flagged before write approval — not discovered after writing
 - [ ] TR-IDs reference the registry — requirement text is not embedded inline in story files
 - [ ] Control manifest rules quoted per-story from the manifest, not invented
-- [ ] Ends with next-step handoff: `/story-readiness` → `/dev-story`
+- [ ] Ends with next-step handoff: `$story-readiness` → `$dev-story`
 
 ---
 
@@ -188,4 +188,4 @@ In `solo` mode: QL-STORY-READY is skipped with equivalent notes.
 - Story ordering (foundational first, UI last) is validated implicitly via
   Case 1's multi-story fixture.
 - The story sizing rule (splitting large requirement groups) is not tested here
-  — it is addressed in the `/create-stories` skill's internal logic.
+  — it is addressed in the `$create-stories` skill's internal logic.

@@ -3,18 +3,18 @@
 ## Agent Summary
 **Domain owned:** Music direction and palette, sound design philosophy, audio implementation strategy, mix balance, audio aspects of phase gates.
 **Does NOT own:** Visual design (art-director), code implementation (lead-programmer), narrative story content (narrative-director), UX interaction flows (ux-designer).
-**Model tier:** Sonnet (individual system analysis — audio direction and spec review).
+No fixed model routing is required; the caller selects the available Codex model.
 **Gate IDs handled:** AD-VISUAL (audio aspect of the phase gate; may be referenced as part of AD-PHASE-GATE in the audio dimension).
 
 ---
 
 ## Static Assertions (Structural)
 
-Verified by reading the agent's `.claude/agents/audio-director.md` frontmatter:
+Verified by reading the agent's `roles/audio-director.md` frontmatter:
 
 - [ ] `description:` field is present and domain-specific (references music direction, sound design, mix, audio implementation — not generic)
-- [ ] `allowed-tools:` list is read-focused; no Bash unless audio asset pipeline checks are justified
-- [ ] Model tier is `claude-sonnet-4-6` per coordination-rules.md
+- [ ] Role boundaries and file ownership match the stated domain
+- [ ] Does not require fixed model routing; the calling Codex client selects the available model
 - [ ] Agent definition does not claim authority over visual design, code implementation, or narrative content
 
 ---
@@ -23,7 +23,7 @@ Verified by reading the agent's `.claude/agents/audio-director.md` frontmatter:
 
 ### Case 1: In-domain request — appropriate output format
 **Scenario:** An audio specification document is submitted for the game's "Exploration" music layer. The spec defines a generative ambient system using layered stems that shift based on environmental density, designed to reinforce the pillar "lived-in world." The tone palette (sparse, organic, slightly melancholic) matches the established design pillars.
-**Expected:** Returns `APPROVED` with rationale confirming the stem-based approach supports dynamic responsiveness and the tone palette aligns with the pillar vocabulary.
+**Expected:** Returns a documented domain-specific verdict with rationale confirming the stem-based approach supports dynamic responsiveness and the tone palette aligns with the pillar vocabulary.
 **Assertions:**
 - [ ] Verdict is exactly one of APPROVED / NEEDS REVISION
 - [ ] Rationale references the specific pillar ("lived-in world") and how the audio spec supports it
@@ -40,7 +40,7 @@ Verified by reading the agent's `.claude/agents/audio-director.md` frontmatter:
 
 ### Case 3: Gate verdict — correct vocabulary
 **Scenario:** A music cue for the final boss encounter is submitted. The cue is an upbeat, major-key orchestral piece with fast tempo. The game pillars and narrative context for this encounter specify "dread, inevitability, and tragic sacrifice." The audio cue's emotional register directly contradicts the intended emotional beat.
-**Expected:** Returns `NEEDS REVISION` with specific citation of the emotional mismatch: the cue's upbeat/major-key/fast-tempo characteristics versus the intended dread/inevitability/sacrifice emotional targets from the pillars and narrative context.
+**Expected:** Returns a documented domain-specific verdict with specific citation of the emotional mismatch: the cue's upbeat/major-key/fast-tempo characteristics versus the intended dread/inevitability/sacrifice emotional targets from the pillars and narrative context.
 **Assertions:**
 - [ ] Verdict is exactly one of APPROVED / NEEDS REVISION — not freeform text
 - [ ] Rationale identifies the specific musical characteristics that conflict with the emotional targets

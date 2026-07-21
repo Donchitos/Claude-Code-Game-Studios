@@ -17,8 +17,9 @@ delegates vs. handles directly. Include which gates it triggers (if any).]
 
 ## Static Assertions
 
-- [ ] Agent file exists at `.claude/agents/[name].md`
-- [ ] Frontmatter has `name`, `description`, `model`, `tools` fields
+- [ ] Role profile exists at `roles/[name].md`
+- [ ] Frontmatter has non-empty `name` and `description` fields
+- [ ] Profile states that it is injected into a generic Codex sub-agent; it does not claim fixed model routing or automatic registration
 - [ ] Domain clearly stated
 - [ ] Escalation path documented
 - [ ] Does not make decisions outside its domain

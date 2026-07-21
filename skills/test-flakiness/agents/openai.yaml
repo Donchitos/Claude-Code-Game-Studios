@@ -1,0 +1,4 @@
+interface:
+  display_name: "Test Flakiness"
+  short_description: "Detect flaky tests from CI history and failure patterns"
+  default_prompt: "Use $test-flakiness to detect flaky tests from CI history and failure patterns."

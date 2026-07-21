@@ -1,0 +1,4 @@
+interface:
+  display_name: "Changelog"
+  short_description: "Generate a changelog from Git and sprint history"
+  default_prompt: "Use $changelog to generate a changelog from Git and sprint history."

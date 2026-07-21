@@ -3,18 +3,18 @@
 ## Agent Summary
 **Domain owned:** Core loop design, progression systems, combat mechanics rules, economy design, player-facing rules and interactions.
 **Does NOT own:** Code implementation (lead-programmer / gameplay-programmer), visual art (art-director), narrative lore and story (narrative-director — coordinates with), balance formula math (systems-designer — collaborates with).
-**Model tier:** Sonnet (individual system design authoring and review).
+No fixed model routing is required; the caller selects the available Codex model.
 **Gate IDs handled:** Design review verdicts on mechanic specs (no named gate ID prefix — uses APPROVED / NEEDS REVISION vocabulary).
 
 ---
 
 ## Static Assertions (Structural)
 
-Verified by reading the agent's `.claude/agents/game-designer.md` frontmatter:
+Verified by reading the agent's `roles/game-designer.md` frontmatter:
 
 - [ ] `description:` field is present and domain-specific (references core loop, progression, combat rules, economy, player-facing design — not generic)
-- [ ] `allowed-tools:` list is read-focused; includes Read for GDDs and design docs; no Bash unless design tooling requires it
-- [ ] Model tier is `claude-sonnet-4-6` per coordination-rules.md
+- [ ] Role boundaries and file ownership match the stated domain
+- [ ] Does not require fixed model routing; the calling Codex client selects the available model
 - [ ] Agent definition does not claim authority over code implementation, visual art style, or standalone narrative lore decisions
 
 ---
@@ -23,7 +23,7 @@ Verified by reading the agent's `.claude/agents/game-designer.md` frontmatter:
 
 ### Case 1: In-domain request — appropriate output format
 **Scenario:** A mechanic spec for a "Stamina-Based Dodge" system is submitted for review. The spec defines: the player has a stamina pool (100 units), each dodge costs 25 stamina, stamina regenerates at 20 units/second when not dodging, and the dodge grants 0.3 seconds of invincibility. The core loop interaction is clearly described, rules are unambiguous, and edge cases (stamina at 0, dodge during regen) are addressed.
-**Expected:** Returns `APPROVED` with rationale confirming the core loop clarity, unambiguous rules, and edge case coverage.
+**Expected:** Returns a documented domain-specific verdict with rationale confirming the core loop clarity, unambiguous rules, and edge case coverage.
 **Assertions:**
 - [ ] Verdict is exactly one of APPROVED / NEEDS REVISION
 - [ ] Rationale references specific design quality criteria (clear rules, edge case coverage, core loop coherence)
@@ -40,7 +40,7 @@ Verified by reading the agent's `.claude/agents/game-designer.md` frontmatter:
 
 ### Case 3: Gate verdict — correct vocabulary
 **Scenario:** A mechanic spec for "Environmental Hazard Damage" is submitted. The spec defines three hazard types (fire, acid, electricity) but does not specify what happens when a player is simultaneously affected by multiple hazard types, what happens when a hazard is applied during the invincibility window from a dodge, or what the damage frequency is (per-second, per-tick, on-enter).
-**Expected:** Returns `NEEDS REVISION` with specific identification of the undefined edge cases: multi-hazard interaction, hazard-during-invincibility, and damage frequency specification.
+**Expected:** Returns a documented domain-specific verdict with specific identification of the undefined edge cases: multi-hazard interaction, hazard-during-invincibility, and damage frequency specification.
 **Assertions:**
 - [ ] Verdict is exactly one of APPROVED / NEEDS REVISION — not freeform text
 - [ ] Rationale identifies the specific missing edge cases by name
@@ -80,5 +80,5 @@ Verified by reading the agent's `.claude/agents/game-designer.md` frontmatter:
 ## Coverage Notes
 - Economy design review (resource sinks, faucets, inflation prevention) is not covered — a dedicated case should be added.
 - Progression system review (XP curves, unlock gates, player power trajectory) is not covered.
-- Core loop validation across multiple interconnected systems (not just a single mechanic) is not covered — deferred to /review-all-gdds integration.
+- Core loop validation across multiple interconnected systems (not just a single mechanic) is not covered — deferred to $review-all-gdds integration.
 - Coordination protocol with systems-designer on formula ownership boundary could benefit from additional cases.

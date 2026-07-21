@@ -1,8 +1,8 @@
-# Skill Test Spec: /milestone-review
+# Skill Test Spec: $milestone-review
 
 ## Skill Summary
 
-`/milestone-review` generates a comprehensive review of a completed milestone:
+`$milestone-review` generates a comprehensive review of a completed milestone:
 what shipped, velocity metrics, deferred items, risks surfaced, and retrospective
 seeds. In full mode the PR-MILESTONE director gate runs after the review is
 compiled (producer reviews scope delivery). In lean and solo modes the gate is
@@ -13,9 +13,9 @@ before persisting. Verdicts: MILESTONE COMPLETE or MILESTONE INCOMPLETE.
 
 ## Static Assertions (Structural)
 
-Verified automatically by `/skill-test static` — no fixture needed.
+Verified automatically by `$skill-test static` — no fixture needed.
 
-- [ ] Has required frontmatter fields: `name`, `description`, `argument-hint`, `user-invocable`, `allowed-tools`
+- [ ] Has non-empty `name` and `description`; `agents/openai.yaml` has non-empty display name and short description
 - [ ] Has ≥2 phase headings
 - [ ] Contains verdict keywords: MILESTONE COMPLETE, MILESTONE INCOMPLETE
 - [ ] Contains "May I write" language (skill writes review document)
@@ -41,7 +41,7 @@ Verified automatically by `/skill-test static` — no fixture needed.
 - 1 story has `Status: Deferred` (deferred to milestone-04)
 - `review-mode.txt` contains `full`
 
-**Input:** `/milestone-review milestone-03`
+**Input:** `$milestone-review milestone-03`
 
 **Expected behavior:**
 1. Skill reads `milestone-03.md` and all referenced sprint files
@@ -68,7 +68,7 @@ Verified automatically by `/skill-test static` — no fixture needed.
 - 3 stories have `Status: Blocked` (named blockers listed in each story)
 - `review-mode.txt` contains `full`
 
-**Input:** `/milestone-review milestone-03`
+**Input:** `$milestone-review milestone-03`
 
 **Expected behavior:**
 1. Skill reads milestone and sprint files
@@ -91,7 +91,7 @@ Verified automatically by `/skill-test static` — no fixture needed.
 - Milestone-03 has 6 complete stories but 2 were not in the original scope (added mid-sprint)
 - `review-mode.txt` contains `full`
 
-**Input:** `/milestone-review milestone-03`
+**Input:** `$milestone-review milestone-03`
 
 **Expected behavior:**
 1. Skill compiles review; notes 2 out-of-scope stories shipped
@@ -110,10 +110,10 @@ Verified automatically by `/skill-test static` — no fixture needed.
 ### Case 4: Edge Case — No milestone file found for specified milestone
 
 **Fixture:**
-- User calls `/milestone-review milestone-07`
+- User calls `$milestone-review milestone-07`
 - `production/milestones/milestone-07.md` does NOT exist
 
-**Input:** `/milestone-review milestone-07`
+**Input:** `$milestone-review milestone-07`
 
 **Expected behavior:**
 1. Skill attempts to read `production/milestones/milestone-07.md`
@@ -135,7 +135,7 @@ Verified automatically by `/skill-test static` — no fixture needed.
 - `production/milestones/milestone-03.md` exists with 5 complete stories
 - `review-mode.txt` contains `solo`
 
-**Input:** `/milestone-review milestone-03`
+**Input:** `$milestone-review milestone-03`
 
 **Expected behavior:**
 1. Skill reads review mode — determines `solo`

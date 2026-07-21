@@ -1,8 +1,8 @@
-# Skill Test Spec: /ux-review
+# Skill Test Spec: $ux-review
 
 ## Skill Summary
 
-`/ux-review` validates an existing UX spec or HUD design document against
+`$ux-review` validates an existing UX spec or HUD design document against
 accessibility and interaction standards. It checks for required sections
 (User Flows, Interaction States, Wireframe Description, Accessibility Notes),
 completeness of interaction state definitions (hover, focus, disabled, error),
@@ -13,25 +13,25 @@ if those documents exist.
 The skill is read-only — it produces no file writes. Verdicts: APPROVED
 (all checks pass), NEEDS REVISION (fixable issues found), or MAJOR REVISION
 NEEDED (structural or accessibility failures). No director gates apply —
-`/ux-review` IS the review gate for UX specs.
+`$ux-review` IS the review gate for UX specs.
 
 ---
 
 ## Static Assertions (Structural)
 
-Verified automatically by `/skill-test static` — no fixture needed.
+Verified automatically by `$skill-test static` — no fixture needed.
 
-- [ ] Has required frontmatter fields: `name`, `description`, `argument-hint`, `user-invocable`, `allowed-tools`
+- [ ] Has non-empty `name` and `description`; `agents/openai.yaml` has non-empty display name and short description
 - [ ] Has ≥2 phase headings
 - [ ] Contains verdict keywords: APPROVED, NEEDS REVISION, MAJOR REVISION NEEDED
 - [ ] Does NOT contain "May I write" language (skill is read-only)
-- [ ] Has a next-step handoff (e.g., back to `/ux-design` for revision, or proceed to implementation)
+- [ ] Has a next-step handoff (e.g., back to `$ux-design` for revision, or proceed to implementation)
 
 ---
 
 ## Director Gate Checks
 
-None. `/ux-review` is itself the review gate for UX specs. No additional director
+None. `$ux-review` is itself the review gate for UX specs. No additional director
 gates are invoked within this skill.
 
 ---
@@ -47,7 +47,7 @@ gates are invoked within this skill.
   - Wireframe Description: layout described
   - Accessibility Notes: keyboard nav, contrast ratios, screen reader notes
 
-**Input:** `/ux-review hud`
+**Input:** `$ux-review hud`
 
 **Expected behavior:**
 1. Skill reads `design/ux/hud.md`
@@ -71,7 +71,7 @@ gates are invoked within this skill.
 - `design/ux/hud.md` exists but the Accessibility Notes section is empty
 - All other sections are fully populated
 
-**Input:** `/ux-review hud`
+**Input:** `$ux-review hud`
 
 **Expected behavior:**
 1. Skill reads the file and checks all sections
@@ -80,12 +80,12 @@ gates are invoked within this skill.
 4. Skill lists specific items to add: keyboard navigation, color contrast ratios,
    screen reader labels
 5. Verdict is NEEDS REVISION
-6. Handoff suggests returning to `/ux-design hud` to fill in the section
+6. Handoff suggests returning to `$ux-design hud` to fill in the section
 
 **Assertions:**
 - [ ] NEEDS REVISION verdict is returned (not APPROVED or MAJOR REVISION NEEDED)
 - [ ] Specific missing content items are listed
-- [ ] Handoff points back to `/ux-design hud` for revision
+- [ ] Handoff points back to `$ux-design hud` for revision
 - [ ] No files are written
 
 ---
@@ -97,7 +97,7 @@ gates are invoked within this skill.
 - Interaction States section only defines: normal and hover
 - Missing: focus, disabled, error states
 
-**Input:** `/ux-review settings-menu`
+**Input:** `$ux-review settings-menu`
 
 **Expected behavior:**
 1. Skill reads the file and checks interaction states
@@ -109,7 +109,7 @@ gates are invoked within this skill.
 - [ ] NEEDS REVISION verdict returned
 - [ ] All 3 missing states are named explicitly in the output
 - [ ] Skill does not return MAJOR REVISION NEEDED for a fixable gap
-- [ ] Handoff suggests returning to `/ux-design settings-menu`
+- [ ] Handoff suggests returning to `$ux-design settings-menu`
 
 ---
 
@@ -118,17 +118,17 @@ gates are invoked within this skill.
 **Fixture:**
 - `design/ux/inventory-screen.md` does not exist
 
-**Input:** `/ux-review inventory-screen`
+**Input:** `$ux-review inventory-screen`
 
 **Expected behavior:**
 1. Skill attempts to read `design/ux/inventory-screen.md` — file not found
 2. Skill outputs: "UX spec not found: design/ux/inventory-screen.md"
-3. Skill suggests running `/ux-design inventory-screen` to create the spec first
+3. Skill suggests running `$ux-design inventory-screen` to create the spec first
 4. No review is performed; no verdict is issued
 
 **Assertions:**
 - [ ] Error message names the missing file with full path
-- [ ] `/ux-design inventory-screen` is suggested as the remediation
+- [ ] `$ux-design inventory-screen` is suggested as the remediation
 - [ ] No review checklist is produced
 - [ ] No verdict is issued (error state, not APPROVED/NEEDS REVISION)
 
@@ -139,7 +139,7 @@ gates are invoked within this skill.
 **Fixture:**
 - Valid UX spec file
 
-**Input:** `/ux-review hud`
+**Input:** `$ux-review hud`
 
 **Expected behavior:**
 1. Skill performs the review and issues a verdict
@@ -161,7 +161,7 @@ gates are invoked within this skill.
 - [ ] Checks accessibility coverage (keyboard nav, contrast, screen reader)
 - [ ] Does not write any files
 - [ ] Issues specific, actionable feedback when verdict is not APPROVED
-- [ ] Ends with next-step handoff to `/ux-design` for revision or implementation
+- [ ] Ends with next-step handoff to `$ux-design` for revision or implementation
 
 ---
 

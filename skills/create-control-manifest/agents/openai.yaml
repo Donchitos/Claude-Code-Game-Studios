@@ -1,0 +1,4 @@
+interface:
+  display_name: "Create Control Manifest"
+  short_description: "Compile architecture decisions into implementation rules"
+  default_prompt: "Use $create-control-manifest to compile architecture decisions into implementation rules."

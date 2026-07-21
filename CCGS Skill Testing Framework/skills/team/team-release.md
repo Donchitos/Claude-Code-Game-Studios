@@ -1,4 +1,4 @@
-# Skill Test Spec: /team-release
+# Skill Test Spec: $team-release
 
 ## Skill Summary
 
@@ -14,13 +14,13 @@ NO-GO. Closes with a post-release monitoring plan.
 
 ## Static Assertions (Structural)
 
-- [ ] Has required frontmatter fields: `name`, `description`, `argument-hint`, `user-invocable`, `allowed-tools`
+- [ ] Has non-empty `name` and `description`; `agents/openai.yaml` has non-empty display name and short description
 - [ ] Has ≥2 phase headings
 - [ ] Contains verdict keywords: COMPLETE, BLOCKED
 - [ ] Contains "May I write" language in the File Write Protocol section (delegated to sub-agents)
 - [ ] Has a File Write Protocol section stating that the orchestrator does not write files directly
 - [ ] Has an Error Recovery Protocol section with four recovery options (surface / assess / offer options / partial report)
-- [ ] Has a next-step handoff referencing post-release monitoring, `/retrospective`, and `production/stage.txt`
+- [ ] Has a next-step handoff referencing post-release monitoring, `$retrospective`, and `production/stage.txt`
 - [ ] Uses `AskUserQuestion` at phase transitions requiring user approval before proceeding
 - [ ] Phase 3 agents (qa-lead, devops-engineer, and optionally security-engineer, network-programmer) are explicitly stated to run in parallel
 - [ ] Phase 6 (Deployment) is conditional on a GO decision from Phase 5
@@ -40,15 +40,15 @@ NO-GO. Closes with a post-release monitoring plan.
 - No open S1/S2 bugs
 - `production/sprints/` contains the completed sprint stories for this milestone
 
-**Input:** `/team-release v1.0.0`
+**Input:** `$team-release v1.0.0`
 
 **Expected behavior:**
 1. Phase 1: Spawns `producer` via Task; confirms all milestone acceptance criteria met; identifies any deferred scope; produces release authorization; presents to user; AskUserQuestion: user approves before Phase 2
-2. Phase 2: Spawns `release-manager` via Task; cuts release branch from agreed commit; bumps version numbers; invokes `/release-checklist`; freezes branch; output: branch name and checklist; AskUserQuestion: user approves before Phase 3
+2. Phase 2: Spawns `release-manager` via Task; cuts release branch from agreed commit; bumps version numbers; invokes `$release-checklist`; freezes branch; output: branch name and checklist; AskUserQuestion: user approves before Phase 3
 3. Phase 3 (parallel): Issues Task calls simultaneously for `qa-lead` (regression suite, critical path sign-off) and `devops-engineer` (build artifacts, CI verification); security-engineer is NOT spawned (no online features); network-programmer is NOT spawned (no multiplayer); both complete successfully
 4. Phase 4: Verifies localization strings all translated; `analytics-engineer` verifies telemetry fires correctly on the release build; performance benchmarks pass; sign-off produced
 5. Phase 5: Spawns `producer` via Task; collects sign-offs from qa-lead, release-manager, devops-engineer; no open blocking issues; producer declares GO; AskUserQuestion: user sees GO decision and confirms deployment
-6. Phase 6: Spawns `release-manager` + `devops-engineer` (parallel); tags release in version control; invokes `/changelog`; deploys to staging; smoke test passes; deploys to production; simultaneously spawns `community-manager` to finalize patch notes via `/patch-notes v1.0.0` and prepare launch announcement
+6. Phase 6: Spawns `release-manager` + `devops-engineer` (parallel); tags release in version control; invokes `$changelog`; deploys to staging; smoke test passes; deploys to production; simultaneously spawns `community-manager` to finalize patch notes via `$patch-notes v1.0.0` and prepare launch announcement
 7. Phase 7: release-manager generates release report; producer updates milestone tracking; qa-lead begins monitoring for regressions; community-manager publishes communication; analytics-engineer confirms live dashboards healthy
 8. Verdict: COMPLETE — release executed and deployed
 
@@ -57,8 +57,8 @@ NO-GO. Closes with a post-release monitoring plan.
 - [ ] security-engineer is NOT spawned when the game has no online features, multiplayer, or player data
 - [ ] Phase 5 producer collects sign-offs from all required parties before declaring GO
 - [ ] Phase 6 deployment only begins after GO decision is confirmed by the user
-- [ ] `/changelog` is invoked by release-manager in Phase 6 (not written directly)
-- [ ] `/patch-notes v1.0.0` is invoked by community-manager in Phase 6
+- [ ] `$changelog` is invoked by release-manager in Phase 6 (not written directly)
+- [ ] `$patch-notes v1.0.0` is invoked by community-manager in Phase 6
 - [ ] Phase 7 monitoring plan includes a 48-hour post-release monitoring commitment
 - [ ] Next steps recommend updating `production/stage.txt` to `Live` after successful deployment
 - [ ] Verdict: COMPLETE appears in the final output
@@ -73,7 +73,7 @@ NO-GO. Closes with a post-release monitoring plan.
 - devops-engineer build is clean and artifacts are ready
 - producer is aware of the S1 bug
 
-**Input:** `/team-release v0.9.0`
+**Input:** `$team-release v0.9.0`
 
 **Expected behavior:**
 1. Phases 1–2 complete normally; release candidate is cut
@@ -107,7 +107,7 @@ NO-GO. Closes with a post-release monitoring plan.
 - qa-lead and devops-engineer both return clean sign-offs
 - security-engineer audit is required per team composition rules
 
-**Input:** `/team-release v2.1.0`
+**Input:** `$team-release v2.1.0`
 
 **Expected behavior:**
 1. Phases 1–2 complete normally
@@ -137,7 +137,7 @@ NO-GO. Closes with a post-release monitoring plan.
 - Phase 4: localization verification detects 47 untranslated strings in the French locale (a supported language in the game's localization scope)
 - localization-lead is available as a delegatable agent
 
-**Input:** `/team-release v1.2.0`
+**Input:** `$team-release v1.2.0`
 
 **Expected behavior:**
 1. Phases 1–3 complete with clean sign-offs
@@ -170,13 +170,13 @@ NO-GO. Closes with a post-release monitoring plan.
 - `production/session-state/active.md` does not reference a version
 - No git tags are present from which to infer a version
 
-**Input:** `/team-release` (no argument)
+**Input:** `$team-release` (no argument)
 
 **Expected behavior (variant A):**
 1. Phase 1: No argument provided; reads `production/session-state/active.md`; reads most recent milestone file in `production/milestones/`
 2. Infers v1.1.0 as the target version; reports "No version argument provided — inferred v1.1.0 from milestone data. Proceeding."
 3. Confirms with AskUserQuestion before beginning Phase 1 proper: "Releasing v1.1.0. Is this correct?"
-4. Proceeds as if `/team-release v1.1.0` was the input
+4. Proceeds as if `$team-release v1.1.0` was the input
 
 **Expected behavior (variant B):**
 1. Phase 1: No argument provided; reads available state files — no version discoverable
@@ -202,7 +202,7 @@ NO-GO. Closes with a post-release monitoring plan.
 - [ ] Error recovery: any BLOCKED agent is surfaced immediately before continuing to dependent phases
 - [ ] Partial reports are always produced if any phase fails or the pipeline is halted (Case 2)
 - [ ] Verdict: COMPLETE only when deployment completes; BLOCKED when go/no-go is NO or a hard blocker is unresolved
-- [ ] Next steps always include 48-hour post-release monitoring, `/retrospective` recommendation, and `production/stage.txt` update to `Live`
+- [ ] Next steps always include 48-hour post-release monitoring, `$retrospective` recommendation, and `production/stage.txt` update to `Live`
 
 ---
 

@@ -1,8 +1,8 @@
-# Skill Test Spec: /retrospective
+# Skill Test Spec: $retrospective
 
 ## Skill Summary
 
-`/retrospective` generates a structured sprint or milestone retrospective
+`$retrospective` generates a structured sprint or milestone retrospective
 covering three categories: what went well, what didn't, and action items.
 It reads sprint files and session logs to compile observations, then produces
 a retrospective document. No director gates are used — retrospectives are
@@ -15,9 +15,9 @@ assessment).
 
 ## Static Assertions (Structural)
 
-Verified automatically by `/skill-test static` — no fixture needed.
+Verified automatically by `$skill-test static` — no fixture needed.
 
-- [ ] Has required frontmatter fields: `name`, `description`, `argument-hint`, `user-invocable`, `allowed-tools`
+- [ ] Has non-empty `name` and `description`; `agents/openai.yaml` has non-empty display name and short description
 - [ ] Has ≥2 phase headings
 - [ ] Contains verdict keyword: COMPLETE
 - [ ] Contains "May I write" language (skill writes retrospective document)
@@ -40,7 +40,7 @@ None. Retrospectives are team self-reflection documents; no gates are invoked.
 - `production/session-logs/` contains log entries for the sprint period
 - No prior retrospective exists for sprint-005
 
-**Input:** `/retrospective sprint-005`
+**Input:** `$retrospective sprint-005`
 
 **Expected behavior:**
 1. Skill reads sprint-005 and session logs
@@ -62,11 +62,11 @@ None. Retrospectives are team self-reflection documents; no gates are invoked.
 ### Case 2: No Sprint Data — Manual input fallback
 
 **Fixture:**
-- User calls `/retrospective sprint-009`
+- User calls `$retrospective sprint-009`
 - `production/sprints/sprint-009.md` does NOT exist
 - No session logs reference sprint-009
 
-**Input:** `/retrospective sprint-009`
+**Input:** `$retrospective sprint-009`
 
 **Expected behavior:**
 1. Skill attempts to read sprint-009 — not found
@@ -87,9 +87,9 @@ None. Retrospectives are team self-reflection documents; no gates are invoked.
 
 **Fixture:**
 - `production/retrospectives/retro-sprint-005.md` already exists with content
-- User re-runs `/retrospective sprint-005` after changes
+- User re-runs `$retrospective sprint-005` after changes
 
-**Input:** `/retrospective sprint-005`
+**Input:** `$retrospective sprint-005`
 
 **Expected behavior:**
 1. Skill detects that `retro-sprint-005.md` already exists
@@ -110,9 +110,9 @@ None. Retrospectives are team self-reflection documents; no gates are invoked.
 
 **Fixture:**
 - `production/retrospectives/retro-sprint-004.md` exists with 2 action items marked `[ ]` (not done)
-- User runs `/retrospective sprint-005`
+- User runs `$retrospective sprint-005`
 
-**Input:** `/retrospective sprint-005`
+**Input:** `$retrospective sprint-005`
 
 **Expected behavior:**
 1. Skill reads the most recent prior retrospective (retro-sprint-004)
@@ -134,7 +134,7 @@ None. Retrospectives are team self-reflection documents; no gates are invoked.
 - `production/sprints/sprint-005.md` exists with complete stories
 - `production/session-state/review-mode.txt` contains `full`
 
-**Input:** `/retrospective sprint-005`
+**Input:** `$retrospective sprint-005`
 
 **Expected behavior:**
 1. Skill compiles retrospective in full mode

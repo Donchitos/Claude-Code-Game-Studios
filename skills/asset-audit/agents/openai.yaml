@@ -1,0 +1,4 @@
+interface:
+  display_name: "Asset Audit"
+  short_description: "Audit asset naming, formats, metadata, and budgets"
+  default_prompt: "Use $asset-audit to audit asset naming, formats, metadata, and budgets."

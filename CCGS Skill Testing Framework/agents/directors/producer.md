@@ -3,18 +3,18 @@
 ## Agent Summary
 **Domain owned:** Scope management, sprint planning validation, milestone tracking, epic prioritization, production phase gate.
 **Does NOT own:** Game design decisions (creative-director / game-designer), technical architecture (technical-director), creative direction.
-**Model tier:** Opus (multi-document synthesis, high-stakes phase gate verdicts).
+No fixed model routing is required; the caller selects the available Codex model.
 **Gate IDs handled:** PR-SCOPE, PR-SPRINT, PR-MILESTONE, PR-EPIC, PR-PHASE-GATE.
 
 ---
 
 ## Static Assertions (Structural)
 
-Verified by reading the agent's `.claude/agents/producer.md` frontmatter:
+Verified by reading the agent's `roles/producer.md` frontmatter:
 
 - [ ] `description:` field is present and domain-specific (references scope, sprint, milestone, production — not generic)
-- [ ] `allowed-tools:` list is primarily read-focused; Bash only if sprint/milestone files require parsing
-- [ ] Model tier is `claude-opus-4-6` per coordination-rules.md (directors with gate synthesis = Opus)
+- [ ] Role boundaries and file ownership match the stated domain
+- [ ] Does not require fixed model routing; the calling Codex client selects the available model
 - [ ] Agent definition does not claim authority over design decisions or technical architecture
 
 ---
@@ -23,10 +23,10 @@ Verified by reading the agent's `.claude/agents/producer.md` frontmatter:
 
 ### Case 1: In-domain request — appropriate output format
 **Scenario:** A sprint plan is submitted for Sprint 7. The plan includes 12 story points across 4 team members over 2 weeks. Historical velocity from the last 3 sprints averages 11.5 points. Request is tagged PR-SPRINT.
-**Expected:** Returns `PR-SPRINT: REALISTIC` with rationale noting the plan is within one standard deviation of historical velocity and capacity appears matched.
+**Expected:** Returns a documented domain-specific verdict with rationale noting the plan is within one standard deviation of historical velocity and capacity appears matched.
 **Assertions:**
 - [ ] Verdict is exactly one of REALISTIC / CONCERNS / UNREALISTIC
-- [ ] Verdict token is formatted as `PR-SPRINT: REALISTIC`
+- [ ] Verdict and rationale are clear and grounded in the supplied context
 - [ ] Rationale references the specific story point count and historical velocity figures
 - [ ] Output stays within production scope — does not comment on whether the stories are well-designed or technically sound
 
@@ -40,10 +40,10 @@ Verified by reading the agent's `.claude/agents/producer.md` frontmatter:
 
 ### Case 3: Gate verdict — correct vocabulary
 **Scenario:** A new feature proposal adds three new systems (crafting, weather, and faction reputation) to a milestone that was scoped for two systems only. None of these additions appear in the current milestone plan. Request is tagged PR-SCOPE.
-**Expected:** Returns `PR-SCOPE: CONCERNS` with specific identification of the three unplanned systems and their absence from the milestone scope document.
+**Expected:** Returns a documented domain-specific verdict with specific identification of the three unplanned systems and their absence from the milestone scope document.
 **Assertions:**
 - [ ] Verdict is exactly one of REALISTIC / CONCERNS / UNREALISTIC — not freeform text
-- [ ] Verdict token is formatted as `PR-SCOPE: CONCERNS`
+- [ ] Verdict and rationale are clear and grounded in the supplied context
 - [ ] Rationale names the three specific systems being added out of scope
 - [ ] Does not evaluate whether the systems are good design — only whether they fit the plan
 
@@ -72,13 +72,13 @@ Verified by reading the agent's `.claude/agents/producer.md` frontmatter:
 - [ ] Returns verdicts using REALISTIC / CONCERNS / UNREALISTIC vocabulary only
 - [ ] Stays within declared production domain
 - [ ] Escalates design/technical conflicts by quantifying scope impact and presenting to user
-- [ ] Uses gate IDs in output (e.g., `PR-SPRINT: REALISTIC`) not inline prose verdicts
+- [ ] Uses the provided task context when applicable; does not claim automatic role registration
 - [ ] Does not make binding game design or technical architecture decisions
 
 ---
 
 ## Coverage Notes
-- PR-EPIC (epic-level prioritization) is not covered — a dedicated case should be added when the /create-epics skill produces structured epic documents.
-- PR-MILESTONE (milestone health review) is not covered — deferred to integration with /milestone-review skill.
+- PR-EPIC (epic-level prioritization) is not covered — a dedicated case should be added when the $create-epics skill produces structured epic documents.
+- PR-MILESTONE (milestone health review) is not covered — deferred to integration with $milestone-review skill.
 - PR-PHASE-GATE (full production phase advancement) involving synthesis of multiple sub-gate results is deferred.
 - Multi-sprint burn-down and velocity trend analysis are not covered here.

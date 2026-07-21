@@ -10,16 +10,16 @@
 #     to be registered.
 #   - Never delete entries — set status: superseded_by: ADR-NNNN instead.
 #   - When a stance changes: update the entry, set revised: to today's date,
-#     add a comment with the old value, and run /architecture-review to check
+#     add a comment with the old value, and run $architecture-review to check
 #     what ADRs are now invalidated.
 #   - adr: is the authoritative source. All other ADRs that depend on this
 #     stance list themselves in referenced_by.
 #
-# WRITTEN BY: /architecture-decision (Phase 5 — after ADR is approved)
-# READ BY:    /architecture-decision (Step 2 — before authoring begins)
-#             /architecture-review (Phase 4 — cross-ADR conflict baseline)
-#             /create-stories (to embed architectural constraints in stories)
-#             /dev-story (to check implementation against accepted stances)
+# WRITTEN BY: $architecture-decision (Phase 5 — after ADR is approved)
+# READ BY:    $architecture-decision (Step 2 — before authoring begins)
+#             $architecture-review (Phase 4 — cross-ADR conflict baseline)
+#             $create-stories (to embed architectural constraints in stories)
+#             $dev-story (to check implementation against accepted stances)
 #
 # SEARCH PATTERNS (for skills using Grep):
 #   All state owners:       Grep pattern="^  - state:" path="docs/registry/architecture.yaml"
@@ -98,7 +98,7 @@ interfaces: []
 # Conflicts: allocations that sum to more than the total budget = unshippable.
 #
 # Register a budget when an ADR explicitly claims a frame time allocation.
-# The registry lets /architecture-review verify the total doesn't exceed the target.
+# The registry lets $architecture-review verify the total doesn't exceed the target.
 
 performance_budgets: []
 

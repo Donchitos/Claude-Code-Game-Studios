@@ -1,0 +1,4 @@
+interface:
+  display_name: "Milestone Review"
+  short_description: "Review milestone progress, risks, scope, and readiness"
+  default_prompt: "Use $milestone-review to review milestone progress, risks, scope, and readiness."

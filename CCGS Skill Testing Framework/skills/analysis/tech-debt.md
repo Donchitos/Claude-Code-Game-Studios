@@ -1,8 +1,8 @@
-# Skill Test Spec: /tech-debt
+# Skill Test Spec: $tech-debt
 
 ## Skill Summary
 
-`/tech-debt` tracks, categorizes, and prioritizes technical debt across the
+`$tech-debt` tracks, categorizes, and prioritizes technical debt across the
 codebase. It reads `docs/tech-debt-register.md` for the existing debt register
 and scans source files in `src/` for inline `TODO` and `FIXME` comments. It
 merges and sorts items by severity. No director gates are invoked. The skill
@@ -13,9 +13,9 @@ REGISTER UPDATED or NO NEW DEBT FOUND.
 
 ## Static Assertions (Structural)
 
-Verified automatically by `/skill-test static` — no fixture needed.
+Verified automatically by `$skill-test static` — no fixture needed.
 
-- [ ] Has required frontmatter fields: `name`, `description`, `argument-hint`, `user-invocable`, `allowed-tools`
+- [ ] Has non-empty `name` and `description`; `agents/openai.yaml` has non-empty display name and short description
 - [ ] Has ≥2 phase headings
 - [ ] Contains verdict keywords: REGISTER UPDATED, NO NEW DEBT FOUND
 - [ ] Contains "May I write" language (skill writes to debt register)
@@ -39,7 +39,7 @@ invoked.
 - `src/gameplay/combat.gd` has 2 `# TODO` comments and 1 `# FIXME` comment
 - `src/ui/hud.gd` has 0 inline debt comments
 
-**Input:** `/tech-debt`
+**Input:** `$tech-debt`
 
 **Expected behavior:**
 1. Skill reads `docs/tech-debt-register.md` — finds 2 existing items
@@ -64,7 +64,7 @@ invoked.
 - `docs/tech-debt-register.md` does NOT exist
 - `src/` contains 4 inline TODO/FIXME comments
 
-**Input:** `/tech-debt`
+**Input:** `$tech-debt`
 
 **Expected behavior:**
 1. Skill attempts to read `docs/tech-debt-register.md` — not found
@@ -88,7 +88,7 @@ invoked.
 - `src/gameplay/legacy_input.gd` has been deleted (refactored away)
 - The referenced TODO comment no longer exists in source
 
-**Input:** `/tech-debt`
+**Input:** `$tech-debt`
 
 **Expected behavior:**
 1. Skill reads register — finds 3 items
@@ -111,7 +111,7 @@ invoked.
 - `src/core/network_sync.gd` has a comment: `# FIXME(CRITICAL): race condition in sync buffer — can corrupt save data`
 - `docs/tech-debt-register.md` exists with 5 lower-severity items
 
-**Input:** `/tech-debt`
+**Input:** `$tech-debt`
 
 **Expected behavior:**
 1. Skill scans source and finds the CRITICAL-tagged FIXME
@@ -134,7 +134,7 @@ invoked.
 - Inline scan finds 2 new TODOs; register has 3 existing items
 - `review-mode.txt` contains `full`
 
-**Input:** `/tech-debt`
+**Input:** `$tech-debt`
 
 **Expected behavior:**
 1. Skill scans source and reads register; compiles combined debt list

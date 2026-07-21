@@ -1,11 +1,11 @@
-# Skill Test Spec: /help
+# Skill Test Spec: $help
 
 ## Skill Summary
 
-`/help` analyzes what has been done and what comes next in the project workflow.
-It runs on the Haiku model (read-only, formatting task) and reads `production/stage.txt`,
+`$help` analyzes what has been done and what comes next in the project workflow.
+It is read-only (, formatting task) and reads `production/stage.txt`,
 the active sprint file, and recent session state to produce a concise situational
-guidance summary. The skill optionally accepts a context query (e.g., `/help testing`)
+guidance summary. The skill optionally accepts a context query (e.g., `$help testing`)
 to surface relevant skills for a specific topic.
 
 The output is always informational — no files are written and no director gates
@@ -16,9 +16,9 @@ navigator, suggesting 2-3 next skills based on the current project state.
 
 ## Static Assertions (Structural)
 
-Verified automatically by `/skill-test static` — no fixture needed.
+Verified automatically by `$skill-test static` — no fixture needed.
 
-- [ ] Has required frontmatter fields: `name`, `description`, `argument-hint`, `user-invocable`, `allowed-tools`
+- [ ] Has non-empty `name` and `description`; `agents/openai.yaml` has non-empty display name and short description
 - [ ] Has ≥2 phase headings
 - [ ] Contains verdict keyword: HELP COMPLETE
 - [ ] Does NOT contain "May I write" language (skill is read-only)
@@ -28,7 +28,7 @@ Verified automatically by `/skill-test static` — no fixture needed.
 
 ## Director Gate Checks
 
-None. `/help` is a read-only navigation skill. No director gates apply.
+None. `$help` is a read-only navigation skill. No director gates apply.
 
 ---
 
@@ -41,13 +41,13 @@ None. `/help` is a read-only navigation skill. No director gates apply.
 - `production/sprints/sprint-004.md` exists with in-progress stories
 - `production/session-state/active.md` has a recent checkpoint
 
-**Input:** `/help`
+**Input:** `$help`
 
 **Expected behavior:**
 1. Skill reads stage.txt and active sprint
 2. Skill identifies current sprint number and in-progress story count
 3. Skill outputs: current stage, sprint summary, and 3 suggested next skills
-   (e.g., `/sprint-status`, `/dev-story`, `/story-done`)
+   (e.g., `$sprint-status`, `$dev-story`, `$story-done`)
 4. Suggestions are ranked by relevance to current sprint state
 5. Verdict is HELP COMPLETE
 
@@ -68,18 +68,18 @@ None. `/help` is a read-only navigation skill. No director gates apply.
 - No sprint files, no GDD files
 - `technical-preferences.md` is configured (engine selected)
 
-**Input:** `/help`
+**Input:** `$help`
 
 **Expected behavior:**
 1. Skill reads stage.txt — detects Concept stage
 2. Skill outputs the Concept-stage workflow: brainstorm → map-systems → design-system
-3. Suggested skills are: `/brainstorm`, `/map-systems` (if concept exists)
+3. Suggested skills are: `$brainstorm`, `$map-systems` (if concept exists)
 4. Current progress is noted: "Engine configured, concept not yet created"
 
 **Assertions:**
 - [ ] Stage is identified as Concept
 - [ ] Workflow path shows the expected sequence for this stage
-- [ ] Suggestions do not include Production-stage skills (e.g., `/dev-story`)
+- [ ] Suggestions do not include Production-stage skills (e.g., `$dev-story`)
 - [ ] Verdict is HELP COMPLETE
 
 ---
@@ -91,19 +91,19 @@ None. `/help` is a read-only navigation skill. No director gates apply.
 - No sprint files
 - `technical-preferences.md` has placeholders
 
-**Input:** `/help`
+**Input:** `$help`
 
 **Expected behavior:**
 1. Skill cannot determine stage from stage.txt
 2. Skill runs project-stage-detect logic to infer stage from artifacts
 3. If stage cannot be inferred: outputs the full workflow overview from
    Concept through Release as a reference map
-4. Primary suggestion is `/start` to begin configuration
+4. Primary suggestion is `$start` to begin configuration
 
 **Assertions:**
 - [ ] Skill does not crash when stage.txt is absent
 - [ ] Full workflow overview is shown when stage cannot be determined
-- [ ] `/start` or `/project-stage-detect` is a top suggestion
+- [ ] `$start` or `$project-stage-detect` is a top suggestion
 - [ ] Verdict is HELP COMPLETE
 
 ---
@@ -114,19 +114,19 @@ None. `/help` is a read-only navigation skill. No director gates apply.
 - `production/stage.txt` contains `Production`
 - Active sprint has a story with `Status: In Review`
 
-**Input:** `/help testing`
+**Input:** `$help testing`
 
 **Expected behavior:**
 1. Skill reads context query: "testing"
-2. Skill surfaces skills relevant to testing: `/qa-plan`, `/smoke-check`,
-   `/regression-suite`, `/test-setup`, `/test-evidence-review`
+2. Skill surfaces skills relevant to testing: `$qa-plan`, `$smoke-check`,
+   `$regression-suite`, `$test-setup`, `$test-evidence-review`
 3. Output is focused on testing workflow, not general sprint navigation
 4. Currently in-review story is highlighted as a testing candidate
 
 **Assertions:**
 - [ ] Context query is acknowledged in output ("Help topic: testing")
 - [ ] At least 3 testing-relevant skills are listed
-- [ ] General sprint skills (e.g., `/sprint-plan`) are not the primary suggestions
+- [ ] General sprint skills (e.g., `$sprint-plan`) are not the primary suggestions
 - [ ] Verdict is HELP COMPLETE
 
 ---
@@ -136,7 +136,7 @@ None. `/help` is a read-only navigation skill. No director gates apply.
 **Fixture:**
 - Any project state
 
-**Input:** `/help`
+**Input:** `$help`
 
 **Expected behavior:**
 1. Skill produces workflow guidance summary
@@ -165,8 +165,8 @@ None. `/help` is a read-only navigation skill. No director gates apply.
 ## Coverage Notes
 
 - The case where the active sprint is complete (all stories Done) is not
-  separately tested; the skill would suggest `/sprint-plan` for the next sprint.
-- The `/help` skill does not validate whether suggested skills are available —
+  separately tested; the skill would suggest `$sprint-plan` for the next sprint.
+- The `$help` skill does not validate whether suggested skills are available —
   it assumes standard skill catalog availability.
 - Stage detection fallback (when stage.txt is absent) delegates to the same
-  logic as `/project-stage-detect` and is not re-tested here in detail.
+  logic as `$project-stage-detect` and is not re-tested here in detail.

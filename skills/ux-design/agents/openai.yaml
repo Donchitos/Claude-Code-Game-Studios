@@ -1,0 +1,4 @@
+interface:
+  display_name: "UX Design"
+  short_description: "Author a UX specification for a screen, flow, or HUD"
+  default_prompt: "Use $ux-design to author a UX specification for a screen, flow, or HUD."

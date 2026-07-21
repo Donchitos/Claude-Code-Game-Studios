@@ -1,0 +1,4 @@
+interface:
+  display_name: "Localize"
+  short_description: "Extract, translate, and validate player-facing strings"
+  default_prompt: "Use $localize to extract, translate, and validate player-facing strings."

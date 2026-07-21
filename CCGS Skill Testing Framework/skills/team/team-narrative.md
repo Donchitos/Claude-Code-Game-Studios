@@ -1,4 +1,4 @@
-# Skill Test Spec: /team-narrative
+# Skill Test Spec: $team-narrative
 
 ## Skill Summary
 
@@ -16,13 +16,13 @@ is unresolved.
 
 ## Static Assertions (Structural)
 
-- [ ] Has required frontmatter fields: `name`, `description`, `argument-hint`, `user-invocable`, `allowed-tools`
+- [ ] Has non-empty `name` and `description`; `agents/openai.yaml` has non-empty display name and short description
 - [ ] Has ≥2 phase headings
 - [ ] Contains verdict keywords: COMPLETE, BLOCKED
 - [ ] Contains "File Write Protocol" section
 - [ ] File writes are delegated to sub-agents — orchestrator does not write files directly
 - [ ] Sub-agents enforce "May I write to [path]?" before any write
-- [ ] Has a next-step handoff at the end (references `/design-review`, `/localize extract`, `/dev-story`)
+- [ ] Has a next-step handoff at the end (references `$design-review`, `$localize extract`, `$dev-story`)
 - [ ] Error Recovery Protocol section is present
 - [ ] `AskUserQuestion` is used at phase transitions before proceeding
 - [ ] Phase 2 explicitly spawns world-builder and writer in parallel
@@ -40,7 +40,7 @@ is unresolved.
 - Existing lore entries exist for cross-reference (e.g., `design/narrative/lore/`)
 - No lore contradictions exist between existing entries and the new content
 
-**Input:** `/team-narrative faction introduction cutscene for the Ironveil faction`
+**Input:** `$team-narrative faction introduction cutscene for the Ironveil faction`
 
 **Expected behavior:**
 1. Phase 1: narrative-director is spawned; outputs a narrative brief defining the story beat, characters involved, emotional tone, and lore dependencies
@@ -75,7 +75,7 @@ is unresolved.
 - The new narrative brief (from Phase 1) states the Ironveil were founded 50 years ago
 - The writer has been spawned in parallel with the world-builder in Phase 2
 
-**Input:** `/team-narrative ironveil faction introduction cutscene`
+**Input:** `$team-narrative ironveil faction introduction cutscene`
 
 **Expected behavior:**
 1. Phases 1–2 begin normally
@@ -105,11 +105,11 @@ is unresolved.
 **Fixture:**
 - Any project state
 
-**Input:** `/team-narrative` (no argument)
+**Input:** `$team-narrative` (no argument)
 
 **Expected behavior:**
 1. Skill detects no argument is provided
-2. Outputs usage guidance: e.g., "Usage: `/team-narrative [narrative content description]` — describe the story content, scene, or narrative area to work on (e.g., `boss encounter cutscene`, `faction intro dialogue`, `tutorial narrative`)"
+2. Outputs usage guidance: e.g., "Usage: `$team-narrative [narrative content description]` — describe the story content, scene, or narrative area to work on (e.g., `boss encounter cutscene`, `faction intro dialogue`, `tutorial narrative`)"
 3. Skill exits without spawning any agents
 
 **Assertions:**
@@ -127,7 +127,7 @@ is unresolved.
 - Phase 5 begins; writer and world-builder complete without issues
 - localization-lead finds a dialogue line that uses a hardcoded formatted date string (e.g., `"On March 12th, Year 3"`) that cannot survive locale-specific translation without a locale-aware formatter
 
-**Input:** `/team-narrative ironveil faction introduction cutscene` (Phase 5 scenario)
+**Input:** `$team-narrative ironveil faction introduction cutscene` (Phase 5 scenario)
 
 **Expected behavior:**
 1. Phase 5 spawns writer, localization-lead, and world-builder in parallel
@@ -157,7 +157,7 @@ is unresolved.
 - No character voice profiles exist in `design/narrative/characters/` for either character
 - Phase 2 begins; world-builder proceeds normally
 
-**Input:** `/team-narrative ironveil surrender negotiation scene`
+**Input:** `$team-narrative ironveil surrender negotiation scene`
 
 **Expected behavior:**
 1. Phase 1 completes; narrative brief lists Commander Varek and Advisor Selene as characters
@@ -190,7 +190,7 @@ is unresolved.
 - [ ] BLOCKED status from any agent is surfaced immediately — not silently skipped
 - [ ] A partial report is always produced when some agents complete and others block
 - [ ] Verdict is exactly COMPLETE or BLOCKED — no other verdict values used
-- [ ] Next Steps handoff references `/design-review`, `/localize extract`, and `/dev-story`
+- [ ] Next Steps handoff references `$design-review`, `$localize extract`, and `$dev-story`
 
 ---
 

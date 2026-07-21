@@ -1,9 +1,9 @@
-# Skill Test Spec: /code-review
+# Skill Test Spec: $code-review
 
 ## Skill Summary
 
-`/code-review` performs an architectural code review of source files in `src/`,
-checking coding standards from `CLAUDE.md` (doc comments on public APIs,
+`$code-review` performs an architectural code review of source files in `src/`,
+checking coding standards from `AGENTS.md` (doc comments on public APIs,
 dependency injection over singletons, data-driven values, testability). Findings
 are advisory. No director gates are invoked. No code edits are made. Verdicts:
 APPROVED, CONCERNS, or NEEDS CHANGES.
@@ -12,9 +12,9 @@ APPROVED, CONCERNS, or NEEDS CHANGES.
 
 ## Static Assertions (Structural)
 
-Verified automatically by `/skill-test static` — no fixture needed.
+Verified automatically by `$skill-test static` — no fixture needed.
 
-- [ ] Has required frontmatter fields: `name`, `description`, `argument-hint`, `user-invocable`, `allowed-tools`
+- [ ] Has non-empty `name` and `description`; `agents/openai.yaml` has non-empty display name and short description
 - [ ] Has ≥2 phase headings
 - [ ] Contains verdict keywords: APPROVED, CONCERNS, NEEDS CHANGES
 - [ ] Does NOT require "May I write" language (read-only; findings are advisory output)
@@ -40,7 +40,7 @@ None. Code review is a read-only advisory skill; no gates are invoked.
   - ADR reference in file header: `# ADR: docs/architecture/adr-004-health.md`
   - Referenced ADR has `Status: Accepted`
 
-**Input:** `/code-review src/gameplay/health_component.gd`
+**Input:** `$code-review src/gameplay/health_component.gd`
 
 **Expected behavior:**
 1. Skill reads the source file
@@ -66,7 +66,7 @@ None. Code review is a read-only advisory skill; no gates are invoked.
   - Uses `GameManager.instance` (singleton pattern)
   - All other standards met
 
-**Input:** `/code-review src/ui/inventory_ui.gd`
+**Input:** `$code-review src/ui/inventory_ui.gd`
 
 **Expected behavior:**
 1. Skill reads the source file
@@ -91,7 +91,7 @@ None. Code review is a read-only advisory skill; no gates are invoked.
 - `adr-010-save.md` exists but has `Status: Proposed`
 - Code itself follows all other coding standards
 
-**Input:** `/code-review src/core/save_system.gd`
+**Input:** `$code-review src/core/save_system.gd`
 
 **Expected behavior:**
 1. Skill reads the source file
@@ -111,10 +111,10 @@ None. Code review is a read-only advisory skill; no gates are invoked.
 ### Case 4: Edge Case — No source files found at specified path
 
 **Fixture:**
-- User calls `/code-review src/networking/`
+- User calls `$code-review src/networking/`
 - `src/networking/` directory does not exist
 
-**Input:** `/code-review src/networking/`
+**Input:** `$code-review src/networking/`
 
 **Expected behavior:**
 1. Skill attempts to read files in `src/networking/`
@@ -137,7 +137,7 @@ None. Code review is a read-only advisory skill; no gates are invoked.
 - Source file follows most standards but has 1 CONCERNS-level finding (a magic number)
 - `review-mode.txt` contains `full`
 
-**Input:** `/code-review src/gameplay/loot_system.gd`
+**Input:** `$code-review src/gameplay/loot_system.gd`
 
 **Expected behavior:**
 1. Skill reads and reviews the source file
@@ -169,4 +169,4 @@ None. Code review is a read-only advisory skill; no gates are invoked.
 - Batch review of all files in a directory is not explicitly tested; behavior
   is assumed to apply the same checks file by file and aggregate the verdict.
 - Test coverage checks (verifying corresponding test files exist) are a stretch
-  goal not tested here; that is primarily the domain of `/test-evidence-review`.
+  goal not tested here; that is primarily the domain of `$test-evidence-review`.

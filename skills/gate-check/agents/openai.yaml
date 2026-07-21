@@ -1,0 +1,4 @@
+interface:
+  display_name: "Gate Check"
+  short_description: "Validate readiness to advance development phases"
+  default_prompt: "Use $gate-check to validate readiness to advance development phases."

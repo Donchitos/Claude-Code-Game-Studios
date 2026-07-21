@@ -1,8 +1,8 @@
-# Skill Test Spec: /balance-check
+# Skill Test Spec: $balance-check
 
 ## Skill Summary
 
-`/balance-check` reads balance data files (JSON or YAML in `assets/data/`) and
+`$balance-check` reads balance data files (JSON or YAML in `assets/data/`) and
 checks each value against the design formulas defined in GDDs under `design/gdd/`.
 It produces a findings table with columns: Value → Formula → Deviation → Severity.
 No director gates are invoked (read-only analysis). The skill may optionally write
@@ -13,9 +13,9 @@ CONCERNS, or OUT OF BALANCE.
 
 ## Static Assertions (Structural)
 
-Verified automatically by `/skill-test static` — no fixture needed.
+Verified automatically by `$skill-test static` — no fixture needed.
 
-- [ ] Has required frontmatter fields: `name`, `description`, `argument-hint`, `user-invocable`, `allowed-tools`
+- [ ] Has non-empty `name` and `description`; `agents/openai.yaml` has non-empty display name and short description
 - [ ] Has ≥2 phase headings
 - [ ] Contains verdict keywords: BALANCED, CONCERNS, OUT OF BALANCE
 - [ ] Contains "May I write" language (optional report write)
@@ -38,7 +38,7 @@ None. Balance check is a read-only analysis skill; no gates are invoked.
 - `design/gdd/combat-system.md` contains formulas for all 6 stats with ±10% tolerance
 - All 6 values fall within tolerance
 
-**Input:** `/balance-check`
+**Input:** `$balance-check`
 
 **Expected behavior:**
 1. Skill reads all balance data files in `assets/data/`
@@ -64,7 +64,7 @@ None. Balance check is a read-only analysis skill; no gates are invoked.
 - `design/gdd/combat-system.md` formula specifies `player_damage_base = 100` (±10%)
 - All other stats are within tolerance
 
-**Input:** `/balance-check`
+**Input:** `$balance-check`
 
 **Expected behavior:**
 1. Skill reads combat-balance.json and computes deviation for `player_damage_base`
@@ -87,19 +87,19 @@ None. Balance check is a read-only analysis skill; no gates are invoked.
 - `assets/data/economy-balance.yaml` exists with 10 stat values
 - No GDD in `design/gdd/` contains formula definitions for economy stats
 
-**Input:** `/balance-check`
+**Input:** `$balance-check`
 
 **Expected behavior:**
 1. Skill reads balance data files
 2. Skill searches GDDs for formula definitions — finds none for economy stats
-3. Skill outputs: "Cannot validate economy stats — no formulas defined. Run /design-system first."
+3. Skill outputs: "Cannot validate economy stats — no formulas defined. Run $design-system first."
 4. No findings table is generated for the economy stats
 5. Verdict is CONCERNS (data exists but cannot be validated)
 
 **Assertions:**
 - [ ] Skill does not fabricate formula targets when none exist in GDDs
 - [ ] Output explicitly names the missing formula source
-- [ ] Output recommends running `/design-system` to define formulas
+- [ ] Output recommends running `$design-system` to define formulas
 - [ ] Verdict is CONCERNS (not BALANCED, since validation was impossible)
 
 ---
@@ -111,7 +111,7 @@ None. Balance check is a read-only analysis skill; no gates are invoked.
 - `design/gdd/combat-system.md` has no formula for `legacy_armor_mult`
 - All other stats have formula definitions and pass validation
 
-**Input:** `/balance-check`
+**Input:** `$balance-check`
 
 **Expected behavior:**
 1. Skill reads all stats from combat-balance.json
@@ -134,7 +134,7 @@ None. Balance check is a read-only analysis skill; no gates are invoked.
 - Balance data and GDD formulas exist; 1 stat has CONCERNS-level deviation (15% above target)
 - `review-mode.txt` contains `full`
 
-**Input:** `/balance-check`
+**Input:** `$balance-check`
 
 **Expected behavior:**
 1. Skill reads data and GDDs; generates findings table

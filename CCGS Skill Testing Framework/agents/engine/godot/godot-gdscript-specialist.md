@@ -3,7 +3,7 @@
 ## Agent Summary
 Domain: GDScript static typing, design patterns in GDScript, signal architecture, coroutine/await patterns, and GDScript performance.
 Does NOT own: shader code (godot-shader-specialist), GDExtension bindings (godot-gdextension-specialist).
-Model tier: Sonnet (default).
+No fixed model routing is required; the caller selects the available Codex model.
 No gate IDs assigned.
 
 ---
@@ -11,8 +11,8 @@ No gate IDs assigned.
 ## Static Assertions (Structural)
 
 - [ ] `description:` field is present and domain-specific (references GDScript / static typing / signals / coroutines)
-- [ ] `allowed-tools:` list includes Read, Write, Edit, Bash, Glob, Grep
-- [ ] Model tier is Sonnet (default for specialists)
+- [ ] Role boundaries and file ownership match the stated domain
+- [ ] Does not require fixed model routing; the calling Codex client selects the available model
 - [ ] Agent definition does not claim authority over shader code or GDExtension
 
 ---

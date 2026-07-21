@@ -1,8 +1,8 @@
-# Skill Test Spec: /soak-test
+# Skill Test Spec: $soak-test
 
 ## Skill Summary
 
-`/soak-test` generates a structured soak test protocol — an extended runtime
+`$soak-test` generates a structured soak test protocol — an extended runtime
 test plan designed to surface memory leaks, performance drift, and stability
 issues that only appear under sustained gameplay. The skill produces a document
 specifying the test duration, system under test, monitoring checkpoints (e.g.,
@@ -18,19 +18,19 @@ is COMPLETE when the soak test protocol is written.
 
 ## Static Assertions (Structural)
 
-Verified automatically by `/skill-test static` — no fixture needed.
+Verified automatically by `$skill-test static` — no fixture needed.
 
-- [ ] Has required frontmatter fields: `name`, `description`, `argument-hint`, `user-invocable`, `allowed-tools`
+- [ ] Has non-empty `name` and `description`; `agents/openai.yaml` has non-empty display name and short description
 - [ ] Has ≥2 phase headings
 - [ ] Contains verdict keyword: COMPLETE
 - [ ] Contains "May I write" collaborative protocol language before writing the protocol
-- [ ] Has a next-step handoff (e.g., `/regression-suite` or `/release-checklist`)
+- [ ] Has a next-step handoff (e.g., `$regression-suite` or `$release-checklist`)
 
 ---
 
 ## Director Gate Checks
 
-None. `/soak-test` is a QA planning utility. No director gates apply.
+None. `$soak-test` is a QA planning utility. No director gates apply.
 
 ---
 
@@ -42,7 +42,7 @@ None. `/soak-test` is a QA planning utility. No director gates apply.
 - User specifies: system = "online multiplayer lobby", duration = "2 hours"
 - `technical-preferences.md` has engine configured
 
-**Input:** `/soak-test online-lobby 2h`
+**Input:** `$soak-test online-lobby 2h`
 
 **Expected behavior:**
 1. Skill generates a 2-hour soak test protocol for the online lobby system
@@ -68,7 +68,7 @@ None. `/soak-test` is a QA planning utility. No director gates apply.
 - No arguments provided
 - No soak test config in session state
 
-**Input:** `/soak-test`
+**Input:** `$soak-test`
 
 **Expected behavior:**
 1. Skill detects no target system or duration specified
@@ -92,7 +92,7 @@ None. `/soak-test` is a QA planning utility. No director gates apply.
 - `production/qa/soak-online-lobby-2026-03-15.md` exists with a 1-hour protocol
 - User wants to extend to 4 hours with new memory threshold conditions
 
-**Input:** `/soak-test online-lobby 4h`
+**Input:** `$soak-test online-lobby 4h`
 
 **Expected behavior:**
 1. Skill finds existing soak test for online-lobby
@@ -118,7 +118,7 @@ None. `/soak-test` is a QA planning utility. No director gates apply.
 - `technical-preferences.md` specifies target platform: Mobile
 - User requests soak test for "gameplay session" at 30 minutes
 
-**Input:** `/soak-test gameplay 30m`
+**Input:** `$soak-test gameplay 30m`
 
 **Expected behavior:**
 1. Skill reads `technical-preferences.md` and detects mobile target platform
@@ -142,7 +142,7 @@ None. `/soak-test` is a QA planning utility. No director gates apply.
 **Fixture:**
 - Valid system and duration provided
 
-**Input:** `/soak-test combat 1h`
+**Input:** `$soak-test combat 1h`
 
 **Expected behavior:**
 1. Skill generates and writes the soak test protocol

@@ -1,0 +1,4 @@
+interface:
+  display_name: "Create Stories"
+  short_description: "Break an epic into implementation-ready stories"
+  default_prompt: "Use $create-stories to break an epic into implementation-ready stories."

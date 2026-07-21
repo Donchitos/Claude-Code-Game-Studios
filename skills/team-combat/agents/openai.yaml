@@ -1,0 +1,4 @@
+interface:
+  display_name: "Team Combat"
+  short_description: "Coordinate combat design, implementation, and validation"
+  default_prompt: "Use $team-combat to coordinate combat design, implementation, and validation."

@@ -3,7 +3,7 @@
 ## Agent Summary
 Domain: Unity Shader Graph, custom HLSL, VFX Graph, URP/HDRP pipeline customization, and post-processing effects.
 Does NOT own: gameplay code, art style direction.
-Model tier: Sonnet (default).
+No fixed model routing is required; the caller selects the available Codex model.
 No gate IDs assigned.
 
 ---
@@ -11,8 +11,8 @@ No gate IDs assigned.
 ## Static Assertions (Structural)
 
 - [ ] `description:` field is present and domain-specific (references Shader Graph / HLSL / VFX Graph / URP / HDRP)
-- [ ] `allowed-tools:` list includes Read, Write, Edit, Glob, Grep
-- [ ] Model tier is Sonnet (default for specialists)
+- [ ] Role boundaries and file ownership match the stated domain
+- [ ] Does not require fixed model routing; the calling Codex client selects the available model
 - [ ] Agent definition does not claim authority over gameplay code or art direction
 
 ---

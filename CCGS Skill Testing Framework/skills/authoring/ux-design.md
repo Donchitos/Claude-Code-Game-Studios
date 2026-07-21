@@ -1,15 +1,15 @@
-# Skill Test Spec: /ux-design
+# Skill Test Spec: $ux-design
 
 ## Skill Summary
 
-`/ux-design` is a guided, section-by-section UX spec authoring skill. It produces
+`$ux-design` is a guided, section-by-section UX spec authoring skill. It produces
 user flow diagrams (described textually), interaction state definitions, wireframe
 descriptions, and accessibility notes for a specified screen or HUD element. The
 skill follows the skeleton-first pattern: it creates the file with all section
 headers immediately, then fills each section through discussion and writes each
 section to disk after user approval.
 
-The skill has no inline director gates — `/ux-review` is the separate review step.
+The skill has no inline director gates — `$ux-review` is the separate review step.
 Each section requires a "May I write section [N] to [filepath]?" ask. If a UX spec
 already exists for the named screen, the skill offers to retrofit individual sections
 rather than replace. Verdict is COMPLETE when all sections are written.
@@ -18,19 +18,19 @@ rather than replace. Verdict is COMPLETE when all sections are written.
 
 ## Static Assertions (Structural)
 
-Verified automatically by `/skill-test static` — no fixture needed.
+Verified automatically by `$skill-test static` — no fixture needed.
 
-- [ ] Has required frontmatter fields: `name`, `description`, `argument-hint`, `user-invocable`, `allowed-tools`
+- [ ] Has non-empty `name` and `description`; `agents/openai.yaml` has non-empty display name and short description
 - [ ] Has ≥2 phase headings
 - [ ] Contains verdict keyword: COMPLETE
 - [ ] Contains "May I write" language per section
-- [ ] Has a next-step handoff (e.g., `/ux-review` to validate the completed spec)
+- [ ] Has a next-step handoff (e.g., `$ux-review` to validate the completed spec)
 
 ---
 
 ## Director Gate Checks
 
-None. `/ux-design` has no inline director gates. `/ux-review` is the separate
+None. `$ux-design` has no inline director gates. `$ux-review` is the separate
 review skill invoked after this skill completes.
 
 ---
@@ -43,7 +43,7 @@ review skill invoked after this skill completes.
 - No existing HUD UX spec in `design/ux/`
 - Engine and rendering preferences configured
 
-**Input:** `/ux-design hud`
+**Input:** `$ux-design hud`
 
 **Expected behavior:**
 1. Skill creates a skeleton file `design/ux/hud.md` with all section headers
@@ -53,14 +53,14 @@ review skill invoked after this skill completes.
    section [N] to `design/ux/hud.md`?"
 4. Each section is written in sequence after approval
 5. After all sections are written, verdict is COMPLETE
-6. Skill suggests running `/ux-review` as the next step
+6. Skill suggests running `$ux-review` as the next step
 
 **Assertions:**
 - [ ] Skeleton file is created first (with empty section bodies)
 - [ ] "May I write section [N]" is asked per section (not once at the end)
 - [ ] All required sections are present: User Flows, Interaction States,
      Wireframe Description, Accessibility Notes
-- [ ] Handoff to `/ux-review` is at the end
+- [ ] Handoff to `$ux-review` is at the end
 - [ ] Verdict is COMPLETE
 
 ---
@@ -71,7 +71,7 @@ review skill invoked after this skill completes.
 - `design/ux/hud.md` already exists with all sections populated
 - User wants to update only the Accessibility Notes section
 
-**Input:** `/ux-design hud`
+**Input:** `$ux-design hud`
 
 **Expected behavior:**
 1. Skill reads existing `design/ux/hud.md` and detects all sections are populated
@@ -97,7 +97,7 @@ review skill invoked after this skill completes.
 - User is authoring a UX spec for the inventory screen
 - `design/gdd/inventory.md` does not exist
 
-**Input:** `/ux-design inventory-screen`
+**Input:** `$ux-design inventory-screen`
 
 **Expected behavior:**
 1. Skill begins authoring the inventory screen UX spec
@@ -111,7 +111,7 @@ review skill invoked after this skill completes.
 - [ ] DEPENDENCY GAP label appears in the spec for the missing system doc
 - [ ] Skill does NOT block on the missing GDD — it continues with placeholders
 - [ ] Dependency gap is also noted in the skill output (not just in the file)
-- [ ] Handoff suggests both `/ux-review` and writing the missing GDD
+- [ ] Handoff suggests both `$ux-review` and writing the missing GDD
 
 ---
 
@@ -120,12 +120,12 @@ review skill invoked after this skill completes.
 **Fixture:**
 - No argument provided with the skill invocation
 
-**Input:** `/ux-design`
+**Input:** `$ux-design`
 
 **Expected behavior:**
 1. Skill detects no screen name or argument provided
-2. Skill outputs a usage error: "Screen name required. Usage: `/ux-design [screen-name]`"
-3. Skill provides examples: `/ux-design hud`, `/ux-design main-menu`, `/ux-design inventory`
+2. Skill outputs a usage error: "Screen name required. Usage: `$ux-design [screen-name]`"
+3. Skill provides examples: `$ux-design hud`, `$ux-design main-menu`, `$ux-design inventory`
 4. No file is created; no "May I write" is asked
 
 **Assertions:**
@@ -141,7 +141,7 @@ review skill invoked after this skill completes.
 **Fixture:**
 - New screen spec with argument provided
 
-**Input:** `/ux-design settings-menu`
+**Input:** `$ux-design settings-menu`
 
 **Expected behavior:**
 1. Skill authors all sections of the settings menu UX spec
@@ -161,7 +161,7 @@ review skill invoked after this skill completes.
 - [ ] Discusses and drafts one section at a time
 - [ ] Asks "May I write section [N]" after each section is approved
 - [ ] Detects existing spec and offers retrofit path
-- [ ] Ends with handoff to `/ux-review`
+- [ ] Ends with handoff to `$ux-review`
 - [ ] Verdict is COMPLETE when all sections are written
 
 ---
@@ -169,7 +169,7 @@ review skill invoked after this skill completes.
 ## Coverage Notes
 
 - Interaction state enumeration (normal/hover/focus/disabled/error) is a core
-  requirement of each spec; the `/ux-review` skill checks for completeness.
+  requirement of each spec; the `$ux-review` skill checks for completeness.
 - Wireframe descriptions are text-only (no images); image references may be
   added manually by a designer after the fact.
 - Responsive layout concerns (different screen sizes) are noted as optional

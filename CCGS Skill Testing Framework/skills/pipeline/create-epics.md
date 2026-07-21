@@ -1,8 +1,8 @@
-# Skill Test Spec: /create-epics
+# Skill Test Spec: $create-epics
 
 ## Skill Summary
 
-`/create-epics` reads all approved GDDs and translates them into EPIC.md files,
+`$create-epics` reads all approved GDDs and translates them into EPIC.md files,
 one per system. Epics are organized by layer (Foundation → Core → Feature →
 Presentation) and processed in priority order within each layer. Each EPIC.md
 includes scope, governing ADRs, GDD requirements, engine risk level, and a
@@ -16,13 +16,13 @@ Epics are written to `production/epics/[layer]/EPIC-[name].md`.
 
 ## Static Assertions (Structural)
 
-Verified automatically by `/skill-test static` — no fixture needed.
+Verified automatically by `$skill-test static` — no fixture needed.
 
-- [ ] Has required frontmatter fields: `name`, `description`, `argument-hint`, `user-invocable`, `allowed-tools`
+- [ ] Has non-empty `name` and `description`; `agents/openai.yaml` has non-empty display name and short description
 - [ ] Has ≥2 phase headings
 - [ ] Contains verdict keywords: CREATED, BLOCKED
 - [ ] Contains "May I write" collaborative protocol language (per-epic approval)
-- [ ] Has a next-step handoff at the end (`/create-stories`)
+- [ ] Has a next-step handoff at the end (`$create-stories`)
 - [ ] Documents PR-EPIC gate behavior: runs in full mode; skipped in lean/solo
 
 ---
@@ -50,7 +50,7 @@ In `solo` mode: PR-EPIC is skipped. Output notes: "PR-EPIC skipped — solo mode
 - At least one Accepted ADR exists for each system
 - `production/session-state/review-mode.txt` contains `lean`
 
-**Input:** `/create-epics`
+**Input:** `$create-epics`
 
 **Expected behavior:**
 1. Skill reads systems index and both GDDs
@@ -76,13 +76,13 @@ In `solo` mode: PR-EPIC is skipped. Output notes: "PR-EPIC skipped — solo mode
 - `design/gdd/systems-index.md` exists
 - No GDDs in `design/gdd/` have approved status (all are Draft or In Progress)
 
-**Input:** `/create-epics`
+**Input:** `$create-epics`
 
 **Expected behavior:**
 1. Skill reads systems index and attempts to find approved GDDs
 2. No approved GDDs found
 3. Skill outputs: "No approved GDDs to convert. GDDs must be Approved before creating epics."
-4. Skill suggests running `/design-system` and completing GDD approval first
+4. Skill suggests running `$design-system` and completing GDD approval first
 5. Skill exits without creating any EPIC files
 
 **Assertions:**
@@ -131,7 +131,7 @@ In `solo` mode: PR-EPIC is skipped. Output notes: "PR-EPIC skipped — solo mode
 - `production/epics/[layer]/EPIC-[name].md` already exists for one of the approved GDDs
 - The other GDD has no existing EPIC file
 
-**Input:** `/create-epics`
+**Input:** `$create-epics`
 
 **Expected behavior:**
 1. Skill detects the existing EPIC file for the first system
@@ -152,7 +152,7 @@ In `solo` mode: PR-EPIC is skipped. Output notes: "PR-EPIC skipped — solo mode
 - `production/session-state/review-mode.txt` contains `full`
 - PR-EPIC gate returns CONCERNS (e.g., scope of one epic is too large)
 
-**Input:** `/create-epics`
+**Input:** `$create-epics`
 
 **Expected behavior:**
 1. PR-EPIC gate spawns and returns CONCERNS with specific feedback
@@ -176,7 +176,7 @@ In `solo` mode: PR-EPIC is skipped. Output notes: "PR-EPIC skipped — solo mode
 - [ ] PR-EPIC gate (if active) runs before write asks — not after
 - [ ] Skipped gates noted by name and mode in output
 - [ ] EPIC.md content sourced only from GDDs, ADRs, and architecture docs — nothing invented
-- [ ] Ends with next-step handoff: `/create-stories [epic-slug]` per created epic
+- [ ] Ends with next-step handoff: `$create-stories [epic-slug]` per created epic
 
 ---
 

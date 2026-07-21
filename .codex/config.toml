@@ -1,0 +1,3 @@
+[features]
+multi_agent = true
+plugins = true

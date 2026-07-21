@@ -1,0 +1,4 @@
+interface:
+  display_name: "Skill Test"
+  short_description: "Validate skill structure, behavior, and coverage"
+  default_prompt: "Use $skill-test to validate skill structure, behavior, and coverage."

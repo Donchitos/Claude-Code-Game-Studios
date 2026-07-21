@@ -1,0 +1,4 @@
+interface:
+  display_name: "Onboard"
+  short_description: "Create a contextual onboarding guide for contributors"
+  default_prompt: "Use $onboard to create a contextual onboarding guide for contributors."

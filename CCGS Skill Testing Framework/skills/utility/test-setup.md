@@ -1,8 +1,8 @@
-# Skill Test Spec: /test-setup
+# Skill Test Spec: $test-setup
 
 ## Skill Summary
 
-`/test-setup` scaffolds the test framework for the project based on the
+`$test-setup` scaffolds the test framework for the project based on the
 configured engine. It creates the `tests/` directory structure defined in
 `coding-standards.md` (unit/, integration/, performance/, playtest/) and
 generates the appropriate test runner configuration for the detected engine:
@@ -18,19 +18,19 @@ scaffold is in place.
 
 ## Static Assertions (Structural)
 
-Verified automatically by `/skill-test static` — no fixture needed.
+Verified automatically by `$skill-test static` — no fixture needed.
 
-- [ ] Has required frontmatter fields: `name`, `description`, `argument-hint`, `user-invocable`, `allowed-tools`
+- [ ] Has non-empty `name` and `description`; `agents/openai.yaml` has non-empty display name and short description
 - [ ] Has ≥2 phase headings
 - [ ] Contains verdict keyword: COMPLETE
 - [ ] Contains "May I write" collaborative protocol language before creating files
-- [ ] Has a next-step handoff (e.g., `/test-helpers` to generate helper utilities)
+- [ ] Has a next-step handoff (e.g., `$test-helpers` to generate helper utilities)
 
 ---
 
 ## Director Gate Checks
 
-None. `/test-setup` is a scaffolding utility. No director gates apply.
+None. `$test-setup` is a scaffolding utility. No director gates apply.
 
 ---
 
@@ -42,7 +42,7 @@ None. `/test-setup` is a scaffolding utility. No director gates apply.
 - `technical-preferences.md` has engine set to Godot 4, language GDScript
 - `tests/` directory does not exist yet
 
-**Input:** `/test-setup`
+**Input:** `$test-setup`
 
 **Expected behavior:**
 1. Skill reads engine from `technical-preferences.md` → Godot 4 + GDScript
@@ -69,7 +69,7 @@ None. `/test-setup` is a scaffolding utility. No director gates apply.
 - `technical-preferences.md` has engine set to Unity, language C#
 - `tests/` directory does not exist
 
-**Input:** `/test-setup`
+**Input:** `$test-setup`
 
 **Expected behavior:**
 1. Skill reads engine → Unity + C#
@@ -93,7 +93,7 @@ None. `/test-setup` is a scaffolding utility. No director gates apply.
 - `tests/unit/`, `tests/integration/` exist
 - GdUnit4 runner script exists (Godot project)
 
-**Input:** `/test-setup`
+**Input:** `$test-setup`
 
 **Expected behavior:**
 1. Skill detects existing tests/ structure
@@ -111,22 +111,22 @@ None. `/test-setup` is a scaffolding utility. No director gates apply.
 
 ---
 
-### Case 4: No Engine Configured — Redirects to /setup-engine
+### Case 4: No Engine Configured — Redirects to $setup-engine
 
 **Fixture:**
 - `technical-preferences.md` contains only placeholders (engine not set)
 
-**Input:** `/test-setup`
+**Input:** `$test-setup`
 
 **Expected behavior:**
 1. Skill reads `technical-preferences.md` and finds engine placeholder
 2. Skill reports: "Engine not configured — cannot scaffold engine-specific test framework"
-3. Skill suggests running `/setup-engine` first
+3. Skill suggests running `$setup-engine` first
 4. No directories or files are created
 
 **Assertions:**
 - [ ] Error message explicitly states engine is not configured
-- [ ] `/setup-engine` is suggested as the next step
+- [ ] `$setup-engine` is suggested as the next step
 - [ ] No write tool is called
 - [ ] Verdict is not COMPLETE (blocked state)
 
@@ -137,7 +137,7 @@ None. `/test-setup` is a scaffolding utility. No director gates apply.
 **Fixture:**
 - Engine configured, tests/ does not exist
 
-**Input:** `/test-setup`
+**Input:** `$test-setup`
 
 **Expected behavior:**
 1. Skill scaffolds and writes all test framework files

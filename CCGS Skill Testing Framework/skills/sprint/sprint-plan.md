@@ -1,8 +1,8 @@
-# Skill Test Spec: /sprint-plan
+# Skill Test Spec: $sprint-plan
 
 ## Skill Summary
 
-`/sprint-plan` reads the current milestone file and backlog stories, then
+`$sprint-plan` reads the current milestone file and backlog stories, then
 generates a new numbered sprint with stories prioritized by implementation layer
 and priority score. In full mode the PR-SPRINT director gate runs after the
 sprint draft is compiled (producer reviews the plan). In lean and solo modes
@@ -14,9 +14,9 @@ BLOCKED (cannot proceed due to missing data or gate failure).
 
 ## Static Assertions (Structural)
 
-Verified automatically by `/skill-test static` — no fixture needed.
+Verified automatically by `$skill-test static` — no fixture needed.
 
-- [ ] Has required frontmatter fields: `name`, `description`, `argument-hint`, `user-invocable`, `allowed-tools`
+- [ ] Has non-empty `name` and `description`; `agents/openai.yaml` has non-empty display name and short description
 - [ ] Has ≥2 phase headings
 - [ ] Contains verdict keywords: COMPLETE, BLOCKED
 - [ ] Contains "May I write" language (skill writes sprint file)
@@ -42,7 +42,7 @@ Verified automatically by `/skill-test static` — no fixture needed.
 - `production/session-state/review-mode.txt` contains `full`
 - Next sprint number is `003` (sprints 001 and 002 already exist)
 
-**Input:** `/sprint-plan`
+**Input:** `$sprint-plan`
 
 **Expected behavior:**
 1. Skill reads current milestone to obtain capacity and goals
@@ -69,18 +69,18 @@ Verified automatically by `/skill-test static` — no fixture needed.
 - `production/milestones/milestone-02.md` exists
 - No unstarted stories exist in any epic backlog
 
-**Input:** `/sprint-plan`
+**Input:** `$sprint-plan`
 
 **Expected behavior:**
 1. Skill reads backlog — finds no unstarted stories
 2. Skill outputs "No unstarted stories in backlog"
-3. Skill suggests running `/create-stories` to populate the backlog
+3. Skill suggests running `$create-stories` to populate the backlog
 4. No gate is invoked; no file is written
 
 **Assertions:**
 - [ ] Verdict is BLOCKED
 - [ ] Output contains "No unstarted stories" or equivalent message
-- [ ] Output recommends `/create-stories`
+- [ ] Output recommends `$create-stories`
 - [ ] PR-SPRINT gate is NOT invoked
 - [ ] No write tool is called
 
@@ -92,7 +92,7 @@ Verified automatically by `/skill-test static` — no fixture needed.
 - Backlog has 8 stories totalling 16 points; milestone capacity is 10 points
 - `review-mode.txt` contains `full`
 
-**Input:** `/sprint-plan`
+**Input:** `$sprint-plan`
 
 **Expected behavior:**
 1. Skill drafts sprint with all 8 stories (over capacity)
@@ -115,7 +115,7 @@ Verified automatically by `/skill-test static` — no fixture needed.
 - Backlog has 4 stories; milestone capacity is 8 points
 - `review-mode.txt` contains `lean`
 
-**Input:** `/sprint-plan`
+**Input:** `$sprint-plan`
 
 **Expected behavior:**
 1. Skill reads review mode — determines `lean`
@@ -139,7 +139,7 @@ Verified automatically by `/skill-test static` — no fixture needed.
 - Backlog has 5 new unstarted stories
 - `review-mode.txt` contains `full`
 
-**Input:** `/sprint-plan`
+**Input:** `$sprint-plan`
 
 **Expected behavior:**
 1. Skill reads sprint-002 and detects 2 open (in-progress) stories
@@ -169,7 +169,7 @@ Verified automatically by `/skill-test static` — no fixture needed.
 ## Coverage Notes
 
 - The case where no milestone file exists is not explicitly tested; behavior
-  follows the BLOCKED pattern with a suggestion to run `/gate-check` for
+  follows the BLOCKED pattern with a suggestion to run `$gate-check` for
   milestone progression.
 - Solo mode behavior is equivalent to lean (gate skipped, user approval
   required) and is not separately tested.

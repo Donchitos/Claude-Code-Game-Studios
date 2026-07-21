@@ -3,18 +3,18 @@
 ## Agent Summary
 **Domain owned:** Creative vision, game pillars, GDD alignment, systems decomposition feedback, narrative direction, playtest feedback interpretation, phase gate (creative aspect).
 **Does NOT own:** Technical architecture or implementation details (delegates to technical-director), production scheduling (producer), visual art style execution (delegates to art-director).
-**Model tier:** Opus (multi-document synthesis, high-stakes phase gate verdicts).
+No fixed model routing is required; the caller selects the available Codex model.
 **Gate IDs handled:** CD-PILLARS, CD-GDD-ALIGN, CD-SYSTEMS, CD-NARRATIVE, CD-PLAYTEST, CD-PHASE-GATE.
 
 ---
 
 ## Static Assertions (Structural)
 
-Verified by reading the agent's `.claude/agents/creative-director.md` frontmatter:
+Verified by reading the agent's `roles/creative-director.md` frontmatter:
 
 - [ ] `description:` field is present and domain-specific (references creative vision, pillars, GDD alignment — not generic)
-- [ ] `allowed-tools:` list is read-heavy; should not include Bash unless justified by a creative workflow need
-- [ ] Model tier is `claude-opus-4-6` per coordination-rules.md (directors with gate synthesis = Opus)
+- [ ] Role boundaries and file ownership match the stated domain
+- [ ] Does not require fixed model routing; the calling Codex client selects the available model
 - [ ] Agent definition does not claim authority over technical architecture or production scheduling
 
 ---
@@ -23,10 +23,10 @@ Verified by reading the agent's `.claude/agents/creative-director.md` frontmatte
 
 ### Case 1: In-domain request — appropriate output format
 **Scenario:** A game concept document is submitted for pillar review. The concept describes a narrative survival game built around three pillars: "emergent stories," "meaningful sacrifice," and "lived-in world." Request is tagged CD-PILLARS.
-**Expected:** Returns `CD-PILLARS: APPROVE` with rationale citing how each pillar is represented in the concept and any reinforcing or weakening signals found in the document.
+**Expected:** Returns a documented domain-specific verdict with rationale citing how each pillar is represented in the concept and any reinforcing or weakening signals found in the document.
 **Assertions:**
 - [ ] Verdict is exactly one of APPROVE / CONCERNS / REJECT
-- [ ] Verdict token is formatted as `CD-PILLARS: APPROVE` (gate ID prefix, colon, verdict keyword)
+- [ ] Verdict and rationale are clear and grounded in the supplied context
 - [ ] Rationale references the three specific pillars by name, not generic creative advice
 - [ ] Output stays within creative scope — does not comment on engine feasibility or sprint schedule
 
@@ -40,10 +40,10 @@ Verified by reading the agent's `.claude/agents/creative-director.md` frontmatte
 
 ### Case 3: Gate verdict — correct vocabulary
 **Scenario:** A GDD for the "Crafting" system is submitted. Section 4 (Formulas) defines a resource decay formula that punishes exploration — contradicting the Player Fantasy section which calls for "freedom to roam without fear." Request is tagged CD-GDD-ALIGN.
-**Expected:** Returns `CD-GDD-ALIGN: CONCERNS` with specific citation of the contradiction between the formula behavior and the Player Fantasy statement.
+**Expected:** Returns a documented domain-specific verdict with specific citation of the contradiction between the formula behavior and the Player Fantasy statement.
 **Assertions:**
 - [ ] Verdict is exactly one of APPROVE / CONCERNS / REJECT — not freeform text
-- [ ] Verdict token is formatted as `CD-GDD-ALIGN: CONCERNS`
+- [ ] Verdict and rationale are clear and grounded in the supplied context
 - [ ] Rationale quotes or directly references GDD Section 4 (Formulas) and the Player Fantasy section
 - [ ] Does not prescribe a specific formula fix — that belongs to systems-designer
 
@@ -72,7 +72,7 @@ Verified by reading the agent's `.claude/agents/creative-director.md` frontmatte
 - [ ] Returns verdicts using APPROVE / CONCERNS / REJECT vocabulary only
 - [ ] Stays within declared creative domain
 - [ ] Escalates conflicts by presenting trade-offs to user rather than unilateral override
-- [ ] Uses gate IDs in output (e.g., `CD-PILLARS: APPROVE`) not inline prose verdicts
+- [ ] Uses the provided task context when applicable; does not claim automatic role registration
 - [ ] Does not make binding cross-domain decisions (technical, production, art execution)
 
 ---

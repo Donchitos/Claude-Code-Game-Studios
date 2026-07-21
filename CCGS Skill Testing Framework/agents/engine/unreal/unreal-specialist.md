@@ -3,7 +3,7 @@
 ## Agent Summary
 - **Domain**: Unreal Engine patterns and architecture — Blueprint vs C++ decisions, UE subsystems (GAS, Enhanced Input, Niagara), UE project structure, plugin integration, and engine-level configuration
 - **Does NOT own**: Art style and visual direction (art-director), server infrastructure and deployment (devops-engineer), UI/UX flow design (ux-designer)
-- **Model tier**: Sonnet
+No fixed model routing is required; the caller selects the available Codex model.
 - **Gate IDs**: None; defers gate verdicts to technical-director
 
 ---
@@ -11,8 +11,8 @@
 ## Static Assertions (Structural)
 
 - [ ] `description:` field is present and domain-specific (references Unreal Engine)
-- [ ] `allowed-tools:` list matches the agent's role (Read, Write for UE project files; no deployment tools)
-- [ ] Model tier is Sonnet (default for specialists)
+- [ ] Role boundaries and file ownership match the stated domain
+- [ ] Does not require fixed model routing; the calling Codex client selects the available model
 - [ ] Agent definition does not claim authority outside its declared domain (no art, no server infra)
 
 ---
@@ -75,6 +75,6 @@
 ---
 
 ## Coverage Notes
-- No automated runner exists for agent behavior tests — these are reviewed manually or via `/skill-test`
+- No automated runner exists for agent behavior tests — these are reviewed manually or via `$skill-test`
 - Version-awareness (Case 3, Case 5) is the highest-risk failure mode for this agent; test regularly when engine version changes
 - Case 4 integration with lead-programmer is a coordination test, not a technical correctness test

@@ -1,8 +1,8 @@
-# Skill Test Spec: /architecture-decision
+# Skill Test Spec: $architecture-decision
 
 ## Skill Summary
 
-`/architecture-decision` guides the user through section-by-section authoring of
+`$architecture-decision` guides the user through section-by-section authoring of
 a new Architecture Decision Record (ADR). Required sections are: Status, Context,
 Decision, Consequences, Alternatives, and Related ADRs. The skill also stamps the
 engine version reference from `docs/engine-reference/` into the ADR for traceability.
@@ -18,9 +18,9 @@ asks "May I write" per section during authoring. ADRs are written to
 
 ## Static Assertions (Structural)
 
-Verified automatically by `/skill-test static` — no fixture needed.
+Verified automatically by `$skill-test static` — no fixture needed.
 
-- [ ] Has required frontmatter fields: `name`, `description`, `argument-hint`, `user-invocable`, `allowed-tools`
+- [ ] Has non-empty `name` and `description`; `agents/openai.yaml` has non-empty display name and short description
 - [ ] Has ≥2 phase headings
 - [ ] Contains verdict keywords: ACCEPTED, PROPOSED, CONCERNS
 - [ ] Contains "May I write" collaborative protocol language (per-section approval)
@@ -53,7 +53,7 @@ In `solo` mode: both gates are skipped. ADR is written with Status: Proposed.
 - `docs/engine-reference/[engine]/VERSION.md` exists
 - `production/session-state/review-mode.txt` contains `full`
 
-**Input:** `/architecture-decision rendering-approach`
+**Input:** `$architecture-decision rendering-approach`
 
 **Expected behavior:**
 1. Skill guides user through each required section (Status, Context, Decision, Consequences, Alternatives, Related ADRs)
@@ -82,7 +82,7 @@ In `solo` mode: both gates are skipped. ADR is written with Status: Proposed.
 - `production/session-state/review-mode.txt` contains `full`
 - TD-ADR gate returns CONCERNS: "The decision does not address [specific concern]"
 
-**Input:** `/architecture-decision [topic]`
+**Input:** `$architecture-decision [topic]`
 
 **Expected behavior:**
 1. TD-ADR gate spawns and returns CONCERNS with specific feedback
@@ -105,7 +105,7 @@ In `solo` mode: both gates are skipped. ADR is written with Status: Proposed.
 - `production/session-state/review-mode.txt` contains `lean`
 - ADR draft is authored for a new technical decision
 
-**Input:** `/architecture-decision [topic]`
+**Input:** `$architecture-decision [topic]`
 
 **Expected behavior:**
 1. Skill guides user through all 6 sections
@@ -128,7 +128,7 @@ In `solo` mode: both gates are skipped. ADR is written with Status: Proposed.
 - `docs/architecture/` contains an existing ADR covering the same topic
 - The existing ADR has Status: Accepted
 
-**Input:** `/architecture-decision [same-topic]`
+**Input:** `$architecture-decision [same-topic]`
 
 **Expected behavior:**
 1. Skill detects an existing ADR covering the same topic
@@ -183,7 +183,7 @@ In `solo` mode: both gates are skipped. ADR is written with Status: Proposed.
 - [ ] TD-ADR and LP-FEASIBILITY spawn in parallel in full mode
 - [ ] Skipped gates noted by name and mode in lean/solo output
 - [ ] ADR Status: Accepted only when full mode AND both gates APPROVED
-- [ ] Ends with next-step handoff: `/architecture-review` or `/create-control-manifest`
+- [ ] Ends with next-step handoff: `$architecture-review` or `$create-control-manifest`
 
 ---
 

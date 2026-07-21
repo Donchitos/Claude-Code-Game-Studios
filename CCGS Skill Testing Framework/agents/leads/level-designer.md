@@ -3,18 +3,18 @@
 ## Agent Summary
 **Domain owned:** Level layouts, encounter design, pacing and tension arc, environmental storytelling, spatial puzzles.
 **Does NOT own:** Narrative dialogue (writer / narrative-director), visual art style (art-director), code implementation (lead-programmer / ai-programmer), enemy AI behavior logic (ai-programmer / gameplay-programmer).
-**Model tier:** Sonnet (individual system analysis — level design review and encounter assessment).
+No fixed model routing is required; the caller selects the available Codex model.
 **Gate IDs handled:** Level design review verdicts (uses APPROVED / REVISION NEEDED vocabulary).
 
 ---
 
 ## Static Assertions (Structural)
 
-Verified by reading the agent's `.claude/agents/level-designer.md` frontmatter:
+Verified by reading the agent's `roles/level-designer.md` frontmatter:
 
 - [ ] `description:` field is present and domain-specific (references level layout, encounter design, pacing, environmental storytelling — not generic)
-- [ ] `allowed-tools:` list is read-focused; includes Read for level design documents and GDDs; no Bash unless level tooling requires it
-- [ ] Model tier is `claude-sonnet-4-6` per coordination-rules.md
+- [ ] Role boundaries and file ownership match the stated domain
+- [ ] Does not require fixed model routing; the calling Codex client selects the available model
 - [ ] Agent definition does not claim authority over narrative dialogue, AI behavior code, or visual art style
 
 ---
@@ -23,7 +23,7 @@ Verified by reading the agent's `.claude/agents/level-designer.md` frontmatter:
 
 ### Case 1: In-domain request — appropriate output format
 **Scenario:** A level layout document for "The Flooded Tunnels" is submitted for review. The layout includes: a low-intensity exploration opening section, two mid-intensity encounters with visible escape routes, a tension-building narrow passage with environmental hazards, and a high-intensity final encounter room followed by a release/reward area. The pacing follows a classic tension-arc structure.
-**Expected:** Returns `APPROVED` with rationale confirming the pacing follows the tension arc, encounters are varied in intensity, and spatial readability supports player navigation.
+**Expected:** Returns a documented domain-specific verdict with rationale confirming the pacing follows the tension arc, encounters are varied in intensity, and spatial readability supports player navigation.
 **Assertions:**
 - [ ] Verdict is exactly one of APPROVED / REVISION NEEDED
 - [ ] Rationale references specific pacing arc elements (opening, escalation, climax, release)
@@ -40,7 +40,7 @@ Verified by reading the agent's `.claude/agents/level-designer.md` frontmatter:
 
 ### Case 3: Gate verdict — correct vocabulary
 **Scenario:** A level layout for "The Ancient Forge" is submitted. Section 3 of the level introduces a dramatically harder enemy encounter (elite enemy with new attack patterns) with no preceding tutorial moment, no environmental readability cues (no visible cover or safe zones), and no checkpoint nearby. Players are likely to die repeatedly with no clear signal of what to do differently.
-**Expected:** Returns `REVISION NEEDED` with specific identification of the difficulty spike in section 3, the missing readability cue, and the absence of a nearby checkpoint to reduce frustration from repeated deaths.
+**Expected:** Returns a documented domain-specific verdict with specific identification of the difficulty spike in section 3, the missing readability cue, and the absence of a nearby checkpoint to reduce frustration from repeated deaths.
 **Assertions:**
 - [ ] Verdict is exactly one of APPROVED / REVISION NEEDED — not freeform text
 - [ ] Rationale identifies section 3 specifically as the location of the issue

@@ -1,8 +1,8 @@
-# Skill Test Spec: /sprint-status
+# Skill Test Spec: $sprint-status
 
 ## Skill Summary
 
-`/sprint-status` is a Haiku-tier read-only skill that reads the current active
+`$sprint-status` is a read-only read-only skill that reads the current active
 sprint file and the session state to produce a concise sprint health summary.
 It reports story counts by status (Complete / In Progress / Blocked / Not Started)
 and emits one of three sprint-health verdicts: ON TRACK, AT RISK, or BLOCKED.
@@ -13,9 +13,9 @@ fast, low-cost status checks during a session.
 
 ## Static Assertions (Structural)
 
-Verified automatically by `/skill-test static` — no fixture needed.
+Verified automatically by `$skill-test static` — no fixture needed.
 
-- [ ] Has required frontmatter fields: `name`, `description`, `argument-hint`, `user-invocable`, `allowed-tools`
+- [ ] Has non-empty `name` and `description`; `agents/openai.yaml` has non-empty display name and short description
 - [ ] Has ≥2 phase headings or numbered check sections
 - [ ] Contains verdict keywords: ON TRACK, AT RISK, BLOCKED
 - [ ] Does NOT require "May I write" language (read-only skill)
@@ -25,7 +25,7 @@ Verified automatically by `/skill-test static` — no fixture needed.
 
 ## Director Gate Checks
 
-None. `/sprint-status` is a read-only reporting skill; no gates are invoked.
+None. `$sprint-status` is a read-only reporting skill; no gates are invoked.
 
 ---
 
@@ -41,7 +41,7 @@ None. `/sprint-status` is a read-only reporting skill; no gates are invoked.
   - 1 with `Status: Blocked` (blocker: "Waiting on physics ADR acceptance")
 - Sprint end date is 2 days away
 
-**Input:** `/sprint-status`
+**Input:** `$sprint-status`
 
 **Expected behavior:**
 1. Skill reads `production/session-state/active.md` to find active sprint reference
@@ -64,39 +64,39 @@ None. `/sprint-status` is a read-only reporting skill; no gates are invoked.
 - `production/sprints/sprint-004.md` exists
 - All 5 stories have `Status: Complete`
 
-**Input:** `/sprint-status`
+**Input:** `$sprint-status`
 
 **Expected behavior:**
 1. Skill reads sprint file — all stories are Complete
 2. Skill outputs ON TRACK verdict or SPRINT COMPLETE label
-3. Skill suggests running `/milestone-review` or `/sprint-plan` as next steps
+3. Skill suggests running `$milestone-review` or `$sprint-plan` as next steps
 
 **Assertions:**
 - [ ] Verdict is ON TRACK or SPRINT COMPLETE when all stories are Complete
 - [ ] Output notes that the sprint is fully done
-- [ ] Next-step suggestion references `/milestone-review` or `/sprint-plan`
+- [ ] Next-step suggestion references `$milestone-review` or `$sprint-plan`
 - [ ] No files are written
 
 ---
 
-### Case 3: No Active Sprint File — Guidance to run /sprint-plan
+### Case 3: No Active Sprint File — Guidance to run $sprint-plan
 
 **Fixture:**
 - `production/session-state/active.md` does not reference an active sprint
 - `production/sprints/` directory is empty or absent
 
-**Input:** `/sprint-status`
+**Input:** `$sprint-status`
 
 **Expected behavior:**
 1. Skill reads `active.md` — finds no active sprint reference
 2. Skill checks `production/sprints/` — finds no files
 3. Skill outputs an informational message: no active sprint detected
-4. Skill suggests running `/sprint-plan` to create one
+4. Skill suggests running `$sprint-plan` to create one
 
 **Assertions:**
 - [ ] Skill does not error or crash when no sprint file exists
 - [ ] Output clearly states no active sprint was found
-- [ ] Output recommends `/sprint-plan` as the next action
+- [ ] Output recommends `$sprint-plan` as the next action
 - [ ] No verdict keyword is emitted (no sprint to assess)
 
 ---
@@ -109,7 +109,7 @@ None. `/sprint-status` is a read-only reporting skill; no gates are invoked.
   `Last updated: 2026-03-30` (more than 2 days before today's session date)
 - No stories are Blocked
 
-**Input:** `/sprint-status`
+**Input:** `$sprint-status`
 
 **Expected behavior:**
 1. Skill reads sprint file and session state
@@ -131,7 +131,7 @@ None. `/sprint-status` is a read-only reporting skill; no gates are invoked.
 - `production/sprints/sprint-004.md` exists with 4 stories (2 Complete, 2 In Progress)
 - `production/session-state/review-mode.txt` contains `full`
 
-**Input:** `/sprint-status`
+**Input:** `$sprint-status`
 
 **Expected behavior:**
 1. Skill reads sprint and produces status summary
@@ -153,7 +153,7 @@ None. `/sprint-status` is a read-only reporting skill; no gates are invoked.
 - [ ] Presents story count breakdown before emitting verdict
 - [ ] Does not ask for approval
 - [ ] Ends with a recommended next step based on verdict
-- [ ] Runs on Haiku model tier (fast, low-cost)
+- [ ] Is documented as read-only and lightweight
 
 ---
 

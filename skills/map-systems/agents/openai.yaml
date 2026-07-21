@@ -1,0 +1,4 @@
+interface:
+  display_name: "Map Systems"
+  short_description: "Decompose a game concept into connected systems"
+  default_prompt: "Use $map-systems to decompose a game concept into connected systems."

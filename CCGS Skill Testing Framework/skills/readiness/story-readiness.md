@@ -1,8 +1,8 @@
-# Skill Test Spec: /story-readiness
+# Skill Test Spec: $story-readiness
 
 ## Skill Summary
 
-`/story-readiness` validates that a story file is ready for a developer to
+`$story-readiness` validates that a story file is ready for a developer to
 pick up and implement. It checks four dimensions: Design (embedded GDD
 requirements), Architecture (ADR references and status), Scope (clear
 boundaries and DoD), and Definition of Done (testable criteria). It produces
@@ -13,9 +13,9 @@ before any developer picks up a story.
 
 ## Static Assertions (Structural)
 
-Verified automatically by `/skill-test static` — no fixture needed.
+Verified automatically by `$skill-test static` — no fixture needed.
 
-- [ ] Has required frontmatter fields: `name`, `description`, `argument-hint`, `user-invocable`, `allowed-tools`
+- [ ] Has non-empty `name` and `description`; `agents/openai.yaml` has non-empty display name and short description
 - [ ] Has ≥2 phase headings or numbered check sections
 - [ ] Contains verdict keywords: READY, NEEDS WORK, BLOCKED
 - [ ] Does NOT require "May I write" language (read-only skill)
@@ -39,7 +39,7 @@ Verified automatically by `/skill-test static` — no fixture needed.
   - Story has `Status: Ready for Dev`
   - Manifest version in story header matches current `docs/architecture/control-manifest.md`
 
-**Input:** `/story-readiness production/epics/core/story-light-pickup.md`
+**Input:** `$story-readiness production/epics/core/story-light-pickup.md`
 
 **Expected behavior:**
 1. Skill reads the story file
@@ -66,7 +66,7 @@ Verified automatically by `/skill-test static` — no fixture needed.
 - `adr-005-light-system.md` exists but has `Status: Proposed`
 - All other story content is otherwise complete
 
-**Input:** `/story-readiness production/epics/core/story-light-system.md`
+**Input:** `$story-readiness production/epics/core/story-light-system.md`
 
 **Expected behavior:**
 1. Skill reads the story
@@ -91,7 +91,7 @@ Verified automatically by `/skill-test static` — no fixture needed.
 - TR-ID exists in registry
 - Manifest version matches
 
-**Input:** `/story-readiness production/epics/core/story-oxygen-drain.md`
+**Input:** `$story-readiness production/epics/core/story-oxygen-drain.md`
 
 **Expected behavior:**
 1. Skill reads the story
@@ -115,7 +115,7 @@ Verified automatically by `/skill-test static` — no fixture needed.
 - `docs/architecture/control-manifest.md` has `Manifest Version: 2026-03-10`
 - Versions do not match (story was created before manifest was updated)
 
-**Input:** `/story-readiness production/epics/core/story-mirror-rotation.md`
+**Input:** `$story-readiness production/epics/core/story-mirror-rotation.md`
 
 **Expected behavior:**
 1. Skill reads the story and extracts manifest version `2026-01-15`
@@ -143,7 +143,7 @@ Verified automatically by `/skill-test static` — no fixture needed.
 **Case 5a — full mode:**
 - `review-mode.txt` contains `full`
 
-**Input:** `/story-readiness production/epics/core/story-light-pickup.md` (full mode)
+**Input:** `$story-readiness production/epics/core/story-light-pickup.md` (full mode)
 
 **Expected behavior:**
 1. Skill reads review mode — determines `full`

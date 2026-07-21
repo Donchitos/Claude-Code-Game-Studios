@@ -3,7 +3,7 @@
 ## Agent Summary
 - **Domain**: Property replication (UPROPERTY Replicated/ReplicatedUsing), RPCs (Server/Client/NetMulticast), client prediction and reconciliation, net relevancy and always-relevant settings, net serialization (FArchive/NetSerialize), bandwidth optimization and replication frequency tuning
 - **Does NOT own**: Gameplay logic being replicated (gameplay-programmer), server infrastructure and hosting (devops-engineer), GAS-specific prediction (ue-gas-specialist handles GAS net prediction)
-- **Model tier**: Sonnet
+No fixed model routing is required; the caller selects the available Codex model.
 - **Gate IDs**: None; escalates security-relevant replication concerns to lead-programmer
 
 ---
@@ -11,8 +11,8 @@
 ## Static Assertions (Structural)
 
 - [ ] `description:` field is present and domain-specific (references replication, RPCs, client prediction, bandwidth)
-- [ ] `allowed-tools:` list matches the agent's role (Read/Write for C++ and Blueprint source files; no infrastructure or deployment tools)
-- [ ] Model tier is Sonnet (default for specialists)
+- [ ] Role boundaries and file ownership match the stated domain
+- [ ] Does not require fixed model routing; the calling Codex client selects the available model
 - [ ] Agent definition does not claim authority over server infrastructure, game server architecture, or gameplay logic correctness
 
 ---
@@ -79,4 +79,4 @@
 - Case 3 (RPC security) is a shipping-critical test — unvalidated RPCs are a top-ten multiplayer exploit vector
 - Case 5 is the most important context-awareness test; agent must use actual budget numbers, not generic advice
 - Case 1 GAS branch: if GAS is configured, agent should detect it and defer to ue-gas-specialist for GAS-managed attributes
-- No automated runner; review manually or via `/skill-test`
+- No automated runner; review manually or via `$skill-test`

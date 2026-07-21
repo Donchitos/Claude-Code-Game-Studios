@@ -1,8 +1,8 @@
-# Skill Test Spec: /art-bible
+# Skill Test Spec: $art-bible
 
 ## Skill Summary
 
-`/art-bible` is a guided, section-by-section art bible authoring skill. It
+`$art-bible` is a guided, section-by-section art bible authoring skill. It
 produces a comprehensive visual direction document covering: Visual Style overview,
 Color Palette, Typography, Character Design Rules, Environment Style, and UI
 Visual Language. The skill follows the skeleton-first pattern: creates the file
@@ -18,14 +18,14 @@ is COMPLETE when all sections are written.
 
 ## Static Assertions (Structural)
 
-Verified automatically by `/skill-test static` — no fixture needed.
+Verified automatically by `$skill-test static` — no fixture needed.
 
-- [ ] Has required frontmatter fields: `name`, `description`, `argument-hint`, `user-invocable`, `allowed-tools`
+- [ ] Has non-empty `name` and `description`; `agents/openai.yaml` has non-empty display name and short description
 - [ ] Has ≥2 phase headings
 - [ ] Contains verdict keyword: COMPLETE
 - [ ] Contains "May I write" language per section
 - [ ] Documents the AD-ART-BIBLE director gate and its mode behavior
-- [ ] Has a next-step handoff (e.g., `/asset-spec` or `/design-system`)
+- [ ] Has a next-step handoff (e.g., `$asset-spec` or `$design-system`)
 
 ---
 
@@ -46,7 +46,7 @@ Verified automatically by `/skill-test static` — no fixture needed.
 - `production/session-state/review-mode.txt` contains `full`
 - `design/gdd/game-concept.md` exists with visual tone described
 
-**Input:** `/art-bible`
+**Input:** `$art-bible`
 
 **Expected behavior:**
 1. Skill creates skeleton `design/art-bible.md` with all section headers
@@ -73,7 +73,7 @@ Verified automatically by `/skill-test static` — no fixture needed.
 - AD-ART-BIBLE gate returns CONCERNS: "Color palette clashes with the dark
   atmospheric tone described in the game concept"
 
-**Input:** `/art-bible`
+**Input:** `$art-bible`
 
 **Expected behavior:**
 1. AD-ART-BIBLE gate returns CONCERNS with specific feedback about palette
@@ -97,7 +97,7 @@ Verified automatically by `/skill-test static` — no fixture needed.
 - No existing art bible
 - `production/session-state/review-mode.txt` contains `lean`
 
-**Input:** `/art-bible`
+**Input:** `$art-bible`
 
 **Expected behavior:**
 1. Skill reads review mode — determines `lean`
@@ -120,7 +120,7 @@ Verified automatically by `/skill-test static` — no fixture needed.
 - `design/art-bible.md` already exists with all sections populated
 - User wants to update the Character Design Rules section
 
-**Input:** `/art-bible`
+**Input:** `$art-bible`
 
 **Expected behavior:**
 1. Skill reads existing art bible and detects all sections populated
@@ -146,7 +146,7 @@ Verified automatically by `/skill-test static` — no fixture needed.
 - No existing art bible
 - `production/session-state/review-mode.txt` contains `solo`
 
-**Input:** `/art-bible`
+**Input:** `$art-bible`
 
 **Expected behavior:**
 1. Skill reads review mode — determines `solo`
@@ -181,5 +181,5 @@ Verified automatically by `/skill-test static` — no fixture needed.
   proceed (revise or override).
 - The Typography section is listed as a required art bible section but its
   specific content requirements are not assertion-tested here.
-- The art bible feeds into `/asset-spec` — this relationship is noted in the
+- The art bible feeds into `$asset-spec` — this relationship is noted in the
   handoff but not tested as part of this skill's spec.

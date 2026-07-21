@@ -1,0 +1,4 @@
+interface:
+  display_name: "Tech Debt"
+  short_description: "Track and prioritize technical debt across the project"
+  default_prompt: "Use $tech-debt to track and prioritize technical debt across the project."

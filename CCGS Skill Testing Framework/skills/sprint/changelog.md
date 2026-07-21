@@ -1,8 +1,8 @@
-# Skill Test Spec: /changelog
+# Skill Test Spec: $changelog
 
 ## Skill Summary
 
-`/changelog` is a Haiku-tier skill that auto-generates a developer-facing
+`$changelog` is a read-only skill that auto-generates a developer-facing
 changelog by reading git commit history and closed sprint stories since the
 last release tag. It organizes entries into features, fixes, and known issues.
 No director gates are used. The skill asks "May I write to `docs/CHANGELOG.md`?"
@@ -12,13 +12,13 @@ before persisting. Verdict is always COMPLETE.
 
 ## Static Assertions (Structural)
 
-Verified automatically by `/skill-test static` — no fixture needed.
+Verified automatically by `$skill-test static` — no fixture needed.
 
-- [ ] Has required frontmatter fields: `name`, `description`, `argument-hint`, `user-invocable`, `allowed-tools`
+- [ ] Has non-empty `name` and `description`; `agents/openai.yaml` has non-empty display name and short description
 - [ ] Has ≥2 phase headings
 - [ ] Contains verdict keyword: COMPLETE
 - [ ] Contains "May I write" language (skill writes changelog)
-- [ ] Has a next-step handoff (e.g., run /patch-notes for player-facing version)
+- [ ] Has a next-step handoff (e.g., run $patch-notes for player-facing version)
 
 ---
 
@@ -38,7 +38,7 @@ None. Changelog generation is a fast compilation task; no gates are invoked.
 - Sprint story files reference task IDs matching commit messages
 - `docs/CHANGELOG.md` does not yet exist
 
-**Input:** `/changelog`
+**Input:** `$changelog`
 
 **Expected behavior:**
 1. Skill reads git log since `v0.3.0` tag
@@ -63,7 +63,7 @@ None. Changelog generation is a fast compilation task; no gates are invoked.
 - Git repository has commits but no tags exist
 - 20 commits in history across 3 sprints
 
-**Input:** `/changelog`
+**Input:** `$changelog`
 
 **Expected behavior:**
 1. Skill checks for git tags — finds none
@@ -87,7 +87,7 @@ None. Changelog generation is a fast compilation task; no gates are invoked.
 - 5 commits have no task ID in the message (e.g., "fix typo", "tweak values")
 - 3 commits reference task IDs matching sprint stories
 
-**Input:** `/changelog`
+**Input:** `$changelog`
 
 **Expected behavior:**
 1. Skill reads commits and sprint stories
@@ -110,7 +110,7 @@ None. Changelog generation is a fast compilation task; no gates are invoked.
 - `docs/CHANGELOG.md` already exists with sections for `v0.2.0` and `v0.3.0`
 - New commits exist since `v0.3.0` tag
 
-**Input:** `/changelog`
+**Input:** `$changelog`
 
 **Expected behavior:**
 1. Skill detects that `docs/CHANGELOG.md` already exists
@@ -133,12 +133,12 @@ None. Changelog generation is a fast compilation task; no gates are invoked.
 - Git history has commits since last tag
 - `review-mode.txt` contains `full`
 
-**Input:** `/changelog`
+**Input:** `$changelog`
 
 **Expected behavior:**
 1. Skill compiles changelog in full mode
 2. No director gate is invoked (changelog generation is compilation, not a delivery gate)
-3. Skill runs on Haiku model — fast compilation
+3. Skill produces the requested changelog without relying on fixed model routing
 4. Skill asks user for approval and writes file on confirmation
 
 **Assertions:**
@@ -155,7 +155,7 @@ None. Changelog generation is a fast compilation task; no gates are invoked.
 - [ ] Always asks "May I write" before writing changelog
 - [ ] No director gates are invoked
 - [ ] Verdict is always COMPLETE
-- [ ] Runs on Haiku model tier (fast, low-cost)
+- [ ] Is documented as read-only and lightweight
 
 ---
 
@@ -165,5 +165,5 @@ None. Changelog generation is a fast compilation task; no gates are invoked.
   behavior would depend on git command failure handling.
 - Merge commits vs. squash commits are not explicitly differentiated in
   these tests; implementation detail of the git log parsing phase.
-- The `/patch-notes` skill should be run after `/changelog` for player-facing
+- The `$patch-notes` skill should be run after `$changelog` for player-facing
   output; that handoff is verified in the patch-notes spec.

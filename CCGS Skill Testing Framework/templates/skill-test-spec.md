@@ -14,10 +14,10 @@
 
 These should pass before any behavioral testing:
 
-- [ ] Frontmatter has all required fields (`name`, `description`, `argument-hint`, `user-invocable`, `allowed-tools`)
+- [ ] Frontmatter has non-empty `name` and `description`; `agents/openai.yaml` has non-empty `interface.display_name` and `interface.short_description`
 - [ ] 2+ phase headings found
 - [ ] At least one verdict keyword present (`PASS`, `FAIL`, `CONCERNS`, `APPROVED`, `BLOCKED`, `COMPLETE`, `READY`)
-- [ ] If `allowed-tools` includes Write/Edit: `"May I write"` language present
+- [ ] Write-capable workflows use ask-before-write language (or are explicitly read-only)
 - [ ] Next-step handoff section present at end
 
 ---

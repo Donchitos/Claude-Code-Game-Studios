@@ -1,4 +1,4 @@
-# Skill Test Spec: /team-polish
+# Skill Test Spec: $team-polish
 
 ## Skill Summary
 
@@ -15,13 +15,13 @@ identifies engine-level root causes. Verdict is READY FOR RELEASE or NEEDS MORE 
 
 ## Static Assertions (Structural)
 
-- [ ] Has required frontmatter fields: `name`, `description`, `argument-hint`, `user-invocable`, `allowed-tools`
+- [ ] Has non-empty `name` and `description`; `agents/openai.yaml` has non-empty display name and short description
 - [ ] Has ≥2 phase headings
 - [ ] Contains verdict keywords: READY FOR RELEASE, NEEDS MORE WORK
 - [ ] Contains "File Write Protocol" section
 - [ ] File writes are delegated to sub-agents — orchestrator does not write files directly
 - [ ] Sub-agents enforce "May I write to [path]?" before any write
-- [ ] Has a next-step handoff at the end (references `/release-checklist`, `/sprint-plan update`, `/gate-check`)
+- [ ] Has a next-step handoff at the end (references `$release-checklist`, `$sprint-plan update`, `$gate-check`)
 - [ ] Error Recovery Protocol section is present
 - [ ] `AskUserQuestion` is used at phase transitions before proceeding
 - [ ] Phase 3 (visual polish) and Phase 4 (audio polish) are explicitly run in parallel with Phase 2
@@ -41,7 +41,7 @@ identifies engine-level root causes. Verdict is READY FOR RELEASE or NEEDS MORE 
 - No audio events are missing; VFX assets are complete
 - No regressions are introduced by polish changes
 
-**Input:** `/team-polish combat`
+**Input:** `$team-polish combat`
 
 **Expected behavior:**
 1. Phase 1: performance-analyst is spawned; profiles the combat system, measures frame budget, checks memory usage; output: performance report showing all metrics within budget, no violations
@@ -78,7 +78,7 @@ identifies engine-level root causes. Verdict is READY FOR RELEASE or NEEDS MORE 
 - Phase 2 performance-analyst applies optimizations reducing cost to 9ms — still over the 6ms budget
 - Phase 2 cannot fully resolve the violation without a fundamental design change
 
-**Input:** `/team-polish particle-storm`
+**Input:** `$team-polish particle-storm`
 
 **Expected behavior:**
 1. Phase 1: performance-analyst identifies the 12ms frame cost vs. 6ms budget; reports "FRAME BUDGET VIOLATION: particle-storm costs 12ms, budget is 6ms"
@@ -89,14 +89,14 @@ identifies engine-level root causes. Verdict is READY FOR RELEASE or NEEDS MORE 
 6. Phase 6: orchestrator collects results; frame budget violation (9ms vs 6ms budget) remains unresolved
 7. Verdict: NEEDS MORE WORK
 8. Report lists the specific unresolved issue: "particle-storm frame cost (9ms) exceeds budget (6ms) by 3ms — requires design scope reduction or budget renegotiation"
-9. Next Steps: schedule the remaining issue in `/sprint-plan update`; re-run `/team-polish` after fix
+9. Next Steps: schedule the remaining issue in `$sprint-plan update`; re-run `$team-polish` after fix
 
 **Assertions:**
 - [ ] Frame budget violation is flagged in Phase 1 with specific numbers (actual vs. budget)
 - [ ] Phase 2 reports the post-optimization metric explicitly (9ms achieved, 3ms still over)
 - [ ] Verdict is NEEDS MORE WORK (not READY FOR RELEASE) when a budget violation remains
 - [ ] The specific unresolved issue is listed by name with the remaining gap quantified
-- [ ] Next Steps references `/sprint-plan update` for scheduling the remaining fix
+- [ ] Next Steps references `$sprint-plan update` for scheduling the remaining fix
 - [ ] Phases 3 and 4 still run (polish work is not abandoned due to a Phase 2 partial resolution)
 - [ ] Phase 5 qa-tester still runs (regression testing is independent of the performance outcome)
 
@@ -107,11 +107,11 @@ identifies engine-level root causes. Verdict is READY FOR RELEASE or NEEDS MORE 
 **Fixture:**
 - Any project state
 
-**Input:** `/team-polish` (no argument)
+**Input:** `$team-polish` (no argument)
 
 **Expected behavior:**
 1. Skill detects no argument is provided
-2. Outputs usage guidance: e.g., "Usage: `/team-polish [feature or area]` — specify the feature or area to polish (e.g., `combat`, `main menu`, `inventory system`, `level-1`)"
+2. Outputs usage guidance: e.g., "Usage: `$team-polish [feature or area]` — specify the feature or area to polish (e.g., `combat`, `main menu`, `inventory system`, `level-1`)"
 3. Skill exits without spawning any agents
 
 **Assertions:**
@@ -129,7 +129,7 @@ identifies engine-level root causes. Verdict is READY FOR RELEASE or NEEDS MORE 
 - Phase 1 identifies a performance bottleneck with a root cause in the rendering pipeline: "draw call overhead is caused by the engine's scene tree traversal in the spatial indexer — this is an engine-level issue, not a game code issue"
 - Performance budgets are defined; the rendering overhead exceeds target frame budget
 
-**Input:** `/team-polish open-world`
+**Input:** `$team-polish open-world`
 
 **Expected behavior:**
 1. Phase 1: performance-analyst profiles the environment; identifies frame budget violation; root cause analysis points to engine-level rendering pipeline (spatial indexer traversal overhead)
@@ -159,7 +159,7 @@ identifies engine-level root causes. Verdict is READY FOR RELEASE or NEEDS MORE 
 - Phases 1–4 complete successfully; performance and polish changes are applied
 - Phase 5: qa-tester runs regression tests and finds that a shader optimization applied in Phase 3 broke the item highlight glow effect on hover — an existing feature that was working before the polish pass
 
-**Input:** `/team-polish inventory-ui` (Phase 5 scenario)
+**Input:** `$team-polish inventory-ui` (Phase 5 scenario)
 
 **Expected behavior:**
 1. Phases 1–4 complete; polish changes include a shader optimization from technical-artist
@@ -197,7 +197,7 @@ identifies engine-level root causes. Verdict is READY FOR RELEASE or NEEDS MORE 
 - [ ] A partial report is always produced when some agents complete and others block
 - [ ] Verdict is exactly READY FOR RELEASE or NEEDS MORE WORK — no other verdict values used
 - [ ] NEEDS MORE WORK verdict always lists specific remaining issues with severity
-- [ ] Next Steps handoff references `/release-checklist` (on success) and `/sprint-plan update` + `/gate-check` (on failure)
+- [ ] Next Steps handoff references `$release-checklist` (on success) and `$sprint-plan update` + `$gate-check` (on failure)
 
 ---
 

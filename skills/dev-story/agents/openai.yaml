@@ -1,0 +1,4 @@
+interface:
+  display_name: "Dev Story"
+  short_description: "Implement a story from its design and architecture context"
+  default_prompt: "Use $dev-story to implement a story from its design and architecture context."

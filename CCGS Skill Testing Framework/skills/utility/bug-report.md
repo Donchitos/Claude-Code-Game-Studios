@@ -1,8 +1,8 @@
-# Skill Test Spec: /bug-report
+# Skill Test Spec: $bug-report
 
 ## Skill Summary
 
-`/bug-report` creates a structured bug report document from a user description.
+`$bug-report` creates a structured bug report document from a user description.
 It produces a report with the following required fields: Title, Repro Steps,
 Expected Behavior, Actual Behavior, Severity (CRITICAL/HIGH/MEDIUM/LOW), Affected
 System(s), and Build/Version. If the user's initial description is missing any
@@ -18,19 +18,19 @@ ask. No director gates are used — bug reporting is an operational utility.
 
 ## Static Assertions (Structural)
 
-Verified automatically by `/skill-test static` — no fixture needed.
+Verified automatically by `$skill-test static` — no fixture needed.
 
-- [ ] Has required frontmatter fields: `name`, `description`, `argument-hint`, `user-invocable`, `allowed-tools`
+- [ ] Has non-empty `name` and `description`; `agents/openai.yaml` has non-empty display name and short description
 - [ ] Has ≥2 phase headings
 - [ ] Contains verdict keyword: COMPLETE
 - [ ] Contains "May I write" collaborative protocol language before writing the report
-- [ ] Has a next-step handoff (e.g., `/bug-triage` to reprioritize, `/hotfix` for critical)
+- [ ] Has a next-step handoff (e.g., `$bug-triage` to reprioritize, `$hotfix` for critical)
 
 ---
 
 ## Director Gate Checks
 
-None. `/bug-report` is an operational documentation skill. No director gates apply.
+None. `$bug-report` is an operational documentation skill. No director gates apply.
 
 ---
 
@@ -42,7 +42,7 @@ None. `/bug-report` is an operational documentation skill. No director gates app
 - `production/bugs/` directory exists and is empty
 - No similar existing reports
 
-**Input:** `/bug-report` (user describes: "Game crashes when player enters the boss arena")
+**Input:** `$bug-report` (user describes: "Game crashes when player enters the boss arena")
 
 **Expected behavior:**
 1. Skill extracts: Title = "Game crashes when entering boss arena"
@@ -68,7 +68,7 @@ None. `/bug-report` is an operational documentation skill. No director gates app
 - User provides: "Sometimes the audio cuts out"
 - No existing reports
 
-**Input:** `/bug-report`
+**Input:** `$bug-report`
 
 **Expected behavior:**
 1. Skill identifies missing required fields: repro steps, expected vs. actual,
@@ -93,7 +93,7 @@ None. `/bug-report` is an operational documentation skill. No director gates app
 - `production/bugs/bug-2026-03-20-audio-cut-out.md` already exists with
   similar title and MEDIUM severity
 
-**Input:** `/bug-report` (user describes: "Audio randomly stops working")
+**Input:** `$bug-report` (user describes: "Audio randomly stops working")
 
 **Expected behavior:**
 1. Skill scans existing reports and finds the similar audio bug
@@ -116,7 +116,7 @@ None. `/bug-report` is an operational documentation skill. No director gates app
 **Fixture:**
 - No existing reports
 
-**Input:** `/bug-report` (user describes: "After finishing a level, the save system
+**Input:** `$bug-report` (user describes: "After finishing a level, the save system
   freezes and the UI doesn't show the completion screen")
 
 **Expected behavior:**
@@ -139,7 +139,7 @@ None. `/bug-report` is an operational documentation skill. No director gates app
 **Fixture:**
 - Any bug description provided
 
-**Input:** `/bug-report`
+**Input:** `$bug-report`
 
 **Expected behavior:**
 1. Skill creates and writes the bug report

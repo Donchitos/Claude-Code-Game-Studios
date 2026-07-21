@@ -3,7 +3,7 @@
 ## Agent Summary
 - **Domain**: In-game written content — NPC dialogue (including branching trees), lore codex entries, item and ability descriptions, environmental text (signs, books, notes), quest text, tutorial text, in-world written documents
 - **Does NOT own**: Story architecture and narrative structure (narrative-director), world lore and world rules (world-builder), UX copy and UI labels (ux-designer), patch notes (community-manager)
-- **Model tier**: Sonnet
+No fixed model routing is required; the caller selects the available Codex model.
 - **Gate IDs**: None; flags lore inconsistencies to narrative-director rather than resolving them autonomously
 
 ---
@@ -11,8 +11,8 @@
 ## Static Assertions (Structural)
 
 - [ ] `description:` field is present and domain-specific (references dialogue, lore entries, item descriptions, in-game text)
-- [ ] `allowed-tools:` list matches the agent's role (Read/Write for design/narrative/ and assets/data/dialogue/; no code or world-building architecture files)
-- [ ] Model tier is Sonnet (default for creative specialists)
+- [ ] Role boundaries and file ownership match the stated domain
+- [ ] Does not require fixed model routing; the calling Codex client selects the available model
 - [ ] Agent definition does not claim authority over narrative structure, world rules, or UX copy direction
 
 ---
@@ -78,4 +78,4 @@
 - Case 3 (lore contradiction detection) requires that existing lore is in the conversation context — test is only valid when context is provided
 - Case 4 (dependency gap) tests whether the agent writes descriptions that could set wrong player expectations — a subtle but important quality issue
 - Case 5 is the most important context-awareness test; voice guide compliance must be checked rule-by-rule, not holistically
-- No automated runner; review manually or via `/skill-test`
+- No automated runner; review manually or via `$skill-test`

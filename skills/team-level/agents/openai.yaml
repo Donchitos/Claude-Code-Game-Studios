@@ -1,0 +1,4 @@
+interface:
+  display_name: "Team Level"
+  short_description: "Coordinate level design, production, and validation"
+  default_prompt: "Use $team-level to coordinate level design, production, and validation."

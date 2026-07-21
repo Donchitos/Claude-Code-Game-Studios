@@ -1,0 +1,4 @@
+interface:
+  display_name: "Help"
+  short_description: "Recommend the next workflow from project state and goals"
+  default_prompt: "Use $help to recommend the next workflow from project state and goals."

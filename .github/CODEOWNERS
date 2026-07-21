@@ -1,16 +1,23 @@
-# CODEOWNERS — auto-assigns reviewers to PRs by path
-# Format: <pattern> <@github-username or @org/team>
-# Last match wins. Docs: https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
+# Default owner
+*                                      @nghgdong
 
-# Default owner for everything
-*                           @Donchitos
+# Codex package and project configuration
+/.codex-plugin/                        @nghgdong
+/.codex/                               @nghgdong
+/AGENTS.md                             @nghgdong
 
-# Core configuration — owner review required
-CLAUDE.md                   @Donchitos
-.claude/                    @Donchitos
-settings.json               @Donchitos
+# Skills, role profiles, hooks, and path-scoped instructions
+/skills/                               @nghgdong
+/roles/                                @nghgdong
+/hooks/                                @nghgdong
+/**/AGENTS.md                          @nghgdong
 
-# Skills and agents — high-impact, review carefully
-.claude/skills/             @Donchitos
-.claude/agents/             @Donchitos
-.claude/hooks/              @Donchitos
+# User-facing documentation and project templates
+/docs/                                 @nghgdong
+/README.md                             @nghgdong
+/CONTRIBUTING.md                       @nghgdong
+/SECURITY.md                           @nghgdong
+/UPGRADING.md                          @nghgdong
+
+# Studio validation specifications
+/CCGS\ Skill\ Testing\ Framework/     @nghgdong

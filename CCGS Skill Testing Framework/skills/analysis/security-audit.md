@@ -1,8 +1,8 @@
-# Skill Test Spec: /security-audit
+# Skill Test Spec: $security-audit
 
 ## Skill Summary
 
-`/security-audit` audits the game for security risks including save data
+`$security-audit` audits the game for security risks including save data
 integrity, network communication, anti-cheat exposure, and data privacy. It
 reads source files in `src/` for security patterns and checks whether sensitive
 data is handled correctly. No director gates are invoked. The skill does not
@@ -13,9 +13,9 @@ VULNERABILITIES FOUND.
 
 ## Static Assertions (Structural)
 
-Verified automatically by `/skill-test static` — no fixture needed.
+Verified automatically by `$skill-test static` — no fixture needed.
 
-- [ ] Has required frontmatter fields: `name`, `description`, `argument-hint`, `user-invocable`, `allowed-tools`
+- [ ] Has non-empty `name` and `description`; `agents/openai.yaml` has non-empty display name and short description
 - [ ] Has ≥2 phase headings
 - [ ] Contains verdict keywords: SECURE, CONCERNS, VULNERABILITIES FOUND
 - [ ] Does NOT require "May I write" language (read-only; findings report only)
@@ -38,7 +38,7 @@ None. Security audit is a read-only advisory skill; no gates are invoked.
 - No hardcoded API keys, passwords, or credentials in any `src/` file
 - No version numbers or internal build IDs exposed in client-facing output
 
-**Input:** `/security-audit`
+**Input:** `$security-audit`
 
 **Expected behavior:**
 1. Skill scans `src/` for security patterns: encryption usage, hardcoded credentials, exposed internals
@@ -62,7 +62,7 @@ None. Security audit is a read-only advisory skill; no gates are invoked.
 - `src/ui/debug_overlay.gd` contains: `label.text = "Build: " + ProjectSettings.get("application/config/version")`
   (exposes internal build version to player)
 
-**Input:** `/security-audit`
+**Input:** `$security-audit`
 
 **Expected behavior:**
 1. Skill scans `src/` — finds unencrypted save write in `save_system.gd`
@@ -87,7 +87,7 @@ None. Security audit is a read-only advisory skill; no gates are invoked.
 - No authentication check is found before `send_chat()` — players can call it without being verified
 - Game has online multiplayer features (inferred from file presence)
 
-**Input:** `/security-audit`
+**Input:** `$security-audit`
 
 **Expected behavior:**
 1. Skill scans `src/networking/` — detects online feature code
@@ -108,7 +108,7 @@ None. Security audit is a read-only advisory skill; no gates are invoked.
 **Fixture:**
 - `src/` directory does not exist or is completely empty
 
-**Input:** `/security-audit`
+**Input:** `$security-audit`
 
 **Expected behavior:**
 1. Skill attempts to scan `src/` — no files found
@@ -130,7 +130,7 @@ None. Security audit is a read-only advisory skill; no gates are invoked.
 - Source files exist; 1 CONCERNS-level finding detected (debug logging enabled in release build)
 - `review-mode.txt` contains `full`
 
-**Input:** `/security-audit`
+**Input:** `$security-audit`
 
 **Expected behavior:**
 1. Skill scans source; finds debug logging active in release path

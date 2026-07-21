@@ -1,6 +1,6 @@
 # Skill Quality Rubric
 
-Used by `/skill-test category [name|all]` to evaluate skills beyond structural compliance.
+Used by `$skill-test category [name|all]` to evaluate skills beyond structural compliance.
 Each category defines 4–5 binary PASS/FAIL metrics specific to the skill's job.
 
 A metric is PASS when the skill's written instructions clearly satisfy the criterion.
@@ -44,7 +44,7 @@ read-only and must not trigger director gates during the analysis phase.
 | **R5 — Structured findings** | Output contains a per-section status table or checklist before the final verdict |
 
 > **Exceptions:**
-> - `design-review`: Has `Write, Edit` in allowed-tools to support an optional "Revise now" path (all writes gated behind user approval) and to write review logs. R1 is satisfied because the reviewed document is never silently modified.
+> - `design-review`: Supports an optional "Revise now" path and review-log writes, all gated behind user approval. R1 is satisfied because the reviewed document is never silently modified.
 > - `architecture-review`: Spawns TD-ARCHITECTURE and LP-FEASIBILITY gates after its analysis is complete. This is intentional — architecture review is high-stakes and benefits from director sign-off. R4 is satisfied because the gates run post-analysis, not during it.
 
 ---
@@ -169,14 +169,14 @@ gates, the gate mode logic must also be correct.
 
 | Metric | PASS criteria |
 |---|---|
-| **U1 — Passes all 7 static checks** | `/skill-test static [name]` returns COMPLIANT with 0 FAILs |
+| **U1 — Passes all 7 static checks** | `$skill-test static [name]` returns COMPLIANT with 0 FAILs |
 | **U2 — Gate mode correct (if applicable)** | If the skill spawns any director gate, it reads review-mode and applies full/lean/solo logic correctly |
 
 ---
 
 ## Agent Categories
 
-Used to validate agent spec files in `tests/agents/`.
+Used to validate agent spec files in `CCGS Skill Testing Framework/agents/`.
 
 ### `director`
 
@@ -187,7 +187,7 @@ Used to validate agent spec files in `tests/agents/`.
 | **D1 — Correct verdict vocabulary** | Returns APPROVE / CONCERNS / REJECT (or domain equivalent: REALISTIC/CONCERNS/UNREALISTIC for producer) |
 | **D2 — Domain boundary respected** | Does not make binding decisions outside its declared domain |
 | **D3 — Conflict escalation** | When two departments conflict, escalates to correct parent (creative-director or technical-director) rather than unilaterally deciding |
-| **D4 — Opus model tier** | Agent is assigned Opus model per coordination-rules.md |
+| **D4 — Injectable role profile** | Profile can be supplied to a generic Codex sub-agent without fixed model routing |
 
 ### `lead`
 
@@ -198,7 +198,7 @@ systems-designer, level-designer
 |---|---|
 | **L1 — Domain verdict** | Returns a domain-specific verdict (e.g., FEASIBLE/INFEASIBLE for lead-programmer, PASS/FAIL for qa-lead) |
 | **L2 — Escalates to shared parent** | Out-of-domain conflicts escalate to creative-director (design) or technical-director (tech) |
-| **L3 — Sonnet model tier** | Agent is assigned Sonnet model (default) per coordination-rules.md |
+| **L3 — Injectable role profile** | Profile documents its domain and can be supplied to a generic Codex sub-agent |
 
 ### `specialist`
 
@@ -246,4 +246,4 @@ analytics-engineer, economy-designer, localization-lead
 |---|---|
 | **O1 — Domain ownership clear** | Agent description clearly states what it owns (pipeline, releases, economy, etc.) |
 | **O2 — Defers implementation** | Does not write game logic or engine code; delegates to appropriate specialist |
-| **O3 — Toolset matches role** | `allowed-tools` in frontmatter matches the operational (not coding) nature of the role |
+| **O3 — Role boundaries match** | The documented role boundaries match the operational (not coding) nature of the role |

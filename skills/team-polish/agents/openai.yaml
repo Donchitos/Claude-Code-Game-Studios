@@ -1,0 +1,4 @@
+interface:
+  display_name: "Team Polish"
+  short_description: "Coordinate performance, art, audio, and QA polish"
+  default_prompt: "Use $team-polish to coordinate performance, art, audio, and QA polish."

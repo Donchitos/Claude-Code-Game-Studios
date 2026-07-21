@@ -1,0 +1,4 @@
+interface:
+  display_name: "Perf Profile"
+  short_description: "Profile performance against budgets and find bottlenecks"
+  default_prompt: "Use $perf-profile to profile performance against budgets and find bottlenecks."

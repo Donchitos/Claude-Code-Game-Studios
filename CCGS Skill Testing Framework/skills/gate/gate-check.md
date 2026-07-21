@@ -1,8 +1,8 @@
-# Skill Test Spec: /gate-check
+# Skill Test Spec: $gate-check
 
 ## Skill Summary
 
-`/gate-check` validates whether the project is ready to advance to the next
+`$gate-check` validates whether the project is ready to advance to the next
 development phase. It checks for required artifacts, runs quality checks, asks
 the user about unverifiable items, and produces a PASS/CONCERNS/FAIL verdict.
 On PASS with user confirmation, it writes the new stage name to
@@ -13,9 +13,9 @@ critical gate-keeping skill in the pipeline.
 
 ## Static Assertions (Structural)
 
-Verified automatically by `/skill-test static` — no fixture needed.
+Verified automatically by `$skill-test static` — no fixture needed.
 
-- [ ] Has required frontmatter fields: `name`, `description`, `argument-hint`, `user-invocable`, `allowed-tools`
+- [ ] Has non-empty `name` and `description`; `agents/openai.yaml` has non-empty display name and short description
 - [ ] Has ≥2 phase headings (numbered Phase N or ## sections)
 - [ ] Contains verdict keywords: PASS, CONCERNS, FAIL
 - [ ] Contains "May I write" collaborative protocol language
@@ -32,7 +32,7 @@ Verified automatically by `/skill-test static` — no fixture needed.
 - `design/gdd/game-pillars.md` exists (or pillars defined within concept doc)
 - No systems index yet (which is correct for this stage)
 
-**Input:** `/gate-check systems-design`
+**Input:** `$gate-check systems-design`
 
 **Expected behavior:**
 1. Skill reads `design/gdd/game-concept.md` and verifies it has content
@@ -60,20 +60,20 @@ Verified automatically by `/skill-test static` — no fixture needed.
 - No game pillars document exists
 - `design/gdd/` directory is empty or absent
 
-**Input:** `/gate-check systems-design`
+**Input:** `$gate-check systems-design`
 
 **Expected behavior:**
 1. Skill attempts to read `design/gdd/game-concept.md` — file not found
 2. Skill marks required artifact as missing (not present)
 3. Skill outputs FAIL verdict
 4. Skill lists blocker: "No game concept document found"
-5. Skill suggests remediation: run `/brainstorm` to create one
+5. Skill suggests remediation: run `$brainstorm` to create one
 
 **Assertions:**
 - [ ] Verdict is FAIL (not PASS or CONCERNS) when required artifacts are missing
 - [ ] Output explicitly names `design/gdd/game-concept.md` as missing
 - [ ] Output includes a "Blockers" section with at least 1 item
-- [ ] Output recommends `/brainstorm` as the remediation action
+- [ ] Output recommends `$brainstorm` as the remediation action
 - [ ] Skill does NOT write `production/stage.txt` when verdict is FAIL
 
 ---
@@ -85,7 +85,7 @@ Verified automatically by `/skill-test static` — no fixture needed.
 - `design/gdd/game-concept.md` exists with content
 - No systems index yet
 
-**Input:** `/gate-check` (no argument)
+**Input:** `$gate-check` (no argument)
 
 **Expected behavior:**
 1. Skill reads `production/stage.txt` to determine current stage
@@ -106,7 +106,7 @@ Verified automatically by `/skill-test static` — no fixture needed.
 - All required artifacts for Concept → Systems Design are present
 - No playtest or review record exists (can't auto-verify quality checks)
 
-**Input:** `/gate-check systems-design`
+**Input:** `$gate-check systems-design`
 
 **Expected behavior:**
 1. Skill verifies all artifact files exist
@@ -134,7 +134,7 @@ Verified automatically by `/skill-test static` — no fixture needed.
 **Case 5a — full mode:**
 - `review-mode.txt` contains `full`
 
-**Input:** `/gate-check systems-design` (with full mode active)
+**Input:** `$gate-check systems-design` (with full mode active)
 
 **Expected behavior:**
 1. Skill reads review mode — determines `full`
@@ -156,7 +156,7 @@ Verified automatically by `/skill-test static` — no fixture needed.
 **Case 5b — solo mode:**
 - `review-mode.txt` contains `solo`
 
-**Input:** `/gate-check systems-design` (with solo mode active)
+**Input:** `$gate-check systems-design` (with solo mode active)
 
 **Expected behavior:**
 1. Skill reads review mode — determines `solo`

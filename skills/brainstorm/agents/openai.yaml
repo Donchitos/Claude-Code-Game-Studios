@@ -1,0 +1,4 @@
+interface:
+  display_name: "Brainstorm"
+  short_description: "Develop a game idea into a structured concept"
+  default_prompt: "Use $brainstorm to develop a game idea into a structured concept."

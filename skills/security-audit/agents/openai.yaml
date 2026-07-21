@@ -1,0 +1,4 @@
+interface:
+  display_name: "Security Audit"
+  short_description: "Audit game code and data for security vulnerabilities"
+  default_prompt: "Use $security-audit to audit game code and data for security vulnerabilities."

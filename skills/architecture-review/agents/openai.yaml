@@ -1,0 +1,4 @@
+interface:
+  display_name: "Architecture Review"
+  short_description: "Review architecture coverage, risks, and consistency"
+  default_prompt: "Use $architecture-review to review architecture coverage, risks, and consistency."

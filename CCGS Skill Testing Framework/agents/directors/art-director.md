@@ -3,18 +3,18 @@
 ## Agent Summary
 **Domain owned:** Visual identity, art bible authorship and enforcement, asset quality standards, UI/UX visual design, visual phase gate, concept art evaluation.
 **Does NOT own:** UX interaction flows and information architecture (ux-designer's domain), audio direction (audio-director), code implementation.
-**Model tier:** Sonnet (note: despite the "director" title, art-director is assigned Sonnet per coordination-rules.md — it handles individual system analysis, not multi-document phase gate synthesis at the Opus level).
-**Gate IDs handled:** AD-CONCEPT-VISUAL, AD-ART-BIBLE, AD-PHASE-GATE.
+No fixed model routing is required; the caller selects the available Codex model.
+**Gate IDs handled:** visual concept review, $art-bible review, AD-PHASE-GATE.
 
 ---
 
 ## Static Assertions (Structural)
 
-Verified by reading the agent's `.claude/agents/art-director.md` frontmatter:
+Verified by reading the agent's `roles/art-director.md` frontmatter:
 
 - [ ] `description:` field is present and domain-specific (references visual identity, art bible, asset standards — not generic)
-- [ ] `allowed-tools:` list is read-focused; image review capability if supported; no Bash unless asset pipeline checks are justified
-- [ ] Model tier is `claude-sonnet-4-6` (NOT Opus — coordination-rules.md assigns Sonnet to art-director)
+- [ ] Role boundaries and file ownership match the stated domain
+- [ ] Does not require fixed model routing; the calling Codex client selects the available model
 - [ ] Agent definition does not claim authority over UX interaction flows or audio direction
 
 ---
@@ -22,11 +22,11 @@ Verified by reading the agent's `.claude/agents/art-director.md` frontmatter:
 ## Test Cases
 
 ### Case 1: In-domain request — appropriate output format
-**Scenario:** The art bible's color palette section is submitted for review. The section defines a desaturated earth-tone primary palette with high-contrast accent colors tied to the game pillar "beauty in decay." The palette is internally consistent and references the pillar vocabulary. Request is tagged AD-ART-BIBLE.
-**Expected:** Returns `AD-ART-BIBLE: APPROVE` with rationale confirming the palette's internal consistency and its alignment with the stated pillar.
+**Scenario:** The art bible's color palette section is submitted for review. The section defines a desaturated earth-tone primary palette with high-contrast accent colors tied to the game pillar "beauty in decay." The palette is internally consistent and references the pillar vocabulary. Request is tagged $art-bible review.
+**Expected:** Returns a documented domain-specific verdict with rationale confirming the palette's internal consistency and its alignment with the stated pillar.
 **Assertions:**
 - [ ] Verdict is exactly one of APPROVE / CONCERNS / REJECT
-- [ ] Verdict token is formatted as `AD-ART-BIBLE: APPROVE`
+- [ ] Verdict and rationale are clear and grounded in the supplied context
 - [ ] Rationale references the specific palette characteristics and pillar alignment — not generic art advice
 - [ ] Output stays within visual domain — does not comment on UX interaction patterns or audio mood
 
@@ -39,11 +39,11 @@ Verified by reading the agent's `.claude/agents/art-director.md` frontmatter:
 - [ ] May note if the audio has visual mood implications (e.g., "the audio should match the visual tension of the zone"), but defers all audio specification to audio-director
 
 ### Case 3: Gate verdict — correct vocabulary
-**Scenario:** Concept art for the protagonist is submitted. The art uses a vivid, saturated color palette (primary: #FF4500, #00BFFF) that directly contradicts the established art bible's "desaturated earth-tones" palette specification. Request is tagged AD-CONCEPT-VISUAL.
-**Expected:** Returns `AD-CONCEPT-VISUAL: CONCERNS` with specific citation of the palette discrepancy, referencing the art bible's stated palette values versus the submitted concept's palette.
+**Scenario:** Concept art for the protagonist is submitted. The art uses a vivid, saturated color palette (primary: #FF4500, #00BFFF) that directly contradicts the established art bible's "desaturated earth-tones" palette specification. Request is tagged visual concept review.
+**Expected:** Returns a documented domain-specific verdict with specific citation of the palette discrepancy, referencing the art bible's stated palette values versus the submitted concept's palette.
 **Assertions:**
 - [ ] Verdict is exactly one of APPROVE / CONCERNS / REJECT — not freeform text
-- [ ] Verdict token is formatted as `AD-CONCEPT-VISUAL: CONCERNS`
+- [ ] Verdict and rationale are clear and grounded in the supplied context
 - [ ] Rationale specifically identifies the palette conflict — not a generic "doesn't match style" comment
 - [ ] References the art bible as the authoritative source for the correct palette
 
@@ -72,13 +72,13 @@ Verified by reading the agent's `.claude/agents/art-director.md` frontmatter:
 - [ ] Returns verdicts using APPROVE / CONCERNS / REJECT vocabulary only
 - [ ] Stays within declared visual domain
 - [ ] Escalates UX-vs-visual conflicts to creative-director
-- [ ] Uses gate IDs in output (e.g., `AD-ART-BIBLE: APPROVE`) not inline prose verdicts
+- [ ] Uses the provided task context when applicable; does not claim automatic role registration
 - [ ] Does not make binding UX interaction, audio, or code implementation decisions
 
 ---
 
 ## Coverage Notes
-- AD-PHASE-GATE (full visual phase advancement) is not covered — deferred to integration with /gate-check skill.
+- AD-PHASE-GATE (full visual phase advancement) is not covered — deferred to integration with $gate-check skill.
 - Asset pipeline standards (file format, resolution, naming conventions) compliance checks are not covered here.
 - Shader visual output review is not covered — that interaction with the engine specialist is deferred.
 - UI component visual review (as distinct from UX flow review) could benefit from additional cases.

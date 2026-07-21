@@ -3,7 +3,7 @@
 ## Agent Summary
 - **Domain**: UMG widget hierarchy design, data binding patterns, CommonUI input routing and action tags, widget styling (WidgetStyle assets), UI optimization (widget pooling, ListView, invalidation)
 - **Does NOT own**: UX flow and screen navigation design (ux-designer), gameplay logic (gameplay-programmer), backend data sources (game code), server communication
-- **Model tier**: Sonnet
+No fixed model routing is required; the caller selects the available Codex model.
 - **Gate IDs**: None; defers UX flow decisions to ux-designer
 
 ---
@@ -11,8 +11,8 @@
 ## Static Assertions (Structural)
 
 - [ ] `description:` field is present and domain-specific (references UMG, widget hierarchy, CommonUI)
-- [ ] `allowed-tools:` list matches the agent's role (Read/Write for UI assets and Blueprint files; no server or gameplay source tools)
-- [ ] Model tier is Sonnet (default for specialists)
+- [ ] Role boundaries and file ownership match the stated domain
+- [ ] Does not require fixed model routing; the calling Codex client selects the available model
 - [ ] Agent definition does not claim authority over UX flow, navigation architecture, or gameplay data logic
 
 ---
@@ -76,4 +76,4 @@
 - Case 3 (CommonUI input routing) requires project to have CommonUI configured; test is skipped if project does not use CommonUI
 - Case 4 (performance) is a high-impact failure mode — 300ms hitches are shipping-blocking; prioritize this test case
 - Case 5 is the most important context-awareness test for UI pipeline consistency
-- No automated runner; review manually or via `/skill-test`
+- No automated runner; review manually or via `$skill-test`

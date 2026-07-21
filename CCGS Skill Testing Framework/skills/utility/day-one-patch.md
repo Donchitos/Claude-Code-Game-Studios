@@ -1,8 +1,8 @@
-# Skill Test Spec: /day-one-patch
+# Skill Test Spec: $day-one-patch
 
 ## Skill Summary
 
-`/day-one-patch` prepares a day-one patch plan for issues that are known at
+`$day-one-patch` prepares a day-one patch plan for issues that are known at
 launch but deferred from the v1.0 release. It reads open bug reports in
 `production/bugs/`, deferred acceptance criteria from story files (stories
 marked `Status: Done` but with noted deferred ACs), and produces a prioritized
@@ -10,26 +10,26 @@ patch plan with estimated fix timelines per issue.
 
 The patch plan is written to `production/releases/day-one-patch.md` after a
 "May I write" ask. If a P0 (critical post-ship) issue is discovered, the skill
-triggers guidance to run `/hotfix` before the patch. No director gates apply.
+triggers guidance to run `$hotfix` before the patch. No director gates apply.
 The verdict is always COMPLETE.
 
 ---
 
 ## Static Assertions (Structural)
 
-Verified automatically by `/skill-test static` — no fixture needed.
+Verified automatically by `$skill-test static` — no fixture needed.
 
-- [ ] Has required frontmatter fields: `name`, `description`, `argument-hint`, `user-invocable`, `allowed-tools`
+- [ ] Has non-empty `name` and `description`; `agents/openai.yaml` has non-empty display name and short description
 - [ ] Has ≥2 phase headings
 - [ ] Contains verdict keyword: COMPLETE
 - [ ] Contains "May I write" collaborative protocol language before writing the plan
-- [ ] Has a next-step handoff (e.g., `/hotfix` for P0 issues, `/release-checklist` for follow-up)
+- [ ] Has a next-step handoff (e.g., `$hotfix` for P0 issues, `$release-checklist` for follow-up)
 
 ---
 
 ## Director Gate Checks
 
-None. `/day-one-patch` is a release planning utility. No director gates apply.
+None. `$day-one-patch` is a release planning utility. No director gates apply.
 
 ---
 
@@ -42,7 +42,7 @@ None. `/day-one-patch` is a release planning utility. No director gates apply.
 - No deferred ACs in sprint stories
 - All bugs have repro steps and system identifications
 
-**Input:** `/day-one-patch`
+**Input:** `$day-one-patch`
 
 **Expected behavior:**
 1. Skill reads all 3 open bugs
@@ -61,26 +61,26 @@ None. `/day-one-patch` is a release planning utility. No director gates apply.
 
 ---
 
-### Case 2: Critical Issue Discovered Post-Ship — P0, Triggers /hotfix Guidance
+### Case 2: Critical Issue Discovered Post-Ship — P0, Triggers $hotfix Guidance
 
 **Fixture:**
 - A CRITICAL severity bug is found in `production/bugs/` after the v1.0 release
 - The bug causes data loss for all save files
 
-**Input:** `/day-one-patch`
+**Input:** `$day-one-patch`
 
 **Expected behavior:**
 1. Skill reads bugs and identifies the CRITICAL severity issue
 2. Skill escalates: "P0 ISSUE DETECTED — data loss bug requires immediate hotfix
    before patch planning can proceed"
 3. Skill does NOT include the P0 issue in the patch plan timeline
-4. Skill explicitly directs: "Run `/hotfix` to resolve this issue first"
+4. Skill explicitly directs: "Run `$hotfix` to resolve this issue first"
 5. After P0 guidance is issued: plan for remaining lower-severity bugs is still
    generated and written; verdict is COMPLETE
 
 **Assertions:**
 - [ ] P0 escalation message appears prominently before the patch plan
-- [ ] `/hotfix` is explicitly directed for the P0 issue
+- [ ] `$hotfix` is explicitly directed for the P0 issue
 - [ ] P0 issue is NOT scheduled in the patch plan timeline (it needs immediate action)
 - [ ] Non-P0 issues are still planned; verdict is COMPLETE
 
@@ -93,7 +93,7 @@ None. `/day-one-patch` is a release planning utility. No director gates apply.
   "DEFERRED AC: Gamepad vibration on damage — deferred to post-launch patch"
 - No open bugs for the same system
 
-**Input:** `/day-one-patch`
+**Input:** `$day-one-patch`
 
 **Expected behavior:**
 1. Skill reads sprint stories and detects the deferred AC note
@@ -116,7 +116,7 @@ None. `/day-one-patch` is a release planning utility. No director gates apply.
 - `production/bugs/` is empty
 - No stories have deferred ACs
 
-**Input:** `/day-one-patch`
+**Input:** `$day-one-patch`
 
 **Expected behavior:**
 1. Skill reads bugs — none found
@@ -139,7 +139,7 @@ None. `/day-one-patch` is a release planning utility. No director gates apply.
 **Fixture:**
 - Known issues present in production/bugs/
 
-**Input:** `/day-one-patch`
+**Input:** `$day-one-patch`
 
 **Expected behavior:**
 1. Skill generates and writes the patch plan
@@ -157,7 +157,7 @@ None. `/day-one-patch` is a release planning utility. No director gates apply.
 
 - [ ] Reads open bugs from `production/bugs/` before generating the plan
 - [ ] Scans story files for deferred AC notes
-- [ ] Escalates CRITICAL (P0) bugs with explicit `/hotfix` guidance
+- [ ] Escalates CRITICAL (P0) bugs with explicit `$hotfix` guidance
 - [ ] Produces an empty plan with note when no issues exist (not an error)
 - [ ] Asks "May I write to `production/releases/day-one-patch.md`?" before writing
 - [ ] Verdict is COMPLETE in all paths
@@ -171,5 +171,5 @@ None. `/day-one-patch` is a release planning utility. No director gates apply.
 - Timeline estimation for the patch (e.g., "patch available in 3 days")
   requires manual QA and build time estimates; the skill uses rough estimates
   based on severity, not actual team velocity.
-- The patch notes player communication document (`/patch-notes`) is a separate
+- The patch notes player communication document (`$patch-notes`) is a separate
   skill invoked after the patch plan is executed.

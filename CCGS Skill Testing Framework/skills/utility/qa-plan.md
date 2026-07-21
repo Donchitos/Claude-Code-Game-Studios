@@ -1,8 +1,8 @@
-# Skill Test Spec: /qa-plan
+# Skill Test Spec: $qa-plan
 
 ## Skill Summary
 
-`/qa-plan` generates a structured QA test plan for a feature or sprint milestone.
+`$qa-plan` generates a structured QA test plan for a feature or sprint milestone.
 It reads story files for the specified sprint, extracts acceptance criteria from
 each story, cross-references test standards from `coding-standards.md` to assign
 the appropriate test type (unit, integration, visual, UI, or config/data), and
@@ -12,25 +12,25 @@ The skill asks "May I write to `production/qa/qa-plan-sprint-NNN.md`?" before
 persisting the output. If an existing test plan for the same sprint is found, the
 skill offers to update rather than replace. The verdict is COMPLETE when the plan
 is written. No director gates are used — gate-level story readiness is handled by
-`/story-readiness`.
+`$story-readiness`.
 
 ---
 
 ## Static Assertions (Structural)
 
-Verified automatically by `/skill-test static` — no fixture needed.
+Verified automatically by `$skill-test static` — no fixture needed.
 
-- [ ] Has required frontmatter fields: `name`, `description`, `argument-hint`, `user-invocable`, `allowed-tools`
+- [ ] Has non-empty `name` and `description`; `agents/openai.yaml` has non-empty display name and short description
 - [ ] Has ≥2 phase headings
 - [ ] Contains verdict keyword: COMPLETE
 - [ ] Contains "May I write" collaborative protocol language before writing the plan
-- [ ] Has a next-step handoff (e.g., `/smoke-check` or `/story-readiness`)
+- [ ] Has a next-step handoff (e.g., `$smoke-check` or `$story-readiness`)
 
 ---
 
 ## Director Gate Checks
 
-None. `/qa-plan` is a planning utility. Story readiness gates are separate.
+None. `$qa-plan` is a planning utility. Story readiness gates are separate.
 
 ---
 
@@ -43,7 +43,7 @@ None. `/qa-plan` is a planning utility. Story readiness gates are separate.
 - Stories span types: 1 logic (formula), 1 integration, 1 visual, 1 UI
 - `coding-standards.md` is present with test evidence table
 
-**Input:** `/qa-plan sprint-003`
+**Input:** `$qa-plan sprint-003`
 
 **Expected behavior:**
 1. Skill reads sprint-003.md and identifies 4 stories
@@ -72,7 +72,7 @@ None. `/qa-plan` is a planning utility. Story readiness gates are separate.
 - `production/sprints/sprint-004.md` lists 3 stories; one story has empty
   acceptance criteria section
 
-**Input:** `/qa-plan sprint-004`
+**Input:** `$qa-plan sprint-004`
 
 **Expected behavior:**
 1. Skill reads all 3 stories
@@ -95,7 +95,7 @@ None. `/qa-plan` is a planning utility. Story readiness gates are separate.
 - `production/qa/qa-plan-sprint-003.md` already exists from a previous run
 - Sprint-003 has 2 new stories added since the last plan
 
-**Input:** `/qa-plan sprint-003`
+**Input:** `$qa-plan sprint-003`
 
 **Expected behavior:**
 1. Skill reads sprint-003.md and detects 2 stories not in the existing plan
@@ -118,17 +118,17 @@ None. `/qa-plan` is a planning utility. Story readiness gates are separate.
 - `production/sprints/sprint-007.md` does not exist
 - No other sprint file matching sprint-007
 
-**Input:** `/qa-plan sprint-007`
+**Input:** `$qa-plan sprint-007`
 
 **Expected behavior:**
 1. Skill attempts to read sprint-007.md — file not found
 2. Skill outputs: "No sprint file found for sprint-007"
-3. Skill suggests running `/sprint-plan` to create the sprint first
+3. Skill suggests running `$sprint-plan` to create the sprint first
 4. No plan is written; no "May I write" is asked
 
 **Assertions:**
 - [ ] Error message names the missing sprint file
-- [ ] `/sprint-plan` is suggested as the remediation step
+- [ ] `$sprint-plan` is suggested as the remediation step
 - [ ] No write tool is called
 - [ ] Verdict is not COMPLETE (error state)
 
@@ -139,7 +139,7 @@ None. `/qa-plan` is a planning utility. Story readiness gates are separate.
 **Fixture:**
 - Sprint with valid stories and AC
 
-**Input:** `/qa-plan sprint-003`
+**Input:** `$qa-plan sprint-003`
 
 **Expected behavior:**
 1. Skill generates and writes QA plan

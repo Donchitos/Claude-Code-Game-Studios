@@ -3,7 +3,7 @@
 ## Agent Summary
 - **Domain**: Gameplay Ability System (GAS) — abilities (UGameplayAbility), gameplay effects (UGameplayEffect), attribute sets (UAttributeSet), gameplay tags, ability tasks (UAbilityTask), ability specs (FGameplayAbilitySpec), GAS prediction and latency compensation
 - **Does NOT own**: UI display of ability state (ue-umg-specialist), net replication of GAS data beyond built-in GAS prediction (ue-replication-specialist), art or VFX for ability feedback (vfx-artist)
-- **Model tier**: Sonnet
+No fixed model routing is required; the caller selects the available Codex model.
 - **Gate IDs**: None; defers cross-domain calls to the appropriate specialist
 
 ---
@@ -11,8 +11,8 @@
 ## Static Assertions (Structural)
 
 - [ ] `description:` field is present and domain-specific (references GAS, abilities, GameplayEffects, AttributeSets)
-- [ ] `allowed-tools:` list matches the agent's role (Read/Write for GAS source files; no deployment or server tools)
-- [ ] Model tier is Sonnet (default for specialists)
+- [ ] Role boundaries and file ownership match the stated domain
+- [ ] Does not require fixed model routing; the calling Codex client selects the available model
 - [ ] Agent definition does not claim authority over UI implementation or low-level net serialization
 
 ---
@@ -78,4 +78,4 @@
 - Case 3 (tag hierarchy) is a frequent source of subtle bugs; test whenever tag naming conventions change
 - Case 4 requires knowledge of GAS stacking policies — verify this case if the GAS integration depth changes
 - Case 5 is the most important context-awareness test; failing it means the agent ignores project state
-- No automated runner; review manually or via `/skill-test`
+- No automated runner; review manually or via `$skill-test`

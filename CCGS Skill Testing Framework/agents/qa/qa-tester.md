@@ -4,7 +4,7 @@
 - **Domain**: Detailed test case authoring, bug reports (structured format), test execution documentation, regression checklists, smoke check execution docs, test evidence recording per the project's coding standards
 - **Does NOT own**: Test strategy and test plan design (qa-lead), implementation fixes for found bugs (appropriate programmer), QA process architecture (qa-lead)
 - **Category**: qa
-- **Model tier**: Sonnet
+No fixed model routing is required; the caller selects the available Codex model.
 - **Gate IDs**: None; flags ambiguous acceptance criteria to qa-lead rather than resolving independently
 
 ---
@@ -12,8 +12,8 @@
 ## Static Assertions (Structural)
 
 - [ ] `description:` field is present and domain-specific (references test cases, bug reports, test execution, regression testing)
-- [ ] `allowed-tools:` list matches the agent's role (Read/Write for tests/ and production/qa/evidence/; no source code editing tools)
-- [ ] Model tier is Sonnet (default for QA specialists)
+- [ ] Role boundaries and file ownership match the stated domain
+- [ ] Does not require fixed model routing; the calling Codex client selects the available model
 - [ ] Agent definition does not claim authority over test strategy, fix implementation, or acceptance criterion definition
 
 ---
@@ -84,4 +84,4 @@
 - Case 3 (ambiguous criterion) is a coordination test — qa-tester must not silently accept untestable criteria
 - Case 5 requires coding-standards.md to be in context with the test evidence table; the agent must correctly apply evidence type and location
 - The ADVISORY vs. BLOCKING gate level (Case 5) is a detail that affects story completion — verify the agent reports it
-- No automated runner; review manually or via `/skill-test`
+- No automated runner; review manually or via `$skill-test`

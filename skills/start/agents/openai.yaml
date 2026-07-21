@@ -1,0 +1,4 @@
+interface:
+  display_name: "Start"
+  short_description: "Guide a new user into the right studio workflow"
+  default_prompt: "Use $start to guide a new user into the right studio workflow."

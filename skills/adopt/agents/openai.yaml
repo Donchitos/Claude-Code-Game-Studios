@@ -1,0 +1,4 @@
+interface:
+  display_name: "Adopt"
+  short_description: "Audit brownfield projects for template compatibility"
+  default_prompt: "Use $adopt to audit brownfield projects for template compatibility."

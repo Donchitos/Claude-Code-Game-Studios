@@ -182,13 +182,13 @@
 >
 > **Rules Enforcement Results:**
 >
-> The `gameplay-code` rule automatically flagged 2 issues during implementation:
+> Review against `src/gameplay/AGENTS.md` identified 2 issues during implementation:
 > 1. ❌ `crit_multiplier` was hardcoded as `2.0` in damage_calculator.gd
 >    - **Fixed:** Moved to `combat_damage.json` and loaded from config
 > 2. ❌ `HealthComponent` had direct `print()` debug output
 >    - **Fixed:** Removed hardcoded debug, added proper signals instead
 >
-> The `data-files` rule validated:
+> Review against `assets/data/AGENTS.md` confirmed:
 > - ✅ `combat_damage.json` is valid JSON
 > - ✅ Naming convention matches `[system]_[name].json`
 > - ✅ All values have comment documentation
@@ -208,7 +208,7 @@
 >
 > **Next Steps - Your Choice:**
 > A) I can write formal unit tests now (recommended - verification-driven development)
-> B) You can review the code first via `/code-review src/gameplay/combat/damage_calculator.gd`
+> B) You can review the code first via `$code-review src/gameplay/combat/damage_calculator.gd`
 > C) Skip tests for now and integrate into actual combat
 >
 > What would you like?
@@ -275,7 +275,7 @@
 - Didn't assume or guess - asked for clarification on every unclear point
 - Proposed full architecture for user approval before writing code
 - Incorporated user's type safety feedback immediately
-- Rules caught issues automatically and agent fixed them transparently
+- Scoped instruction review caught issues and the agent fixed them transparently
 - Tests written proactively following verification-driven development
 - Agent offered next-step options rather than assuming what user wants
 

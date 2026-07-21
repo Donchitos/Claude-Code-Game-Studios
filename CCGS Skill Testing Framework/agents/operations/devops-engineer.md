@@ -3,7 +3,7 @@
 ## Agent Summary
 - **Domain**: CI/CD pipeline configuration, build scripts, version control workflow enforcement, deployment infrastructure, branching strategy, environment management, automated test integration in CI
 - **Does NOT own**: Game logic or gameplay systems, security audits (security-engineer), QA test strategy (qa-lead), game networking logic (network-programmer)
-- **Model tier**: Sonnet
+No fixed model routing is required; the caller selects the available Codex model.
 - **Gate IDs**: None; escalates deployment blockers to producer
 
 ---
@@ -11,8 +11,8 @@
 ## Static Assertions (Structural)
 
 - [ ] `description:` field is present and domain-specific (references CI/CD, build, deployment, version control)
-- [ ] `allowed-tools:` list matches the agent's role (Read/Write for pipeline config files, shell scripts, YAML; no game source editing tools)
-- [ ] Model tier is Sonnet (default for operations specialists)
+- [ ] Role boundaries and file ownership match the stated domain
+- [ ] Does not require fixed model routing; the calling Codex client selects the available model
 - [ ] Agent definition does not claim authority over game logic, security audits, or QA test design
 
 ---
@@ -46,11 +46,11 @@
 ### Case 4: Branching strategy conflict
 **Input**: "Half the team wants to use GitFlow with long-lived feature branches. The other half wants trunk-based development. How should we set this up?"
 **Expected behavior**:
-- Recommends trunk-based development per project conventions (CLAUDE.md / coordination-rules.md specify Git with trunk-based development)
+- Recommends trunk-based development per project conventions (AGENTS.md / coordination-rules.md specify Git with trunk-based development)
 - Provides concrete rationale for the recommendation in this project's context: smaller team, fewer integration conflicts, faster CI feedback
 - Does NOT present this as a 50/50 choice if the project has an established convention
 - Explains how to implement trunk-based development with short-lived feature branches and feature flags if needed
-- Does NOT override the project convention without flagging that doing so requires updating CLAUDE.md
+- Does NOT override the project convention without flagging that doing so requires updating AGENTS.md
 
 ### Case 5: Context pass — platform-specific build matrix
 **Input context**: Project targets PC (Windows, Linux), Nintendo Switch, and PlayStation 5.
@@ -77,4 +77,4 @@
 - Case 1 (Godot CI) references `coding-standards.md` CI rules — verify this file is present and current before running this test
 - Case 4 (branching strategy) is a convention-enforcement test — agent must know the project convention, not just give neutral advice
 - Case 5 requires that project's target platforms are documented (in `technical-preferences.md` or equivalent)
-- No automated runner; review manually or via `/skill-test`
+- No automated runner; review manually or via `$skill-test`

@@ -1,40 +1,41 @@
 ---
 name: Feature Request
-about: Suggest a new agent, skill, hook, or improvement
+about: Suggest a focused framework improvement
 title: "[Feature] "
 labels: enhancement
 assignees: ''
 ---
 
-## Summary
+## Problem
 
-A brief description of what you'd like added or changed.
+What current workflow gap or user problem should be addressed?
 
-## Type
+## Proposed Scope
 
-- [ ] New agent
-- [ ] New skill (slash command)
-- [ ] New hook
-- [ ] New rule
-- [ ] New template
-- [ ] Improvement to existing component
+- [ ] New or changed skill
+- [ ] New or changed role profile
+- [ ] Hook behavior or event mapping
+- [ ] Nested `AGENTS.md` rule
+- [ ] Studio document or template
+- [ ] Package metadata
 - [ ] Other:
 
-## Problem / Motivation
+## Proposed Behavior
 
-What problem does this solve? What workflow does it improve?
-
-## Proposed Solution
-
-How do you think this should work? Include details like:
-- For agents: what domain, what tier, what tools
-- For skills: what the workflow looks like, what it outputs
-- For hooks: what event triggers it, what it validates
+Describe the minimum behavior needed. For skills, include expected
+`$skill-name` invocation, inputs, and outputs. For role profiles, define the
+domain and delegation boundary. For hooks, identify the Codex event, input,
+side effects, and project-trust/security implications.
 
 ## Alternatives Considered
 
-Any other approaches you've thought about.
+What smaller or existing workflow could solve the same problem?
+
+## Validation Ideas
+
+How should maintainers prove the feature works on Windows, macOS, and Linux
+where applicable?
 
 ## Additional Context
 
-Examples, references, or screenshots that help explain the request.
+Add references, examples, or screenshots that clarify the request.

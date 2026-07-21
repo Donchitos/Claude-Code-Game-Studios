@@ -1,8 +1,8 @@
-# Skill Test Spec: /architecture-review
+# Skill Test Spec: $architecture-review
 
 ## Skill Summary
 
-`/architecture-review` is an Opus-tier skill that validates a technical architecture
+`$architecture-review` is an Opus-tier skill that validates a technical architecture
 document against the project's 8 required architecture sections and checks that it
 is internally consistent, non-contradictory with existing ADRs, and correctly
 targeting the pinned engine version. It produces a verdict of APPROVED /
@@ -17,9 +17,9 @@ no files are written.
 
 ## Static Assertions (Structural)
 
-Verified automatically by `/skill-test static` — no fixture needed.
+Verified automatically by `$skill-test static` — no fixture needed.
 
-- [ ] Has required frontmatter fields: `name`, `description`, `argument-hint`, `user-invocable`, `allowed-tools`
+- [ ] Has non-empty `name` and `description`; `agents/openai.yaml` has non-empty display name and short description
 - [ ] Has ≥2 phase headings
 - [ ] Contains verdict keywords: APPROVED, NEEDS REVISION, MAJOR REVISION NEEDED
 - [ ] Does NOT require "May I write" language (read-only skill)
@@ -50,7 +50,7 @@ In `solo` mode: both gates are skipped with equivalent notes.
 - No contradictions with existing Accepted ADRs in `docs/architecture/`
 - `production/session-state/review-mode.txt` contains `full`
 
-**Input:** `/architecture-review docs/architecture/architecture.md`
+**Input:** `$architecture-review docs/architecture/architecture.md`
 
 **Expected behavior:**
 1. Skill reads the architecture document
@@ -66,7 +66,7 @@ In `solo` mode: both gates are skipped with equivalent notes.
 - [ ] TD-ARCHITECTURE and LP-FEASIBILITY spawn in parallel (not sequentially)
 - [ ] Verdict is APPROVED when all sections are present and no conflicts exist
 - [ ] Skill does NOT write any files
-- [ ] Next-step handoff to `/create-control-manifest` or `/create-epics` is present
+- [ ] Next-step handoff to `$create-control-manifest` or `$create-epics` is present
 
 ---
 
@@ -77,7 +77,7 @@ In `solo` mode: both gates are skipped with equivalent notes.
   (e.g., no data model section, no error handling section)
 - `production/session-state/review-mode.txt` contains `full`
 
-**Input:** `/architecture-review docs/architecture/architecture.md`
+**Input:** `$architecture-review docs/architecture/architecture.md`
 
 **Expected behavior:**
 1. Skill reads the document and identifies missing sections
@@ -100,7 +100,7 @@ In `solo` mode: both gates are skipped with equivalent notes.
 - One Accepted ADR in `docs/architecture/` establishes a constraint that the architecture doc contradicts
   (e.g., ADR-001 mandates ECS pattern; architecture.md describes a different pattern for the same system)
 
-**Input:** `/architecture-review docs/architecture/architecture.md`
+**Input:** `$architecture-review docs/architecture/architecture.md`
 
 **Expected behavior:**
 1. Skill reads the architecture doc and all existing ADRs
@@ -121,13 +121,13 @@ In `solo` mode: both gates are skipped with equivalent notes.
 **Fixture:**
 - The path provided does not exist in the project
 
-**Input:** `/architecture-review docs/architecture/nonexistent.md`
+**Input:** `$architecture-review docs/architecture/nonexistent.md`
 
 **Expected behavior:**
 1. Skill attempts to read the file
 2. File not found
 3. Skill outputs a clear error naming the missing file
-4. Skill suggests checking `docs/architecture/` or running `/create-architecture`
+4. Skill suggests checking `docs/architecture/` or running `$create-architecture`
 5. Skill does NOT produce a verdict
 
 **Assertions:**
@@ -189,4 +189,4 @@ In `solo` mode: both gates are skipped with equivalent notes.
 - Engine version compatibility checking (cross-referencing `docs/engine-reference/`)
   is part of Case 1's happy path but not independently fixture-tested.
 - RTM (requirement traceability matrix) mode is a separate concern covered by
-  the `/architecture-review` skill's own `rtm` argument mode, not tested here.
+  the `$architecture-review` skill's own `rtm` argument mode, not tested here.

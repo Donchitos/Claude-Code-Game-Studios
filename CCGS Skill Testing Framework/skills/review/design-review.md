@@ -1,8 +1,8 @@
-# Skill Test Spec: /design-review
+# Skill Test Spec: $design-review
 
 ## Skill Summary
 
-`/design-review` reads a game design document (GDD) and evaluates it against
+`$design-review` reads a game design document (GDD) and evaluates it against
 the project's 8-section design standard (Overview, Player Fantasy, Detailed
 Rules, Formulas, Edge Cases, Dependencies, Tuning Knobs, Acceptance Criteria).
 It checks for internal consistency, implementability, and cross-system
@@ -14,12 +14,12 @@ REVISION NEEDED. It is a read-only skill (no file writes) and runs as a
 
 ## Static Assertions (Structural)
 
-Verified automatically by `/skill-test static` — no fixture needed.
+Verified automatically by `$skill-test static` — no fixture needed.
 
-- [ ] Has required frontmatter fields: `name`, `description`, `argument-hint`, `user-invocable`, `allowed-tools`
+- [ ] Has non-empty `name` and `description`; `agents/openai.yaml` has non-empty display name and short description
 - [ ] Has ≥2 phase headings or numbered steps
 - [ ] Contains verdict keywords: APPROVED, NEEDS REVISION, MAJOR REVISION NEEDED
-- [ ] Does NOT require "May I write" language (read-only skill — `allowed-tools` excludes Write/Edit)
+- [ ] Does NOT require "May I write" language because the workflow is read-only
 - [ ] Output format is documented (review template shown in skill body)
 
 ---
@@ -35,11 +35,11 @@ Verified automatically by `/skill-test static` — no fixture needed.
 - Formulas section contains at least one formula with defined variables
 - Acceptance Criteria section contains at least 3 testable criteria
 
-**Input:** `/design-review design/gdd/light-manipulation.md`
+**Input:** `$design-review design/gdd/light-manipulation.md`
 
 **Expected behavior:**
 1. Skill reads the target document in full
-2. Skill reads CLAUDE.md for project context and standards
+2. Skill reads AGENTS.md for project context and standards
 3. Skill evaluates all 8 required sections (present/absent check)
 4. Skill checks internal consistency (formulas match described behavior)
 5. Skill checks implementability (rules are precise enough to code)
@@ -59,11 +59,10 @@ Verified automatically by `/skill-test static` — no fixture needed.
 ### Case 2: Failure Path — Incomplete GDD (4/8 sections)
 
 **Fixture:**
-- `design/gdd/light-manipulation.md` exists using content from
-  `tests/skills/_fixtures/incomplete-gdd.md` (4 of 8 sections populated;
-  Formulas, Edge Cases, Tuning Knobs, Acceptance Criteria are missing)
+- `design/gdd/light-manipulation.md` exists with four populated sections; Formulas,
+  Edge Cases, Tuning Knobs, and Acceptance Criteria are missing
 
-**Input:** `/design-review design/gdd/light-manipulation.md`
+**Input:** `$design-review design/gdd/light-manipulation.md`
 
 **Expected behavior:**
 1. Skill reads the document
@@ -88,7 +87,7 @@ Verified automatically by `/skill-test static` — no fixture needed.
 - The described behavior mentions numeric values but no formulas are defined
 - Acceptance Criteria exist but are vague ("feels good" rather than measurable)
 
-**Input:** `/design-review design/gdd/[document].md`
+**Input:** `$design-review design/gdd/[document].md`
 
 **Expected behavior:**
 1. Skill identifies missing Formulas section
@@ -109,7 +108,7 @@ Verified automatically by `/skill-test static` — no fixture needed.
 **Fixture:**
 - The path provided does not exist in the project
 
-**Input:** `/design-review design/gdd/nonexistent.md`
+**Input:** `$design-review design/gdd/nonexistent.md`
 
 **Expected behavior:**
 1. Skill attempts to read the file
@@ -133,7 +132,7 @@ Verified automatically by `/skill-test static` — no fixture needed.
 - `design/gdd/light-manipulation.md` exists with all 8 sections
 - `production/session-state/review-mode.txt` exists with `full` (most permissive mode)
 
-**Input:** `/design-review design/gdd/light-manipulation.md` (with full review mode active)
+**Input:** `$design-review design/gdd/light-manipulation.md` (with full review mode active)
 
 **Expected behavior:**
 1. Skill reads the GDD document
@@ -156,7 +155,7 @@ Verified automatically by `/skill-test static` — no fixture needed.
 - [ ] Does NOT use Write or Edit tools (read-only skill)
 - [ ] Presents complete findings before any verdict
 - [ ] Does not ask for approval before producing output (no writes to approve)
-- [ ] Ends with recommended next step (e.g., fix issues and re-run, or proceed to `/map-systems`)
+- [ ] Ends with recommended next step (e.g., fix issues and re-run, or proceed to `$map-systems`)
 
 ---
 
@@ -164,7 +163,7 @@ Verified automatically by `/skill-test static` — no fixture needed.
 
 - Cross-system consistency checking (Case 3 in the skill's own phase list) is
   not directly tested here because it requires multiple GDD files to compare;
-  this is covered by the `/review-all-gdds` spec instead.
+  this is covered by the `$review-all-gdds` spec instead.
 - The skill's `context: fork` behavior (running as a subagent) is not tested
   at the spec level — this is a runtime behavior verified manually.
 - Performance and edge cases involving very large GDD files are not in scope.

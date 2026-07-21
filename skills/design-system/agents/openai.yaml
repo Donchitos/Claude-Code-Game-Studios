@@ -1,0 +1,4 @@
+interface:
+  display_name: "Design System"
+  short_description: "Author a complete GDD for one game system"
+  default_prompt: "Use $design-system to author a complete GDD for one game system."
