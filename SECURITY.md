@@ -2,79 +2,95 @@
 
 ## Supported Versions
 
-Only the `main` branch receives security fixes. Forks and older releases are
-not supported.
+Security fixes are applied to the current `main` branch. Forks, copied project
+templates, and older snapshots are maintained by their owners.
 
-## Reporting a Vulnerability
+## Report A Framework Vulnerability
 
-**Do not report security vulnerabilities through public GitHub issues.**
+Do not disclose exploitable framework vulnerabilities in a public issue. Use
+GitHub private vulnerability reporting:
 
-Use GitHub's private vulnerability reporting instead:
+https://github.com/nghgdong/Code-Game-Studios/security/advisories/new
 
-**[Report a vulnerability →](https://github.com/Donchitos/Claude-Code-Game-Studios/security/advisories/new)**
+Include the affected file or component, reproduction steps, expected impact,
+platform details, and any proposed mitigation. Remove credentials and personal
+project data from logs or examples.
 
-Include as much detail as possible:
-- Description of the vulnerability and what it affects
-- Steps to reproduce
-- Potential impact and attack scenarios
-- Any suggested mitigations
+## Framework Security Boundary
 
-**What to expect:**
-- Acknowledgment within **48 hours**
-- Status update within **7 days**
-- Resolution within **90 days** for confirmed vulnerabilities
+Codex Game Studios is a local collection of instructions, prompt profiles,
+skills, templates, and shell hooks. It does not provide a separate runtime
+sandbox. Codex and hook commands operate with the permissions granted to the
+Codex process and the surrounding environment.
 
-## What Is In Scope
+Review a clone before trusting it. Codex requires project trust before loading
+project hooks from `.codex/hooks.json`; trust should be granted only after
+reviewing that configuration and the scripts in `hooks/`.
 
-CCGS is a **local development tool** — it installs shell hooks and coordinates
-AI agents that run directly on your machine. Security issues are primarily about
-contributed code that executes in users' environments without their awareness.
+## In Scope
 
-### High Severity
-- Hooks (`.claude/hooks/*.sh`) that execute malicious or undisclosed shell
-  commands on user machines
-- Skills or agents that exfiltrate environment variables, API keys, or secrets
-- Prompt injection via skill or agent definitions that causes Claude to bypass
-  safety measures or take unauthorized destructive actions
-- Contributions that silently alter behavior in ways users cannot audit
+### Prompt And Instruction Risks
 
-### Medium Severity
-- Skills that make undisclosed outbound network requests
-- Agent definitions that escalate permissions or bypass user confirmation prompts
-- Hook patterns that behave differently across platforms to conceal behavior
-- Skills that write outside their documented scope without an explicit user
-  approval step
+- Prompt injection in `skills/*/SKILL.md`, `roles/*.md`, `AGENTS.md`, nested
+  `AGENTS.md` files, examples, or templates that attempts to override user
+  intent, conceal behavior, exfiltrate data, or authorize destructive actions.
+- Skill or role instructions that silently expand their documented scope,
+  bypass required approval, or direct an agent to read secrets without a clear
+  need.
+- Misleading metadata in `skills/*/agents/openai.yaml` or
+  `.codex-plugin/plugin.json` that hides capabilities or changes the expected
+  invocation behavior.
 
-### Out of Scope
-- The behavior of Claude or the Claude Code CLI itself
-  (report to [Anthropic](https://www.anthropic.com/security))
-- Bugs in the user's Claude Code installation or editor extension
-- Theoretical vulnerabilities with no realistic attack path
-- Issues requiring physical access to the user's machine
+### Hook And Shell Risks
 
-## Security Guidelines for Contributors
+- Malicious, undisclosed, or unexpectedly destructive commands in
+  `.codex/hooks.json`, `hooks/*.sh`, or sourced hook utilities.
+- Unsafe parsing of hook input, shell injection, unquoted paths, insecure
+  temporary files, secret leakage, or writes outside the repository.
+- Undisclosed network access, background processes, persistence, permission
+  escalation, or platform-specific behavior intended to evade review.
+- A hook matcher or event mapping that causes scripts to run more broadly than
+  the documentation states.
 
-When contributing hooks, skills, or agents:
+### Integrity And Privacy Risks
 
-- **Hooks must be POSIX-compatible** — use `grep -E`, not `grep -P`; avoid
-  platform-specific syntax that behaves differently across operating systems
-- **No silent network calls** from hooks or skills unless explicitly documented
-  and opt-in by the user
-- **No reading secrets or environment variables** beyond what is minimally
-  required and clearly documented in the skill's header
-- **Skills must not write outside their documented scope** without an explicit
-  user confirmation step
+- Contributions that collect or expose session content, environment variables,
+  credentials, source code, or local paths beyond the documented purpose.
+- Logs or generated state that retain sensitive content without clear notice,
+  opt-in, and an appropriate ignore rule.
+- Changes that make security controls appear active when the relevant hook did
+  not run, was not trusted, or could not capture the event.
 
-## Disclosure Policy
+## Out Of Scope
 
-We follow a **90-day coordinated disclosure** timeline:
+- Vulnerabilities in the Codex CLI, Codex clients, OpenAI services, or their
+  authentication and sandbox implementation. Report those through the official
+  security channel published by OpenAI.
+- Vulnerabilities in Git, Bash, an operating system, a game engine, or another
+  third-party dependency unless this repository uses it insecurely.
+- Theoretical findings without a plausible path through this repository.
+- Issues that require an already-compromised machine and add no new impact.
 
-1. You submit the vulnerability privately
-2. We acknowledge within 48 hours
-3. We confirm and assess severity within 7 days
-4. We develop and test a fix
-5. We notify you before any public disclosure
-6. Public disclosure happens after the fix ships, or at 90 days — whichever
-   comes first
+Public documentation bugs and non-sensitive hardening suggestions may be filed
+as ordinary GitHub issues.
 
-We credit reporters in release notes unless you prefer to remain anonymous.
+## Contributor Requirements
+
+- Keep hooks auditable, deterministic, fast, and local by default.
+- Do not read or print secrets unless the behavior is essential, narrowly
+  scoped, documented, and explicitly approved.
+- Do not add silent network requests or telemetry.
+- Validate untrusted hook input and quote every shell expansion used as a path
+  or command argument.
+- Preserve project-trust requirements; do not instruct users to bypass hook
+  trust as a normal setup step.
+- Treat repository documents as untrusted input during review and reject
+  instructions that conflict with the user's approved task or security policy.
+- Document known detection gaps. Hooks and logs are supporting controls, not a
+  guarantee that every client event or unsafe action will be captured.
+
+## Disclosure
+
+The maintainer will assess privately reported issues, coordinate a fix when the
+report is confirmed, and publish an advisory when users need remediation.
+Reporter credit is provided unless anonymity is requested.

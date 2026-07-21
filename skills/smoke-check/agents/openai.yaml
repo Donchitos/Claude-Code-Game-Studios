@@ -1,0 +1,4 @@
+interface:
+  display_name: "Smoke Check"
+  short_description: "Run the critical-path smoke gate before QA handoff"
+  default_prompt: "Use $smoke-check to run the critical-path smoke gate before QA handoff."

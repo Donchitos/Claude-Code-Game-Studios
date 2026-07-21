@@ -3,16 +3,16 @@
 ## Agent Summary
 - **Domain**: Release pipeline management, platform certification checklists (Nintendo, Sony, Microsoft, Apple, Google), store submission workflows, platform technical requirements compliance, semantic version numbering, release branch management
 - **Does NOT own**: Game design decisions, QA test strategy or test case design (qa-lead), QA test execution (qa-tester), build infrastructure (devops-engineer)
-- **Model tier**: Sonnet
-- **Gate IDs**: May be invoked by `/gate-check` during Release phase; LAUNCH BLOCKED verdict is release-manager's primary escalation output
+No fixed model routing is required; the caller selects the available Codex model.
+- **Gate IDs**: May be invoked by `$gate-check` during Release phase; LAUNCH BLOCKED verdict is release-manager's primary escalation output
 
 ---
 
 ## Static Assertions (Structural)
 
 - [ ] `description:` field is present and domain-specific (references release pipeline, certification, store submission)
-- [ ] `allowed-tools:` list matches the agent's role (Read/Write for production/releases/ directory; no game source or test tools)
-- [ ] Model tier is Sonnet (default for operations specialists)
+- [ ] Role boundaries and file ownership match the stated domain
+- [ ] Does not require fixed model routing; the calling Codex client selects the available model
 - [ ] Agent definition does not claim authority over QA strategy, game design, or build infrastructure
 
 ---
@@ -77,4 +77,4 @@
 - Case 3 (LAUNCH BLOCKED verdict) is the most critical test — this agent's primary safety output is blocking bad launches
 - Case 5 requires current date and release date context; verify the agent uses actual dates, not placeholder estimates
 - Certification requirements change over time — flag if the agent produces specific requirement IDs that may be outdated
-- No automated runner; review manually or via `/skill-test`
+- No automated runner; review manually or via `$skill-test`

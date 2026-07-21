@@ -3,7 +3,7 @@
 ## Agent Summary
 - **Domain**: Resource economy design, loot table design, progression curves (XP, level, unlock), in-game market and shop design, economic balance analysis, sink and faucet mechanics, inflation/deflation risk assessment
 - **Does NOT own**: Live ops event scheduling and structure (live-ops-designer), code implementation, analytics tracking design (analytics-engineer), narrative justification for economy systems (writer)
-- **Model tier**: Sonnet
+No fixed model routing is required; the caller selects the available Codex model.
 - **Gate IDs**: None; escalates economy-breaking design conflicts to creative-director or producer
 
 ---
@@ -11,8 +11,8 @@
 ## Static Assertions (Structural)
 
 - [ ] `description:` field is present and domain-specific (references economy, loot tables, progression curves, balance)
-- [ ] `allowed-tools:` list matches the agent's role (Read/Write for design/balance/ documents; no code or analytics tools)
-- [ ] Model tier is Sonnet (default for design specialists)
+- [ ] Role boundaries and file ownership match the stated domain
+- [ ] Does not require fixed model routing; the calling Codex client selects the available model
 - [ ] Agent definition does not claim authority over live ops scheduling, code, or narrative
 
 ---
@@ -77,4 +77,4 @@
 - Case 3 (inflation risk) is an economic health test — missed inflation risks cause long-term economy damage in live games
 - Case 4 requires the agent to produce actual numbers, not curve shapes — verify math is present, not just a narrative
 - Case 5 is the most important context-awareness test; agent must use provided data, not placeholder values
-- No automated runner; review manually or via `/skill-test`
+- No automated runner; review manually or via `$skill-test`

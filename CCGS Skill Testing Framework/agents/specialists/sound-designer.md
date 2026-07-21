@@ -3,7 +3,7 @@
 ## Agent Summary
 Domain: SFX specs, audio events, mixing parameters, and sound category definitions.
 Does NOT own: music composition direction (audio-director), code implementation of audio systems.
-Model tier: Sonnet (default).
+No fixed model routing is required; the caller selects the available Codex model.
 No gate IDs assigned.
 
 ---
@@ -11,8 +11,8 @@ No gate IDs assigned.
 ## Static Assertions (Structural)
 
 - [ ] `description:` field is present and domain-specific (references SFX / audio events / mixing)
-- [ ] `allowed-tools:` list includes Read, Write, Edit, Glob, Grep — does NOT include engine code execution tools
-- [ ] Model tier is Sonnet (default for specialists)
+- [ ] Role boundaries and file ownership match the stated domain
+- [ ] Does not require fixed model routing; the calling Codex client selects the available model
 - [ ] Agent definition does not claim authority over music direction or audio code implementation
 
 ---

@@ -1,0 +1,4 @@
+interface:
+  display_name: "Team Live Ops"
+  short_description: "Coordinate planning for seasons, events, and live content"
+  default_prompt: "Use $team-live-ops to coordinate planning for seasons, events, and live content."

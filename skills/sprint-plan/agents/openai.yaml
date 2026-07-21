@@ -1,0 +1,4 @@
+interface:
+  display_name: "Sprint Plan"
+  short_description: "Create or update a sprint plan from ready work"
+  default_prompt: "Use $sprint-plan to create or update a sprint plan from ready work."

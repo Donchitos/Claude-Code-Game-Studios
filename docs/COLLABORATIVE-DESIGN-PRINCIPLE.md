@@ -6,7 +6,7 @@
 
 ## 🎯 Core Philosophy
 
-This agent architecture is designed for **USER-DRIVEN COLLABORATION**, not autonomous AI generation.
+This studio workflow is designed for **USER-DRIVEN COLLABORATION**, not autonomous generation.
 
 ### ✅ The Right Model: Collaborative Consultant
 
@@ -132,9 +132,9 @@ Every agent interaction should follow this pattern:
     User: "Yes, write it."  ← ONLY NOW does file get created
 
 11. AGENT WRITES FILE
-    Agent: [Uses Write tool]
+    Agent: [Writes the approved file]
            "Created design/gdd/crafting-system.md. Would you like me to run
-            /design-review to validate it against the standard?"
+            $design-review to validate it against the standard?"
 ```
 
 ---
@@ -215,15 +215,15 @@ Agent: [Writes code, runs through gameplay-code rule checks, fixes issues]
 
 ### 🎯 Brainstorming Tasks
 
-**Example:** `/brainstorm roguelike`
+**Example:** `$brainstorm roguelike`
 
 ```
 ❌ WRONG:
-User: "/brainstorm roguelike"
+User: "$brainstorm roguelike"
 Skill: [Generates 1 concept and writes it to design/concept.md]
 
 ✅ RIGHT:
-User: "/brainstorm roguelike"
+User: "$brainstorm roguelike"
 Skill: "I'll help you brainstorm roguelike concepts using professional
        ideation frameworks. First:
 
@@ -329,126 +329,42 @@ Skill: "Writing design/concept.md..."
 
 ---
 
-## 🎛️ Structured Decision UI (AskUserQuestion)
+## Structured Decisions
 
-Use the `AskUserQuestion` tool to present decisions as a **selectable UI** instead
-of plain markdown text. This gives the user a clean interface to pick from options
-(or type "Other" for a custom answer).
+Use the **Explain -> Capture** pattern without depending on a particular client
+widget:
 
-### The Explain → Capture Pattern
+1. **Explain first** - Present the full analysis, evidence, trade-offs, and
+   recommendation in conversation.
+2. **Capture the decision** - Ask the user to choose from concise options or
+   provide a different answer.
 
-Detailed reasoning doesn't fit in the tool's short descriptions. So use a two-step
-pattern:
+A Codex client may provide a structured question control. Use it when available
+and helpful, but every workflow must also work through ordinary text prompts.
+Delegated agents should return analysis and options to the coordinating agent;
+they must not assume access to the same interaction controls.
 
-1. **Explain first** — Write your full expert analysis in conversation text:
-   detailed pros/cons, theory references, example games, pillar alignment. This is
-   where the reasoning lives.
+Use constrained choices for design, architecture, scope, and next-step
+decisions. Use open conversation for discovery questions and a direct
+confirmation for approval to write.
 
-2. **Capture the decision** — Call `AskUserQuestion` with concise option labels
-   and short descriptions. The user picks from the UI or types a custom answer.
+Example:
 
-### When to Use AskUserQuestion
+```text
+I recommend Hybrid Discovery because it preserves experimentation while giving
+new players a recovery path.
 
-✅ **Use it for:**
-- Every decision point where you'd present 2-4 options
-- Initial clarifying questions with constrained answers
-- Batching up to 4 independent questions in one call
-- Next-step choices ("Draft formulas or refine rules first?")
-- Architecture decisions ("Static utility or singleton?")
-- Strategic choices ("Simplify scope, slip deadline, or cut feature?")
+Choose one:
+1. Hybrid Discovery (recommended) - earned hints plus experimentation
+2. Full Discovery - maximum mystery, higher frustration risk
+3. Guided Recipes - clearest onboarding, less surprise
 
-❌ **Don't use it for:**
-- Open-ended discovery questions ("What excites you about roguelikes?")
-- Single yes/no confirmations ("May I write to file?")
-- When running as a Task subagent (tool may not be available)
-
-### Format Guidelines
-
-- **Labels**: 1-5 words (e.g., "Hybrid Discovery", "Full Randomized")
-- **Descriptions**: 1 sentence summarizing the approach and key trade-off
-- **Recommended**: Add "(Recommended)" to your preferred option's label
-- **Previews**: Use `markdown` field for comparing code structures or formulas
-- **Multi-select**: Use `multiSelect: true` when choices aren't mutually exclusive
-
-### Example — Multi-Question Batch (Clarifying Questions)
-
-After introducing the topic in conversation, batch constrained questions:
-
-```
-AskUserQuestion:
-  questions:
-    - question: "Should crafting recipes be discovered or learned?"
-      header: "Discovery"
-      options:
-        - label: "Experimentation"
-          description: "Players discover by trying combinations — high mystery"
-        - label: "NPC/Book Learning"
-          description: "Recipes taught explicitly — accessible, lower mystery"
-        - label: "Tiered Hybrid"
-          description: "Basic recipes learned, advanced discovered — best of both"
-    - question: "How punishing should failed crafts be?"
-      header: "Failure"
-      options:
-        - label: "Materials Lost"
-          description: "All consumed on failure — high stakes, risk/reward"
-        - label: "Partial Recovery"
-          description: "50% returned — moderate risk"
-        - label: "No Loss"
-          description: "Materials returned, only time spent — forgiving"
+You can also describe a different approach.
 ```
 
-### Example — Design Decision (After Full Analysis)
-
-After writing the full pros/cons analysis in conversation text:
-
-```
-AskUserQuestion:
-  questions:
-    - question: "Which crafting approach fits your vision?"
-      header: "Approach"
-      options:
-        - label: "Hybrid Discovery (Recommended)"
-          description: "Discovery base with earned hints — balances exploration and accessibility"
-        - label: "Full Discovery"
-          description: "Pure experimentation — maximum mystery, risk of frustration"
-        - label: "Hint System"
-          description: "Progressive hints reveal recipes — accessible but less surprise"
-```
-
-### Example — Strategic Decision
-
-After presenting the full strategic analysis with pillar alignment:
-
-```
-AskUserQuestion:
-  questions:
-    - question: "How should we handle crafting scope for Alpha?"
-      header: "Scope"
-      options:
-        - label: "Simplify to Core (Recommended)"
-          description: "Recipe discovery only, 10 recipes — makes deadline, pillar visible"
-        - label: "Full Implementation"
-          description: "Complete system, 30 recipes — slips Alpha by 1 week"
-        - label: "Cut Entirely"
-          description: "Drop crafting, focus on combat — deadline met, pillar missing"
-```
-
-### Team Skill Orchestration
-
-In team skills, subagents return their analysis as text. The **orchestrator**
-(main session) calls `AskUserQuestion` at each decision point between phases:
-
-```
-[game-designer returns 3 combat approaches with analysis]
-
-Orchestrator uses AskUserQuestion:
-  question: "Which combat approach should we develop?"
-  options: [concise summaries of the 3 approaches]
-
-[User picks → orchestrator passes decision to next phase]
-```
-
----
+In multi-role workflows, each delegated reviewer returns evidence and options.
+The coordinating agent reconciles them, explains conflicts, and asks the user
+for the final decision.
 
 ## 📄 File Writing Protocol
 
@@ -465,7 +381,7 @@ Every file write must follow:
 2. User: "Yes" or "No, change X first" or "Show me the full draft"
 
 3. IF User says "Yes":
-   Agent: [Uses Write/Edit tool]
+   Agent: [Writes the approved files]
           "Written to [filepath]. Next steps?"
 
    IF User says "No":
@@ -558,10 +474,10 @@ Agents should be:
 
 ## 🎯 Applying This to Team Skills
 
-Team skills (like `/team-combat`) orchestrate multiple agents, but still collaborative:
+Team skills (like `$team-combat`) orchestrate multiple agents, but still collaborative:
 
 ```
-User: "/team-combat 'grappling hook ability'"
+User: "$team-combat 'grappling hook ability'"
 
 Skill (Coordinator):
 "I'll coordinate the combat team to design and implement the grappling hook.
@@ -602,10 +518,10 @@ Skill (Coordinator):
 "All 4 subsystems implemented. Would you like me to:
  A) Have gameplay-programmer integrate them now
  B) Let you test each independently first
- C) Run /code-review before integration?"
+ C) Run $code-review before integration?"
 ```
 
-The orchestration is automated, but **decision points stay with the user**.
+The skill coordinates the workflow, but **decision points stay with the user**.
 
 ---
 
@@ -678,11 +594,7 @@ WHEN implementing:
 
 ## Implementation Status
 
-This principle has been fully embedded across the project:
-
-- **CLAUDE.md** — Collaboration protocol section added
-- **All 48 agent definitions** — Updated to enforce question-asking and approval
-- **All skills** — Updated to require approval before writing
-- **WORKFLOW-GUIDE.md** — Rewritten with collaborative examples
-- **README.md** — Clarifies collaborative (not autonomous) design
-- **AskUserQuestion tool** — Integrated into 16 skills for structured option UI
+The collaboration principle is represented in `AGENTS.md`, role profiles,
+skills, the workflow guide, and the repository templates. Client-specific
+interaction controls remain optional; the required behavior is clear analysis,
+user choice, scoped approval, and verified execution.

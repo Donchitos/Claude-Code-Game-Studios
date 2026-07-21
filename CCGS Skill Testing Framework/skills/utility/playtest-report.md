@@ -1,8 +1,8 @@
-# Skill Test Spec: /playtest-report
+# Skill Test Spec: $playtest-report
 
 ## Skill Summary
 
-`/playtest-report` generates a structured playtest report from session notes or
+`$playtest-report` generates a structured playtest report from session notes or
 user input. The report is organized into four sections: Feel/Accessibility,
 Bugs Observed, Design Feedback, and Next Steps. When multiple testers participated,
 the skill aggregates feedback and distinguishes majority opinions from minority
@@ -17,19 +17,19 @@ a separate invocation. The verdict is COMPLETE when the report is written.
 
 ## Static Assertions (Structural)
 
-Verified automatically by `/skill-test static` — no fixture needed.
+Verified automatically by `$skill-test static` — no fixture needed.
 
-- [ ] Has required frontmatter fields: `name`, `description`, `argument-hint`, `user-invocable`, `allowed-tools`
+- [ ] Has non-empty `name` and `description`; `agents/openai.yaml` has non-empty display name and short description
 - [ ] Has ≥2 phase headings
 - [ ] Contains verdict keyword: COMPLETE
 - [ ] Contains "May I write" collaborative protocol language before writing the report
-- [ ] Has a next-step handoff (e.g., `/bug-report` for new issues found, `/design-review` for feedback)
+- [ ] Has a next-step handoff (e.g., `$bug-report` for new issues found, `$design-review` for feedback)
 
 ---
 
 ## Director Gate Checks
 
-None. `/playtest-report` is a documentation utility. The CD-PLAYTEST gate is a
+None. `$playtest-report` is a documentation utility. The CD-PLAYTEST gate is a
 separate invocation and not part of this skill.
 
 ---
@@ -44,14 +44,14 @@ separate invocation and not part of this skill.
   (tutorial too long)
 - `production/bugs/` exists but is empty (bug not yet reported)
 
-**Input:** `/playtest-report` (user pastes session notes)
+**Input:** `$playtest-report` (user pastes session notes)
 
 **Expected behavior:**
 1. Skill reads the provided notes and structures them into the 4-section template
 2. Feel/Accessibility: extracts feel observations
 3. Bugs: notes the framerate drop with available repro details
 4. Design Feedback: notes the tutorial length concern
-5. Next Steps: suggests `/bug-report` for the framerate issue and `/design-review`
+5. Next Steps: suggests `$bug-report` for the framerate issue and `$design-review`
    for the tutorial feedback
 6. Skill asks "May I write to `production/qa/playtest-2026-04-06.md`?"
 7. Report is written on approval; verdict is COMPLETE
@@ -70,7 +70,7 @@ separate invocation and not part of this skill.
 **Fixture:**
 - No notes provided by user at invocation
 
-**Input:** `/playtest-report`
+**Input:** `$playtest-report`
 
 **Expected behavior:**
 1. Skill detects empty input
@@ -97,7 +97,7 @@ separate invocation and not part of this skill.
 - 1/3 tester found the UI font too small
 - All 3 noted the same bug (player stuck on ledge)
 
-**Input:** `/playtest-report` (3-tester session)
+**Input:** `$playtest-report` (3-tester session)
 
 **Expected behavior:**
 1. Skill identifies 3 distinct tester perspectives in the input
@@ -121,7 +121,7 @@ separate invocation and not part of this skill.
 - `production/bugs/bug-2026-03-30-player-stuck-ledge.md` exists
 - User's playtest notes describe "player gets stuck on ledges near walls"
 
-**Input:** `/playtest-report`
+**Input:** `$playtest-report`
 
 **Expected behavior:**
 1. Skill structures the report and identifies the stuck-on-ledge bug
@@ -133,7 +133,7 @@ separate invocation and not part of this skill.
 
 **Assertions:**
 - [ ] Existing bug report is found and linked in the playtest report
-- [ ] `/bug-report` is NOT suggested for the already-reported issue
+- [ ] `$bug-report` is NOT suggested for the already-reported issue
 - [ ] Cross-reference to existing file appears in the Bugs section
 - [ ] Verdict is COMPLETE
 
@@ -144,7 +144,7 @@ separate invocation and not part of this skill.
 **Fixture:**
 - Playtest notes provided
 
-**Input:** `/playtest-report`
+**Input:** `$playtest-report`
 
 **Expected behavior:**
 1. Skill generates and writes the playtest report

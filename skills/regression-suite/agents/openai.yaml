@@ -1,0 +1,4 @@
+interface:
+  display_name: "Regression Suite"
+  short_description: "Map regression coverage to critical paths and fixed bugs"
+  default_prompt: "Use $regression-suite to map regression coverage to critical paths and fixed bugs."

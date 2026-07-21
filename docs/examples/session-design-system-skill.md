@@ -1,6 +1,6 @@
-# Example Session: Using /design-system to Author a GDD
+# Example Session: Using $design-system to Author a GDD
 
-**Context:** Solo indie dev, week 3 of project. `/map-systems` already ran and produced `design/gdd/systems-index.md`. The movement system is listed as MVP tier, Foundation priority.
+**Context:** Solo indie dev, week 3 of project. `$map-systems` already ran and produced `design/gdd/systems-index.md`. The movement system is listed as MVP tier, Foundation priority.
 
 **Starting State:**
 - `design/gdd/game-concept.md` exists (survival-crafting game, 2D, Godot 4.6)
@@ -10,18 +10,18 @@
 
 **Session Duration:** ~60 minutes
 **Turns:** 14
-**Outcome:** Complete `design/gdd/movement-system.md` with all 8 required sections written to file, ready for `/design-review`
+**Outcome:** Complete `design/gdd/movement-system.md` with all 8 required sections written to file, ready for `$design-review`
 
 ---
 
 ## Turn 1: User Invokes the Skill
 
 **User:**
-> /design-system movement
+> $design-system movement
 
 ## Turn 2: Agent Loads Context and Presents the Plan
 
-**Agent (game-designer, via /design-system):**
+**Agent (game-designer, via $design-system):**
 > I'm loading context before we start:
 >
 > - Read `design/gdd/game-concept.md` — survival-crafting, exploration-heavy, lone survivor stranded on alien planet
@@ -253,7 +253,7 @@
 > - Rolling has a flat stamina cost (not per-second)
 > - Heavy carry disables run (signal-driven, not hardcoded check)
 >
-> **Recommended next step:** Run `/design-review design/gdd/movement-system.md` before moving to the next system in your queue (stamina is next in dependency order, per systems-index).
+> **Recommended next step:** Run `$design-review design/gdd/movement-system.md` before moving to the next system in your queue (stamina is next in dependency order, per systems-index).
 >
 > The review will validate completeness, internal consistency, and catch anything that needs revision before you build on this GDD.
 

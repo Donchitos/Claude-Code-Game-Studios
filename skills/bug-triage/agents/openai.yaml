@@ -1,0 +1,4 @@
+interface:
+  display_name: "Bug Triage"
+  short_description: "Prioritize open bugs and recommend next actions"
+  default_prompt: "Use $bug-triage to prioritize open bugs and recommend next actions."

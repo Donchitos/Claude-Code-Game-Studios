@@ -1,0 +1,4 @@
+interface:
+  display_name: "Story Readiness"
+  short_description: "Check whether stories are ready for implementation"
+  default_prompt: "Use $story-readiness to check whether stories are ready for implementation."

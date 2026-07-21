@@ -1,0 +1,4 @@
+interface:
+  display_name: "Design Review"
+  short_description: "Review a GDD for completeness and implementation readiness"
+  default_prompt: "Use $design-review to review a GDD for completeness and implementation readiness."

@@ -1,9 +1,9 @@
-# Skill Test Spec: /project-stage-detect
+# Skill Test Spec: $project-stage-detect
 
 ## Skill Summary
 
-`/project-stage-detect` automatically analyzes project artifacts to determine
-the current development stage. It runs on the Haiku model (read-only) and
+`$project-stage-detect` automatically analyzes project artifacts to determine
+the current development stage. It is read-only () and
 examines `production/stage.txt` (if present), design documents in `design/`,
 source code in `src/`, sprint and milestone files in `production/`, and the
 presence of engine configuration to classify the project into one of seven
@@ -11,7 +11,7 @@ stages: Concept, Systems Design, Technical Setup, Pre-Production, Production,
 Polish, or Release.
 
 The skill is advisory — it never writes `stage.txt`. That file is only updated
-when `/gate-check` passes and the user confirms advancement. The skill reports
+when `$gate-check` passes and the user confirms advancement. The skill reports
 its confidence level (HIGH if stage.txt was read directly, MEDIUM if inferred
 from artifacts, LOW if conflicting signals were found).
 
@@ -19,19 +19,19 @@ from artifacts, LOW if conflicting signals were found).
 
 ## Static Assertions (Structural)
 
-Verified automatically by `/skill-test static` — no fixture needed.
+Verified automatically by `$skill-test static` — no fixture needed.
 
-- [ ] Has required frontmatter fields: `name`, `description`, `argument-hint`, `user-invocable`, `allowed-tools`
+- [ ] Has non-empty `name` and `description`; `agents/openai.yaml` has non-empty display name and short description
 - [ ] Has ≥2 phase headings
 - [ ] Contains all seven stage names: Concept, Systems Design, Technical Setup, Pre-Production, Production, Polish, Release
 - [ ] Does NOT contain "May I write" language (skill is detection-only)
-- [ ] Has a next-step handoff (e.g., `/gate-check` to formally advance stage)
+- [ ] Has a next-step handoff (e.g., `$gate-check` to formally advance stage)
 
 ---
 
 ## Director Gate Checks
 
-None. `/project-stage-detect` is a read-only detection utility. No director
+None. `$project-stage-detect` is a read-only detection utility. No director
 gates apply.
 
 ---
@@ -46,14 +46,14 @@ gates apply.
 - `src/` has source code files
 - `production/sprints/sprint-002.md` exists
 
-**Input:** `/project-stage-detect`
+**Input:** `$project-stage-detect`
 
 **Expected behavior:**
 1. Skill reads `production/stage.txt` — detects stage `Production`
 2. Skill cross-checks artifacts: GDDs present, source code present, sprint present
 3. Artifacts are consistent with Production stage
 4. Skill reports: Stage = Production, Confidence = HIGH (from stage.txt, confirmed by artifacts)
-5. Next step: continue with `/sprint-plan` or `/dev-story`
+5. Next step: continue with `$sprint-plan` or `$dev-story`
 
 **Assertions:**
 - [ ] Detected stage is Production
@@ -73,7 +73,7 @@ gates apply.
 - `src/` has source code files
 - `production/sprints/sprint-001.md` exists
 
-**Input:** `/project-stage-detect`
+**Input:** `$project-stage-detect`
 
 **Expected behavior:**
 1. Skill finds no stage.txt — switches to artifact inference mode
@@ -81,12 +81,12 @@ gates apply.
    source code and sprints (Production active)
 3. Skill infers: Stage = Production
 4. Confidence is MEDIUM (inferred from artifacts, not from stage.txt)
-5. Skill recommends running `/gate-check` to formalize and write stage.txt
+5. Skill recommends running `$gate-check` to formalize and write stage.txt
 
 **Assertions:**
 - [ ] Inferred stage is Production
 - [ ] Confidence is MEDIUM (not HIGH, since stage.txt is absent)
-- [ ] Recommendation to run `/gate-check` is present
+- [ ] Recommendation to run `$gate-check` is present
 - [ ] No stage.txt is written by this skill
 
 ---
@@ -99,19 +99,19 @@ gates apply.
 - `src/` exists but contains no code files
 - `technical-preferences.md` has placeholders only
 
-**Input:** `/project-stage-detect`
+**Input:** `$project-stage-detect`
 
 **Expected behavior:**
 1. Skill finds no stage.txt
 2. Artifact scan: no GDDs, no source, no epics, no sprints, engine unconfigured
 3. Skill infers: Stage = Concept
 4. Confidence is MEDIUM
-5. Skill suggests `/start` to begin the onboarding workflow
+5. Skill suggests `$start` to begin the onboarding workflow
 
 **Assertions:**
 - [ ] Inferred stage is Concept
 - [ ] Output lists the artifacts that were checked (and found absent)
-- [ ] `/start` is suggested as the next step
+- [ ] `$start` is suggested as the next step
 - [ ] No files are written
 
 ---
@@ -124,7 +124,7 @@ gates apply.
 - `src/` directory exists but contains no source code files
 - No sprint files exist
 
-**Input:** `/project-stage-detect`
+**Input:** `$project-stage-detect`
 
 **Expected behavior:**
 1. Skill reads stage.txt — detects `Production`
@@ -132,7 +132,7 @@ gates apply.
 3. Skill flags discrepancy: "stage.txt says Production but no source code or sprints found"
 4. Skill reports detected stage as Production (honoring stage.txt) but
    confidence drops to LOW due to artifact mismatch
-5. Skill suggests reviewing stage.txt manually or running `/gate-check`
+5. Skill suggests reviewing stage.txt manually or running `$gate-check`
 
 **Assertions:**
 - [ ] Discrepancy is flagged explicitly in the output
@@ -147,7 +147,7 @@ gates apply.
 **Fixture:**
 - Any project state with or without stage.txt
 
-**Input:** `/project-stage-detect`
+**Input:** `$project-stage-detect`
 
 **Expected behavior:**
 1. Skill completes full stage detection
@@ -168,7 +168,7 @@ gates apply.
 - [ ] Reads stage.txt if present; falls back to artifact inference if absent
 - [ ] Always reports a confidence level (HIGH / MEDIUM / LOW)
 - [ ] Cross-checks stage.txt against artifacts and flags discrepancies
-- [ ] Does not write stage.txt (that is `/gate-check`'s responsibility)
+- [ ] Does not write stage.txt (that is `$gate-check`'s responsibility)
 - [ ] Ends with a next-step recommendation appropriate to the detected stage
 
 ---

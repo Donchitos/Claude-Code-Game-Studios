@@ -1,8 +1,8 @@
-# Skill Test Spec: /reverse-document
+# Skill Test Spec: $reverse-document
 
 ## Skill Summary
 
-`/reverse-document` generates design or architecture documentation from existing
+`$reverse-document` generates design or architecture documentation from existing
 source code. It reads the specified source file(s), infers design intent from
 class structure, method names, constants, and comments, and produces either a
 GDD skeleton (for gameplay systems) or an architecture overview (for technical
@@ -17,19 +17,19 @@ fields are ambiguous and need human review).
 
 ## Static Assertions (Structural)
 
-Verified automatically by `/skill-test static` — no fixture needed.
+Verified automatically by `$skill-test static` — no fixture needed.
 
-- [ ] Has required frontmatter fields: `name`, `description`, `argument-hint`, `user-invocable`, `allowed-tools`
+- [ ] Has non-empty `name` and `description`; `agents/openai.yaml` has non-empty display name and short description
 - [ ] Has ≥2 phase headings
 - [ ] Contains verdict keywords: COMPLETE, PARTIAL
 - [ ] Contains "May I write" collaborative protocol language before writing the doc
-- [ ] Has a next-step handoff (e.g., `/design-review` to validate the generated doc)
+- [ ] Has a next-step handoff (e.g., `$design-review` to validate the generated doc)
 
 ---
 
 ## Director Gate Checks
 
-None. `/reverse-document` is a documentation utility. No director gates apply.
+None. `$reverse-document` is a documentation utility. No director gates apply.
 
 ---
 
@@ -44,7 +44,7 @@ None. `/reverse-document` is a documentation utility. No director gates apply.
   - `signal health_changed(new_value: int)`
   - Docstrings on all public methods
 
-**Input:** `/reverse-document src/gameplay/health_system.gd`
+**Input:** `$reverse-document src/gameplay/health_system.gd`
 
 **Expected behavior:**
 1. Skill reads the source file and identifies the health system
@@ -74,7 +74,7 @@ None. `/reverse-document` is a documentation utility. No director gates apply.
   - No comments or docstrings
   - Complex state machine logic that is not self-explanatory
 
-**Input:** `/reverse-document src/gameplay/enemy_ai.gd`
+**Input:** `$reverse-document src/gameplay/enemy_ai.gd`
 
 **Expected behavior:**
 1. Skill reads the file and detects magic numbers with no context
@@ -98,7 +98,7 @@ None. `/reverse-document` is a documentation utility. No director gates apply.
 - User provides 2 source files: `combat_system.gd` and `damage_resolver.gd`
 - The files reference each other (combat calls damage_resolver)
 
-**Input:** `/reverse-document src/gameplay/combat_system.gd src/gameplay/damage_resolver.gd`
+**Input:** `$reverse-document src/gameplay/combat_system.gd src/gameplay/damage_resolver.gd`
 
 **Expected behavior:**
 1. Skill reads both files and detects the dependency relationship
@@ -121,18 +121,18 @@ None. `/reverse-document` is a documentation utility. No director gates apply.
 **Fixture:**
 - `src/gameplay/inventory_system.gd` does not exist
 
-**Input:** `/reverse-document src/gameplay/inventory_system.gd`
+**Input:** `$reverse-document src/gameplay/inventory_system.gd`
 
 **Expected behavior:**
 1. Skill attempts to read the specified file — not found
 2. Skill outputs: "Source file not found: src/gameplay/inventory_system.gd"
-3. Skill suggests checking the path or running `/map-systems` to identify
+3. Skill suggests checking the path or running `$map-systems` to identify
    the correct source file
 4. No document is created
 
 **Assertions:**
 - [ ] Error message names the missing file with the full path
-- [ ] Alternative suggestion (check path or `/map-systems`) is provided
+- [ ] Alternative suggestion (check path or `$map-systems`) is provided
 - [ ] No write tool is called
 - [ ] No verdict is issued (error state)
 
@@ -143,7 +143,7 @@ None. `/reverse-document` is a documentation utility. No director gates apply.
 **Fixture:**
 - Well-structured source file exists
 
-**Input:** `/reverse-document src/gameplay/health_system.gd`
+**Input:** `$reverse-document src/gameplay/health_system.gd`
 
 **Expected behavior:**
 1. Skill generates and writes the design doc

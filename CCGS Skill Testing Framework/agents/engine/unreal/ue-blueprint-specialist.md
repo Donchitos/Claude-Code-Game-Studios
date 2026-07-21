@@ -3,7 +3,7 @@
 ## Agent Summary
 - **Domain**: Blueprint architecture, the Blueprint/C++ boundary, Blueprint graph quality, Blueprint performance optimization, Blueprint Function Library design
 - **Does NOT own**: C++ implementation (engine-programmer or gameplay-programmer), art assets or shaders, UI/UX flow design (ux-designer)
-- **Model tier**: Sonnet
+No fixed model routing is required; the caller selects the available Codex model.
 - **Gate IDs**: None; defers to unreal-specialist or lead-programmer for cross-domain rulings
 
 ---
@@ -11,8 +11,8 @@
 ## Static Assertions (Structural)
 
 - [ ] `description:` field is present and domain-specific (references Blueprint architecture and optimization)
-- [ ] `allowed-tools:` list matches the agent's role (Read for Blueprint project files; no server or deployment tools)
-- [ ] Model tier is Sonnet (default for specialists)
+- [ ] Role boundaries and file ownership match the stated domain
+- [ ] Does not require fixed model routing; the calling Codex client selects the available model
 - [ ] Agent definition does not claim authority over C++ implementation decisions
 
 ---
@@ -77,4 +77,4 @@
 ## Coverage Notes
 - Case 3 (null pointer safety) is a safety-critical test — this is a common source of shipping crashes
 - Case 5 requires that project conventions include a stated node budget; if none is configured, the agent should note the absence and recommend setting one
-- No automated runner; review manually or via `/skill-test`
+- No automated runner; review manually or via `$skill-test`

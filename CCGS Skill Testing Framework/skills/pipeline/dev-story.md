@@ -1,8 +1,8 @@
-# Skill Test Spec: /dev-story
+# Skill Test Spec: $dev-story
 
 ## Skill Summary
 
-`/dev-story` reads a story file, loads all required context (referenced ADR,
+`$dev-story` reads a story file, loads all required context (referenced ADR,
 TR-ID from the registry, control manifest, engine preferences), implements the
 story, verifies that all acceptance criteria are met, and marks the story
 Complete. The skill routes implementation to the correct specialist agent based
@@ -17,13 +17,13 @@ marked Complete after the user confirms all criteria are met. The skill asks
 
 ## Static Assertions (Structural)
 
-Verified automatically by `/skill-test static` — no fixture needed.
+Verified automatically by `$skill-test static` — no fixture needed.
 
-- [ ] Has required frontmatter fields: `name`, `description`, `argument-hint`, `user-invocable`, `allowed-tools`
+- [ ] Has non-empty `name` and `description`; `agents/openai.yaml` has non-empty display name and short description
 - [ ] Has ≥2 phase headings
 - [ ] Contains verdict keywords: COMPLETE, BLOCKED, IN PROGRESS, NEEDS CHANGES
 - [ ] Contains "May I write" collaborative protocol language (story status + code files)
-- [ ] Has a next-step handoff at the end (`/story-done`)
+- [ ] Has a next-step handoff at the end (`$story-done`)
 - [ ] Documents LP-CODE-REVIEW gate: active in full mode, skipped in lean/solo
 - [ ] Notes that implementation is delegated to specialist agents (not done directly)
 
@@ -46,17 +46,17 @@ In `solo` mode: LP-CODE-REVIEW is skipped with equivalent notes.
 ### Case 1: Happy Path — Story implemented and marked Complete (full mode)
 
 **Fixture:**
-- A story file exists at `production/epics/[layer]/story-[name].md` with:
+- A story file exists at `production/epics/[layer]$story-[name].md` with:
   - `Status: Ready`
   - A TR-ID referencing a registered requirement
   - At least 2 Given-When-Then acceptance criteria
   - A test evidence path
 - Referenced ADR has `Status: Accepted`
 - `docs/architecture/control-manifest.md` exists
-- `.claude/docs/technical-preferences.md` has engine and language configured
+- `docs/studio/technical-preferences.md` has engine and language configured
 - `production/session-state/review-mode.txt` contains `full`
 
-**Input:** `/dev-story production/epics/[layer]/story-[name].md`
+**Input:** `$dev-story production/epics/[layer]$story-[name].md`
 
 **Expected behavior:**
 1. Skill reads the story file and all referenced context
@@ -84,20 +84,20 @@ In `solo` mode: LP-CODE-REVIEW is skipped with equivalent notes.
 - A story file exists with `Status: Ready`
 - The story's TR-ID points to a requirement covered by an ADR with `Status: Proposed`
 
-**Input:** `/dev-story production/epics/[layer]/story-[name].md`
+**Input:** `$dev-story production/epics/[layer]$story-[name].md`
 
 **Expected behavior:**
 1. Skill reads the story file
 2. Skill resolves the TR-ID and reads the governing ADR
 3. ADR status is Proposed — skill outputs a BLOCKED message
 4. Skill names the specific ADR blocking the story
-5. Skill recommends running `/architecture-decision` to advance the ADR
+5. Skill recommends running `$architecture-decision` to advance the ADR
 6. Implementation does NOT begin
 
 **Assertions:**
 - [ ] Skill does NOT begin implementation with a Proposed ADR
 - [ ] BLOCKED message names the specific ADR number and title
-- [ ] Skill recommends `/architecture-decision` as the next action
+- [ ] Skill recommends `$architecture-decision` as the next action
 - [ ] Story status remains unchanged (not set to In Progress or Complete)
 
 ---
@@ -109,7 +109,7 @@ In `solo` mode: LP-CODE-REVIEW is skipped with equivalent notes.
 - Referenced ADR is Accepted
 - One acceptance criterion is ambiguous (not Given-When-Then; uses subjective language like "feels responsive")
 
-**Input:** `/dev-story production/epics/[layer]/story-[name].md`
+**Input:** `$dev-story production/epics/[layer]$story-[name].md`
 
 **Expected behavior:**
 1. Skill reads the story and identifies the ambiguous criterion
@@ -133,7 +133,7 @@ In `solo` mode: LP-CODE-REVIEW is skipped with equivalent notes.
 - `production/session-state/active.md` references an active story file
 - That story file exists with `Status: In Progress`
 
-**Input:** `/dev-story` (no argument)
+**Input:** `$dev-story` (no argument)
 
 **Expected behavior:**
 1. Skill detects no argument is provided
@@ -191,7 +191,7 @@ In `solo` mode: LP-CODE-REVIEW is skipped with equivalent notes.
 - [ ] "May I write" asked before updating story status and before writing code files
 - [ ] Skipped gates noted by name and mode in output
 - [ ] Updates `production/session-state/active.md` after story completion
-- [ ] Ends with next-step handoff: `/story-done`
+- [ ] Ends with next-step handoff: `$story-done`
 
 ---
 

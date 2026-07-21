@@ -3,18 +3,18 @@
 ## Agent Summary
 **Domain owned:** Combat formulas, progression curves, crafting recipes, status effect interactions, economy math, numerical balance.
 **Does NOT own:** Narrative and lore (narrative-director), visual design (art-director), code implementation (lead-programmer), conceptual mechanic rules (game-designer — collaborates with).
-**Model tier:** Sonnet (individual system analysis — formula review and balance math).
+No fixed model routing is required; the caller selects the available Codex model.
 **Gate IDs handled:** Systems review verdicts on formulas and balance specs (uses APPROVED / NEEDS REVISION vocabulary).
 
 ---
 
 ## Static Assertions (Structural)
 
-Verified by reading the agent's `.claude/agents/systems-designer.md` frontmatter:
+Verified by reading the agent's `roles/systems-designer.md` frontmatter:
 
 - [ ] `description:` field is present and domain-specific (references formulas, progression curves, balance math, economy — not generic)
-- [ ] `allowed-tools:` list is read-focused; may include Bash for formula evaluation scripts if the project uses them; no write access outside `design/balance/` without delegation
-- [ ] Model tier is `claude-sonnet-4-6` per coordination-rules.md
+- [ ] Role boundaries and file ownership match the stated domain
+- [ ] Does not require fixed model routing; the calling Codex client selects the available model
 - [ ] Agent definition does not claim authority over narrative, visual design, or conceptual mechanic rule ownership
 
 ---
@@ -23,7 +23,7 @@ Verified by reading the agent's `.claude/agents/systems-designer.md` frontmatter
 
 ### Case 1: In-domain request — appropriate output format
 **Scenario:** A damage formula is submitted for review: `damage = base_attack * (1 + strength_modifier * 0.1) - defense * 0.5`, with defined ranges: base_attack [10–100], strength_modifier [0–20], defense [0–50]. The formula produces positive damage across all valid input ranges, scales smoothly, and has no division-by-zero or overflow risk within the defined value bounds.
-**Expected:** Returns `APPROVED` with rationale confirming the formula is balanced within the design parameters, produces valid output across the full input range, and has no degenerate cases.
+**Expected:** Returns a documented domain-specific verdict with rationale confirming the formula is balanced within the design parameters, produces valid output across the full input range, and has no degenerate cases.
 **Assertions:**
 - [ ] Verdict is exactly one of APPROVED / NEEDS REVISION
 - [ ] Rationale demonstrates verification across the input range (min/max cases checked)
@@ -40,7 +40,7 @@ Verified by reading the agent's `.claude/agents/systems-designer.md` frontmatter
 
 ### Case 3: Gate verdict — correct vocabulary
 **Scenario:** A damage scaling formula is submitted: `damage = base_attack * level_multiplier`, where `level_multiplier = (player_level / enemy_level) ^ 2`. At max player level (50) against a min-level enemy (1), the multiplier is 2500x — producing 25,000+ damage from a 10-base-attack weapon, far exceeding any meaningful balance. This is a degenerate case at max level.
-**Expected:** Returns `NEEDS REVISION` with specific identification of the degenerate case: at max level vs. min enemy, the formula produces a 2500x multiplier that destroys any balance ceiling.
+**Expected:** Returns a documented domain-specific verdict with specific identification of the degenerate case: at max level vs. min enemy, the formula produces a 2500x multiplier that destroys any balance ceiling.
 **Assertions:**
 - [ ] Verdict is exactly one of APPROVED / NEEDS REVISION — not freeform text
 - [ ] Rationale includes the specific degenerate input values (player level 50, enemy level 1) and the resulting output (2500x multiplier)

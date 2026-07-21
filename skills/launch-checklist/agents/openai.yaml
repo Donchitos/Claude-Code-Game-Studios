@@ -1,0 +1,4 @@
+interface:
+  display_name: "Launch Checklist"
+  short_description: "Validate cross-team readiness for game launch"
+  default_prompt: "Use $launch-checklist to validate cross-team readiness for game launch."

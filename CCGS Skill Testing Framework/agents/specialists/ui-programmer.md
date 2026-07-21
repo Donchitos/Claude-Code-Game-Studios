@@ -3,7 +3,7 @@
 ## Agent Summary
 Domain: Menu screens, HUDs, inventory screens, dialogue boxes, UI framework code, and data binding.
 Does NOT own: UX flow design (ux-designer), visual style direction (art-director / technical-artist).
-Model tier: Sonnet (default).
+No fixed model routing is required; the caller selects the available Codex model.
 No gate IDs assigned.
 
 ---
@@ -11,8 +11,8 @@ No gate IDs assigned.
 ## Static Assertions (Structural)
 
 - [ ] `description:` field is present and domain-specific (references menus / HUDs / UI framework / data binding)
-- [ ] `allowed-tools:` list includes Read, Write, Edit, Bash, Glob, Grep
-- [ ] Model tier is Sonnet (default for specialists)
+- [ ] Role boundaries and file ownership match the stated domain
+- [ ] Does not require fixed model routing; the calling Codex client selects the available model
 - [ ] Agent definition does not claim authority over UX flow design or visual art direction
 
 ---

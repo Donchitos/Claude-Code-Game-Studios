@@ -1,8 +1,8 @@
-# Skill Test Spec: /test-helpers
+# Skill Test Spec: $test-helpers
 
 ## Skill Summary
 
-`/test-helpers` generates engine-specific test helper utilities for the project's
+`$test-helpers` generates engine-specific test helper utilities for the project's
 test suite. Helpers include factory functions (for creating test entities with
 known state), fixture loaders, assertion helpers, and mock stubs for external
 dependencies. Generated helpers follow the naming and structure conventions in
@@ -16,9 +16,9 @@ apply. The verdict is COMPLETE when helper files are written.
 
 ## Static Assertions (Structural)
 
-Verified automatically by `/skill-test static` — no fixture needed.
+Verified automatically by `$skill-test static` — no fixture needed.
 
-- [ ] Has required frontmatter fields: `name`, `description`, `argument-hint`, `user-invocable`, `allowed-tools`
+- [ ] Has non-empty `name` and `description`; `agents/openai.yaml` has non-empty display name and short description
 - [ ] Has ≥2 phase headings
 - [ ] Contains verdict keyword: COMPLETE
 - [ ] Contains "May I write" collaborative protocol language before writing helpers
@@ -28,7 +28,7 @@ Verified automatically by `/skill-test static` — no fixture needed.
 
 ## Director Gate Checks
 
-None. `/test-helpers` is a scaffolding utility. No director gates apply.
+None. `$test-helpers` is a scaffolding utility. No director gates apply.
 
 ---
 
@@ -42,7 +42,7 @@ None. `/test-helpers` is a scaffolding utility. No director gates apply.
 - `design/gdd/player.md` exists with defined player properties
 - No existing helpers in `tests/helpers/`
 
-**Input:** `/test-helpers player-factory`
+**Input:** `$test-helpers player-factory`
 
 **Expected behavior:**
 1. Skill reads engine (Godot 4 / GDScript) and player GDD for property context
@@ -62,22 +62,22 @@ None. `/test-helpers` is a scaffolding utility. No director gates apply.
 
 ---
 
-### Case 2: No Test Setup Exists — Redirects to /test-setup
+### Case 2: No Test Setup Exists — Redirects to $test-setup
 
 **Fixture:**
 - `tests/` directory does not exist
 
-**Input:** `/test-helpers player-factory`
+**Input:** `$test-helpers player-factory`
 
 **Expected behavior:**
 1. Skill checks for `tests/` directory — not found
 2. Skill reports: "Test directory not found — test framework must be set up first"
-3. Skill suggests running `/test-setup` before generating helpers
+3. Skill suggests running `$test-setup` before generating helpers
 4. No helper file is created
 
 **Assertions:**
 - [ ] Error message identifies the missing tests/ directory
-- [ ] `/test-setup` is suggested as the prerequisite step
+- [ ] `$test-setup` is suggested as the prerequisite step
 - [ ] No write tool is called
 - [ ] Verdict is not COMPLETE (blocked state)
 
@@ -89,7 +89,7 @@ None. `/test-helpers` is a scaffolding utility. No director gates apply.
 - `tests/helpers/player_factory.gd` already exists with a `create_player()` function
 - User requests a new `create_enemy()` function be added to the factory
 
-**Input:** `/test-helpers enemy-factory`
+**Input:** `$test-helpers enemy-factory`
 
 **Expected behavior:**
 1. Skill finds an existing `player_factory.gd` and checks if it's the right file
@@ -116,7 +116,7 @@ None. `/test-helpers` is a scaffolding utility. No director gates apply.
 - `tests/` exists
 - User requests a helper for the "inventory system" but no `design/gdd/inventory.md` exists
 
-**Input:** `/test-helpers inventory-factory`
+**Input:** `$test-helpers inventory-factory`
 
 **Expected behavior:**
 1. Skill looks for `design/gdd/inventory.md` — not found
@@ -140,7 +140,7 @@ None. `/test-helpers` is a scaffolding utility. No director gates apply.
 **Fixture:**
 - Engine configured, tests/ exists
 
-**Input:** `/test-helpers player-factory`
+**Input:** `$test-helpers player-factory`
 
 **Expected behavior:**
 1. Skill generates and writes the helper file

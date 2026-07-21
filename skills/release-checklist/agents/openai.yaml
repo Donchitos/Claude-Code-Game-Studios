@@ -1,0 +1,4 @@
+interface:
+  display_name: "Release Checklist"
+  short_description: "Generate a comprehensive pre-release validation checklist"
+  default_prompt: "Use $release-checklist to generate a comprehensive pre-release validation checklist."

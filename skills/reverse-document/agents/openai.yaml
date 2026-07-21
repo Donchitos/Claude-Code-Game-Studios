@@ -1,0 +1,4 @@
+interface:
+  display_name: "Reverse Document"
+  short_description: "Derive design or architecture docs from existing code"
+  default_prompt: "Use $reverse-document to derive design or architecture docs from existing code."

@@ -1,8 +1,8 @@
-# Skill Test Spec: /asset-spec
+# Skill Test Spec: $asset-spec
 
 ## Skill Summary
 
-`/asset-spec` generates per-asset visual specification documents from design
+`$asset-spec` generates per-asset visual specification documents from design
 requirements. It reads the relevant GDD, art bible, and design system to produce
 a structured asset spec sheet that defines: dimensions, animation states (if
 applicable), color palette reference, style notes, technical constraints
@@ -17,19 +17,19 @@ director gates apply. The verdict is COMPLETE when all requested specs are writt
 
 ## Static Assertions (Structural)
 
-Verified automatically by `/skill-test static` — no fixture needed.
+Verified automatically by `$skill-test static` — no fixture needed.
 
-- [ ] Has required frontmatter fields: `name`, `description`, `argument-hint`, `user-invocable`, `allowed-tools`
+- [ ] Has non-empty `name` and `description`; `agents/openai.yaml` has non-empty display name and short description
 - [ ] Has ≥2 phase headings
 - [ ] Contains verdict keyword: COMPLETE
 - [ ] Contains "May I write" collaborative protocol language (per asset)
-- [ ] Has a next-step handoff (e.g., assign to an artist, or `/asset-audit` later)
+- [ ] Has a next-step handoff (e.g., assign to an artist, or `$asset-audit` later)
 
 ---
 
 ## Director Gate Checks
 
-None. `/asset-spec` is a design documentation utility. Technical artists may
+None. `$asset-spec` is a design documentation utility. Technical artists may
 review specs separately but this is not a gate within this skill.
 
 ---
@@ -43,7 +43,7 @@ review specs separately but this is not a gate within this skill.
 - `design/art-bible.md` exists with color palette and style notes
 - No existing asset spec for "goblin-enemy"
 
-**Input:** `/asset-spec goblin-enemy`
+**Input:** `$asset-spec goblin-enemy`
 
 **Expected behavior:**
 1. Skill reads enemies GDD and art bible
@@ -72,7 +72,7 @@ review specs separately but this is not a gate within this skill.
 - `design/gdd/player.md` exists
 - `design/art-bible.md` does NOT exist
 
-**Input:** `/asset-spec player-sprite`
+**Input:** `$asset-spec player-sprite`
 
 **Expected behavior:**
 1. Skill reads player GDD but cannot find the art bible
@@ -96,7 +96,7 @@ review specs separately but this is not a gate within this skill.
 - `assets/specs/goblin-enemy-spec.md` already exists
 - GDD has been updated since the spec was written (new attack animation added)
 
-**Input:** `/asset-spec goblin-enemy`
+**Input:** `$asset-spec goblin-enemy`
 
 **Expected behavior:**
 1. Skill detects existing spec file
@@ -122,7 +122,7 @@ review specs separately but this is not a gate within this skill.
 - GDD and art bible exist
 - User requests specs for 3 assets: goblin-enemy, orc-enemy, treasure-chest
 
-**Input:** `/asset-spec goblin-enemy orc-enemy treasure-chest`
+**Input:** `$asset-spec goblin-enemy orc-enemy treasure-chest`
 
 **Expected behavior:**
 1. Skill generates all 3 specs in sequence
@@ -144,7 +144,7 @@ review specs separately but this is not a gate within this skill.
 **Fixture:**
 - GDD and art bible exist
 
-**Input:** `/asset-spec goblin-enemy`
+**Input:** `$asset-spec goblin-enemy`
 
 **Expected behavior:**
 1. Skill generates and writes the asset spec

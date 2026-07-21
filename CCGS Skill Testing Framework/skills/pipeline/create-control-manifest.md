@@ -1,8 +1,8 @@
-# Skill Test Spec: /create-control-manifest
+# Skill Test Spec: $create-control-manifest
 
 ## Skill Summary
 
-`/create-control-manifest` reads all Accepted ADRs from `docs/architecture/` and
+`$create-control-manifest` reads all Accepted ADRs from `docs/architecture/` and
 generates a control manifest — a summary document that captures all architectural
 constraints, required patterns, and forbidden patterns in one place. The manifest
 is the reference document that story authors use when writing story files, ensuring
@@ -17,13 +17,13 @@ has no director gates. The skill asks "May I write" before writing
 
 ## Static Assertions (Structural)
 
-Verified automatically by `/skill-test static` — no fixture needed.
+Verified automatically by `$skill-test static` — no fixture needed.
 
-- [ ] Has required frontmatter fields: `name`, `description`, `argument-hint`, `user-invocable`, `allowed-tools`
+- [ ] Has non-empty `name` and `description`; `agents/openai.yaml` has non-empty display name and short description
 - [ ] Has ≥2 phase headings
 - [ ] Contains verdict keywords: CREATED, BLOCKED
 - [ ] Contains "May I write" collaborative protocol language (for control-manifest.md)
-- [ ] Has a next-step handoff at the end (`/create-epics` or `/create-stories`)
+- [ ] Has a next-step handoff at the end (`$create-epics` or `$create-stories`)
 - [ ] Documents that only Accepted ADRs are included (not Proposed)
 
 ---
@@ -45,7 +45,7 @@ review gate is needed.
 - Each ADR has a "Required Patterns" and/or "Forbidden Patterns" section
 - No existing `docs/architecture/control-manifest.md`
 
-**Input:** `/create-control-manifest`
+**Input:** `$create-control-manifest`
 
 **Expected behavior:**
 1. Skill reads all ADR files in `docs/architecture/`
@@ -70,18 +70,18 @@ review gate is needed.
 **Fixture:**
 - `docs/architecture/` directory exists but contains no ADR files
 
-**Input:** `/create-control-manifest`
+**Input:** `$create-control-manifest`
 
 **Expected behavior:**
 1. Skill reads `docs/architecture/` and finds no ADR files
-2. Skill outputs: "No ADRs found. Run `/architecture-decision` to create ADRs before generating the control manifest."
+2. Skill outputs: "No ADRs found. Run `$architecture-decision` to create ADRs before generating the control manifest."
 3. Skill exits without creating any file
 4. Verdict is BLOCKED
 
 **Assertions:**
 - [ ] Skill outputs a clear error when no ADRs are found
 - [ ] No control manifest file is written
-- [ ] Skill recommends `/architecture-decision` as the next action
+- [ ] Skill recommends `$architecture-decision` as the next action
 - [ ] Verdict is BLOCKED (not an error crash)
 
 ---
@@ -91,7 +91,7 @@ review gate is needed.
 **Fixture:**
 - `docs/architecture/` contains 3 Accepted ADRs and 2 Proposed ADRs
 
-**Input:** `/create-control-manifest`
+**Input:** `$create-control-manifest`
 
 **Expected behavior:**
 1. Skill reads all ADR files and filters by Status: Accepted
@@ -114,7 +114,7 @@ review gate is needed.
 - `docs/architecture/control-manifest.md` already exists (version 1, dated last week)
 - `docs/architecture/` contains Accepted ADRs (some new since last manifest)
 
-**Input:** `/create-control-manifest`
+**Input:** `$create-control-manifest`
 
 **Expected behavior:**
 1. Skill detects existing manifest and reads its version number / date
@@ -137,7 +137,7 @@ review gate is needed.
 - 4 Accepted ADRs exist
 - `production/session-state/review-mode.txt` exists with `full`
 
-**Input:** `/create-control-manifest`
+**Input:** `$create-control-manifest`
 
 **Expected behavior:**
 1. Skill reads ADRs and drafts manifest
@@ -161,7 +161,7 @@ review gate is needed.
 - [ ] Manifest draft shown to user before "May I write" ask
 - [ ] "May I write `docs/architecture/control-manifest.md`?" asked before writing
 - [ ] No director gates — no review-mode.txt read
-- [ ] Ends with next-step handoff: `/create-epics` or `/create-stories`
+- [ ] Ends with next-step handoff: `$create-epics` or `$create-stories`
 
 ---
 

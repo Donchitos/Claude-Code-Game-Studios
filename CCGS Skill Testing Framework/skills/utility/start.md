@@ -1,11 +1,11 @@
-# Skill Test Spec: /start
+# Skill Test Spec: $start
 
 ## Skill Summary
 
-`/start` is the first-time onboarding skill for new projects. It guides the
+`$start` is the first-time onboarding skill for new projects. It guides the
 user through naming the project, choosing a game engine, and setting up the
-initial directory structure. It creates stub configuration files (CLAUDE.md,
-technical-preferences.md) and then routes to `/setup-engine` with the chosen
+initial directory structure. It creates stub configuration files (AGENTS.md,
+technical-preferences.md) and then routes to `$setup-engine` with the chosen
 engine as an argument. Each file or directory created is gated behind a
 "May I write" ask, following the collaborative protocol.
 
@@ -18,19 +18,19 @@ hierarchy exists.
 
 ## Static Assertions (Structural)
 
-Verified automatically by `/skill-test static` — no fixture needed.
+Verified automatically by `$skill-test static` — no fixture needed.
 
-- [ ] Has required frontmatter fields: `name`, `description`, `argument-hint`, `user-invocable`, `allowed-tools`
+- [ ] Has non-empty `name` and `description`; `agents/openai.yaml` has non-empty display name and short description
 - [ ] Has ≥2 phase headings
 - [ ] Contains verdict keywords: COMPLETE, BLOCKED
 - [ ] Contains "May I write" collaborative protocol language for each config file
-- [ ] Has a next-step handoff at the end (routes to `/setup-engine`)
+- [ ] Has a next-step handoff at the end (routes to `$setup-engine`)
 
 ---
 
 ## Director Gate Checks
 
-None. `/start` is a utility setup skill. No director agents exist yet at the
+None. `$start` is a utility setup skill. No director agents exist yet at the
 point this skill runs.
 
 ---
@@ -40,11 +40,11 @@ point this skill runs.
 ### Case 1: Happy Path — Fresh repo, no engine, full onboarding flow
 
 **Fixture:**
-- Empty repository: no CLAUDE.md overrides, no `production/stage.txt`, no
+- Empty repository: no AGENTS.md overrides, no `production/stage.txt`, no
   `technical-preferences.md` content beyond placeholders
 - No existing design docs or source code
 
-**Input:** `/start`
+**Input:** `$start`
 
 **Expected behavior:**
 1. Skill detects no existing configuration and begins fresh onboarding
@@ -53,15 +53,15 @@ point this skill runs.
 4. User selects an engine
 5. Skill asks "May I write the initial directory structure?"
 6. Skill creates all directories defined in `directory-structure.md`
-7. Skill asks "May I write CLAUDE.md stub?" and writes it on approval
-8. Skill routes to `/setup-engine [chosen-engine]` to complete technical config
+7. Skill asks "May I write AGENTS.md stub?" and writes it on approval
+8. Skill routes to `$setup-engine [chosen-engine]` to complete technical config
 
 **Assertions:**
 - [ ] Project name is captured before any file is written
 - [ ] Exactly 3 engine options are presented
 - [ ] "May I write" is asked for each config file individually
 - [ ] No file is written without explicit user approval
-- [ ] Handoff to `/setup-engine` occurs at the end with the chosen engine argument
+- [ ] Handoff to `$setup-engine` occurs at the end with the chosen engine argument
 - [ ] Verdict is COMPLETE after all files are written and handoff is issued
 
 ---
@@ -72,7 +72,7 @@ point this skill runs.
 - `technical-preferences.md` has engine already set (not placeholder)
 - `production/stage.txt` exists with `Concept`
 
-**Input:** `/start`
+**Input:** `$start`
 
 **Expected behavior:**
 1. Skill reads `technical-preferences.md` and detects configured engine
@@ -89,21 +89,21 @@ point this skill runs.
 
 ---
 
-### Case 3: Engine Choice — User picks Godot 4, routes to /setup-engine godot
+### Case 3: Engine Choice — User picks Godot 4, routes to $setup-engine godot
 
 **Fixture:**
 - Fresh repo — no existing configuration
 
-**Input:** `/start`
+**Input:** `$start`
 
 **Expected behavior:**
 1. Skill presents engine options and user selects Godot 4
-2. Skill writes initial stubs (directory structure, CLAUDE.md) after approval
-3. Skill explicitly routes to `/setup-engine godot` as the next step
+2. Skill writes initial stubs (directory structure, AGENTS.md) after approval
+3. Skill explicitly routes to `$setup-engine godot` as the next step
 4. Handoff message clearly names the engine and the next skill invocation
 
 **Assertions:**
-- [ ] Handoff command is `/setup-engine godot` (not generic `/setup-engine`)
+- [ ] Handoff command is `$setup-engine godot` (not generic `$setup-engine`)
 - [ ] Handoff is issued after all initial stubs are written, not before
 - [ ] Engine choice is echoed back to user before writing begins
 
@@ -116,7 +116,7 @@ point this skill runs.
   still all placeholders (engine was never chosen — setup was interrupted)
 - No `production/stage.txt`
 
-**Input:** `/start`
+**Input:** `$start`
 
 **Expected behavior:**
 1. Skill detects partial state: directories exist but engine is unconfigured
@@ -138,7 +138,7 @@ point this skill runs.
 **Fixture:**
 - Any fixture
 
-**Input:** `/start`
+**Input:** `$start`
 
 **Expected behavior:**
 1. Skill completes full onboarding flow
@@ -156,8 +156,8 @@ point this skill runs.
 
 - [ ] Asks for project name before any file is written
 - [ ] Presents engine options as a structured choice (not free text)
-- [ ] Asks "May I write" separately for directory structure and for CLAUDE.md stub
-- [ ] Ends with a handoff to `/setup-engine` with the engine name as argument
+- [ ] Asks "May I write" separately for directory structure and for AGENTS.md stub
+- [ ] Ends with a handoff to `$setup-engine` with the engine name as argument
 - [ ] Verdict is clearly stated (COMPLETE or BLOCKED) at end of output
 
 ---

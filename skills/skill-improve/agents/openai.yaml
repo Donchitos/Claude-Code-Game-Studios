@@ -1,0 +1,4 @@
+interface:
+  display_name: "Skill Improve"
+  short_description: "Improve a skill through a test, fix, and retest loop"
+  default_prompt: "Use $skill-improve to improve a skill through a test, fix, and retest loop."

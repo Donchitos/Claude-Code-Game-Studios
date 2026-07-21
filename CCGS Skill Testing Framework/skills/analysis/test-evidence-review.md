@@ -1,8 +1,8 @@
-# Skill Test Spec: /test-evidence-review
+# Skill Test Spec: $test-evidence-review
 
 ## Skill Summary
 
-`/test-evidence-review` performs a quality review of test files in `tests/`,
+`$test-evidence-review` performs a quality review of test files in `tests/`,
 checking test naming conventions, determinism, isolation, and absence of
 hardcoded magic numbers — all against the project's test standards defined in
 `coding-standards.md`. Findings may be flagged for qa-lead review. No director
@@ -13,9 +13,9 @@ PASS, WARNINGS, or FAIL.
 
 ## Static Assertions (Structural)
 
-Verified automatically by `/skill-test static` — no fixture needed.
+Verified automatically by `$skill-test static` — no fixture needed.
 
-- [ ] Has required frontmatter fields: `name`, `description`, `argument-hint`, `user-invocable`, `allowed-tools`
+- [ ] Has non-empty `name` and `description`; `agents/openai.yaml` has non-empty display name and short description
 - [ ] Has ≥2 phase headings
 - [ ] Contains verdict keywords: PASS, WARNINGS, FAIL
 - [ ] Does NOT require "May I write" language (read-only; write is optional flagging report)
@@ -42,7 +42,7 @@ is a separate skill invocation and is NOT triggered here.
   - No calls to external APIs or file I/O
   - No inline magic numbers (uses constants from `tests/unit/combat/fixtures/`)
 
-**Input:** `/test-evidence-review tests/unit/combat/`
+**Input:** `$test-evidence-review tests/unit/combat/`
 
 **Expected behavior:**
 1. Skill reads test standards from `coding-standards.md`
@@ -68,7 +68,7 @@ is a separate skill invocation and is NOT triggered here.
   ```
 - Real-time wait of 1 second used instead of mock or signal-based assertion
 
-**Input:** `/test-evidence-review tests/unit/ui/hud_update_test.gd`
+**Input:** `$test-evidence-review tests/unit/ui/hud_update_test.gd`
 
 **Expected behavior:**
 1. Skill reads the test file
@@ -91,11 +91,11 @@ is a separate skill invocation and is NOT triggered here.
 **Fixture:**
 - `tests/unit/networking/auth_test.gd` contains:
   ```gdscript
-  var result = HTTPRequest.new().request("https://api.example.com/auth")
+  var result = HTTPRequest.new().request("https:/$api.example.com/auth")
   ```
 - Direct HTTP call to external API without a mock
 
-**Input:** `/test-evidence-review tests/unit/networking/auth_test.gd`
+**Input:** `$test-evidence-review tests/unit/networking/auth_test.gd`
 
 **Expected behavior:**
 1. Skill reads the test file
@@ -116,20 +116,20 @@ is a separate skill invocation and is NOT triggered here.
 ### Case 4: Edge Case — No Test Files Found
 
 **Fixture:**
-- User calls `/test-evidence-review tests/unit/audio/`
+- User calls `$test-evidence-review tests/unit/audio/`
 - `tests/unit/audio/` directory does not exist
 
-**Input:** `/test-evidence-review tests/unit/audio/`
+**Input:** `$test-evidence-review tests/unit/audio/`
 
 **Expected behavior:**
 1. Skill attempts to read files in `tests/unit/audio/` — not found
-2. Skill outputs: "No test files found at `tests/unit/audio/` — run `/test-setup` to scaffold test directories"
+2. Skill outputs: "No test files found at `tests/unit/audio/` — run `$test-setup` to scaffold test directories"
 3. No verdict is emitted
 
 **Assertions:**
 - [ ] Skill does not crash when path does not exist
 - [ ] Output names the attempted path in the message
-- [ ] Output recommends `/test-setup` for scaffolding
+- [ ] Output recommends `$test-setup` for scaffolding
 - [ ] No verdict is emitted when there is nothing to review
 
 ---
@@ -140,13 +140,13 @@ is a separate skill invocation and is NOT triggered here.
 - Test file has 1 WARNINGS-level finding (magic number in a non-boundary test)
 - `review-mode.txt` contains `full`
 
-**Input:** `/test-evidence-review tests/unit/combat/`
+**Input:** `$test-evidence-review tests/unit/combat/`
 
 **Expected behavior:**
 1. Skill reviews tests; finds 1 WARNINGS-level finding
 2. No director gate is invoked (QL-TEST-COVERAGE is invoked separately, not here)
 3. Verdict is WARNINGS
-4. Output notes: "For full test coverage gate, run `/gate-check` which invokes QL-TEST-COVERAGE"
+4. Output notes: "For full test coverage gate, run `$gate-check` which invokes QL-TEST-COVERAGE"
 5. Skill offers optional report write; asks "May I write" if user opts in
 
 **Assertions:**

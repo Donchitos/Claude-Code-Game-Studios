@@ -1,0 +1,4 @@
+interface:
+  display_name: "Test Helpers"
+  short_description: "Generate engine-specific reusable test helpers"
+  default_prompt: "Use $test-helpers to generate engine-specific reusable test helpers."

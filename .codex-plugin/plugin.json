@@ -1,0 +1,22 @@
+{
+  "name": "codex-game-studios",
+  "version": "1.0.0",
+  "description": "Codex role profiles and workflows for an indie game studio.",
+  "author": {
+    "name": "nghgdong",
+    "url": "https://github.com/nghgdong"
+  },
+  "homepage": "https://github.com/nghgdong/Code-Game-Studios",
+  "repository": "https://github.com/nghgdong/Code-Game-Studios",
+  "license": "MIT",
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Codex Game Studios",
+    "shortDescription": "Run an indie game studio with specialist Codex workflows.",
+    "longDescription": "Coordinate game design, engineering, production, and review through focused Codex skills and role profiles.",
+    "developerName": "nghgdong",
+    "category": "Developer Tools",
+    "capabilities": ["Interactive", "Write"],
+    "defaultPrompt": "Help me plan and execute the next game development task."
+  }
+}

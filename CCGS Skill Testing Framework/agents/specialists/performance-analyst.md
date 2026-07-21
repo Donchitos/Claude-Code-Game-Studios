@@ -3,7 +3,7 @@
 ## Agent Summary
 Domain: Profiling, bottleneck identification, performance metrics tracking, and optimization recommendations.
 Does NOT own: implementing optimizations (belongs to the appropriate programmer for that domain).
-Model tier: Sonnet (default).
+No fixed model routing is required; the caller selects the available Codex model.
 No gate IDs assigned.
 
 ---
@@ -11,8 +11,8 @@ No gate IDs assigned.
 ## Static Assertions (Structural)
 
 - [ ] `description:` field is present and domain-specific (references profiling / bottleneck analysis / performance metrics)
-- [ ] `allowed-tools:` list includes Read, Write, Edit, Bash, Glob, Grep
-- [ ] Model tier is Sonnet (default for specialists)
+- [ ] Role boundaries and file ownership match the stated domain
+- [ ] Does not require fixed model routing; the calling Codex client selects the available model
 - [ ] Agent definition does not claim authority over implementing any optimization — explicitly identifies itself as analysis/recommendation only
 
 ---

@@ -1,15 +1,15 @@
-# Skill Test Spec: /adopt
+# Skill Test Spec: $adopt
 
 ## Skill Summary
 
-`/adopt` audits an existing project's artifacts — GDDs, ADRs, stories, infrastructure
+`$adopt` audits an existing project's artifacts — GDDs, ADRs, stories, infrastructure
 files, and `technical-preferences.md` — for format compliance with the template's
 skill pipeline. It classifies every gap by severity (BLOCKING / HIGH / MEDIUM / LOW),
 composes a numbered, ordered migration plan, and writes it to `docs/adoption-plan-[date].md`
 after explicit user approval via `AskUserQuestion`.
 
-This skill is distinct from `/project-stage-detect` (which checks what exists).
-`/adopt` checks whether what exists will actually work with the template's skills.
+This skill is distinct from `$project-stage-detect` (which checks what exists).
+`$adopt` checks whether what exists will actually work with the template's skills.
 
 No director gates apply. The skill does NOT invoke any director agents.
 
@@ -17,9 +17,9 @@ No director gates apply. The skill does NOT invoke any director agents.
 
 ## Static Assertions (Structural)
 
-Verified automatically by `/skill-test static` — no fixture needed.
+Verified automatically by `$skill-test static` — no fixture needed.
 
-- [ ] Has required frontmatter fields: `name`, `description`, `argument-hint`, `user-invocable`, `allowed-tools`
+- [ ] Has non-empty `name` and `description`; `agents/openai.yaml` has non-empty display name and short description
 - [ ] Has ≥2 phase headings
 - [ ] Contains severity tier keywords: BLOCKING, HIGH, MEDIUM, LOW
 - [ ] Contains "May I write" or `AskUserQuestion` language before writing the adoption plan
@@ -29,7 +29,7 @@ Verified automatically by `/skill-test static` — no fixture needed.
 
 ## Director Gate Checks
 
-None. `/adopt` is a brownfield audit utility. No director gates apply.
+None. `$adopt` is a brownfield audit utility. No director gates apply.
 
 ---
 
@@ -45,7 +45,7 @@ None. `/adopt` is a brownfield audit utility. No director gates apply.
 - `docs/architecture/tr-registry.yaml` and `docs/architecture/control-manifest.md` exist
 - Engine configured in `technical-preferences.md`
 
-**Input:** `/adopt`
+**Input:** `$adopt`
 
 **Expected behavior:**
 1. Skill emits "Scanning project artifacts..." then reads all artifacts silently
@@ -78,7 +78,7 @@ None. `/adopt` is a brownfield audit utility. No director gates apply.
 - One ADR (`adr-0001.md`) is missing `## Status` section
 - `docs/architecture/tr-registry.yaml` does not exist
 
-**Input:** `/adopt`
+**Input:** `$adopt`
 
 **Expected behavior:**
 1. Skill scans all artifacts
@@ -91,9 +91,9 @@ None. `/adopt` is a brownfield audit utility. No director gates apply.
    - HIGH: `tr-registry.yaml` missing; `combat.md` missing Acceptance Criteria (can't generate stories)
    - MEDIUM: `combat.md` missing Formulas
 4. Phase 4 builds ordered migration plan:
-   - Step 1 (BLOCKING): Add `## Status` to `adr-0001.md` — command: `/architecture-decision retrofit`
-   - Step 2 (HIGH): Run `/architecture-review` to bootstrap tr-registry.yaml
-   - Step 3 (HIGH): Add Acceptance Criteria to `combat.md` — command: `/design-system retrofit`
+   - Step 1 (BLOCKING): Add `## Status` to `adr-0001.md` — command: `$architecture-decision retrofit`
+   - Step 2 (HIGH): Run `$architecture-review` to bootstrap tr-registry.yaml
+   - Step 3 (HIGH): Add Acceptance Criteria to `combat.md` — command: `$design-system retrofit`
    - Step 4 (MEDIUM): Add Formulas to `combat.md`
 5. Gap Preview shows BLOCKING items as bullets (actual file names), HIGH/MEDIUM as counts
 6. `AskUserQuestion` asks to write the plan; writes after approval
@@ -117,7 +117,7 @@ None. `/adopt` is a brownfield audit utility. No director gates apply.
 - Stories: 5 files — 3 have TR-ID references, 2 do not
 - Infrastructure: all critical files present; `technical-preferences.md` fully configured
 
-**Input:** `/adopt`
+**Input:** `$adopt`
 
 **Expected behavior:**
 1. Skill audits all artifact types
@@ -142,7 +142,7 @@ None. `/adopt` is a brownfield audit utility. No director gates apply.
 
 ---
 
-### Case 4: No Artifacts Found — Fresh project, guidance to run /start
+### Case 4: No Artifacts Found — Fresh project, guidance to run $start
 
 **Fixture:**
 - Repository has no files in `design/gdd/`, `docs/architecture/`, `production/epics/`
@@ -150,20 +150,20 @@ None. `/adopt` is a brownfield audit utility. No director gates apply.
 - `src/` directory does not exist or has fewer than 10 files
 - No game-concept.md, no systems-index.md
 
-**Input:** `/adopt`
+**Input:** `$adopt`
 
 **Expected behavior:**
 1. Phase 1 existence check finds no artifacts
 2. Skill infers "Fresh" — no brownfield work to migrate
 3. Uses `AskUserQuestion`:
-   - "This looks like a fresh project — no existing artifacts found. `/adopt` is for
+   - "This looks like a fresh project — no existing artifacts found. `$adopt` is for
      projects with work to migrate. What would you like to do?"
-   - Options: "Run `/start`", "My artifacts are in a non-standard location", "Cancel"
+   - Options: "Run `$start`", "My artifacts are in a non-standard location", "Cancel"
 4. Skill stops — does not proceed to audit regardless of user selection
 
 **Assertions:**
 - [ ] `AskUserQuestion` is used (not a plain text message) when no artifacts are found
-- [ ] `/start` is presented as a named option
+- [ ] `$start` is presented as a named option
 - [ ] Skill stops after the question — no audit phases run
 - [ ] No adoption plan file is written
 
@@ -174,13 +174,13 @@ None. `/adopt` is a brownfield audit utility. No director gates apply.
 **Fixture:**
 - Project with a mix of compliant and non-compliant GDDs
 
-**Input:** `/adopt`
+**Input:** `$adopt`
 
 **Expected behavior:**
 1. Skill completes full audit and produces migration plan
 2. No director agents are spawned at any point
 3. No gate IDs (CD-*, TD-*, AD-*, PR-*) appear in output
-4. No `/gate-check` is invoked during the skill run
+4. No `$gate-check` is invoked during the skill run
 
 **Assertions:**
 - [ ] No director gate is invoked

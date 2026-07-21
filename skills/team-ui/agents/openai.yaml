@@ -1,0 +1,4 @@
+interface:
+  display_name: "Team UI"
+  short_description: "Coordinate UX design, UI implementation, and review"
+  default_prompt: "Use $team-ui to coordinate UX design, UI implementation, and review."

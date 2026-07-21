@@ -1,0 +1,4 @@
+interface:
+  display_name: "Propagate Design Change"
+  short_description: "Trace a GDD change through dependent project artifacts"
+  default_prompt: "Use $propagate-design-change to trace a GDD change through dependent project artifacts."

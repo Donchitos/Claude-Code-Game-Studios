@@ -1,0 +1,4 @@
+interface:
+  display_name: "Consistency Check"
+  short_description: "Find cross-GDD entity, rule, and formula conflicts"
+  default_prompt: "Use $consistency-check to find cross-GDD entity, rule, and formula conflicts."

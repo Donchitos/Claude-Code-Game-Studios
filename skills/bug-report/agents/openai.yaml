@@ -1,0 +1,4 @@
+interface:
+  display_name: "Bug Report"
+  short_description: "Create or analyze a structured game bug report"
+  default_prompt: "Use $bug-report to create or analyze a structured game bug report."

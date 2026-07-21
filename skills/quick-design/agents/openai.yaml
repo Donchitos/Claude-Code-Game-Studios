@@ -1,0 +1,4 @@
+interface:
+  display_name: "Quick Design"
+  short_description: "Create a lightweight design spec for a small change"
+  default_prompt: "Use $quick-design to create a lightweight design spec for a small change."

@@ -1,20 +1,20 @@
 # Agent Test Spec: narrative-director
 
 ## Agent Summary
-**Domain owned:** Story architecture, character design direction, world-building oversight, ND-CONSISTENCY gate, dialogue quality review.
+**Domain owned:** Story architecture, character design direction, world-building oversight, narrative consistency review gate, dialogue quality review.
 **Does NOT own:** Visual art style (art-director), technical systems or code (lead-programmer), production scheduling (producer), game mechanics rules (game-designer).
-**Model tier:** Sonnet (individual system analysis — narrative consistency and lore review).
-**Gate IDs handled:** ND-CONSISTENCY.
+No fixed model routing is required; the caller selects the available Codex model.
+**Gate IDs handled:** narrative consistency review.
 
 ---
 
 ## Static Assertions (Structural)
 
-Verified by reading the agent's `.claude/agents/narrative-director.md` frontmatter:
+Verified by reading the agent's `roles/narrative-director.md` frontmatter:
 
 - [ ] `description:` field is present and domain-specific (references story, character, world-building, consistency — not generic)
-- [ ] `allowed-tools:` list is read-focused; includes Read for lore documents, GDDs, and narrative docs; no Bash unless justified
-- [ ] Model tier is `claude-sonnet-4-6` per coordination-rules.md
+- [ ] Role boundaries and file ownership match the stated domain
+- [ ] Does not require fixed model routing; the calling Codex client selects the available model
 - [ ] Agent definition does not claim authority over visual style, technical systems, or production scheduling
 
 ---
@@ -22,11 +22,11 @@ Verified by reading the agent's `.claude/agents/narrative-director.md` frontmatt
 ## Test Cases
 
 ### Case 1: In-domain request — appropriate output format
-**Scenario:** A new lore document for "The Sunken Archive" location is submitted. The document establishes that the Archive was flooded 200 years ago during the Great Collapse, consistent with the established timeline in the world-bible. All named characters referenced are consistent with their established backstories. Request is tagged ND-CONSISTENCY.
-**Expected:** Returns `ND-CONSISTENCY: CONSISTENT` with rationale confirming the timeline alignment and character reference accuracy.
+**Scenario:** A new lore document for "The Sunken Archive" location is submitted. The document establishes that the Archive was flooded 200 years ago during the Great Collapse, consistent with the established timeline in the world-bible. All named characters referenced are consistent with their established backstories. Request is tagged narrative consistency review.
+**Expected:** Returns a documented domain-specific verdict with rationale confirming the timeline alignment and character reference accuracy.
 **Assertions:**
 - [ ] Verdict is exactly one of CONSISTENT / INCONSISTENT
-- [ ] Verdict token is formatted as `ND-CONSISTENCY: CONSISTENT`
+- [ ] Verdict and rationale are clear and grounded in the supplied context
 - [ ] Rationale references specific established facts verified (the 200-year timeline, the Great Collapse event)
 - [ ] Output stays within narrative scope — does not comment on visual design of the location or its technical implementation
 
@@ -39,11 +39,11 @@ Verified by reading the agent's `.claude/agents/narrative-director.md` frontmatt
 - [ ] May note the intended narrative mood the effect should convey (e.g., "should feel ancient and sacred, not technological"), but defers all technical visual implementation
 
 ### Case 3: Gate verdict — correct vocabulary
-**Scenario:** A new character backstory document is submitted for the character "Aldric Vorne." The document states Aldric was born in the Capital 150 years ago and witnessed the Great Collapse firsthand. However, the established world-bible states Aldric was born 50 years after the Great Collapse in a provincial town, not the Capital. Request is tagged ND-CONSISTENCY.
-**Expected:** Returns `ND-CONSISTENCY: INCONSISTENT` with specific citation of the two contradicting facts: the birth timing (150 years ago vs. 50 years post-Collapse) and the birth location (Capital vs. provincial town).
+**Scenario:** A new character backstory document is submitted for the character "Aldric Vorne." The document states Aldric was born in the Capital 150 years ago and witnessed the Great Collapse firsthand. However, the established world-bible states Aldric was born 50 years after the Great Collapse in a provincial town, not the Capital. Request is tagged narrative consistency review.
+**Expected:** Returns a documented domain-specific verdict with specific citation of the two contradicting facts: the birth timing (150 years ago vs. 50 years post-Collapse) and the birth location (Capital vs. provincial town).
 **Assertions:**
 - [ ] Verdict is exactly one of CONSISTENT / INCONSISTENT — not freeform text
-- [ ] Verdict token is formatted as `ND-CONSISTENCY: INCONSISTENT`
+- [ ] Verdict and rationale are clear and grounded in the supplied context
 - [ ] Rationale cites both contradictions specifically, not just "doesn't match lore"
 - [ ] References the authoritative source (world-bible) for the established facts
 
@@ -72,13 +72,13 @@ Verified by reading the agent's `.claude/agents/narrative-director.md` frontmatt
 - [ ] Returns verdicts using CONSISTENT / INCONSISTENT vocabulary only
 - [ ] Stays within declared narrative domain
 - [ ] Makes binding decisions for intra-narrative conflicts without unnecessary escalation
-- [ ] Uses gate IDs in output (e.g., `ND-CONSISTENCY: INCONSISTENT`) not inline prose verdicts
+- [ ] Uses the provided task context when applicable; does not claim automatic role registration
 - [ ] Does not make binding visual design, technical, or production decisions
 
 ---
 
 ## Coverage Notes
 - Dialogue quality review (distinct from world-building consistency) is not covered — a dedicated case should be added.
-- Multi-document consistency check across a full chapter set is not covered — deferred to /review-all-gdds integration.
+- Multi-document consistency check across a full chapter set is not covered — deferred to $review-all-gdds integration.
 - Narrative impact of mechanical changes (e.g., a game mechanic that undermines story tension) requires coordination with game-designer and is not covered here.
 - Character arc review (progression, motivation coherence over time) is not covered.

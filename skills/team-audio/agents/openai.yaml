@@ -1,0 +1,4 @@
+interface:
+  display_name: "Team Audio"
+  short_description: "Coordinate audio design, implementation, and validation"
+  default_prompt: "Use $team-audio to coordinate audio design, implementation, and validation."

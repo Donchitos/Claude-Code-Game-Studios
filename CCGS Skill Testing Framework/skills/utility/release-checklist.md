@@ -1,35 +1,35 @@
-# Skill Test Spec: /release-checklist
+# Skill Test Spec: $release-checklist
 
 ## Skill Summary
 
-`/release-checklist` generates an internal release readiness checklist covering:
+`$release-checklist` generates an internal release readiness checklist covering:
 sprint story completion, open bug severity, QA sign-off status, build stability,
 and changelog readiness. It is an internal gate — not a platform/store checklist
-(that is `/launch-checklist`). When a previous release checklist exists, it shows
+(that is `$launch-checklist`). When a previous release checklist exists, it shows
 a delta of resolved and newly introduced issues.
 
 The skill writes its checklist report to `production/releases/release-checklist-[date].md`
-after a "May I write" ask. No director gates apply — `/gate-check` handles
+after a "May I write" ask. No director gates apply — `$gate-check` handles
 formal phase gate logic. Verdicts: RELEASE READY, RELEASE BLOCKED, or CONCERNS.
 
 ---
 
 ## Static Assertions (Structural)
 
-Verified automatically by `/skill-test static` — no fixture needed.
+Verified automatically by `$skill-test static` — no fixture needed.
 
-- [ ] Has required frontmatter fields: `name`, `description`, `argument-hint`, `user-invocable`, `allowed-tools`
+- [ ] Has non-empty `name` and `description`; `agents/openai.yaml` has non-empty display name and short description
 - [ ] Has ≥2 phase headings
 - [ ] Contains verdict keywords: RELEASE READY, RELEASE BLOCKED, CONCERNS
 - [ ] Contains "May I write" collaborative protocol language before writing the report
-- [ ] Has a next-step handoff (e.g., `/launch-checklist` for external or `/gate-check` for phase)
+- [ ] Has a next-step handoff (e.g., `$launch-checklist` for external or `$gate-check` for phase)
 
 ---
 
 ## Director Gate Checks
 
-None. `/release-checklist` is an internal audit utility. Formal phase advancement
-is managed by `/gate-check`.
+None. `$release-checklist` is an internal audit utility. Formal phase advancement
+is managed by `$gate-check`.
 
 ---
 
@@ -44,7 +44,7 @@ is managed by `/gate-check`.
 - Changelog entry for this version exists
 - `production/stage.txt` contains `Polish`
 
-**Input:** `/release-checklist`
+**Input:** `$release-checklist`
 
 **Expected behavior:**
 1. Skill reads sprint-008: all stories Done
@@ -69,7 +69,7 @@ is managed by `/gate-check`.
 - All sprint stories are Done
 - `production/bugs/` contains 2 open bugs with severity HIGH
 
-**Input:** `/release-checklist`
+**Input:** `$release-checklist`
 
 **Expected behavior:**
 1. Skill reads sprint — stories complete
@@ -91,18 +91,18 @@ is managed by `/gate-check`.
 - All stories Done, no HIGH/CRITICAL bugs
 - No changelog entry found for the current version/sprint
 
-**Input:** `/release-checklist`
+**Input:** `$release-checklist`
 
 **Expected behavior:**
 1. Skill checks all items
 2. Changelog check fails: no changelog entry found
 3. Skill reports: "CONCERNS — Changelog not generated for this release"
-4. Skill suggests running `/changelog` to generate it
+4. Skill suggests running `$changelog` to generate it
 5. Verdict is CONCERNS (advisory — not a hard block)
 
 **Assertions:**
 - [ ] Verdict is CONCERNS (not RELEASE BLOCKED — changelog is advisory)
-- [ ] `/changelog` is suggested as the remediation
+- [ ] `$changelog` is suggested as the remediation
 - [ ] Other passing checks are shown in the report
 - [ ] Missing changelog is described as advisory, not blocking
 
@@ -115,7 +115,7 @@ is managed by `/gate-check`.
 - Previous: 1 story was incomplete, 1 HIGH bug open
 - Current: all stories Done, HIGH bug resolved, but now 1 MEDIUM bug appeared
 
-**Input:** `/release-checklist`
+**Input:** `$release-checklist`
 
 **Expected behavior:**
 1. Skill finds the previous checklist and loads it
@@ -139,7 +139,7 @@ is managed by `/gate-check`.
 **Fixture:**
 - Active sprint with stories and bug reports
 
-**Input:** `/release-checklist`
+**Input:** `$release-checklist`
 
 **Expected behavior:**
 1. Skill runs the full checklist and writes the report

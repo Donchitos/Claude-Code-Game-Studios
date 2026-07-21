@@ -1,7 +1,7 @@
 # Technical Requirement ID Registry
 #
 # PURPOSE: Persistent, stable IDs for every GDD technical requirement.
-# Prevents TR-ID renumbering across /architecture-review runs, which would
+# Prevents TR-ID renumbering across $architecture-review runs, which would
 # break story references.
 #
 # RULES:
@@ -13,10 +13,10 @@
 #   - When a requirement is split or replaced: set status: superseded-by with
 #     the new TR-ID(s).
 #
-# WRITTEN BY: /architecture-review (appends new entries, never overwrites)
-# READ BY:    /create-stories (embed IDs in stories)
-#             /story-done (look up current requirement text at review time)
-#             /story-readiness (validate TR-ID exists and is active)
+# WRITTEN BY: $architecture-review (appends new entries, never overwrites)
+# READ BY:    $create-stories (embed IDs in stories)
+#             $story-done (look up current requirement text at review time)
+#             $story-readiness (validate TR-ID exists and is active)
 #
 # ID FORMAT: TR-[system-slug]-[NNN]
 #   system-slug = short slug matching the GDD system name

@@ -1,9 +1,9 @@
-# Skill Test Spec: /hotfix
+# Skill Test Spec: $hotfix
 
 ## Skill Summary
 
-`/hotfix` manages an emergency fix workflow: it creates a hotfix branch from
-main, applies a targeted fix to the identified file(s), runs `/smoke-check` to
+`$hotfix` manages an emergency fix workflow: it creates a hotfix branch from
+main, applies a targeted fix to the identified file(s), runs `$smoke-check` to
 validate the fix doesn't introduce regressions, and prompts the user to confirm
 merge back to main. Each code change requires a "May I write to [filepath]?" ask.
 Git operations (branch creation, merge) are presented as Bash commands for user
@@ -17,13 +17,13 @@ or HOTFIX BLOCKED (fix introduced regression or user declined).
 
 ## Static Assertions (Structural)
 
-Verified automatically by `/skill-test static` — no fixture needed.
+Verified automatically by `$skill-test static` — no fixture needed.
 
-- [ ] Has required frontmatter fields: `name`, `description`, `argument-hint`, `user-invocable`, `allowed-tools`
+- [ ] Has non-empty `name` and `description`; `agents/openai.yaml` has non-empty display name and short description
 - [ ] Has ≥2 phase headings
 - [ ] Contains verdict keywords: HOTFIX COMPLETE, HOTFIX BLOCKED
 - [ ] Contains "May I write" language for code changes
-- [ ] Has a next-step handoff (e.g., `/bug-report` to document the issue, or version bump)
+- [ ] Has a next-step handoff (e.g., `$bug-report` to document the issue, or version bump)
 
 ---
 
@@ -43,21 +43,21 @@ post-hoc step. No gate is invoked within this skill.
 - Bug is identified in `src/gameplay/arena.gd` (crash on boss arena entry)
 - Repro steps are provided by user
 
-**Input:** `/hotfix` (user describes the crash and affected file)
+**Input:** `$hotfix` (user describes the crash and affected file)
 
 **Expected behavior:**
 1. Skill proposes creating a hotfix branch: `hotfix/boss-arena-crash`
 2. User confirms; Bash command for branch creation is shown and confirmed
 3. Skill identifies the fix location in `arena.gd` and drafts the change
 4. Skill asks "May I write to `src/gameplay/arena.gd`?" and applies fix on approval
-5. Skill runs `/smoke-check` — PASS
+5. Skill runs `$smoke-check` — PASS
 6. Skill presents the merge command and asks user to confirm merge to `main`
 7. User confirms; merge executes; verdict is HOTFIX COMPLETE
 
 **Assertions:**
 - [ ] Hotfix branch is created before any code changes
 - [ ] "May I write" is asked before modifying any source file
-- [ ] `/smoke-check` runs after the fix is applied
+- [ ] `$smoke-check` runs after the fix is applied
 - [ ] Merge requires explicit user confirmation (not automatic)
 - [ ] Verdict is HOTFIX COMPLETE after successful merge
 
@@ -67,12 +67,12 @@ post-hoc step. No gate is invoked within this skill.
 
 **Fixture:**
 - Fix has been applied to `src/gameplay/arena.gd`
-- `/smoke-check` returns FAIL: "Player health clamping regression detected"
+- `$smoke-check` returns FAIL: "Player health clamping regression detected"
 
-**Input:** `/hotfix`
+**Input:** `$hotfix`
 
 **Expected behavior:**
-1. Skill applies the fix and runs `/smoke-check`
+1. Skill applies the fix and runs `$smoke-check`
 2. Smoke check returns FAIL with specific regression identified
 3. Skill reports: "HOTFIX BLOCKED — smoke check failed: [regression detail]"
 4. Skill presents options: attempt revised fix, revert changes, or merge with
@@ -93,7 +93,7 @@ post-hoc step. No gate is invoked within this skill.
 - Latest git tag is `v1.2.0`
 - Hotfix targets a bug in the v1.2.0 release
 
-**Input:** `/hotfix`
+**Input:** `$hotfix`
 
 **Expected behavior:**
 1. Skill detects that the current HEAD is a tagged release (v1.2.0)
@@ -113,10 +113,10 @@ post-hoc step. No gate is invoked within this skill.
 ### Case 4: No Repro Steps — Skill Asks Before Applying Fix
 
 **Fixture:**
-- User invokes `/hotfix` with a vague description: "something is broken on level 3"
+- User invokes `$hotfix` with a vague description: "something is broken on level 3"
 - No repro steps provided
 
-**Input:** `/hotfix` (vague description)
+**Input:** `$hotfix` (vague description)
 
 **Expected behavior:**
 1. Skill detects insufficient information to identify the fix location
@@ -137,7 +137,7 @@ post-hoc step. No gate is invoked within this skill.
 **Fixture:**
 - Critical bug with repro steps identified
 
-**Input:** `/hotfix`
+**Input:** `$hotfix`
 
 **Expected behavior:**
 1. Skill completes the hotfix workflow
@@ -156,7 +156,7 @@ post-hoc step. No gate is invoked within this skill.
 
 - [ ] Creates hotfix branch before making any code changes
 - [ ] Asks "May I write" before modifying any source files
-- [ ] Runs `/smoke-check` after applying the fix
+- [ ] Runs `$smoke-check` after applying the fix
 - [ ] Requires explicit user confirmation before merging
 - [ ] HOTFIX BLOCKED when smoke check fails — no automatic merge
 - [ ] Verdict is HOTFIX COMPLETE or HOTFIX BLOCKED

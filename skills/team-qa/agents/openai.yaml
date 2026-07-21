@@ -1,0 +1,4 @@
+interface:
+  display_name: "Team QA"
+  short_description: "Coordinate a complete QA cycle and sign-off"
+  default_prompt: "Use $team-qa to coordinate a complete QA cycle and sign-off."

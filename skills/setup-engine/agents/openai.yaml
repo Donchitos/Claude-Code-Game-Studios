@@ -1,0 +1,4 @@
+interface:
+  display_name: "Setup Engine"
+  short_description: "Configure the project's engine, version, and specialists"
+  default_prompt: "Use $setup-engine to configure the project's engine, version, and specialists."

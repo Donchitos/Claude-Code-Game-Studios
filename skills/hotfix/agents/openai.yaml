@@ -1,0 +1,4 @@
+interface:
+  display_name: "Hotfix"
+  short_description: "Run a traceable emergency fix and verification workflow"
+  default_prompt: "Use $hotfix to run a traceable emergency fix and verification workflow."

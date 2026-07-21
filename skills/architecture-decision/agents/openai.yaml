@@ -1,0 +1,4 @@
+interface:
+  display_name: "Architecture Decision"
+  short_description: "Create an engine-aware architecture decision record"
+  default_prompt: "Use $architecture-decision to create an engine-aware architecture decision record."

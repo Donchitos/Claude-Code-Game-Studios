@@ -1,20 +1,20 @@
 # Agent Test Spec: lead-programmer
 
 ## Agent Summary
-**Domain owned:** Code architecture decisions, LP-FEASIBILITY gate, LP-CODE-REVIEW gate, coding standards enforcement, tech stack decisions within the approved engine.
+**Domain owned:** Code architecture decisions, feasibility review gate, $code-review gate, coding standards enforcement, tech stack decisions within the approved engine.
 **Does NOT own:** Game design decisions (game-designer), creative direction (creative-director), production scheduling (producer), visual art direction (art-director).
-**Model tier:** Sonnet (implementation-level analysis of individual systems).
-**Gate IDs handled:** LP-FEASIBILITY, LP-CODE-REVIEW.
+No fixed model routing is required; the caller selects the available Codex model.
+**Gate IDs handled:** feasibility review, $code-review.
 
 ---
 
 ## Static Assertions (Structural)
 
-Verified by reading the agent's `.claude/agents/lead-programmer.md` frontmatter:
+Verified by reading the agent's `roles/lead-programmer.md` frontmatter:
 
 - [ ] `description:` field is present and domain-specific (references code architecture, feasibility, code review, coding standards — not generic)
-- [ ] `allowed-tools:` list includes Read for source files; Bash may be included for static analysis or test runs; no write access outside `src/` without explicit delegation
-- [ ] Model tier is `claude-sonnet-4-6` per coordination-rules.md
+- [ ] Role boundaries and file ownership match the stated domain
+- [ ] Does not require fixed model routing; the calling Codex client selects the available model
 - [ ] Agent definition does not claim authority over game design, creative direction, or production scheduling
 
 ---
@@ -22,11 +22,11 @@ Verified by reading the agent's `.claude/agents/lead-programmer.md` frontmatter:
 ## Test Cases
 
 ### Case 1: In-domain request — appropriate output format
-**Scenario:** A new `CombatSystem` implementation is submitted for code review. The system uses dependency injection for all external references, has doc comments on all public APIs, follows the project's naming conventions, and includes unit tests for all public methods. Request is tagged LP-CODE-REVIEW.
-**Expected:** Returns `LP-CODE-REVIEW: APPROVED` with rationale confirming dependency injection usage, doc comment coverage, naming convention compliance, and test coverage.
+**Scenario:** A new `CombatSystem` implementation is submitted for code review. The system uses dependency injection for all external references, has doc comments on all public APIs, follows the project's naming conventions, and includes unit tests for all public methods. Request is tagged $code-review.
+**Expected:** Returns a documented domain-specific verdict with rationale confirming dependency injection usage, doc comment coverage, naming convention compliance, and test coverage.
 **Assertions:**
 - [ ] Verdict is exactly one of APPROVED / NEEDS CHANGES
-- [ ] Verdict token is formatted as `LP-CODE-REVIEW: APPROVED`
+- [ ] Verdict and rationale are clear and grounded in the supplied context
 - [ ] Rationale references specific coding standards criteria (DI, doc comments, naming, tests)
 - [ ] Output stays within code quality scope — does not comment on whether the mechanic is fun or fits creative vision
 
@@ -39,11 +39,11 @@ Verified by reading the agent's `.claude/agents/lead-programmer.md` frontmatter:
 - [ ] May note code implementation concerns about the formula (e.g., integer overflow risk at max level), but defers all balance evaluation to systems-designer
 
 ### Case 3: Gate verdict — correct vocabulary
-**Scenario:** A proposed pathfinding approach for enemy AI uses a brute-force nearest-neighbor search against all other entities every frame. With expected enemy counts of 200+, this is O(n²) per frame at 60fps. Request is tagged LP-FEASIBILITY.
-**Expected:** Returns `LP-FEASIBILITY: INFEASIBLE` with specific citation of the O(n²) complexity, the entity count threshold, and the resulting per-frame cost against the target frame budget.
+**Scenario:** A proposed pathfinding approach for enemy AI uses a brute-force nearest-neighbor search against all other entities every frame. With expected enemy counts of 200+, this is O(n²) per frame at 60fps. Request is tagged feasibility review.
+**Expected:** Returns a documented domain-specific verdict with specific citation of the O(n²) complexity, the entity count threshold, and the resulting per-frame cost against the target frame budget.
 **Assertions:**
 - [ ] Verdict is exactly one of FEASIBLE / CONCERNS / INFEASIBLE — not freeform text
-- [ ] Verdict token is formatted as `LP-FEASIBILITY: INFEASIBLE`
+- [ ] Verdict and rationale are clear and grounded in the supplied context
 - [ ] Rationale includes the specific algorithmic complexity and entity count numbers
 - [ ] Suggests at least one alternative approach (e.g., spatial hashing, KD-tree) without mandating a choice
 
@@ -69,17 +69,17 @@ Verified by reading the agent's `.claude/agents/lead-programmer.md` frontmatter:
 
 ## Protocol Compliance
 
-- [ ] Returns LP-CODE-REVIEW verdicts using APPROVED / NEEDS CHANGES vocabulary only
-- [ ] Returns LP-FEASIBILITY verdicts using FEASIBLE / CONCERNS / INFEASIBLE vocabulary only
+- [ ] Uses the verdict vocabulary documented by the current workflow
+- [ ] Uses the verdict vocabulary documented by the current workflow
 - [ ] Stays within declared code architecture domain
 - [ ] Defers design priority conflicts to creative-director
-- [ ] Uses gate IDs in output (e.g., `LP-FEASIBILITY: INFEASIBLE`) not inline prose verdicts
+- [ ] Uses the provided task context when applicable; does not claim automatic role registration
 - [ ] Does not make binding game design or creative direction decisions
 
 ---
 
 ## Coverage Notes
 - Multi-file code review spanning several interdependent systems is not covered — deferred to integration tests.
-- Tech debt assessment and prioritization are not covered here — deferred to /tech-debt skill integration.
+- Tech debt assessment and prioritization are not covered here — deferred to $tech-debt skill integration.
 - Coding standards document updates (adding a new forbidden pattern) are not covered.
 - Interaction with qa-lead on what constitutes a testable unit (LP vs QL boundary) is not covered.

@@ -1,0 +1,4 @@
+interface:
+  display_name: "QA Plan"
+  short_description: "Create a scoped QA plan from stories and design requirements"
+  default_prompt: "Use $qa-plan to create a scoped QA plan from stories and design requirements."

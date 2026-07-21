@@ -1,10 +1,10 @@
-# Skill Test Spec: /bug-triage
+# Skill Test Spec: $bug-triage
 
 ## Skill Summary
 
-`/bug-triage` reads all open bug reports in `production/bugs/` and produces a
+`$bug-triage` reads all open bug reports in `production/bugs/` and produces a
 prioritized triage table sorted by severity (CRITICAL → HIGH → MEDIUM → LOW).
-It runs on the Haiku model (read-only, formatting/sorting task) and produces no
+It is read-only (, formatting/sorting task) and produces no
 file writes — the triage output is conversational. The skill flags bugs missing
 reproduction steps and identifies possible duplicates by comparing titles and
 affected systems.
@@ -17,19 +17,19 @@ prioritize which bugs to address next.
 
 ## Static Assertions (Structural)
 
-Verified automatically by `/skill-test static` — no fixture needed.
+Verified automatically by `$skill-test static` — no fixture needed.
 
-- [ ] Has required frontmatter fields: `name`, `description`, `argument-hint`, `user-invocable`, `allowed-tools`
+- [ ] Has non-empty `name` and `description`; `agents/openai.yaml` has non-empty display name and short description
 - [ ] Has ≥2 phase headings
 - [ ] Contains verdict keyword: TRIAGED
 - [ ] Does NOT contain "May I write" language (skill is read-only)
-- [ ] Has a next-step handoff (e.g., `/bug-report` to create new reports, `/hotfix` for critical bugs)
+- [ ] Has a next-step handoff (e.g., `$bug-report` to create new reports, `$hotfix` for critical bugs)
 
 ---
 
 ## Director Gate Checks
 
-None. `/bug-triage` is a read-only advisory skill. No director gates apply.
+None. `$bug-triage` is a read-only advisory skill. No director gates apply.
 
 ---
 
@@ -45,7 +45,7 @@ None. `/bug-triage` is a read-only advisory skill. No director gates apply.
   - bug-2026-03-15-typo-tutorial.md (LOW)
   - bug-2026-03-16-vfx-flicker.md (HIGH)
 
-**Input:** `/bug-triage`
+**Input:** `$bug-triage`
 
 **Expected behavior:**
 1. Skill reads all 5 bug report files
@@ -63,22 +63,22 @@ None. `/bug-triage` is a read-only advisory skill. No director gates apply.
 
 ---
 
-### Case 2: No Bug Reports Found — Guidance to run /bug-report
+### Case 2: No Bug Reports Found — Guidance to run $bug-report
 
 **Fixture:**
 - `production/bugs/` directory exists but is empty (or does not exist)
 
-**Input:** `/bug-triage`
+**Input:** `$bug-triage`
 
 **Expected behavior:**
 1. Skill scans `production/bugs/` and finds no reports
 2. Skill outputs: "No open bug reports found in production/bugs/"
-3. Skill suggests running `/bug-report` to create a bug report
+3. Skill suggests running `$bug-report` to create a bug report
 4. No triage table is produced
 
 **Assertions:**
 - [ ] Output explicitly states no bugs were found
-- [ ] `/bug-report` is suggested as the next step
+- [ ] `$bug-report` is suggested as the next step
 - [ ] Skill does not error out — it handles empty directory gracefully
 - [ ] Verdict is TRIAGED (with "no bugs found" context)
 
@@ -89,7 +89,7 @@ None. `/bug-triage` is a read-only advisory skill. No director gates apply.
 **Fixture:**
 - `production/bugs/` contains 3 bug reports; one has an empty "Repro Steps" section
 
-**Input:** `/bug-triage`
+**Input:** `$bug-triage`
 
 **Expected behavior:**
 1. Skill reads all 3 reports
@@ -114,7 +114,7 @@ None. `/bug-triage` is a read-only advisory skill. No director gates apply.
   - bug-2026-03-20-player-clips-through-floor.md
   - Both affect the "Physics" system with identical severity
 
-**Input:** `/bug-triage`
+**Input:** `$bug-triage`
 
 **Expected behavior:**
 1. Skill reads both reports and detects similar title + same system + same severity
@@ -136,7 +136,7 @@ None. `/bug-triage` is a read-only advisory skill. No director gates apply.
 **Fixture:**
 - `production/bugs/` contains any number of reports
 
-**Input:** `/bug-triage`
+**Input:** `$bug-triage`
 
 **Expected behavior:**
 1. Skill produces the triage table

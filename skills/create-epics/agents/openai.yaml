@@ -1,0 +1,4 @@
+interface:
+  display_name: "Create Epics"
+  short_description: "Convert approved design and architecture into epics"
+  default_prompt: "Use $create-epics to convert approved design and architecture into epics."

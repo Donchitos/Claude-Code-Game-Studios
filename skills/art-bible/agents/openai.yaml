@@ -1,0 +1,4 @@
+interface:
+  display_name: "Art Bible"
+  short_description: "Author a production-ready visual art bible"
+  default_prompt: "Use $art-bible to author a production-ready visual art bible."

@@ -1,0 +1,4 @@
+interface:
+  display_name: "Create Architecture"
+  short_description: "Author the game's master technical architecture"
+  default_prompt: "Use $create-architecture to author the game's master technical architecture."

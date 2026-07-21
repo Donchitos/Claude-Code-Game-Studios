@@ -1,0 +1,4 @@
+interface:
+  display_name: "Team Release"
+  short_description: "Coordinate release validation, deployment, and launch"
+  default_prompt: "Use $team-release to coordinate release validation, deployment, and launch."

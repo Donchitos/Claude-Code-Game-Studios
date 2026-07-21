@@ -1,0 +1,4 @@
+interface:
+  display_name: "Soak Test"
+  short_description: "Design an extended-play soak test and monitoring plan"
+  default_prompt: "Use $soak-test to design an extended-play soak test and monitoring plan."

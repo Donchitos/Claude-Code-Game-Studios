@@ -1,0 +1,4 @@
+interface:
+  display_name: "UX Review"
+  short_description: "Review UX specifications for usability and accessibility"
+  default_prompt: "Use $ux-review to review UX specifications for usability and accessibility."

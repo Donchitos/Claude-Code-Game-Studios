@@ -1,8 +1,8 @@
-# Skill Test Spec: /smoke-check
+# Skill Test Spec: $smoke-check
 
 ## Skill Summary
 
-`/smoke-check` is the gate between implementation and QA hand-off. It detects the
+`$smoke-check` is the gate between implementation and QA hand-off. It detects the
 test environment, runs the automated test suite (via Bash), scans test coverage
 against sprint stories, and uses `AskUserQuestion` to batch-verify manual smoke
 checks with the developer. It writes a report to `production/qa/smoke-[date].md`
@@ -19,19 +19,19 @@ No director gates apply. The skill does NOT invoke any director agents.
 
 ## Static Assertions (Structural)
 
-Verified automatically by `/skill-test static` — no fixture needed.
+Verified automatically by `$skill-test static` — no fixture needed.
 
-- [ ] Has required frontmatter fields: `name`, `description`, `argument-hint`, `user-invocable`, `allowed-tools`
+- [ ] Has non-empty `name` and `description`; `agents/openai.yaml` has non-empty display name and short description
 - [ ] Has ≥2 phase headings
 - [ ] Contains verdict keywords: PASS, PASS WITH WARNINGS, FAIL
 - [ ] Contains "May I write" collaborative protocol language before writing the report
-- [ ] Has a next-step handoff (e.g., `/bug-report` on FAIL, QA hand-off guidance on PASS)
+- [ ] Has a next-step handoff (e.g., `$bug-report` on FAIL, QA hand-off guidance on PASS)
 
 ---
 
 ## Director Gate Checks
 
-None. `/smoke-check` is a pre-QA utility skill. No director gates apply.
+None. `$smoke-check` is a pre-QA utility skill. No director gates apply.
 
 ---
 
@@ -47,7 +47,7 @@ None. `/smoke-check` is a pre-QA utility skill. No director gates apply.
 - Developer confirms all Batch 1 and Batch 2 smoke checks as PASS
 - All sprint stories have matching test files (no MISSING coverage)
 
-**Input:** `/smoke-check`
+**Input:** `$smoke-check`
 
 **Expected behavior:**
 1. Skill detects test directory and engine, notes QA plan found
@@ -78,7 +78,7 @@ None. `/smoke-check` is a pre-QA utility skill. No director gates apply.
   - Failing tests: `test_health_clamp_at_zero`, `test_damage_calculation_negative`
 - QA plan exists
 
-**Input:** `/smoke-check`
+**Input:** `$smoke-check`
 
 **Expected behavior:**
 1. Skill runs automated tests via Bash
@@ -89,13 +89,13 @@ None. `/smoke-check` is a pre-QA utility skill. No director gates apply.
 6. Asks to write report; writes after approval
 7. Delivers FAIL verdict with message: "The smoke check failed. Do not hand off to
    QA until these failures are resolved." Lists failing tests and suggests fixing
-   then re-running `/smoke-check`
+   then re-running `$smoke-check`
 
 **Assertions:**
 - [ ] Failing test names are listed in the report
 - [ ] Verdict is FAIL
 - [ ] Post-verdict message directs developer to fix failures before QA hand-off
-- [ ] `/smoke-check` re-run is suggested after fixing
+- [ ] `$smoke-check` re-run is suggested after fixing
 
 ---
 
@@ -107,7 +107,7 @@ None. `/smoke-check` is a pre-QA utility skill. No director gates apply.
 - One Logic story has no matching test file (MISSING coverage)
 - Developer confirms all Batch 1 and Batch 2 smoke checks as PASS
 
-**Input:** `/smoke-check`
+**Input:** `$smoke-check`
 
 **Expected behavior:**
 1. Automated tests PASS
@@ -115,14 +115,14 @@ None. `/smoke-check` is a pre-QA utility skill. No director gates apply.
 3. `AskUserQuestion` is used for Batch 1 and Batch 2 — developer confirms all PASS
 4. Report shows: automated tests PASS, manual checks all PASS, 1 MISSING coverage entry
 5. Verdict is PASS WITH WARNINGS — build ready for QA, but MISSING entry must be
-   resolved before `/story-done` closes the affected story
+   resolved before `$story-done` closes the affected story
 6. Asks to write report; writes after approval
 
 **Assertions:**
 - [ ] `AskUserQuestion` is used for manual smoke check batches (not inline text prompts)
 - [ ] MISSING test coverage entry appears in the report
 - [ ] Verdict is PASS WITH WARNINGS (not PASS, not FAIL)
-- [ ] Advisory note explains MISSING entry must be resolved before `/story-done`
+- [ ] Advisory note explains MISSING entry must be resolved before `$story-done`
 - [ ] Report file is written to `production/qa/smoke-[date].md`
 
 ---
@@ -133,18 +133,18 @@ None. `/smoke-check` is a pre-QA utility skill. No director gates apply.
 - `tests/` directory does not exist
 - Engine is configured as Godot
 
-**Input:** `/smoke-check`
+**Input:** `$smoke-check`
 
 **Expected behavior:**
 1. Phase 1 checks for `tests/` directory — not found
-2. Skill outputs: "No test directory found at `tests/`. Run `/test-setup` to
+2. Skill outputs: "No test directory found at `tests/`. Run `$test-setup` to
    scaffold the testing infrastructure, or create the directory manually if
    tests live elsewhere."
 3. Skill stops — no automated tests run, no manual smoke checks, no report written
 
 **Assertions:**
 - [ ] Error message references the missing `tests/` directory
-- [ ] `/test-setup` is suggested as the remediation step
+- [ ] `$test-setup` is suggested as the remediation step
 - [ ] Skill stops after this message (no further phases run)
 - [ ] No report file is written
 
@@ -155,13 +155,13 @@ None. `/smoke-check` is a pre-QA utility skill. No director gates apply.
 **Fixture:**
 - Valid test setup, automated tests pass, manual smoke checks confirmed
 
-**Input:** `/smoke-check`
+**Input:** `$smoke-check`
 
 **Expected behavior:**
 1. Skill runs all phases and produces a PASS or PASS WITH WARNINGS verdict
 2. No director agents are spawned at any point
 3. No gate IDs (CD-*, TD-*, AD-*, PR-*) appear in output
-4. No `/gate-check` is invoked
+4. No `$gate-check` is invoked
 
 **Assertions:**
 - [ ] No director gate is invoked

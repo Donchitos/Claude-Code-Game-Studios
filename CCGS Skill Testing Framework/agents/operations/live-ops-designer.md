@@ -3,7 +3,7 @@
 ## Agent Summary
 - **Domain**: Post-launch content strategy, seasonal events (design and structure), battle pass design, content cadence planning, player retention mechanic design, live service feature roadmaps
 - **Does NOT own**: Economy math and reward value calculations (economy-designer), analytics tracking implementation (analytics-engineer), narrative content within events (writer), code implementation
-- **Model tier**: Sonnet
+No fixed model routing is required; the caller selects the available Codex model.
 - **Gate IDs**: None; escalates monetization concerns to creative-director for brand/ethics review
 
 ---
@@ -11,8 +11,8 @@
 ## Static Assertions (Structural)
 
 - [ ] `description:` field is present and domain-specific (references live ops, seasonal events, battle pass, retention)
-- [ ] `allowed-tools:` list matches the agent's role (Read/Write for design/live-ops/ documents; no code or analytics tools)
-- [ ] Model tier is Sonnet (default for design specialists)
+- [ ] Role boundaries and file ownership match the stated domain
+- [ ] Does not require fixed model routing; the calling Codex client selects the available model
 - [ ] Agent definition does not claim authority over economy math, analytics pipelines, or narrative direction
 
 ---
@@ -78,4 +78,4 @@
 - Case 3 (monetization ethics) is a brand-safety test — failure here could result in harmful live ops designs shipping
 - Case 4 (escalation behavior) is a coordination test — verify the agent actually escalates rather than deciding independently
 - Case 5 is the most important context-awareness test; agent must target the specific drop-off point, not a generic solution
-- No automated runner; review manually or via `/skill-test`
+- No automated runner; review manually or via `$skill-test`

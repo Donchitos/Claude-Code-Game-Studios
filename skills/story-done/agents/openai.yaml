@@ -1,0 +1,4 @@
+interface:
+  display_name: "Story Done"
+  short_description: "Verify and close an implemented story safely"
+  default_prompt: "Use $story-done to verify and close an implemented story safely."

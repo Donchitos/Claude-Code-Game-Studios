@@ -1,27 +1,34 @@
 ## Summary
 
-Brief description of what this PR does.
+Describe the problem and the smallest change that solves it.
 
-## Type of Change
+## Type Of Change
 
-- [ ] New agent
-- [ ] New skill
-- [ ] New hook or rule
+- [ ] Skill
+- [ ] Role profile
+- [ ] Hook or `.codex/hooks.json`
+- [ ] `AGENTS.md` instruction rule
 - [ ] Bug fix
-- [ ] Documentation improvement
+- [ ] Documentation or template
+- [ ] Package metadata
 - [ ] Other:
 
 ## Changes
 
 -
--
--
+
+## Verification
+
+List the commands, Codex skill invocations, hook events, and manual checks run.
 
 ## Checklist
 
-- [ ] I've tested this in a Claude Code session
-- [ ] New agents include the Collaboration Protocol section
-- [ ] New skills use the subdirectory format (`.claude/skills/<name>/SKILL.md`)
-- [ ] Reference docs are updated (agent-roster, skills-reference, hooks-reference, rules-reference)
-- [ ] Hooks use `grep -E` (POSIX) and fail gracefully without jq/python
-- [ ] No hardcoded paths or platform-specific assumptions
+- [ ] I tested the change in a project opened with Codex.
+- [ ] Skill examples use `$skill-name` and skill files use `skills/<name>/SKILL.md`.
+- [ ] Skill metadata in `agents/openai.yaml` is updated when needed.
+- [ ] Role files are documented as injectable profiles, not registered agents.
+- [ ] Hook changes are reflected in `.codex/hooks.json` and use portable Bash.
+- [ ] I reviewed project-trust, shell-injection, secret-leakage, and path risks.
+- [ ] Relevant studio reference docs and examples are updated.
+- [ ] Referenced local paths and Markdown links were checked.
+- [ ] `git diff --check` passes and skipped validation is explained.

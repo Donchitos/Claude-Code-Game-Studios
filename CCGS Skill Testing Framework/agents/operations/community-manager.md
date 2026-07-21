@@ -3,7 +3,7 @@
 ## Agent Summary
 - **Domain**: Player-facing communications — patch notes text (player-friendly), social media post drafts, community update announcements, crisis communication response plans, bug triage and routing from player reports (not fixing)
 - **Does NOT own**: Technical patch content (devops-engineer), QA verification and test execution (qa-lead), bug fixes (programmers), brand strategy direction (creative-director)
-- **Model tier**: Sonnet
+No fixed model routing is required; the caller selects the available Codex model.
 - **Gate IDs**: None; escalates brand voice conflicts to creative-director
 
 ---
@@ -11,8 +11,8 @@
 ## Static Assertions (Structural)
 
 - [ ] `description:` field is present and domain-specific (references player communication, patch notes, community management)
-- [ ] `allowed-tools:` list matches the agent's role (Read/Write for production/releases/patch-notes/ and communication drafts; no code or build tools)
-- [ ] Model tier is Sonnet (default for operations specialists)
+- [ ] Role boundaries and file ownership match the stated domain
+- [ ] Does not require fixed model routing; the calling Codex client selects the available model
 - [ ] Agent definition does not claim authority over technical content, QA strategy, or bug fixing
 
 ---
@@ -78,4 +78,4 @@
 - Case 3 (crisis communication) is a brand-safety test — verify the agent de-escalates rather than inflames
 - Case 4 requires a brand voice document to be in context; test is incomplete without it
 - Case 5 is the most important context-awareness test for tone consistency
-- No automated runner; review manually or via `/skill-test`
+- No automated runner; review manually or via `$skill-test`

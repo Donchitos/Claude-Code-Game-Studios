@@ -1,0 +1,4 @@
+interface:
+  display_name: "Prototype"
+  short_description: "Build a throwaway prototype to test a game concept"
+  default_prompt: "Use $prototype to build a throwaway prototype to test a game concept."

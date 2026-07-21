@@ -1,8 +1,8 @@
-# Skill Test Spec: /propagate-design-change
+# Skill Test Spec: $propagate-design-change
 
 ## Skill Summary
 
-`/propagate-design-change` handles GDD revision cascades. When a GDD is updated,
+`$propagate-design-change` handles GDD revision cascades. When a GDD is updated,
 the skill traces all downstream artifacts that reference it: ADRs, TR-registry
 entries, stories, and epics. It produces a structured impact report showing what
 needs to change and why. The skill does NOT automatically apply changes — it
@@ -17,9 +17,9 @@ tracing, not a creative review.
 
 ## Static Assertions (Structural)
 
-Verified automatically by `/skill-test static` — no fixture needed.
+Verified automatically by `$skill-test static` — no fixture needed.
 
-- [ ] Has required frontmatter fields: `name`, `description`, `argument-hint`, `user-invocable`, `allowed-tools`
+- [ ] Has non-empty `name` and `description`; `agents/openai.yaml` has non-empty display name and short description
 - [ ] Has ≥2 phase headings
 - [ ] Contains verdict keywords: COMPLETE, BLOCKED, NO IMPACT
 - [ ] Contains "May I write" collaborative protocol language (per-artifact approval)
@@ -46,7 +46,7 @@ director review is required at the analysis stage.
 - 2 story files reference TR-IDs from this GDD
 - The changed GDD section affects the acceptance criteria of both stories
 
-**Input:** `/propagate-design-change design/gdd/[system].md`
+**Input:** `$propagate-design-change design/gdd/[system].md`
 
 **Expected behavior:**
 1. Skill reads the revised GDD and identifies what changed (git diff or content comparison)
@@ -71,7 +71,7 @@ director review is required at the analysis stage.
 - `design/gdd/[system].md` exists and has been revised
 - No ADRs, stories, or epics reference this GDD's TR-IDs or GDD path
 
-**Input:** `/propagate-design-change design/gdd/[system].md`
+**Input:** `$propagate-design-change design/gdd/[system].md`
 
 **Expected behavior:**
 1. Skill reads the revised GDD
@@ -94,7 +94,7 @@ director review is required at the analysis stage.
 - A story referencing this GDD has `Status: In Progress`
 - The developer has already started implementing this story
 
-**Input:** `/propagate-design-change design/gdd/[system].md`
+**Input:** `$propagate-design-change design/gdd/[system].md`
 
 **Expected behavior:**
 1. Skill identifies the In Progress story as an affected artifact
@@ -115,11 +115,11 @@ director review is required at the analysis stage.
 **Fixture:**
 - Multiple GDDs exist in `design/gdd/`
 
-**Input:** `/propagate-design-change` (no argument)
+**Input:** `$propagate-design-change` (no argument)
 
 **Expected behavior:**
 1. Skill detects no argument is provided
-2. Skill outputs a usage error: "No GDD specified. Usage: /propagate-design-change design/gdd/[system].md"
+2. Skill outputs a usage error: "No GDD specified. Usage: $propagate-design-change design/gdd/[system].md"
 3. Skill lists recently modified GDDs as suggestions (git log)
 4. No analysis is performed
 
@@ -137,7 +137,7 @@ director review is required at the analysis stage.
 - A GDD has been revised with downstream references
 - `production/session-state/review-mode.txt` exists with `full`
 
-**Input:** `/propagate-design-change design/gdd/[system].md`
+**Input:** `$propagate-design-change design/gdd/[system].md`
 
 **Expected behavior:**
 1. Skill reads the GDD and traces downstream references

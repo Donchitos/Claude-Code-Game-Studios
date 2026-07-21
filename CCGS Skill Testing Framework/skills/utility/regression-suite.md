@@ -1,8 +1,8 @@
-# Skill Test Spec: /regression-suite
+# Skill Test Spec: $regression-suite
 
 ## Skill Summary
 
-`/regression-suite` maps test coverage to GDD requirements: it reads the
+`$regression-suite` maps test coverage to GDD requirements: it reads the
 acceptance criteria from story files in the current sprint (or a specified epic),
 then scans `tests/` for corresponding test files and checks whether each AC has
 a matching assertion. It produces a coverage report identifying which ACs are
@@ -18,19 +18,19 @@ has no test).
 
 ## Static Assertions (Structural)
 
-Verified automatically by `/skill-test static` — no fixture needed.
+Verified automatically by `$skill-test static` — no fixture needed.
 
-- [ ] Has required frontmatter fields: `name`, `description`, `argument-hint`, `user-invocable`, `allowed-tools`
+- [ ] Has non-empty `name` and `description`; `agents/openai.yaml` has non-empty display name and short description
 - [ ] Has ≥2 phase headings
 - [ ] Contains verdict keywords: FULL COVERAGE, GAPS FOUND, CRITICAL GAPS
 - [ ] Contains "May I write" language (skill may write coverage report)
-- [ ] Has a next-step handoff (e.g., `/test-setup` if framework missing, `/qa-plan` if plan missing)
+- [ ] Has a next-step handoff (e.g., `$test-setup` if framework missing, `$qa-plan` if plan missing)
 
 ---
 
 ## Director Gate Checks
 
-None. `/regression-suite` is a QA analysis utility. No director gates apply.
+None. `$regression-suite` is a QA analysis utility. No director gates apply.
 
 ---
 
@@ -43,7 +43,7 @@ None. `/regression-suite` is a QA analysis utility. No director gates apply.
 - `tests/unit/` and `tests/integration/` contain test files that match all 6 ACs
   (by system name and scenario description)
 
-**Input:** `/regression-suite sprint-004`
+**Input:** `$regression-suite sprint-004`
 
 **Expected behavior:**
 1. Skill reads all 6 ACs from sprint-004 stories
@@ -67,7 +67,7 @@ None. `/regression-suite` is a QA analysis utility. No director gates apply.
 - Sprint has 5 stories with 8 total ACs
 - Tests exist for 5 of the 8 ACs; 3 ACs have no corresponding test file or assertion
 
-**Input:** `/regression-suite`
+**Input:** `$regression-suite`
 
 **Expected behavior:**
 1. Skill reads all 8 ACs
@@ -90,7 +90,7 @@ None. `/regression-suite` is a QA analysis utility. No director gates apply.
 - Sprint has 4 stories; one story is Priority: Critical with 2 ACs
 - One of the critical-priority ACs has no test
 
-**Input:** `/regression-suite`
+**Input:** `$regression-suite`
 
 **Expected behavior:**
 1. Skill reads all stories and ACs, noting which stories are critical priority
@@ -114,7 +114,7 @@ None. `/regression-suite` is a QA analysis utility. No director gates apply.
   not present in any current story's AC list
 - Current sprint stories do not reference save system
 
-**Input:** `/regression-suite`
+**Input:** `$regression-suite`
 
 **Expected behavior:**
 1. Skill scans tests and cross-references ACs
@@ -137,7 +137,7 @@ None. `/regression-suite` is a QA analysis utility. No director gates apply.
 **Fixture:**
 - Sprint with stories and test files
 
-**Input:** `/regression-suite`
+**Input:** `$regression-suite`
 
 **Expected behavior:**
 1. Skill produces coverage report and writes it

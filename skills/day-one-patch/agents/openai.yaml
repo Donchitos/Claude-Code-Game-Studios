@@ -1,0 +1,4 @@
+interface:
+  display_name: "Day One Patch"
+  short_description: "Plan and verify a safe, focused day-one patch"
+  default_prompt: "Use $day-one-patch to plan and verify a safe, focused day-one patch."

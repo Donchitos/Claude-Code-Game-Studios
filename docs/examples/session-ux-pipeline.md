@@ -1,4 +1,4 @@
-# Example Session: UX Pipeline — /ux-design → /ux-review → /team-ui
+# Example Session: UX Pipeline — $ux-design → $ux-review → $team-ui
 
 **Context:** Solo indie dev, Pre-Production phase. The HUD and inventory screen are the first UI to design. The game has a player journey doc and GDDs for inventory and combat.
 
@@ -15,16 +15,16 @@
 
 ---
 
-## Part 1: HUD Design with /ux-design
+## Part 1: HUD Design with $ux-design
 
 ### Turn 1: User Starts HUD Design
 
 **User:**
-> /ux-design hud
+> $ux-design hud
 
 ### Turn 2: Agent Loads Context and Presents the Approach
 
-**Agent (ux-designer, via /ux-design):**
+**Agent (ux-designer, via $ux-design):**
 > Starting HUD design. Loading context...
 >
 > - `design/player-journey.md` read — key states: Calm Exploration, Tension (threat detected), Crisis (low HP/stamina), Combat
@@ -78,12 +78,12 @@ design/ux/hud.md
 
 ---
 
-## Part 2: Inventory Screen with /ux-design
+## Part 2: Inventory Screen with $ux-design
 
 ### Turn 8: User Starts Inventory Screen
 
 **User:**
-> /ux-design screen inventory
+> $ux-design screen inventory
 
 ### Turn 9: Agent Scans GDD and Player Journey
 
@@ -114,16 +114,16 @@ design/ux/hud.md
 
 ---
 
-## Part 3: /ux-review
+## Part 3: $ux-review
 
 ### Turn 13: User Runs Review
 
 **User:**
-> /ux-review design/ux/
+> $ux-review design/ux/
 
 ### Turn 14: Agent Reviews Both Documents
 
-**Agent (via /ux-review):**
+**Agent (via $ux-review):**
 > Reviewing all UX specs in `design/ux/`...
 >
 > ---
@@ -151,7 +151,7 @@ design/ux/hud.md
 > ---
 > **Verdict: NEEDS REVISION**
 >
-> Two issues must be resolved before handoff to /team-ui:
+> Two issues must be resolved before handoff to $team-ui:
 >
 > 1. **BLOCKING (Accessibility):** Inventory screen has no keyboard alternative to drag-drop. Motor accessibility requires a non-drag interaction path. Add a "press X to pick up / press X again to place" toggle, or a details panel with keyboard-accessible action buttons.
 >
@@ -177,19 +177,19 @@ design/ux/hud.md
 
 ---
 
-## Part 4: Handoff to /team-ui
+## Part 4: Handoff to $team-ui
 
 ### Turn 16: User Kicks Off Team UI
 
 **User:**
-> /team-ui
+> $team-ui
 
-**Agent (via /team-ui):**
+**Agent (via $team-ui):**
 > Running UX pipeline context check...
 >
 > - `design/ux/hud.md` — reviewed ✅
 > - `design/ux/screens/inventory.md` — reviewed ✅
-> - `/ux-review` verdict: NEEDS REVISION was resolved — current state: APPROVED ✅
+> - `$ux-review` verdict: NEEDS REVISION was resolved — current state: APPROVED ✅
 >
 > Proceeding to **Phase 2: Visual Design**
 >
@@ -202,9 +202,9 @@ design/ux/hud.md
 ## What This Example Demonstrates
 
 - **Context-driven design**: agent reads player-journey.md to ground HUD decisions in player emotional state, not just feature lists
-- **UX review is a hard gate**: `/team-ui` checks for a passing `/ux-review` before proceeding to visual design
+- **UX review is a hard gate**: `$team-ui` checks for a passing `$ux-review` before proceeding to visual design
 - **Accessibility caught early**: the missing keyboard alternative was flagged by review, not discovered by a QA tester in the final week
 - **Blocking vs. advisory**: the missing keyboard path was BLOCKING (stops handoff); the colorblind colors were ADVISORY (can be fixed in visual pass)
-- **Section-by-section UX authoring**: same incremental pattern as `/design-system` — each section written to file before moving on
+- **Section-by-section UX authoring**: same incremental pattern as `$design-system` — each section written to file before moving on
 - **Separate HUD and screen files**: `design/ux/hud.md` is the whole-game HUD; per-screen specs live in `design/ux/screens/`
-- **Pattern library enforced by /team-ui**: after this session, inventory drag-drop becomes a documented pattern in `design/ux/interaction-patterns.md` for all future screens to reference
+- **Pattern library enforced by $team-ui**: after this session, inventory drag-drop becomes a documented pattern in `design/ux/interaction-patterns.md` for all future screens to reference

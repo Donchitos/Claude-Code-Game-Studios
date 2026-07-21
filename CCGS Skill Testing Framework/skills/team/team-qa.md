@@ -1,4 +1,4 @@
-# Skill Test Spec: /team-qa
+# Skill Test Spec: $team-qa
 
 ## Skill Summary
 
@@ -14,7 +14,7 @@ independent stories.
 
 ## Static Assertions (Structural)
 
-- [ ] Has required frontmatter fields: `name`, `description`, `argument-hint`, `user-invocable`, `allowed-tools`
+- [ ] Has non-empty `name` and `description`; `agents/openai.yaml` has non-empty display name and short description
 - [ ] Has ≥2 phase headings
 - [ ] Contains verdict keywords: COMPLETE, BLOCKED
 - [ ] Contains verdict keywords for sign-off report: APPROVED, APPROVED WITH CONDITIONS, NOT APPROVED
@@ -39,7 +39,7 @@ independent stories.
 - `tests/smoke/` contains a smoke test list; all items are verifiable
 - No existing bugs in `production/qa/bugs/`
 
-**Input:** `/team-qa sprint-03`
+**Input:** `$team-qa sprint-03`
 
 **Expected behavior:**
 1. Phase 1: Reads all story files in `production/sprints/sprint-03/`; reads `production/stage.txt`; reports "Found 4 stories. Current stage: [stage]. Ready to begin QA strategy?"
@@ -60,7 +60,7 @@ independent stories.
 - [ ] Sign-off report includes Test Coverage Summary table and Verdict: APPROVED
 - [ ] Sign-off report written only after "May I write?" approval
 - [ ] Verdict: COMPLETE appears in final output
-- [ ] Next step: "Run `/gate-check` to validate advancement."
+- [ ] Next step: "Run `$gate-check` to validate advancement."
 
 ---
 
@@ -70,19 +70,19 @@ independent stories.
 - `production/sprints/sprint-04/` exists with 3 story files
 - `tests/smoke/` exists with 5 smoke test items; 2 items cannot be verified (e.g., build is unstable, core navigation broken)
 
-**Input:** `/team-qa sprint-04`
+**Input:** `$team-qa sprint-04`
 
 **Expected behavior:**
 1. Phases 1–3 complete normally; QA plan is written
 2. Phase 4: Spawns `qa-lead` via Task; smoke check returns FAIL; two specific failures are identified
-3. Skill reports: "Smoke check failed. QA cannot begin until these issues are resolved: [list of 2 failures]. Fix them and re-run `/smoke-check`, or re-run `/team-qa` once resolved."
+3. Skill reports: "Smoke check failed. QA cannot begin until these issues are resolved: [list of 2 failures]. Fix them and re-run `$smoke-check`, or re-run `$team-qa` once resolved."
 4. Skill stops immediately after Phase 4 — no Phase 5, 6, or 7 is executed
 5. No sign-off report is produced; no "May I write?" for a sign-off is issued
 
 **Assertions:**
 - [ ] Smoke check FAIL causes the pipeline to halt at Phase 4 — Phases 5, 6, 7 are NOT executed
 - [ ] Failure list is shown to the user explicitly (not summarized vaguely)
-- [ ] Skill recommends `/smoke-check` and `/team-qa` re-run as remediation steps
+- [ ] Skill recommends `$smoke-check` and `$team-qa` re-run as remediation steps
 - [ ] No QA sign-off report is written or offered
 - [ ] Skill does NOT produce a COMPLETE verdict
 - [ ] Any QA plan already written in Phase 3 is preserved (not deleted)
@@ -97,7 +97,7 @@ independent stories.
 - The Visual/Feel story's animation timing is visibly wrong (acceptance criterion not met)
 - `production/qa/bugs/` directory exists (empty or with existing bugs)
 
-**Input:** `/team-qa sprint-05`
+**Input:** `$team-qa sprint-05`
 
 **Expected behavior:**
 1. Phases 1–5 complete normally; test cases are written for the Visual/Feel story
@@ -106,7 +106,7 @@ independent stories.
 4. Result summary: "Stories PASS: 1, FAIL: 1 — bugs filed: BUG-001"
 5. Phase 7: Spawns `qa-lead` to produce sign-off report; Bugs Found table lists BUG-001 with severity and status Open; Verdict: NOT APPROVED (S1/S2 bug open, or FAIL without documented workaround)
 6. Sign-off report write is offered; writes after approval
-7. Next step: "Resolve S1/S2 bugs and re-run `/team-qa` or targeted manual QA before advancing."
+7. Next step: "Resolve S1/S2 bugs and re-run `$team-qa` or targeted manual QA before advancing."
 
 **Assertions:**
 - [ ] FAIL result in Phase 6 triggers AskUserQuestion to collect the failure description before the bug report is written
@@ -115,7 +115,7 @@ independent stories.
 - [ ] Bug report NNN is incremented correctly from existing bugs in the directory
 - [ ] Phase 7 sign-off report Bugs Found table includes the bug ID, story name, severity, and status
 - [ ] Verdict in sign-off report is NOT APPROVED
-- [ ] Next step explicitly mentions re-running `/team-qa`
+- [ ] Next step explicitly mentions re-running `$team-qa`
 - [ ] Verdict: COMPLETE is still issued by the orchestrator (the QA cycle finished — the verdict is NOT APPROVED, but the skill completed its pipeline)
 
 ---
@@ -130,12 +130,12 @@ independent stories.
 - `production/session-state/active.md` does NOT exist
 - `production/sprint-status.yaml` does NOT exist
 
-**Input:** `/team-qa` (no argument)
+**Input:** `$team-qa` (no argument)
 
 **Expected behavior (variant A):**
 1. Phase 1: No argument provided; reads `production/session-state/active.md`; reads `production/sprint-status.yaml`
 2. Detects `sprint-06` as the active sprint from both sources
-3. Proceeds as if `/team-qa sprint-06` was the input; reports "No sprint argument provided — inferred sprint-06 from session state. Found [N] stories."
+3. Proceeds as if `$team-qa sprint-06` was the input; reports "No sprint argument provided — inferred sprint-06 from session state. Found [N] stories."
 
 **Expected behavior (variant B):**
 1. Phase 1: No argument provided; attempts to read `production/session-state/active.md` — file missing; attempts to read `production/sprint-status.yaml` — file missing
@@ -160,7 +160,7 @@ independent stories.
 - Story C (Visual/Feel): manual QA — FAIL; tester identifies S1 crash on ability activation
 - Story D (Integration): cannot test — BLOCKED (dependency system not yet implemented)
 
-**Input:** `/team-qa sprint-07`
+**Input:** `$team-qa sprint-07`
 
 **Expected behavior:**
 1. Phases 1–5 proceed; Phase 5 test cases cover stories B, C, D
@@ -169,7 +169,7 @@ independent stories.
 4. Result summary presented: "Stories PASS: 1, PASS WITH NOTES: 1, FAIL: 1 — bugs filed: BUG-001 (S1), BLOCKED: 1"
 5. Phase 7: qa-lead produces sign-off report covering all 4 stories; BUG-001 listed as S1/Open; Story D listed as BLOCKED; Verdict: NOT APPROVED
 6. Sign-off report written after "May I write?" approval
-7. Next step: "Resolve S1/S2 bugs and re-run `/team-qa` or targeted manual QA before advancing."
+7. Next step: "Resolve S1/S2 bugs and re-run `$team-qa` or targeted manual QA before advancing."
 
 **Assertions:**
 - [ ] All 4 stories appear in the Phase 7 sign-off report Test Coverage Summary table — none are silently omitted

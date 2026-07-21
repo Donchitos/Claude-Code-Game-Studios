@@ -1,0 +1,4 @@
+interface:
+  display_name: "Vertical Slice"
+  short_description: "Build and evaluate a production-quality vertical slice"
+  default_prompt: "Use $vertical-slice to build and evaluate a production-quality vertical slice."

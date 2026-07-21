@@ -1,8 +1,8 @@
-# Skill Test Spec: /create-architecture
+# Skill Test Spec: $create-architecture
 
 ## Skill Summary
 
-`/create-architecture` guides the user through section-by-section authoring of a
+`$create-architecture` guides the user through section-by-section authoring of a
 technical architecture document. It uses a skeleton-first approach — the file is
 created with all required section headers before any content is filled. Each
 section is discussed, drafted, and written individually after user approval. If an
@@ -17,13 +17,13 @@ mode, both gates are skipped. The skill writes to `docs/architecture/architectur
 
 ## Static Assertions (Structural)
 
-Verified automatically by `/skill-test static` — no fixture needed.
+Verified automatically by `$skill-test static` — no fixture needed.
 
-- [ ] Has required frontmatter fields: `name`, `description`, `argument-hint`, `user-invocable`, `allowed-tools`
+- [ ] Has non-empty `name` and `description`; `agents/openai.yaml` has non-empty display name and short description
 - [ ] Has ≥2 phase headings
 - [ ] Contains verdict keywords: APPROVED, NEEDS REVISION, MAJOR REVISION NEEDED
 - [ ] Contains "May I write" collaborative protocol language (per-section approval)
-- [ ] Has a next-step handoff at the end (`/architecture-review` or `/create-control-manifest`)
+- [ ] Has a next-step handoff at the end (`$architecture-review` or `$create-control-manifest`)
 - [ ] Documents skeleton-first approach
 - [ ] Documents gate behavior: TD-ARCHITECTURE + LP-FEASIBILITY in full mode; skipped in lean/solo
 - [ ] Documents retrofit mode for existing architecture documents
@@ -52,7 +52,7 @@ In `solo` mode: both gates are skipped with equivalent notes.
 - `docs/architecture/` contains Accepted ADRs for reference
 - `production/session-state/review-mode.txt` contains `full`
 
-**Input:** `/create-architecture`
+**Input:** `$create-architecture`
 
 **Expected behavior:**
 1. Skill creates skeleton `docs/architecture/architecture.md` with all required section headers
@@ -68,7 +68,7 @@ In `solo` mode: both gates are skipped with equivalent notes.
 - [ ] TD-ARCHITECTURE and LP-FEASIBILITY spawn in parallel (not sequentially)
 - [ ] Both gates complete before the final completion confirmation
 - [ ] Verdict is APPROVED when both gates return APPROVED
-- [ ] Next-step handoff to `/architecture-review` or `/create-control-manifest` is present
+- [ ] Next-step handoff to `$architecture-review` or `$create-control-manifest` is present
 
 ---
 
@@ -79,7 +79,7 @@ In `solo` mode: both gates are skipped with equivalent notes.
 - `production/session-state/review-mode.txt` contains `full`
 - TD-ARCHITECTURE gate returns MAJOR REVISION: "[specific structural issue]"
 
-**Input:** `/create-architecture`
+**Input:** `$create-architecture`
 
 **Expected behavior:**
 1. All sections are drafted and written
@@ -102,7 +102,7 @@ In `solo` mode: both gates are skipped with equivalent notes.
 - No existing architecture doc
 - `production/session-state/review-mode.txt` contains `lean`
 
-**Input:** `/create-architecture`
+**Input:** `$create-architecture`
 
 **Expected behavior:**
 1. Skeleton file is created
@@ -124,7 +124,7 @@ In `solo` mode: both gates are skipped with equivalent notes.
 **Fixture:**
 - `docs/architecture/architecture.md` already exists with all sections populated
 
-**Input:** `/create-architecture`
+**Input:** `$create-architecture`
 
 **Expected behavior:**
 1. Skill detects existing architecture doc and reads its current content
@@ -148,7 +148,7 @@ In `solo` mode: both gates are skipped with equivalent notes.
 - One section references or depends on an ADR that has `Status: Proposed`
 - `production/session-state/review-mode.txt` contains `full`
 
-**Input:** `/create-architecture`
+**Input:** `$create-architecture`
 
 **Expected behavior:**
 1. Skill authors all sections
@@ -172,14 +172,14 @@ In `solo` mode: both gates are skipped with equivalent notes.
 - [ ] TD-ARCHITECTURE and LP-FEASIBILITY spawn in parallel in full mode
 - [ ] Skipped gates noted by name and mode in lean/solo output
 - [ ] Proposed ADR references flagged as risks in the document
-- [ ] Ends with next-step handoff: `/architecture-review` or `/create-control-manifest`
+- [ ] Ends with next-step handoff: `$architecture-review` or `$create-control-manifest`
 
 ---
 
 ## Coverage Notes
 
 - The required section list for architecture documents is defined in the skill
-  body and in the `/architecture-review` skill — not re-enumerated here.
+  body and in the `$architecture-review` skill — not re-enumerated here.
 - Engine version stamping in the architecture doc (parallel to ADR stamping)
   is part of the authoring workflow — tested implicitly via Case 1.
 - The retrofit mode for updating multiple sections in one session follows the

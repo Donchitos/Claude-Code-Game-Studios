@@ -1,0 +1,4 @@
+interface:
+  display_name: "Sprint Status"
+  short_description: "Summarize sprint progress, burndown, and emerging risks"
+  default_prompt: "Use $sprint-status to summarize sprint progress, burndown, and emerging risks."

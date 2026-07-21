@@ -1,8 +1,8 @@
-# Skill Test Spec: /prototype
+# Skill Test Spec: $prototype
 
 ## Skill Summary
 
-`/prototype` manages a rapid prototyping workflow for validating a game mechanic
+`$prototype` manages a rapid prototyping workflow for validating a game mechanic
 before committing to full production implementation. Prototypes are created in
 `prototypes/[mechanic-name]/` and are intentionally disposable — coding standards
 are relaxed (no ADR required, AC can be minimal, hardcoded values acceptable).
@@ -18,13 +18,13 @@ documented) or PROTOTYPE ABANDONED (mechanic found to be unworkable).
 
 ## Static Assertions (Structural)
 
-Verified automatically by `/skill-test static` — no fixture needed.
+Verified automatically by `$skill-test static` — no fixture needed.
 
-- [ ] Has required frontmatter fields: `name`, `description`, `argument-hint`, `user-invocable`, `allowed-tools`
+- [ ] Has non-empty `name` and `description`; `agents/openai.yaml` has non-empty display name and short description
 - [ ] Has ≥2 phase headings
 - [ ] Contains verdict keywords: PROTOTYPE COMPLETE, PROTOTYPE ABANDONED
 - [ ] Contains "May I write" language before creating prototype files
-- [ ] Has a next-step handoff (e.g., `/design-system` to formalize, or archive)
+- [ ] Has a next-step handoff (e.g., `$design-system` to formalize, or archive)
 
 ---
 
@@ -42,7 +42,7 @@ None. Prototypes are throwaway validation artifacts. No director gates apply.
 - `prototypes/` directory exists
 - No existing prototype for "grapple-hook"
 
-**Input:** `/prototype grapple-hook`
+**Input:** `$prototype grapple-hook`
 
 **Expected behavior:**
 1. Skill asks "May I write to `prototypes/grapple-hook/`?"
@@ -71,7 +71,7 @@ None. Prototypes are throwaway validation artifacts. No director gates apply.
 - `prototypes/grapple-hook/` already exists from a previous prototype session
 - It contains a basic implementation and a findings.md
 
-**Input:** `/prototype grapple-hook`
+**Input:** `$prototype grapple-hook`
 
 **Expected behavior:**
 1. Skill detects existing `prototypes/grapple-hook/` directory
@@ -96,18 +96,18 @@ None. Prototypes are throwaway validation artifacts. No director gates apply.
 - Prototype implementation complete
 - Findings: grapple hook mechanic is fun and technically feasible
 
-**Input:** `/prototype grapple-hook` (prototype session complete)
+**Input:** `$prototype grapple-hook` (prototype session complete)
 
 **Expected behavior:**
 1. After prototype is built and tested, findings are summarized
 2. Recommendation in findings.md: "Mechanic validated — recommend proceeding
-   to `/design-system` for full specification"
-3. Skill handoff message explicitly suggests `/design-system grapple-hook`
+   to `$design-system` for full specification"
+3. Skill handoff message explicitly suggests `$design-system grapple-hook`
 4. Verdict is PROTOTYPE COMPLETE
 
 **Assertions:**
 - [ ] `findings.md` contains an explicit recommendation
-- [ ] Recommendation references `/design-system` when mechanic is validated
+- [ ] Recommendation references `$design-system` when mechanic is validated
 - [ ] Handoff message echoes the recommendation
 - [ ] Verdict is PROTOTYPE COMPLETE (not PROTOTYPE ABANDONED)
 
@@ -120,7 +120,7 @@ None. Prototypes are throwaway validation artifacts. No director gates apply.
 - After testing: the mechanic creates incoherent dialogue trees and is
   frustrating to play
 
-**Input:** `/prototype procedural-dialogue`
+**Input:** `$prototype procedural-dialogue`
 
 **Expected behavior:**
 1. Prototype is built
@@ -143,7 +143,7 @@ None. Prototypes are throwaway validation artifacts. No director gates apply.
 **Fixture:**
 - Mechanic concept provided
 
-**Input:** `/prototype wall-jump`
+**Input:** `$prototype wall-jump`
 
 **Expected behavior:**
 1. Skill creates and documents the prototype

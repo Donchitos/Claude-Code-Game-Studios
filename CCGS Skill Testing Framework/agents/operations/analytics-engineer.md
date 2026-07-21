@@ -3,7 +3,7 @@
 ## Agent Summary
 - **Domain**: Telemetry architecture and event schema design, A/B test framework design, player behavior analysis methodology, analytics dashboard specification, event naming conventions, data pipeline design (schema → ingestion → dashboard)
 - **Does NOT own**: Game implementation of event tracking (appropriate programmer), economy design decisions informed by analytics (economy-designer), live ops event design (live-ops-designer)
-- **Model tier**: Sonnet
+No fixed model routing is required; the caller selects the available Codex model.
 - **Gate IDs**: None; produces schemas and test designs; defers implementation to programmers
 
 ---
@@ -11,8 +11,8 @@
 ## Static Assertions (Structural)
 
 - [ ] `description:` field is present and domain-specific (references telemetry, A/B testing, event tracking, analytics)
-- [ ] `allowed-tools:` list matches the agent's role (Read/Write for design/analytics/ and documentation; no game source or CI tools)
-- [ ] Model tier is Sonnet (default for operations specialists)
+- [ ] Role boundaries and file ownership match the stated domain
+- [ ] Does not require fixed model routing; the calling Codex client selects the available model
 - [ ] Agent definition does not claim authority over game implementation, economy design, or live ops scheduling
 
 ---
@@ -80,4 +80,4 @@
 - Case 3 (A/B test design completeness) is a quality gate — an incomplete test design wastes experiment budget
 - Case 4 (mutual exclusion) is a data integrity test — overlapping tests produce unusable results; this must be caught
 - Case 5 is the most important context-awareness test; naming convention drift across schemas causes dashboard breakage
-- No automated runner; review manually or via `/skill-test`
+- No automated runner; review manually or via `$skill-test`

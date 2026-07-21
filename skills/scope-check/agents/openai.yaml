@@ -1,0 +1,4 @@
+interface:
+  display_name: "Scope Check"
+  short_description: "Compare current scope with the approved baseline plan"
+  default_prompt: "Use $scope-check to compare current scope with the approved baseline plan."

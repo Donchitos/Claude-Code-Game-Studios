@@ -1,0 +1,4 @@
+interface:
+  display_name: "Balance Check"
+  short_description: "Analyze balance data, formulas, and progression risks"
+  default_prompt: "Use $balance-check to analyze balance data, formulas, and progression risks."

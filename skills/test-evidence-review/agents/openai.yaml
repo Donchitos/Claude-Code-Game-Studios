@@ -1,0 +1,4 @@
+interface:
+  display_name: "Test Evidence Review"
+  short_description: "Review automated tests and manual evidence quality"
+  default_prompt: "Use $test-evidence-review to review automated tests and manual evidence quality."
