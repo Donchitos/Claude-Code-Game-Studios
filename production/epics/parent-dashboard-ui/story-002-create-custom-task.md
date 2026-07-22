@@ -1,12 +1,12 @@
 # Story 002: Create Custom Task Bottom Sheet
 
 > **Epic**: Parent Dashboard UI
-> **Status**: Ready
+> **Status**: Complete
 > **Layer**: Presentation
 > **Type**: Integration
 > **Estimate**: 3h
 > **Manifest Version**: 2026-07-16
-> **Last Updated**: —
+> **Last Updated**: 2026-07-22
 
 ## Context
 
@@ -33,14 +33,14 @@
 
 *From GDD Core Rule 3 and Edge Cases 2, 3; includes the GDD's own explicitly-tagged BLOCKING criterion (carried into `design/ux/parent-dashboard-ui.md`'s Acceptance Criteria during `/ux-review`):*
 
-- [ ] **Conditional child selector — 1 child**: GIVEN family có đúng 1 bé, WHEN bottom sheet tạo task mở, THEN child selector KHÔNG hiển thị (**P18** — Conditional selector pattern).
-- [ ] **Conditional child selector — ≥2 children**: GIVEN family có ≥2 bé, WHEN bottom sheet mở, THEN child selector hiển thị đầy đủ tất cả bé trong gia đình.
-- [ ] **Category dropdown**: GIVEN dropdown mở, THEN đúng 5 giá trị hiển thị (`study`/`arts`/`chores`/`sport`/`helping`); tag `custom` KHÔNG xuất hiện như option chọn được.
-- [ ] **Empty title validation**: GIVEN title trống hoặc chỉ whitespace, THEN nút Save disabled (Edge Case 2); GIVEN ≥1 ký tự non-whitespace, THEN Save enabled.
-- [ ] **Save writes correct document**: GIVEN title, category, child đã chọn hợp lệ, WHEN tap Save, THEN document mới tạo tại `families/{parentId}/customTasks/{customTaskId}` với đúng 4 field `{title, categoryId, targetChildId, createdAt}`, KHÔNG có field `status`; sheet đóng; snackbar "Đã thêm nhiệm vụ" hiển thị.
-- [ ] **BLOCKING — `targetChildId` read-back verification** (GDD Core Rule 3's own tagged requirement, carried into UX spec at `/ux-review`): GIVEN gia đình có đúng 1 bé, WHEN Save được gọi, THEN `targetChildId` trong document vừa ghi khớp đúng ID của bé đó — verify bằng cách **đọc lại document sau khi ghi** (không chỉ quan sát UI). Sai ID silently corrupt data mà không có triệu chứng UI nào quan sát được — cần automated integration test, không phải chỉ manual walkthrough.
-- [ ] **Duplicate title allowed**: GIVEN 2 custom task templates cùng title được tạo, THEN cả 2 đều tồn tại trong `customTasks`, không lỗi dedup (Edge Case 3).
-- [ ] **Save error state**: GIVEN write thất bại, THEN inline error "Không thêm được nhiệm vụ — thử lại" hiển thị, sheet KHÔNG tự đóng, Save re-enable (UX spec States & Variants — gap the GDD didn't cover, added during `/ux-design`).
+- [x] **Conditional child selector — 1 child**: GIVEN family có đúng 1 bé, WHEN bottom sheet tạo task mở, THEN child selector KHÔNG hiển thị (**P18** — Conditional selector pattern).
+- [x] **Conditional child selector — ≥2 children**: GIVEN family có ≥2 bé, WHEN bottom sheet mở, THEN child selector hiển thị đầy đủ tất cả bé trong gia đình.
+- [x] **Category dropdown**: GIVEN dropdown mở, THEN đúng 5 giá trị hiển thị (`study`/`arts`/`chores`/`sport`/`helping`); tag `custom` KHÔNG xuất hiện như option chọn được.
+- [x] **Empty title validation**: GIVEN title trống hoặc chỉ whitespace, THEN nút Save disabled (Edge Case 2); GIVEN ≥1 ký tự non-whitespace, THEN Save enabled.
+- [x] **Save writes correct document**: GIVEN title, category, child đã chọn hợp lệ, WHEN tap Save, THEN document mới tạo tại `families/{parentId}/customTasks/{customTaskId}` với đúng 4 field `{title, categoryId, targetChildId, createdAt}`, KHÔNG có field `status`; sheet đóng; snackbar "Đã thêm nhiệm vụ" hiển thị.
+- [x] **BLOCKING — `targetChildId` read-back verification** (GDD Core Rule 3's own tagged requirement, carried into UX spec at `/ux-review`): GIVEN gia đình có đúng 1 bé, WHEN Save được gọi, THEN `targetChildId` trong document vừa ghi khớp đúng ID của bé đó — verify bằng cách **đọc lại document sau khi ghi** (không chỉ quan sát UI). Sai ID silently corrupt data mà không có triệu chứng UI nào quan sát được — cần automated integration test, không phải chỉ manual walkthrough.
+- [x] **Duplicate title allowed**: GIVEN 2 custom task templates cùng title được tạo, THEN cả 2 đều tồn tại trong `customTasks`, không lỗi dedup (Edge Case 3).
+- [x] **Save error state**: GIVEN write thất bại, THEN inline error "Không thêm được nhiệm vụ — thử lại" hiển thị, sheet KHÔNG tự đóng, Save re-enable (UX spec States & Variants — gap the GDD didn't cover, added during `/ux-design`).
 
 ---
 
@@ -111,7 +111,7 @@
 **Required evidence**:
 - `tests/integration/parent-dashboard-ui/create_custom_task_test.dart` — must exist and pass, MUST include the BLOCKING read-back test (AC-2)
 
-**Status**: [ ] Not yet created
+**Status**: [x] Created — 13/13 tests passing (`create_custom_task_test.dart`), including the mutation-tested BLOCKING read-back test
 
 ---
 
@@ -119,3 +119,15 @@
 
 - Depends on: None (Task Library epic Complete, `customTasks` collection already propagated).
 - Unlocks: None further within this epic.
+
+---
+
+## Completion Notes
+**Completed**: 2026-07-22
+**Criteria**: 8/8 passing (all auto-verified via tests; no manual/deferred criteria)
+**Deviations**:
+- ADVISORY: `task_providers.dart`'s `customTaskRepositoryProvider` addition — necessary Riverpod wiring, matches sibling provider convention exactly, not explicitly listed in the story's scope bullets.
+- ADVISORY (documented, not a defect): `parent_dashboard_tasks_tab.dart` gained a provisional FAB trigger since Story 001 (owns the real FAB) is separately Blocked on unrelated Task Library gaps — same "placeholder for a blocked neighbor" pattern established in the Main Navigation Shell epic.
+- ADVISORY: invented a local Vietnamese category-label table (no existing table found codebase-wide); 2/5 labels turned out to have partial precedent in the UX doc's wireframe, corrected in the doc comment during review. Flagged for localization-lead confirmation.
+**Test Evidence**: Integration — `tests/integration/parent-dashboard-ui/create_custom_task_test.dart` (13/13 passing, 5 beyond the story's own 8 stated ACs — the BLOCKING test was mutation-tested during code review to confirm it genuinely catches the fault it claims to)
+**Code Review**: Complete — `/code-review`, flame-specialist + qa-tester, verdict APPROVED WITH SUGGESTIONS, all findings applied and re-verified same session (433/433 full suite, `flutter analyze` clean)

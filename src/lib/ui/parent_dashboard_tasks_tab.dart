@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import 'create_custom_task_sheet.dart';
+
 /// Parent Shell's Dashboard tab (main-navigation-shell Story 003, ADR-0014
 /// Decision §3) — a bare placeholder `Scaffold`, same shape as
 /// `TaskManagementScreen`/`ShopScreen` from Story 002. Real content belongs
@@ -7,6 +9,15 @@ import 'package:flutter/material.dart';
 /// this epic (this story's Out of Scope note) — that epic will edit this
 /// file in place rather than swap out a placeholder-named widget, matching
 /// how `PetRoomScreen` etc. were done in Story 002.
+///
+/// The `FloatingActionButton` below is a PROVISIONAL trigger for
+/// Parent Dashboard UI Story 002 (Create Custom Task sheet) only — Story 001
+/// of the same epic (the real pending-list + its own "+" FAB) is currently
+/// Blocked on an unrelated Task Library gap (`pendingTasksProvider` not
+/// family-scoped, `TaskModel` missing `id`/`childId`). Same precedent as
+/// `ParentOverrideTrigger` (main-navigation-shell Story 004): built to be
+/// absorbed/lifted by Story 001 when it unblocks, not a throwaway stub —
+/// Story 001 should replace this FAB with its real one, not end up with two.
 ///
 /// Named `ParentDashboardTasksTab` to match ADR-0014 Decision §3's own code
 /// sample exactly (`parentShellRoute`'s branch builder), not an invented
@@ -69,6 +80,11 @@ class ParentDashboardTasksTabState extends State<ParentDashboardTasksTab> {
     return Scaffold(
       appBar: AppBar(title: const Text('Parent Dashboard')),
       body: const Center(child: Text('Nhiệm vụ (placeholder)')),
+      floatingActionButton: FloatingActionButton(
+        key: const Key('createCustomTaskFab'),
+        onPressed: () => showCreateCustomTaskSheet(context),
+        child: const Icon(Icons.add),
+      ),
     );
   }
 }

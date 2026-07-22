@@ -3,12 +3,18 @@
 > **Layer**: Presentation
 > **GDD**: design/gdd/parent-dashboard-ui.md
 > **Architecture Module**: Parent Dashboard UI (#21)
-> **Status**: Ready (Stories 001–003) — unblocked as of Main Navigation Shell (#17) reaching Complete, 2026-07-22
-> **Stories**: 4 stories (Story 004 still Blocked on a missing ADR — unrelated to Main Navigation Shell; Stories 001–003 unblocked)
+> **Status**: In Progress (2/4 stories complete) — Story 001 still Blocked (see below); Story 004 separately Blocked on a missing ADR; no further Ready stories remain in this epic
+> **Stories**: 4 stories
 
-## ✅ Former Epic-Wide Blocker — Resolved 2026-07-22
+## Blocker status — corrected 2026-07-22 (previous note here was incomplete)
 
-Main Navigation Shell (#17), previously referenced as Designed/Approved throughout this epic's own GDD/ADRs/UX spec but with **no real implementation** (found during `/dev-story` on Story 001, 2026-07-18), is now Complete — all 6 stories implemented, code-reviewed, and closed. `/parent/dashboard`/`/parent/family` routes, the Parent Shell tab structure, and `/select-child` all now exist and are tested (`production/epics/main-navigation-shell/EPIC.md`). Stories 001–003 of this epic can proceed — recommend `/story-readiness` on each before starting, since they were written against routes that didn't exist yet at spec time and should be spot-checked against the real, now-implemented shell.
+Main Navigation Shell (#17)'s blocker (found 2026-07-18) is resolved — all 6 stories Complete, `/parent/dashboard`/`/parent/family` routes and the Parent Shell tab structure now real and tested.
+
+**Story 001 has a SECOND, separate blocker that is still open** — found in the same 2026-07-18 `/dev-story` attempt, Task Library (#8)'s own gaps, not yet fixed:
+1. `pendingTasksProvider` (`src/lib/providers/task_providers.dart:16`) is still scoped to `activeChildProvider` (single child) — verified directly against source 2026-07-22, unchanged since the original finding. Breaks Story 001's AC-2 (multi-child correctness) and the primary "parent logs in directly, no active child session" flow.
+2. `TaskModel` (`src/lib/core/models/task_model.dart`) still has no `id`/`childId` fields — verified directly against source 2026-07-22. Both are required for Story 001 to call `approveTask()`/`rejectTask()` and resolve per-card avatar/name.
+
+Story 001 cannot start until these are fixed — that's Task Library's own scope, not this epic's. Stories 002 and 003 don't depend on either gap and can proceed independently.
 
 ## Overview
 
@@ -75,11 +81,15 @@ This epic is complete when:
 
 | # | Story | Type | Status | ADR |
 |---|-------|------|--------|-----|
-| 001 | Nhiệm vụ Tab — Pending List, Approve/Reject Wiring & Event Emission | Integration | Ready | N/A (ADR-0013/0004 referenced) |
-| 002 | Create Custom Task Bottom Sheet | Integration | Ready | N/A |
-| 003 | Gia đình Tab — Child List & Reset PIN Dialog | UI | Ready | N/A |
+| 001 | Nhiệm vụ Tab — Pending List, Approve/Reject Wiring & Event Emission | Integration | **Blocked** (Task Library gaps — see note above) | N/A (ADR-0013/0004 referenced) |
+| 002 | Create Custom Task Bottom Sheet | Integration | Complete | N/A |
+| 003 | Gia đình Tab — Child List & Reset PIN Dialog | UI | Complete | N/A |
 | 004 | FCM Foreground Banner — Defer/Coalesce State Machine & Permission Reminder | Logic | **Blocked** | None — run `/architecture-decision` |
 
 ## Next Step
 
-Run `/story-readiness production/epics/parent-dashboard-ui/story-001-pending-list-approve-reject.md` then `/dev-story` to begin implementation. Story 004 stays Blocked until its ADR exists.
+No Ready stories remain in this epic. Both remaining stories are Blocked:
+- Story 001: blocked on Task Library (#8) gaps — `pendingTasksProvider` still single-child-scoped, `TaskModel` still missing `id`/`childId` fields.
+- Story 004: blocked on a missing ADR — run `/architecture-decision` for "Parent Dashboard Notification Banner State Machine" (TR-parentdash-002) to unblock.
+
+This epic cannot progress further until one of those blockers is resolved.

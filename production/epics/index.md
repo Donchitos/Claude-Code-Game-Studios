@@ -1,6 +1,6 @@
 # Epics Index
 
-Last Updated: 2026-07-22 (Main Navigation Shell Complete — 6/6 stories; Parent Dashboard UI unblocked)
+Last Updated: 2026-07-22 (Parent Dashboard UI Story 003 Complete — 2/4 stories; no Ready stories remain)
 Engine: Flutter 3.44.4 / Flame 1.37.0 / Dart 3.12.2
 
 | Epic | Layer | System | GDD | Stories | Status |
@@ -17,4 +17,4 @@ Engine: Flutter 3.44.4 / Flame 1.37.0 / Dart 3.12.2
 | [seed-buffer](seed-buffer/EPIC.md) | Feature | Seed Buffer Mechanic (#10) | design/gdd/seed-buffer.md | 3 stories | Complete |
 | [parent-approval](parent-approval/EPIC.md) | Feature | Parent Approval System (#11) | design/gdd/parent-approval.md | 2/2 stories complete | Blocked on Parent Dashboard UI (#21) |
 | [main-navigation-shell](main-navigation-shell/EPIC.md) | Presentation | Main Navigation Shell (#17) | design/gdd/main-navigation-shell.md | 6 stories | Complete |
-| [parent-dashboard-ui](parent-dashboard-ui/EPIC.md) | Presentation | Parent Dashboard UI (#21) | design/gdd/parent-dashboard-ui.md | 4 stories | Ready (Stories 001-003; Story 004 separately Blocked on missing ADR) |
+| [parent-dashboard-ui](parent-dashboard-ui/EPIC.md) | Presentation | Parent Dashboard UI (#21) | design/gdd/parent-dashboard-ui.md | 4 stories | In Progress (2/4 complete; 001 Blocked on Task Library gaps; 004 Blocked on missing ADR; no Ready stories remain) |

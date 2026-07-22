@@ -1,12 +1,12 @@
 # Story 003: Gia đình Tab — Child List & Reset PIN Dialog
 
 > **Epic**: Parent Dashboard UI
-> **Status**: Ready
+> **Status**: Complete
 > **Layer**: Presentation
 > **Type**: UI
 > **Estimate**: 2.5h
 > **Manifest Version**: 2026-07-16
-> **Last Updated**: —
+> **Last Updated**: 2026-07-22
 
 ## Context
 
@@ -32,16 +32,16 @@
 
 *From GDD Core Rules 1 (Gia đình tab portion), 4, 5 (reused) and Edge Cases 6, 7:*
 
-- [ ] **Screen structure — Gia đình tab**: GIVEN bố mẹ ở `/parent/family`, THEN nội dung hiển thị đúng child profile list — không lẫn nội dung Tab Nhiệm vụ.
-- [ ] **Child list rendering**: GIVEN family có N bé (1 ≤ N ≤ 4), WHEN Gia đình tab mở, THEN đúng N row hiển thị với avatar+tên.
-- [ ] **Reset PIN dialog open**: GIVEN tap "Reset PIN" trên row của bé X, THEN dialog hiện đúng title "Đặt lại PIN cho [tên X]" kèm 1 PIN input field 4 số (**P10** — reused PIN-entry UI, this time for entering a new PIN, not verifying one).
-- [ ] **Xác nhận disabled until complete**: GIVEN PIN input chưa đủ 4 số, THEN nút Xác nhận disabled.
-- [ ] **Correct childId/newPin passed**: GIVEN đã nhập đủ 4 số, WHEN tap Xác nhận, THEN `resetChildPin(childId, newPin)` được gọi với đúng `childId` của bé X (không phải bé khác trong list) và `newPin` đúng giá trị đã nhập.
-- [ ] **Cancel — no side effect**: GIVEN confirm dialog mở, WHEN tap Cancel/Hủy, THEN dialog đóng, KHÔNG gọi `resetChildPin()`, PIN không đổi (Edge Case 6).
-- [ ] **Active session not kicked**: GIVEN bé X đang có active session đang chơi, WHEN bố mẹ reset PIN của bé X, THEN session hiện tại KHÔNG bị kick — PIN mới chỉ áp dụng ở lần login tiếp theo (Edge Case 7 — this is Auth #1's own guarantee; this story only verifies it isn't broken by the UI trigger).
-- [ ] **"Chọn bé" reused**: GIVEN bố mẹ ở Gia đình tab, THEN app bar hiển thị action "Chọn bé" giống Tab Nhiệm vụ (Core Rule 5, same implementation as Story 001 — do not reimplement).
-- [ ] **Reset PIN error state**: GIVEN `resetChildPin()` throw, THEN inline error "Đặt lại PIN thất bại — thử lại" hiển thị, dialog KHÔNG tự đóng, Xác nhận re-enable (UX spec States & Variants — gap the GDD didn't cover, added during `/ux-design`).
-- [ ] **Defensive empty state** *(added during `/ux-review`, not a GDD-designed case)*: GIVEN 0 child profile (GDD assumes 1 ≤ N ≤ 4 and does not design for 0, but no `createChildProfile()` write path currently exists in the codebase — a separately-flagged gap), THEN show "Chưa có hồ sơ con nào" rather than a silent blank list or a crash.
+- [x] **Screen structure — Gia đình tab**: GIVEN bố mẹ ở `/parent/family`, THEN nội dung hiển thị đúng child profile list — không lẫn nội dung Tab Nhiệm vụ.
+- [x] **Child list rendering**: GIVEN family có N bé (1 ≤ N ≤ 4), WHEN Gia đình tab mở, THEN đúng N row hiển thị với avatar+tên.
+- [x] **Reset PIN dialog open**: GIVEN tap "Reset PIN" trên row của bé X, THEN dialog hiện đúng title "Đặt lại PIN cho [tên X]" kèm 1 PIN input field 4 số (**P10** — reused PIN-entry UI, this time for entering a new PIN, not verifying one).
+- [x] **Xác nhận disabled until complete**: GIVEN PIN input chưa đủ 4 số, THEN nút Xác nhận disabled.
+- [x] **Correct childId/newPin passed**: GIVEN đã nhập đủ 4 số, WHEN tap Xác nhận, THEN `resetChildPin(childId, newPin)` được gọi với đúng `childId` của bé X (không phải bé khác trong list) và `newPin` đúng giá trị đã nhập.
+- [x] **Cancel — no side effect**: GIVEN confirm dialog mở, WHEN tap Cancel/Hủy, THEN dialog đóng, KHÔNG gọi `resetChildPin()`, PIN không đổi (Edge Case 6).
+- [x] **Active session not kicked**: GIVEN bé X đang có active session đang chơi, WHEN bố mẹ reset PIN của bé X, THEN session hiện tại KHÔNG bị kick — PIN mới chỉ áp dụng ở lần login tiếp theo (Edge Case 7 — this is Auth #1's own guarantee; this story only verifies it isn't broken by the UI trigger).
+- [x] **"Chọn bé" reused**: GIVEN bố mẹ ở Gia đình tab, THEN app bar hiển thị action "Chọn bé" giống Tab Nhiệm vụ (Core Rule 5, same implementation as Story 001 — do not reimplement).
+- [x] **Reset PIN error state**: GIVEN `resetChildPin()` throw, THEN inline error "Đặt lại PIN thất bại — thử lại" hiển thị, dialog KHÔNG tự đóng, Xác nhận re-enable (UX spec States & Variants — gap the GDD didn't cover, added during `/ux-design`).
+- [x] **Defensive empty state** *(added during `/ux-review`, not a GDD-designed case)*: GIVEN 0 child profile (GDD assumes 1 ≤ N ≤ 4 and does not design for 0, but no `createChildProfile()` write path currently exists in the codebase — a separately-flagged gap), THEN show "Chưa có hồ sơ con nào" rather than a silent blank list or a crash.
 
 ---
 
@@ -104,7 +104,7 @@
 **Required evidence**:
 - `production/qa/evidence/reset-pin-dialog-evidence.md` — manual walkthrough OR interaction test at `tests/integration/parent-dashboard-ui/family_tab_reset_pin_test.dart`
 
-**Status**: [ ] Not yet created
+**Status**: [x] Created — 13/13 tests passing (`family_tab_reset_pin_test.dart`), including the mutation-tested BLOCKING childId test and a newPin-content-forwarding test
 
 ---
 
@@ -112,3 +112,15 @@
 
 - Depends on: None (Auth & Account epic Complete).
 - Unlocks: None further within this epic.
+
+---
+
+## Completion Notes
+**Completed**: 2026-07-22
+**Criteria**: 9/9 passing (all auto-verified via tests; no manual/deferred criteria)
+**Deviations**:
+- ADVISORY: `"Chọn bé"` app bar action is a local provisional re-implementation, not literally Story 001's widget — Story 001 (which owns the canonical one) remains Blocked on unrelated Task Library gaps. Same precedent as the FAB in Story 002 and `ParentOverrideTrigger` in Main Navigation Shell — meant to be absorbed/aligned when Story 001 unblocks.
+- ADVISORY: PIN-entry field uses a plain `TextField` (obscured, digits-only, 4-char) rather than reconstructing P10's dot-display/numpad convention — P10's classes are library-private to `pin_entry_screen.dart`, and this is an admin-side "set new PIN" flow with no lockout concept, unlike P10's child-facing verification flow. Confirmed reasonable in code review.
+- ADVISORY (fixed during review, not shipped as a gap): `showResetPinDialog` originally lacked `barrierDismissible: false`/`PopScope`, allowing a scrim/back-button dismiss mid-submit that contradicted the Cancel button's own doc comment. Fixed before close.
+**Test Evidence**: Interaction test — `tests/integration/parent-dashboard-ui/family_tab_reset_pin_test.dart` (13/13 passing, 3 added during code review: newPin-content-forwarding, active-session-untouched, and `_LoadErrorContent` coverage)
+**Code Review**: Complete — flame-specialist + qa-tester in parallel, both verdict APPROVED WITH SUGGESTIONS, all findings applied and re-verified same session (446/446 full suite, `flutter analyze` clean on touched files)

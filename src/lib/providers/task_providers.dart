@@ -1,10 +1,20 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../core/custom_task_repository.dart';
 import '../core/firebase_providers.dart';
 import '../core/firestore_paths.dart';
 import '../core/models/task_model.dart';
 import 'auth_providers.dart';
+
+/// [CustomTaskRepository] instance (Parent Dashboard UI Story 002) — same
+/// constructor-injected-Firestore shape as [childProfileRepositoryProvider]
+/// in `auth_providers.dart`. Lives here, not in `auth_providers.dart`,
+/// because `CustomTaskRepository` is a Task Library (#8) type, matching this
+/// file's existing `pendingTasksProvider`/`taskHistoryProvider` domain.
+final customTaskRepositoryProvider = Provider<CustomTaskRepository>((ref) {
+  return CustomTaskRepository(firestore: ref.watch(firebaseFirestoreProvider));
+});
 
 /// Pending tasks for the active child, newest-first (ADR-0009 Decision §5).
 /// Composite-indexed: `(status ASC, submittedAt DESC)` — see

@@ -1053,3 +1053,55 @@ Since the 07-11 architecture review: **all 11 ADRs are now Accepted** (B2 resolv
 - Tech debt logged: None.
 - No git commit made yet — pending explicit user go-ahead. All 6 Main Navigation Shell stories (+ epic/index doc updates) still uncommitted together as one large pending changeset.
 - Next recommended: two independent paths now open — (a) `/story-readiness` on Parent Dashboard UI Story 001 to resume that now-unblocked epic, or (b) commit this epic's substantial uncommitted work first. User has not yet indicated which they want; ask rather than assume.
+- User committed the Main Navigation Shell epic's full changeset (commit 9deb2a7, 40 files) — clean working tree confirmed before commit, matches exactly what was tracked all session.
+
+## Session Extract — /story-readiness parent-dashboard-ui story-001 — 2026-07-21/22
+- Verdict: BLOCKED — corrected an earlier premature "Ready" note I'd written on the epic file (had only checked the Main Navigation Shell half of the story's own 2-part Dependencies section). Verified directly against source: pendingTasksProvider (task_providers.dart:16) still scoped to activeChildProvider (single child, not family-wide); TaskModel still has no id/childId fields. Both real, both still open, both Task Library's scope not this story's.
+- Corrected parent-dashboard-ui/EPIC.md and epics/index.md to reflect Story 001 specifically Blocked (002-003 unaffected, both Ready).
+- Next: /story-readiness on Story 002 or 003, or fix the Task Library gaps first — user chose to run Story 002.
+
+## Session Extract — /story-readiness parent-dashboard-ui story-002 — 2026-07-22
+- Verdict: READY (18/18 checks pass, no gaps).
+- Pre-implementation verification found the backend is already substantially built: CustomTaskRepository.createCustomTaskTemplate() (Task Library epic) already exists, already unit-tested, writes exactly the 4-field shape this story specifies. FirestorePaths.customTasks(), knownCategoryIds (6 values), P18 pattern, and the 4-child max cap all confirmed real.
+- Next: /dev-story production/epics/parent-dashboard-ui/story-002-create-custom-task.md
+
+## Session Extract — /dev-story parent-dashboard-ui story-002 — 2026-07-22
+- Story: production/epics/parent-dashboard-ui/story-002-create-custom-task.md — Create Custom Task Bottom Sheet
+- Implementer: flame-widget-specialist (LOW risk). First run returned zero output despite 39 tool calls (worst-case truncation, no partial progress visible via git status); resumed once, came back complete with a thorough report.
+- Files created: src/lib/ui/create_custom_task_sheet.dart (CreateCustomTaskSheet, P3+P18), tests/integration/parent-dashboard-ui/create_custom_task_test.dart (new directory — first story of this epic to reach implementation).
+- Files modified: task_providers.dart (added customTaskRepositoryProvider, matches sibling convention exactly), parent_dashboard_tasks_tab.dart (provisional FAB trigger since Story 001, which owns the real FAB, is blocked — same "placeholder for a blocked neighbor" pattern as Main Navigation Shell Story 004/006).
+- Correctly reused the already-built CustomTaskRepository/CustomTaskTemplate/knownCategoryIds rather than duplicating; invented a local Vietnamese category-label table (flagged for localization-lead, no existing table found — code review later found 2/5 labels do have partial UX-doc precedent).
+- Independently re-verified: 11/11 new tests, full suite 431/431 (1 pre-existing skip, up from 420), flutter analyze clean.
+- Blockers: None.
+- Next: /code-review [4 files], then /story-done
+
+## Session Extract — /code-review parent-dashboard-ui story-002 — 2026-07-22
+- Verdict: APPROVED WITH SUGGESTIONS → all findings applied same session (flame-specialist + qa-tester, parallel spawn; qa-tester truncated once mid-mutation-test, resumed via SendMessage).
+- flame-specialist: verified the initialValue-not-.value Flutter API claim directly against installed 3.44.6 SDK source (dropdown.dart), confirmed P18 compliance, confirmed the BLOCKING test is a genuine read-back, no Forbidden APIs, customTaskRepositoryProvider matches sibling shape exactly. This story broke the sibling epic's "every story has a real gap" pattern on the engine-review side — no blocking issues.
+- qa-tester: MUTATION-TESTED the BLOCKING test itself (hardcoded a wrong targetChildId, confirmed exactly 1 test failed with a clean diff, reverted cleanly) — strongest possible confirmation the story's own highest-priority test genuinely works. Found 2 real ADVISORY gaps: zero-children defensive path untested; rapid-double-tap-on-Save (a REAL bug in 3 separate Main Navigation Shell stories, not theoretical) unproven by inspection alone. Both fixed with new tests.
+- Final test count: 13/13 in create_custom_task_test.dart (was 11, +2 from this review), full suite 433/433 passed (1 pre-existing skip, up from 431), flutter analyze clean.
+- Next: /story-done production/epics/parent-dashboard-ui/story-002-create-custom-task.md
+
+## Session Extract — /story-done parent-dashboard-ui story-002 — 2026-07-22
+- Verdict: COMPLETE WITH NOTES
+- Story: production/epics/parent-dashboard-ui/story-002-create-custom-task.md — Create Custom Task Bottom Sheet — Status → Complete
+- 8/8 ACs passing, all auto-verified via tests. LP-CODE-REVIEW gate (lean mode) confirmed via user: /code-review already run this session, APPROVED WITH SUGGESTIONS, all fixed.
+- Deviations logged (advisory, not tech debt — user chose plain close): (1) customTaskRepositoryProvider wiring, necessary/conventional; (2) provisional FAB on parent_dashboard_tasks_tab.dart for the blocked Story 001 neighbor; (3) invented category-label table, flagged for localization-lead.
+- Epic file, epics/index.md updated: Parent Dashboard UI now "In Progress (1/4 stories complete)". Also corrected Story 001's own stale "Ready" row in the Stories table to Blocked (was missed when the epic-level note was fixed earlier).
+- Tech debt logged: None.
+- No git commit made yet — pending explicit user go-ahead.
+- Next recommended: /story-readiness on Story 003 (Gia đình Tab — Child List & Reset PIN Dialog), the only other unblocked story in this epic. Story 001 remains Blocked on Task Library gaps (pendingTasksProvider family-scoping, TaskModel.id/childId) — those would need to be fixed in Task Library's own files before Story 001 can proceed; Story 004 remains Blocked on a missing ADR.
+
+## Session Extract — /dev-story + /code-review + /story-done parent-dashboard-ui story-003 — 2026-07-22
+- Story: production/epics/parent-dashboard-ui/story-003-family-tab-reset-pin.md — Gia đình Tab — Child List & Reset PIN Dialog — Status → Complete
+- Implementer: flame-widget-specialist. Hit the session's recurring truncation pattern again — resumed 3x via SendMessage; final resume ran the full suite (443/443 at that point) but the agent never delivered its written final report, stopping right after the test command. Recovered by reading the raw task output file directly and independently re-running everything myself.
+- Files created: tests/integration/parent-dashboard-ui/family_tab_reset_pin_test.dart (10 tests initially, 13 after code review).
+- Files modified: src/lib/ui/parent_dashboard_family_tab.dart (replaced Main Navigation Shell's placeholder in place — ParentDashboardFamilyTab, ResetPinDialog, per-child Reset PIN wiring to the already-built/tested PinResetActions.resetChildPin).
+- Design choices confirmed sound in review: plain TextField instead of reconstructing P10's private dot-display/numpad (admin-side, no lockout, P10 classes are library-private); childId captured from widget.child (the specific row), never ambient state — directly addresses the story's core "wrong child" bug-class risk.
+- Code review: flame-specialist + qa-tester in parallel, both APPROVED WITH SUGGESTIONS. Findings applied same session: (1) showResetPinDialog lacked barrierDismissible:false/PopScope — a parent could dismiss mid-submit, contradicting the Cancel button's own doc comment, now fixed; (2) _ChildRow's key was a private literal duplicated by string in tests — exposed as public ParentDashboardFamilyTab.childRowKey(childId); (3) added a newPin-content-forwarding test (injectable hashPinFn override proves the exact typed PIN is used, not just childId); (4) added an active-session-untouched test; (5) added coverage for the previously-untested _LoadErrorContent path; (6) strengthened the Cancel test with a pre-seeded PIN to prove byte-identical survival.
+- Final test count: 13/13 in family_tab_reset_pin_test.dart (was 10, +3 from review), full suite 446/446 passed (1 pre-existing unrelated skip, up from 443), flutter analyze clean on touched files.
+- Deviations logged (advisory): (1) "Chọn bé" is a local provisional duplicate, not literally Story 001's widget (Story 001 still blocked); (2) PIN-entry TextField choice over P10 reuse.
+- Epic file, epics/index.md updated: Parent Dashboard UI now "In Progress (2/4 stories complete)" — Story 001 and Story 004 both Blocked, **no Ready stories remain in this epic**.
+- Tech debt logged: None (user chose plain close, not the tech-debt-register option).
+- No git commit made yet — pending explicit user go-ahead.
+- Next recommended: this epic has no further Ready work. Story 001 needs Task Library (#8) fixes (pendingTasksProvider family-scoping, TaskModel.id/childId) — out of this epic's scope. Story 004 needs /architecture-decision for the banner defer/coalesce state machine (TR-parentdash-002) before it can start. Surface both blockers to the user rather than silently stopping.
