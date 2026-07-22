@@ -1,16 +1,16 @@
 # Story 004: FCM Foreground Banner — Defer/Coalesce State Machine & Permission Reminder
 
 > **Epic**: Parent Dashboard UI
-> **Status**: **Blocked**
+> **Status**: Ready
 > **Layer**: Presentation
 > **Type**: Logic
-> **Estimate**: 3h (once unblocked)
+> **Estimate**: 3h
 > **Manifest Version**: 2026-07-16
-> **Last Updated**: —
+> **Last Updated**: 2026-07-22
 
-## ⚠️ BLOCKED
+## Unblocked — 2026-07-22
 
-**No ADR exists for the banner defer/coalesce state machine.** `docs/architecture/architecture.md`'s own Required ADRs list names this explicitly: *"Parent Dashboard Notification Banner State Machine — not yet written."* This is the GDD's only `[LOGIC]`-tier requirement (a real state machine with input-dependent branching) — run `/architecture-decision` to create and Accept an ADR before implementing this story. Do not implement from the GDD/UX-spec text alone; the ADR must formalize the `unseenCount` state transitions, the defer-during-modal mechanism, and the banner-slot-conflict resolution (FCM vs. reminder banner) the UX spec resolved during `/ux-design`.
+ADR-0015 (Parent Dashboard Notification Banner State Machine) written and Accepted — see `docs/architecture/adr-0015-parent-dashboard-notification-banner-state-machine.md`. This story can now proceed to `/dev-story`.
 
 ---
 
@@ -20,15 +20,16 @@
 **Requirement**: `TR-parentdash-002`
 *(Requirement text lives in `docs/architecture/tr-registry.yaml` — read fresh at review time)*
 
-**ADR Governing Implementation**: **None — this is the blocker.** Once written, update this field before removing the Blocked status.
-**ADR Decision Summary**: N/A until the ADR exists.
+**ADR Governing Implementation**: **ADR-0015** (Parent Dashboard Notification Banner State Machine, Accepted 2026-07-22).
+**ADR Decision Summary**: A pure `BannerState`/`BannerActions` Riverpod state machine (`bannerStateProvider`/`bannerActionsProvider`) drives a `displayKind` (`none`/`fcm`/`reminder`) derived purely from `unseenCount`/`isModalOpen`/`permissionDeclined`/`reminderConsumedThisSession`. Rendered via `ScaffoldMessenger.showMaterialBanner()`/`.hideCurrentMaterialBanner()` inside `ParentShellScaffold` (**never** a `Stack` — that subtree has an existing structural "no Stack" test from Main Navigation Shell Story 003 that must not break). Modal defer is wired via two explicit `modalOpened()`/`modalClosed()` call-site edits in `create_custom_task_sheet.dart` and `parent_dashboard_family_tab.dart`. Full transition logic, Key Interfaces, and a worked example of every GDD Edge Case (including the 3-message-during-modal permutation) are in the ADR's Decision section — implement from there, this section only summarizes.
 
-**Engine**: Flutter 3.44.4 / Flame 1.37.0 — pure Flutter widget layer, no Flame | **Risk**: Unknown until ADR is written — likely LOW (this is a Riverpod state machine + `FirebaseMessaging.onMessage` listener, both already-established patterns elsewhere in the codebase, e.g. Push Notification #9's own foreground handling).
-**Engine Notes**: `firebase_messaging` is already confirmed resolving to `16.4.3` with the needed APIs present (Push Notification epic's own findings) — the ADR should confirm this still holds, not re-derive it from scratch.
+**Engine**: Flutter 3.44.4 / Flame 1.37.0 — pure Flutter widget layer, no Flame | **Risk**: LOW — `MaterialBanner`/`ScaffoldMessenger` verified against installed Flutter 3.44.6 SDK source (ADR-0015 Engine Compatibility); `firebase_messaging.onMessage`/`getNotificationSettings()` already verified by ADR-0010.
+**Engine Notes**: `ref.listenManual` (not `ref.listen` in `build`) is required for the `initState`-registered `onMessage` subscription and the `displayKind`-driven `ScaffoldMessenger` sync — same pattern already used by `mood_event_bridge.dart` in this codebase, confirmed present in the pinned `flutter_riverpod 3.3.2`.
 
-**Control Manifest Rules (this layer)** *(to be confirmed/expanded by the ADR)*:
-- Required: Riverpod state (`unseenCount`) must be screen-scoped, not global singleton (matches P1's own screen-scoped in-flight state convention).
-- Required: single-flight guard pattern for banner state transitions — same class of correctness concern as P1, though this isn't a write-guard, it's a display-state guard.
+**Control Manifest Rules (this layer)**:
+- Required: `bannerStateProvider` is screen-scoped (Parent Shell level), not a global singleton — ADR-0015 Decision §2.
+- Required: no `Stack` widget introduced in `ParentShellScaffold`'s subtree — ADR-0015 Decision §1 / registry `forbidden_patterns.parent_shell_stack_overlay`.
+- Required: banner rendering goes through `ScaffoldMessenger.showMaterialBanner`/`.hideCurrentMaterialBanner` only — registry `interfaces.parent_dashboard_banner_render`.
 
 **Performance Budget**: No dedicated latency contract for the banner's own state transitions — the underlying FCM delivery latency is Push Notification (#9)'s concern, not this story's.
 
@@ -53,7 +54,15 @@
 
 ## Implementation Notes
 
-**Do not implement until the governing ADR exists and is Accepted.** Once it is, replace this section with guidance derived from that ADR's Decision/Implementation Guidelines, following the same pattern every other story in this project uses (ADR is the source of truth for implementation shape; this section transcribes it, does not reinterpret it).
+*Derived from ADR-0015's Decision section — implement from the ADR directly, this transcribes the shape, not the full reasoning:*
+
+1. `BannerState`/`BannerActions`/`bannerStateProvider`/`bannerActionsProvider` — new file, e.g. `src/lib/providers/banner_providers.dart` (matches this epic's one-domain-per-provider-file convention, e.g. `parent_approval_providers.dart`). `displayKind` is a pure getter on `BannerState`, never stored (ADR-0015 Decision §2 — copy the exact reducer logic, including the `messageReceived`/`bannerDismissedOrTapped` transitions).
+2. `_ParentShellScaffoldState` (`src/lib/ui/parent_shell_scaffold.dart`, Main Navigation Shell epic, Complete): add the `FirebaseMessaging.onMessage` subscription + `getNotificationSettings()` resolution in `initState`, a `ref.listenManual`-driven `ScaffoldMessenger.showMaterialBanner`/`.hideCurrentMaterialBanner` sync, and cleanup in `dispose()` (ADR-0015 Decision §4). **Do not wrap `widget.navigationShell` in a `Stack`** — see the file's own doc comment and registry `forbidden_patterns.parent_shell_stack_overlay`.
+3. `create_custom_task_sheet.dart`'s `showCreateCustomTaskSheet` and `parent_dashboard_family_tab.dart`'s `showResetPinDialog`: wrap the existing `showModalBottomSheet`/`showDialog` calls with `modalOpened()`/`modalClosed()` (try/finally) — ADR-0015 Decision §3.
+4. `parent_dashboard_tasks_tab.dart`: remove the now-dead reserved `SizedBox.shrink()` banner slot (ADR-0015 Decision §6 — Story 001's placeholder is superseded by the shell-level `MaterialBanner` approach).
+5. Display text: `unseenCount == 1` reuses `familyPendingTasksProvider`/`childProfilesProvider` (already-loaded, no new Firestore read) to render "[Tên bé] vừa hoàn thành [task]"; `unseenCount >= 2` uses the fixed "N nhiệm vụ mới đang chờ" string; a generic fallback covers the rare lookup-miss race (ADR-0015 Decision §5).
+6. `MaterialBanner.actions` is required and non-empty — an explicit dismiss action button is mandatory; swipe-to-dismiss (GDD's "swipe hoặc tap" wording) requires wrapping in a `Dismissible` and is an optional UX enhancement, not a hard requirement (ADR-0015 Decision §1's GDD-correction note).
+7. `elevation: 0` (default) makes the banner reflow content downward rather than float over it — this is CORRECT per GDD's "slide-down, không phải popup chặn màn hình," do not add elevation to "fix" it (ADR-0015 Decision §1).
 
 ---
 
@@ -61,14 +70,22 @@
 
 *Handled by neighbouring stories or future epics — do not implement here:*
 
-- **Story 001 (this epic)**: reserves the banner's layout slot but does not implement banner logic.
+- **Story 001 (this epic)**: pending-list rendering itself — this story only removes that story's now-dead reserved banner slot (Implementation Note 4).
 - **Push Notification (#9)**: FCM delivery mechanism itself, permission request flow, background/OS-tray notification handling — this story only handles the foreground in-app case.
+- **ADR-0015's own scope boundary**: this story implements exactly what the ADR decided; do not redesign the state machine shape while implementing.
 
 ---
 
 ## QA Test Cases
 
-*Not yet written — deferred until the ADR exists and story unblocks. Transcribe from the Acceptance Criteria above using the same Given/When/Then format the rest of this epic's stories use, once implementation-ready.*
+*Transcribed from ADR-0015's Validation Criteria + the Acceptance Criteria above:*
+
+- **Banner appears / live-updates / coalesces** (Core Rule 6): given 1, then 2, then 3 messages arrive with no modal open and no prior dismiss, THEN `displayKind` stays `fcm` throughout and `unseenCount` reads 1→2→3 with no intermediate `none` state (never a second banner spawned).
+- **Defer during modal** (Edge Case 4): given a message arrives while `isModalOpen == true`, THEN `displayKind == none`; WHEN the modal closes, THEN `displayKind` reflects the pending `unseenCount` immediately.
+- **3-message-during-modal permutation** (Edge Case 5, the GDD's own explicitly-resolved case): 2 messages arrive while a modal is open (`unseenCount=2`, deferred) → modal closes (banner shows "2 đang chờ") → a 3rd message arrives before tap/dismiss → banner live-updates to "3 đang chờ", no second banner, no dismiss-then-show transition.
+- **Banner-slot conflict resolution**: given the reminder is currently displayed (`displayKind == reminder`), WHEN a message arrives, THEN `displayKind` becomes `fcm` AND `reminderConsumedThisSession == true` — reminder never reappears later in the same `BannerState` lineage even after the FCM banner is dismissed.
+- **Reminder session scoping**: given `permissionDeclined == true` and no prior dismiss/consumption, THEN `displayKind == reminder`; after `bannerDismissedOrTapped()`, THEN `displayKind` never returns to `reminder` for the rest of that in-memory session (a fresh `BannerState()` — i.e. app cold start — is the only way it resets).
+- **Tap vs. dismiss have identical state transitions**: both call `bannerDismissedOrTapped()`; the ONLY difference is the widget layer's navigation side-effect (tap navigates to Tab Nhiệm vụ if not already there; dismiss never navigates) — not part of the pure reducer's own test surface, but the integration test should confirm the widget layer respects this split.
 
 ---
 
@@ -76,13 +93,13 @@
 
 **Story Type**: Logic
 **Required evidence**:
-- `tests/unit/parent-dashboard-ui/fcm_banner_state_machine_test.dart` — must exist and pass (BLOCKING per coding-standards.md's Logic-story rule)
+- `tests/unit/parent-dashboard-ui/fcm_banner_state_machine_test.dart` — must exist and pass (BLOCKING per coding-standards.md's Logic-story rule), covering every QA Test Case above as a pure `BannerState`/`BannerActions` reducer test.
 
-**Status**: [ ] Not yet created — story Blocked, cannot start
+**Status**: [ ] Not yet created
 
 ---
 
 ## Dependencies
 
-- Depends on: **An Accepted ADR for the banner state machine** (blocking — see top of file). Also benefits from Story 001 existing first (shares the Nhiệm vụ tab's banner slot), though not strictly a hard dependency.
-- Unlocks: None further within this epic.
+- Depends on: ADR-0015 (Accepted 2026-07-22). Story 001 (Complete — this story removes its now-dead banner slot, Implementation Note 4).
+- Unlocks: None further within this epic. This is the last story in Parent Dashboard UI — closes the epic once done.

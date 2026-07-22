@@ -289,6 +289,24 @@ state_ownership:
     added: 2026-07-18
     revised: ""
 
+  - state: parent_dashboard_banner_state
+    status: active
+    owner_system: parent-dashboard-ui
+    adr: docs/architecture/adr-0015-parent-dashboard-notification-banner-state-machine.md
+    interface: "bannerStateProvider (StateProvider<BannerState>, in-memory only, never persisted —
+      session = process lifetime by construction). BannerState{unseenCount, lastMessage, isModalOpen,
+      reminderConsumedThisSession, permissionDeclined}; displayKind (BannerKind: none|fcm|reminder) is a
+      PURE derivation, never stored. Mutated only through BannerActions (bannerActionsProvider):
+      permissionStatusResolved, modalOpened, modalClosed, messageReceived, bannerDismissedOrTapped."
+    write_access: parent-dashboard-ui-only   # BannerActions is the sole mutation path; two modal call
+      # sites (create_custom_task_sheet.dart, parent_dashboard_family_tab.dart) call modalOpened/
+      # modalClosed explicitly but do not otherwise touch the state directly
+    referenced_by:
+      - docs/architecture/adr-0015-parent-dashboard-notification-banner-state-machine.md
+      - design/gdd/parent-dashboard-ui.md
+    added: 2026-07-22
+    revised: ""
+
 # Example:
 #
 # state_ownership:
@@ -422,6 +440,24 @@ interfaces:
       - docs/architecture/adr-0014-navigation-shell-route-guard-architecture.md
       - design/gdd/main-navigation-shell.md
     added: 2026-07-18
+    revised: ""
+
+  - contract: parent_dashboard_banner_render
+    status: active
+    pattern: direct_call   # ScaffoldMessenger.showMaterialBanner/hideCurrentMaterialBanner, imperative
+    producer: parent-dashboard-ui
+    consumers:
+      - parent-dashboard-ui   # ParentShellScaffold itself is both producer and sole consumer
+    adr: docs/architecture/adr-0015-parent-dashboard-notification-banner-state-machine.md
+    signal_signature: "ScaffoldMessenger.of(context).showMaterialBanner(...) / .hideCurrentMaterialBanner(),
+      driven by ref.listenManual(bannerStateProvider.select((s) => s.displayKind), ...) registered in
+      _ParentShellScaffoldState.initState(). MUST NOT be rendered via a Stack-positioned custom widget —
+      see forbidden_patterns' parent_shell_stack_overlay entry below. This is the ONLY sanctioned banner
+      render path for Parent Dashboard UI."
+    referenced_by:
+      - docs/architecture/adr-0015-parent-dashboard-notification-banner-state-machine.md
+      - design/gdd/parent-dashboard-ui.md
+    added: 2026-07-22
     revised: ""
 
 # Example:
@@ -1070,6 +1106,24 @@ forbidden_patterns:
     referenced_by:
       - docs/architecture/adr-0014-navigation-shell-route-guard-architecture.md
     added: 2026-07-18
+
+  - pattern: parent_shell_stack_overlay
+    status: active
+    description: "Never wrap ParentShellScaffold's widget.navigationShell (or any of its subtree) in a
+      Stack. The FCM/reminder banner MUST render via ScaffoldMessenger.showMaterialBanner(), not a
+      Stack-positioned custom widget — see interfaces' parent_dashboard_banner_render entry above."
+    why: "ParentShellScaffold's own doc comment and an existing Main Navigation Shell Story 003
+      regression test both depend on 'no Stack widget exists in this subtree' as a structural proof of
+      the 'no floating chips' acceptance criterion. Introducing a Stack for the banner (a reasonable-
+      looking first instinct) would risk silently breaking that pre-existing, already-Complete-epic
+      test. MaterialBanner's own internals (Scaffold's CustomMultiChildLayout slot, verified against
+      installed Flutter 3.44.6 source) already achieve the needed shell-level overlay with zero Stack
+      widgets, so this constraint costs nothing functionally."
+    adr: docs/architecture/adr-0015-parent-dashboard-notification-banner-state-machine.md
+    referenced_by:
+      - docs/architecture/adr-0015-parent-dashboard-notification-banner-state-machine.md
+      - docs/architecture/adr-0014-navigation-shell-route-guard-architecture.md
+    added: 2026-07-22
 
 # Example:
 #

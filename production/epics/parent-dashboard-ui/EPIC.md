@@ -3,7 +3,7 @@
 > **Layer**: Presentation
 > **GDD**: design/gdd/parent-dashboard-ui.md
 > **Architecture Module**: Parent Dashboard UI (#21)
-> **Status**: In Progress (3/4 stories complete) — Story 004 still Blocked on a missing ADR; no further Ready stories remain in this epic
+> **Status**: In Progress (3/4 stories complete) — Story 004 now Ready (ADR-0015 Accepted 2026-07-22), last story in this epic
 > **Stories**: 4 stories
 
 ## Blocker status — corrected 2026-07-22 (Story 001's second blocker now fixed)
@@ -39,25 +39,18 @@ Definition of Done items — it's the first real `ConsumerWidget` caller of
 
 ## Governing ADRs
 
-**None yet.** `architecture.md`'s Required ADRs list names "Parent Dashboard
-Notification Banner State Machine" as not yet written — this covers the GDD's
-only `[LOGIC]`-tier requirement (Core Rule 6/Edge Case 4-5's banner defer/coalesce
-state machine). The remaining 4 surfaces are `[UI]`-tier Flutter widget work
-calling already-defined functions from owning systems (#11, #8, #1) and do not
-require a dedicated ADR the way a data/transaction system would — user chose to
-proceed without blocking epic creation on this, and write the ADR when the
-banner-logic story is reached.
+**ADR-0015** (Parent Dashboard Notification Banner State Machine) — Accepted 2026-07-22. Covers the GDD's only `[LOGIC]`-tier requirement (Core Rule 6/Edge Case 4-5's banner defer/coalesce state machine): a pure `BannerState`/`BannerActions` Riverpod reducer, rendered via `ScaffoldMessenger.showMaterialBanner` at the `ParentShellScaffold` level (explicitly NOT a `Stack`, to preserve an existing Main Navigation Shell structural test). The remaining 3 surfaces are `[UI]`-tier Flutter widget work calling already-defined functions from owning systems (#11, #8, #1) and do not require a dedicated ADR.
 
 ## GDD Requirements
 
 | TR-ID | Requirement | ADR Coverage |
 |-------|-------------|--------------|
 | TR-parentdash-001 | Pending list is uncapped; Approve/Reject button state machine matches Parent Approval exactly | ❌ No ADR (UI-tier, reuses #11's already-Accepted ADR-0013 pattern via P1) |
-| TR-parentdash-002 | FCM banner defers while a modal is open, and coalesces via an unseenCount state machine | ❌ No ADR — **the one requirement that genuinely needs one** (Logic-tier) |
+| TR-parentdash-002 | FCM banner defers while a modal is open, and coalesces via an unseenCount state machine | ✅ ADR-0015 (Accepted 2026-07-22) |
 | TR-parentdash-003 | targetChildId auto-assigns for single-child families | ❌ No ADR (UI-tier, but BLOCKING test-evidence requirement per GDD — read-back verification) |
 | TR-parentdash-004 | Reset PIN dialog calls resetChildPin() and includes a real PIN-entry field, not a bare confirm | ❌ No ADR (UI-tier, calls #1's already-defined mechanism) |
 
-**Coverage: 0 / 4 by ADR** — acceptable per user decision above; TR-parentdash-002's story will be Blocked until an ADR is written for it specifically.
+**Coverage: 1 / 4 by ADR** — the one requirement that genuinely needed one now has it; the other 3 remain acceptably UI-tier per the original epic-creation decision.
 
 ## UX Spec
 
@@ -74,7 +67,7 @@ This epic is complete when:
 - All acceptance criteria from `design/gdd/parent-dashboard-ui.md` AND `design/ux/parent-dashboard-ui.md` are verified
 - All Logic and Integration stories have passing test files in `tests/` (the banner state machine, the `targetChildId` read-back verification)
 - All UI stories have evidence docs with sign-off in `production/qa/evidence/` (advisory gate per this GDD's own predominantly-UI test tier)
-- An ADR exists and is Accepted for the banner defer/coalesce state machine (TR-parentdash-002) before that specific story is implemented
+- An ADR exists and is Accepted for the banner defer/coalesce state machine (TR-parentdash-002) before that specific story is implemented — ✅ **done**, ADR-0015 Accepted 2026-07-22
 - Parent Approval (#11)'s two remaining DoD items (background→foreground replay verification, GameEventBus replay-risk acknowledgment) are closed by the Approve-button story in this epic — ✅ **done**, Story 001's Completion Notes explicitly acknowledge the replay risk is now live (first real emitter); the risk itself remains open tech debt requiring an ADR-0004 revision, tracked there, not silently closed
 
 ## Stories
@@ -84,8 +77,8 @@ This epic is complete when:
 | 001 | Nhiệm vụ Tab — Pending List, Approve/Reject Wiring & Event Emission | Integration | Complete | N/A (ADR-0013/0004 referenced) |
 | 002 | Create Custom Task Bottom Sheet | Integration | Complete | N/A |
 | 003 | Gia đình Tab — Child List & Reset PIN Dialog | UI | Complete | N/A |
-| 004 | FCM Foreground Banner — Defer/Coalesce State Machine & Permission Reminder | Logic | **Blocked** | None — run `/architecture-decision` |
+| 004 | FCM Foreground Banner — Defer/Coalesce State Machine & Permission Reminder | Logic | Ready | ADR-0015 (Accepted) |
 
 ## Next Step
 
-No Ready stories remain in this epic. Story 004 (FCM Foreground Banner) is the only remaining story — run `/architecture-decision` for "Parent Dashboard Notification Banner State Machine" (TR-parentdash-002) to unblock it.
+Run `/story-readiness production/epics/parent-dashboard-ui/story-004-fcm-banner-state-machine.md` then `/dev-story` to implement the final story in this epic. Completing it closes Parent Dashboard UI entirely.
