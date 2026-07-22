@@ -426,7 +426,16 @@ void main() {
       // branch verified above.
       container.read(parentOverrideProvider.notifier).state = true;
       await _pumpBoundedSteps(tester);
-      expect(find.text('Parent Dashboard'), findsOneWidget);
+      // Asserted via the route URI, not the old literal `Text('Parent
+      // Dashboard')` marker — Parent Dashboard UI Story 001 gave this tab
+      // its real "Nhiệm vụ" app bar title (design/ux/parent-dashboard-ui.md),
+      // superseding that placeholder-era marker. The URI check proves the
+      // same thing the marker was standing in for: routing genuinely reached
+      // this route, not just that some screen rendered.
+      expect(
+        container.read(routerProvider).routerDelegate.currentConfiguration.uri.toString(),
+        AppRoutes.parentDashboard,
+      );
       expect(find.text('Pet Room'), findsNothing);
     });
   });

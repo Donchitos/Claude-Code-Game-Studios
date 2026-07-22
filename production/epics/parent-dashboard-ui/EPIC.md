@@ -3,18 +3,18 @@
 > **Layer**: Presentation
 > **GDD**: design/gdd/parent-dashboard-ui.md
 > **Architecture Module**: Parent Dashboard UI (#21)
-> **Status**: In Progress (2/4 stories complete) — Story 001 still Blocked (see below); Story 004 separately Blocked on a missing ADR; no further Ready stories remain in this epic
+> **Status**: In Progress (3/4 stories complete) — Story 004 still Blocked on a missing ADR; no further Ready stories remain in this epic
 > **Stories**: 4 stories
 
-## Blocker status — corrected 2026-07-22 (previous note here was incomplete)
+## Blocker status — corrected 2026-07-22 (Story 001's second blocker now fixed)
 
 Main Navigation Shell (#17)'s blocker (found 2026-07-18) is resolved — all 6 stories Complete, `/parent/dashboard`/`/parent/family` routes and the Parent Shell tab structure now real and tested.
 
-**Story 001 has a SECOND, separate blocker that is still open** — found in the same 2026-07-18 `/dev-story` attempt, Task Library (#8)'s own gaps, not yet fixed:
-1. `pendingTasksProvider` (`src/lib/providers/task_providers.dart:16`) is still scoped to `activeChildProvider` (single child) — verified directly against source 2026-07-22, unchanged since the original finding. Breaks Story 001's AC-2 (multi-child correctness) and the primary "parent logs in directly, no active child session" flow.
-2. `TaskModel` (`src/lib/core/models/task_model.dart`) still has no `id`/`childId` fields — verified directly against source 2026-07-22. Both are required for Story 001 to call `approveTask()`/`rejectTask()` and resolve per-card avatar/name.
+**Story 001's second blocker (Task Library #8 gaps) is now fixed** — see Task Library `EPIC.md`'s "Post-Closure Fix — 2026-07-22" note:
+1. `familyPendingTasksProvider` added (`src/lib/providers/task_providers.dart`) — merges pending tasks across all of the family's children, fixing AC-2 (multi-child correctness) and the primary "parent logs in directly, no active child session" flow.
+2. `TaskModel` (`src/lib/core/models/task_model.dart`) now has `id`/`childId` fields, required for Story 001 to call `approveTask()`/`rejectTask()` and resolve per-card avatar/name.
 
-Story 001 cannot start until these are fixed — that's Task Library's own scope, not this epic's. Stories 002 and 003 don't depend on either gap and can proceed independently.
+Story 001 is Ready. Story 004 remains separately Blocked on a missing ADR (TR-parentdash-002).
 
 ## Overview
 
@@ -75,21 +75,17 @@ This epic is complete when:
 - All Logic and Integration stories have passing test files in `tests/` (the banner state machine, the `targetChildId` read-back verification)
 - All UI stories have evidence docs with sign-off in `production/qa/evidence/` (advisory gate per this GDD's own predominantly-UI test tier)
 - An ADR exists and is Accepted for the banner defer/coalesce state machine (TR-parentdash-002) before that specific story is implemented
-- Parent Approval (#11)'s two remaining DoD items (background→foreground replay verification, GameEventBus replay-risk acknowledgment) are closed by the Approve-button story in this epic
+- Parent Approval (#11)'s two remaining DoD items (background→foreground replay verification, GameEventBus replay-risk acknowledgment) are closed by the Approve-button story in this epic — ✅ **done**, Story 001's Completion Notes explicitly acknowledge the replay risk is now live (first real emitter); the risk itself remains open tech debt requiring an ADR-0004 revision, tracked there, not silently closed
 
 ## Stories
 
 | # | Story | Type | Status | ADR |
 |---|-------|------|--------|-----|
-| 001 | Nhiệm vụ Tab — Pending List, Approve/Reject Wiring & Event Emission | Integration | **Blocked** (Task Library gaps — see note above) | N/A (ADR-0013/0004 referenced) |
+| 001 | Nhiệm vụ Tab — Pending List, Approve/Reject Wiring & Event Emission | Integration | Complete | N/A (ADR-0013/0004 referenced) |
 | 002 | Create Custom Task Bottom Sheet | Integration | Complete | N/A |
 | 003 | Gia đình Tab — Child List & Reset PIN Dialog | UI | Complete | N/A |
 | 004 | FCM Foreground Banner — Defer/Coalesce State Machine & Permission Reminder | Logic | **Blocked** | None — run `/architecture-decision` |
 
 ## Next Step
 
-No Ready stories remain in this epic. Both remaining stories are Blocked:
-- Story 001: blocked on Task Library (#8) gaps — `pendingTasksProvider` still single-child-scoped, `TaskModel` still missing `id`/`childId` fields.
-- Story 004: blocked on a missing ADR — run `/architecture-decision` for "Parent Dashboard Notification Banner State Machine" (TR-parentdash-002) to unblock.
-
-This epic cannot progress further until one of those blockers is resolved.
+No Ready stories remain in this epic. Story 004 (FCM Foreground Banner) is the only remaining story — run `/architecture-decision` for "Parent Dashboard Notification Banner State Machine" (TR-parentdash-002) to unblock it.

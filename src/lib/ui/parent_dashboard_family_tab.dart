@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 
 import '../core/models/child_profile.dart';
 import '../providers/auth_providers.dart';
-import '../providers/router_provider.dart';
 import 'app_colors.dart';
+import 'select_child_action.dart';
 
 /// Parent Shell's Family tab (Parent Dashboard UI Story 003, TR-parentdash-004)
 /// — replaces the bare placeholder `Scaffold` left by Main Navigation Shell
@@ -21,15 +20,16 @@ import 'app_colors.dart';
 class ParentDashboardFamilyTab extends ConsumerWidget {
   const ParentDashboardFamilyTab({super.key});
 
-  /// "Chọn bé" app bar action — a minimal, LOCAL implementation, not a
-  /// reuse of Story 001's (Implementation Note 5), because Story 001 (Tab
-  /// Nhiệm vụ + its own "Chọn bé" action) is currently Blocked on an
-  /// unrelated Task Library gap and has not built one yet. Provisional —
-  /// same precedent as `ParentDashboardTasksTab`'s FAB and
-  /// `ParentOverrideTrigger` (main-navigation-shell Story 004→006): meant to
-  /// be absorbed/aligned by Story 001 when it unblocks, not left as a
-  /// permanent second implementation.
-  static const selectChildActionKey = Key('familyTabSelectChildAction');
+  /// "Chọn bé" app bar action — ABSORBED (2026-07-22) into the shared
+  /// [SelectChildAction] widget, now Parent Dashboard UI Story 001's
+  /// canonical implementation (see that widget's own doc comment). This
+  /// constant is kept as a forwarding alias to [SelectChildAction.actionKey]
+  /// so external callers/tests (`family_tab_reset_pin_test.dart`'s
+  /// `test_ParentDashboardFamilyTab_tapChonBe_navigatesToSelectChildRoute`)
+  /// keep working unmodified — same Key identity, same navigation behavior
+  /// (`context.push(AppRoutes.selectChild)`), now sourced from one shared
+  /// widget instead of two independent look-alike implementations.
+  static const selectChildActionKey = SelectChildAction.actionKey;
 
   /// Per-row "Reset PIN" button key, keyed by `childId` so a test (or a
   /// future screen-reader audit) can address a SPECIFIC row unambiguously —
@@ -51,14 +51,7 @@ class ParentDashboardFamilyTab extends ConsumerWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Gia đình'),
-        actions: [
-          TextButton.icon(
-            key: selectChildActionKey,
-            onPressed: () => context.push(AppRoutes.selectChild),
-            icon: const Icon(Icons.switch_account_outlined),
-            label: const Text('Chọn bé'),
-          ),
-        ],
+        actions: const [SelectChildAction()],
       ),
       body: childProfilesAsync.when(
         data: (children) => _ChildList(children: children),

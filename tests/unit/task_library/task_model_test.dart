@@ -9,10 +9,61 @@ import 'package:pet_quest/core/models/task_model.dart';
 import 'package:pet_quest/core/reward_table.dart';
 import 'package:yaml/yaml.dart';
 
+/// Minimal fake `DocumentReference` built purely from a path STRING —
+/// generic, reusable for any Firestore path shape, no hookup to any fake
+/// Firestore registry needed. `.parent` is derived by splitting off the
+/// last path segment, alternating collection/doc the way real Firestore
+/// paths always do — this is what lets `TaskModel.fromFirestore`'s
+/// `doc.reference.parent.parent!.id` (tasks collection -> its owning child
+/// doc -> that doc's id, i.e. `childId`) resolve correctly against a fake.
+class _FakeDocumentReference implements DocumentReference<Map<String, dynamic>> {
+  _FakeDocumentReference(this._path);
+  final String _path;
+
+  @override
+  String get id => _path.split('/').last;
+
+  @override
+  CollectionReference<Map<String, dynamic>> get parent =>
+      _FakeCollectionReference(_path.substring(0, _path.lastIndexOf('/')));
+
+  @override
+  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
+}
+
+class _FakeCollectionReference implements CollectionReference<Map<String, dynamic>> {
+  _FakeCollectionReference(this._path);
+  final String _path;
+
+  @override
+  DocumentReference<Map<String, dynamic>>? get parent {
+    final idx = _path.lastIndexOf('/');
+    if (idx < 0) return null; // root collection — never hit by this schema.
+    return _FakeDocumentReference(_path.substring(0, idx));
+  }
+
+  @override
+  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
+}
+
 class _FakeQueryDocumentSnapshot
     implements QueryDocumentSnapshot<Map<String, dynamic>> {
-  _FakeQueryDocumentSnapshot(this._data);
+  /// [path] defaults to a plausible full task doc path so every EXISTING
+  /// call site below (none of which cares about `id`/`childId`) keeps
+  /// working unmodified — only the new id/childId-specific test passes an
+  /// explicit path.
+  _FakeQueryDocumentSnapshot(
+    this._data, {
+    String path = 'families/parent-1/children/child-1/tasks/task-1',
+  }) : reference = _FakeDocumentReference(path);
+
   final Map<String, dynamic> _data;
+
+  @override
+  final DocumentReference<Map<String, dynamic>> reference;
+
+  @override
+  String get id => reference.id;
 
   @override
   Map<String, dynamic> data() => _data;
@@ -170,6 +221,34 @@ void main() {
       expect(task.status, 'approved');
       expect(task.approvedAt, approved);
       expect(task.rejectedAt, isNull);
+    });
+
+    test(
+        'test_fromFirestore_derives_id_and_childId_from_the_document_reference_path',
+        () {
+      // Parent Dashboard UI Story 001's blocker fix: `id` is the task doc's
+      // own id; `childId` is NOT a document field (tasks live at
+      // families/{parentId}/children/{childId}/tasks/{taskId} — childId only
+      // ever appears in the PATH) and must be derived from
+      // doc.reference.parent.parent!.id instead.
+      final now = DateTime(2026, 7, 22, 9);
+      final doc = _FakeQueryDocumentSnapshot(
+        {
+          'title': 'Quét nhà',
+          'flavorText': 'desc',
+          'categoryId': 'chores',
+          'xuReward': 15,
+          'energyReward': 25,
+          'status': 'pending',
+          'submittedAt': Timestamp.fromDate(now),
+        },
+        path: 'families/parent-9/children/child-42/tasks/task-abc',
+      );
+
+      final task = TaskModel.fromFirestore(doc);
+
+      expect(task.id, 'task-abc');
+      expect(task.childId, 'child-42');
     });
   });
 }

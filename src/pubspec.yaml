@@ -44,6 +44,7 @@ dependencies:
   pointycastle: ^4.0.0
   go_router: ^17.3.0
   meta: ^1.18.0
+  connectivity_plus: ^7.3.0
 
 dev_dependencies:
   flutter_test:

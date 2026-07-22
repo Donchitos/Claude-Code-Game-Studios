@@ -7,6 +7,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 /// runtime guard that could be bypassed.
 class TaskModel {
   const TaskModel({
+    required this.id,
+    required this.childId,
     required this.title,
     required this.flavorText,
     required this.categoryId,
@@ -17,6 +19,25 @@ class TaskModel {
     this.approvedAt,
     this.rejectedAt,
   });
+
+  /// The `tasks/{taskId}` document ID — required to call
+  /// `approveTask()`/`rejectTask()` (Parent Approval #11, ADR-0013), which
+  /// both take `taskId` as a parameter. Added for Parent Dashboard UI Story
+  /// 001 (TR-parentdash-001) — this model's own reader is that story's
+  /// pending-list cards.
+  final String id;
+
+  /// The owning child's ID — NOT a document field (tasks live at
+  /// `families/{parentId}/children/{childId}/tasks/{taskId}`, `childId` is
+  /// only ever present in the PATH). Derived in [fromFirestore] from
+  /// `doc.reference.parent.parent!.id` rather than threaded in as a separate
+  /// parameter — always correct regardless of whether the snapshot came from
+  /// a single child's subcollection query or a merged multi-child stream
+  /// (Parent Dashboard UI Story 001's `familyPendingTasksProvider`), since a
+  /// `QueryDocumentSnapshot`'s `.reference` always carries its true full
+  /// path. Required to resolve per-card avatar/name and to call
+  /// `approveTask()`/`rejectTask()`, both of which take `childId`.
+  final String childId;
 
   final String title;
   final String flavorText;
@@ -39,6 +60,11 @@ class TaskModel {
   ) {
     final data = doc.data();
     return TaskModel(
+      id: doc.id,
+      // `tasks` collection's parent document IS the child doc — its `.id`
+      // is the childId. `.parent` on a subcollection reference is only ever
+      // null for a ROOT collection (never the case here); the `!` is safe.
+      childId: doc.reference.parent.parent!.id,
       title: data['title'] as String,
       flavorText: data['flavorText'] as String,
       categoryId: data['categoryId'] as String,

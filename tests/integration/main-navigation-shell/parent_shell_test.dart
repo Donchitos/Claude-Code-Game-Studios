@@ -205,14 +205,27 @@ void main() {
       AppRoutes.parentDashboard,
     );
     expect(find.byType(NavigationBar), findsOneWidget);
-    expect(find.text('Nhiệm vụ'), findsOneWidget);
+    // Updated for Parent Dashboard UI Story 001: `ParentDashboardTasksTab`'s
+    // app bar title is now the real "Nhiệm vụ" (matching
+    // design/ux/parent-dashboard-ui.md), which is the SAME string as this
+    // NavigationBar destination's own label — so `find.text('Nhiệm vụ')` now
+    // legitimately matches 2 widgets (the tab label + the app bar title) on
+    // this tab, not 1. Scoped to the NavigationBar specifically to keep
+    // asserting the tab-label part of the original intent unambiguously.
+    expect(
+      find.descendant(of: find.byType(NavigationBar), matching: find.text('Nhiệm vụ')),
+      findsOneWidget,
+    );
     expect(find.text('Gia đình'), findsOneWidget);
-    // Retained marker (AppBar title) — see ParentDashboardTasksTab's doc
-    // comment — proves the router really reached this route, not just that
-    // the NavigationBar rendered. Also the exact marker two pre-existing
-    // regression test files (root_redirect_test.dart,
-    // auth_account/router_redirect_test.dart) assert on.
-    expect(find.text('Parent Dashboard'), findsOneWidget);
+    // The route URI (above) is what actually proves the router reached this
+    // route — the old literal `Text('Parent Dashboard')` marker this
+    // assertion used to check no longer exists (superseded by the tab's real
+    // "Nhiệm vụ" title, see ParentDashboardTasksTab's own doc comment). Also
+    // updated in the 2 sibling regression files that used the same marker
+    // (root_redirect_test.dart, auth_account/router_redirect_test.dart).
+    expect(find.text('Nhiệm vụ'), findsNWidgets(2),
+        reason: 'app bar title + NavigationBar destination label both read '
+            '"Nhiệm vụ" while on this tab');
 
     final navBar = tester.widget<NavigationBar>(find.byType(NavigationBar));
     expect(navBar.selectedIndex, 0);
@@ -513,8 +526,14 @@ void main() {
     final locationBefore = router.routerDelegate.currentConfiguration.uri.toString();
     final depthBefore = router.routerDelegate.currentConfiguration.matches.length;
 
-    // Re-tap the already-active "Nhiệm vụ" tab.
-    await tester.tap(find.text('Nhiệm vụ'));
+    // Re-tap the already-active "Nhiệm vụ" tab. Scoped to the NavigationBar
+    // specifically (not a bare `find.text('Nhiệm vụ')`) since Parent
+    // Dashboard UI Story 001 gave the tab's own app bar the same "Nhiệm vụ"
+    // title as this NavigationBar destination's label — an unscoped finder
+    // would now ambiguously match both and `tester.tap()` would throw.
+    await tester.tap(
+      find.descendant(of: find.byType(NavigationBar), matching: find.text('Nhiệm vụ')),
+    );
     await _pumpSteps(tester, 2);
 
     expect(

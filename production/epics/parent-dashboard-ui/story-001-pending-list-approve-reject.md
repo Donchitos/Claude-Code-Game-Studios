@@ -1,22 +1,22 @@
 # Story 001: Nhiệm vụ Tab — Pending List, Approve/Reject Wiring & Event Emission
 
 > **Epic**: Parent Dashboard UI
-> **Status**: **Blocked**
+> **Status**: Complete
 > **Layer**: Presentation
 > **Type**: Integration
 > **Estimate**: 4h
 > **Manifest Version**: 2026-07-16
-> **Last Updated**: 2026-07-18
+> **Last Updated**: 2026-07-22
 
-## ⚠️ BLOCKED (found during `/dev-story`, 2026-07-18)
+## Unblocked — 2026-07-22 (both original blockers resolved)
 
-`ui-programmer` stopped before writing code and found 3 real architectural gaps, independently verified:
+Originally blocked on 3 gaps found during `/dev-story`, 2026-07-18. All 3 now resolved:
 
-1. **Main Navigation Shell (#17) has no real implementation** — `src/lib/providers/router_provider.dart` only has flat placeholder routes (`/parent-dashboard` → a bare placeholder screen). No `StatefulShellRoute`, no tab branches, no `/parent/dashboard`/`/parent/family` routes, no `/select-child` route. No epic for it exists in `production/epics/index.md` despite its own Approved UX spec (`design/ux/main-navigation-shell.md`). **This is the blocker** — there is no real shell to render this story's content into.
-2. `pendingTasksProvider` (Task Library #8) is scoped to `activeChildProvider` (one child at a time), not family-wide — breaks AC-2 (multi-child correctness) and returns empty for the primary "parent logs in directly, no active child session" flow. Needs a `familyPendingTasksProvider` or `collectionGroup` query — Task Library's domain, not this story's.
-3. `TaskModel.fromFirestore` captures neither the document `id` nor `childId` — both required to call `approveTask()`/`rejectTask()` and to resolve per-card avatar/name. Small, additive fix, but still Task Library's file.
+1. **Main Navigation Shell (#17)** — built and Complete as its own epic (6/6 stories), `/parent/dashboard`/`/parent/family` routes and the Parent Shell tab structure are now real and tested.
+2. **`pendingTasksProvider` single-child scoping** — fixed via a new `familyPendingTasksProvider` (Task Library epic, Post-Closure Fix note, 2026-07-22): merges pending tasks across ALL of the family's children, not just `activeChildProvider`.
+3. **`TaskModel` missing `id`/`childId`** — fixed (same Post-Closure Fix note): `id` = `doc.id`, `childId` derived from `doc.reference.parent.parent!.id`.
 
-User decision: pause this story, build Main Navigation Shell as its own epic first (`/create-epics main-navigation-shell` → `/create-stories` → implement), then return here once a real route exists to render into. Gaps 2–3 are flagged separately for Task Library's owner.
+This story can now proceed to `/dev-story`.
 
 ## Context
 
@@ -44,16 +44,16 @@ User decision: pause this story, build Main Navigation Shell as its own epic fir
 
 *From GDD `design/gdd/parent-dashboard-ui.md` Core Rules 1, 2, 5 and Edge Cases 1, 9, plus `design/ux/parent-dashboard-ui.md`'s Events Fired and States & Variants sections:*
 
-- [ ] **Screen structure**: GIVEN bố mẹ đã xác thực, WHEN họ ở `/parent/dashboard`, THEN nội dung hiển thị đúng Tab Nhiệm vụ (pending list + FAB) — tab chrome (icon/label/switching) không thuộc story này (Main Navigation Shell #17).
-- [ ] **Pending list rendering**: GIVEN `pendingTasksProvider` trả về N pending tasks (test N=1 và N=15+), WHEN Tab Nhiệm vụ mở, THEN đúng N card hiển thị, không pagination/cap, mỗi card có avatar+tên bé, category icon+label, task title, "submitted X phút/giờ trước", 2 nút Approve/Reject.
-- [ ] **Multi-child correctness**: GIVEN family có ≥2 bé, WHEN 2 bé cùng có pending task, THEN mỗi card hiển thị avatar+tên đúng bé tương ứng — không nhầm bé.
-- [ ] **Offline pre-check wiring**: GIVEN thiết bị offline, WHEN tap Approve, THEN `connectivity_plus` pre-check chặn trước khi gọi `approveTask()` — hành vi nút cụ thể (disable/re-enable/error text) là AC của Parent Approval (#11)/ADR-0013, story này chỉ verify wiring đúng.
-- [ ] **"Chọn bé" always visible**: GIVEN bố mẹ ở Tab Nhiệm vụ, THEN app bar hiển thị action "Chọn bé"; WHEN tap, THEN navigate đúng `/select-child` (không redefine hành vi ở đây — Main Navigation Shell #17 Rule 7).
-- [ ] **Empty state**: GIVEN 0 pending task, THEN empty state "Chưa có nhiệm vụ nào chờ duyệt" hiển thị, FAB "+" vẫn tap được.
-- [ ] **Tab switch during in-flight transaction**: GIVEN Approve/Reject transaction đang chạy, WHEN chuyển tab đi rồi quay lại Tab Nhiệm vụ sau khi transaction hoàn tất, THEN `pendingTasksProvider` phản ánh đúng kết quả — transaction không bị cancel bởi navigation.
-- [ ] **Event emission on Approve**: GIVEN `approveTask()` trả về non-null `ApproveResult`, WHEN kết quả nhận được, THEN `GameEvent(taskApproved)` emit đúng 1 lần LUÔN; `GameEvent(petLeveledUp, result.newPetLevel)` emit đúng 1 lần CHỈ KHI `result.leveledUp == true`.
-- [ ] **No event emission on Reject**: GIVEN `rejectTask()` hoàn tất, THEN không `GameEvent` nào được emit (GDD Core Rule 3 — wither animation là UI-local, thuộc Task Management UI #19, không phải trách nhiệm của story này).
-- [ ] **List load error state**: GIVEN `pendingTasksProvider` throw, THEN inline error "Không tải được danh sách — thử lại" + nút Thử lại hiển thị, KHÔNG crash toàn màn hình (UX spec States & Variants — gap the GDD didn't cover, added during `/ux-design`).
+- [x] **Screen structure**: GIVEN bố mẹ đã xác thực, WHEN họ ở `/parent/dashboard`, THEN nội dung hiển thị đúng Tab Nhiệm vụ (pending list + FAB) — tab chrome (icon/label/switching) không thuộc story này (Main Navigation Shell #17).
+- [x] **Pending list rendering**: GIVEN `familyPendingTasksProvider` trả về N pending tasks (test N=1 và N=15+), WHEN Tab Nhiệm vụ mở, THEN đúng N card hiển thị, không pagination/cap, mỗi card có avatar+tên bé, category icon+label, task title, "submitted X phút/giờ trước", 2 nút Approve/Reject.
+- [x] **Multi-child correctness**: GIVEN family có ≥2 bé, WHEN 2 bé cùng có pending task, THEN mỗi card hiển thị avatar+tên đúng bé tương ứng — không nhầm bé.
+- [x] **Offline pre-check wiring**: GIVEN thiết bị offline, WHEN tap Approve, THEN `connectivity_plus` pre-check chặn trước khi gọi `approveTask()` — hành vi nút cụ thể (disable/re-enable/error text) là AC của Parent Approval (#11)/ADR-0013, story này chỉ verify wiring đúng.
+- [x] **"Chọn bé" always visible**: GIVEN bố mẹ ở Tab Nhiệm vụ, THEN app bar hiển thị action "Chọn bé"; WHEN tap, THEN navigate đúng `/select-child` (không redefine hành vi ở đây — Main Navigation Shell #17 Rule 7).
+- [x] **Empty state**: GIVEN 0 pending task, THEN empty state "Chưa có nhiệm vụ nào chờ duyệt" hiển thị, FAB "+" vẫn tap được.
+- [x] **Tab switch during in-flight transaction**: GIVEN Approve/Reject transaction đang chạy, WHEN chuyển tab đi rồi quay lại Tab Nhiệm vụ sau khi transaction hoàn tất, THEN `familyPendingTasksProvider` phản ánh đúng kết quả — transaction không bị cancel bởi navigation.
+- [x] **Event emission on Approve**: GIVEN `approveTask()` trả về non-null `ApproveResult`, WHEN kết quả nhận được, THEN `GameEvent(taskApproved)` emit đúng 1 lần LUÔN; `GameEvent(petLeveledUp, result.newPetLevel)` emit đúng 1 lần CHỈ KHI `result.leveledUp == true`.
+- [x] **No event emission on Reject**: GIVEN `rejectTask()` hoàn tất, THEN không `GameEvent` nào được emit (GDD Core Rule 3 — wither animation là UI-local, thuộc Task Management UI #19, không phải trách nhiệm của story này).
+- [x] **List load error state**: GIVEN `familyPendingTasksProvider` throw, THEN inline error "Không tải được danh sách — thử lại" + nút Thử lại hiển thị, KHÔNG crash toàn màn hình (UX spec States & Variants — gap the GDD didn't cover, added during `/ux-design`).
 
 ---
 
@@ -62,7 +62,7 @@ User decision: pause this story, build Main Navigation Shell as its own epic fir
 *Derived from `design/ux/parent-dashboard-ui.md` (Layout Zones, Component Inventory, Interaction Map, Events Fired) and GDD Core Rules 1/2/5:*
 
 1. Render inside Main Navigation Shell (#17)'s already-existing `/parent/dashboard` route slot — this story creates NO new routes, only content.
-2. Data source: `pendingTasksProvider` (Task Library #8, already built and Complete) — a `StreamProvider`, uncapped.
+2. Data source: `familyPendingTasksProvider` (Task Library #8, added 2026-07-22 as this story's own unblock fix) — a `StreamProvider<List<TaskModel>>`, uncapped, merged across all of the family's children. Do NOT use the older single-child `pendingTasksProvider` (still scoped to `activeChildProvider`) — it would silently reintroduce the exact multi-child bug this story's AC-2 guards against.
 3. App bar: title "Nhiệm vụ" + "Chọn bé" action calling the existing navigation to `/select-child` — do not reimplement that navigation's internals.
 4. **Banner slot**: the UX spec reserves a zone directly below the app bar for the FCM/reminder banner (shared slot, P7) — this story builds the layout with that slot present but EMPTY (a placeholder `SizedBox.shrink()` or equivalent) since actual banner rendering/logic is Story 004's scope (currently Blocked on a missing ADR). Do not implement banner behavior here.
 5. Pending task card: avatar+name, category icon+label, title, relative-time text (display only), 2 buttons.
@@ -137,11 +137,26 @@ User decision: pause this story, build Main Navigation Shell as its own epic fir
 **Required evidence**:
 - `tests/integration/parent-dashboard-ui/pending_list_approve_reject_test.dart` — must exist and pass
 
-**Status**: [ ] Not yet created
+**Status**: [x] Created — 17/17 tests passing (`pending_list_approve_reject_test.dart`), covering all 7 QA Test Cases plus offline pre-check, "Chọn bé" wiring/absorption, P1 regression (both Approve and Reject paths), and FAB absorption
 
 ---
 
 ## Dependencies
 
-- Depends on: **Main Navigation Shell (#17) epic — no epic exists yet, must be created and at least minimally implemented first** (found during `/dev-story`, 2026-07-18 — see Blocked note above). Also needs Task Library (#8) fixes: `familyPendingTasksProvider` (or equivalent) and `TaskModel.id`/`childId` fields.
+- Depends on: Main Navigation Shell (#17) epic — Complete. Task Library (#8) `familyPendingTasksProvider` and `TaskModel.id`/`childId` — Complete (Post-Closure Fix, 2026-07-22). Both original blockers resolved, see Unblocked note above.
 - Unlocks: Closes Parent Approval epic's Definition of Done items 5–6 (background→foreground replay verification, GameEventBus replay-risk acknowledgment) once this story's Completion Notes address them.
+
+---
+
+## Completion Notes
+**Completed**: 2026-07-22
+**Criteria**: 10/10 passing (all auto-verified via tests; no manual/deferred criteria)
+**Deviations**:
+- ADVISORY: `"Chọn bé"` was extracted into a new shared `SelectChildAction` widget (`src/lib/ui/select_child_action.dart`) used by BOTH this tab and `ParentDashboardFamilyTab` (Story 003) — collapses the tech-debt-by-design Story 003's own doc comment flagged ("meant to be absorbed/aligned by Story 001 when it unblocks"). `ParentDashboardFamilyTab.selectChildActionKey`'s external identity/behavior kept unchanged; its own test suite verified passing unmodified.
+- ADVISORY: `parentApprovalRepositoryProvider`/`connectivityProvider` added in a new file, `src/lib/providers/parent_approval_providers.dart` — necessary Riverpod wiring (ADR-0013 explicitly left provider construction to "a future Parent Dashboard ConsumerWidget," which this story is), matches sibling one-domain-per-provider-file convention.
+- ADVISORY: `connectivity_plus: ^7.3.0` added as a new pubspec dependency — required for the offline pre-check AC; its post-training-cutoff API was verified directly against the installed package source, not assumed (see `parent_approval_providers.dart`'s doc comments).
+- ADVISORY: 3 pre-existing regression tests (`root_redirect_test.dart`, `router_redirect_test.dart`, `parent_shell_test.dart`) updated — the placeholder's literal `Text('Parent Dashboard')` app bar title (their routing-reached marker) was superseded by this story's own required "Nhiệm vụ" title per the UX spec; updated to assert on route URI instead, which is what they actually intended to verify.
+- **GameEventBus replay risk is now LIVE** (not fixed, per this story's own scope boundary): this is the first real `taskApproved`/`petLeveledUp` emission in the running app. A Flame component remounting elsewhere (e.g. Pet Room nav away/back) will receive a spurious replay of the last cached event. This is pre-existing tech debt in the bus's design (ADR-0004 §5 Consequences → Risks, predates this story) — fixing it requires an ADR-0004 revision, explicitly out of scope here. Recorded per Parent Approval epic's Definition of Done item 5, which transfers to this story; closes Parent Approval DoD items 5–6.
+- Two Task Library (#8) gaps were fixed as this story's own unblock (`familyPendingTasksProvider`, `TaskModel.id`/`childId`) — documented in Task Library's own EPIC.md as a Post-Closure Fix, not a new numbered story there.
+**Test Evidence**: Integration — `tests/integration/parent-dashboard-ui/pending_list_approve_reject_test.dart` (17/17 passing — grew from the implementer's original delivery after independent debugging found and fixed: a missing `misc.dart` import for `Override`, a systemic `connectivityProvider`-not-overridden hang affecting 8 of the original tests, 3 broken `find.descendant` Finder calls, a viewport-too-small rendering assumption, and a genuine P1 single-flight guard bug in the implementation itself where the button's visual disable alone didn't prevent a re-entrant rapid-double-tap call — fixed with a synchronous guard check at handler entry, verified via a `Completer`-gated stub test)
+**Code Review**: Complete — `/code-review`, flame-specialist + qa-tester in parallel, both verdict APPROVED (qa-tester independently mutation-tested the P1 guard fix; flame-specialist independently verified the connectivity_plus API against installed package source and traced Riverpod's unmounted-ref safety). 3 non-blocking suggestions applied: `PendingCardStatus` equality override (removes reliance on implicit const-canonicalization for targeted rebuild scoping), a doc comment on the post-await `ref` safety invariant, and a symmetric P1 regression test for the Reject path (test count 16→17).
