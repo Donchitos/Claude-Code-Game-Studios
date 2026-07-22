@@ -33,17 +33,32 @@ import 'auth_providers.dart';
 /// null-guard — a `StreamProvider` fed `Stream.empty()` never emits, so its
 /// `AsyncValue` would stay perpetually loading rather than resolving to a
 /// usable default.
-final seedCountProvider = StreamProvider<int>((ref) {
-  final childId = ref.watch(activeChildProvider)?.childId;
-  final parentId = ref.watch(authStateProvider).value?.uid;
-  if (parentId == null || childId == null) return Stream.value(0);
+final seedCountProvider = StreamProvider<int>(
+  (ref) {
+    final childId = ref.watch(activeChildProvider)?.childId;
+    final parentId = ref.watch(authStateProvider).value?.uid;
+    if (parentId == null || childId == null) return Stream.value(0);
 
-  return ref
-      .watch(firebaseFirestoreProvider)
-      .doc(FirestorePaths.child(parentId, childId))
-      .snapshots()
-      .map((doc) {
-    final raw = (doc.data()?['seedCount'] as num?)?.toInt() ?? 0;
-    return raw < 0 ? 0 : raw;
-  });
-});
+    return ref
+        .watch(firebaseFirestoreProvider)
+        .doc(FirestorePaths.child(parentId, childId))
+        .snapshots()
+        .map((doc) {
+      final raw = (doc.data()?['seedCount'] as num?)?.toInt() ?? 0;
+      return raw < 0 ? 0 : raw;
+    });
+  },
+  // `retry: (retryCount, error) => null` — same fix applied to the sibling
+  // `xuBalanceProvider` (`currency_providers.dart` — see that provider's own
+  // doc comment for the full, code-review-corrected trace against installed
+  // riverpod-3.3.2 source: `.hasError` flips immediately on first failure,
+  // it does NOT stay `isLoading` for ~38s, for any consumer reading
+  // `.hasError`/`.value` directly). Kept here for the same narrower reasons:
+  // matches the established codebase convention (`childProfilesProvider`,
+  // `itemCatalogProvider`), avoids a pointless background retry `Timer`
+  // against a persistent failure, and protects any future `.when()`-based
+  // consumer. Not currently exercised by a failing test in this codebase
+  // (`ContextualBadgeChip` treats any error the same as `0` — hidden — so no
+  // test observes a pending-`Timer` leak the way `xuBalanceProvider`'s did).
+  retry: (retryCount, error) => null,
+);

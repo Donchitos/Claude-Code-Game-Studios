@@ -1,11 +1,23 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+// `StateProvider` moved to the legacy export in riverpod 3.x (no longer in
+// the main `flutter_riverpod.dart` barrel) — same fix already applied in
+// `auth_providers.dart`; required here for [activeChildBranchIndexProvider].
+import 'package:flutter_riverpod/legacy.dart';
 import 'package:go_router/go_router.dart';
 
 import '../ui/child_profile_selection_screen.dart';
+import '../ui/child_shell_scaffold.dart';
 import '../ui/login_screen.dart';
+import '../ui/new_task_screen.dart';
+import '../ui/parent_dashboard_family_tab.dart';
+import '../ui/parent_dashboard_tasks_tab.dart';
+import '../ui/parent_shell_scaffold.dart';
+import '../ui/pet_room_screen.dart';
 import '../ui/pin_entry_screen.dart';
 import '../ui/register_screen.dart';
+import '../ui/shop_screen.dart';
+import '../ui/task_management_screen.dart';
 import 'auth_providers.dart';
 
 /// Bridges [sessionStateProvider] (a plain Riverpod [Provider], not
@@ -57,9 +69,10 @@ abstract final class AppRoutes {
 
   /// Child Shell default route (ADR-0014 Decision §1) — the `childSelected`
   /// redirect branch (see [redirectForSessionState]) allows any `/child/*`
-  /// location and defaults here. Only a flat placeholder `GoRoute` exists for
-  /// this path so far (main-navigation-shell Story 001) — Story 002 replaces
-  /// it with the real `StatefulShellRoute` (Pet Room/Tasks/Shop tabs).
+  /// location and defaults here. Backed by the real `StatefulShellRoute`
+  /// (Pet Room/Tasks/Shop tabs, `childShellRoute`) since main-navigation-shell
+  /// Story 002 — Story 001 originally wired only a flat placeholder
+  /// `GoRoute` here.
   static const childPetRoom = '/child/pet-room';
   static const childTasks = '/child/tasks';
   static const childTasksNew = '/child/tasks/new';
@@ -69,15 +82,80 @@ abstract final class AppRoutes {
   /// redirect branch (see [redirectForSessionState]) allows any `/parent/*`
   /// location and defaults here. MOVED from the flat `/parent-dashboard`
   /// (pre-main-navigation-shell) to this branch-scoped path per ADR-0014's
-  /// Migration Plan (main-navigation-shell Story 001). Only a flat
-  /// placeholder `GoRoute` exists for this path so far — Story 003 replaces
-  /// it with the real `StatefulShellRoute` (Dashboard/Gia đình tabs).
+  /// Migration Plan (main-navigation-shell Story 001). Backed by the real
+  /// `StatefulShellRoute` (Dashboard/Gia đình tabs, `parentShellRoute`) since
+  /// main-navigation-shell Story 003 — Story 001 originally wired only a
+  /// flat placeholder `GoRoute` here.
   static const parentDashboard = '/parent/dashboard';
   static const parentFamily = '/parent/family';
 
   static String pinEntryFor(String childId) =>
       '$pinEntry?childId=${Uri.encodeQueryComponent(childId)}';
 }
+
+/// Child Shell — `StatefulShellRoute` with 3 branches, preserving Pet Room's
+/// Flame state across tab switches (main-navigation-shell Story 002,
+/// ADR-0014 Decision §2). Copied closely from the ADR's own verified code
+/// sample rather than improvised — every API shape here (the `.indexedStack`
+/// factory, `StatefulShellBranch`, nested `GoRoute(path: 'new', ...)`) was
+/// read directly from the installed `go_router 17.3.0` source during the
+/// ADR's authoring pass, not assumed from training data.
+final childShellRoute = StatefulShellRoute.indexedStack(
+  builder: (context, state, navigationShell) => ChildShellScaffold(
+    navigationShell: navigationShell,
+  ),
+  branches: [
+    StatefulShellBranch(routes: [
+      GoRoute(path: AppRoutes.childPetRoom, builder: (_, _) => const PetRoomScreen()),
+    ]),
+    StatefulShellBranch(routes: [
+      GoRoute(
+        path: AppRoutes.childTasks,
+        builder: (_, _) => const TaskManagementScreen(),
+        routes: [
+          GoRoute(path: 'new', builder: (_, _) => const NewTaskScreen()), // → /child/tasks/new
+        ],
+      ),
+    ]),
+    StatefulShellBranch(routes: [
+      GoRoute(path: AppRoutes.childShop, builder: (_, _) => const ShopScreen()),
+    ]),
+  ],
+);
+
+/// Parent Shell — `StatefulShellRoute` with 2 branches, no Flame concerns
+/// but the same state-preservation convention as [childShellRoute] for
+/// consistency (main-navigation-shell Story 003, ADR-0014 Decision §3).
+/// Copied closely from the ADR's own verified code sample, same as
+/// [childShellRoute] above.
+final parentShellRoute = StatefulShellRoute.indexedStack(
+  builder: (context, state, navigationShell) => ParentShellScaffold(
+    navigationShell: navigationShell,
+  ),
+  branches: [
+    StatefulShellBranch(routes: [
+      GoRoute(
+        path: AppRoutes.parentDashboard,
+        builder: (_, _) => const ParentDashboardTasksTab(),
+      ),
+    ]),
+    StatefulShellBranch(routes: [
+      GoRoute(
+        path: AppRoutes.parentFamily,
+        builder: (_, _) => const ParentDashboardFamilyTab(),
+      ),
+    ]),
+  ],
+);
+
+/// Written by each shell's bottom-nav `onTap`, alongside `goBranch(index)`
+/// (ADR-0014 Decision §4 — new state this ADR defines and this system owns,
+/// registered in `docs/registry/architecture.yaml`). 0-2 for Child Shell
+/// (Pet Room/Tasks/Shop) — index space is scoped per-shell, not global. Any
+/// screen needing "am I still the active tab" watches this instead of
+/// relying on widget lifecycle (branches are never disposed on switch, so
+/// `dispose()`/`RouteObserver` never fires for a sibling-branch switch).
+final activeChildBranchIndexProvider = StateProvider<int>((ref) => 0);
 
 /// The single app router. `redirect` reads only [sessionStateProvider] and
 /// does not re-derive session state itself (control-manifest Foundation Layer
@@ -116,19 +194,8 @@ final routerProvider = Provider<GoRouter>((ref) {
           PinEntryScreen(childId: state.uri.queryParameters['childId'] ?? ''),
         ),
       ),
-      GoRoute(
-        path: AppRoutes.childPetRoom,
-        pageBuilder: (context, state) =>
-            fadeTransitionPage(context, state, const _PlaceholderScreen(title: 'Pet Room')),
-      ),
-      GoRoute(
-        path: AppRoutes.parentDashboard,
-        pageBuilder: (context, state) => fadeTransitionPage(
-          context,
-          state,
-          const _PlaceholderScreen(title: 'Parent Dashboard'),
-        ),
-      ),
+      childShellRoute,
+      parentShellRoute,
     ],
   );
 });
@@ -170,28 +237,16 @@ String? redirectForSessionState(SessionState sessionState, String matchedLocatio
           ? null
           : AppRoutes.selectChild;
     case SessionState.childSelected:
-      // Allows any /child/* location — Story 002's real StatefulShellRoute
-      // branches (Pet Room/Tasks/Shop) will all live under this prefix, but
-      // this story only wires the placeholder childPetRoom GoRoute against
-      // it (main-navigation-shell Story 001).
+      // Allows any /child/* location — the real StatefulShellRoute branches
+      // (Pet Room/Tasks/Shop, main-navigation-shell Story 002's
+      // `childShellRoute`) all live under this prefix.
       return matchedLocation.startsWith('/child/') ? null : AppRoutes.childPetRoom;
     case SessionState.parentView:
-      // Allows any /parent/* location — Story 003's real StatefulShellRoute
-      // branches (Dashboard/Gia đình) will all live under this prefix; this
-      // story only wires the placeholder parentDashboard GoRoute against it.
-      // Independent branch from childSelected above — verified separately
-      // per this story's own "parentView redirect" acceptance criterion.
+      // Allows any /parent/* location — the real StatefulShellRoute branches
+      // (Dashboard/Gia đình, main-navigation-shell Story 003's
+      // `parentShellRoute`) all live under this prefix. Independent branch
+      // from childSelected above — verified separately per this story's own
+      // "parentView redirect" acceptance criterion.
       return matchedLocation.startsWith('/parent/') ? null : AppRoutes.parentDashboard;
-  }
-}
-
-class _PlaceholderScreen extends StatelessWidget {
-  const _PlaceholderScreen({required this.title});
-
-  final String title;
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(body: Center(child: Text(title)));
   }
 }

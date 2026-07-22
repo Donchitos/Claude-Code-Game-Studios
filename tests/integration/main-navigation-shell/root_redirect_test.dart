@@ -59,13 +59,76 @@ class _FakeCollectionReference implements CollectionReference<Map<String, dynami
   dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
 }
 
+class _FakeDocumentSnapshot implements DocumentSnapshot<Map<String, dynamic>> {
+  @override
+  Map<String, dynamic>? data() => null;
+
+  @override
+  bool get exists => false;
+
+  @override
+  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
+}
+
+/// Story 006 (Floating Chip Cluster) addition: `ChildShellScaffold` now
+/// renders `FloatingChipCluster`, which watches `xuBalanceProvider`/
+/// `seedCountProvider` — both call `.doc(...)` on the injected Firestore.
+/// This file's `_FakeFirestore` previously only supported `.collection(...)`
+/// (for `childProfilesProvider`); without this, `.doc()` would fall through
+/// to `noSuchMethod`/`Object.noSuchMethod`, throwing `NoSuchMethodError` the
+/// moment Pet Room mounts en route to `childSelected`/`parentView` (this
+/// file's own header comment). A single no-data snapshot (never erroring,
+/// never completing) is enough here — no test in this file asserts on
+/// xu/seed content, and both providers already default a missing document to
+/// `0` (`currency_providers.dart`/`seed_buffer_providers.dart`).
+class _FakeDocumentReference implements DocumentReference<Map<String, dynamic>> {
+  @override
+  Stream<DocumentSnapshot<Map<String, dynamic>>> snapshots({
+    bool includeMetadataChanges = false,
+    ListenSource source = ListenSource.defaultSource,
+  }) =>
+      Stream.value(_FakeDocumentSnapshot());
+
+  @override
+  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
+}
+
 class _FakeFirestore implements FirebaseFirestore {
   @override
   CollectionReference<Map<String, dynamic>> collection(String path) =>
       _FakeCollectionReference();
 
   @override
+  DocumentReference<Map<String, dynamic>> doc(String path) => _FakeDocumentReference();
+
+  @override
   dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
+}
+
+/// Regression fix (main-navigation-shell Story 002): once a test reaches
+/// `/child/pet-room`, the real `PetRoomScreen` (`StatefulShellRoute`'s Child
+/// Shell, ADR-0014 Decision §2) mounts a `GameWidget<PetRoomGame>` whose
+/// `GameLoop` drives itself via a raw `Ticker` that keeps
+/// `SchedulerBinding.hasScheduledFrame` perpetually true for as long as any
+/// widget subtree containing it stays mounted (by design — this is
+/// literally what proves AC-5). `tester.pumpAndSettle()` therefore never
+/// settles from that point on and throws "pumpAndSettle timed out" — it did
+/// not before Story 002, when `/child/pet-room` was still a bare
+/// `_PlaceholderScreen` with no active Ticker. Every `pumpAndSettle()` call
+/// below that occurs at-or-after the moment `activeChildProvider` is first
+/// set is replaced with this bounded-step helper instead (same fix, and
+/// same underlying reason, as
+/// `tests/integration/pet_state_machine/mochi_component_background_pause_real_ticker_test.dart`'s
+/// `_pumpRealTicker` helper). Calls before that point (still at /login or
+/// /select-child, no Ticker mounted yet) are untouched.
+Future<void> _pumpBoundedSteps(
+  WidgetTester tester, {
+  int steps = 20,
+  Duration step = const Duration(milliseconds: 50),
+}) async {
+  for (var i = 0; i < steps; i++) {
+    await tester.pump(step);
+  }
 }
 
 void main() {
@@ -311,13 +374,13 @@ void main() {
         avatarId: 'avatar-1',
         mochiName: 'Mochi',
       );
-      await tester.pumpAndSettle();
+      await _pumpBoundedSteps(tester);
       expect(find.text('Pet Room'), findsOneWidget);
 
       // Session expires mid-session (signed out) — AC-11: must redirect to
       // /login, must not remain stuck on the child route.
       await mockAuth.signOut();
-      await tester.pumpAndSettle();
+      await _pumpBoundedSteps(tester);
       expect(find.byType(LoginScreen), findsOneWidget);
       expect(find.text('Pet Room'), findsNothing);
     });
@@ -355,14 +418,14 @@ void main() {
         avatarId: 'avatar-1',
         mochiName: 'Mochi',
       );
-      await tester.pumpAndSettle();
+      await _pumpBoundedSteps(tester);
       expect(find.text('Pet Room'), findsOneWidget);
 
       // parentView -> real navigation into /parent/dashboard (ADR-0014
       // Decision §5), a distinct code path from childSelected's /child/*
       // branch verified above.
       container.read(parentOverrideProvider.notifier).state = true;
-      await tester.pumpAndSettle();
+      await _pumpBoundedSteps(tester);
       expect(find.text('Parent Dashboard'), findsOneWidget);
       expect(find.text('Pet Room'), findsNothing);
     });

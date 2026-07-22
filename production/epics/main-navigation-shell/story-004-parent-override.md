@@ -1,12 +1,12 @@
 # Story 004: Parent Override — Switch To/From Parent Mode
 
 > **Epic**: Main Navigation Shell
-> **Status**: Ready
+> **Status**: Complete
 > **Layer**: Presentation
 > **Type**: Integration
 > **Estimate**: 3.5h
 > **Manifest Version**: 2026-07-16
-> **Last Updated**: —
+> **Last Updated**: 2026-07-21
 
 ## Context
 
@@ -119,3 +119,12 @@
 
 - Depends on: Story 001 (Root Redirect), Story 002 (Child Shell — for the return-trip preservation guarantee), Story 003 (Parent Shell — the transition's destination) must all be Complete.
 - Unlocks: None further within this epic.
+
+---
+
+## Completion Notes
+**Completed**: 2026-07-21
+**Criteria**: 6/6 passing (all auto-verified via tests; no manual/deferred criteria)
+**Deviations**: None blocking. Positive deviation from the story's own Implementation Notes (which describe writing directly to `parentOverrideProvider`): the actual implementation reuses the already-tested `ParentOverrideActions.attempt()`/`.end()` from the Auth & Account epic instead, confirmed non-duplicative in code review by both reviewers. `parent_shell_scaffold.dart`/`child_shell_scaffold.dart` (Stories 003/002) modified only at their pre-reserved insertion points, not scope creep.
+**Test Evidence**: Integration — `tests/integration/main-navigation-shell/parent_override_test.dart` (10/10 passing, 4 beyond the story's own 6 stated ACs, added during code review — including a mutation-tested AC-8 boundary fix and a single-flight submit-guard regression test)
+**Code Review**: Complete — `/code-review`, flame-specialist + qa-tester, verdict APPROVED WITH SUGGESTIONS, all findings applied and re-verified same session (394/394 full suite, `flutter analyze` clean)

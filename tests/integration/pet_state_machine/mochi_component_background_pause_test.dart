@@ -208,30 +208,54 @@ void main() {
   });
 
   test(
-      'test_no_FlameGame_subclass_in_the_codebase_disables_pauseWhenBackgrounded',
+      'test_every_FlameGame_subclass_in_the_codebase_respects_pauseWhenBackgrounded',
       () {
     // Standing constraint (ADR-0007 Risks): "nothing may set
     // pauseWhenBackgrounded=false on the shared FlameGame; any
-    // lifecycleStateChange() override must call super." As of this story,
-    // no FlameGame subclass exists anywhere in this codebase yet (Pet Room
-    // Screen UI #18, a future epic, owns that) — so this check is currently
-    // N/A rather than fabricated against nothing, per this story's own
-    // Out-of-Scope note. This test documents that fact and will start
-    // actually scanning source once such a subclass exists.
+    // lifecycleStateChange() override must call super." Originally this test
+    // only asserted N/A (no FlameGame subclass existed anywhere in the
+    // codebase). main-navigation-shell Story 002 added the first one
+    // (`PetRoomGame`, `lib/gameplay/pet_room_game.dart`, a placeholder Pet
+    // Room `FlameGame` for the Child Shell's AC-5 branch-preservation test) —
+    // per this file's own prior self-documented instruction, this test now
+    // actually scans source instead of asserting emptiness.
     final gameplayDir = Directory('lib/gameplay');
     final flameGameSubclassFiles = gameplayDir
         .listSync(recursive: true)
         .whereType<File>()
         .where((f) => f.path.endsWith('.dart'))
-        .where((f) => f.readAsStringSync().contains('extends FlameGame'));
+        .where((f) => f.readAsStringSync().contains('extends FlameGame'))
+        .toList();
 
     expect(
       flameGameSubclassFiles,
-      isEmpty,
-      reason: 'A FlameGame subclass now exists — this test must be updated '
-          'to actually check it for pauseWhenBackgrounded=false and a '
-          'super-calling lifecycleStateChange() override, per ADR-0007 '
-          'Risks, instead of asserting N/A.',
+      isNotEmpty,
+      reason: 'No FlameGame subclass found — if one was removed, revert this '
+          'test to asserting isEmpty per its original N/A form.',
     );
+
+    for (final file in flameGameSubclassFiles) {
+      final source = file.readAsStringSync();
+      expect(
+        source.contains('pauseWhenBackgrounded = false') ||
+            source.contains('pauseWhenBackgrounded=false'),
+        isFalse,
+        reason: '${file.path} sets pauseWhenBackgrounded=false — forbidden '
+            'by ADR-0007 Risks, breaks background-pause behavior for every '
+            'triggered-state timer.',
+      );
+
+      final overridesLifecycleChange =
+          source.contains('lifecycleStateChange(');
+      if (overridesLifecycleChange) {
+        expect(
+          source.contains('super.lifecycleStateChange('),
+          isTrue,
+          reason: '${file.path} overrides lifecycleStateChange() without '
+              'calling super — forbidden by ADR-0007 Risks, breaks Flame\'s '
+              'own pause bookkeeping.',
+        );
+      }
+    }
   });
 }

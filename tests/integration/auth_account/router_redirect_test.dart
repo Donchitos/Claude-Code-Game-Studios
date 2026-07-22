@@ -69,6 +69,32 @@ class _FakeFirestore implements FirebaseFirestore {
   dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
 }
 
+/// Regression fix (main-navigation-shell Story 002): once this test reaches
+/// `/child/pet-room`, the real `PetRoomScreen` (`StatefulShellRoute`'s Child
+/// Shell, ADR-0014 Decision §2) mounts a `GameWidget<PetRoomGame>` whose
+/// `GameLoop` drives itself via a raw `Ticker` that keeps
+/// `SchedulerBinding.hasScheduledFrame` perpetually true for as long as any
+/// widget subtree containing it stays mounted (by design — this is
+/// literally what proves AC-5). `tester.pumpAndSettle()` therefore never
+/// settles from that point on and throws "pumpAndSettle timed out" — it did
+/// not before Story 002, when `/child/pet-room` was still a bare
+/// `_PlaceholderScreen` with no active Ticker. Every `pumpAndSettle()` call
+/// below that occurs at-or-after the moment `activeChildProvider` is first
+/// set is replaced with this bounded-step helper instead (same fix, and
+/// same underlying reason, as
+/// `tests/integration/pet_state_machine/mochi_component_background_pause_real_ticker_test.dart`'s
+/// `_pumpRealTicker` helper). The two calls before that point (still at
+/// /login or /select-child, no Ticker mounted yet) are untouched.
+Future<void> _pumpBoundedSteps(
+  WidgetTester tester, {
+  int steps = 20,
+  Duration step = const Duration(milliseconds: 50),
+}) async {
+  for (var i = 0; i < steps; i++) {
+    await tester.pump(step);
+  }
+}
+
 void main() {
   group('redirectForSessionState (pure logic)', () {
     test('test_redirectForSessionState_unauthenticated_routes_to_login', () {
@@ -217,7 +243,7 @@ void main() {
         avatarId: 'avatar-1',
         mochiName: 'Mochi',
       );
-      await tester.pumpAndSettle();
+      await _pumpBoundedSteps(tester);
       expect(find.text('Pet Room'), findsOneWidget);
 
       // 4. parent override -> parentView -> navigates to /parent/dashboard.
@@ -226,7 +252,7 @@ void main() {
       //    context.go(), superseding this file's original "stays on Pet
       //    Room" overlay-model expectation.
       container.read(parentOverrideProvider.notifier).state = true;
-      await tester.pumpAndSettle();
+      await _pumpBoundedSteps(tester);
       expect(find.text('Parent Dashboard'), findsOneWidget);
       expect(find.text('Pet Room'), findsNothing);
 
@@ -235,7 +261,7 @@ void main() {
       //    back to the childPetRoom default — the child branch was never
       //    disposed, per ADR-0014 Decision §5, so no re-PIN is needed).
       container.read(parentOverrideProvider.notifier).state = false;
-      await tester.pumpAndSettle();
+      await _pumpBoundedSteps(tester);
       expect(find.text('Pet Room'), findsOneWidget);
     });
   });

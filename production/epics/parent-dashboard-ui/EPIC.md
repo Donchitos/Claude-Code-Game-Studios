@@ -3,14 +3,12 @@
 > **Layer**: Presentation
 > **GDD**: design/gdd/parent-dashboard-ui.md
 > **Architecture Module**: Parent Dashboard UI (#21)
-> **Status**: **Blocked on Main Navigation Shell (#17)** — see note below
-> **Stories**: 4 stories (Story 004 Blocked on missing ADR; Stories 001–003 all additionally Blocked on Main Navigation Shell)
+> **Status**: Ready (Stories 001–003) — unblocked as of Main Navigation Shell (#17) reaching Complete, 2026-07-22
+> **Stories**: 4 stories (Story 004 still Blocked on a missing ADR — unrelated to Main Navigation Shell; Stories 001–003 unblocked)
 
-## ⚠️ Epic-Wide Blocker (found during `/dev-story` on Story 001, 2026-07-18)
+## ✅ Former Epic-Wide Blocker — Resolved 2026-07-22
 
-Main Navigation Shell (#17) — referenced as Designed/Approved throughout this epic's own GDD, ADRs, and UX spec — has **no real implementation**. `src/lib/providers/router_provider.dart` has only flat placeholder routes; no tab shell, no `/parent/dashboard`/`/parent/family` routes, no `/child-selector` route, and no epic exists for it in `production/epics/index.md`. Every surface in this epic (all 3 non-banner stories) is specced to render inside routes that don't exist yet. Independently verified, not agent error.
-
-**This must be resolved before any story in this epic can be implemented** — not just Story 001. User decision: create and implement a Main Navigation Shell epic first, then return here.
+Main Navigation Shell (#17), previously referenced as Designed/Approved throughout this epic's own GDD/ADRs/UX spec but with **no real implementation** (found during `/dev-story` on Story 001, 2026-07-18), is now Complete — all 6 stories implemented, code-reviewed, and closed. `/parent/dashboard`/`/parent/family` routes, the Parent Shell tab structure, and `/select-child` all now exist and are tested (`production/epics/main-navigation-shell/EPIC.md`). Stories 001–003 of this epic can proceed — recommend `/story-readiness` on each before starting, since they were written against routes that didn't exist yet at spec time and should be spot-checked against the real, now-implemented shell.
 
 ## Overview
 

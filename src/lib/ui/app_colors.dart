@@ -26,4 +26,11 @@ abstract final class AppColors {
   /// Darkened 2026-07-14 from the original `#C0A898` (worst-case 1.04:1) —
   /// passes AA large-text/UI-component 3:1 on all 7 backgrounds now.
   static const disabledText = Color(0xFF644A3C);
+
+  /// Parent-zone tone — `design/gdd/main-navigation-shell.md:184` ("Navy
+  /// `#2C3E50`"), reaffirmed by `design/gdd/parent-dashboard-ui.md:134` as
+  /// the tone Parent Dashboard UI inherits directly. Added here
+  /// (main-navigation-shell Story 003) rather than left file-local, since
+  /// at least 2 more upcoming screens already cite this exact value.
+  static const parentNavy = Color.fromARGB(0xFF, 0x2C, 0x3E, 0x50);
 }

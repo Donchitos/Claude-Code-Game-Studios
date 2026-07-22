@@ -1,12 +1,12 @@
 # Story 003: Parent Shell — 2-Tab StatefulShellRoute
 
 > **Epic**: Main Navigation Shell
-> **Status**: Ready
+> **Status**: Complete
 > **Layer**: Presentation
 > **Type**: Integration
 > **Estimate**: 2h
 > **Manifest Version**: 2026-07-16
-> **Last Updated**: —
+> **Last Updated**: 2026-07-21
 
 ## Context
 
@@ -108,3 +108,15 @@
 
 - Depends on: Story 001 (Root Redirect) must be Complete.
 - Unlocks: Story 004 (Parent Override needs this shell to exist as the transition's destination).
+
+---
+
+## Completion Notes
+**Completed**: 2026-07-21
+**Criteria**: 6/6 passing (all auto-verified via tests; no manual/deferred criteria)
+**Deviations**:
+- ADVISORY: open accessibility question found while fixing a code-review finding — GDD's 2026-07-13/14 WCAG audit says text-on-Navy must use Primary text (`#3D2B1F`), but that audit never tested Navy as a full-fill background; Primary-on-Navy (dark-on-dark) would likely fail contrast in the opposite direction. `ParentShellScaffold` uses `Colors.white70` instead, flagged via doc comment rather than silently applying the literal rule. Not yet ruled on — recommend a dedicated audit before Parent Dashboard UI locks in real content.
+- ADVISORY (documented, not a defect): `childShellRoute`/`parentShellRoute` are independent top-level routes, not branches of one shared shell — a Parent Override round-trip fully disposes/reconstructs Pet Room's `FlameGame`, unlike intra-Child-Shell tab switching. Narrows a loose reading of ADR-0014 §5's "child branch never disposed" wording (accurate for Riverpod session state, not the Flame widget tree). Flagged explicitly for Story 004 to verify rather than inherit at face value.
+- Real gaps found and fixed during code review (not deviations, fixes): forbidden `Color(0xFFRRGGBB)` int constructor replaced with `Color.fromARGB()`; invented navy hex (`#23324A`) corrected to the GDD's actual specified `#2C3E50` and centralized into `AppColors.parentNavy`; rapid-double-tap test added (AC-2); cross-shell provider-contamination test added (AC-5).
+**Test Evidence**: Integration — `tests/integration/main-navigation-shell/parent_shell_test.dart` (8/8 passing, 2 beyond the story's own 6 stated ACs, added during code review)
+**Code Review**: Complete — `/code-review`, flame-specialist + qa-tester, verdict APPROVED WITH SUGGESTIONS, all required changes fixed and re-verified same session (384/384 full suite, `flutter analyze` clean)

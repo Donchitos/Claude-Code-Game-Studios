@@ -1,12 +1,12 @@
 # Story 006: Floating Chip Cluster — Profile, Xu, Contextual Badge Wiring
 
 > **Epic**: Main Navigation Shell
-> **Status**: Ready
+> **Status**: Complete
 > **Layer**: Presentation
 > **Type**: Integration
 > **Estimate**: 3h
 > **Manifest Version**: 2026-07-16
-> **Last Updated**: —
+> **Last Updated**: 2026-07-21
 
 ## Context
 
@@ -31,15 +31,15 @@
 
 *From GDD Acceptance Criteria AC-6, 7, plus `hud.md`'s HUD Elements specifications for Profile chip and Contextual badge (cross-referenced, not duplicated from scratch):*
 
-- [ ] **AC-6**: GIVEN `xuBalanceProvider` có giá trị 75, THEN Xu chip (floating, top-left) hiển thị "75 xu" (hoặc icon + "75").
-- [ ] **AC-7**: GIVEN `xuBalanceProvider` throw error, THEN Xu chip hiển thị "— xu" — không crash.
-- [ ] **Profile chip renders correctly** (per `hud.md` HUD Elements §1): avatar circle 32dp + child's name 16sp bold, adjacent to Xu chip in the top-left cluster (small visible gap, never fused into one shape).
-- [ ] **Contextual badge — hidden at zero**: GIVEN `seedCount == 0` AND `chestCount == 0`, THEN Contextual badge chip hoàn toàn không render (removed from layout, không phải faded/greyed).
-- [ ] **Contextual badge — seed variant**: GIVEN `seedCount > 0` trên screen thuộc task-submission flow, THEN badge hiện 🌱 + count.
-- [ ] **Contextual badge — mutual exclusivity**: badge chỉ bind 1 trong 2 (seed HOẶC chest) tại 1 thời điểm trên 1 screen — never cả hai cùng lúc.
-- [ ] **Xu count-up animation on increase**: GIVEN `xuBalanceProvider`'s value tăng (ví dụ do task reward), THEN digits count up over ~400ms thay vì snap ngay — kèm scale-pulse (1.0→1.15→1.0, ~200ms) nếu tăng do task reward cụ thể; purchases (decrease) không có pulse.
-- [ ] **Touch target**: Profile chip và Xu chip đều đạt ≥48×48dp dù không tương tác (Xu chip) hoặc chỉ tương tác qua long-press (Profile chip — long-press logic là Story 004's, chip rendering + hit-area là story này's).
-- [ ] **Safe area**: chips tôn trọng device safe-area inset (notch/Dynamic Island iOS, cutout Android) — không bao giờ render dưới status bar/camera cutout.
+- [x] **AC-6**: GIVEN `xuBalanceProvider` có giá trị 75, THEN Xu chip (floating, top-left) hiển thị "75 xu" (hoặc icon + "75").
+- [x] **AC-7**: GIVEN `xuBalanceProvider` throw error, THEN Xu chip hiển thị "— xu" — không crash.
+- [x] **Profile chip renders correctly** (per `hud.md` HUD Elements §1): avatar circle 32dp + child's name 16sp bold, adjacent to Xu chip in the top-left cluster (small visible gap, never fused into one shape).
+- [x] **Contextual badge — hidden at zero**: GIVEN `seedCount == 0` AND `chestCount == 0`, THEN Contextual badge chip hoàn toàn không render (removed from layout, không phải faded/greyed).
+- [x] **Contextual badge — seed variant**: GIVEN `seedCount > 0` trên screen thuộc task-submission flow, THEN badge hiện 🌱 + count.
+- [x] **Contextual badge — mutual exclusivity**: badge chỉ bind 1 trong 2 (seed HOẶC chest) tại 1 thời điểm trên 1 screen — never cả hai cùng lúc.
+- [x] **Xu count-up animation on increase**: GIVEN `xuBalanceProvider`'s value tăng (ví dụ do task reward), THEN digits count up over ~400ms thay vì snap ngay — kèm scale-pulse (1.0→1.15→1.0, ~200ms) nếu tăng do task reward cụ thể; purchases (decrease) không có pulse.
+- [x] **Touch target**: Profile chip và Xu chip đều đạt ≥48×48dp dù không tương tác (Xu chip) hoặc chỉ tương tác qua long-press (Profile chip — long-press logic là Story 004's, chip rendering + hit-area là story này's).
+- [x] **Safe area**: chips tôn trọng device safe-area inset (notch/Dynamic Island iOS, cutout Android) — không bao giờ render dưới status bar/camera cutout.
 
 ---
 
@@ -115,7 +115,7 @@
 **Required evidence**:
 - `tests/integration/main-navigation-shell/chip_cluster_test.dart` — must exist and pass
 
-**Status**: [ ] Not yet created
+**Status**: [x] Created — 18/18 tests passing (`chip_cluster_test.dart`)
 
 ---
 
@@ -123,3 +123,15 @@
 
 - Depends on: Story 002 (Child Shell) should be Complete or in-progress alongside this story (they share the same Scaffold structure) — Currency System (#7) and Seed Buffer (#10) epics already Complete.
 - Unlocks: None further within this epic. Long-press gesture wiring unlocks Story 004's testability (Story 004 can be tested independently with a stub gesture trigger if this story isn't done first, but full end-to-end testing needs both).
+
+---
+
+## Completion Notes
+**Completed**: 2026-07-22
+**Criteria**: 9/9 passing (all auto-verified via tests; no manual/deferred criteria)
+**Deviations**:
+- ADVISORY: `src/lib/providers/currency_providers.dart` and `seed_buffer_providers.dart` (Currency System #7 / Seed Buffer #10, outside this story's own layer) were touched to add `retry: (retryCount, error) => null` — closing the 3rd instance of an already-documented control-manifest gap, found via this story's own AC-7 test.
+- ADVISORY (documented gap, not an oversight): Contextual badge binds only to `seedCountProvider` — `chestCount` has no dedicated provider yet (Gacha/Loot #12, no epic/ADR), explicitly permitted by this story's Out of Scope note.
+- ADVISORY (documented, not a defect): `xuBalanceProvider` exposes no reward-vs-purchase cause signal — every increase treated as reward-pulsed, per this story's own anticipated simplification.
+**Test Evidence**: Integration — `tests/integration/main-navigation-shell/chip_cluster_test.dart` (18/18 passing, well beyond the story's own 9 stated ACs — bonus coverage plus 3 gaps added during code review: strengthened mutual-exclusivity, reduced-motion, and chip-persistence-across-tab-switch tests)
+**Code Review**: Complete — `/code-review`, flame-specialist + qa-tester, verdict APPROVED WITH SUGGESTIONS, all findings applied and re-verified same session (420/420 full suite, `flutter analyze` clean)

@@ -888,3 +888,168 @@ Since the 07-11 architecture review: **all 11 ADRs are now Accepted** (B2 resolv
 - Tech debt logged: None (user chose plain close, not tech-debt logging).
 - No git commit made yet — substantial uncommitted work across this epic (ADR-0014, epic/story files, router_provider.dart, 2 test files, UX specs, GDD fix, registry) still pending explicit user go-ahead.
 - Next recommended: /story-readiness production/epics/main-navigation-shell/story-002-child-shell-flame-preservation.md, then /dev-story — Story 002 (Child Shell) is next, unblocked, no dependencies beyond Story 001 now complete.
+
+## Session Extract — /story-readiness main-navigation-shell story-002 — 2026-07-21
+- Verdict: READY (18/18 checks pass, no gaps). QL-STORY-READY skipped — Lean mode.
+- Noted, not blocking: TR-navshell-001's registry text ("2 branches") reads oddly against this story's 3-branch Child Shell — already reconciled by ADR-0014's own GDD Sync Check table ("two separate trees, not one 2-branch tree"), not a fresh gap.
+- Next: /dev-story production/epics/main-navigation-shell/story-002-child-shell-flame-preservation.md
+
+## Session Extract — /dev-story main-navigation-shell story-002 — 2026-07-21
+- Story: production/epics/main-navigation-shell/story-002-child-shell-flame-preservation.md — Child Shell (3-Tab StatefulShellRoute & Flame State Preservation)
+- Implementer: flame-widget-specialist (consulted flame-specialist for the AC-5 engine-critical test design, per this story's HIGH engine-risk mandate). Agent truncated mid-response 3 times this run (recurring pattern, same as prior sessions) — resumed via SendMessage each time; independently verified end state via direct file/test/analyze checks rather than only trusting the final self-report.
+- Files changed: src/lib/providers/router_provider.dart (modified — childShellRoute + activeChildBranchIndexProvider wired in), src/lib/ui/child_shell_scaffold.dart (new), src/lib/ui/pet_room_screen.dart (new — real PetRoomGame in a GameWidget, not a bare placeholder, needed for AC-5), src/lib/gameplay/pet_room_game.dart (new), src/lib/ui/task_management_screen.dart + shop_screen.dart (new, bare placeholders), src/lib/ui/new_task_screen.dart (new, default PopScope).
+- Test written: tests/integration/main-navigation-shell/child_shell_test.dart (new, 6 tests, one per AC including the critical AC-5 FlameGame-instance-identity + tick-count assertion).
+- Real cross-story consequence found and fixed during my own independent full-suite run (not part of the implementer's file list): tests/integration/pet_state_machine/mochi_component_background_pause_test.dart had a self-documented ADR-0007 canary test asserting "no FlameGame subclass exists yet" — this story's new PetRoomGame is the first one, so the canary fired exactly as its own embedded comment predicted it would. Updated it to actually scan for ADR-0007 compliance (no pauseWhenBackgrounded=false, any lifecycleStateChange() override calls super) instead of asserting emptiness — PetRoomGame passes cleanly.
+- Independently re-verified (not just trusting the agent's report): 6/6 new tests, 24/24 pre-existing regression tests (root_redirect_test.dart + auth_account/router_redirect_test.dart, "Pet Room" text marker deliberately preserved in the new PetRoomScreen for this reason), full suite 374/374 passed (1 pre-existing skip, 368 baseline + 6 new), flutter analyze clean (same 13 pre-existing prefer_initializing_formals lints, no new issues).
+- Blockers: None.
+- Next: /code-review src/lib/providers/router_provider.dart src/lib/ui/child_shell_scaffold.dart src/lib/ui/pet_room_screen.dart src/lib/gameplay/pet_room_game.dart src/lib/ui/task_management_screen.dart src/lib/ui/shop_screen.dart src/lib/ui/new_task_screen.dart tests/integration/main-navigation-shell/child_shell_test.dart tests/integration/pet_state_machine/mochi_component_background_pause_test.dart, then /story-done production/epics/main-navigation-shell/story-002-child-shell-flame-preservation.md
+- Correction to the extract above: "Pet Room" text-marker files were NOT unmodified — root_redirect_test.dart and auth_account/router_redirect_test.dart both needed a real, necessary fix (pumpAndSettle() → a bounded-step helper, since PetRoomGame's GameWidget now keeps a Ticker perpetually scheduled) — caught by flame-specialist in code review, not by my own initial verification pass. Both are legitimate, correctly scoped, and already covered by the "24/24 passing" count reported — just mislabeled as untouched.
+
+## Session Extract — /code-review main-navigation-shell story-002 — 2026-07-21
+- Verdict: APPROVED WITH SUGGESTIONS → all suggestions fixed same session (flame-specialist + qa-tester, parallel spawn; both agents truncated mid-response, resumed via SendMessage — 3rd occurrence of this pattern this session).
+- flame-specialist: ADR-0014 COMPLIANT, verified the Ticker/TickerMode survival mechanism directly against installed flame-1.37.0/go_router-17.3.0 source (not training data). Forbidden-API scan clean. One doc-comment accuracy nit (pet_room_screen.dart claimed 2 pre-existing test files stayed "unmodified" — they were legitimately modified for a pumpAndSettle→bounded-step fix) — fixed.
+- qa-tester: verdict GAPS → both fixed. (1) Story's own AC-4 documented edge case (rapid double-tap) had no test — added `test_AC4_rapidDoubleTapOnTargetTab_doesNotDoubleNavigate`. (2) Real latent bug found: ADR-0014 Risks explicitly mandates "test deep-link-to-non-default-branch explicitly," never carried into the story's ACs — and `activeChildBranchIndexProvider` was written ONLY by the tap handler, so a route landing on a non-default branch without a tap (deep link, restored state) would silently leave it stuck at 0 while NavigationBar still looked correct. Fixed at the implementation level: `ChildShellScaffold` converted to `ConsumerStatefulWidget` with `initState`/`didUpdateWidget` syncing the provider from `navigationShell.currentIndex` via a guarded post-frame callback; added `test_deepLinkDirectlyToNonDefaultBranch_rendersCorrectBranch_and_syncsProviderIndex` which fails without the fix and passes with it.
+- Also applied 2 minor suggestions: `@visibleForTesting` on `PetRoomGame.updateTickCount`; corrected the inaccurate doc comment in `pet_room_screen.dart`.
+- Flagged, not blocking, needs a ruling: AC-4's story header says "Tab switch fade-through animation 200ms (Material 3 pattern)" but ADR-0014 Decision §2's own code sample (which this story correctly followed) uses zero-animation `builder:` (instant IndexedStack swap, no `pageBuilder`). Genuine GDD-vs-ADR wording ambiguity — recommend treating the ADR (Accepted, engine-verified) as authoritative over the GDD's looser "fade-through" language, consistent with this project's established precedent of ADR superseding stale GDD wording, but flagging for an explicit qa-lead/creative-director ruling rather than silently deciding.
+- Final test count: 8/8 in child_shell_test.dart (was 6, +2 from this review), full suite 376/376 passed (1 pre-existing skip, up from 374), flutter analyze clean (same 13 pre-existing lints, no new issues) — all independently re-verified directly, not just trusting agent reports.
+- Next: /story-done production/epics/main-navigation-shell/story-002-child-shell-flame-preservation.md (recommend surfacing the AC-4 animation ambiguity to the user during that pass, or separately, before considering it settled)
+
+## Session Extract — /story-done main-navigation-shell story-002 — 2026-07-21
+- Verdict: COMPLETE WITH NOTES
+- Story: production/epics/main-navigation-shell/story-002-child-shell-flame-preservation.md — Child Shell (3-Tab StatefulShellRoute & Flame State Preservation) — Status → Complete
+- 6/6 ACs passing, all auto-verified via tests (no manual confirmation needed). LP-CODE-REVIEW gate (lean mode) confirmed via user: /code-review already run this session, APPROVED WITH SUGGESTIONS, all fixed.
+- Deviations logged (advisory, not tech debt — user chose plain close): (1) AC-4 "fade-through animation" header language vs. ADR-0014's actual zero-animation implementation — unresolved GDD/ADR wording tension, not yet ruled on; (2) 3 out-of-system files touched as necessary consequences (canary test + 2 pumpAndSettle→bounded-step fixes) — documented, not scope creep.
+- Epic file, epics/index.md updated: Main Navigation Shell now "In Progress (2/6 stories complete)". Epic's own Next Step now points to Story 003.
+- Tech debt logged: None (user chose plain close, not tech-debt logging).
+- No git commit made yet — pending explicit user go-ahead (same as Story 001's close).
+- Next recommended: /story-readiness production/epics/main-navigation-shell/story-003-parent-shell.md, then /dev-story — Story 003 (Parent Shell) is next, unblocked, no dependencies beyond Story 001 (Complete). Simpler mirror of Story 002, no Flame concerns.
+
+## Session Extract — /story-readiness main-navigation-shell story-003 — 2026-07-21
+- Verdict: READY (18/18 checks pass, no gaps). QL-STORY-READY skipped — Lean mode.
+- Next: /dev-story production/epics/main-navigation-shell/story-003-parent-shell.md
+
+## Session Extract — /dev-story main-navigation-shell story-003 — 2026-07-21
+- Story: production/epics/main-navigation-shell/story-003-parent-shell.md — Parent Shell (2-Tab StatefulShellRoute)
+- Implementer: flame-widget-specialist (LOW risk, single agent — no mandatory engine-specialist co-spawn this time, unlike Story 002's HIGH risk). Asked permission before writing (per project's Collaboration Protocol) — plan reviewed and approved before proceeding, no truncation this time.
+- Files changed: src/lib/providers/router_provider.dart (modified — parentShellRoute wired in, unused _PlaceholderScreen removed), src/lib/ui/parent_shell_scaffold.dart (new — mirrors ChildShellScaffold's provider-sync fix), src/lib/ui/parent_dashboard_tasks_tab.dart (new, public State test seam), src/lib/ui/parent_dashboard_family_tab.dart (new placeholder).
+- Test written: tests/integration/main-navigation-shell/parent_shell_test.dart (new, 6 tests, one per AC).
+- Real architectural finding surfaced by the implementer, independently confirmed by flame-specialist in code review: childShellRoute and parentShellRoute are two independent top-level GoRoutes (not branches of one shared shell) — a childSelected↔parentView transition is a genuine page push/pop, both shells briefly co-mounted during the ~300ms transition. Confirmed no Ticker leak (Flame's GameLoop disposes cleanly on real RenderBox detach). Flagged for Story 004: Pet Room's FlameGame does NOT survive a Parent Override round-trip (full dispose/reconstruct) — narrower than a loose reading of ADR-0014 §5's "child branch never disposed" wording, which is only accurate for Riverpod session state, not the Flame widget tree.
+- Independently re-verified: 6/6 new tests, full suite 382/382 (1 pre-existing skip, up from 376), flutter analyze clean.
+- Blockers: None.
+- Next: /code-review src/lib/providers/router_provider.dart src/lib/ui/parent_shell_scaffold.dart src/lib/ui/parent_dashboard_tasks_tab.dart src/lib/ui/parent_dashboard_family_tab.dart tests/integration/main-navigation-shell/parent_shell_test.dart, then /story-done
+
+## Session Extract — /code-review main-navigation-shell story-003 — 2026-07-21
+- Verdict: APPROVED WITH SUGGESTIONS → all required fixes applied same session (flame-specialist + qa-tester, parallel spawn; both delivered complete reports first try, no truncation this run).
+- flame-specialist: ADR-0014 COMPLIANT, provider-sync fix correctly replicated from Story 002. Found 1 real Forbidden-API violation (Color(0xFFRRGGBB) int constructor) and 1 color-drift issue (invented #23324A instead of GDD's specified #2C3E50, kept file-local against app_colors.dart's own house rule) — both fixed: added AppColors.parentNavy using Color.fromARGB() and the correct GDD hex. Confirmed and deepened the cross-shell co-mounting finding — flagged for Story 004 (see dev-story extract above).
+- qa-tester: verdict GAPS → both fixed. (1) AC-2's rapid-double-tap edge case (same pattern as Story 002's AC-4) had no test — added. (2) The shared activeChildBranchIndexProvider's cross-shell handoff (stale Child-Shell value like 2 must be overwritten on Parent Shell entry) was untested — added test_AC5_crossShellHandoff_staleChildShellIndexOverwrittenOnParentEntry, passed on first run.
+- Real open accessibility question found while fixing the color (not from either spawned reviewer, found independently while implementing their color fix): GDD's 2026-07-13/14 WCAG audit says text-on-Navy must use Primary text (#3D2B1F), but that audit never tested Navy as a fill background — Primary-on-Navy (dark-on-dark) would likely fail contrast in the opposite direction. Used Colors.white70 instead with a doc comment flagging this rather than blindly applying the literal rule. Recommend a dedicated audit before Parent Dashboard UI locks in real content — not yet ruled on.
+- Final test count: 8/8 in parent_shell_test.dart (was 6, +2 from this review), full suite 384/384 passed (1 pre-existing skip, up from 382), flutter analyze clean — all independently re-verified.
+- Next: /story-done production/epics/main-navigation-shell/story-003-parent-shell.md (recommend surfacing the text-on-Navy contrast question to the user during that pass, alongside Story 002's still-unresolved AC-4 animation question)
+
+## Session Extract — /story-done main-navigation-shell story-003 — 2026-07-21
+- Verdict: COMPLETE WITH NOTES
+- Story: production/epics/main-navigation-shell/story-003-parent-shell.md — Parent Shell (2-Tab StatefulShellRoute) — Status → Complete
+- 6/6 ACs passing, all auto-verified via tests. LP-CODE-REVIEW gate (lean mode) confirmed via user: /code-review already run this session, APPROVED WITH SUGGESTIONS, all fixed.
+- Deviations logged (advisory, not tech debt — user chose plain close): (1) text-on-Navy WCAG contrast question, unresolved, needs a dedicated audit before Parent Dashboard UI locks in real content; (2) Pet Room's FlameGame does NOT survive a Parent Override round-trip (full dispose/reconstruct, since Child/Parent Shell are independent top-level routes not one shared shell) — flagged explicitly for Story 004 to verify rather than inherit ADR-0014 §5's wording at face value.
+- Epic file, epics/index.md updated: Main Navigation Shell now "In Progress (3/6 stories complete)". Epic's own Next Step now points to Story 004, with an explicit pointer to Story 003's Completion Notes finding.
+- Tech debt logged: None (user chose plain close, not tech-debt logging).
+- No git commit made yet — pending explicit user go-ahead (same as Stories 001/002's close).
+- Next recommended: /story-readiness production/epics/main-navigation-shell/story-004-parent-override.md, then /dev-story — Story 004 (Parent Override) is next, all 3 dependencies (Stories 001, 002, 003) now Complete. This is the story where Story 003's flagged Flame-survival finding becomes directly testable — read that Completion Notes section before implementing.
+
+## Session Extract — /story-readiness main-navigation-shell story-004 — 2026-07-21
+- Verdict: READY (18/18 checks pass, no gaps). QL-STORY-READY skipped — Lean mode.
+- Major pre-existing-implementation finding surfaced proactively (before /dev-story, not discovered mid-flight): the password-verification/override machinery this story describes already exists and is already tested — `ParentOverrideActions` class (`.attempt()`/`.end()`) in `auth_providers.dart`, `AuthRepository.reauthenticate()`, and 10 passing tests in `tests/integration/auth_account/parent_override_test.dart`, all built as part of the Auth & Account epic ahead of this story. Story 004's real remaining scope is the UI/route-integration layer only.
+- Next: /dev-story production/epics/main-navigation-shell/story-004-parent-override.md
+
+## Session Extract — /dev-story main-navigation-shell story-004 — 2026-07-21
+- Story: production/epics/main-navigation-shell/story-004-parent-override.md — Parent Override (Switch To/From Parent Mode)
+- Implementer: flame-widget-specialist (MEDIUM risk). Given full context about the pre-existing ParentOverrideActions to prevent reimplementation. No truncation this run — delivered a complete, detailed final report first try.
+- Files created: src/lib/ui/parent_override_actions.dart (endParentOverrideAndReturnToPetRoom), src/lib/ui/parent_switch_mode_sheet.dart (bottom sheet UI, reuses ParentOverrideActions), src/lib/ui/parent_override_trigger.dart (real 600ms-timer placeholder trigger for Story 006 to later lift wholesale), tests/integration/main-navigation-shell/parent_override_test.dart.
+- Files modified: src/lib/ui/parent_shell_scaffold.dart (override-exit PopScope added), src/lib/ui/child_shell_scaffold.dart (mounted the trigger in the existing chip-cluster Stack).
+- Real architectural finding, independently confirmed by flame-specialist in code review by re-deriving from source (not trusting the comment): the "Parent Shell, NOT in override" PopScope case ADR-0014 Decision §6 also documents is structurally UNREACHABLE given the current session-state machine (parentView requires override already true) — implemented the exit PopScope unconditionally rather than adding dead code.
+- Independently re-verified: 8/8 new tests, full suite 392/392 (1 pre-existing skip, up from 384), flutter analyze clean.
+- Blockers: None.
+- Next: /code-review src/lib/ui/parent_override_actions.dart src/lib/ui/parent_switch_mode_sheet.dart src/lib/ui/parent_override_trigger.dart src/lib/ui/parent_shell_scaffold.dart src/lib/ui/child_shell_scaffold.dart tests/integration/main-navigation-shell/parent_override_test.dart, then /story-done
+
+## Session Extract — /code-review main-navigation-shell story-004 — 2026-07-21
+- Verdict: APPROVED WITH SUGGESTIONS → all findings applied same session (flame-specialist + qa-tester, parallel spawn; qa-tester truncated once mid-tangent, resumed via SendMessage).
+- flame-specialist: ADR-0014 COMPLIANT, independently re-derived (not trusted) the "unreachable PopScope case" claim from source, verified go_router API usage against installed 17.3.0 source directly. 2 minor suggestions (query-string fragility in sub-screen path comparison, missing named const for switch_mode_confirm_timeout) — the path-comparison one fixed (`.path` not `.uri.toString()`); the timeout-const one left as a suggestion (already behaviorally correct via absence of a timer).
+- qa-tester: verdict GAPS → both Moderate gaps fixed. (1) Mutation-tested the AC-8 threshold test by changing the tuning knob to 400ms and confirming existing tests still passed unchanged — proved the 300ms/700ms boundary didn't pin the actual configured value; added a ±1ms boundary test. (2) The sheet's new `_isSubmitting` single-flight guard had zero coverage (same rapid-double-tap risk class as Stories 002/003) — added a regression test. 3 minor/optional gaps (trigger re-press race, catch-all error path, AC-9 nav-bar assertion) left as suggestions, not applied — consistent with how Story 002/003's advisory items were handled.
+- Final test count: 10/10 in parent_override_test.dart (was 8, +2 from this review), full suite 394/394 passed (1 pre-existing skip, up from 392), flutter analyze clean — all independently re-verified.
+- Next: /story-done production/epics/main-navigation-shell/story-004-parent-override.md
+
+## Session Extract — /story-done main-navigation-shell story-004 — 2026-07-21
+- Verdict: COMPLETE
+- Story: production/epics/main-navigation-shell/story-004-parent-override.md — Parent Override (Switch To/From Parent Mode) — Status → Complete
+- 6/6 ACs passing, all auto-verified via tests. LP-CODE-REVIEW gate (lean mode) confirmed via user: /code-review already run this session, APPROVED WITH SUGGESTIONS, all fixed.
+- No blocking deviations. Positive deviation noted (not logged as tech debt — user chose plain close): implementation correctly reused already-tested ParentOverrideActions instead of the story's own Implementation Notes' literal "write directly to parentOverrideProvider" guidance.
+- Epic file, epics/index.md updated: Main Navigation Shell now "In Progress (4/6 stories complete)". Epic's own Next Step now points to Stories 005 AND 006 (both unblocked, no ordering dependency between them) — explicitly flags that Story 004 built ParentOverrideTrigger as a lift-wholesale placeholder for Story 006's real Profile chip.
+- Tech debt logged: None.
+- No git commit made yet — pending explicit user go-ahead (same as Stories 001/002/003's close). 4 stories now uncommitted together.
+- Next recommended: pick either Story 005 (Child Back-Button Exit Dialog & Root-Navigator Push Contract) or Story 006 (Floating Chip Cluster) — both unblocked. Run /story-readiness on whichever is chosen.
+
+## Session Extract — /story-readiness main-navigation-shell story-005 — 2026-07-21
+- Verdict: READY (18/18 checks pass, no gaps). QL-STORY-READY skipped — Lean mode. Type: UI (min 2 ACs, has 4). P17 pattern confirmed to exist in interaction-patterns.md.
+- Next: /dev-story production/epics/main-navigation-shell/story-005-child-exit-dialog-root-navigator-push.md
+
+## Session Extract — /dev-story main-navigation-shell story-005 — 2026-07-21
+- Story: production/epics/main-navigation-shell/story-005-child-exit-dialog-root-navigator-push.md — Child Back-Button Exit Dialog & Root-Navigator Push Contract
+- Implementer: flame-widget-specialist (LOW risk). Truncated twice with zero-then-partial output this run (worst truncation pattern yet — first resume returned nothing at all); resumed both times via SendMessage, verified real progress independently via git status between resumes rather than waiting blind.
+- Files created: src/lib/ui/exit_confirm_dialog.dart (ExitConfirmDialog, P17 pattern), src/lib/ui/root_navigator_push.dart (pushNonDismissibleOverlay), tests/integration/main-navigation-shell/root_navigator_push_test.dart, production/qa/evidence/child-exit-dialog-evidence.md.
+- Files modified: src/lib/ui/child_shell_scaffold.dart (single shell-level PopScope added).
+- Real, well-justified deviation from Implementation Note 3: rather than keying the exit dialog off activeChildBranchIndexProvider + a manual Navigator.canPop probe (as the note literally suggested), the implementer used ONE PopScope wrapped around the whole shell, relying on how PopScope registers per-Route and go_router's GoRouterDelegate.popRoute() tries the deepest Navigator first — meaning sub-screen back-presses get consumed by NewTaskScreen's own PopScope before ever reaching the shell-level one, with no branch-detection code needed at all. Verified empirically via tester.binding.handlePopRoute(), not just reasoned about.
+- Independently re-verified: 7/7 new tests, full suite 401/401 (1 pre-existing skip, up from 394), flutter analyze clean.
+- Blockers: None.
+- Next: /code-review src/lib/ui/exit_confirm_dialog.dart src/lib/ui/root_navigator_push.dart src/lib/ui/child_shell_scaffold.dart tests/integration/main-navigation-shell/root_navigator_push_test.dart, then /story-done
+
+## Session Extract — /code-review main-navigation-shell story-005 — 2026-07-21
+- Verdict: APPROVED → 1 real gap found and fixed (flame-specialist + qa-tester, parallel spawn; both delivered complete reports first try).
+- flame-specialist: performed a full independent byte-level trace of the core claim (single shell-level PopScope structurally cannot collide with NewTaskScreen's PopScope) against installed go_router-17.3.0/Flutter 3.44.4 source, not the doc comment's own citations — CONFIRMED correct through _findCurrentNavigators(), maybePop(), Route.popDisposition. ADR-0014 COMPLIANT, no forbidden APIs.
+- qa-tester: verdict GAPS → the one real gap fixed. The "second back-press while dialog already open safely resolves to stay" claim was asserted only in exit_confirm_dialog.dart's doc comment, never tested — exactly the class of unverified claim this story's own "verify, don't assume" methodology (already applied to the tab-root/sub-screen collision case) says shouldn't be left unverified. Added test_AC10_backPressWhileDialogAlreadyOpen_doesNotStackSecondDialog, passed on first run — confirms the claim was in fact correct. Also added a one-line note documenting why branch-transition-timing doesn't apply to this router shape (IndexedStack, no animated push/pop), per a lower-priority suggestion.
+- Advisory only, deferred to story-done: story file's own AC checkboxes and Test Evidence status field still unchecked despite both artifacts existing — process bookkeeping, not a code defect.
+- Final test count: 8/8 in root_navigator_push_test.dart (was 7, +1 from this review), full suite 402/402 passed (1 pre-existing skip, up from 401), flutter analyze clean.
+- Next: /story-done production/epics/main-navigation-shell/story-005-child-exit-dialog-root-navigator-push.md
+
+## Session Extract — /story-done main-navigation-shell story-005 — 2026-07-21
+- Verdict: COMPLETE WITH NOTES
+- Story: production/epics/main-navigation-shell/story-005-child-exit-dialog-root-navigator-push.md — Child Back-Button Exit Dialog & Root-Navigator Push Contract — Status → Complete
+- 4/4 ACs passing, all auto-verified via tests. LP-CODE-REVIEW gate (lean mode) confirmed via user: /code-review already run this session, APPROVED, the one gap found fixed.
+- Deviations logged (advisory, not tech debt — user chose plain close): (1) "Parent tab root NOT in override" criterion's literal precondition structurally unreachable (same finding as Story 004); (2) deliberate, independently-verified-correct deviation from Implementation Note 3 (single shell-level PopScope instead of provider+canPop check).
+- Story file's own stale bookkeeping fixed as part of this close: all 4 AC checkboxes ticked, Test Evidence status updated from "[ ] Not yet created" to reflect the 8 passing tests + evidence doc (sign-offs still pending, no live device).
+- Epic file, epics/index.md updated: Main Navigation Shell now "In Progress (5/6 stories complete)". Epic's own Next Step now points to Story 006 as the LAST remaining story in this epic.
+- Tech debt logged: None.
+- No git commit made yet — pending explicit user go-ahead. 5 stories now uncommitted together.
+- Next recommended: /story-readiness production/epics/main-navigation-shell/story-006-floating-chip-cluster.md, then /dev-story — Story 006 (Floating Chip Cluster) is the last story in this epic, unblocked (Story 002 dependency Complete). It should absorb/replace Story 004's ParentOverrideTrigger placeholder, not add a second trigger.
+
+## Session Extract — /story-readiness main-navigation-shell story-006 — 2026-07-21
+- Verdict: READY (18/18 checks pass, no gaps). QL-STORY-READY skipped — Lean mode.
+- Pre-implementation verification: xuBalanceProvider (StreamProvider<int>, currency_providers.dart) and seedCountProvider (StreamProvider<int>, seed_buffer_providers.dart) both confirmed real. chestCount confirmed to have NO dedicated provider yet — only a raw Firestore field, matching the story's own explicit caveat.
+- Next: /dev-story production/epics/main-navigation-shell/story-006-floating-chip-cluster.md
+
+## Session Extract — /dev-story main-navigation-shell story-006 — 2026-07-21/22
+- Story: production/epics/main-navigation-shell/story-006-floating-chip-cluster.md — Floating Chip Cluster (LAST story in Main Navigation Shell epic)
+- Implementer: flame-widget-specialist (LOW risk). Presented a full plan before writing (per Collaboration Protocol), correctly identified a cross-file regression risk (5 sibling _FakeFirestore fakes needed .doc() support) before I approved. Truncated 3 times this run; independently verified real progress via git status/direct test runs between each resume rather than waiting blind.
+- Files created: src/lib/ui/profile_chip.dart, xu_chip.dart, contextual_badge_chip.dart, floating_chip_cluster.dart, tests/integration/main-navigation-shell/chip_cluster_test.dart.
+- Files modified: parent_override_trigger.dart (generalized to wrap arbitrary child, absorbed by ProfileChip), child_shell_scaffold.dart (Stack child swapped), currency_providers.dart + seed_buffer_providers.dart (retry: fix), 5 sibling test files (.doc() fake support).
+- Two real bugs found and fixed by the implementer during its own work: (1) XuChip's _pulseController was a lazy `late final` field accessed for the first time inside dispose() when build() never took the animated branch — crashed with "Looking up a deactivated widget's ancestor is unsafe"; fixed via eager initState() construction. I independently hit this same bug myself in auth_account/router_redirect_test.dart before seeing the implementer's fix land — confirmed correct. (2) riverpod 3.3.2's defaultRetry silently retries Firestore errors up to 10x/~38s before exposing AsyncError — closed the 3rd instance of this already-documented control-manifest gap (after childProfilesProvider, itemCatalogProvider) via retry: (retryCount, error) => null.
+- Independently re-verified: 14/14 new tests, full suite 416/416 (1 pre-existing skip, up from 402), flutter analyze clean.
+- Blockers: None.
+- Next: /code-review [8 files], then /story-done
+
+## Session Extract — /code-review main-navigation-shell story-006 — 2026-07-22
+- Verdict: APPROVED WITH SUGGESTIONS → all findings applied same session (flame-specialist + qa-tester, parallel spawn; both truncated once, resumed via SendMessage).
+- flame-specialist: full hud.md §1-§3 compliance confirmed, no Forbidden-API violations. Independently traced the retry: fix's doc-comment rationale against installed riverpod 3.3.2 source (element.dart/async_value.dart) and found it PARTIALLY INACCURATE — .hasError flips immediately on first failure for .hasError-based consumers (these two chips), so the "blocked 38s" framing never actually applied to them; the fix itself remains correct for narrower reasons (convention-matching, avoiding a pointless retry Timer, protecting future .when()-based consumers). Corrected the doc comments accordingly. Confirmed XuChip's dispose-bug fix correct and sufficient; ContextualBadgeChip never had the same latent issue.
+- qa-tester: verdict GAPS → all 3 real findings fixed. (1) Mutual exclusivity test only proved "chest doesn't unhide when seed already 0," not the actual both-positive conflict case — strengthened. (2) hud.md's explicit "hard requirement" reduced-motion behavior had zero coverage — added 2 tests using the codebase's established accessibilityFeaturesTestValue pattern (found in pin_entry_screen_test.dart). (3) This epic's recurring "architecture rule in a doc comment, never verified" pattern recurred once more — nothing proved chips survive IndexedStack branch switches despite that being this story's own Forbidden control-manifest rule; added a persistence test (caught and fixed a real bug in my own first draft along the way — seeded after mount instead of as an initial value, the exact pitfall the file's own helper doc comment warns about).
+- Final test count: 18/18 in chip_cluster_test.dart (was 14, +4 from this review), full suite 420/420 passed (1 pre-existing skip, up from 416), flutter analyze clean — all independently re-verified.
+- Next: /story-done production/epics/main-navigation-shell/story-006-floating-chip-cluster.md
+
+## Session Extract — /story-done main-navigation-shell story-006 — 2026-07-22 — EPIC COMPLETE (6/6)
+- Verdict: COMPLETE WITH NOTES
+- Story: production/epics/main-navigation-shell/story-006-floating-chip-cluster.md — Floating Chip Cluster — Status → Complete
+- 9/9 ACs passing, all auto-verified via tests. LP-CODE-REVIEW gate (lean mode) confirmed via user: /code-review already run this session, APPROVED WITH SUGGESTIONS, all fixed.
+- Deviations logged (advisory, not tech debt — user chose plain close): (1) currency_providers.dart/seed_buffer_providers.dart touched outside this story's own layer for the retry: fix; (2) chestCount binding gap, explicitly permitted; (3) no-cause-signal xu-pulse simplification, explicitly anticipated.
+- **Main Navigation Shell epic marked Complete (6/6 stories)** — EPIC.md updated with a full completion summary (every story's code review found ≥1 real gap, a genuinely useful pattern not a quality signal; 420/420 full suite; DoD self-assessed with an honest caveat that a formal /architecture-review or /gate-check pass would fully certify it, not yet run).
+- **Parent Dashboard UI epic unblocked** — its own EPIC.md's "Blocked on Main Navigation Shell" note (found 2026-07-18) resolved; Stories 001-003 now Status: Ready (Story 004 separately Blocked on an unrelated missing ADR). epics/index.md updated for both epics.
+- Tech debt logged: None.
+- No git commit made yet — pending explicit user go-ahead. All 6 Main Navigation Shell stories (+ epic/index doc updates) still uncommitted together as one large pending changeset.
+- Next recommended: two independent paths now open — (a) `/story-readiness` on Parent Dashboard UI Story 001 to resume that now-unblocked epic, or (b) commit this epic's substantial uncommitted work first. User has not yet indicated which they want; ask rather than assume.

@@ -1,12 +1,12 @@
 # Story 002: Child Shell — 3-Tab StatefulShellRoute & Flame State Preservation
 
 > **Epic**: Main Navigation Shell
-> **Status**: Ready
+> **Status**: Complete
 > **Layer**: Presentation
 > **Type**: Integration
 > **Estimate**: 4h
 > **Manifest Version**: 2026-07-16
-> **Last Updated**: —
+> **Last Updated**: 2026-07-21
 
 ## Context
 
@@ -114,3 +114,15 @@
 
 - Depends on: Story 001 (Root Redirect) must be Complete — this story's `StatefulShellRoute` wires into that story's route tree.
 - Unlocks: Story 006 (Floating Chip Cluster needs the Child Shell's Scaffold structure to render into).
+
+---
+
+## Completion Notes
+**Completed**: 2026-07-21
+**Criteria**: 6/6 passing (all 6 ACs auto-verified via passing tests; no manual/deferred criteria)
+**Deviations**:
+- ADVISORY: story header's Performance Budget references a "fade-through animation" that doesn't visually exist in the implementation — ADR-0014 Decision §2's own sanctioned code sample uses a zero-animation `builder:` (instant `IndexedStack` swap). AC-4's literal text ("navigate within 200ms; Nhà no longer active") is satisfied regardless. GDD-vs-ADR wording tension, not yet given an explicit ruling by qa-lead/creative-director — recommend treating the Accepted, engine-verified ADR as authoritative.
+- ADVISORY (documented, not a defect): 3 files outside this story's own system were touched as necessary consequences of this story adding the first real `FlameGame` to the codebase — `tests/integration/pet_state_machine/mochi_component_background_pause_test.dart` (an ADR-0007 canary test that explicitly predicted and required this exact update), and `tests/integration/main-navigation-shell/root_redirect_test.dart` + `tests/integration/auth_account/router_redirect_test.dart` (`pumpAndSettle()` → bounded-step fix, since `PetRoomGame`'s `GameWidget` now keeps a `Ticker` perpetually scheduled). All verified correct by flame-specialist during code review.
+- Real gap found and fixed during code review (not a deviation, a fix): `activeChildBranchIndexProvider` was originally written only by the bottom-nav tap handler — a route landing on a non-default branch without a tap (deep link, restored state) would have silently left it stuck at 0, violating TR-navshell-003's "sole is-this-tab-active signal" requirement. Fixed via `ChildShellScaffold`'s `initState`/`didUpdateWidget` sync; covered by a new regression test.
+**Test Evidence**: Integration — `tests/integration/main-navigation-shell/child_shell_test.dart` (8/8 passing, 2 beyond the story's own 6 stated ACs, added during code review)
+**Code Review**: Complete — `/code-review`, flame-specialist + qa-tester, verdict APPROVED WITH SUGGESTIONS, all suggestions fixed and re-verified same session (376/376 full suite, `flutter analyze` clean)
