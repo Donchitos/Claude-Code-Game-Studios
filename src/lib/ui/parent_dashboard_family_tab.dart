@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../core/models/child_profile.dart';
 import '../providers/auth_providers.dart';
+import '../providers/banner_providers.dart';
 import 'app_colors.dart';
 import 'select_child_action.dart';
 
@@ -135,18 +136,31 @@ class _LoadErrorContent extends StatelessWidget {
 /// for a SPECIFIC child, captured at call time from the row that opened it —
 /// never read from any ambient/global state, per Implementation Note 4 /
 /// AC "Correct childId/newPin passed".
-Future<void> showResetPinDialog(BuildContext context, {required ChildProfile child}) {
-  return showDialog<void>(
-    context: context,
-    // Not dismissible via scrim tap or system back while a write is in
-    // flight — see `_ResetPinDialogState.build()`'s `PopScope` for the
-    // matching guard. Without both, a parent could dismiss mid-submit and
-    // the dialog would close while the PIN silently changes underneath
-    // them, contradicting the Cancel button's own "can't be dismissed out
-    // from under an in-progress write" guarantee (found in code review).
-    barrierDismissible: false,
-    builder: (_) => ResetPinDialog(child: child),
-  );
+///
+/// **Parent Dashboard UI Story 004 (ADR-0015 Decision §3) addition**: wraps
+/// the dialog with `bannerActionsProvider.modalOpened()`/`.modalClosed()`
+/// so the shared Parent Shell FCM banner defers while this dialog is open
+/// (GDD Edge Case 4) — same wrapping shape and
+/// `ProviderScope.containerOf(context)` rationale as
+/// `create_custom_task_sheet.dart`'s `showCreateCustomTaskSheet`.
+Future<void> showResetPinDialog(BuildContext context, {required ChildProfile child}) async {
+  final bannerActions = ProviderScope.containerOf(context).read(bannerActionsProvider);
+  bannerActions.modalOpened();
+  try {
+    await showDialog<void>(
+      context: context,
+      // Not dismissible via scrim tap or system back while a write is in
+      // flight — see `_ResetPinDialogState.build()`'s `PopScope` for the
+      // matching guard. Without both, a parent could dismiss mid-submit and
+      // the dialog would close while the PIN silently changes underneath
+      // them, contradicting the Cancel button's own "can't be dismissed out
+      // from under an in-progress write" guarantee (found in code review).
+      barrierDismissible: false,
+      builder: (_) => ResetPinDialog(child: child),
+    );
+  } finally {
+    bannerActions.modalClosed();
+  }
 }
 
 /// Reset PIN confirm dialog. Standard Material 3 `AlertDialog`

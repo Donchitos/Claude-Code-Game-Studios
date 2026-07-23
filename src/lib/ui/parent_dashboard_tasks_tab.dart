@@ -109,16 +109,13 @@ class ParentDashboardTasksTabState
         title: const Text('Nhiệm vụ'),
         actions: const [SelectChildAction()],
       ),
-      body: const Column(
-        children: [
-          // Banner slot (Implementation Note 4) — reserved, empty. Real FCM/
-          // reminder banner rendering is Story 004's scope (currently
-          // Blocked on a missing ADR); this story only reserves the layout
-          // position directly below the app bar.
-          SizedBox.shrink(),
-          Expanded(child: _PendingTaskListSection()),
-        ],
-      ),
+      // Story 004 (ADR-0015 Decision §6) superseded the reserved
+      // `SizedBox.shrink()` banner slot this `Column` used to hold — the
+      // FCM/reminder banner now renders at the `ParentShellScaffold` level
+      // via `MaterialBanner`/`ScaffoldMessenger`, not inline in this tab's
+      // own layout. No `Column` wrapper is needed anymore now that there's
+      // only one child.
+      body: const _PendingTaskListSection(),
       floatingActionButton: FloatingActionButton(
         key: const Key('createCustomTaskFab'),
         onPressed: () => showCreateCustomTaskSheet(context),

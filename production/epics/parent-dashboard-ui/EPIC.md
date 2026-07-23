@@ -3,7 +3,7 @@
 > **Layer**: Presentation
 > **GDD**: design/gdd/parent-dashboard-ui.md
 > **Architecture Module**: Parent Dashboard UI (#21)
-> **Status**: In Progress (3/4 stories complete) — Story 004 now Ready (ADR-0015 Accepted 2026-07-22), last story in this epic
+> **Status**: Complete (4/4 stories) — 2026-07-23
 > **Stories**: 4 stories
 
 ## Blocker status — corrected 2026-07-22 (Story 001's second blocker now fixed)
@@ -77,8 +77,26 @@ This epic is complete when:
 | 001 | Nhiệm vụ Tab — Pending List, Approve/Reject Wiring & Event Emission | Integration | Complete | N/A (ADR-0013/0004 referenced) |
 | 002 | Create Custom Task Bottom Sheet | Integration | Complete | N/A |
 | 003 | Gia đình Tab — Child List & Reset PIN Dialog | UI | Complete | N/A |
-| 004 | FCM Foreground Banner — Defer/Coalesce State Machine & Permission Reminder | Logic | Ready | ADR-0015 (Accepted) |
+| 004 | FCM Foreground Banner — Defer/Coalesce State Machine & Permission Reminder | Logic | Complete | ADR-0015 (Accepted) |
 
-## Next Step
+## Epic Completion Notes
 
-Run `/story-readiness production/epics/parent-dashboard-ui/story-004-fcm-banner-state-machine.md` then `/dev-story` to implement the final story in this epic. Completing it closes Parent Dashboard UI entirely.
+**Closed**: 2026-07-23
+
+All 4 stories implemented, code-reviewed (flame-specialist + qa-tester in parallel on every story), and closed with full Completion Notes on their respective story files.
+
+**Definition of Done status**:
+- All stories implemented, reviewed, closed via `/story-done`. ✅
+- All acceptance criteria from the GDD and UX spec verified per story. ✅
+- Logic/Integration stories have passing test files: `tests/integration/parent-dashboard-ui/create_custom_task_test.dart` (13), `family_tab_reset_pin_test.dart` (13), `pending_list_approve_reject_test.dart` (17), `fcm_banner_state_machine_test.dart` (23, Logic-tier BLOCKING, mutation-tested), plus `parent_shell_banner_test.dart` (7, ADVISORY widget-tier, added in Story 004's own code review). ✅
+- UI stories' evidence requirement satisfied via interaction tests (the coding-standards.md "manual walkthrough OR interaction test" rule) rather than separate `production/qa/evidence/` docs — no gap. ✅
+- ADR-0015 written and Accepted for the banner defer/coalesce state machine before Story 004 was implemented. ✅
+- Parent Approval (#11)'s two remaining DoD items closed by Story 001 — the GameEventBus replay risk is explicitly acknowledged as now-live tech debt (requires a future ADR-0004 revision), not silently resolved. ✅
+
+**Cross-epic work absorbed along the way** (not this epic's original scope, but required to unblock it):
+- Task Library (#8) post-closure fix: `familyPendingTasksProvider` + `TaskModel.id`/`childId` (unblocked Story 001's multi-child correctness requirement).
+- ADR-0015 itself, plus 2 new `docs/registry/architecture.yaml` entries (`parent_dashboard_banner_state` state ownership, `parent_dashboard_banner_render` interface contract, `parent_shell_stack_overlay` forbidden pattern).
+- 8 regression fixes in pre-existing Main Navigation Shell / Auth & Account test files (`router_redirect_test.dart`, `root_redirect_test.dart`, `root_navigator_push_test.dart`, `parent_override_test.dart`) that needed a `firebaseMessagingProvider` fake once `ParentShellScaffold` started reading it in Story 004.
+- Two "absorption" refactors collapsing tech debt flagged by earlier stories: `SelectChildAction` (shared between Story 001 and Story 003's "Chọn bé"), and this story's own two modal call-site edits (`create_custom_task_sheet.dart`, `parent_dashboard_family_tab.dart`) wiring the banner's defer signal.
+
+**Known follow-up (non-blocking, tracked)**: the GameEventBus replay risk (a Flame component remounting receives a spurious `taskApproved`/`petLeveledUp` replay) remains open — fixing it requires an ADR-0004 revision, explicitly out of scope for every story in this epic. `bannerDisplayText`'s child-name/task-title lookup path has no direct unit test (only its fallback path is exercised) — low-stakes per ADR-0015's own Risk assessment, since a lookup miss only affects display text, not `unseenCount`/`displayKind` correctness.

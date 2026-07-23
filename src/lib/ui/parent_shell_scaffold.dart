@@ -1,8 +1,17 @@
+import 'dart:async';
+
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../core/firebase_providers.dart';
+import '../core/models/child_profile.dart';
+import '../core/models/task_model.dart';
+import '../providers/auth_providers.dart';
+import '../providers/banner_providers.dart';
 import '../providers/router_provider.dart';
+import '../providers/task_providers.dart';
 import 'app_colors.dart';
 import 'parent_override_actions.dart';
 
@@ -22,12 +31,35 @@ import 'parent_override_actions.dart';
 /// same bug in this shell.
 ///
 /// Unlike [ChildShellScaffold], there is NO `Stack` overlay here — Parent
-/// Shell has no floating chips (GDD Core Rule 5 / this story's
-/// Implementation Note 2); the top zone stays reserved/empty for the FCM
-/// banner Parent Dashboard UI will render later (not this story's concern).
-/// `body: widget.navigationShell` is passed directly to [Scaffold], so no
-/// `Stack` widget exists anywhere in this subtree — the structural proof
-/// this story's "no floating chips" acceptance criterion tests against.
+/// Shell has no floating chips (GDD Core Rule 5 / Main Navigation Shell
+/// Story 003's Implementation Note 2). `body: widget.navigationShell` is
+/// passed directly to [Scaffold], so no `Stack` widget exists anywhere in
+/// this subtree — the structural proof that story's "no floating chips"
+/// acceptance criterion tests against
+/// (`tests/integration/main-navigation-shell/parent_shell_test.dart`'s
+/// `test_AC3_noFloatingChips_...`), and a real, registered forbidden
+/// pattern (`docs/registry/architecture.yaml`'s
+/// `forbidden_patterns.parent_shell_stack_overlay`).
+///
+/// **FCM foreground banner + permission reminder (Parent Dashboard UI
+/// Story 004, ADR-0015)**: rendered via
+/// `ScaffoldMessenger.of(context).showMaterialBanner(...)`/
+/// `.hideCurrentMaterialBanner()`/`.removeCurrentMaterialBanner()` — NOT a
+/// `Stack`-positioned widget — so it introduces zero new `Stack`s while
+/// still being genuinely shell-level (both tabs share the one persistent
+/// `Scaffold`/`ScaffoldMessenger` this class owns). [_onMessageSub]
+/// subscribes to `FirebaseMessaging.onMessage` in [initState] and forwards
+/// each message to [bannerActionsProvider]'s `messageReceived`; the
+/// notification-permission status is resolved once via
+/// `firebaseMessagingProvider.getNotificationSettings()` (DI'd, not the
+/// bare `FirebaseMessaging.instance` static ADR-0015's own code sample used
+/// — this codebase's established convention, `firebase_providers.dart`,
+/// and what keeps this widget testable without a live Firebase app; see
+/// [_ParentShellScaffoldState.initState]'s doc comment for the full
+/// rationale). [_syncMaterialBanner] is driven by
+/// `ref.listenManual(bannerStateProvider.select((s) => s.displayKind), ...)`
+/// — the same one-time-`initState`-subscription idiom already established
+/// by `mood_event_bridge.dart` in this codebase.
 ///
 /// Visual tone is deliberately distinct from [ChildShellScaffold]'s default
 /// `NavigationBar`: navy-toned and more subdued, 24dp icons / 12sp labels
@@ -94,10 +126,61 @@ class _ParentShellScaffoldState extends ConsumerState<ParentShellScaffold> {
     ),
   ];
 
+  /// Cancelled in [dispose] — `FirebaseMessaging.onMessage` is a plain
+  /// static broadcast `StreamController` (verified against the installed
+  /// `firebase_messaging_platform_interface-4.9.2` source,
+  /// `platform_interface_messaging.dart`), not a per-widget resource, so an
+  /// un-cancelled subscription here would keep forwarding messages to a
+  /// disposed `ref` after this widget is torn down.
+  StreamSubscription<RemoteMessage>? _onMessageSub;
+
   @override
   void initState() {
     super.initState();
     _syncActiveBranchIndexAfterBuild();
+
+    // ADR-0015 Decision §4 — Parent Dashboard UI Story 004.
+    _onMessageSub = FirebaseMessaging.onMessage.listen(
+      (message) => ref.read(bannerActionsProvider).messageReceived(message),
+    );
+    // Resolved via the DI'd `firebaseMessagingProvider`
+    // (`core/firebase_providers.dart`), NOT the bare `FirebaseMessaging
+    // .instance` static ADR-0015's own code sample shows — `.instance`
+    // resolves through `Firebase.app()` and throws `[core/no-app]` without a
+    // live Firebase app, which would crash every widget test that mounts
+    // this scaffold (including the already-Complete Main Navigation Shell
+    // Story 003 regression suite) unless each one were updated to bootstrap
+    // real Firebase. `firebaseMessagingProvider` defaults to the exact same
+    // `FirebaseMessaging.instance` in production while staying overridable
+    // with a fake in tests — same DI-over-singleton convention this
+    // codebase already applies everywhere else Firebase is touched
+    // (`notification_providers.dart`'s `requestPermissionOnce`,
+    // `auth_providers.dart`'s `fcmTokenRefreshListenerProvider`). Zero
+    // behavior change in production; a deliberate, low-risk deviation from
+    // ADR-0015's literal code sample for testability.
+    ref.read(firebaseMessagingProvider).getNotificationSettings().then((settings) {
+      if (!mounted) return;
+      ref.read(bannerActionsProvider).permissionStatusResolved(
+            declined: settings.authorizationStatus == AuthorizationStatus.denied,
+          );
+    });
+    // Fires only when `displayKind` itself CHANGES (none<->fcm<->reminder),
+    // never on an in-kind `unseenCount` change (e.g. 2->3 while `fcm` stays
+    // `fcm`) — that in-place text update is handled reactively by
+    // `_buildBanner`'s own `Consumer`, not by re-invoking this listener
+    // (ADR-0015 Decision §2's "live-update in place, never a second
+    // banner" requirement — see Edge Case 5's 3-message-during-modal
+    // permutation).
+    ref.listenManual<BannerKind>(
+      bannerStateProvider.select((s) => s.displayKind),
+      _syncMaterialBanner,
+    );
+  }
+
+  @override
+  void dispose() {
+    _onMessageSub?.cancel();
+    super.dispose();
   }
 
   @override
@@ -171,4 +254,156 @@ class _ParentShellScaffoldState extends ConsumerState<ParentShellScaffold> {
     );
     ref.read(activeChildBranchIndexProvider.notifier).state = index;
   }
+
+  /// `ref.listenManual(bannerStateProvider.select((s) => s.displayKind))`'s
+  /// callback (ADR-0015 Decision §4). Only fires on a KIND transition, so
+  /// [previous] is only ever null on the very first call (riverpod's
+  /// `listenManual` convention) — treated the same as `none` here, since
+  /// [BannerState]'s own default is `unseenCount: 0, permissionDeclined:
+  /// false`, i.e. `displayKind == none` at construction.
+  void _syncMaterialBanner(BannerKind? previous, BannerKind next) {
+    final messenger = ScaffoldMessenger.of(context);
+    if (next == BannerKind.none) {
+      messenger.hideCurrentMaterialBanner();
+      return;
+    }
+    // Banner-slot conflict resolution (reminder<->fcm, GDD Edge Case 5 /
+    // Core Rule 6) transitions directly between two non-`none` kinds with
+    // no intervening `none`. `showMaterialBanner` while one is already
+    // visible ENQUEUES it behind the current banner's exit animation
+    // (verified against the installed Flutter 3.44.6
+    // `scaffold.dart`'s `ScaffoldMessengerState.showMaterialBanner` doc
+    // comment: "the given material banner will be added to a queue and
+    // displayed after the earlier material banners have closed") — that
+    // would show a dismiss-then-show animation, directly violating GDD's
+    // "FCM banner thay thế NGAY tại cùng vị trí" (replaces immediately, same
+    // position). `removeCurrentMaterialBanner()` clears the old banner with
+    // no exit animation first, so the immediately-following
+    // `showMaterialBanner` starts fresh rather than queuing.
+    if (previous != null && previous != BannerKind.none) {
+      messenger.removeCurrentMaterialBanner();
+    }
+    messenger.showMaterialBanner(_buildBanner(next));
+  }
+
+  /// GDD line 144 (Cloud White background, Lavender Soft accent, no
+  /// elevation — see this file's class doc comment for why `elevation: 0`,
+  /// the default, is correct and must not be "fixed"). [content] is a
+  /// [Consumer] so `unseenCount`/`lastMessage` changes WITHIN the same
+  /// [BannerKind] (the 2->3 coalescing case) update this already-shown
+  /// banner's text in place, without this method or
+  /// [_syncMaterialBanner] running again.
+  MaterialBanner _buildBanner(BannerKind kind) {
+    return MaterialBanner(
+      backgroundColor: AppColors.cloudWhite,
+      leading: const Icon(Icons.notifications_active, color: AppColors.lavenderSoft),
+      content: GestureDetector(
+        key: const Key('parentShellBannerTapTarget'),
+        behavior: HitTestBehavior.opaque,
+        onTap: () => _handleBannerTap(kind),
+        child: Consumer(
+          builder: (context, ref, _) {
+            final state = ref.watch(bannerStateProvider);
+            return Text(
+              bannerDisplayText(ref, state, kind),
+              style: const TextStyle(color: AppColors.primaryText),
+            );
+          },
+        ),
+      ),
+      // `actions` is a required, non-empty parameter (an assert in
+      // MaterialBanner's own constructor, ADR-0015 Decision §1) — an
+      // explicit "Đóng" dismiss action satisfies GDD's "swipe hoặc tap"
+      // dismiss wording via tap; swipe-to-dismiss is an optional
+      // `Dismissible`-wrapper enhancement left out here (ADR-0015 Decision
+      // §1's own explicit UX-judgment-call note), not a hard requirement.
+      actions: [
+        TextButton(
+          key: const Key('parentShellBannerDismissButton'),
+          onPressed: _handleBannerDismiss,
+          style: TextButton.styleFrom(foregroundColor: AppColors.lavenderSoft),
+          child: const Text('Đóng'),
+        ),
+      ],
+    );
+  }
+
+  /// GDD Core Rule 6 — tap navigates to Tab Nhiệm vụ (branch index 0) only
+  /// if [kind] is `fcm` and not already there; a `reminder` tap never
+  /// navigates (the reminder only ever renders while Tab Nhiệm vụ is
+  /// already the default/active tab on cold start — Core Rule 7 — and
+  /// wiring a tap to the Settings-deep-link/re-prompt flow is Push
+  /// Notification #9's permission-request territory, explicitly out of
+  /// scope for this story). `kind` is the value captured when THIS banner
+  /// was built, not re-derived from state after
+  /// `bannerDismissedOrTapped()` has already run (which may have already
+  /// changed `displayKind`).
+  void _handleBannerTap(BannerKind kind) {
+    ref.read(bannerActionsProvider).bannerDismissedOrTapped();
+    if (kind == BannerKind.fcm && widget.navigationShell.currentIndex != 0) {
+      widget.navigationShell.goBranch(0);
+      ref.read(activeChildBranchIndexProvider.notifier).state = 0;
+    }
+  }
+
+  /// Dismiss never navigates, for either [BannerKind] — GDD Core Rule 6 /
+  /// Edge Case 5. Shares the exact same state transition as
+  /// [_handleBannerTap] (`bannerDismissedOrTapped()`); the only difference
+  /// is this navigation no-op.
+  void _handleBannerDismiss() {
+    ref.read(bannerActionsProvider).bannerDismissedOrTapped();
+  }
+}
+
+/// ADR-0015 Decision §5 — display text derivation, widget-layer
+/// responsibility, reusing already-loaded data (no new Firestore read).
+/// `unseenCount == 1` resolves "[Tên bé] vừa hoàn thành [task]" by looking
+/// up `state.lastMessage`'s `taskId`/`childId` (ADR-0010's payload
+/// contract) against the SAME [familyPendingTasksProvider]/
+/// [childProfilesProvider] snapshots Story 001's pending-list cards already
+/// read. `unseenCount >= 2` always uses the fixed "N nhiệm vụ mới đang chờ"
+/// string, never derived from message content. Falls back to "Có nhiệm vụ
+/// mới cần duyệt" on a lookup miss (a low-stakes display-text race, not a
+/// correctness-critical path per the ADR's own Risks section) — exposed
+/// (not private) so the pure-reducer test file can exercise it directly
+/// without pumping a widget tree.
+String bannerDisplayText(WidgetRef ref, BannerState state, BannerKind kind) {
+  if (kind == BannerKind.reminder) {
+    // Push Notification #9 GDD's own ratified copy
+    // (`design/gdd/push-notification.md`), reused verbatim rather than
+    // reinvented here.
+    return 'Bật thông báo để biết ngay khi con submit task →';
+  }
+
+  if (state.unseenCount >= 2) {
+    return '${state.unseenCount} nhiệm vụ mới đang chờ';
+  }
+
+  final data = state.lastMessage?.data;
+  final taskId = data?['taskId'] as String?;
+  final childId = data?['childId'] as String?;
+  if (taskId != null && childId != null) {
+    final tasks = ref.watch(familyPendingTasksProvider).value ?? const <TaskModel>[];
+    final children = ref.watch(childProfilesProvider).value ?? const <ChildProfile>[];
+
+    TaskModel? task;
+    for (final t in tasks) {
+      if (t.id == taskId) {
+        task = t;
+        break;
+      }
+    }
+    ChildProfile? child;
+    for (final c in children) {
+      if (c.childId == childId) {
+        child = c;
+        break;
+      }
+    }
+    if (task != null && child != null) {
+      return '${child.name} vừa hoàn thành ${task.title}';
+    }
+  }
+
+  return 'Có nhiệm vụ mới cần duyệt';
 }

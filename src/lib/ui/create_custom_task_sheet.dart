@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../core/models/child_profile.dart';
 import '../core/reward_table.dart';
 import '../providers/auth_providers.dart';
+import '../providers/banner_providers.dart';
 import '../providers/task_providers.dart';
 import 'app_colors.dart';
 
@@ -19,12 +20,29 @@ import 'app_colors.dart';
 /// (no app-wide `BottomSheetThemeData` exists yet to standardize the 12-20dp
 /// corner radius Art Bible §3 calls for; a pre-existing gap, not introduced
 /// by this story).
-Future<void> showCreateCustomTaskSheet(BuildContext context) {
-  return showModalBottomSheet<void>(
-    context: context,
-    isScrollControlled: true,
-    builder: (_) => const CreateCustomTaskSheet(),
-  );
+///
+/// **Parent Dashboard UI Story 004 (ADR-0015 Decision §3) addition**: wraps
+/// the sheet with `bannerActionsProvider.modalOpened()`/`.modalClosed()` so
+/// the shared Parent Shell FCM banner defers while this sheet is open
+/// (GDD Edge Case 4). `modalClosed()` runs in a `finally` so a thrown error
+/// during the sheet's own lifecycle still clears the defer state.
+/// `ProviderScope.containerOf(context)` reaches the container from this
+/// bare `BuildContext` without widening this function's own signature to
+/// take a `WidgetRef`/`Ref` — this function has no other callers to update,
+/// but keeping the signature stable avoids an unnecessary second edit
+/// surface for a change this story doesn't otherwise need to make.
+Future<void> showCreateCustomTaskSheet(BuildContext context) async {
+  final bannerActions = ProviderScope.containerOf(context).read(bannerActionsProvider);
+  bannerActions.modalOpened();
+  try {
+    await showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      builder: (_) => const CreateCustomTaskSheet(),
+    );
+  } finally {
+    bannerActions.modalClosed();
+  }
 }
 
 /// The 5 real, selectable category IDs for the dropdown — sourced from

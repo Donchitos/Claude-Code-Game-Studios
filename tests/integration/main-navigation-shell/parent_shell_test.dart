@@ -18,6 +18,20 @@
 // `authStateChanges()` stream + `activeChildProvider` + `parentOverrideProvider`
 // to reach `SessionState.parentView` -> `/parent/dashboard`.
 //
+// Parent Dashboard UI Story 004 (ADR-0015) addition: `ParentShellScaffold
+// .initState()` now reads `firebaseMessagingProvider.getNotificationSettings()`
+// once (to resolve the permission-declined reminder banner's eligibility).
+// `firebaseMessagingProvider` defaults to `FirebaseMessaging.instance`, which
+// requires a live Firebase app (`Firebase.app()`) and would throw
+// `[core/no-app]` in this widget-test environment — `_FakeFirebaseMessaging`
+// below overrides it, same hand-rolled-fake pattern as
+// `tests/unit/push_notification/permission_coordinator_test.dart` (firebase_
+// messaging has no mocks package equivalent to firebase_auth_mocks).
+// `authorizationStatus: authorized` (not `denied`) is deliberate: it keeps
+// `displayKind` at `none` by default, so this file's pre-existing ACs (none
+// of which concern the Story 004 banner) see no incidental extra
+// `MaterialBanner`.
+//
 // Reaching `parentView` requires going through `childSelected` FIRST
 // (`sessionStateProvider`'s own derivation: `parentView` = `activeChild !=
 // null && parentOverrideProvider == true` — see `auth_providers.dart`), which
@@ -37,6 +51,7 @@
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth_mocks/firebase_auth_mocks.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -115,6 +130,34 @@ class _FakeFirestore implements FirebaseFirestore {
   dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
 }
 
+/// Parent Dashboard UI Story 004 (ADR-0015) addition — see this file's
+/// header comment for why this override is needed at all.
+/// `authorizationStatus: authorized` keeps `bannerStateProvider.displayKind`
+/// at `none` for every test in this file (no test here exercises the
+/// reminder banner — that's `fcm_banner_state_machine_test.dart`'s job).
+const _fakeNotificationSettings = NotificationSettings(
+  alert: AppleNotificationSetting.enabled,
+  announcement: AppleNotificationSetting.disabled,
+  authorizationStatus: AuthorizationStatus.authorized,
+  badge: AppleNotificationSetting.enabled,
+  carPlay: AppleNotificationSetting.disabled,
+  lockScreen: AppleNotificationSetting.enabled,
+  notificationCenter: AppleNotificationSetting.enabled,
+  showPreviews: AppleShowPreviewSetting.always,
+  timeSensitive: AppleNotificationSetting.disabled,
+  criticalAlert: AppleNotificationSetting.disabled,
+  sound: AppleNotificationSetting.enabled,
+  providesAppNotificationSettings: AppleNotificationSetting.disabled,
+);
+
+class _FakeFirebaseMessaging implements FirebaseMessaging {
+  @override
+  Future<NotificationSettings> getNotificationSettings() async => _fakeNotificationSettings;
+
+  @override
+  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
+}
+
 /// Pumps [steps] small, fixed-size frames instead of `pumpAndSettle()` — see
 /// this file's header comment for why `pumpAndSettle()` is unsafe once Pet
 /// Room's `GameWidget` has mounted en route to `parentView`.
@@ -139,6 +182,7 @@ Future<ProviderContainer> _reachParentDashboard(WidgetTester tester) async {
     overrides: [
       firebaseAuthProvider.overrideWithValue(mockAuth),
       firebaseFirestoreProvider.overrideWithValue(_FakeFirestore()),
+      firebaseMessagingProvider.overrideWithValue(_FakeFirebaseMessaging()),
     ],
   );
   addTearDown(container.dispose);
@@ -447,6 +491,7 @@ void main() {
       overrides: [
         firebaseAuthProvider.overrideWithValue(mockAuth),
         firebaseFirestoreProvider.overrideWithValue(_FakeFirestore()),
+        firebaseMessagingProvider.overrideWithValue(_FakeFirebaseMessaging()),
       ],
     );
     addTearDown(container.dispose);

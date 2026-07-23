@@ -30,6 +30,7 @@
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth_mocks/firebase_auth_mocks.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -100,6 +101,37 @@ class _FakeFirestore implements FirebaseFirestore {
 
   @override
   DocumentReference<Map<String, dynamic>> doc(String path) => _FakeDocumentReference();
+
+  @override
+  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
+}
+
+/// Parent Dashboard UI Story 004 (ADR-0015) addition — `ParentShellScaffold
+/// .initState()` now reads `firebaseMessagingProvider.getNotificationSettings()`
+/// once. The default `firebaseMessagingProvider` resolves `FirebaseMessaging
+/// .instance`, which requires a live Firebase app and throws `[core/no-app]`
+/// in this widget-test environment — this fake avoids that for the one test
+/// in this file that reaches `/parent/dashboard`. `authorized` keeps
+/// `bannerStateProvider.displayKind` at `none` so no incidental banner shows
+/// up during a test that isn't exercising Story 004's own banner logic.
+const _fakeNotificationSettings = NotificationSettings(
+  alert: AppleNotificationSetting.enabled,
+  announcement: AppleNotificationSetting.disabled,
+  authorizationStatus: AuthorizationStatus.authorized,
+  badge: AppleNotificationSetting.enabled,
+  carPlay: AppleNotificationSetting.disabled,
+  lockScreen: AppleNotificationSetting.enabled,
+  notificationCenter: AppleNotificationSetting.enabled,
+  showPreviews: AppleShowPreviewSetting.always,
+  timeSensitive: AppleNotificationSetting.disabled,
+  criticalAlert: AppleNotificationSetting.disabled,
+  sound: AppleNotificationSetting.enabled,
+  providesAppNotificationSettings: AppleNotificationSetting.disabled,
+);
+
+class _FakeFirebaseMessaging implements FirebaseMessaging {
+  @override
+  Future<NotificationSettings> getNotificationSettings() async => _fakeNotificationSettings;
 
   @override
   dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
@@ -393,6 +425,7 @@ void main() {
         overrides: [
           firebaseAuthProvider.overrideWithValue(mockAuth),
           firebaseFirestoreProvider.overrideWithValue(_FakeFirestore()),
+          firebaseMessagingProvider.overrideWithValue(_FakeFirebaseMessaging()),
         ],
       );
       addTearDown(container.dispose);

@@ -37,6 +37,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_auth_mocks/firebase_auth_mocks.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -119,6 +120,38 @@ class _FakeFirestore implements FirebaseFirestore {
   dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
 }
 
+/// Parent Dashboard UI Story 004 (ADR-0015) addition — `ParentShellScaffold
+/// .initState()` now reads `firebaseMessagingProvider.getNotificationSettings()`
+/// once. The default `firebaseMessagingProvider` resolves `FirebaseMessaging
+/// .instance`, which requires a live Firebase app and throws `[core/no-app]`
+/// in this widget-test environment — this fake avoids that for every test in
+/// this file, all of which transition into the Parent Shell via override.
+/// `authorized` keeps `bannerStateProvider.displayKind` at `none` so no
+/// incidental banner shows up during tests that aren't exercising Story
+/// 004's own banner logic.
+const _fakeNotificationSettings = NotificationSettings(
+  alert: AppleNotificationSetting.enabled,
+  announcement: AppleNotificationSetting.disabled,
+  authorizationStatus: AuthorizationStatus.authorized,
+  badge: AppleNotificationSetting.enabled,
+  carPlay: AppleNotificationSetting.disabled,
+  lockScreen: AppleNotificationSetting.enabled,
+  notificationCenter: AppleNotificationSetting.enabled,
+  showPreviews: AppleShowPreviewSetting.always,
+  timeSensitive: AppleNotificationSetting.disabled,
+  criticalAlert: AppleNotificationSetting.disabled,
+  sound: AppleNotificationSetting.enabled,
+  providesAppNotificationSettings: AppleNotificationSetting.disabled,
+);
+
+class _FakeFirebaseMessaging implements FirebaseMessaging {
+  @override
+  Future<NotificationSettings> getNotificationSettings() async => _fakeNotificationSettings;
+
+  @override
+  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
+}
+
 const _activeChild = ChildProfile(
   childId: 'child-1',
   name: 'Bé An',
@@ -160,6 +193,7 @@ Future<(ProviderContainer, MockFirebaseAuth)> _reachChildPetRoom(
     overrides: [
       firebaseAuthProvider.overrideWithValue(mockAuth),
       firebaseFirestoreProvider.overrideWithValue(_FakeFirestore()),
+      firebaseMessagingProvider.overrideWithValue(_FakeFirebaseMessaging()),
     ],
   );
   addTearDown(container.dispose);

@@ -1,12 +1,12 @@
 # Story 004: FCM Foreground Banner — Defer/Coalesce State Machine & Permission Reminder
 
 > **Epic**: Parent Dashboard UI
-> **Status**: Ready
+> **Status**: Complete
 > **Layer**: Presentation
 > **Type**: Logic
 > **Estimate**: 3h
 > **Manifest Version**: 2026-07-16
-> **Last Updated**: 2026-07-22
+> **Last Updated**: 2026-07-23
 
 ## Unblocked — 2026-07-22
 
@@ -37,18 +37,18 @@ ADR-0015 (Parent Dashboard Notification Banner State Machine) written and Accept
 
 ## Acceptance Criteria
 
-*From GDD Core Rules 6, 7 and Edge Cases 4, 5 — held here for when the story unblocks, NOT yet implementation-ready without the ADR above:*
+*From GDD Core Rules 6, 7 and Edge Cases 4, 5:*
 
-- [ ] **Banner appears on message**: GIVEN app đang mở foreground (bất kỳ tab nào), WHEN `FirebaseMessaging.onMessage` fire, THEN `MaterialBanner` hiện ở top của Tab Nhiệm vụ với text "[Tên bé] vừa hoàn thành [task]".
-- [ ] **Banner tap — from Gia đình tab**: GIVEN banner hiện trên Tab Gia đình, WHEN tap banner, THEN navigate sang Tab Nhiệm vụ.
-- [ ] **Banner tap — already on Nhiệm vụ**: GIVEN banner hiện khi đã ở Tab Nhiệm vụ, WHEN tap banner, THEN không navigate (no-op), banner dismiss.
-- [ ] **Permission-declined reminder — once per session**: GIVEN bố mẹ đã decline notification permission, VÀ đây là session đầu (cold start) mở dashboard, WHEN Tab Nhiệm vụ hiển thị, THEN reminder banner hiện đúng 1 lần trong session đó (session = process lifetime).
-- [ ] **Reminder not re-shown mid-session**: GIVEN banner đã bị dismiss trong session hiện tại, WHEN chuyển tab đi rồi quay lại (không kill app), THEN banner KHÔNG hiện lại.
-- [ ] **Reminder re-shown after cold start**: GIVEN app bị kill và mở lại, VÀ permission vẫn declined, THEN banner hiện lại 1 lần.
-- [ ] **Banner deferred during modal**: GIVEN bất kỳ modal đang mở (create-task sheet HOẶC Reset PIN dialog), WHEN FCM message đến, THEN banner KHÔNG hiện chồng lên; WHEN modal đóng, THEN banner hiện ngay sau đó nếu chưa bị thay bởi banner mới hơn.
-- [ ] **Coalescing — 2+ messages**: GIVEN ≥2 FCM messages đến mà chưa "được xem" (counter chỉ reset khi tap hoặc dismiss — KHÔNG reset chỉ vì tab được xem), THEN banner hiện coalesced "N nhiệm vụ mới đang chờ" thay vì N banner riêng.
-- [ ] **Live-update, not replace**: GIVEN banner "2 nhiệm vụ mới đang chờ" đang hiện (`unseenCount=2`, chưa tap/dismiss), WHEN message thứ 3 đến, THEN banner live-update tại chỗ thành "3 nhiệm vụ mới đang chờ" — KHÔNG banner thứ 2 nào được tạo, KHÔNG dismiss-then-show animation.
-- [ ] **Banner-slot conflict resolution** (resolved during `/ux-design`, not in the original GDD): GIVEN reminder banner đang hiện, WHEN FCM message đến, THEN FCM banner thay thế ngay tại cùng vị trí — reminder coi như đã "được thấy," không hiện lại trong session đó.
+- [x] **Banner appears on message**: GIVEN app đang mở foreground (bất kỳ tab nào), WHEN `FirebaseMessaging.onMessage` fire, THEN `MaterialBanner` hiện ở top của Tab Nhiệm vụ với text "[Tên bé] vừa hoàn thành [task]".
+- [x] **Banner tap — from Gia đình tab**: GIVEN banner hiện trên Tab Gia đình, WHEN tap banner, THEN navigate sang Tab Nhiệm vụ.
+- [x] **Banner tap — already on Nhiệm vụ**: GIVEN banner hiện khi đã ở Tab Nhiệm vụ, WHEN tap banner, THEN không navigate (no-op), banner dismiss.
+- [x] **Permission-declined reminder — once per session**: GIVEN bố mẹ đã decline notification permission, VÀ đây là session đầu (cold start) mở dashboard, WHEN Tab Nhiệm vụ hiển thị, THEN reminder banner hiện đúng 1 lần trong session đó (session = process lifetime).
+- [x] **Reminder not re-shown mid-session**: GIVEN banner đã bị dismiss trong session hiện tại, WHEN chuyển tab đi rồi quay lại (không kill app), THEN banner KHÔNG hiện lại.
+- [x] **Reminder re-shown after cold start**: GIVEN app bị kill và mở lại, VÀ permission vẫn declined, THEN banner hiện lại 1 lần.
+- [x] **Banner deferred during modal**: GIVEN bất kỳ modal đang mở (create-task sheet HOẶC Reset PIN dialog), WHEN FCM message đến, THEN banner KHÔNG hiện chồng lên; WHEN modal đóng, THEN banner hiện ngay sau đó nếu chưa bị thay bởi banner mới hơn.
+- [x] **Coalescing — 2+ messages**: GIVEN ≥2 FCM messages đến mà chưa "được xem" (counter chỉ reset khi tap hoặc dismiss — KHÔNG reset chỉ vì tab được xem), THEN banner hiện coalesced "N nhiệm vụ mới đang chờ" thay vì N banner riêng.
+- [x] **Live-update, not replace**: GIVEN banner "2 nhiệm vụ mới đang chờ" đang hiện (`unseenCount=2`, chưa tap/dismiss), WHEN message thứ 3 đến, THEN banner live-update tại chỗ thành "3 nhiệm vụ mới đang chờ" — KHÔNG banner thứ 2 nào được tạo, KHÔNG dismiss-then-show animation.
+- [x] **Banner-slot conflict resolution** (resolved during `/ux-design`, not in the original GDD): GIVEN reminder banner đang hiện, WHEN FCM message đến, THEN FCM banner thay thế ngay tại cùng vị trí — reminder coi như đã "được thấy," không hiện lại trong session đó.
 
 ---
 
@@ -95,7 +95,7 @@ ADR-0015 (Parent Dashboard Notification Banner State Machine) written and Accept
 **Required evidence**:
 - `tests/unit/parent-dashboard-ui/fcm_banner_state_machine_test.dart` — must exist and pass (BLOCKING per coding-standards.md's Logic-story rule), covering every QA Test Case above as a pure `BannerState`/`BannerActions` reducer test.
 
-**Status**: [ ] Not yet created
+**Status**: [x] Created — 23/23 tests passing (BLOCKING, mutation-tested in code review against 2 plausible bug classes: `displayKind` precedence order, blanket-vs-scoped reminder consumption). Plus `tests/integration/parent-dashboard-ui/parent_shell_banner_test.dart` — 7/7 tests passing (ADVISORY widget-layer coverage, added during code review after both reviewers independently flagged this story's own QA Test Case 6 — "tap vs. dismiss" navigation split — had no widget-level test; covers `MaterialBanner` rendering, live-update-in-place, tap-navigates-if-not-already-there, dismiss-never-navigates, and the reminder→FCM banner-slot-conflict replacement with no queueing).
 
 ---
 
@@ -103,3 +103,17 @@ ADR-0015 (Parent Dashboard Notification Banner State Machine) written and Accept
 
 - Depends on: ADR-0015 (Accepted 2026-07-22). Story 001 (Complete — this story removes its now-dead banner slot, Implementation Note 4).
 - Unlocks: None further within this epic. This is the last story in Parent Dashboard UI — closes the epic once done.
+
+---
+
+## Completion Notes
+**Completed**: 2026-07-23
+**Criteria**: 10/10 passing (all auto-verified via tests; no manual/deferred criteria)
+**Deviations**:
+- ADVISORY: `_ParentShellScaffoldState.initState()` resolves notification permission status via the pre-existing `firebaseMessagingProvider` DI seam (`core/firebase_providers.dart`) rather than the bare `FirebaseMessaging.instance` static ADR-0015's own code sample showed. Verified in code review as genuinely necessary (not overengineering): `.instance` calls `Firebase.app()` internally and throws `[core/no-app]` without a live Firebase app, which would have broken every widget test mounting `ParentShellScaffold`. `FirebaseMessaging.onMessage` itself is left non-DI'd since it's a plain static broadcast `StreamController` with no `Firebase.app()` dependency — confirmed by tracing both code paths against the installed package source. Zero production behavior change.
+- ADVISORY: this DI choice surfaced 8 pre-existing test failures in files unrelated to this story's own scope (`router_redirect_test.dart`, `root_redirect_test.dart`, `root_navigator_push_test.dart`, `parent_override_test.dart` ×4, `pending_list_approve_reject_test.dart` AC-6) — all constructing `ParentShellScaffold` via a real router without a `firebaseMessagingProvider` override. Fixed directly (same fake pattern added to each file) rather than deferred, since a story cannot ship leaving the existing suite red.
+- ADVISORY: a second test file, `tests/integration/parent-dashboard-ui/parent_shell_banner_test.dart` (7 tests), was added during code review — both flame-specialist and qa-tester independently flagged that no widget-level test exercised `MaterialBanner` rendering, the tap-navigates/dismiss-never-navigates split, or the reminder→FCM replacement animation, despite the story's own QA Test Case 6 explicitly calling for exactly this. Not present in the original Test Evidence requirement (which only names the Logic-tier reducer test as BLOCKING) — added anyway since both reviewers converged on the same gap and it directly closes a self-declared requirement.
+- ADVISORY (documented, not fixed — explicitly out of scope per the ADR's own Risks section): `bannerDisplayText`'s child-name/task-title lookup path (the `unseenCount == 1` case) has no direct unit test — only exercised indirectly via the new widget test's fallback-text path (no task/child seeded there). A lookup-miss only affects display text, never `unseenCount`/`displayKind` correctness.
+**Test Evidence**: Logic (BLOCKING) — `tests/unit/parent-dashboard-ui/fcm_banner_state_machine_test.dart` (23/23 passing, mutation-tested). Widget-tier (ADVISORY, added in review) — `tests/integration/parent-dashboard-ui/parent_shell_banner_test.dart` (7/7 passing).
+**Code Review**: Complete — flame-specialist + qa-tester in parallel, both verdict APPROVED WITH SUGGESTIONS. All findings applied and re-verified same session: the widget-level test gap (above), independently confirmed via mutation testing (qa-tester temporarily broke `displayKind`'s precedence order and the reminder-consumption scoping in `banner_providers.dart`, ran the suite, confirmed exactly the expected tests failed, then reverted cleanly). Full regression suite re-verified at 497/497 (1 pre-existing unrelated skip), `flutter analyze` clean.
+**Epic status**: This was the last story in Parent Dashboard UI (#21) — closing this closes the epic at 4/4 stories complete.
