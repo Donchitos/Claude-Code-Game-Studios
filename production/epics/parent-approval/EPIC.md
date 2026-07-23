@@ -3,7 +3,7 @@
 > **Layer**: Feature
 > **GDD**: design/gdd/parent-approval.md
 > **Architecture Module**: Parent Approval (#11)
-> **Status**: Stories Complete — Blocked on Parent Dashboard UI (#21) for 2 DoD items (see Definition of Done)
+> **Status**: Stories Complete — Parent Dashboard UI (#21) is now Complete and closed 1 of 2 remaining DoD items (GameEventBus replay-risk acknowledgment, Story 001). The other (background→foreground/offline-reconnect manual verification) is still open — see Definition of Done.
 > **Stories**: 2 stories (2/2 Complete)
 
 ## Overview
@@ -76,10 +76,10 @@ This epic is complete when:
 - [x] All stories are implemented, reviewed, and closed via `/story-done`
 - [x] All acceptance criteria from `design/gdd/parent-approval.md` (Approve/Reject scope) are verified
 - [x] All Logic and Integration stories have passing test files in `tests/`
-- [ ] The background→foreground replay verification (ADR-0004) has been performed at least once and the result documented in the relevant story's Completion Notes — **cannot be performed by this epic's own stories**: neither `approveTask()` nor `rejectTask()` has a real caller (both deliberately return without emitting, ADR-0013 §2/§3). This verification requires a live `taskApproved` emission, which only a future Parent Dashboard UI (#21) `ConsumerWidget` can trigger.
-- [ ] The GameEventBus replay risk is explicitly acknowledged in the story that first emits `taskApproved`/`petLeveledUp` for real — **not yet applicable**: no story in this epic emits events at all. This item transfers to whichever future story (Parent Dashboard UI #21) first wires `ref.listen` onto `approveTask()`'s result.
+- [ ] The background→foreground replay verification (ADR-0004) has been performed at least once and the result documented in the relevant story's Completion Notes — **still open, 2026-07-23**: Parent Dashboard UI (#21) Story 001 became the first real `approveTask()` caller (closing the *prerequisite* — a live emission now exists to test against), but no story anywhere has actually run the manual test itself: approve a task while the device is offline, then reconnect, and confirm the sync/emission behaves correctly across that transition. This is a hands-on verification pass (~10 min, per ADR-0004's own estimate), not something either epic's automated test suite exercises. Whoever picks this up next should run it directly against the now-real `ParentDashboardTasksTab`/`approveTask()` call site and document the result here.
+- [x] The GameEventBus replay risk is explicitly acknowledged in the story that first emits `taskApproved`/`petLeveledUp` for real — **closed 2026-07-22**: Parent Dashboard UI (#21) Story 001 is that story. Its own Completion Notes state explicitly: "GameEventBus replay risk is now LIVE (not fixed)... this is the first real `taskApproved`/`petLeveledUp` emission in the running app... fixing it requires an ADR-0004 revision, explicitly out of scope." The risk itself remains unfixed (as designed — fixing it is cross-cutting, out of any single story's scope), but the acknowledgment requirement this DoD item actually asks for is satisfied.
 
-**Epic Status: Stories Complete, epic itself left open** — matching the same honest pattern already established for the Push Notification epic ("Stories Complete — Blocked on TestFlight hardware"), not silently marked fully Complete. The repository layer (`approveTask()`/`rejectTask()`) is done, tested, and reviewed; the two remaining DoD items are Parent Dashboard UI's (#21) responsibility to close when that epic is created.
+**Epic Status: Stories Complete, epic itself left open** — matching the same honest pattern already established for the Push Notification epic ("Stories Complete — Blocked on TestFlight hardware"), not silently marked fully Complete. The repository layer (`approveTask()`/`rejectTask()`) is done, tested, and reviewed; Parent Dashboard UI (#21) is now Complete and closed one of the two remaining DoD items. The other — a genuine manual offline/reconnect verification pass — has not been performed by anyone yet and is the sole remaining gate before this epic can be marked fully Complete.
 
 ## Stories
 
@@ -94,8 +94,8 @@ This epic is complete when:
 **Test coverage**: 39 tests total (19 approve + 8 reject + 12 pure-formula unit tests), all independently re-verified. Full project suite: 354 passed / 1 pre-existing skip / 0 failures.
 **Code review**: Both stories APPROVED WITH SUGGESTIONS (`flame-specialist` + `qa-tester`, parallel/independent each time) — all suggestions closed before each story's close (petLevel corruption guard, dedicated formula unit tests, missing-reward-field documentation, child-doc-existence invariant documentation).
 **Carried-forward gap** (flagged separately, not silently dropped): no `createChildProfile()` write path exists anywhere in the codebase — Auth & Account (marked Complete) never built it. Flagged via a spawned background task during epic creation, not fixed here (out of Parent Approval's scope). `approveTask()`/`rejectTask()` work correctly regardless (all child-doc reads default safely).
-**Next recommended**: Parent Dashboard UI (#21) is the natural next epic — it both closes this epic's 2 remaining DoD items (event emission, replay verification) and is the actual consumer of `approveTask()`/`rejectTask()`. Alternatively, Shop System (#13) or Gacha/Loot (#12) — both have existing GDDs/ADRs and no epic yet.
+**Update — 2026-07-23**: Parent Dashboard UI (#21) is now Complete (4/4 stories). Its Story 001 was the first real `approveTask()`/`rejectTask()` caller and closed this epic's GameEventBus replay-risk acknowledgment DoD item. The one remaining DoD item — a manual background→foreground/offline-reconnect verification pass — is now genuinely runnable (a real emission call site exists) but has not been performed by anyone yet. Recommend running that verification directly, or continuing to Shop System (#13)/Gacha/Loot (#12), both of which have existing GDDs/ADRs and no epic yet.
 
 ## Next Step
 
-Epic's own implementation work is done. See "Next recommended" above for what to pick up next.
+Only remaining work: the manual background→foreground/offline-reconnect verification pass described in Definition of Done above. No further story or code work is needed to unblock it — it's a hands-on test against the now-real `ParentDashboardTasksTab` Approve flow.

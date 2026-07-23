@@ -15,6 +15,6 @@ Engine: Flutter 3.44.4 / Flame 1.37.0 / Dart 3.12.2
 | [task-library](task-library/EPIC.md) | Core | Task Library (#8) | design/gdd/task-library.md | 4 stories | Complete |
 | [push-notification](push-notification/EPIC.md) | Core | Push Notification (#9) | design/gdd/push-notification.md | 2/2 stories complete | Blocked on TestFlight hardware |
 | [seed-buffer](seed-buffer/EPIC.md) | Feature | Seed Buffer Mechanic (#10) | design/gdd/seed-buffer.md | 3 stories | Complete |
-| [parent-approval](parent-approval/EPIC.md) | Feature | Parent Approval System (#11) | design/gdd/parent-approval.md | 2/2 stories complete | Blocked on Parent Dashboard UI (#21) |
+| [parent-approval](parent-approval/EPIC.md) | Feature | Parent Approval System (#11) | design/gdd/parent-approval.md | 2/2 stories complete | Stories Complete — 1 of 2 DoD items closed; needs a manual offline/reconnect verification pass |
 | [main-navigation-shell](main-navigation-shell/EPIC.md) | Presentation | Main Navigation Shell (#17) | design/gdd/main-navigation-shell.md | 6 stories | Complete |
 | [parent-dashboard-ui](parent-dashboard-ui/EPIC.md) | Presentation | Parent Dashboard UI (#21) | design/gdd/parent-dashboard-ui.md | 4 stories | Complete |
