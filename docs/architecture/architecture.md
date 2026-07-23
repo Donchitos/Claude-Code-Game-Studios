@@ -277,11 +277,11 @@ Full 104-row Technical Requirements Baseline was extracted in Phase 0b (see `pro
 | Parent Approval (#11) | 8 | 1/8 — ADR-0004 (event-type contract only) | ⚠️ PARTIAL |
 | Gacha/Loot (#12) | 5 | — | ❌ GAP |
 | Shop System (#13) | 4 | 4/4 — ADR-0011 | ✅ FULL |
-| Pet Interaction (#14) | 4 | 1/4 — ADR-0004 §3b (Flame-emit contract only) | ⚠️ PARTIAL |
+| Pet Interaction (#14) | 4 | 4/4 — ADR-0004 §3b (001) + ADR-0016 (002-004) | ✅ FULL |
 | Pet Equipment (#15) | 4 | — | ❌ GAP |
 | Pet Leveling (#16) | 5 | — | ❌ GAP |
 | Nav Shell (#17) | 4 | — | ❌ GAP |
-| Pet Room UI (#18) | 5 | 1/5 — ADR-0001 (draw-call budget only) | ⚠️ PARTIAL |
+| Pet Room UI (#18) | 5 | 5/5 — ADR-0001 (TR-petroom-002, draw-call budget) + ADR-0017 (TR-petroom-001/003/004/005) | ✅ FULL |
 | Task Mgmt UI (#19) | 4 | — | ❌ GAP |
 | Shop/Reward UI (#20) | 4 | — | ❌ GAP |
 | Parent Dashboard UI (#21) | 4 | — | ❌ GAP |
@@ -308,20 +308,20 @@ Every gap becomes a Required New ADR, grouped by layer (each ADR scoped to one s
 - Parent Approval Transaction Design — covers TR-parentapproval-001..006,008 (007 already covered by ADR-0004) — **not yet written**
 - Gacha/Loot Roll Architecture — covers TR-gacha-001..005 — **not yet written**
 - ~~Shop Purchase Pipeline & Idempotency Fix~~ — **ADR-0011, Accepted (2026-07-11)** — covers TR-shop-001..004, closes QQ-01
-- Pet Interaction Input Handling — covers TR-petinteraction-002..004 (001 already covered by ADR-0004 §3b) — **not yet written**
+- ~~Pet Interaction Input Handling~~ — **ADR-0016, Accepted (2026-07-23)** — covers TR-petinteraction-002..004 (001 already covered by ADR-0004 §3b)
 - Pet Equipment Ownership & Rendering — covers TR-petequip-001..004 — **not yet written**
 - Pet Leveling & Evolution Consistency — covers TR-leveling-001..005 — **not yet written**
 
 **Presentation layer — 0 of 5 written:**
 - Navigation Shell & Route Guard Architecture — covers TR-navshell-001..004 — **not yet written**
-- Pet Room Screen Rendering & Interaction Contract — covers TR-petroom-001,003,004,005 (002 already covered by ADR-0001) — **not yet written**
+- ~~Pet Room Screen Rendering & Interaction Contract~~ — **ADR-0017, Accepted (2026-07-23)** — covers TR-petroom-001,003,004,005 (002 already covered by ADR-0001)
 - Task Management UI Data & Interrupt Handling — covers TR-taskui-001..004 — **not yet written**
 - Shop/Reward Ceremony UI State Management — covers TR-shopui-001..004 — **not yet written**
 - Parent Dashboard Notification Banner State Machine — covers TR-parentdash-001..004 — **not yet written**
 
 ## Required ADRs
 
-Same 20 required ADRs identified in the ADR Audit above, regrouped by priority. **11 of 20 written and Accepted as of 2026-07-13** (all 9 must-have + 1 should-have, ADR-0011).
+Same 20 required ADRs identified in the ADR Audit above, regrouped by priority. **12 of 20 written and Accepted as of 2026-07-23** (all 9 must-have + 2 should-have, ADR-0011 and ADR-0016 — note: ADRs 0012–0015 also now exist for other systems in this should-have list but this summary line has not been re-audited against them; see Pet Interaction's own row above, which is verified current as of this edit).
 
 **Must have before coding starts** (Foundation & Core layer — everything downstream depends on these) — **✅ ALL 9 ACCEPTED, condition met 2026-07-11**:
 1. ~~Auth & PIN Security Architecture~~ — ADR-0002 ✅
@@ -334,12 +334,12 @@ Same 20 required ADRs identified in the ADR Audit above, regrouped by priority. 
 8. ~~Task Lifecycle & Reward Integrity~~ — ADR-0009 ✅
 9. ~~Push Notification Delivery Architecture~~ — ADR-0010 ✅
 
-**Should have before the relevant system is built** (Feature + Presentation layer — needed before that specific system's implementation starts, not before all coding) — **1 of 12 done**:
+**Should have before the relevant system is built** (Feature + Presentation layer — needed before that specific system's implementation starts, not before all coding) — **2 of 12 done** (plus ADRs 0012–0015 exist for other should-have systems, not yet re-tallied here):
 10. Seed Buffer Derivation Strategy — not yet written
 11. Parent Approval Transaction Design — not yet written
 12. Gacha/Loot Roll Architecture — not yet written
 13. ~~Shop Purchase Pipeline & Idempotency Fix~~ — **ADR-0011 ✅ (2026-07-11)**
-14. Pet Interaction Input Handling — not yet written
+14. ~~Pet Interaction Input Handling~~ — ADR-0016 ✅ (2026-07-23)
 15. Pet Equipment Ownership & Rendering — not yet written
 16. Pet Leveling & Evolution Consistency — not yet written
 17. Navigation Shell & Route Guard Architecture — not yet written

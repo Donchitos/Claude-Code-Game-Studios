@@ -91,6 +91,26 @@ class GameEventBus {
   static void Function(String message) logWarning = (message) =>
       developer.log(message, name: 'GameEventBus', level: 900);
 
+  /// Synchronously returns the currently-cached last event for [type], or
+  /// `null` if [type] has never been emitted. Read-only — does not
+  /// subscribe, does not touch the replay cache, no side effects; it just
+  /// exposes existing [_lastEventByType] state that already backs [stream]'s
+  /// own replay.
+  ///
+  /// Exists so a consumer can distinguish, by object identity, "a live
+  /// event I'm receiving right now" from "the replay of an already-known
+  /// cached event delivered at subscribe time" — snapshot this at
+  /// subscribe time, then compare each delivered event via `identical()`
+  /// (added for Story 004 / Pet Interaction's AC-11: `MochiComponent` needs
+  /// this to avoid replaying a stale `petInteracted` into a fresh PLEASED
+  /// animation on remount, without changing this bus's own cache/replay
+  /// semantics for any `GameEventType`, which stay exactly as ADR-0004 §5
+  /// specifies). A microtask-ordering-based approach was tried first and
+  /// found unreliable: `Stream.multi`'s replay of multiple cached types can
+  /// interleave with an unrelated scheduled microtask in a way that isn't
+  /// safely orderable — identity comparison has no such timing dependency.
+  GameEvent? peekLastEvent(GameEventType type) => _lastEventByType[type];
+
   /// Pushes [event] to every current subscriber and updates the per-type
   /// replay cache. A silent no-op (does not throw) if the bus has already
   /// been [dispose]d — logs a warning instead, since `dispose()` should only

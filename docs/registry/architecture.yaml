@@ -30,7 +30,7 @@
 #   Superseded entries:     Grep pattern="status: superseded"
 
 version: 1
-last_updated: "2026-07-18"
+last_updated: "2026-07-23"
 
 # ─── STATE OWNERSHIP ─────────────────────────────────────────────────────────
 # Who is the authoritative owner of each piece of shared game state.
@@ -307,6 +307,27 @@ state_ownership:
     added: 2026-07-22
     revised: ""
 
+  - state: mochi_hit_area_size
+    status: active
+    owner_system: pet-room-screen-ui
+    adr: docs/architecture/adr-0017-pet-room-screen-rendering-interaction-contract.md
+    interface: "computeHitArea(spriteSize, {hitBoxMin = kTapHitboxMin}) -> HitArea{padding,
+      hitBoxSize} (src/lib/gameplay/hit_area_formula.dart, pure Dart). MochiComponent.size is
+      set to Vector2.all(hitBoxSize) — the padded value, NOT the visual sprite size — recomputed
+      only on evolution-stage transition. The requirement this satisfies (hitBoxSize >= 80dp,
+      kTapHitboxMin = 80.0) is owned by Pet Interaction / ADR-0016, which fixed the size-based
+      hit-test CONTRACT; this entry owns the concrete COMPUTATION that produces the value."
+    write_access: pet-room-screen-ui-only   # MochiComponent.size is set only where the component
+      # is mounted/resized (pet_room_game.dart); Pet Interaction (ADR-0016) reads/verifies this
+      # value (Story 005, AC-12) but never sets it
+    referenced_by:
+      - docs/architecture/adr-0017-pet-room-screen-rendering-interaction-contract.md
+      - docs/architecture/adr-0016-pet-interaction-input-handling.md
+      - design/gdd/pet-room-screen-ui.md
+      - design/gdd/pet-interaction.md
+    added: 2026-07-23
+    revised: ""
+
 # Example:
 #
 # state_ownership:
@@ -366,20 +387,23 @@ interfaces:
       - seed-buffer              # subscribes: seedReceived
       - pet-equipment            # subscribes: itemEquipped
       - pet-leveling-evolution   # emits (via ref.listen adapter): petLeveledUp
-      - pet-room-screen-ui       # subscribes: multiple
+      - pet-room-screen-ui       # subscribes: multiple; ALSO EMITS modalVisibilityChanged (ADR-0017,
+                                  # from showModal()/dismissModal() call sites — still one-way Flutter→Flame)
       - pet-interaction          # EMITS directly from a Flame component: petInteracted
     adr: docs/architecture/adr-0004-flutter-flame-event-bridge-architecture.md
     signal_signature: "GameEventBus() -> pure-Dart broadcast singleton; GameEvent(GameEventType type, dynamic data);
       GameEventType { petMoodChanged→PetMood, seedReceived→SeedData, itemEquipped→String,
-      energyChanged→double, petLeveledUp→int, petInteracted→InteractionType, taskApproved→null }.
+      energyChanged→double, petLeveledUp→int, petInteracted→InteractionType, taskApproved→null,
+      modalVisibilityChanged→bool (ADR-0017; true=a Pet Room modal just opened, false=closed) }.
       Two sanctioned adapters: (a) ref.listen in ConsumerWidget → emit(); (b) Flame component emit()
       direct (#14 only, Flame→Bus→Flame). Subscribers MUST subscribe in onMount(), guard with isMounted,
       cancel() in onRemove(). One-way only: never Flame→Flutter."
     referenced_by:
       - docs/architecture/adr-0004-flutter-flame-event-bridge-architecture.md
+      - docs/architecture/adr-0017-pet-room-screen-rendering-interaction-contract.md
       - design/gdd/flutter-flame-state-bridge.md
     added: 2026-07-07
-    revised: ""
+    revised: "2026-07-23"
 
   - contract: fcm_notification_payload
     status: active
@@ -458,6 +482,27 @@ interfaces:
       - docs/architecture/adr-0015-parent-dashboard-notification-banner-state-machine.md
       - design/gdd/parent-dashboard-ui.md
     added: 2026-07-22
+    revised: ""
+
+  - contract: pet_room_modal_control
+    status: active
+    pattern: direct_call   # PetRoomGame.showModal(key)/dismissModal() — imperative overlay-key mutation
+    producer: pet-room-screen-ui
+    consumers:
+      - pet-room-screen-ui   # PetRoomGame itself is both producer and sole consumer
+    adr: docs/architecture/adr-0017-pet-room-screen-rendering-interaction-contract.md
+    signal_signature: "PetRoomGame.showModal(String overlayKey) / .dismissModal() — the ONLY
+      sanctioned way to add/remove the 'context_menu' or 'wardrobe' GameWidget overlay keys.
+      showModal() always removes both keys before adding the requested one, guaranteeing
+      mutual exclusivity (GDD Core Rule 1/5, Edge Case 3). Each call site also emits
+      GameEventType.modalVisibilityChanged(bool) on GameEventBus immediately before/after —
+      see game_event_bus interface entry above. Calling game.overlays.add/remove directly
+      with either key from outside pet_room_game.dart is forbidden — see forbidden_patterns'
+      direct_overlay_mutation_for_petroom_modals entry below."
+    referenced_by:
+      - docs/architecture/adr-0017-pet-room-screen-rendering-interaction-contract.md
+      - design/gdd/pet-room-screen-ui.md
+    added: 2026-07-23
     revised: ""
 
 # Example:
@@ -731,6 +776,56 @@ api_decisions:
       - design/gdd/seed-buffer.md
     added: 2026-07-17
     revised: "2026-07-17"
+
+  - purpose: pet_interaction_gesture_classification
+    status: active
+    api: "DragCallbacks mixin ONLY on MochiComponent (no TapCallbacks alongside it). All
+      touches are funneled through onDragStart/onDragEnd; classification into
+      InteractionType.tap vs .swipe happens once, on release, by comparing straight-line
+      displacement (end - start canvasPosition) and elapsed duration (injected-clock
+      DateTime diff between onDragStart/onDragEnd) against the GDD's 40dp/300ms thresholds.
+      onDragCancel discards in-flight state with no emit. A single-active-pointer guard
+      (keyed by pointerId) ignores any second concurrent touch."
+    not: "TapCallbacks + DragCallbacks combined on the same component (gesture-arena
+      conflict — DragCallbacks' ImmediateMultiDragGestureRecognizer tends to win the arena
+      before TapCallbacks' MultiTapGestureRecognizer is fairly resolved, per flame-specialist
+      validation); summed per-onDragUpdate path-length as the distance metric (overcounts
+      jitter vs. straight-line displacement)."
+    adr: docs/architecture/adr-0016-pet-interaction-input-handling.md
+    reason: "A stationary touch-and-release must still classify as a tap, which requires a
+      recognizer that accepts immediately without pan-slop movement (DragCallbacks). Pairing
+      it with a second, competing tap recognizer on the same component is an unreliable-arena
+      risk, not a functional need — one recognizer classifying on release covers both cases."
+    referenced_by:
+      - docs/architecture/adr-0016-pet-interaction-input-handling.md
+      - design/gdd/pet-interaction.md
+    added: 2026-07-23
+    revised: ""
+
+  - purpose: pet_interaction_cooldown_mechanism
+    status: active
+    api: "Two independent nullable DateTime fields (one per InteractionType), updated only
+      when that type's gesture is actually emitted. Before emitting, compare
+      injectedNow().difference(lastInteractionOfThisType) against the type's cooldown
+      duration (tap 1.0s / swipe 2.0s) — a lazy comparison evaluated only when a new gesture
+      arrives, never a scheduled callback."
+    not: "A scheduled dart:async Timer(duration, callback), and especially not a Flame
+      TimerComponent/frame-ticked timer (the latter is already the registered
+      wall_clock_timer_for_flame_triggered_state-adjacent mistake — Flame's game loop pauses
+      on background, which would make a frame-ticked cooldown timer stop counting, the
+      opposite of the GDD's intent)."
+    adr: docs/architecture/adr-0016-pet-interaction-input-handling.md
+    reason: "Mirrors ADR-0005's Time & Decay pattern (injected now(), pure comparison, no
+      background timer) for the identical underlying problem: correctness of elapsed
+      wall-clock time across app background/foreground without depending on Dart Timer
+      scheduling semantics during isolate suspension, which is platform-dependent and not
+      something to build correctness on."
+    referenced_by:
+      - docs/architecture/adr-0016-pet-interaction-input-handling.md
+      - docs/architecture/adr-0005-time-decay-calculation-strategy.md
+      - design/gdd/pet-interaction.md
+    added: 2026-07-23
+    revised: ""
 
 # Example:
 #
@@ -1124,6 +1219,79 @@ forbidden_patterns:
       - docs/architecture/adr-0015-parent-dashboard-notification-banner-state-machine.md
       - docs/architecture/adr-0014-navigation-shell-route-guard-architecture.md
     added: 2026-07-22
+
+  - pattern: combining_tapcallbacks_and_dragcallbacks_same_component
+    status: active
+    description: "Never mix both TapCallbacks and DragCallbacks onto the same Flame
+      component when one gesture must be classified as either a tap or a drag/swipe.
+      Use DragCallbacks alone and classify tap-vs-swipe in onDragEnd instead."
+    why: "DragCallbacks is backed by ImmediateMultiDragGestureRecognizer, which accepts a
+      pointer immediately on touch-down. Paired with TapCallbacks' MultiTapGestureRecognizer
+      on the same component, the drag recognizer tends to win the gesture arena before the
+      tap recognizer is fairly resolved, producing unreliable or double-fired taps
+      (flame-specialist-confirmed during ADR-0016 authoring — a stable Flame characteristic,
+      not a version-specific bug)."
+    adr: docs/architecture/adr-0016-pet-interaction-input-handling.md
+    referenced_by:
+      - docs/architecture/adr-0016-pet-interaction-input-handling.md
+      - docs/architecture/adr-0017-pet-room-screen-rendering-interaction-contract.md
+      - design/gdd/pet-interaction.md
+    added: 2026-07-23
+
+  - pattern: scheduled_timer_for_interaction_cooldown
+    status: active
+    description: "Never gate a per-type interaction cooldown (e.g. Pet Interaction's tap/
+      swipe cooldown) behind a scheduled dart:async Timer(duration, callback) or a Flame
+      TimerComponent. Store the last-interaction DateTime per type and compare it lazily
+      (injected-clock diff) at the moment the next gesture arrives."
+    why: "A Flame TimerComponent pauses with the game loop on background — the opposite of
+      a cooldown that should keep elapsing while the app is minimized. A plain dart:async
+      Timer avoids that specific bug but adds a scheduled-callback code path with no
+      functional benefit over a lazy comparison, and does not survive an OS process kill any
+      better than a stored timestamp would. Mirrors ADR-0005's injected-now/pure-comparison
+      precedent for the same class of problem (correctness of elapsed wall-clock time across
+      backgrounding)."
+    adr: docs/architecture/adr-0016-pet-interaction-input-handling.md
+    referenced_by:
+      - docs/architecture/adr-0016-pet-interaction-input-handling.md
+      - docs/architecture/adr-0007-pet-state-machine-architecture.md
+      - design/gdd/pet-interaction.md
+    added: 2026-07-23
+
+  - pattern: direct_overlay_mutation_for_petroom_modals
+    status: active
+    description: "Never call game.overlays.add()/.remove() with the 'context_menu' or
+      'wardrobe' keys from anywhere other than PetRoomGame.showModal()/dismissModal()
+      (pet_room_game.dart)."
+    why: "showModal()/dismissModal() are the single enforcement point guaranteeing the two
+      modal overlays are mutually exclusive (GDD Core Rule 1: at no point are both modals
+      mounted) and that the modalVisibilityChanged bridge event (see game_event_bus interface
+      entry) is emitted in lockstep with the overlay mutation. A direct overlays.add()/remove()
+      call bypasses both guarantees silently — Flame does not prevent two overlay keys from
+      being active simultaneously on its own."
+    adr: docs/architecture/adr-0017-pet-room-screen-rendering-interaction-contract.md
+    referenced_by:
+      - docs/architecture/adr-0017-pet-room-screen-rendering-interaction-contract.md
+      - design/gdd/pet-room-screen-ui.md
+    added: 2026-07-23
+
+  - pattern: scaling_pinned_sprite_to_fill_padded_hitbox
+    status: active
+    description: "When a Flame component's size is padded beyond its visual sprite's true
+      dimensions for hit-test purposes (e.g. MochiComponent's size == hitBoxSize per
+      mochi_hit_area_size), never let the sprite render via the default SpriteComponent
+      paint path (which stretches the sprite to fill size). Override render() to paint the
+      sprite at its true, unscaled size, centered within the padded bounding box."
+    why: "Letting the sprite auto-scale to fill the padded hit box would visually enlarge
+      Mochi beyond its Art-Bible-pinned per-evolution-stage dimensions (72/112/152dp) —
+      directly violating GDD pet-room-screen-ui.md Core Rule 4 ('không co giãn sprite lớn
+      hơn thiết kế gốc'). The padding must stay invisible — present only in the tap hit-test
+      region, never in what's painted."
+    adr: docs/architecture/adr-0017-pet-room-screen-rendering-interaction-contract.md
+    referenced_by:
+      - docs/architecture/adr-0017-pet-room-screen-rendering-interaction-contract.md
+      - design/gdd/pet-room-screen-ui.md
+    added: 2026-07-23
 
 # Example:
 #

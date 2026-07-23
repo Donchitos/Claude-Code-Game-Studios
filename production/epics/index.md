@@ -1,6 +1,6 @@
 # Epics Index
 
-Last Updated: 2026-07-23 (Parent Dashboard UI epic Complete — 4/4 stories)
+Last Updated: 2026-07-23 (pet-interaction epic Complete — 5/5 stories)
 Engine: Flutter 3.44.4 / Flame 1.37.0 / Dart 3.12.2
 
 | Epic | Layer | System | GDD | Stories | Status |
@@ -18,3 +18,5 @@ Engine: Flutter 3.44.4 / Flame 1.37.0 / Dart 3.12.2
 | [parent-approval](parent-approval/EPIC.md) | Feature | Parent Approval System (#11) | design/gdd/parent-approval.md | 2/2 stories complete | Stories Complete — 1 of 2 DoD items closed; needs a manual offline/reconnect verification pass |
 | [main-navigation-shell](main-navigation-shell/EPIC.md) | Presentation | Main Navigation Shell (#17) | design/gdd/main-navigation-shell.md | 6 stories | Complete |
 | [parent-dashboard-ui](parent-dashboard-ui/EPIC.md) | Presentation | Parent Dashboard UI (#21) | design/gdd/parent-dashboard-ui.md | 4 stories | Complete |
+| [pet-interaction](pet-interaction/EPIC.md) | Feature | Pet Interaction (#14) | design/gdd/pet-interaction.md | 5 stories | Complete |
+| [pet-room-screen-ui](pet-room-screen-ui/EPIC.md) | Presentation | Pet Room Screen UI (#18) | design/gdd/pet-room-screen-ui.md | 7 stories (1 Complete, 6 Ready) | Ready |
