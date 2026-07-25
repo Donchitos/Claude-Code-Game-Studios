@@ -4,7 +4,7 @@
 > **GDD**: design/gdd/pet-room-screen-ui.md
 > **Architecture Module**: Pet Room Screen UI (#18)
 > **Status**: Ready
-> **Stories**: 7 stories (Stories 001, 003 implemented — see Stories table)
+> **Stories**: 7 stories (Stories 001, 003, 004 implemented — see Stories table)
 
 ## Overview
 
@@ -91,7 +91,7 @@ This epic is complete when:
 | 001 | Tap Hit-Area Padding (Formula 2) | Logic | Complete | ADR-0017 |
 | 002 | Flame Canvas Draw-Call Budget Contract (Formula 1) | Logic | Ready | ADR-0001 |
 | 003 | Flame Canvas Composition, Z-Order & Modal Mutual Exclusivity | Integration | Complete | ADR-0017 |
-| 004 | Modal Defer for Wardrobe / Competing GameEvent | Integration | Ready | ADR-0017 |
+| 004 | Modal Defer for Wardrobe / Competing GameEvent | Integration | Complete | ADR-0017 |
 | 005 | FlameGame Lifecycle — Never Init/Reset on Tab Return | Integration | Ready | ADR-0017 |
 | 006 | Persistent Chrome — Status Row & Level Progress Bar | UI | Ready | ADR-0017 |
 | 007 | Tap-on-Mochi Context Menu & Wardrobe Bottom Sheet | UI | Ready | ADR-0017 |
@@ -103,14 +103,18 @@ Minimum Enforcement). Story 003 (Composition, Z-Order & Modal Mutual
 Exclusivity) is now also Complete — it fixes the live-app black-screen bug
 (neither `RoomBackgroundComponent` nor `MochiComponent` were ever mounted
 prior to this story) and unblocks Stories 004, 006, 007, which needed its
-`showModal`/`dismissModal`/overlay-key contract. Stories 002, 004, 005, 006,
-007 remain Ready and unimplemented; work through them in `Depends on:` order
-(see each story's Dependencies section).
+`showModal`/`dismissModal`/overlay-key contract. Story 004 (Modal Defer) is
+now also Complete — code review (flame-specialist + qa-tester, both
+independently) found and this story fixed a real bug in `_onTriggerComplete`
+that bypassed the new modal-defer gate for a dequeued ADR-0007 `_queued`
+trigger; see story-004's own Implementation Record for the full repro and
+fix. Stories 002, 005, 006, 007 remain Ready and unimplemented; work through
+them in `Depends on:` order (see each story's Dependencies section).
 
 ## Next Step
 
-Continue implementing stories in dependency order: Story 004 (Modal Defer),
-006 (Persistent Chrome), and 007 (Context Menu & Wardrobe) are now unblocked
-by Story 003. Story 002 (Formula 1) and Story 005 (Lifecycle) have no
+Continue implementing stories in dependency order: 006 (Persistent Chrome)
+and 007 (Context Menu & Wardrobe) are now unblocked by both Story 003 and
+Story 004. Story 002 (Formula 1) and Story 005 (Lifecycle) have no
 dependencies and can be picked up any time. Run
 `/story-readiness [story-path]` then `/dev-story [story-path]` for each.

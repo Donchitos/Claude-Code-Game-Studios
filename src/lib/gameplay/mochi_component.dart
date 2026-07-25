@@ -76,6 +76,37 @@ class MochiComponent extends SpriteComponent
   TriggeredState? _queued;
 
   // ---------------------------------------------------------------------
+  // Pet Room Screen UI Story 004 (Modal Defer for Wardrobe / Competing
+  // GameEvent, ADR-0017 Decision → TR-petroom-004): while a Pet Room modal
+  // (context menu or Wardrobe) is open, `onTrigger` must not play or queue
+  // as normal — Base Mood state (`_baseMood` above, updated via
+  // `petMoodChanged`) still updates immediately regardless of modal state,
+  // only the VISUAL is deferred. Independent of ADR-0007's `_queued`
+  // LEVELING_UP-interrupt gate above: being inside a non-interruptible
+  // LEVELING_UP animation and having a modal open are two different
+  // preconditions, checked at different points in the same `onTrigger`.
+  // ---------------------------------------------------------------------
+
+  /// `true` while a Pet Room modal (context menu or Wardrobe) is open —
+  /// driven solely by [GameEventType.modalVisibilityChanged], never read
+  /// from Riverpod (one-way Flutter→Flame flow, ADR-0004; ADR-0017
+  /// Alternative 4 explicitly rejects a direct-provider-read alternative
+  /// for this exact case).
+  bool _modalOpen = false;
+
+  /// The single highest-priority triggered state requested while
+  /// [_modalOpen] was `true`, replayed via [onTrigger] the moment the modal
+  /// closes. `null` when nothing is pending. Distinct from [_queued]
+  /// (ADR-0007's LEVELING_UP-interrupt slot) — the two gates never interact
+  /// directly.
+  TriggeredState? _pendingVisual;
+
+  /// Test-only accessor — `null` means no triggered state is currently
+  /// deferred behind an open modal.
+  @visibleForTesting
+  TriggeredState? get pendingVisual => _pendingVisual;
+
+  // ---------------------------------------------------------------------
   // Story 004 (No-Mutation & Background/Foreground Resilience, AC-11):
   // guards the ONE genuine gap found in ADR-0004 §5's per-type replay cache
   // when applied to `petInteracted` specifically — see [_petInteractedAtSubscribeTime].
@@ -198,6 +229,7 @@ class MochiComponent extends SpriteComponent
     GameEventType.itemEquipped,
     GameEventType.seedReceived,
     GameEventType.petLeveledUp,
+    GameEventType.modalVisibilityChanged,
   };
 
   @override
@@ -225,6 +257,15 @@ class MochiComponent extends SpriteComponent
         onTrigger(TriggeredState.bouncing);
       case GameEventType.petLeveledUp:
         onTrigger(TriggeredState.levelingUp);
+      case GameEventType.modalVisibilityChanged:
+        // Story 004: Base Mood updates above are never gated by modal
+        // state — only the visual (via `onTrigger`, below) is deferred.
+        _modalOpen = event.data as bool;
+        if (!_modalOpen && _pendingVisual != null) {
+          final t = _pendingVisual!;
+          _pendingVisual = null;
+          onTrigger(t);
+        }
       default:
         break;
     }
@@ -236,6 +277,19 @@ class MochiComponent extends SpriteComponent
   /// [GameEvent] round-trip through [GameEventBus] for every scenario.
   @visibleForTesting
   void onTrigger(TriggeredState t) {
+    // Story 004 (ADR-0017 Decision → TR-petroom-004): while a Pet Room
+    // modal is open, do not play or queue as normal — keep only the
+    // highest-priority pending trigger (same priority comparison
+    // `_queueHighest` uses below) and replay it via `onTrigger` once the
+    // modal closes (see the `modalVisibilityChanged` case in
+    // `onGameEvent`). Checked FIRST, before ADR-0007's LEVELING_UP-
+    // interrupt gate below — a modal open takes precedence over the
+    // priority machinery entirely, since nothing should visually play
+    // while a modal is covering the screen.
+    if (_modalOpen) {
+      _queuePendingVisual(t);
+      return;
+    }
     // LEVELING_UP is non-interruptible: everything else queues instead of
     // applying (ADR-0007 Decision §3).
     if (_current == TriggeredState.levelingUp) {
@@ -261,6 +315,21 @@ class MochiComponent extends SpriteComponent
     if (_queued == null ||
         triggeredStatePriority(t) > triggeredStatePriority(_queued!)) {
       _queued = t;
+    }
+  }
+
+  /// Shared highest-priority-wins merge into [_pendingVisual] — used by
+  /// both [onTrigger]'s own modal guard and [_onTriggerComplete] below (a
+  /// queued trigger dequeuing while a modal is STILL open must defer the
+  /// same way, not bypass the modal gate — flame-specialist code-review
+  /// finding: an earlier version called `_play(next)` unconditionally in
+  /// `_onTriggerComplete`, which could start a real triggered-state visual
+  /// while a modal was still open if its predecessor's timer/effect
+  /// happened to complete during that window).
+  void _queuePendingVisual(TriggeredState t) {
+    if (_pendingVisual == null ||
+        triggeredStatePriority(t) > triggeredStatePriority(_pendingVisual!)) {
+      _pendingVisual = t;
     }
   }
 
@@ -303,11 +372,20 @@ class MochiComponent extends SpriteComponent
   void _onTriggerComplete() {
     final next = _queued;
     _queued = null;
-    if (next != null) {
-      _play(next);
-    } else {
-      _current = null;
+    _current = null;
+    if (next == null) return;
+    // Story 004: a modal may have opened WHILE this trigger's timer/effect
+    // was still running (an already-playing triggered state is not
+    // interrupted by a modal opening — see `onTrigger`'s own modal guard).
+    // If the modal is STILL open now that the timer/effect has completed,
+    // the just-dequeued `next` must not play either — defer it through the
+    // same [_queuePendingVisual] path `onTrigger` uses, rather than calling
+    // [_play] directly and bypassing the modal gate entirely.
+    if (_modalOpen) {
+      _queuePendingVisual(next);
+      return;
     }
+    _play(next);
   }
 
   /// Removes any currently-attached [Effect] or trigger-completion timer

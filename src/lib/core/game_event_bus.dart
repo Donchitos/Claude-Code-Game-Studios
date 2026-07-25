@@ -16,6 +16,22 @@ enum GameEventType {
   petLeveledUp,
   petInteracted,
   taskApproved,
+
+  /// Payload: `bool` — `true` when a Pet Room modal (context menu or
+  /// Wardrobe) has just opened, `false` when it has just closed. Emitted
+  /// only from `PetRoomGame.showModal`/`.dismissModal` (Pet Room Screen UI
+  /// Story 004, ADR-0017 Decision → TR-petroom-004) — the only two call
+  /// sites permitted to mutate the `'context_menu'`/`'wardrobe'` overlay
+  /// keys (Story 003's forbidden-pattern rule), so emitting inside those
+  /// methods covers every modal open/close with no separate call-site
+  /// discipline required.
+  ///
+  /// Means "is a modal open **within Pet Room**" — NOT "is the Pet Room
+  /// screen itself visible" (ADR-0017 Consequences → Negative's explicit
+  /// regression guard: do not repurpose this for screen-visibility/tab-
+  /// switch tracking, which is a different concern with its own future
+  /// mechanism if one is ever needed).
+  modalVisibilityChanged,
 }
 
 /// A single typed event on the bridge. `data`'s actual runtime type is

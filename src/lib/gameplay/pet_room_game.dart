@@ -6,6 +6,7 @@ import 'package:flame/game.dart';
 import 'package:flame/sprite.dart';
 import 'package:meta/meta.dart';
 
+import '../core/game_event_bus.dart';
 import 'mochi_component.dart';
 import 'room_background_component.dart';
 
@@ -166,8 +167,20 @@ class PetRoomGame extends FlameGame {
   /// keys are always removed before the requested one is added, so at no
   /// point can both `'context_menu'` and `'wardrobe'` be mounted
   /// simultaneously.
+  ///
+  /// Also the sole emission point for [GameEventType.modalVisibilityChanged]
+  /// (Story 004, ADR-0017 Decision → TR-petroom-004) — since this method is
+  /// already the only sanctioned way to open a modal (the forbidden-pattern
+  /// rule above), emitting here covers every real modal open with no
+  /// separate call-site discipline required, rather than the story's
+  /// illustrative sample (which shows the emit as a step adjacent to the
+  /// call site) risking a future caller forgetting it. `true` is emitted
+  /// BEFORE mutating `overlays`, matching the story's own before/after
+  /// ordering — `MochiComponent` should already know a modal is opening
+  /// before any `GameEvent` arrives during it.
   void showModal(String overlayKey) {
     assert(overlayKey == 'context_menu' || overlayKey == 'wardrobe');
+    GameEventBus().emit(GameEvent(GameEventType.modalVisibilityChanged, true));
     overlays.remove('context_menu');
     overlays.remove('wardrobe');
     overlays.add(overlayKey);
@@ -176,9 +189,16 @@ class PetRoomGame extends FlameGame {
   /// Dismisses whichever of the two modal overlay keys is currently mounted
   /// (a no-op for whichever one isn't). Also the sanctioned path — see
   /// [showModal].
+  ///
+  /// Emits [GameEventType.modalVisibilityChanged] (`false`) AFTER mutating
+  /// `overlays` — matching the story's before/after ordering and
+  /// [showModal]'s own reasoning above (the single sanctioned dismissal
+  /// path, so this covers every real modal close with no separate call-site
+  /// discipline).
   void dismissModal() {
     overlays.remove('context_menu');
     overlays.remove('wardrobe');
+    GameEventBus().emit(GameEvent(GameEventType.modalVisibilityChanged, false));
   }
 
   @override

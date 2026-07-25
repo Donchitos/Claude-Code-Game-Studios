@@ -1,12 +1,12 @@
 # Story 004: Modal Defer for Wardrobe / Competing GameEvent
 
 > **Epic**: Pet Room Screen UI
-> **Status**: Ready
+> **Status**: Complete
 > **Layer**: Presentation
 > **Type**: Integration
 > **Estimate**: 2-3h
 > **Manifest Version**: 2026-07-16
-> **Last Updated**: 2026-07-23
+> **Last Updated**: 2026-07-24
 
 ## Context
 
@@ -32,8 +32,8 @@
 
 *From GDD `design/gdd/pet-room-screen-ui.md`, scoped to this story:*
 
-- [ ] **AC-EC4-1**: GIVEN the Wardrobe bottom sheet is open, WHEN `petLeveledUp` (or a similar `GameEvent`) fires via `GameEventBus`, THEN Pet State Machine's internal state updates immediately (verified via provider/state value, not just UI) — but no animation/sprite-swap visual appears layered over the Wardrobe sheet.
-- [ ] **AC-EC4-2**: GIVEN the same situation as AC-EC4-1, WHEN Wardrobe closes, THEN the visual (e.g. LEVELING_UP animation) plays reflecting the state that was updated while the modal was open — no event lost, no wrong-state animation.
+- [x] **AC-EC4-1**: GIVEN the Wardrobe bottom sheet is open, WHEN `petLeveledUp` (or a similar `GameEvent`) fires via `GameEventBus`, THEN Pet State Machine's internal state updates immediately (verified via provider/state value, not just UI) — but no animation/sprite-swap visual appears layered over the Wardrobe sheet.
+- [x] **AC-EC4-2**: GIVEN the same situation as AC-EC4-1, WHEN Wardrobe closes, THEN the visual (e.g. LEVELING_UP animation) plays reflecting the state that was updated while the modal was open — no event lost, no wrong-state animation.
 
 ---
 
@@ -90,7 +90,7 @@
 **Story Type**: Integration
 **Required evidence**: `tests/integration/pet-room-screen-ui/modal_defer_triggered_visuals_test.dart` — must exist and pass
 
-**Status**: [ ] Not yet created
+**Status**: [x] Created — 9 tests, all passing (`cd src && flutter test ../tests/integration/pet-room-screen-ui/modal_defer_triggered_visuals_test.dart`).
 
 ---
 
@@ -98,3 +98,20 @@
 
 - Depends on: Story 003 (Flame Canvas Composition & Modal Mutual Exclusivity — needs `showModal`/`dismissModal` to exist as emission call sites)
 - Unlocks: None
+
+---
+
+## Implementation Record
+
+**Files modified**:
+- `src/lib/core/game_event_bus.dart` — added `GameEventType.modalVisibilityChanged` (payload: `bool`) with a doc comment on the "modal open within Pet Room, not screen visible" distinction (ADR-0017 Consequences → Negative regression guard).
+- `src/lib/gameplay/pet_room_game.dart` — `showModal`/`dismissModal` now emit `modalVisibilityChanged`. **Deliberate deviation from the story's illustrative code sample**: the sample shows the emit as a step adjacent to the call site (i.e. emitted by whoever calls `showModal`/`dismissModal`); this implementation inlines the emit inside the two methods instead. Justified and flame-specialist-confirmed safe: Story 003's own forbidden-pattern rule already makes these two methods the *only* sanctioned way to mutate the modal overlay keys, so inlining covers every real modal open/close with no separate call-site discipline required — grepped project-wide, confirmed no other code path touches `'context_menu'`/`'wardrobe'` directly. `true` emitted before mutating overlays, `false` emitted after — matching the story's own before/after ordering.
+- `src/lib/gameplay/mochi_component.dart` — added `_modalOpen`/`_pendingVisual` fields (+ `@visibleForTesting pendingVisual` accessor), a `modalVisibilityChanged` case in `onGameEvent`, and a new guard at the top of `onTrigger` checked before ADR-0007's LEVELING_UP-interrupt gate. Extracted the priority-merge logic into a shared `_queuePendingVisual` helper (see Deviations below).
+
+**Deviation (bug found in code review, fixed before close)**: the initial implementation left `_onTriggerComplete()` — the callback that fires when a triggered state's timer/effect completes naturally — calling `_play(next)` on a dequeued `_queued` state unconditionally, with no `_modalOpen` check. Both flame-specialist and qa-tester independently found the same reachable bug via code review: if a modal opens WHILE a non-interruptible LEVELING_UP animation is already playing (modal-open correctly does not interrupt it), and something lower-priority was already queued into `_queued` *before* the modal opened, then when LEVELING_UP's timer completes *while the modal is still open*, `_onTriggerComplete` would call `_play()` directly — starting a real triggered-state visual on top of the still-open modal, violating AC-EC4-1, and potentially causing AC-EC4-2 to silently drop the real pending visual. Fixed: `_onTriggerComplete` now checks `_modalOpen` before playing; if open, it routes the dequeued state through `_queuePendingVisual` (the same priority-merge helper `onTrigger`'s own modal guard uses) instead of `_play`. A regression test (`test_queuedTriggerDequeuingWhileModalStillOpen_doesNotPlay_becomesPendingInstead`) reproduces the exact sequence and would have caught this.
+
+**Code review**: flame-specialist — initial verdict CHANGES REQUIRED (the bug above), re-verified after the fix via the new regression test passing; no other issues found (emit-inlining confirmed safe in both directions, guard ordering confirmed correct for the `_current` case, payload contract clean, no new Flame API surface). qa-tester — initial verdict GAPS, independently found the identical bug via source tracing (not just running the existing suite); confirmed the 8 original tests correctly map to both ACs and the story's own QA Test Cases including the explicit priority-edge-case; 3 non-blocking suggestions not actioned (a multi-cycle open/close regression test, an isolated `petMoodChanged`-only test, a remount-while-modal-cached composition confirmation) — logged here as documented follow-ups, not silently dropped.
+
+**Test results**: Full suite — baseline 572 passing / 1 pre-existing skip (after Story 003 + live-testing fixes) → final 581 passing / 1 pre-existing skip (net +9: 8 original + 1 regression test for the fixed bug). `flutter analyze`: 0 issues in any file this story touched; 13 pre-existing unrelated `info`-level issues elsewhere, unchanged.
+
+**No git commit made yet** — pending explicit user go-ahead per this project's established pattern.
