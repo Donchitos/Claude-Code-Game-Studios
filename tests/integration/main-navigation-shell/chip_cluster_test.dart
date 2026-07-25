@@ -597,6 +597,47 @@ void main() {
       final xuSize = tester.getSize(find.byKey(XuChip.chipKey));
       expect(xuSize.width, greaterThanOrEqualTo(48));
       expect(xuSize.height, greaterThanOrEqualTo(48));
+      // Upper-bound regression check (flame-widget-specialist code-review
+      // finding): a real, live-tested bug had XuChip's `Center` expand to
+      // fill FloatingChipCluster's Row-provided loose-but-finite max height
+      // (near the full screen height, hundreds of dp) instead of
+      // shrink-wrapping to its pill content. The lower-bound-only
+      // assertions above would NOT have caught that regression (an exploded
+      // chip still trivially satisfies `>= 48`) — this does. 60dp is a
+      // generous ceiling for a single-line icon+digit pill with 8dp
+      // vertical padding (well above any real content height, comfortably
+      // below "obviously exploded").
+      expect(
+        xuSize.height,
+        lessThan(60),
+        reason: 'a pill-shaped chip must shrink-wrap to its content height, '
+            "not expand to fill the cluster Row's available height "
+            '(regression check for the Center(widthFactor/heightFactor: 1) fix)',
+      );
+    });
+
+    testWidgets(
+        'test_touchTarget_contextualBadgeChip_meetsMinimumAndDoesNotExplode',
+        (tester) async {
+      final (_, docRef) = await _reachChildPetRoom(tester);
+      docRef.seed({'seedCount': 2});
+      await _pumpSteps(tester, 3);
+
+      // `ContextualBadgeChip` received the identical `Center(widthFactor:
+      // 1, heightFactor: 1)` fix as `XuChip` but had ZERO layout-size test
+      // coverage before this (flame-widget-specialist code-review finding)
+      // — its existing tests only checked `find.byKey`/`find.text`
+      // presence, never `RenderBox.size`.
+      final badgeSize = tester.getSize(find.byKey(ContextualBadgeChip.badgeKey));
+      expect(badgeSize.width, greaterThanOrEqualTo(48));
+      expect(badgeSize.height, greaterThanOrEqualTo(48));
+      expect(
+        badgeSize.height,
+        lessThan(60),
+        reason: 'same shrink-wrap regression check as XuChip above — a '
+            "bare Center() here would expand to the cluster Row's full "
+            'available height instead of the pill content height',
+      );
     });
 
     testWidgets(

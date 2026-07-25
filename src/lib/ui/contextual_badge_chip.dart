@@ -149,7 +149,13 @@ class _SeedBadgeContentState extends State<_SeedBadgeContent>
           ),
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            // widthFactor/heightFactor: 1 forces shrink-wrap instead of
+            // expanding to fill FloatingChipCluster's Row-provided
+            // loose-but-finite max height — same fix as xu_chip.dart, see
+            // its comment for the full explanation.
             child: Center(
+              widthFactor: 1,
+              heightFactor: 1,
               child: Text(
                 '🌱 ${widget.count}',
                 style: const TextStyle(

@@ -146,7 +146,19 @@ class _XuChipState extends ConsumerState<XuChip> with SingleTickerProviderStateM
         ),
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          // widthFactor/heightFactor: 1 forces this to shrink-wrap to its
+          // child's size instead of expanding to fill the incoming
+          // constraint — a bare Center() here would grow to fill the full
+          // available height, since FloatingChipCluster's Row hands its
+          // children a LOOSE-but-FINITE max height (the full screen height
+          // under Positioned.fill), and Align's default (non-shrink-wrap)
+          // sizing expands to that max when it is finite. The chip still
+          // honors the ≥48dp minHeight from the ConstrainedBox above (via
+          // BoxConstraints.constrain clamping child size up to the min),
+          // so the touch-target guarantee is unaffected.
           child: Center(
+            widthFactor: 1,
+            heightFactor: 1,
             child: hasError
                 ? const Text(
                     '— xu',

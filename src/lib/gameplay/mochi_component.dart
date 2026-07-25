@@ -151,7 +151,12 @@ class MochiComponent extends SpriteComponent
     // that base-class contract without depending on any asset-bundle I/O.
     // It carries no visual content and is not a stand-in for real art;
     // `??=` means a real sprite set before `onLoad()` (e.g. by a future
-    // story) is never overwritten.
+    // story, or by the real app assigning one post-construction — see Pet
+    // Room Screen UI Story 003, which loads an interim real asset at the
+    // `PetRoomGame` level rather than here, specifically to avoid this
+    // widely-unit-tested `onLoad()` path depending on asset-bundle I/O that
+    // most of this component's own test harnesses don't set up) is never
+    // overwritten.
     sprite ??= await _createPlaceholderSprite();
   }
 
