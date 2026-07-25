@@ -67,11 +67,28 @@ Future<void> _pumpSteps(
   }
 }
 
-/// Pumps a bare `PetRoomScreen` (no router/auth involved — `PetRoomScreen`
-/// itself has no Riverpod dependency) far enough for `PetRoomGame.onLoad()`
-/// to have resolved, and returns the live [PetRoomGame] instance.
+/// Pumps a bare `PetRoomScreen` far enough for `PetRoomGame.onLoad()` to
+/// have resolved, and returns the live [PetRoomGame] instance.
+///
+/// Wrapped in a `ProviderScope` with `firebaseAuthProvider` overridden to a
+/// `MockFirebaseAuth()` (no signed-in user) — required since Pet Room
+/// Screen UI Story 006 wired real chrome content
+/// ([PetRoomStatusRow]) into the always-mounted `'chrome'` overlay, which
+/// reads `petMoodProvider`/`petEnergyProvider` → ... → `authStateProvider`
+/// → `firebaseAuthProvider` (defaults to `FirebaseAuth.instance`, which
+/// throws `[core/no-app]` with no real Firebase app — confirmed via a real
+/// failed test run during Story 006's implementation, not assumed). No
+/// `firebaseFirestoreProvider` override is needed: with no signed-in user,
+/// `activeChildProvider` stays `null`, so the energy doc stream short-
+/// circuits to `Stream.value(null)` before ever touching Firestore
+/// (`time_decay_providers.dart`'s own null-guard).
 Future<PetRoomGame> _pumpPetRoomScreen(WidgetTester tester) async {
-  await tester.pumpWidget(const MaterialApp(home: PetRoomScreen()));
+  await tester.pumpWidget(
+    ProviderScope(
+      overrides: [firebaseAuthProvider.overrideWithValue(MockFirebaseAuth())],
+      child: const MaterialApp(home: PetRoomScreen()),
+    ),
+  );
   await _pumpSteps(tester, 6);
   return tester
       .widget<GameWidget<PetRoomGame>>(find.byType(GameWidget<PetRoomGame>))

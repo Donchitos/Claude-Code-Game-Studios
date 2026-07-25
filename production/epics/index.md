@@ -1,6 +1,6 @@
 # Epics Index
 
-Last Updated: 2026-07-24 (pet-room-screen-ui: Story 004 Complete — 3/7 stories)
+Last Updated: 2026-07-25 (pet-room-screen-ui: Story 006 Complete with Notes — 4/7 stories)
 Engine: Flutter 3.44.4 / Flame 1.37.0 / Dart 3.12.2
 
 | Epic | Layer | System | GDD | Stories | Status |
@@ -19,4 +19,4 @@ Engine: Flutter 3.44.4 / Flame 1.37.0 / Dart 3.12.2
 | [main-navigation-shell](main-navigation-shell/EPIC.md) | Presentation | Main Navigation Shell (#17) | design/gdd/main-navigation-shell.md | 6 stories | Complete |
 | [parent-dashboard-ui](parent-dashboard-ui/EPIC.md) | Presentation | Parent Dashboard UI (#21) | design/gdd/parent-dashboard-ui.md | 4 stories | Complete |
 | [pet-interaction](pet-interaction/EPIC.md) | Feature | Pet Interaction (#14) | design/gdd/pet-interaction.md | 5 stories | Complete |
-| [pet-room-screen-ui](pet-room-screen-ui/EPIC.md) | Presentation | Pet Room Screen UI (#18) | design/gdd/pet-room-screen-ui.md | 7 stories (3 Complete, 4 Ready) | Ready |
+| [pet-room-screen-ui](pet-room-screen-ui/EPIC.md) | Presentation | Pet Room Screen UI (#18) | design/gdd/pet-room-screen-ui.md | 7 stories (4 Complete, 3 Ready) | Ready |

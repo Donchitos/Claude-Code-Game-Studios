@@ -93,7 +93,7 @@ This epic is complete when:
 | 003 | Flame Canvas Composition, Z-Order & Modal Mutual Exclusivity | Integration | Complete | ADR-0017 |
 | 004 | Modal Defer for Wardrobe / Competing GameEvent | Integration | Complete | ADR-0017 |
 | 005 | FlameGame Lifecycle — Never Init/Reset on Tab Return | Integration | Ready | ADR-0017 |
-| 006 | Persistent Chrome — Status Row & Level Progress Bar | UI | Ready | ADR-0017 |
+| 006 | Persistent Chrome — Status Row & Level Progress Bar | UI | Complete with Notes | ADR-0017 |
 | 007 | Tap-on-Mochi Context Menu & Wardrobe Bottom Sheet | UI | Ready | ADR-0017 |
 
 Story 001 (TR-petroom-003 / Formula 2) was prioritized and implemented first —
@@ -108,13 +108,23 @@ now also Complete — code review (flame-specialist + qa-tester, both
 independently) found and this story fixed a real bug in `_onTriggerComplete`
 that bypassed the new modal-defer gate for a dequeued ADR-0007 `_queued`
 trigger; see story-004's own Implementation Record for the full repro and
-fix. Stories 002, 005, 006, 007 remain Ready and unimplemented; work through
-them in `Depends on:` order (see each story's Dependencies section).
+fix. Story 006 (Persistent Chrome) is now Complete with Notes — AC-CR7
+(mood/energy status row) is implemented and verified; AC-CR8-1/AC-CR8-2
+(level progress bar) are explicitly Blocked pending the Pet Leveling &
+Evolution #16 epic (no `petLevelProvider`/`levelProgressProvider` exists
+yet), an explicit user decision rather than an oversight — see story-006's
+own Acceptance Criteria and Implementation Record. Its code review also
+surfaced and fixed a cross-epic regression in Time & Decay #2's
+`_activeChildEnergyDocProvider` (Riverpod retry-`Timer` leak). Stories 002,
+005, 007 remain Ready and unimplemented; work through them in
+`Depends on:` order (see each story's Dependencies section).
 
 ## Next Step
 
-Continue implementing stories in dependency order: 006 (Persistent Chrome)
-and 007 (Context Menu & Wardrobe) are now unblocked by both Story 003 and
-Story 004. Story 002 (Formula 1) and Story 005 (Lifecycle) have no
-dependencies and can be picked up any time. Run
-`/story-readiness [story-path]` then `/dev-story [story-path]` for each.
+Continue implementing stories in dependency order: 007 (Context Menu &
+Wardrobe) is now unblocked by both Story 003 and Story 004. Story 002
+(Formula 1) and Story 005 (Lifecycle) have no dependencies and can be
+picked up any time. Run `/story-readiness [story-path]` then
+`/dev-story [story-path]` for each. Story 006's AC-CR8 remainder is
+Blocked, not droppable — pick it up once
+`/create-epics pet-leveling-evolution` exists.

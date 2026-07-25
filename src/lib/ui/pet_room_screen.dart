@@ -2,6 +2,7 @@ import 'package:flame/game.dart';
 import 'package:flutter/material.dart';
 
 import '../gameplay/pet_room_game.dart';
+import 'pet_room_status_row.dart';
 
 /// Stable, story-owned [Key]s for the three overlay placeholder widgets —
 /// exposed so `tests/integration/pet-room-screen-ui/
@@ -28,13 +29,11 @@ const kPetRoomWardrobeOverlayKey = Key('petRoomWardrobeOverlay');
 /// [overlayBuilderMap] wires the three overlay keys ADR-0017's component
 /// tree diagram specifies: `'chrome'` (added once, from inside
 /// [PetRoomGame.onLoad] itself — see that method's doc comment for why —
-/// never removed), `'context_menu'` and `'wardrobe'` (modal, mutually
-/// exclusive via [PetRoomGame.showModal]/[PetRoomGame.dismissModal] — never
-/// added/removed directly from here). Each builder is a minimal placeholder
-/// widget per this story's own explicit permission ("a minimal placeholder
-/// widget... is acceptable for each overlay's builder at this story's
-/// scope, to be replaced by Story 006/007") — real chrome/menu/wardrobe
-/// content is Story 006/007's scope, not this one.
+/// never removed; real content since Story 006, [PetRoomStatusRow]),
+/// `'context_menu'` and `'wardrobe'` (modal, mutually exclusive via
+/// [PetRoomGame.showModal]/[PetRoomGame.dismissModal] — never added/removed
+/// directly from here; still minimal placeholders, real content is Story
+/// 007's scope).
 ///
 /// [_game] is a `State` field, constructed exactly once and never replaced
 /// across rebuilds — [GameWidget]'s `game` argument therefore never changes
@@ -72,7 +71,7 @@ class _PetRoomScreenState extends State<PetRoomScreen> {
         game: _game,
         overlayBuilderMap: {
           'chrome': (context, game) =>
-              const _ChromePlaceholder(key: kPetRoomChromeOverlayKey),
+              const PetRoomStatusRow(key: kPetRoomChromeOverlayKey),
           'context_menu': (context, game) => _ContextMenuPlaceholder(
             key: kPetRoomContextMenuOverlayKey,
             game: game,
@@ -83,18 +82,6 @@ class _PetRoomScreenState extends State<PetRoomScreen> {
       ),
     );
   }
-}
-
-/// Minimal `'chrome'` overlay placeholder (status row + level bar content is
-/// Story 006's scope). `SizedBox.shrink()` alone would make it awkward for a
-/// future dev to locate/replace via `find.byType`; a near-invisible labeled
-/// `Container` costs nothing and is easier to spot in a widget tree dump,
-/// per this story's own "minimal placeholder widget... acceptable" note.
-class _ChromePlaceholder extends StatelessWidget {
-  const _ChromePlaceholder({super.key});
-
-  @override
-  Widget build(BuildContext context) => const SizedBox.shrink();
 }
 
 /// Minimal `'wardrobe'` overlay placeholder (the real 3-slot Wardrobe sheet

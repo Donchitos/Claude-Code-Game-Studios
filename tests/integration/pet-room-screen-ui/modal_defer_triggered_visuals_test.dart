@@ -20,15 +20,19 @@
 // ones) before asserting on the delivered effect — an unawaited emit would
 // assert against pre-delivery state and silently pass for the wrong reason.
 
+import 'package:firebase_auth_mocks/firebase_auth_mocks.dart';
 import 'package:flame/game.dart';
 import 'package:flame_test/flame_test.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:pet_quest/core/firebase_providers.dart';
 import 'package:pet_quest/core/game_event_bus.dart';
 import 'package:pet_quest/core/pet_mood.dart';
 import 'package:pet_quest/core/triggered_state.dart';
 import 'package:pet_quest/gameplay/mochi_component.dart';
 import 'package:pet_quest/gameplay/pet_room_game.dart';
+import 'package:pet_quest/providers/auth_providers.dart';
 import 'package:pet_quest/ui/pet_room_screen.dart';
 
 /// Flushes the microtask queue so a just-`emit`ted [GameEvent] (delivered
@@ -86,9 +90,17 @@ Future<void> _pumpSteps(
 /// during this story's implementation, not assumed. This mirrors
 /// `composition_and_modal_exclusivity_test.dart`'s own `_pumpPetRoomScreen`
 /// helper exactly (duplicated for the same "can't share private helpers"
-/// reason).
+/// reason) — including the `ProviderScope`/`firebaseAuthProvider` override
+/// that file's own doc comment explains (required since Pet Room Screen UI
+/// Story 006 wired real chrome content into the always-mounted `'chrome'`
+/// overlay, which transitively reads `firebaseAuthProvider`).
 Future<PetRoomGame> _pumpPetRoomScreen(WidgetTester tester) async {
-  await tester.pumpWidget(const MaterialApp(home: PetRoomScreen()));
+  await tester.pumpWidget(
+    ProviderScope(
+      overrides: [firebaseAuthProvider.overrideWithValue(MockFirebaseAuth())],
+      child: const MaterialApp(home: PetRoomScreen()),
+    ),
+  );
   await _pumpSteps(tester, 6);
   return tester
       .widget<GameWidget<PetRoomGame>>(find.byType(GameWidget<PetRoomGame>))

@@ -47,6 +47,12 @@ class _FakeDocumentReference implements DocumentReference<Map<String, dynamic>> 
     _controller.add(_FakeDocumentSnapshot(data));
   }
 
+  /// Pushes an error onto the live snapshot stream — mirrors
+  /// `chip_cluster_test.dart`'s own `seedError` pattern. Added for the
+  /// `_activeChildEnergyDocProvider` retry-disable regression test below
+  /// (Pet Room Screen UI Story 006's `time_decay_providers.dart` fix).
+  void seedError(Object error) => _controller.addError(error);
+
   @override
   Stream<DocumentSnapshot<Map<String, dynamic>>> snapshots({
     bool includeMetadataChanges = false,
@@ -59,7 +65,7 @@ class _FakeDocumentReference implements DocumentReference<Map<String, dynamic>> 
     // Story 001).
     return Stream.multi((controller) {
       controller.add(_FakeDocumentSnapshot(_data));
-      final sub = _controller.stream.listen(controller.add);
+      final sub = _controller.stream.listen(controller.add, onError: controller.addError);
       controller.onCancel = sub.cancel;
     });
   }
@@ -213,6 +219,117 @@ void main() {
     await Future<void>.delayed(Duration.zero);
 
     expect(sub.read(), closeTo(88.0, 0.1));
+  });
+
+  // Regression test for Pet Room Screen UI Story 006's
+  // `time_decay_providers.dart` fix — `_activeChildEnergyDocProvider` now
+  // passes `retry: (retryCount, error) => null` to disable Riverpod's
+  // default automatic retry-with-backoff on a stream error, found necessary
+  // when that story's chrome wiring made `energyProvider` a real,
+  // always-mounted production consumer for the first time: an unresolvable
+  // Firestore error (e.g. permission-denied) was scheduling a real `Timer`
+  // that outlived a widget tree's disposal — surfaced, incidentally, as a
+  // failure in an UNRELATED test (`chip_cluster_test.dart`'s own
+  // `xuBalanceProvider` error-handling test, which happens to share the
+  // same document path). Deliberately plain `test()`, not `testWidgets()`
+  // — an earlier `testWidgets` version of this test hung indefinitely on
+  // its first `await Future.delayed(Duration.zero)`, while every other
+  // test in this file exercising the identical container-listen/delay
+  // pattern (`test_energyProvider_recomputes_when_resumeTickProvider_
+  // changes` above) already uses plain `test()` and passes reliably —
+  // `testWidgets` runs the test body inside `flutter_test`'s own
+  // `FakeAsync` zone, which is not needed here and was the likely cause.
+  // Proving "no retry Timer is left pending" specifically still relies on
+  // `chip_cluster_test.dart`'s existing
+  // `test_AC7_xuBalanceProviderError_displaysDashXu_noCrash` test, which
+  // already exercises `flutter_test`'s pending-Timer teardown check
+  // through the same shared document path.
+  //
+  // The assertion below was corrected after first writing it: it initially
+  // (incorrectly) expected `energyProvider` to drop to `0.0` on error,
+  // matching a since-corrected claim in `time_decay_providers.dart`'s own
+  // doc comment. Verified against the installed riverpod 3.3.2 source
+  // (`AsyncError.copyWithPrevious`, `async_value.dart:877`) that a stream
+  // error occurring AFTER a value was already received preserves that
+  // value — `.value` keeps returning it, not `null` — so `energyProvider`
+  // correctly keeps showing the last known energy (with continued
+  // wall-clock decay) rather than flashing to empty on a transient error.
+  test('test_energyProvider_preservesLastKnownValueOnFirestoreStreamError',
+      () async {
+    final firestore = _FakeFirestore();
+    final auth = MockFirebaseAuth();
+    final container = ProviderContainer(
+      overrides: [
+        firebaseAuthProvider.overrideWithValue(auth),
+        firebaseFirestoreProvider.overrideWithValue(firestore),
+      ],
+    );
+    addTearDown(container.dispose);
+    final parentId = await waitForSignedInUser(container, auth);
+    container.read(activeChildProvider.notifier).state = child;
+
+    final now = DateTime.now();
+    final docRef = firestore.doc(FirestorePaths.child(parentId, childId))
+        as _FakeDocumentReference;
+    docRef.seed({
+      'storedEnergy': 100.0,
+      'lastApprovedAt': Timestamp.fromDate(now),
+      'createdAt': Timestamp.fromDate(now),
+    });
+
+    final sub = container.listen(energyProvider, (_, __) {});
+    addTearDown(sub.close);
+    await Future<void>.delayed(Duration.zero);
+    expect(sub.read(), closeTo(100.0, 0.1));
+
+    docRef.seedError(
+        FirebaseException(plugin: 'cloud_firestore', code: 'permission-denied'));
+    await Future<void>.delayed(Duration.zero);
+
+    expect(
+      sub.read(),
+      closeTo(100.0, 0.1),
+      reason: 'a stream error after a value was already received must not '
+          "erase energyProvider's last known value — Riverpod's AsyncError "
+          'preserves the prior value, and this is the more resilient '
+          'behavior (stale-but-known energy over a visible flash to empty)',
+    );
+  });
+
+  test(
+      'test_energyProvider_defaultsToZero_whenStreamErrorsBeforeAnyValueEverArrives',
+      () async {
+    final firestore = _FakeFirestore();
+    final auth = MockFirebaseAuth();
+    final container = ProviderContainer(
+      overrides: [
+        firebaseAuthProvider.overrideWithValue(auth),
+        firebaseFirestoreProvider.overrideWithValue(firestore),
+      ],
+    );
+    addTearDown(container.dispose);
+    final parentId = await waitForSignedInUser(container, auth);
+    container.read(activeChildProvider.notifier).state = child;
+
+    final docRef = firestore.doc(FirestorePaths.child(parentId, childId))
+        as _FakeDocumentReference;
+
+    final sub = container.listen(energyProvider, (_, __) {});
+    addTearDown(sub.close);
+
+    // No `docRef.seed(...)` call — the stream errors before ever emitting
+    // a value, so there is no previous value for AsyncError to preserve.
+    docRef.seedError(
+        FirebaseException(plugin: 'cloud_firestore', code: 'permission-denied'));
+    await Future<void>.delayed(Duration.zero);
+
+    expect(
+      sub.read(),
+      0.0,
+      reason: 'with no previous value to fall back on, energyProvider must '
+          'still resolve to the documented sane default (0.0) rather than '
+          'throwing or leaving a stale/uninitialized read',
+    );
   });
 
   test(

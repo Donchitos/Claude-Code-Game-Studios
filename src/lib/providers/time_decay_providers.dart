@@ -47,6 +47,27 @@ class _EnergyDoc {
 /// active-child-economy-field pattern (ADR-0003: `snapshots()`, not `get()`).
 /// Resolves to `null` while no child is active (between screens) rather
 /// than throwing.
+///
+/// `retry: (_, _) => null` disables Riverpod's default automatic
+/// retry-with-backoff on a stream error — found necessary, not cosmetic,
+/// while wiring Pet Room Screen UI Story 006's status row into production
+/// (the first real consumer of [energyProvider] besides tests): a genuine
+/// Firestore stream error here (e.g. a permission-denied security-rule
+/// violation) will not resolve itself by blindly retrying, and the
+/// automatically-scheduled retry `Timer` was found to outlive a widget
+/// tree's disposal in a real test (`flutter_test`'s "Timer is still pending
+/// even after the widget tree was disposed" assertion) — a real leak, not
+/// just a test-teardown nuisance, since the same unresolvable-retry-loop
+/// would run in the production app too. On error, [energyProvider] below
+/// keeps returning whatever it last computed from the most recent
+/// successfully-received doc (Riverpod's `AsyncError` preserves the prior
+/// `.value` via `copyWithPrevious` — verified against the installed
+/// riverpod 3.3.2 source), not `0.0`; `0.0` is only ever seen when no
+/// doc — success or error — has arrived yet (`doc == null` below). This is
+/// the more resilient behavior (stale-but-known energy survives a
+/// transient error instead of visibly flashing to empty), so disabling the
+/// retry only removes the redundant, resource-wasting `Timer` — it does
+/// not change what the UI displays either way.
 final _activeChildEnergyDocProvider = StreamProvider<_EnergyDoc?>((ref) {
   final user = ref.watch(authStateProvider).value;
   final child = ref.watch(activeChildProvider);
@@ -76,7 +97,7 @@ final _activeChildEnergyDocProvider = StreamProvider<_EnergyDoc?>((ref) {
       createdAt: createdAt,
     );
   });
-});
+}, retry: (retryCount, error) => null);
 
 /// Mochi's current energy (ADR-0005 Key Interfaces), recomputed whenever
 /// [resumeTickProvider] ticks (app foreground) or the active child's energy
