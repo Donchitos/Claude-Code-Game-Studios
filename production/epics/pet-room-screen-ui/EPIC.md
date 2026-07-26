@@ -94,7 +94,7 @@ This epic is complete when:
 | 004 | Modal Defer for Wardrobe / Competing GameEvent | Integration | Complete | ADR-0017 |
 | 005 | FlameGame Lifecycle — Never Init/Reset on Tab Return | Integration | Ready | ADR-0017 |
 | 006 | Persistent Chrome — Status Row & Level Progress Bar | UI | Complete with Notes | ADR-0017 |
-| 007 | Tap-on-Mochi Context Menu & Wardrobe Bottom Sheet | UI | Ready | ADR-0017 |
+| 007 | Tap-on-Mochi Context Menu & Wardrobe Bottom Sheet | UI | Complete with Notes | ADR-0017 |
 
 Story 001 (TR-petroom-003 / Formula 2) was prioritized and implemented first —
 per this epic's own prior guidance below — since it was the specific,
@@ -115,16 +115,29 @@ Evolution #16 epic (no `petLevelProvider`/`levelProgressProvider` exists
 yet), an explicit user decision rather than an oversight — see story-006's
 own Acceptance Criteria and Implementation Record. Its code review also
 surfaced and fixed a cross-epic regression in Time & Decay #2's
-`_activeChildEnergyDocProvider` (Riverpod retry-`Timer` leak). Stories 002,
-005, 007 remain Ready and unimplemented; work through them in
+`_activeChildEnergyDocProvider` (Riverpod retry-`Timer` leak). Story 007
+(Context Menu & Wardrobe) is now also Complete with Notes — all 7 ACs
+implemented and verified. **Important gap this story surfaced, flagged by
+both flame-widget-specialist and qa-tester, not just noted in a code
+comment**: `game.showModal('context_menu')` has no production caller
+anywhere in `src/lib/` — the context menu it built is fully implemented
+and tested but currently unreachable by any real player action, since Pet
+Interaction epic's own already-ratified GDD/ADR-0016 binds a tap on
+Mochi's sprite directly to the PLEASED animation, conflicting with this
+GDD's own "tap-on-Mochi mở context menu" prose. Needs a follow-up
+ADR/story to reconcile before the feature is actually playable — see
+story-007's own Acceptance Criteria and Implementation Record. Stories
+002, 005 remain Ready and unimplemented; work through them in
 `Depends on:` order (see each story's Dependencies section).
 
 ## Next Step
 
-Continue implementing stories in dependency order: 007 (Context Menu &
-Wardrobe) is now unblocked by both Story 003 and Story 004. Story 002
-(Formula 1) and Story 005 (Lifecycle) have no dependencies and can be
-picked up any time. Run `/story-readiness [story-path]` then
-`/dev-story [story-path]` for each. Story 006's AC-CR8 remainder is
-Blocked, not droppable — pick it up once
+Resolve the tap-on-Mochi gesture conflict Story 007 surfaced — a new ADR
+or follow-up story reconciling ADR-0016's ratified tap=PLEASED semantics
+against this GDD's "tap-on-Mochi opens context menu" prose. Without it,
+Story 007's context menu stays unreachable in the live app despite being
+Complete. Story 002 (Formula 1) and Story 005 (Lifecycle) have no
+dependencies and can be picked up any time. Run
+`/story-readiness [story-path]` then `/dev-story [story-path]` for each.
+Story 006's AC-CR8 remainder is Blocked, not droppable — pick it up once
 `/create-epics pet-leveling-evolution` exists.

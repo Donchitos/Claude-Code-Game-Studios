@@ -47,7 +47,13 @@ class PetRoomGame extends FlameGame {
   /// `modalVisibilityChanged` emission, Story 007's context-menu content)
   /// can reach it without re-querying `world.children`. `null` until
   /// [onLoad] resolves.
-  @visibleForTesting
+  ///
+  /// Not `@visibleForTesting` — this doc comment's own stated purpose
+  /// (Story 007's `PetRoomContextMenu` reading Mochi's position/size for
+  /// its speech-bubble anchor) is real production overlay-widget code, not
+  /// test-only access; the annotation was left over from before that real
+  /// consumer existed and tripped `invalid_use_of_visible_for_testing_member`
+  /// once `pet_room_context_menu.dart` actually used it as intended.
   MochiComponent? mochi;
 
   @override

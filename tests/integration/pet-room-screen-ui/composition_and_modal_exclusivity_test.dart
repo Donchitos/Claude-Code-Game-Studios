@@ -48,6 +48,7 @@ import 'package:pet_quest/gameplay/pet_room_game.dart';
 import 'package:pet_quest/gameplay/room_background_component.dart';
 import 'package:pet_quest/providers/auth_providers.dart';
 import 'package:pet_quest/providers/router_provider.dart';
+import 'package:pet_quest/ui/pet_room_context_menu.dart';
 import 'package:pet_quest/ui/pet_room_screen.dart';
 
 /// Pumps [steps] small, fixed-size frames instead of `pumpAndSettle()` —
@@ -453,25 +454,54 @@ void main() {
     });
 
     testWidgets(
-        'test_contextMenuOpen_tapOnTheMenuItself_doesNotDismiss',
+        'test_contextMenuOpen_tapOnTheMenuBody_doesNotFallThroughToScrim',
         (tester) async {
       // Not literally required by AC-EC3's own wording (which only tests
       // "outside"), but the scrim-behind-menu-box mechanism this story
       // implements to satisfy AC-EC3 would be trivially wrong the other
-      // direction too if a tap ON the menu also dismissed it — cheap extra
-      // confidence check for the same mechanism.
+      // direction too if a tap on the menu's own body fell through to the
+      // scrim behind it — cheap extra confidence check for the same
+      // mechanism.
+      //
+      // Retargeted from the card's geometric center (what this test
+      // originally tapped, against Story 003's own non-interactive
+      // placeholder box) to one of the `Divider`s between menu options.
+      // Story 007 replaced that placeholder with a real, densely-packed
+      // 3-option menu — its card is now real, opaque button rows edge to
+      // edge, so the card's *center* lands ON a specific button ("Vuốt
+      // ve", the middle option) and correctly triggers that button's own
+      // dismiss behavior; that's AC-CR5-1's own test in
+      // `context_menu_wardrobe_test.dart`, not a scrim-fallthrough bug.
+      // A `Divider` has no tap handler of its own, so tapping it is a
+      // genuine probe of "does the card's own opaque hit-test absorb a
+      // tap that lands on non-button card content" without accidentally
+      // re-testing a specific button's action.
       final game = await _pumpPetRoomScreen(tester);
       game.showModal('context_menu');
       await tester.pump();
+      final petInteractedBefore =
+          GameEventBus().peekLastEvent(GameEventType.petInteracted);
 
-      await tester.tap(find.byKey(kPetRoomContextMenuOverlayKey));
+      await tester.tap(find.byType(Divider).first);
       await tester.pump();
 
       expect(
         game.overlays.activeOverlays.contains('context_menu'),
         isTrue,
-        reason: 'tapping the menu itself (its center, where the placeholder '
-            'box is) must not dismiss it',
+        reason: 'tapping the menu\'s own body (not a button) must not dismiss it',
+      );
+      expect(
+        game.overlays.activeOverlays.contains('wardrobe'),
+        isFalse,
+        reason: 'must not have triggered "Thay đồ" either',
+      );
+      expect(
+        identical(
+          GameEventBus().peekLastEvent(GameEventType.petInteracted),
+          petInteractedBefore,
+        ),
+        isTrue,
+        reason: 'must not have triggered "Vuốt ve" either',
       );
     });
   });

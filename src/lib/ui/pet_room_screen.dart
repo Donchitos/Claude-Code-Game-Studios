@@ -2,9 +2,11 @@ import 'package:flame/game.dart';
 import 'package:flutter/material.dart';
 
 import '../gameplay/pet_room_game.dart';
+import 'pet_room_context_menu.dart';
 import 'pet_room_status_row.dart';
+import 'pet_room_wardrobe.dart';
 
-/// Stable, story-owned [Key]s for the three overlay placeholder widgets —
+/// Stable, story-owned [Key]s for the three overlay widgets —
 /// exposed so `tests/integration/pet-room-screen-ui/
 /// composition_and_modal_exclusivity_test.dart` can assert on which overlay
 /// widget is (or isn't) present without depending on this file's private
@@ -32,8 +34,8 @@ const kPetRoomWardrobeOverlayKey = Key('petRoomWardrobeOverlay');
 /// never removed; real content since Story 006, [PetRoomStatusRow]),
 /// `'context_menu'` and `'wardrobe'` (modal, mutually exclusive via
 /// [PetRoomGame.showModal]/[PetRoomGame.dismissModal] — never added/removed
-/// directly from here; still minimal placeholders, real content is Story
-/// 007's scope).
+/// directly from here; real content since Story 007, [PetRoomContextMenu]/
+/// [PetRoomWardrobe]).
 ///
 /// [_game] is a `State` field, constructed exactly once and never replaced
 /// across rebuilds — [GameWidget]'s `game` argument therefore never changes
@@ -72,77 +74,17 @@ class _PetRoomScreenState extends State<PetRoomScreen> {
         overlayBuilderMap: {
           'chrome': (context, game) =>
               const PetRoomStatusRow(key: kPetRoomChromeOverlayKey),
-          'context_menu': (context, game) => _ContextMenuPlaceholder(
+          'context_menu': (context, game) => PetRoomContextMenu(
             key: kPetRoomContextMenuOverlayKey,
             game: game,
           ),
-          'wardrobe': (context, game) =>
-              const _WardrobePlaceholder(key: kPetRoomWardrobeOverlayKey),
+          'wardrobe': (context, game) => PetRoomWardrobe(
+            key: kPetRoomWardrobeOverlayKey,
+            game: game,
+          ),
         },
       ),
     );
   }
 }
 
-/// Minimal `'wardrobe'` overlay placeholder (the real 3-slot Wardrobe sheet
-/// is Story 007's scope).
-class _WardrobePlaceholder extends StatelessWidget {
-  const _WardrobePlaceholder({super.key});
-
-  @override
-  Widget build(BuildContext context) => const SizedBox.shrink();
-}
-
-/// Minimal `'context_menu'` overlay placeholder (the real 3-option menu is
-/// Story 007's scope) — but AC-EC3 ("tap outside the menu dismisses it, no
-/// other action fires from that same tap") IS this story's own acceptance
-/// criterion, so the dismiss-on-outside-tap mechanism must be real even
-/// though the menu's visual content isn't. Standard Flutter pattern: a
-/// full-screen, transparent `GestureDetector` scrim sits BEHIND a small
-/// placeholder "menu" box in a `Stack` — the scrim intercepts every tap that
-/// lands outside the menu's own bounds and calls
-/// [PetRoomGame.dismissModal], while a tap that lands ON the menu box never
-/// reaches the scrim (the menu box is opaque to hit-testing and sits above
-/// the scrim in paint/hit-test order), so it does not dismiss itself.
-class _ContextMenuPlaceholder extends StatelessWidget {
-  const _ContextMenuPlaceholder({super.key, required this.game});
-
-  final PetRoomGame game;
-
-  @override
-  Widget build(BuildContext context) {
-    return Stack(
-      children: [
-        Positioned.fill(
-          child: GestureDetector(
-            behavior: HitTestBehavior.opaque,
-            onTap: game.dismissModal,
-          ),
-        ),
-        Center(
-          // Wrapped in its own opaque GestureDetector (no-op onTap) so a
-          // tap landing ON the placeholder menu box is consumed here and
-          // never reaches the full-screen scrim behind it — a plain
-          // `Container` alone does not participate in hit testing (no
-          // `hitTestSelf`), so without this wrapper the tap would fall
-          // through to the scrim and dismiss the menu even when tapping
-          // the menu itself. Story 007's real menu content replaces this
-          // box with actual tappable options, each of which will need the
-          // same absorb-the-tap property individually.
-          child: GestureDetector(
-            behavior: HitTestBehavior.opaque,
-            onTap: () {},
-            child: Container(
-              width: 160,
-              height: 120,
-              decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.surface,
-                borderRadius: BorderRadius.circular(12),
-              ),
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-}
