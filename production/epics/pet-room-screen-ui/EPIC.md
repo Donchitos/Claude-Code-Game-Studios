@@ -3,8 +3,8 @@
 > **Layer**: Presentation
 > **GDD**: design/gdd/pet-room-screen-ui.md
 > **Architecture Module**: Pet Room Screen UI (#18)
-> **Status**: Ready
-> **Stories**: 7 stories (Stories 001, 003, 004 implemented — see Stories table)
+> **Status**: Complete with Notes
+> **Stories**: 7/7 stories Complete — see Stories table. 2 open follow-ups: Story 006's AC-CR8 (Blocked on Pet Leveling & Evolution #16 epic) and Story 007's tap-on-Mochi gesture conflict (Blocked on an ADR/GDD reconciliation with Pet Interaction #14).
 
 ## Overview
 
@@ -92,7 +92,7 @@ This epic is complete when:
 | 002 | Flame Canvas Draw-Call Budget Contract (Formula 1) | Logic | Complete | ADR-0001 |
 | 003 | Flame Canvas Composition, Z-Order & Modal Mutual Exclusivity | Integration | Complete | ADR-0017 |
 | 004 | Modal Defer for Wardrobe / Competing GameEvent | Integration | Complete | ADR-0017 |
-| 005 | FlameGame Lifecycle — Never Init/Reset on Tab Return | Integration | Ready | ADR-0017 |
+| 005 | FlameGame Lifecycle — Never Init/Reset on Tab Return | Integration | Complete | ADR-0017 |
 | 006 | Persistent Chrome — Status Row & Level Progress Bar | UI | Complete with Notes | ADR-0017 |
 | 007 | Tap-on-Mochi Context Menu & Wardrobe Bottom Sheet | UI | Complete with Notes | ADR-0017 |
 
@@ -128,16 +128,23 @@ GDD's own "tap-on-Mochi mở context menu" prose. Needs a follow-up
 ADR/story to reconcile before the feature is actually playable — see
 story-007's own Acceptance Criteria and Implementation Record. Story 002
 (Formula 1) is now also Complete — flame-specialist code review: Approve,
-no Required Changes. Story 005 (Lifecycle) remains Ready and
-unimplemented.
+no Required Changes. Story 005 (FlameGame Lifecycle) is now also
+Complete — the epic's last story, requiring no production code change
+(it ratified already-existing, already-tested ADR-0014 behavior with 2
+new regression tests); both flame-specialist and qa-tester code review:
+Approve, no Required Changes.
+
+**All 7 stories are now Complete.** This epic's own functional scope is
+done; what remains open are the two cross-epic follow-ups named in the
+header above, neither of which blocks anything else in THIS epic.
 
 ## Next Step
 
-Implement Story 005 (FlameGame Lifecycle), the epic's last unstarted
-story. Separately, resolve the tap-on-Mochi gesture conflict Story 007
-surfaced — a new ADR or follow-up story reconciling ADR-0016's ratified
-tap=PLEASED semantics against this GDD's "tap-on-Mochi opens context
-menu" prose. Without it, Story 007's context menu stays unreachable in
-the live app despite being Complete. Story 006's AC-CR8 remainder is
-Blocked, not droppable — pick it up once
-`/create-epics pet-leveling-evolution` exists.
+This epic is functionally done. Two follow-ups remain, both requiring a
+decision outside this epic's own scope:
+1. Resolve the tap-on-Mochi gesture conflict Story 007 surfaced (new ADR
+   or story reconciling ADR-0016's tap=PLEASED semantics against this
+   GDD's "tap-on-Mochi opens context menu" prose) — without it, Story
+   007's context menu stays unreachable in the live app.
+2. Story 006's AC-CR8 (level progress bar) is Blocked, not droppable —
+   pick it up once `/create-epics pet-leveling-evolution` exists.

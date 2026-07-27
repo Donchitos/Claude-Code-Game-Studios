@@ -1,12 +1,12 @@
 # Story 005: FlameGame Lifecycle — Never Init/Reset on Tab Return
 
 > **Epic**: Pet Room Screen UI
-> **Status**: Ready
+> **Status**: Complete
 > **Layer**: Presentation
 > **Type**: Integration
 > **Estimate**: 1-2h
 > **Manifest Version**: 2026-07-16
-> **Last Updated**: 2026-07-23
+> **Last Updated**: 2026-07-27
 
 ## Context
 
@@ -31,9 +31,9 @@
 
 *From GDD `design/gdd/pet-room-screen-ui.md`, scoped to this story:*
 
-- [ ] **AC-CR9-1**: GIVEN a triggered-state animation (BOUNCING/EXCITED/LEVELING_UP) starts while bé is on `/child/pet-room`, WHEN bé switches to another tab before it finishes, THEN the Flame game loop is NOT disposed/paused — the animation continues to completion even though nothing is watching.
-- [ ] **AC-CR9-2**: GIVEN the animation finished while bé was on another tab, WHEN bé returns to `/child/pet-room`, THEN Mochi displays the correct final (post-animation) state — no replay, no snap back to the pre-animation state.
-- [ ] **AC-TR005-1** (regression/static check): no `PetRoomGame(` constructor call exists anywhere outside `_PetRoomScreenState`'s field declaration.
+- [x] **AC-CR9-1**: GIVEN a triggered-state animation (BOUNCING/EXCITED/LEVELING_UP) starts while bé is on `/child/pet-room`, WHEN bé switches to another tab before it finishes, THEN the Flame game loop is NOT disposed/paused — the animation continues to completion even though nothing is watching. — Implemented (already-existing behavior, ratified), verified.
+- [x] **AC-CR9-2**: GIVEN the animation finished while bé was on another tab, WHEN bé returns to `/child/pet-room`, THEN Mochi displays the correct final (post-animation) state — no replay, no snap back to the pre-animation state. — Implemented (already-existing behavior, ratified), verified.
+- [x] **AC-TR005-1** (regression/static check): no `PetRoomGame(` constructor call exists anywhere outside `_PetRoomScreenState`'s field declaration. — Implemented, verified.
 
 ---
 
@@ -71,7 +71,7 @@
 **Story Type**: Integration
 **Required evidence**: `tests/integration/pet-room-screen-ui/flamegame_lifecycle_test.dart` — must exist and pass. Relies on and does not duplicate ADR-0014 Story 002's existing AC-5 test.
 
-**Status**: [ ] Not yet created
+**Status**: [x] Created — `tests/integration/pet-room-screen-ui/flamegame_lifecycle_test.dart`, 2 tests, all passing (`cd src && flutter test ../tests/integration/pet-room-screen-ui/flamegame_lifecycle_test.dart`).
 
 ---
 
@@ -79,3 +79,17 @@
 
 - Depends on: None (ratifies already-existing, already-tested code)
 - Unlocks: None
+
+---
+
+## Implementation Record
+
+**No production code changed** — per this story's own framing, the existing `pet_room_screen.dart` singleton-`_game`-field pattern plus main-navigation-shell's already-Accepted ADR-0014 already satisfied AC-CR9-1/9-2; this story's only job was tests.
+
+**Files created**: `tests/integration/pet-room-screen-ui/flamegame_lifecycle_test.dart` — 2 tests: a combined AC-CR9-1/AC-CR9-2 test (starts a real BOUNCING animation on the mounted `MochiComponent` via `onTrigger`, cycles through all 3 Child Shell tabs while offstage — mirroring main-navigation-shell Story 002's own AC-5 edge case — pumps enough elapsed time for the 1.0s animation to complete purely via `update(dt)`, then asserts it settled with no replay on return), and an AC-TR005-1 static source-scan test (walks all of `lib/`, asserts `PetRoomGame(` — a constructor call — appears in exactly one file, at exactly one location).
+
+**Code review — flame-specialist**: Approve, no Required Changes. Independently re-verified the full suite, the timing math (confirmed real fake-async-clock margin, not real-wall-clock — not flaky), the `@visibleForTesting onTrigger` usage (a sanctioned use case per that member's own doc comment), and the AC-TR005-1 static-scan's accuracy. One suggestion, actioned: strip `//`/`///`-prefixed comment lines before the `PetRoomGame(` substring scan, since this codebase's own convention of quoting `ClassName()` syntax in doc-comment prose could otherwise false-positive a future, benign comment addition.
+
+**Code review — qa-tester**: Approve, no Required Changes. Confirmed the test's wording matches the story's own QA Test Cases verbatim for both ACs, confirmed the combined-test structure (not split into two functions) is appropriate since the ACs are sequential checkpoints on one causal timeline, not independent scenarios. 3 suggestions, all actioned: cycle through all 3 tabs (not just 2) before returning, widen the offstage-wait margin from 1.2s to 1.5s for extra defensive margin, and correct a doc-comment citation from "ADR-0007" to the actual source (GDD `pet-room-screen-ui.md` Core Rule 9 — "Offscreen persistence").
+
+**Test results**: Full suite 614/614 passing (1 pre-existing unrelated skip). `flutter analyze`: 0 issues in touched files (13 pre-existing unrelated `info`-level issues elsewhere, unchanged from baseline).
