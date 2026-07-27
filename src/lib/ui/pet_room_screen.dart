@@ -2,6 +2,7 @@ import 'package:flame/game.dart';
 import 'package:flutter/material.dart';
 
 import '../gameplay/pet_room_game.dart';
+import 'mochi_options_button.dart';
 import 'pet_room_context_menu.dart';
 import 'pet_room_status_row.dart';
 import 'pet_room_wardrobe.dart';
@@ -31,7 +32,9 @@ const kPetRoomWardrobeOverlayKey = Key('petRoomWardrobeOverlay');
 /// [overlayBuilderMap] wires the three overlay keys ADR-0017's component
 /// tree diagram specifies: `'chrome'` (added once, from inside
 /// [PetRoomGame.onLoad] itself — see that method's doc comment for why —
-/// never removed; real content since Story 006, [PetRoomStatusRow]),
+/// never removed; real content since Story 006, [PetRoomStatusRow] — and,
+/// since ADR-0018, also [MochiOptionsButton], the sole trigger for opening
+/// the context menu, mounted alongside — not inside — the status row),
 /// `'context_menu'` and `'wardrobe'` (modal, mutually exclusive via
 /// [PetRoomGame.showModal]/[PetRoomGame.dismissModal] — never added/removed
 /// directly from here; real content since Story 007, [PetRoomContextMenu]/
@@ -72,8 +75,13 @@ class _PetRoomScreenState extends State<PetRoomScreen> {
       body: GameWidget<PetRoomGame>(
         game: _game,
         overlayBuilderMap: {
-          'chrome': (context, game) =>
-              const PetRoomStatusRow(key: kPetRoomChromeOverlayKey),
+          'chrome': (context, game) => Stack(
+            key: kPetRoomChromeOverlayKey,
+            children: [
+              const PetRoomStatusRow(),
+              MochiOptionsButton(game: game),
+            ],
+          ),
           'context_menu': (context, game) => PetRoomContextMenu(
             key: kPetRoomContextMenuOverlayKey,
             game: game,

@@ -1,6 +1,6 @@
 # Epics Index
 
-Last Updated: 2026-07-27 (pet-room-screen-ui: Story 005 Complete — 7/7 stories, epic Complete with Notes)
+Last Updated: 2026-07-27 (pet-room-screen-ui: ADR-0018 resolves Story 007's tap-on-Mochi gesture conflict — 1 open follow-up remains, Story 006's AC-CR8)
 Engine: Flutter 3.44.4 / Flame 1.37.0 / Dart 3.12.2
 
 | Epic | Layer | System | GDD | Stories | Status |
@@ -19,4 +19,4 @@ Engine: Flutter 3.44.4 / Flame 1.37.0 / Dart 3.12.2
 | [main-navigation-shell](main-navigation-shell/EPIC.md) | Presentation | Main Navigation Shell (#17) | design/gdd/main-navigation-shell.md | 6 stories | Complete |
 | [parent-dashboard-ui](parent-dashboard-ui/EPIC.md) | Presentation | Parent Dashboard UI (#21) | design/gdd/parent-dashboard-ui.md | 4 stories | Complete |
 | [pet-interaction](pet-interaction/EPIC.md) | Feature | Pet Interaction (#14) | design/gdd/pet-interaction.md | 5 stories | Complete |
-| [pet-room-screen-ui](pet-room-screen-ui/EPIC.md) | Presentation | Pet Room Screen UI (#18) | design/gdd/pet-room-screen-ui.md | 7 stories | Complete with Notes — 2 cross-epic follow-ups open (see EPIC.md) |
+| [pet-room-screen-ui](pet-room-screen-ui/EPIC.md) | Presentation | Pet Room Screen UI (#18) | design/gdd/pet-room-screen-ui.md | 7 stories | Complete with Notes — 1 follow-up open (Story 006 AC-CR8, see EPIC.md) |

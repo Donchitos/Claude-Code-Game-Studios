@@ -7,7 +7,7 @@
 
 ## Overview
 
-Pet Room Screen UI là màn hình mặc định bé thấy mỗi khi mở app — nhà của Mochi. Đây là nơi 6 systems khác hội tụ thành một màn hình duy nhất: FlameGame canvas render `MochiComponent` (mood/energy từ Pet State Machine #6), tap/vuốt ve trực tiếp lên Mochi (Pet Interaction #14, tap area tối thiểu 80×80dp), tap-on-Mochi mở context menu 3 lựa chọn (Thay đồ/Vuốt ve/Đóng) dẫn tới Wardrobe bottom sheet (Pet Equipment #15), progress bar level + trạng thái "MAX" ở L5 (Pet Leveling #16), và room background cố định (xem scope note dưới).
+Pet Room Screen UI là màn hình mặc định bé thấy mỗi khi mở app — nhà của Mochi. Đây là nơi 6 systems khác hội tụ thành một màn hình duy nhất: FlameGame canvas render `MochiComponent` (mood/energy từ Pet State Machine #6), tap/vuốt ve trực tiếp lên Mochi (Pet Interaction #14, tap area tối thiểu 80×80dp) — trigger PLEASED animation, KHÔNG mở menu (xem ADR-0018), nút "Tùy chọn Mochi" riêng (một icon nhỏ, persistent, anchor gần Mochi) mở context menu 3 lựa chọn (Thay đồ/Vuốt ve/Đóng) dẫn tới Wardrobe bottom sheet (Pet Equipment #15), progress bar level + trạng thái "MAX" ở L5 (Pet Leveling #16), và room background cố định (xem scope note dưới).
 
 **Scope note (MVP)**: GDD này scope MVP là **room background CỐ ĐỊNH** (art asset tĩnh, không phải hệ thống đặt đồ tương tác) — khớp với `game-concept.md`'s MVP Definition (đã reconcile 2026-07-06) và `systems-index.md`, vì Decoration Database (#27) và Room Layout System (#28) đều là Alpha-tier, chưa có GDD nào. (Trước 2026-07-06, `game-concept.md` từng liệt kê "10-15 đồ trang trí có thể đặt" là MVP-required — gap đó đã được đóng ở `game-concept.md` chứ không phải ở đây, nên không còn là contradiction sống.)
 
@@ -35,7 +35,7 @@ Player-facing: đây là màn hình bé nhìn vào TRƯỚC KHI làm gì cả �
    1. Room background (fixed art asset, MVP scope — static `Image`/Flame `SpriteComponent`, không tương tác)
    2. `MochiComponent` (Flame, center-weighted, per Pet State Machine #6's mood/triggered states)
    3. Persistent Flutter overlay chrome: "Mochi status row" (mood icon + energy bar, ngay dưới Child app bar) + level progress bar (nhỏ hơn, dưới status row — không cạnh tranh sự chú ý với Mochi, đúng Player Fantasy's nguyên tắc)
-   4. Modal layers (chỉ khi triggered): tap-on-Mochi context menu, Wardrobe bottom sheet
+   4. Modal layers (chỉ khi triggered): Mochi Options context menu (mở qua nút riêng, KHÔNG qua tap-on-Mochi — xem ADR-0018), Wardrobe bottom sheet
 
 2. **FlameGame hosting**: `GameWidget` wraps 1 `FlameGame` instance chứa `MochiComponent` + background. Route `/child/pet-room` (Main Navigation Shell #17, Tab 1 mặc định).
 
@@ -43,7 +43,7 @@ Player-facing: đây là màn hình bé nhìn vào TRƯỚC KHI làm gì cả �
 
 4. **Tap-on-Mochi**: `TapCallbacks` mixin trên `MochiComponent` (KHÔNG dùng `TapDetector` — deprecated theo `docs/engine-reference/flutter-flame/deprecated-apis.md`). Tap AREA tối thiểu 80×80dp (Pet Interaction #14's requirement) — **quan trọng: đây là hit box, không phải kích thước sprite hiển thị**. Baby Mochi (L1) có sprite nhỏ hơn 80dp về mặt hình ảnh — hit box vẫn phải đủ 80×80dp bằng cách mở rộng tap area vô hình xung quanh sprite nhỏ, không scale sprite lớn hơn thiết kế gốc.
 
-5. **Tap-on-Mochi context menu**: Flutter overlay widget (không phải Flame component), 3 options: "Thay đồ" (→ đóng menu NGAY LẬP TỨC, sau đó mở Wardrobe bottom sheet — không có thời điểm nào cả 2 modal cùng mounted, giữ đúng invariant "1 modal layer tại 1 thời điểm" ở Core Rule 1), "Vuốt ve" (→ trigger Pet Interaction #14's pet action trực tiếp, đóng menu ngay), "Đóng" (dismiss, không hành động).
+5. **Mochi Options context menu** (ADR-0018 correction, 2026-07-27: KHÔNG mở bằng tap-on-Mochi — xem lý do bên dưới): Flutter overlay widget (không phải Flame component), mở qua một nút "Tùy chọn Mochi" riêng — icon nhỏ, persistent, luôn hiển thị, anchor gần vị trí Mochi (cùng technique context menu's speech-bubble dùng để đọc `MochiComponent.position`/`.size`), gọi `PetRoomGame.showModal('context_menu')` trực tiếp khi tap. 3 options bên trong menu: "Thay đồ" (→ đóng menu NGAY LẬP TỨC, sau đó mở Wardrobe bottom sheet — không có thời điểm nào cả 2 modal cùng mounted, giữ đúng invariant "1 modal layer tại 1 thời điểm" ở Core Rule 1), "Vuốt ve" (→ trigger Pet Interaction #14's pet action trực tiếp, đóng menu ngay), "Đóng" (dismiss, không hành động). **Lý do KHÔNG dùng tap-on-Mochi làm trigger**: Pet Interaction #14's GDD (Core Rule 2, AC-1, đã ratify) và ADR-0016 (Accepted) đã gán tap trên sprite Mochi cho PLEASED animation — một xung đột thực sự được phát hiện khi implement Story 007 (Pet Room Screen UI epic). ADR-0018 quyết định giữ nguyên tap=PLEASED (không mở lại ADR-0016) và dùng nút UI riêng thay vì tái sử dụng gesture hoặc dùng long-press (long-press đã được `pet-interaction.md`'s Open Question #1 dành riêng cho một interaction thứ 3 trong tương lai — "ôm Mochi", chưa vào MVP).
 
 6. **Wardrobe bottom sheet**: Flutter bottom sheet slide lên từ Pet Room (không phải Flame component, theo Pet Equipment #15's quyết định). 3 slot tabs (icon + tên slot) trên cùng, grid inventory items cho slot đang chọn, nút "Đóng"/tap ngoài để dismiss. Item data từ Item Database (#3)'s `category`/`slot`/`source` fields.
 
@@ -61,7 +61,9 @@ Player-facing: đây là màn hình bé nhìn vào TRƯỚC KHI làm gì cả �
       ├── [default] Mochi hiển thị theo Base Mood (Pet State Machine #6)
       │     └── Triggered states (BOUNCING/EXCITED/SHOWING_OFF/LEVELING_UP) override tạm thời
       │
-      ├── tap Mochi → context menu (3 options)
+      ├── tap Mochi → PLEASED animation (Pet Interaction #14, ADR-0016) — KHÔNG mở menu (xem ADR-0018)
+      │
+      ├── tap nút "Tùy chọn Mochi" (icon riêng, persistent, anchor gần Mochi — ADR-0018) → context menu (3 options)
       │     ├── "Thay đồ" → đóng menu NGAY → Wardrobe bottom sheet mở (không overlap 2 modal)
       │     │     └── chọn item → equip → SHOWING_OFF trigger (Pet Equipment #15) → đóng sheet
       │     ├── "Vuốt ve" → PLEASED trigger (Pet Interaction #14) → đóng menu ngay
@@ -133,13 +135,13 @@ Cùng một expression xử lý cả 2 trường hợp (sprite nhỏ hơn hoặc
 
 1. **Baby Mochi sprite nhỏ hơn 80dp**: Hit area tự động padding theo Formula 2 — không co giãn sprite lớn hơn thiết kế gốc, chỉ mở rộng vùng tap vô hình xung quanh.
 
-2. **Bé tap ngoài hit area nhưng gần Mochi** (ví dụ tap vào background sát cạnh Mochi): Không trigger context menu — tap chỉ đăng ký trong `hitBoxSize` đã tính. Không cần feedback lỗi ("tap gần trúng") — hành vi giống mọi target UI khác.
+2. **Bé tap ngoài hit area nhưng gần Mochi** (ví dụ tap vào background sát cạnh Mochi): Không trigger PLEASED animation (ADR-0016) — tap chỉ đăng ký trong `hitBoxSize` đã tính. (Trước ADR-0018, mục này nói "không trigger context menu" — context menu giờ mở qua nút "Tùy chọn Mochi" riêng, không liên quan đến hit area của Mochi nữa.) Không cần feedback lỗi ("tap gần trúng") — hành vi giống mọi target UI khác.
 
 3. **Context menu đang mở, bé tap ra ngoài menu**: Dismiss menu, không hành động — cùng pattern với các modal khác trong project (Wardrobe bottom sheet, Parent Dashboard's dialogs).
 
 4. **Wardrobe đang mở, có `GameEvent` mới đến** (ví dụ bé approve xong 1 task ở device khác, `petLeveledUp` event fire): Event vẫn được `GameEventBus` deliver và Pet State Machine xử lý internal state — nhưng visual (`LEVELING_UP` animation, sprite swap) bị defer cho đến khi Wardrobe đóng, tương tự cách Task Management UI (#19) defer banner khi modal mở. Không hiển thị animation chồng lên bottom sheet.
 
-5. **Mochi đang chạy LEVELING_UP animation (non-interruptible, Pet State Machine #6), bé tap vào Mochi**: Tap vẫn được `TapCallbacks` nhận, nhưng context menu KHÔNG mở trong lúc LEVELING_UP đang chạy — theo #6's priority rule (LEVELING_UP là highest priority, non-interruptible). Context menu chỉ mở sau khi animation hoàn tất.
+5. **Mochi đang chạy LEVELING_UP animation (non-interruptible, Pet State Machine #6)**: (ADR-0018 correction) Bé tap vào Mochi vẫn được `DragCallbacks` nhận và vẫn emit `petInteracted` bình thường — nhưng #6's priority rule (LEVELING_UP là highest priority) tự động không cho PLEASED interrupt LEVELING_UP, đúng hành vi ADR-0007 đã có sẵn, không cần logic riêng ở GDD này. Riêng nút "Tùy chọn Mochi" (context menu trigger, ADR-0018): tap vào nút này trong lúc LEVELING_UP đang chạy bị ignore — context menu KHÔNG mở, giữ đúng nguyên tắc gốc "không cho mở menu chồng lên lúc đang celebrate." Nút hoạt động bình thường trở lại ngay khi animation hoàn tất.
 
 6. **`itemCatalogProvider` (Item Database #3) chưa load xong khi Wardrobe mở**: Hiển thị skeleton/shimmer loading state trong grid — không crash, không hiển thị grid rỗng gây hiểu nhầm "chưa mua gì". **Nếu provider trả về `AsyncError`** (network/cache failure): grid hiển thị inline error state ("Không tải được đồ — Thử lại" + nút retry) thay cho shimmer — cùng lý do tránh grid rỗng gây hiểu nhầm, không crash sheet.
 
@@ -223,7 +225,7 @@ final itemCatalogProvider = ...  // #3
 
 Pet Room Screen UI đóng góp 4 surfaces trên 1 route (Main Navigation Shell #17):
 1. **`/child/pet-room`** (Tab 1, mặc định) — FlameGame canvas (background + Mochi) + persistent chrome (status row + level bar)
-2. **Tap-on-Mochi context menu** — Flutter overlay, anchor tại Mochi
+2. **Mochi Options context menu** — Flutter overlay, anchor tại Mochi, mở qua nút "Tùy chọn Mochi" riêng (ADR-0018) chứ không phải tap-on-Mochi
 3. **Wardrobe bottom sheet** — Flutter bottom sheet, cap 60-65% chiều cao
 4. **Mochi status row + level progress bar** — floating pill chrome
 
@@ -247,7 +249,7 @@ Pet Room Screen UI đóng góp 4 surfaces trên 1 route (Main Navigation Shell #
 - **GIVEN** `MochiComponent` dùng `TapCallbacks` mixin, **THEN** không có `TapDetector` nào được dùng ở component này (regression check theo `deprecated-apis.md`).
 - **GIVEN** `spriteSize` bất kỳ giá trị >0, **WHEN** tap tại điểm nằm trong `hitBoxSize` đã tính (Formula 2) nhưng ngoài sprite hiển thị, **THEN** `onTapDown` vẫn fire.
 
-**Core Rule 5 — Tap-on-Mochi context menu** `[UI]`
+**Core Rule 5 — Mochi Options context menu** `[UI]` (mở qua nút riêng, không phải tap-on-Mochi — xem ADR-0018)
 - **GIVEN** context menu đang mở, **WHEN** bé tap "Vuốt ve", **THEN** PLEASED trigger (#14) được gọi VÀ menu đóng ngay lập tức, không delay.
 - **GIVEN** context menu đang mở, **WHEN** bé tap "Đóng", **THEN** menu dismiss, không có hành động nào khác được gọi.
 - **GIVEN** context menu đang mở, **WHEN** bé tap "Thay đồ", **THEN** menu đóng NGAY VÀ Wardrobe bottom sheet bắt đầu mở — tại không thời điểm nào cả 2 modal cùng mounted.
@@ -280,7 +282,7 @@ Pet Room Screen UI đóng góp 4 surfaces trên 1 route (Main Navigation Shell #
 - Trùng với Formula 2's worked example 1 — không cần AC riêng, tham chiếu lại.
 
 **Edge Case 2 — Tap ngoài hit area nhưng gần Mochi** `[LOGIC]`
-- **GIVEN** tap tại điểm ngoài `hitBoxSize` đã tính nhưng gần biên visual của sprite, **THEN** `onTapDown` KHÔNG fire, không có context menu nào mở, không hiển thị feedback lỗi nào.
+- **GIVEN** tap tại điểm ngoài `hitBoxSize` đã tính nhưng gần biên visual của sprite, **THEN** không có `petInteracted`/PLEASED nào được trigger, không hiển thị feedback lỗi nào. (ADR-0018: không còn liên quan context menu — nút "Tùy chọn Mochi" có hit area/logic riêng, xem Edge Case 5's AC.)
 
 **Edge Case 3 — Context menu tap ra ngoài** `[UI]`
 - **GIVEN** context menu đang mở, **WHEN** bé tap bất kỳ đâu ngoài menu (kể cả trên Mochi), **THEN** menu dismiss, không hành động nào khác được trigger bởi cùng 1 tap đó.
@@ -290,8 +292,9 @@ Pet Room Screen UI đóng góp 4 surfaces trên 1 route (Main Navigation Shell #
 - **GIVEN** cùng tình huống trên, **WHEN** Wardrobe đóng lại, **THEN** visual (LEVELING_UP animation) chạy đúng state đã được cập nhật trong lúc modal mở — không mất event, không animation sai state.
 
 **Edge Case 5 — LEVELING_UP non-interruptible + tap** `[INTEGRATION]`
-- **GIVEN** LEVELING_UP animation đang chạy, **WHEN** bé tap Mochi, **THEN** `onTapDown` vẫn fire nhưng context menu KHÔNG mở.
-- **GIVEN** animation vừa hoàn tất, **WHEN** bé tap Mochi lại, **THEN** context menu mở bình thường.
+- **GIVEN** LEVELING_UP animation đang chạy, **WHEN** bé tap nút "Tùy chọn Mochi", **THEN** context menu KHÔNG mở (tap bị ignore) — verify qua `game.overlays.activeOverlays` không chứa `'context_menu'` sau tap.
+- **GIVEN** animation vừa hoàn tất, **WHEN** bé tap nút "Tùy chọn Mochi" lại, **THEN** context menu mở bình thường.
+- **GIVEN** LEVELING_UP animation đang chạy, **WHEN** bé tap trực tiếp lên Mochi sprite, **THEN** `petInteracted` vẫn emit bình thường (ADR-0016 không đổi) nhưng LEVELING_UP không bị interrupt (ADR-0007's priority rule, hành vi có sẵn — không phải logic mới của GDD này).
 
 **Edge Case 6 — `itemCatalogProvider` loading/error state** `[UI]`
 - **GIVEN** `itemCatalogProvider` ở loading state khi Wardrobe mở, **THEN** grid hiển thị skeleton/shimmer — không crash, không hiển thị grid rỗng.

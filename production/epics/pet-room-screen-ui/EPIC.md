@@ -4,7 +4,7 @@
 > **GDD**: design/gdd/pet-room-screen-ui.md
 > **Architecture Module**: Pet Room Screen UI (#18)
 > **Status**: Complete with Notes
-> **Stories**: 7/7 stories Complete — see Stories table. 2 open follow-ups: Story 006's AC-CR8 (Blocked on Pet Leveling & Evolution #16 epic) and Story 007's tap-on-Mochi gesture conflict (Blocked on an ADR/GDD reconciliation with Pet Interaction #14).
+> **Stories**: 7/7 stories Complete — see Stories table. 1 open follow-up: Story 006's AC-CR8 (Blocked on Pet Leveling & Evolution #16 epic). Story 007's tap-on-Mochi gesture conflict is RESOLVED — see ADR-0018.
 
 ## Overview
 
@@ -135,16 +135,28 @@ new regression tests); both flame-specialist and qa-tester code review:
 Approve, no Required Changes.
 
 **All 7 stories are now Complete.** This epic's own functional scope is
-done; what remains open are the two cross-epic follow-ups named in the
-header above, neither of which blocks anything else in THIS epic.
+done.
+
+**Story 007's tap-on-Mochi gesture conflict is RESOLVED (2026-07-27,
+ADR-0018)**: user decision — keep ADR-0016's tap=PLEASED semantics
+unchanged; open the context menu via a new `MochiOptionsButton` (a small,
+persistent UI icon button, not a new Flame gesture) instead of reusing tap
+or repurposing long-press (reserved by `pet-interaction.md`'s Open
+Question #1 for a distinct future interaction). Also preserved GDD Edge
+Case 5's original intent — the button ignores taps while Mochi's
+non-interruptible LEVELING_UP celebration is playing, exactly as
+tap-on-Mochi previously did for the same reason. Code review
+(flame-widget-specialist + qa-tester): both found real issues, both
+fixed — 3 more stale "tap-on-Mochi opens menu" passages in the GDD beyond
+what the ADR's own authoring pass caught (States/Transitions diagram,
+Edge Case 2, Edge Case 5 — the last of which needed an actual behavior
+decision, not just a wording fix), and a missing accessibility label on
+the button. See `docs/architecture/adr-0018-mochi-options-button-context-menu-trigger.md`
+and story-007's own Acceptance Criteria note.
 
 ## Next Step
 
-This epic is functionally done. Two follow-ups remain, both requiring a
-decision outside this epic's own scope:
-1. Resolve the tap-on-Mochi gesture conflict Story 007 surfaced (new ADR
-   or story reconciling ADR-0016's tap=PLEASED semantics against this
-   GDD's "tap-on-Mochi opens context menu" prose) — without it, Story
-   007's context menu stays unreachable in the live app.
-2. Story 006's AC-CR8 (level progress bar) is Blocked, not droppable —
-   pick it up once `/create-epics pet-leveling-evolution` exists.
+One follow-up remains, requiring a decision outside this epic's own
+scope: Story 006's AC-CR8 (level progress bar) is Blocked, not
+droppable — pick it up once `/create-epics pet-leveling-evolution`
+exists.

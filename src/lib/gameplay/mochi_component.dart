@@ -160,6 +160,16 @@ class MochiComponent extends SpriteComponent
   @visibleForTesting
   TriggeredState? get currentTriggeredState => _current;
 
+  /// Real, non-test-only accessor — `true` while LEVELING_UP (ADR-0007's
+  /// only non-interruptible Triggered State) is playing. Deliberately
+  /// narrower than [currentTriggeredState] (which stays `@visibleForTesting`
+  /// — external code doesn't need the full enum, just this one signal):
+  /// added for ADR-0018's `MochiOptionsButton`, which must not open the
+  /// context menu over Mochi's non-interruptible celebration (GDD Edge
+  /// Case 5's intent, carried over from the pre-ADR-0018 tap-on-Mochi
+  /// mechanism to this button).
+  bool get isCelebratingNonInterruptibly => _current == TriggeredState.levelingUp;
+
   /// Test-only accessor — the single highest-priority trigger queued while
   /// LEVELING_UP plays (ADR-0007 Decision §3). `null` if nothing is queued.
   @visibleForTesting
