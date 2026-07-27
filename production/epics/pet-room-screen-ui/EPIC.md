@@ -89,7 +89,7 @@ This epic is complete when:
 | # | Story | Type | Status | ADR |
 |---|-------|------|--------|-----|
 | 001 | Tap Hit-Area Padding (Formula 2) | Logic | Complete | ADR-0017 |
-| 002 | Flame Canvas Draw-Call Budget Contract (Formula 1) | Logic | Ready | ADR-0001 |
+| 002 | Flame Canvas Draw-Call Budget Contract (Formula 1) | Logic | Complete | ADR-0001 |
 | 003 | Flame Canvas Composition, Z-Order & Modal Mutual Exclusivity | Integration | Complete | ADR-0017 |
 | 004 | Modal Defer for Wardrobe / Competing GameEvent | Integration | Complete | ADR-0017 |
 | 005 | FlameGame Lifecycle — Never Init/Reset on Tab Return | Integration | Ready | ADR-0017 |
@@ -126,18 +126,18 @@ Interaction epic's own already-ratified GDD/ADR-0016 binds a tap on
 Mochi's sprite directly to the PLEASED animation, conflicting with this
 GDD's own "tap-on-Mochi mở context menu" prose. Needs a follow-up
 ADR/story to reconcile before the feature is actually playable — see
-story-007's own Acceptance Criteria and Implementation Record. Stories
-002, 005 remain Ready and unimplemented; work through them in
-`Depends on:` order (see each story's Dependencies section).
+story-007's own Acceptance Criteria and Implementation Record. Story 002
+(Formula 1) is now also Complete — flame-specialist code review: Approve,
+no Required Changes. Story 005 (Lifecycle) remains Ready and
+unimplemented.
 
 ## Next Step
 
-Resolve the tap-on-Mochi gesture conflict Story 007 surfaced — a new ADR
-or follow-up story reconciling ADR-0016's ratified tap=PLEASED semantics
-against this GDD's "tap-on-Mochi opens context menu" prose. Without it,
-Story 007's context menu stays unreachable in the live app despite being
-Complete. Story 002 (Formula 1) and Story 005 (Lifecycle) have no
-dependencies and can be picked up any time. Run
-`/story-readiness [story-path]` then `/dev-story [story-path]` for each.
-Story 006's AC-CR8 remainder is Blocked, not droppable — pick it up once
+Implement Story 005 (FlameGame Lifecycle), the epic's last unstarted
+story. Separately, resolve the tap-on-Mochi gesture conflict Story 007
+surfaced — a new ADR or follow-up story reconciling ADR-0016's ratified
+tap=PLEASED semantics against this GDD's "tap-on-Mochi opens context
+menu" prose. Without it, Story 007's context menu stays unreachable in
+the live app despite being Complete. Story 006's AC-CR8 remainder is
+Blocked, not droppable — pick it up once
 `/create-epics pet-leveling-evolution` exists.

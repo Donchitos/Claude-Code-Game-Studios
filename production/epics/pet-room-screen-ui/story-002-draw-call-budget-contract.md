@@ -1,12 +1,12 @@
 # Story 002: Flame Canvas Draw-Call Budget Contract (Formula 1)
 
 > **Epic**: Pet Room Screen UI
-> **Status**: Ready
+> **Status**: Complete
 > **Layer**: Presentation
 > **Type**: Logic
 > **Estimate**: 1-2h
 > **Manifest Version**: 2026-07-16
-> **Last Updated**: 2026-07-23
+> **Last Updated**: 2026-07-27
 
 ## Context
 
@@ -31,8 +31,8 @@
 
 *From GDD `design/gdd/pet-room-screen-ui.md`, scoped to this story:*
 
-- [ ] **AC-F1-1**: GIVEN MVP scope (1 background, 1 Mochi base, 3 equipment slots always mounted), THEN `drawCalls_sceneFlame` = 5 exactly (integer equality — every input is a constant).
-- [ ] **AC-F1-2**: GIVEN any item equipped in any slot (including default/"none"), THEN `drawCalls_sceneFlame` remains 5 — equip/unequip does not change the draw-call count.
+- [x] **AC-F1-1**: GIVEN MVP scope (1 background, 1 Mochi base, 3 equipment slots always mounted), THEN `drawCalls_sceneFlame` = 5 exactly (integer equality — every input is a constant). — Implemented, verified.
+- [x] **AC-F1-2**: GIVEN any item equipped in any slot (including default/"none"), THEN `drawCalls_sceneFlame` remains 5 — equip/unequip does not change the draw-call count. — Implemented, verified (proven by the function signature taking no "equipped items" input at all, per the story's own QA Test Cases framing).
 
 ---
 
@@ -82,7 +82,7 @@
 **Story Type**: Logic
 **Required evidence**: `tests/unit/pet-room-screen-ui/draw_call_budget_test.dart` — must exist and pass
 
-**Status**: [ ] Not yet created
+**Status**: [x] Created — `tests/unit/pet-room-screen-ui/draw_call_budget_test.dart`, 4 tests, all passing (`cd src && flutter test ../tests/unit/pet-room-screen-ui/draw_call_budget_test.dart`).
 
 ---
 
@@ -90,3 +90,17 @@
 
 - Depends on: None
 - Unlocks: None (informational contract; Story 003's real component tree should stay consistent with this story's constants but does not import code from it)
+
+---
+
+## Implementation Record
+
+**Files created**:
+- `src/lib/gameplay/draw_call_budget.dart` — `kDrawCallsBackground`/`kDrawCallsMochiBase`/`kEquipmentSlotCount` constants + `computeSceneFlameDrawCalls(...)`, exactly per this story's own Implementation Notes, mirroring `hit_area_formula.dart`'s pure-Dart pattern.
+- `tests/unit/pet-room-screen-ui/draw_call_budget_test.dart` — 4 tests covering AC-F1-1/F1-2 plus a named-constants cross-check and an override test.
+
+**Code review**: flame-specialist — **Approve, no Required Changes**. Confirmed correctness against ADR-0001/the story, confirmed the "no scope creep" constraint was honored (no Flame/Flutter import, no live component-tree walk), confirmed test coverage is adequate and proportionate for a Logic-type story this size. 2 cosmetic suggestions not actioned (test-name casing consistency with the sibling file, an optional doc-comment note on the AC-F1-2 test being a construction-proof) — logged here as documented, deliberately skipped.
+
+**Test results**: 4/4 new tests passing. `flutter analyze`: 0 issues in touched files.
+
+**No git commit made yet** — pending explicit user go-ahead per this project's established pattern.

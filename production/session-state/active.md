@@ -1217,3 +1217,12 @@ Since the 07-11 architecture review: **all 11 ADRs are now Accepted** (B2 resolv
 - Epic file (production/epics/pet-room-screen-ui/EPIC.md) Stories table: row 007 → Complete with Notes. Index (production/epics/index.md) updated to 5/7 stories complete.
 - No git commit made — awaiting explicit user "commit đi" per this session's established norm.
 - Next recommended: resolve the tap-on-Mochi gesture conflict (new ADR or story) before Story 007's context menu is actually reachable in the live app. Story 002 (Formula 1) and Story 005 (Lifecycle) have no dependencies and can be picked up any time — both remain Ready.
+
+## Session Extract — Story 002 (Draw-Call Budget Contract / Formula 1) close — 2026-07-27
+- Verdict: COMPLETE. Story: production/epics/pet-room-screen-ui/story-002-draw-call-budget-contract.md — Status → Complete, 2/2 ACs passing.
+- New files: src/lib/gameplay/draw_call_budget.dart (kDrawCallsBackground/kDrawCallsMochiBase/kEquipmentSlotCount + computeSceneFlameDrawCalls, pure Dart, mirrors hit_area_formula.dart's pattern), tests/unit/pet-room-screen-ui/draw_call_budget_test.dart (4 tests).
+- Code review: flame-specialist — Approve, no Required Changes. 2 cosmetic suggestions (test-name casing consistency, an optional doc-comment note) deliberately not actioned.
+- Final verified state: 612/612 full suite passing (1 pre-existing unrelated skip), flutter analyze clean.
+- Epic/index updated: pet-room-screen-ui now 6/7 stories Complete — only Story 005 (FlameGame Lifecycle) remains.
+- Context: user asked to check project status, then continue through the story/epic queue autonomously, committing after each story, reporting only at epic completion or decision points. Correction made at session start: user's initial request named "Story 002 of Main Navigation Shell" but that whole epic (6/6 stories) was already Complete from an earlier session (2026-07-21) — redirected to the actual next Ready work (pet-room-screen-ui's own Story 002/005).
+- Next: implement Story 005 (FlameGame Lifecycle — Never Init/Reset on Tab Return), the epic's last story. After that, pet-room-screen-ui epic is fully Complete (with the Story 007 gesture-conflict gap and Story 006 AC-CR8 Blocked item still open) — report back to user per their own instruction.
