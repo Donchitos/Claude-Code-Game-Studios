@@ -5,44 +5,41 @@
 
 ## Engine & Language
 
-- **Engine**: [TO BE CONFIGURED — run /setup-engine]
-- **Language**: [TO BE CONFIGURED]
-- **Rendering**: [TO BE CONFIGURED]
-- **Physics**: [TO BE CONFIGURED]
+- **Engine**: Flutter + Flame 1.37.0 (Flutter SDK 3.44.4 / Dart 3.12.2)
+- **Language**: Dart
+- **Rendering**: Flutter CanvasKit / Skia (2D only)
+- **Physics**: Forge2D (optional) or custom collision via Flame
 
 ## Input & Platform
 
-<!-- Written by /setup-engine. Read by /ux-design, /ux-review, /test-setup, /team-ui, and /dev-story -->
-<!-- to scope interaction specs, test helpers, and implementation to the correct input methods. -->
-
-- **Target Platforms**: [TO BE CONFIGURED — e.g., PC, Console, Mobile, Web]
-- **Input Methods**: [TO BE CONFIGURED — e.g., Keyboard/Mouse, Gamepad, Touch, Mixed]
-- **Primary Input**: [TO BE CONFIGURED — the dominant input for this game]
-- **Gamepad Support**: [TO BE CONFIGURED — Full / Partial / None]
-- **Touch Support**: [TO BE CONFIGURED — Full / Partial / None]
-- **Platform Notes**: [TO BE CONFIGURED — any platform-specific UX constraints]
+- **Target Platforms**: Mobile (iOS + Android)
+- **Input Methods**: Touch
+- **Primary Input**: Touch
+- **Gamepad Support**: None
+- **Touch Support**: Full
+- **Platform Notes**: All UI must be touch-friendly. Minimum tap target 48×48dp per Material guidelines. No hover-only interactions. iOS audio session must be configured for background/foreground transitions.
 
 ## Naming Conventions
 
-- **Classes**: [TO BE CONFIGURED]
-- **Variables**: [TO BE CONFIGURED]
-- **Signals/Events**: [TO BE CONFIGURED]
-- **Files**: [TO BE CONFIGURED]
-- **Scenes/Prefabs**: [TO BE CONFIGURED]
-- **Constants**: [TO BE CONFIGURED]
+- **Classes / Components**: PascalCase (e.g., `PlayerComponent`, `PetCareSystem`)
+- **Variables / functions**: camelCase (e.g., `moveSpeed`, `takeDamage()`)
+- **Signals/Events**: camelCase stream names (e.g., `onPetMoodChanged`)
+- **Files**: snake_case matching primary class (e.g., `pet_care_system.dart`)
+- **Scenes/Prefabs**: N/A — Flame uses Dart component trees, not scene files
+- **Constants**: camelCase preferred per Dart style (e.g., `maxHealth`); `SCREAMING_SNAKE_CASE` acceptable for compile-time constants
 
 ## Performance Budgets
 
-- **Target Framerate**: [TO BE CONFIGURED]
-- **Frame Budget**: [TO BE CONFIGURED]
-- **Draw Calls**: [TO BE CONFIGURED]
-- **Memory Ceiling**: [TO BE CONFIGURED]
+- **Target Framerate**: 60fps
+- **Frame Budget**: 16.6ms
+- **Draw Calls**: ≤200 per frame (use SpriteBatch for batching repeated sprites)
+- **Memory Ceiling**: ≤150MB RAM on mid-range Android devices (2019+)
 
 ## Testing
 
-- **Framework**: [TO BE CONFIGURED]
-- **Minimum Coverage**: [TO BE CONFIGURED]
-- **Required Tests**: Balance formulas, gameplay systems, networking (if applicable)
+- **Framework**: flutter_test (unit + widget tests), flame_test (component tests)
+- **Minimum Coverage**: 70% for game logic and economy systems
+- **Required Tests**: Balance formulas, task reward calculations, economy system, pet state machine
 
 ## Forbidden Patterns
 
@@ -65,23 +62,22 @@
 <!-- Read by /code-review, /architecture-decision, /architecture-review, and team skills -->
 <!-- to know which specialist to spawn for engine-specific validation. -->
 
-- **Primary**: [TO BE CONFIGURED — run /setup-engine]
-- **Language/Code Specialist**: [TO BE CONFIGURED]
-- **Shader Specialist**: [TO BE CONFIGURED]
-- **UI Specialist**: [TO BE CONFIGURED]
-- **Additional Specialists**: [TO BE CONFIGURED]
-- **Routing Notes**: [TO BE CONFIGURED]
+- **Primary**: flame-specialist
+- **Language/Code Specialist**: flame-specialist (Dart — primary covers all game code review)
+- **Shader Specialist**: flame-shader-specialist (.frag GLSL files, FragmentProgram, SpriteBatch, particles)
+- **UI Specialist**: flame-widget-specialist (Flutter widget layer, GameWidget overlays, HUD, state management)
+- **Additional Specialists**: flame-audio-specialist (flame_audio, BGM/SFX systems, audio lifecycle, platform quirks)
+- **Routing Notes**: Invoke primary for Flame architecture decisions, component hierarchy, game loop, camera, and collision systems. Invoke widget specialist for Flutter overlay UI, HUD, menus, and state management (Riverpod/Bloc). Invoke shader specialist for fragment shaders, SpriteBatch, and custom Canvas rendering. Invoke audio specialist for all sound and music implementation.
 
 ### File Extension Routing
 
 <!-- Skills use this table to select the right specialist per file type. -->
-<!-- If a row says [TO BE CONFIGURED], fall back to Primary for that file type. -->
 
 | File Extension / Type | Specialist to Spawn |
 |-----------------------|---------------------|
-| Game code (primary language) | [TO BE CONFIGURED] |
-| Shader / material files | [TO BE CONFIGURED] |
-| UI / screen files | [TO BE CONFIGURED] |
-| Scene / prefab / level files | [TO BE CONFIGURED] |
-| Native extension / plugin files | [TO BE CONFIGURED] |
-| General architecture review | Primary |
+| Game code (.dart files — Flame components, FlameGame) | flame-specialist |
+| Flutter UI / overlay files (.dart — widgets, screens) | flame-widget-specialist |
+| Fragment shader files (.frag) | flame-shader-specialist |
+| Asset config / pubspec.yaml (assets, shaders) | flame-specialist |
+| Audio implementation (.dart — flame_audio, audioplayers) | flame-audio-specialist |
+| General architecture review | flame-specialist |

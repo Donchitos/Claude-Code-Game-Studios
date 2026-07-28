@@ -1,0 +1,1 @@
+*(Moved — see `/Users/quangdao/Developer/pet_quest/.claude/agent-memory/art-director/project_contrast-audit-overdue.md`, the project-root canonical location. This copy is stale and was left here only because no file-delete tool was available at the time of relocation.)*

@@ -1,0 +1,331 @@
+{
+  "app": "perfectpixel",
+  "generator": "perfectpixel/component-lane",
+  "schema": "perfectpixel.sprite/2",
+  "version": 2,
+  "character": "chibi mascot character 'Mochi', soft rice-cake creature, Young evolution stage (112dp), slightly elongated oval body (more oval than a perfect sphere), tiny subtle stub-limb hint bumps at the base of the body (barely visible, no defined limbs, no hands, no fingers), flat vector illustration, 2D mobile game sprite, Supercell (MO.CO) mobile game art style blended with Kirby roundness and Jigglypuff-level silhouette softness, thick clean outline 2-3px stroke color #3D2B1F, exactly 3 flat color zones (body mood-tint + Cream Ivory #FFFDF0 belly patch + small heart-shaped Petal Pink #FFB5C8 chest fold marking, fixed across all moods), no gradients, no soft shading except one simple flat drop shadow beneath the character, two long teardrop-shaped ears visibly tapered/narrower toward the rounded tip (a real silhouette difference from a uniform-width ear, tip stays fully rounded, never pointed), ears lifted/perked forward at a more alert baseline posture than a passive droop, small fluffy poof tail (poofier than a tiny nub), oversized round eyes about 35 percent of face height, cheek blush, isolated on plain transparent background, square 1:1 canvas, sticker/icon style, clean silhouette readable at a 48x48px thumbnail, no sharp corners, no pointed ear tips, no full arms or legs, no hands, no fingers, no visible joints, no pure black, no pure red, no neon colors, no photorealistic fur, no realistic animal anatomy, no rabbit/cat/dog species markers",
+  "sheet": {
+    "image": "sprite-sheet.png",
+    "width": 1024,
+    "height": 1280,
+    "cellWidth": 256,
+    "cellHeight": 256
+  },
+  "animations": {
+    "idle": {
+      "row": 1,
+      "frames": 4,
+      "fps": 6,
+      "loop": true,
+      "durationMs": 166,
+      "pivot": {
+        "x": 128,
+        "y": 232
+      },
+      "rects": [
+        {
+          "x": 0,
+          "y": 256,
+          "w": 256,
+          "h": 256
+        },
+        {
+          "x": 256,
+          "y": 256,
+          "w": 256,
+          "h": 256
+        },
+        {
+          "x": 512,
+          "y": 256,
+          "w": 256,
+          "h": 256
+        },
+        {
+          "x": 768,
+          "y": 256,
+          "w": 256,
+          "h": 256
+        }
+      ],
+      "trims": [
+        {
+          "x": 56,
+          "y": 24,
+          "w": 142,
+          "h": 208
+        },
+        {
+          "x": 56,
+          "y": 23,
+          "w": 142,
+          "h": 208
+        },
+        {
+          "x": 60,
+          "y": 23,
+          "w": 133,
+          "h": 208
+        },
+        {
+          "x": 55,
+          "y": 24,
+          "w": 143,
+          "h": 208
+        }
+      ]
+    },
+    "laugh": {
+      "row": 0,
+      "frames": 4,
+      "fps": 8,
+      "loop": true,
+      "durationMs": 125,
+      "pivot": {
+        "x": 128,
+        "y": 232
+      },
+      "rects": [
+        {
+          "x": 0,
+          "y": 0,
+          "w": 256,
+          "h": 256
+        },
+        {
+          "x": 256,
+          "y": 0,
+          "w": 256,
+          "h": 256
+        },
+        {
+          "x": 512,
+          "y": 0,
+          "w": 256,
+          "h": 256
+        },
+        {
+          "x": 768,
+          "y": 0,
+          "w": 256,
+          "h": 256
+        }
+      ],
+      "trims": [
+        {
+          "x": 57,
+          "y": 23,
+          "w": 140,
+          "h": 208
+        },
+        {
+          "x": 40,
+          "y": 23,
+          "w": 166,
+          "h": 208
+        },
+        {
+          "x": 48,
+          "y": 24,
+          "w": 152,
+          "h": 208
+        },
+        {
+          "x": 45,
+          "y": 24,
+          "w": 158,
+          "h": 208
+        }
+      ]
+    },
+    "sad": {
+      "row": 3,
+      "frames": 4,
+      "fps": 4,
+      "loop": true,
+      "durationMs": 250,
+      "pivot": {
+        "x": 128,
+        "y": 232
+      },
+      "rects": [
+        {
+          "x": 0,
+          "y": 768,
+          "w": 256,
+          "h": 256
+        },
+        {
+          "x": 256,
+          "y": 768,
+          "w": 256,
+          "h": 256
+        },
+        {
+          "x": 512,
+          "y": 768,
+          "w": 256,
+          "h": 256
+        },
+        {
+          "x": 768,
+          "y": 768,
+          "w": 256,
+          "h": 256
+        }
+      ],
+      "trims": [
+        {
+          "x": 40,
+          "y": 24,
+          "w": 165,
+          "h": 208
+        },
+        {
+          "x": 35,
+          "y": 24,
+          "w": 184,
+          "h": 208
+        },
+        {
+          "x": 39,
+          "y": 24,
+          "w": 172,
+          "h": 208
+        },
+        {
+          "x": 34,
+          "y": 24,
+          "w": 185,
+          "h": 208
+        }
+      ]
+    },
+    "sleep": {
+      "row": 4,
+      "frames": 4,
+      "fps": 4,
+      "loop": true,
+      "durationMs": 250,
+      "pivot": {
+        "x": 128,
+        "y": 232
+      },
+      "rects": [
+        {
+          "x": 0,
+          "y": 1024,
+          "w": 256,
+          "h": 256
+        },
+        {
+          "x": 256,
+          "y": 1024,
+          "w": 256,
+          "h": 256
+        },
+        {
+          "x": 512,
+          "y": 1024,
+          "w": 256,
+          "h": 256
+        },
+        {
+          "x": 768,
+          "y": 1024,
+          "w": 256,
+          "h": 256
+        }
+      ],
+      "trims": [
+        {
+          "x": 18,
+          "y": 62,
+          "w": 208,
+          "h": 167
+        },
+        {
+          "x": 53,
+          "y": 23,
+          "w": 146,
+          "h": 208
+        },
+        {
+          "x": 16,
+          "y": 62,
+          "w": 208,
+          "h": 170
+        },
+        {
+          "x": 22,
+          "y": 94,
+          "w": 208,
+          "h": 135
+        }
+      ]
+    },
+    "yawn": {
+      "row": 2,
+      "frames": 4,
+      "fps": 6,
+      "loop": false,
+      "durationMs": 166,
+      "pivot": {
+        "x": 128,
+        "y": 232
+      },
+      "rects": [
+        {
+          "x": 0,
+          "y": 512,
+          "w": 256,
+          "h": 256
+        },
+        {
+          "x": 256,
+          "y": 512,
+          "w": 256,
+          "h": 256
+        },
+        {
+          "x": 512,
+          "y": 512,
+          "w": 256,
+          "h": 256
+        },
+        {
+          "x": 768,
+          "y": 512,
+          "w": 256,
+          "h": 256
+        }
+      ],
+      "trims": [
+        {
+          "x": 37,
+          "y": 24,
+          "w": 173,
+          "h": 208
+        },
+        {
+          "x": 43,
+          "y": 24,
+          "w": 166,
+          "h": 208
+        },
+        {
+          "x": 39,
+          "y": 24,
+          "w": 172,
+          "h": 208
+        },
+        {
+          "x": 34,
+          "y": 24,
+          "w": 189,
+          "h": 208
+        }
+      ]
+    }
+  }
+}

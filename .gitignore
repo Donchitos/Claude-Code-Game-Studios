@@ -116,6 +116,10 @@ node_modules/
 credentials.json
 secrets.json
 
+# === Firebase client config (project-identifying, kept local) ===
+GoogleService-Info.plist
+google-services.json
+
 # === Large Binary Assets (use Git LFS instead) ===
 # Uncomment and configure with Git LFS for your project:
 # *.png
@@ -142,3 +146,4 @@ $RECYCLE.BIN/
 *.msm
 *.msp
 *.lnk
+.gstack/

@@ -1,0 +1,2 @@
+- [PetQuest GDD review role](project_petquest-gdd-review-role.md) — user routes qa-lead to sanity-check Core Rules/Edge Cases before AC drafting
+- [GDD AC review depth standard](feedback_gdd-ac-review-depth.md) — catch real upstream design gaps (like #11's transaction-ordering bug), not just AC wording

@@ -1,0 +1,68 @@
+name: Automated Tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+# ---------------------------------------------------------------------------
+# Flutter + Flame CI (adapted from /test-setup — the skill's built-in templates
+# only cover Godot/Unity/Unreal). Engine: Flutter 3.44.4 / Flame 1.37.0.
+#
+# ⚠️ ACTIVATION: this workflow requires the Flutter package (a pubspec.yaml with
+# flutter_test/flame_test in dev_dependencies) to exist. As of setup the game
+# package is NOT yet scaffolded, so this workflow will fail until it is. When the
+# package lands:
+#   - if pubspec.yaml is at the repo root: no change needed.
+#   - if it is under a subdir (e.g. src/ or app/): set `working-directory` on the
+#     pub-get / analyze / test steps (or a top-level `defaults.run.working-directory`)
+#     and adjust the `flutter test` path to that package's tests/ location.
+# Until then, you may keep this on `main` (it will show red) or gate it behind a
+# path filter / comment out the run steps — team's call.
+# ---------------------------------------------------------------------------
+
+jobs:
+  test:
+    name: Run Flutter Tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.44.4'
+          channel: stable
+          cache: true
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Analyze (lint / static analysis — must pass)
+        run: flutter analyze
+
+      - name: Run tests with coverage
+        # Project convention: tests live in tests/ (plural), not Flutter's default test/.
+        run: flutter test tests/ --coverage
+
+      - name: Upload coverage
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage
+          path: coverage/
+
+  # Firestore Security Rules tests (ADR-0009 reward gate, ADR-0003 scoping) run
+  # against the emulator. Enable once firestore.rules + rules tests exist.
+  # rules-test:
+  #   name: Firestore Rules Tests
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - uses: actions/checkout@v4
+  #     - uses: actions/setup-node@v4
+  #       with: { node-version: '20' }
+  #     - run: npm ci --prefix functions
+  #     - run: firebase emulators:exec --only firestore "npm --prefix functions test"

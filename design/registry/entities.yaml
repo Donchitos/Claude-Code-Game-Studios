@@ -37,7 +37,7 @@
 #   Each entry: name, status, source, referenced_by[], attributes{}, added, revised
 
 version: 1
-last_updated: ""
+last_updated: "2026-07-02"
 
 # ─── ENTITIES ────────────────────────────────────────────────────────────────
 # Named game-world objects: enemies, NPCs, characters, factions, bosses.
@@ -106,7 +106,61 @@ items: []
 #   output_range[min, max], added
 # Optional: expression (the actual formula), notes
 
-formulas: []
+formulas:
+  - name: pet_levelup_xu_bonus
+    status: active
+    source: design/gdd/pet-leveling-evolution.md
+    referenced_by:
+      - design/gdd/pet-leveling-evolution.md
+      - design/gdd/parent-approval.md
+    variables:
+      - level
+    output_range: [75, 150]
+    expression: "level * 25 + 25"
+    notes: "level is the NEW pet level after level-up (2-5). Added to xuBalance
+      in the same transaction as the base task.xuReward, on top of it, not
+      instead of it. Values: L2=75, L3=100, L4=125, L5=150."
+    added: 2026-07-04
+    revised: ""
+
+  - name: chest_delta
+    status: active
+    source: design/gdd/parent-approval.md
+    referenced_by:
+      - design/gdd/parent-approval.md
+      - design/gdd/gacha-loot.md
+      - design/gdd/pet-leveling-evolution.md
+    variables:
+      - leveledUp
+      - hitChestMilestone
+    output_range: [0, 2]
+    expression: "[leveledUp] + [hitChestMilestone]"
+    notes: "Both booleans (0 or 1) can independently be true in the same
+      approve transaction; they stack rather than suppress each other.
+      leveledUp requires petLevel < 5. hitChestMilestone checks
+      newApprovedTaskCount % gacha_free_chest_milestone == 0. Result is
+      added to chestCount (owned by gacha-loot.md) within the transaction."
+    added: 2026-07-04
+    revised: ""
+
+  - name: catchup_total_duration
+    status: active
+    source: design/gdd/task-management-ui.md
+    referenced_by:
+      - design/gdd/task-management-ui.md
+    variables:
+      - N
+      - burst_duration
+      - stagger_interval
+    output_range: [1.2, 5.7]
+    expression: "burst_duration + (N - 1) * stagger_interval"
+    notes: "N is capped at 10 by seed_pending_list_max (Seed Buffer #10), so
+      output never needs its own clamp. Test comparisons need float tolerance
+      ±0.001s — 1.2 and 0.5 aren't exact binary floats. This is a LOGIC-tier
+      unit-testable value; actual on-screen animation playback timing is
+      Visual/Feel and not automated per coding-standards.md."
+    added: 2026-07-05
+    revised: ""
 
 # Example:
 #
@@ -139,7 +193,276 @@ formulas: []
 #
 # Required fields: name, status, source, referenced_by, value, unit, added
 
-constants: []
+constants:
+  - name: item_price_min
+    status: active
+    source: design/gdd/item-database.md
+    referenced_by:
+      - design/gdd/item-database.md
+      - design/gdd/currency-system.md
+      - design/gdd/shop-system.md
+    value: 10
+    unit: xu
+    added: 2026-06-28
+    revised: "2026-07-06 — added shop-system.md to referenced_by (found during #13's independent review; its own Formulas table cites this range as a variable definition and was never added)"
+
+  - name: item_price_max
+    status: active
+    source: design/gdd/item-database.md
+    referenced_by:
+      - design/gdd/item-database.md
+      - design/gdd/currency-system.md
+      - design/gdd/shop-system.md
+    value: 200
+    unit: xu
+    added: 2026-06-28
+    revised: ""
+
+  - name: item_catalog_max
+    status: active
+    source: design/gdd/item-database.md
+    referenced_by:
+      - design/gdd/item-database.md
+    value: 500
+    unit: items
+    added: 2026-06-28
+    revised: ""
+
+  - name: task_xu_reward_study
+    status: active
+    source: design/gdd/task-library.md
+    referenced_by:
+      - design/gdd/task-library.md
+      - design/gdd/currency-system.md
+    value: 25 # was: 20 before 2026-07-06 — decoupled from energy axis to fix dominant-strategy blocker (review-all-gdds)
+    unit: xu
+    added: 2026-06-28
+    revised: "2026-07-06"
+
+  - name: task_xu_reward_arts
+    status: active
+    source: design/gdd/task-library.md
+    referenced_by:
+      - design/gdd/task-library.md
+    value: 25 # was: 20 before 2026-07-06 — see task_xu_reward_study
+    unit: xu
+    added: 2026-06-28
+    revised: "2026-07-06"
+
+  - name: task_xu_reward_chores
+    status: active
+    source: design/gdd/task-library.md
+    referenced_by:
+      - design/gdd/task-library.md
+    value: 15
+    unit: xu
+    added: 2026-06-28
+    revised: ""
+
+  - name: task_xu_reward_sport
+    status: active
+    source: design/gdd/task-library.md
+    referenced_by:
+      - design/gdd/task-library.md
+    value: 15
+    unit: xu
+    added: 2026-06-28
+    revised: ""
+
+  - name: task_xu_reward_helping
+    status: active
+    source: design/gdd/task-library.md
+    referenced_by:
+      - design/gdd/task-library.md
+    value: 10
+    unit: xu
+    added: 2026-06-28
+    revised: ""
+
+  - name: task_energy_reward_study
+    status: active
+    source: design/gdd/task-library.md
+    referenced_by:
+      - design/gdd/task-library.md
+      - design/gdd/time-decay.md
+    value: 20 # was: 30 before 2026-07-06 — decoupled from xu axis to fix dominant-strategy blocker (review-all-gdds)
+    unit: energy
+    added: 2026-06-28
+    revised: "2026-07-06"
+
+  - name: task_energy_reward_chores
+    status: active
+    source: design/gdd/task-library.md
+    referenced_by:
+      - design/gdd/task-library.md
+      - design/gdd/time-decay.md
+    value: 25
+    unit: energy
+    added: 2026-06-28
+    revised: ""
+
+  - name: task_energy_reward_helping
+    status: active
+    source: design/gdd/task-library.md
+    referenced_by:
+      - design/gdd/task-library.md
+      - design/gdd/time-decay.md
+    value: 30 # was: 20 before 2026-07-06 — decoupled from xu axis to fix dominant-strategy blocker (review-all-gdds); helping is now the best single-task energy source in the game
+    unit: energy
+    added: 2026-06-28
+    revised: "2026-07-06"
+
+  - name: task_energy_reward_arts
+    status: active
+    source: design/gdd/task-library.md
+    referenced_by:
+      - design/gdd/task-library.md
+      - design/gdd/time-decay.md
+    value: 20 # was: 30 before 2026-07-06 — see task_energy_reward_study
+    unit: energy
+    added: 2026-07-04
+    revised: "2026-07-06"
+
+  - name: task_energy_reward_sport
+    status: active
+    source: design/gdd/task-library.md
+    referenced_by:
+      - design/gdd/task-library.md
+      - design/gdd/time-decay.md
+    value: 25
+    unit: energy
+    added: 2026-07-04
+    revised: ""
+
+  - name: gacha_free_chest_milestone
+    status: active
+    source: design/gdd/gacha-loot.md
+    referenced_by:
+      - design/gdd/gacha-loot.md
+      - design/gdd/parent-approval.md
+    value: 5
+    unit: tasks
+    added: 2026-07-01
+    revised: ""
+
+  - name: gacha_paid_chest_price
+    status: active
+    source: design/gdd/gacha-loot.md
+    referenced_by:
+      - design/gdd/gacha-loot.md
+      - design/gdd/currency-system.md
+      - design/gdd/shop-system.md
+    value: 50
+    unit: xu
+    added: 2026-07-01
+    revised: ""
+
+  - name: pet_level_threshold_l2
+    status: active
+    source: design/gdd/pet-leveling-evolution.md
+    referenced_by:
+      - design/gdd/pet-leveling-evolution.md
+      - design/gdd/data-persistence-layer.md
+      - design/gdd/parent-approval.md
+    value: 150
+    unit: totalXuEarned
+    added: 2026-07-04
+    revised: ""
+
+  - name: pet_level_threshold_l3
+    status: active
+    source: design/gdd/pet-leveling-evolution.md
+    referenced_by:
+      - design/gdd/pet-leveling-evolution.md
+      - design/gdd/data-persistence-layer.md
+      - design/gdd/parent-approval.md
+    value: 400
+    unit: totalXuEarned
+    added: 2026-07-04
+    revised: ""
+
+  - name: pet_level_threshold_l4
+    status: active
+    source: design/gdd/pet-leveling-evolution.md
+    referenced_by:
+      - design/gdd/pet-leveling-evolution.md
+      - design/gdd/data-persistence-layer.md
+      - design/gdd/parent-approval.md
+    value: 900
+    unit: totalXuEarned
+    added: 2026-07-04
+    revised: ""
+
+  - name: pet_level_threshold_l5
+    status: active
+    source: design/gdd/pet-leveling-evolution.md
+    referenced_by:
+      - design/gdd/pet-leveling-evolution.md
+      - design/gdd/data-persistence-layer.md
+      - design/gdd/parent-approval.md
+    value: 1800
+    unit: totalXuEarned
+    added: 2026-07-04
+    revised: ""
+
+  - name: seed_burst_duration
+    status: active
+    source: design/gdd/seed-buffer.md
+    referenced_by:
+      - design/gdd/seed-buffer.md
+      - design/gdd/task-management-ui.md
+    value: 1.2
+    unit: seconds
+    added: 2026-07-05
+    revised: ""
+
+  - name: seed_stagger_interval
+    status: active
+    source: design/gdd/seed-buffer.md
+    referenced_by:
+      - design/gdd/seed-buffer.md
+      - design/gdd/task-management-ui.md
+    value: 0.5
+    unit: seconds
+    added: 2026-07-05
+    revised: ""
+
+  - name: seed_pending_list_max
+    status: active
+    source: design/gdd/seed-buffer.md
+    referenced_by:
+      - design/gdd/seed-buffer.md
+      - design/gdd/task-management-ui.md
+    value: 10
+    unit: seeds
+    added: 2026-07-05
+    revised: ""
+
+  - name: tap_hitbox_min
+    status: active
+    source: design/gdd/pet-interaction.md
+    referenced_by:
+      - design/gdd/pet-interaction.md
+      - design/gdd/pet-room-screen-ui.md
+    value: 80
+    unit: dp
+    added: 2026-07-05
+    revised: ""
+
+  - name: seed_wither_duration
+    status: active
+    source: design/gdd/seed-buffer.md
+    referenced_by:
+      - design/gdd/seed-buffer.md
+      - design/gdd/task-management-ui.md
+    value: 0.6
+    unit: seconds
+    notes: "Retroactively registered 2026-07-06 during independent review of #10 — this
+      value crosses the same system boundary as seed_burst_duration/seed_stagger_interval
+      (task-management-ui.md references it verbatim for its own Wither animation),
+      but was missed when those three were registered."
+    added: 2026-07-06
+    revised: ""
 
 # Example:
 #

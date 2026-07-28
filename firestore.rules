@@ -1,0 +1,83 @@
+rules_version = '2';
+
+// Data Persistence Layer — Story 002.
+//
+// Base structure: ADR-0003 §5 (amended) — explicit nested per-collection
+// match blocks, NEVER a blanket recursive wildcard (Firestore OR's across
+// matching blocks; a wildcard would make any stricter nested rule inert).
+// `tasks` reward-integrity gate: ADR-0009 §3, which supersedes ADR-0003's
+// original placeholder for that block. Transcribed verbatim from both
+// ADRs — do not "clean up" the rewardTable() key syntax; CEL map literals
+// require quoted string keys, not JS-style bare keys (ADR-0009 §3).
+//
+// Deliberately deployed in full now (including the tasks reward-gate)
+// even though the Task Library epic that will actually write tasks/ has
+// no stories yet — both governing ADRs are Accepted with fully worked-out
+// rule text, and an inert-but-correct block is harmless until that epic's
+// client code exists (scope decision recorded in this story's file).
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function rewardTable() {
+      return {
+        'study':   {'xu': 25, 'energy': 20},
+        'arts':    {'xu': 25, 'energy': 20},
+        'chores':  {'xu': 15, 'energy': 25},
+        'sport':   {'xu': 15, 'energy': 25},
+        'helping': {'xu': 10, 'energy': 30},
+        'custom':  {'xu': 15, 'energy': 25},
+      };
+    }
+
+    function rewardOk(d) {
+      return d.categoryId in rewardTable()
+        && d.xuReward     == rewardTable()[d.categoryId].xu
+        && d.energyReward == rewardTable()[d.categoryId].energy;
+    }
+
+    // Global read-only catalog (ADR-0006).
+    match /items/{itemId} {
+      allow read: if request.auth != null;
+      allow write: if false;
+    }
+
+    match /families/{parentId} {
+      allow read, write: if request.auth.uid == parentId; // family doc
+
+      match /customTasks/{customTaskId} {
+        allow read, write: if request.auth.uid == parentId;
+      }
+
+      match /children/{childId} {
+        // child doc: xuBalance/petLevel/storedEnergy etc. still
+        // client-writable — accepted MVP tradeoff, ADR-0003 §5 Non-Goals.
+        allow read, write: if request.auth.uid == parentId;
+
+        match /private/credentials {
+          allow read, write: if request.auth.uid == parentId;
+        }
+
+        match /inventory/{itemId} {
+          allow read, write: if request.auth.uid == parentId;
+        }
+
+        // Reward-integrity gate (ADR-0009 §3). The pending→approved/
+        // rejected status-transition constraint belongs in THIS block too
+        // (Parent Approval epic, not yet implemented) — must stay here,
+        // not a broader match, or it becomes bypassable again exactly the
+        // way the original blanket wildcard was.
+        match /tasks/{taskId} {
+          allow read: if request.auth.uid == parentId;
+
+          allow create: if request.auth.uid == parentId
+            && request.resource.data.status == 'pending'
+            && rewardOk(request.resource.data);
+
+          allow update: if request.auth.uid == parentId
+            && request.resource.data.xuReward == resource.data.xuReward
+            && request.resource.data.energyReward == resource.data.energyReward
+            && request.resource.data.categoryId == resource.data.categoryId;
+        }
+      }
+    }
+  }
+}

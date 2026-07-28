@@ -60,6 +60,7 @@ domain lead) should delegate to specialists.
 | `unreal-specialist` | Unreal Engine 5 | Sonnet | Blueprint vs C++, GAS overview, UE subsystems, Unreal optimization |
 | `unity-specialist` | Unity | Sonnet | MonoBehaviour vs DOTS, Addressables, URP/HDRP, Unity optimization |
 | `godot-specialist` | Godot 4 | Sonnet | GDScript patterns, node/scene architecture, signals, Godot optimization |
+| `flame-specialist` | Flutter + Flame | Sonnet | Flame component system, FlameGame lifecycle, camera/world, collision, Dart patterns |
 
 ### Unreal Engine Sub-Specialists
 
@@ -87,3 +88,17 @@ domain lead) should delegate to specialists.
 | `godot-csharp-specialist` | C# / .NET | Sonnet | .NET patterns, [Signal] delegates, async, nullable types, type-safe node access |
 | `godot-shader-specialist` | Shaders/Rendering | Sonnet | Godot shading language, visual shaders, particles, post-processing |
 | `godot-gdextension-specialist` | GDExtension | Sonnet | C++/Rust bindings, native performance, custom nodes, build systems |
+
+### Flutter + Flame Engine Lead
+
+| Agent | Engine | Model | When to Use |
+| ---- | ---- | ---- | ---- |
+| `flame-specialist` | Flutter + Flame | Sonnet | Component architecture, FlameGame lifecycle, camera/world setup, collision detection, Dart game patterns |
+
+### Flutter + Flame Sub-Specialists
+
+| Agent | Subsystem | Model | When to Use |
+| ---- | ---- | ---- | ---- |
+| `flame-widget-specialist` | Flutter Widget Layer | Sonnet | GameWidget integration, HUD overlays, state management (Riverpod/Bloc), responsive layout, Flutter navigation |
+| `flame-shader-specialist` | Fragment Shaders / Rendering | Sonnet | `.frag` GLSL shaders, FragmentProgram API, SpriteBatch, CustomPainter, particle systems |
+| `flame-audio-specialist` | Audio (flame_audio) | Sonnet | BGM lifecycle, SFX pooling, audio caching, iOS/web platform audio quirks, app lifecycle |

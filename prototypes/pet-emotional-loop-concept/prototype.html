@@ -1,0 +1,1073 @@
+<!--
+  PROTOTYPE v2 - NOT FOR PRODUCTION
+  Question: Does seeing Mochi visibly sad/tired + a visible shop goal
+            create enough emotional motivation for kids to want to submit tasks?
+  Date: 2026-06-25
+  Pivot from: task-approval-loop-concept (REFUTED — missing emotional destination)
+  Hypothesis: If the child sees Mochi sad AND sees a specific item they want in the shop,
+              they will ask "how many more tasks until I can buy [item]?"
+              within 5 minutes of first play.
+  CUT THIS SESSION: parent approval flow (test emotional loop first)
+-->
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>PetQuest v2 — Emotional Loop</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+  body {
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    background: #FFF0E8;
+    display: flex;
+    justify-content: center;
+    padding: 12px;
+    min-height: 100vh;
+  }
+
+  .phone {
+    width: 370px;
+    background: #FFFDF8;
+    border-radius: 30px;
+    box-shadow: 0 8px 40px rgba(160,100,60,0.15);
+    overflow: hidden;
+    position: relative;
+  }
+
+  /* ── HEADER ── */
+  .topbar {
+    background: linear-gradient(135deg, #FFB5C8 0%, #FFCBA4 100%);
+    padding: 14px 18px 12px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .topbar h1 { font-size: 20px; font-weight: 900; color: #5A2D0C; letter-spacing: 0.5px; }
+  .wallet {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .wallet-item {
+    background: rgba(255,255,255,0.75);
+    border-radius: 20px;
+    padding: 4px 10px;
+    font-size: 13px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .wallet-item.coins { color: #C07800; }
+  .wallet-item.seeds { color: #2A8A2A; }
+
+  /* ── TABS ── */
+  .tabs {
+    display: flex;
+    background: #FFFDF8;
+    border-bottom: 2px solid #F0E8E0;
+  }
+  .tab {
+    flex: 1;
+    padding: 10px 6px;
+    text-align: center;
+    font-size: 13px;
+    font-weight: 700;
+    color: #B0907A;
+    cursor: pointer;
+    border-bottom: 3px solid transparent;
+    transition: all 0.2s;
+    user-select: none;
+  }
+  .tab.active { color: #C05070; border-bottom-color: #FFB5C8; background: #FFF5F8; }
+
+  /* ── VIEWS ── */
+  .view { display: none; padding: 14px; }
+  .view.active { display: block; }
+
+  /* ═══════════════ PET VIEW ═══════════════ */
+
+  /* Pet Stage */
+  .pet-stage {
+    background: linear-gradient(180deg, #E0F0FF 0%, #D0EED0 60%, #C8E8B8 100%);
+    border-radius: 22px;
+    padding: 16px 12px 12px;
+    text-align: center;
+    position: relative;
+    margin-bottom: 12px;
+    overflow: hidden;
+  }
+
+  /* Animated background dots */
+  .stage-bg {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+  }
+  .bg-dot {
+    position: absolute;
+    border-radius: 50%;
+    opacity: 0.15;
+    animation: floatDot 4s ease-in-out infinite;
+  }
+  @keyframes floatDot {
+    0%,100% { transform: translateY(0); }
+    50% { transform: translateY(-8px); }
+  }
+
+  /* Pet sprite — pure CSS chibi */
+  .pet-wrap {
+    position: relative;
+    display: inline-block;
+    margin-bottom: 8px;
+  }
+  .pet-body {
+    width: 90px;
+    height: 90px;
+    border-radius: 50%;
+    position: relative;
+    transition: all 0.5s ease;
+    cursor: pointer;
+    animation: breathe 3s ease-in-out infinite;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 60px;
+    user-select: none;
+  }
+  @keyframes breathe {
+    0%,100% { transform: scale(1); }
+    50% { transform: scale(1.04); }
+  }
+  .pet-body.sad { animation: sadWobble 2s ease-in-out infinite; }
+  @keyframes sadWobble {
+    0%,100% { transform: scale(0.96) rotate(-2deg); }
+    50% { transform: scale(0.98) rotate(2deg); }
+  }
+  .pet-body.happy { animation: happyBounce 0.6s ease-in-out infinite; }
+  @keyframes happyBounce {
+    0%,100% { transform: scale(1) translateY(0); }
+    50% { transform: scale(1.08) translateY(-6px); }
+  }
+  .pet-body.superHappy { animation: spin 0.4s ease-in-out infinite alternate; }
+  @keyframes spin {
+    0% { transform: rotate(-8deg) scale(1.05); }
+    100% { transform: rotate(8deg) scale(1.1); }
+  }
+
+  /* Equipped items floating around pet */
+  .pet-items {
+    position: absolute;
+    inset: -10px;
+    pointer-events: none;
+  }
+  .equipped-item {
+    position: absolute;
+    font-size: 22px;
+    animation: orbitFloat 3s ease-in-out infinite;
+  }
+  .equipped-item:nth-child(1) { top: -8px; left: 50%; transform: translateX(-50%); }
+  .equipped-item:nth-child(2) { bottom: 0; right: -8px; animation-delay: 1s; }
+  .equipped-item:nth-child(3) { bottom: 0; left: -8px; animation-delay: 2s; }
+  @keyframes orbitFloat {
+    0%,100% { transform: translateX(-50%) translateY(0); }
+    50% { transform: translateX(-50%) translateY(-4px); }
+  }
+  .equipped-item:nth-child(2), .equipped-item:nth-child(3) {
+    transform: none;
+  }
+  @keyframes orbitFloat2 {
+    0%,100% { transform: translateY(0); }
+    50% { transform: translateY(-4px); }
+  }
+  .equipped-item:nth-child(2) { animation-name: orbitFloat2; }
+  .equipped-item:nth-child(3) { animation-name: orbitFloat2; }
+
+  /* Mood speech bubble */
+  .mood-bubble {
+    background: white;
+    border-radius: 16px;
+    padding: 6px 12px;
+    font-size: 13px;
+    font-weight: 600;
+    display: inline-block;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    position: relative;
+    margin-top: 4px;
+    transition: all 0.4s;
+  }
+  .mood-bubble::before {
+    content: '';
+    position: absolute;
+    top: -7px;
+    left: 50%;
+    transform: translateX(-50%);
+    border: 7px solid transparent;
+    border-bottom-color: white;
+    border-top: none;
+  }
+
+  /* Mood colors */
+  .mood-sad   .pet-stage { background: linear-gradient(180deg, #E8E8F0 0%, #D8D8E8 100%); }
+  .mood-ok    .pet-stage { background: linear-gradient(180deg, #E0F0FF 0%, #D0EED0 100%); }
+  .mood-happy .pet-stage { background: linear-gradient(180deg, #FFF0D0 0%, #D0EED0 100%); }
+  .mood-super .pet-stage { background: linear-gradient(180deg, #FFD0F0 0%, #F0FFD0 100%); }
+
+  /* Energy bar */
+  .energy-track {
+    background: rgba(255,255,255,0.5);
+    border-radius: 10px;
+    height: 10px;
+    margin: 8px 10px 4px;
+    overflow: hidden;
+  }
+  .energy-fill {
+    height: 100%;
+    border-radius: 10px;
+    transition: width 0.7s cubic-bezier(0.34,1.56,0.64,1), background 0.5s;
+  }
+  .energy-label {
+    font-size: 11px;
+    font-weight: 600;
+    text-align: center;
+    opacity: 0.7;
+  }
+
+  /* Pet name + level */
+  .pet-identity {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    margin-bottom: 2px;
+  }
+  .pet-name { font-size: 17px; font-weight: 900; color: #3D2B1F; }
+  .pet-level {
+    background: #FFD060;
+    color: #7A4A00;
+    font-size: 11px;
+    font-weight: 800;
+    padding: 2px 8px;
+    border-radius: 10px;
+  }
+
+  /* ── TASKS ── */
+  .section-label {
+    font-size: 12px;
+    font-weight: 800;
+    color: #9B7060;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .task-list { margin-bottom: 12px; }
+  .task-item {
+    background: white;
+    border-radius: 16px;
+    padding: 11px 13px;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    border: 2px solid transparent;
+    transition: all 0.2s;
+  }
+  .task-item.done { opacity: 0.45; border-color: #C8E8C8; background: #F8FFF8; }
+  .task-item.pending { border-color: #FFE0A0; background: #FFFBF0; }
+
+  .task-icon { font-size: 28px; flex-shrink: 0; }
+  .task-text { flex: 1; }
+  .task-name { font-size: 14px; font-weight: 700; color: #3D2B1F; line-height: 1.2; }
+  .task-flavor { font-size: 11px; color: #B07040; margin-top: 2px; font-style: italic; }
+  .task-price {
+    font-size: 11px;
+    font-weight: 700;
+    color: #2A8A2A;
+    margin-top: 3px;
+    display: flex;
+    gap: 6px;
+  }
+  .task-price span { background: #E8F8E8; border-radius: 8px; padding: 1px 6px; }
+
+  .btn-task {
+    flex-shrink: 0;
+    border: none;
+    border-radius: 12px;
+    padding: 8px 12px;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: transform 0.1s, opacity 0.2s;
+    white-space: nowrap;
+  }
+  .btn-task:not(:disabled):active { transform: scale(0.90); }
+  .btn-task.ready { background: linear-gradient(135deg, #7ED87E, #4CAF50); color: white; }
+  .btn-task.waiting { background: #FFE090; color: #A07000; }
+  .btn-task:disabled { opacity: 0.5; cursor: default; }
+
+  /* ── SEED BAG ── */
+  .seed-bag {
+    background: linear-gradient(135deg, #FFF8E0, #FFEEB0);
+    border: 2px dashed #FFB830;
+    border-radius: 16px;
+    padding: 10px 12px;
+    margin-bottom: 12px;
+  }
+  .seed-bag-title {
+    font-size: 12px;
+    font-weight: 700;
+    color: #A07000;
+    margin-bottom: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .seed-chips { display: flex; flex-wrap: wrap; gap: 6px; min-height: 28px; }
+  .seed-chip {
+    background: white;
+    border: 2px solid #FFB830;
+    border-radius: 20px;
+    padding: 3px 10px;
+    font-size: 12px;
+    font-weight: 600;
+    color: #A07000;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    animation: chipPop 0.35s cubic-bezier(0.34,1.56,0.64,1);
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+  .seed-chip:hover { background: #FFF0C0; }
+  .seed-chip.approved { border-color: #4CAF50; color: #2A6A2A; background: #F0FFF0; }
+  @keyframes chipPop {
+    0% { transform: scale(0) rotate(-10deg); opacity: 0; }
+    100% { transform: scale(1) rotate(0); opacity: 1; }
+  }
+  .seed-empty-note { font-size: 12px; color: #C09050; font-style: italic; }
+
+  /* Quick approve button (parent shortcut for prototype — no latency in this build) */
+  .btn-quick-approve {
+    width: 100%;
+    background: linear-gradient(135deg, #9B6CC8, #7040A0);
+    color: white;
+    border: none;
+    border-radius: 12px;
+    padding: 11px;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    margin-top: 8px;
+    display: none;
+    gap: 6px;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.1s;
+  }
+  .btn-quick-approve:active { transform: scale(0.97); }
+  .btn-quick-approve.show { display: flex; }
+
+  /* ═══════════════ SHOP VIEW ═══════════════ */
+  .shop-intro {
+    background: linear-gradient(135deg, #FFD0E8, #FFEDCC);
+    border-radius: 18px;
+    padding: 12px 14px;
+    margin-bottom: 14px;
+    text-align: center;
+  }
+  .shop-intro p { font-size: 13px; color: #7A4A20; }
+  .shop-intro strong { font-size: 15px; display: block; margin-bottom: 3px; color: #5A2D0C; }
+
+  .shop-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 14px;
+  }
+  .shop-card {
+    background: white;
+    border-radius: 18px;
+    padding: 14px 10px 12px;
+    text-align: center;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+    border: 2.5px solid #F0E0D0;
+    cursor: pointer;
+    transition: transform 0.15s, border-color 0.2s, box-shadow 0.2s;
+    position: relative;
+  }
+  .shop-card:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,0.12); }
+  .shop-card:active { transform: scale(0.94); }
+  .shop-card.owned { border-color: #A0D8A0; background: #F5FFF5; cursor: default; }
+  .shop-card.owned:hover { transform: none; }
+  .shop-card.affordable { border-color: #FFB830; }
+  .shop-card.cant-afford { opacity: 0.65; cursor: not-allowed; }
+  .shop-card.cant-afford:active { transform: none; }
+
+  .shop-item-emoji { font-size: 44px; display: block; margin-bottom: 6px; line-height: 1; }
+  .shop-item-name { font-size: 13px; font-weight: 700; color: #3D2B1F; margin-bottom: 6px; }
+  .shop-item-price {
+    display: flex;
+    justify-content: center;
+    gap: 5px;
+    flex-wrap: wrap;
+  }
+  .price-tag {
+    font-size: 11px;
+    font-weight: 700;
+    border-radius: 10px;
+    padding: 2px 8px;
+    white-space: nowrap;
+  }
+  .price-coins { background: #FFF3D0; color: #A07800; }
+  .price-seeds { background: #E8F8E8; color: #2A7A2A; }
+  .price-free  { background: #FFE0F0; color: #C050A0; }
+
+  .owned-badge {
+    position: absolute;
+    top: 6px;
+    right: 8px;
+    font-size: 16px;
+  }
+  .rarity-dot {
+    position: absolute;
+    top: 8px;
+    left: 8px;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+  }
+  .r-common { background: #CCC; }
+  .r-rare   { background: #60A8E0; }
+  .r-epic   { background: #A060D0; }
+
+  .shop-progress {
+    background: #F5EEE8;
+    border-radius: 14px;
+    padding: 12px 14px;
+  }
+  .progress-title { font-size: 12px; font-weight: 700; color: #9B7060; margin-bottom: 8px; }
+  .progress-goal {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 13px;
+    color: #5A3A2A;
+  }
+  .progress-bar-wrap {
+    flex: 1;
+    background: #E0D0C8;
+    border-radius: 8px;
+    height: 8px;
+    overflow: hidden;
+  }
+  .progress-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #FFB830, #E08000);
+    border-radius: 8px;
+    transition: width 0.6s ease;
+  }
+  .progress-label { font-size: 11px; color: #9B7060; white-space: nowrap; }
+
+  /* ═══════════════ OVERLAYS ═══════════════ */
+  .overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.55);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 200;
+    backdrop-filter: blur(4px);
+  }
+  .overlay.show { display: flex; }
+
+  /* Reward popup */
+  .reward-box {
+    background: linear-gradient(180deg, #FFF8E8, #FFF0C8);
+    border-radius: 28px;
+    padding: 26px 22px 22px;
+    width: 290px;
+    text-align: center;
+    box-shadow: 0 16px 50px rgba(0,0,0,0.35);
+    animation: popIn 0.4s cubic-bezier(0.34,1.56,0.64,1);
+    position: relative;
+    overflow: hidden;
+  }
+  @keyframes popIn {
+    0% { transform: scale(0.4) rotate(-5deg); opacity: 0; }
+    100% { transform: scale(1) rotate(0); opacity: 1; }
+  }
+  .confetti-zone { position: absolute; inset: 0; pointer-events: none; overflow: hidden; }
+  .confetti-bit {
+    position: absolute;
+    width: 7px; height: 7px;
+    border-radius: 2px;
+    animation: cfall linear forwards;
+  }
+  @keyframes cfall {
+    0%   { opacity: 1; transform: translateY(-5px) rotate(0); }
+    100% { opacity: 0; transform: translateY(220px) rotate(600deg); }
+  }
+
+  .reward-headline { font-size: 22px; font-weight: 900; color: #5A2D0C; margin-bottom: 3px; }
+  .reward-sub { font-size: 13px; color: #A07050; margin-bottom: 16px; }
+
+  .buy-item-preview { font-size: 62px; display: block; margin: 0 auto 6px; animation: popIn 0.3s ease; }
+  .buy-item-name { font-size: 17px; font-weight: 800; color: #3D2B1F; margin-bottom: 3px; }
+  .buy-item-equipped { font-size: 12px; color: #4A8A4A; font-weight: 600; margin-bottom: 14px; }
+  .mochi-reaction { font-size: 36px; display: block; margin: 6px auto; animation: happyBounce2 0.5s ease infinite; }
+  @keyframes happyBounce2 {
+    0%,100% { transform: translateY(0) scale(1); }
+    50% { transform: translateY(-8px) scale(1.1); }
+  }
+  .mochi-says { font-size: 14px; font-style: italic; color: #6A4A2A; margin-bottom: 14px; }
+
+  .btn-close-reward {
+    width: 100%;
+    background: linear-gradient(135deg, #FFB5C8, #FF80A8);
+    color: white;
+    border: none;
+    border-radius: 16px;
+    padding: 13px;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: transform 0.1s;
+  }
+  .btn-close-reward:active { transform: scale(0.96); }
+
+  /* Float particles */
+  .floatie {
+    position: fixed;
+    pointer-events: none;
+    z-index: 300;
+    font-size: 20px;
+    animation: floatieAnim 0.9s ease forwards;
+  }
+  @keyframes floatieAnim {
+    0%   { transform: translateY(0) scale(1); opacity: 1; }
+    100% { transform: translateY(-90px) scale(0.4); opacity: 0; }
+  }
+</style>
+</head>
+<body>
+<div class="phone" id="moodRoot">
+
+  <!-- TOPBAR -->
+  <div class="topbar">
+    <h1>🐾 PetQuest</h1>
+    <div class="wallet">
+      <div class="wallet-item coins">🪙 <span id="coins">5</span></div>
+      <div class="wallet-item seeds">🌱 <span id="seeds">0</span></div>
+    </div>
+  </div>
+
+  <!-- TABS -->
+  <div class="tabs">
+    <div class="tab active" id="tabPet"   onclick="switchTab('pet')">🐱 Mochi</div>
+    <div class="tab"        id="tabTasks" onclick="switchTab('tasks')">⚡ Nhiệm vụ</div>
+    <div class="tab"        id="tabShop"  onclick="switchTab('shop')">🛍️ Shop</div>
+  </div>
+
+  <!-- ═══════ PET VIEW ═══════ -->
+  <div class="view active" id="viewPet">
+
+    <div class="pet-stage" id="petStage">
+      <div class="stage-bg" id="stageBg"></div>
+
+      <div class="pet-identity">
+        <div class="pet-name">Mochi</div>
+        <div class="pet-level">Lv.<span id="petLevel">1</span></div>
+      </div>
+
+      <div class="pet-wrap">
+        <div class="pet-body" id="petBody" onclick="tapPet()">🐱</div>
+        <div class="pet-items" id="petItems"></div>
+      </div>
+
+      <div class="mood-bubble" id="moodBubble">😢 Mochi đang mệt quá...</div>
+
+      <div class="energy-track">
+        <div class="energy-fill" id="energyFill" style="width:15%"></div>
+      </div>
+      <div class="energy-label" id="energyLabel">Năng lượng: 15/100</div>
+    </div>
+
+    <!-- Hint when sad -->
+    <div id="sadHint" style="background:#FFF0F0;border:2px solid #FFB0B0;border-radius:14px;padding:10px 14px;margin-bottom:12px;font-size:13px;color:#9A3030;text-align:center;">
+      😢 <strong>Mochi cần bạn!</strong><br>
+      <span style="font-size:12px">Hoàn thành nhiệm vụ để nạp năng lượng cho Mochi 💪</span>
+    </div>
+
+    <div class="section-label">🎁 Đang mặc</div>
+    <div id="equippedList" style="background:#F8F4F0;border-radius:14px;padding:10px 12px;margin-bottom:12px;min-height:44px;display:flex;flex-wrap:wrap;gap:8px;align-items:center;">
+      <span style="font-size:12px;color:#B09080;font-style:italic" id="equippedEmpty">Chưa có trang phục nào — mua trong Shop nhé!</span>
+    </div>
+
+  </div>
+
+  <!-- ═══════ TASKS VIEW ═══════ -->
+  <div class="view" id="viewTasks">
+
+    <div class="task-list" id="taskList"></div>
+
+    <!-- Seed bag -->
+    <div class="seed-bag">
+      <div class="seed-bag-title">
+        <span>🌱 Túi Hạt Giống <span id="seedBagCount">(0)</span></span>
+        <span style="font-size:11px;color:#C09050;font-weight:400">Dùng để mua đồ trong Shop</span>
+      </div>
+      <div class="seed-chips" id="seedChips">
+        <span class="seed-empty-note" id="seedEmptyNote">Chưa có hạt nào — làm nhiệm vụ đi!</span>
+      </div>
+      <button class="btn-quick-approve" id="btnApprove" onclick="approveAll()">
+        ✅ Bố/Mẹ Duyệt Tất Cả (thêm hạt vào ví)
+      </button>
+    </div>
+
+  </div>
+
+  <!-- ═══════ SHOP VIEW ═══════ -->
+  <div class="view" id="viewShop">
+
+    <div class="shop-intro">
+      <strong>🛍️ Cửa hàng cho Mochi</strong>
+      <p>Mua trang phục bằng 🪙 xu và 🌱 hạt giống đã được bố mẹ duyệt!</p>
+    </div>
+
+    <div class="section-label">✨ Trang phục</div>
+    <div class="shop-grid" id="shopGrid"></div>
+
+    <div class="shop-progress">
+      <div class="progress-title">🎯 Mục tiêu tiếp theo</div>
+      <div class="progress-goal" id="progressGoal">
+        <span id="progressEmoji">📦</span>
+        <div class="progress-bar-wrap">
+          <div class="progress-bar-fill" id="progressBarFill" style="width:0%"></div>
+        </div>
+        <span class="progress-label" id="progressLabel">...</span>
+      </div>
+    </div>
+
+  </div>
+
+</div><!-- .phone -->
+
+<!-- ═══════ REWARD OVERLAY ═══════ -->
+<div class="overlay" id="rewardOverlay">
+  <div class="reward-box">
+    <div class="confetti-zone" id="confettiZone"></div>
+    <div class="reward-headline">🎉 Mua thành công!</div>
+    <div class="reward-sub" id="rewardSub">Mochi đang thử trang phục mới...</div>
+    <span class="buy-item-preview" id="rewardEmoji">🎩</span>
+    <div class="buy-item-name" id="rewardName">Mũ Phù Thủy</div>
+    <div class="buy-item-equipped">✅ Đã trang bị cho Mochi!</div>
+    <span class="mochi-reaction" id="mochiReaction">😸</span>
+    <div class="mochi-says" id="mochiSays">"Woa! Mình trông ngầu lắm!"</div>
+    <button class="btn-close-reward" onclick="closeReward()">Tuyệt! 🌟</button>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════════
+//  GAME STATE
+// ═══════════════════════════════════════════════════════
+const G = {
+  coins: 5,
+  seeds: 0,
+  energy: 15,
+  level: 1,
+  equippedItems: [],  // item ids
+  ownedItems: new Set(),
+  pendingSeeds: 0,    // seeds waiting for parent approval
+};
+
+// ── TASKS ──
+const TASKS = [
+  {
+    id: 't0', icon: '📚',
+    name: 'Làm bài tập toán',
+    flavor: '🛡️ Nạp Khiên Ma Thuật cho Mochi',
+    reward: { coins: 15, seeds: 1 }, done: false, pending: false,
+  },
+  {
+    id: 't1', icon: '🧹',
+    name: 'Quét nhà / dọn phòng',
+    flavor: '🏰 Thu thập Mảnh Lâu Đài bằng việc dọn dẹp',
+    reward: { coins: 10, seeds: 1 }, done: false, pending: false,
+  },
+  {
+    id: 't2', icon: '🎹',
+    name: 'Luyện đàn 1 bản nhạc',
+    flavor: '🎵 Đánh thức Tinh Linh Âm Nhạc của Mochi',
+    reward: { coins: 20, seeds: 2 }, done: false, pending: false,
+  },
+];
+
+// ── SHOP ──
+const SHOP_ITEMS = [
+  { id: 's0', emoji: '🎩', name: 'Mũ Phù Thủy',       rarity:'rare',   coins: 0,  seeds: 1, slot:'hat',    says: '"Tớ là phù thủy mạnh nhất!"', moodBonus: 20 },
+  { id: 's1', emoji: '🌺', name: 'Hoa Cài Đầu',        rarity:'common', coins: 8,  seeds: 0, slot:'hat',    says: '"Mình đẹp nhất xóm rồi!"',    moodBonus: 12 },
+  { id: 's2', emoji: '🎀', name: 'Nơ Hồng Dễ Thương',  rarity:'common', coins: 6,  seeds: 0, slot:'neck',   says: '"Chiếc nơ này hợp tớ quá!"',   moodBonus: 10 },
+  { id: 's3', emoji: '👑', name: 'Vương Miện Vàng',     rarity:'epic',   coins: 10, seeds: 3, slot:'hat',    says: '"Tớ là Vua của khu xóm!"',     moodBonus: 35 },
+  { id: 's4', emoji: '🌙', name: 'Mặt Trăng Bạc',      rarity:'rare',   coins: 5,  seeds: 2, slot:'side',   says: '"Tớ sáng như trăng đêm nay!"', moodBonus: 18 },
+  { id: 's5', emoji: '🦋', name: 'Đôi Cánh Bướm',      rarity:'rare',   coins: 12, seeds: 1, slot:'back',   says: '"Bay lên nào Mochi!"',          moodBonus: 22 },
+];
+
+// ── MOOD STATES ──
+const MOODS = [
+  { min:0,  max:20,  class:'sad',   emoji:'😢', body:'🐱', color:'#9090B0', energyColor:'#9090C0',
+    text:'😢 Mochi đang mệt quá...',       shortText:'Mệt', showSadHint:true },
+  { min:20, max:45,  class:'',      emoji:'😐', body:'🐱', color:'#5A9A5A', energyColor:'#7ABA7A',
+    text:'😐 Mochi ổn rồi, cần thêm năng lượng!', shortText:'Ổn', showSadHint:false },
+  { min:45, max:70,  class:'happy', emoji:'😊', body:'😺', color:'#5A9A5A', energyColor:'#5AB85A',
+    text:'😊 Mochi đang vui! Tiếp tục nhé!', shortText:'Vui', showSadHint:false },
+  { min:70, max:90,  class:'happy', emoji:'😄', body:'😸', color:'#C07800', energyColor:'#E0A020',
+    text:'😄 Mochi tràn đầy năng lượng!',   shortText:'Hạnh phúc', showSadHint:false },
+  { min:90, max:101, class:'superHappy', emoji:'🤩', body:'🌟', color:'#C02080', energyColor:'#E040A0',
+    text:'🤩 MOCHI SIÊU HẠNH PHÚC! Bé chăm quá!', shortText:'Siêu vui', showSadHint:false },
+];
+
+function getMood() { return MOODS.find(m => G.energy >= m.min && G.energy < m.max) || MOODS[0]; }
+
+// ═══════════════════════════════════════════════════════
+//  UI UPDATE
+// ═══════════════════════════════════════════════════════
+function updateAll() { updateWallet(); updatePet(); updateTaskList(); updateSeedBag(); updateShop(); }
+
+function updateWallet() {
+  document.getElementById('coins').textContent = G.coins;
+  document.getElementById('seeds').textContent = G.seeds;
+}
+
+function updatePet() {
+  const mood = getMood();
+  const root = document.getElementById('moodRoot');
+  root.className = 'phone mood-' + (mood.class || 'ok');
+
+  const petBody = document.getElementById('petBody');
+  petBody.textContent = mood.body;
+  petBody.className = 'pet-body ' + mood.class;
+
+  document.getElementById('moodBubble').textContent = mood.text;
+  document.getElementById('moodBubble').style.color = mood.color;
+  document.getElementById('energyFill').style.width = G.energy + '%';
+  document.getElementById('energyFill').style.background =
+    `linear-gradient(90deg, ${mood.energyColor}, ${mood.color})`;
+  document.getElementById('energyLabel').textContent =
+    `Năng lượng: ${G.energy}/100`;
+  document.getElementById('petLevel').textContent = G.level;
+  document.getElementById('sadHint').style.display = mood.showSadHint ? '' : 'none';
+
+  // Equipped items display
+  const petItemsEl = document.getElementById('petItems');
+  petItemsEl.innerHTML = '';
+  G.equippedItems.slice(0,3).forEach(id => {
+    const item = SHOP_ITEMS.find(s => s.id === id);
+    if (!item) return;
+    const span = document.createElement('span');
+    span.className = 'equipped-item';
+    span.textContent = item.emoji;
+    petItemsEl.appendChild(span);
+  });
+
+  // Equipped list panel
+  const equippedList = document.getElementById('equippedList');
+  const equippedEmpty = document.getElementById('equippedEmpty');
+  if (G.equippedItems.length === 0) {
+    equippedEmpty.style.display = '';
+  } else {
+    equippedEmpty.style.display = 'none';
+    equippedList.innerHTML = '';
+    G.equippedItems.forEach(id => {
+      const item = SHOP_ITEMS.find(s => s.id === id);
+      if (!item) return;
+      const chip = document.createElement('div');
+      chip.style = 'background:white;border-radius:12px;padding:5px 10px;font-size:13px;display:flex;align-items:center;gap:5px;border:1.5px solid #E0D0C0;';
+      chip.innerHTML = `${item.emoji} <span style="font-weight:600">${item.name}</span>`;
+      equippedList.appendChild(chip);
+    });
+  }
+}
+
+function updateTaskList() {
+  const list = document.getElementById('taskList');
+  list.innerHTML = '';
+  TASKS.forEach((task, i) => {
+    const div = document.createElement('div');
+    div.className = 'task-item ' + (task.done ? 'done' : task.pending ? 'pending' : '');
+    div.id = 'task_' + i;
+
+    const btnText = task.done ? '✓ Xong' : task.pending ? '⏳ Chờ duyệt' : 'Xong!';
+    const btnClass = task.done ? 'btn-task' : task.pending ? 'btn-task waiting' : 'btn-task ready';
+    const disabled = task.done || task.pending ? 'disabled' : '';
+
+    div.innerHTML = `
+      <div class="task-icon">${task.icon}</div>
+      <div class="task-text">
+        <div class="task-name">${task.name}</div>
+        <div class="task-flavor">${task.flavor}</div>
+        <div class="task-price">
+          <span>🪙 +${task.reward.coins} xu</span>
+          <span>🌱 +${task.reward.seeds} hạt</span>
+        </div>
+      </div>
+      <button class="${btnClass}" ${disabled} onclick="completeTask(${i})">${btnText}</button>
+    `;
+    list.appendChild(div);
+  });
+}
+
+function updateSeedBag() {
+  const chips = document.getElementById('seedChips');
+  const empty = document.getElementById('seedEmptyNote');
+  const btn = document.getElementById('btnApprove');
+  const countEl = document.getElementById('seedBagCount');
+
+  const pendingTasks = TASKS.filter(t => t.pending);
+  countEl.textContent = `(${G.pendingSeeds} chờ duyệt, ${G.seeds} đã duyệt)`;
+
+  chips.innerHTML = '';
+  if (pendingTasks.length === 0 && G.seeds === 0) {
+    empty.style.display = '';
+    btn.classList.remove('show');
+    return;
+  }
+  empty.style.display = 'none';
+
+  // Show pending seeds
+  pendingTasks.forEach(t => {
+    const chip = document.createElement('div');
+    chip.className = 'seed-chip';
+    chip.innerHTML = `🌱 ${t.icon} <small style="color:#B09050">⏳</small>`;
+    chip.title = 'Chờ bố mẹ duyệt';
+    chips.appendChild(chip);
+  });
+  // Show approved seeds
+  for (let i = 0; i < G.seeds; i++) {
+    const chip = document.createElement('div');
+    chip.className = 'seed-chip approved';
+    chip.innerHTML = `🌱 ✅`;
+    chips.appendChild(chip);
+  }
+
+  btn.classList.toggle('show', pendingTasks.length > 0);
+}
+
+function updateShop() {
+  const grid = document.getElementById('shopGrid');
+  grid.innerHTML = '';
+  SHOP_ITEMS.forEach(item => {
+    const owned = G.ownedItems.has(item.id);
+    const canAfford = G.coins >= item.coins && G.seeds >= item.seeds;
+    const rClass = item.rarity === 'epic' ? 'r-epic' : item.rarity === 'rare' ? 'r-rare' : 'r-common';
+
+    let cardClass = 'shop-card';
+    if (owned) cardClass += ' owned';
+    else if (canAfford) cardClass += ' affordable';
+    else cardClass += ' cant-afford';
+
+    const onClick = owned ? '' : `onclick="buyItem('${item.id}')"`;
+
+    const priceHtml = owned
+      ? `<div class="price-tag price-free">✓ Đã mua</div>`
+      : [
+          item.coins > 0 ? `<div class="price-tag price-coins">🪙 ${item.coins}</div>` : '',
+          item.seeds > 0 ? `<div class="price-tag price-seeds">🌱 ${item.seeds}</div>` : '',
+          item.coins === 0 && item.seeds === 0 ? '<div class="price-tag price-free">Miễn phí</div>' : '',
+        ].join('');
+
+    const card = document.createElement('div');
+    card.className = cardClass;
+    card.innerHTML = `
+      <div class="rarity-dot ${rClass}"></div>
+      ${owned ? '<div class="owned-badge">✅</div>' : ''}
+      <span class="shop-item-emoji">${item.emoji}</span>
+      <div class="shop-item-name">${item.name}</div>
+      <div class="shop-item-price">${priceHtml}</div>
+    `;
+    if (!owned) card.setAttribute('onclick', `buyItem('${item.id}')`);
+    grid.appendChild(card);
+  });
+
+  updateProgressBar();
+}
+
+function updateProgressBar() {
+  // Find cheapest not-yet-owned affordable (or closest to afford)
+  const unowned = SHOP_ITEMS.filter(i => !G.ownedItems.has(i.id));
+  if (unowned.length === 0) {
+    document.getElementById('progressGoal').innerHTML = '<span>🎉 Đã mua hết tất cả! Sắp có thêm đồ mới!</span>';
+    return;
+  }
+
+  // Sort by proximity to afford
+  unowned.sort((a, b) => {
+    const aGap = Math.max(0, a.coins - G.coins) + Math.max(0, a.seeds - G.seeds) * 10;
+    const bGap = Math.max(0, b.coins - G.coins) + Math.max(0, b.seeds - G.seeds) * 10;
+    return aGap - bGap;
+  });
+  const target = unowned[0];
+  const totalCost = target.coins + target.seeds * 10;
+  const currentProg = Math.min(G.coins, target.coins) + Math.min(G.seeds, target.seeds) * 10;
+  const pct = totalCost > 0 ? Math.round(currentProg / totalCost * 100) : 100;
+
+  document.getElementById('progressEmoji').textContent = target.emoji;
+  document.getElementById('progressBarFill').style.width = pct + '%';
+
+  const coinsNeeded = Math.max(0, target.coins - G.coins);
+  const seedsNeeded = Math.max(0, target.seeds - G.seeds);
+  const parts = [];
+  if (coinsNeeded > 0) parts.push(`${coinsNeeded} xu`);
+  if (seedsNeeded > 0) parts.push(`${seedsNeeded} hạt`);
+  document.getElementById('progressLabel').textContent =
+    parts.length ? `Còn thiếu: ${parts.join(', ')}` : 'Đủ tiền mua rồi! ➡️';
+}
+
+// ═══════════════════════════════════════════════════════
+//  ACTIONS
+// ═══════════════════════════════════════════════════════
+function completeTask(i) {
+  const task = TASKS[i];
+  if (task.done || task.pending) return;
+
+  task.pending = true;
+  G.pendingSeeds += task.reward.seeds;
+
+  // Tiny instant energy boost (preview)
+  G.energy = Math.min(100, G.energy + 5);
+
+  updateTaskList();
+  updateSeedBag();
+  updatePet();
+  updateWallet();
+
+  // Float seed emoji
+  const el = document.getElementById('task_' + i);
+  spawnFloatie('🌱', el);
+}
+
+function approveAll() {
+  const pendingTasks = TASKS.filter(t => t.pending);
+  pendingTasks.forEach(task => {
+    task.pending = false;
+    task.done = true;
+    G.coins += task.reward.coins;
+    G.seeds += task.reward.seeds;
+    G.energy = Math.min(100, G.energy + 15);
+  });
+  G.pendingSeeds = 0;
+  updateAll();
+  // Float coins
+  const btn = document.getElementById('btnApprove');
+  spawnFloatie('🪙', btn);
+  spawnFloatie('✅', btn);
+
+  // Level up check
+  if (G.energy >= 60 && G.level === 1) {
+    G.level = 2;
+    setTimeout(() => alert('🎉 Mochi lên Cấp 2! Tiếp tục nào!'), 400);
+  }
+}
+
+function buyItem(id) {
+  const item = SHOP_ITEMS.find(s => s.id === id);
+  if (!item || G.ownedItems.has(id)) return;
+  if (G.coins < item.coins || G.seeds < item.seeds) {
+    // shake effect
+    const card = [...document.querySelectorAll('.shop-card')].find(c => c.querySelector('.shop-item-name')?.textContent === item.name);
+    if (card) { card.style.animation = 'none'; void card.offsetWidth; card.style.animation = 'shake 0.3s'; }
+    return;
+  }
+
+  G.coins -= item.coins;
+  G.seeds -= item.seeds;
+  G.ownedItems.add(id);
+  G.equippedItems.unshift(id);
+  if (G.equippedItems.length > 3) G.equippedItems.pop();
+
+  // Mood boost
+  G.energy = Math.min(100, G.energy + item.moodBonus);
+
+  // Show reward popup
+  document.getElementById('rewardEmoji').textContent = item.emoji;
+  document.getElementById('rewardName').textContent = item.name;
+  document.getElementById('rewardSub').textContent = `${item.emoji} Mochi đang thử trang phục mới...`;
+  const mood = getMood();
+  document.getElementById('mochiReaction').textContent = mood.body;
+  document.getElementById('mochiSays').textContent = item.says;
+  document.getElementById('rewardOverlay').classList.add('show');
+  spawnConfetti();
+  updateAll();
+}
+
+function closeReward() {
+  document.getElementById('rewardOverlay').classList.remove('show');
+  document.getElementById('confettiZone').innerHTML = '';
+}
+
+function tapPet() {
+  const body = document.getElementById('petBody');
+  body.style.transform = 'scale(1.25) rotate(-8deg)';
+  setTimeout(() => body.style.transform = '', 300);
+  spawnFloatie('💕', body);
+}
+
+// ═══════════════════════════════════════════════════════
+//  NAVIGATION
+// ═══════════════════════════════════════════════════════
+function switchTab(tab) {
+  ['pet','tasks','shop'].forEach(t => {
+    document.getElementById('view' + cap(t)).classList.toggle('active', t === tab);
+    document.getElementById('tab' + cap(t)).classList.toggle('active', t === tab);
+  });
+  if (tab === 'shop') updateShop();
+}
+function cap(s) { return s.charAt(0).toUpperCase() + s.slice(1); }
+
+// ═══════════════════════════════════════════════════════
+//  PARTICLES
+// ═══════════════════════════════════════════════════════
+function spawnFloatie(emoji, relEl) {
+  const rect = relEl.getBoundingClientRect();
+  const el = document.createElement('div');
+  el.className = 'floatie';
+  el.textContent = emoji;
+  el.style.left = (rect.left + rect.width / 2 - 10) + 'px';
+  el.style.top  = (rect.top + rect.height / 2 - 10) + 'px';
+  document.body.appendChild(el);
+  setTimeout(() => el.remove(), 950);
+}
+
+function spawnConfetti() {
+  const zone = document.getElementById('confettiZone');
+  zone.innerHTML = '';
+  const colors = ['#FFB5C8','#FFD700','#A8D8EA','#C8F5C8','#E8A8FF','#FFB830','#80E8FF'];
+  for (let i = 0; i < 24; i++) {
+    const d = document.createElement('div');
+    d.className = 'confetti-bit';
+    d.style.cssText = `
+      background:${colors[i % colors.length]};
+      left:${Math.random()*100}%;
+      top:-8px;
+      animation-duration:${0.7 + Math.random()*0.7}s;
+      animation-delay:${Math.random()*0.25}s;
+    `;
+    zone.appendChild(d);
+  }
+  setTimeout(() => zone.innerHTML = '', 1600);
+}
+
+// ═══════════════════════════════════════════════════════
+//  INIT
+// ═══════════════════════════════════════════════════════
+updateAll();
+</script>
+</body>
+</html>
