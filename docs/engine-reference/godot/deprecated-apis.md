@@ -1,6 +1,6 @@
 # Godot — Deprecated APIs
 
-Last verified: 2026-02-12
+Last verified: 2026-07-09
 
 If an agent suggests any API in the "Deprecated" column, it MUST be replaced
 with the "Use Instead" column.
@@ -15,6 +15,7 @@ with the "Use Instead" column.
 | `YSort` | `Node2D.y_sort_enabled` | 4.0 | Property on Node2D, not a separate node |
 | `Navigation2D` / `Navigation3D` | `NavigationServer2D` / `NavigationServer3D` | 4.0 | Server-based API |
 | `EditorSceneFormatImporterFBX` | `EditorSceneFormatImporterFBX2GLTF` | 4.3 | Renamed |
+| `RichTextLabel.ImageUpdateMask.UPDATE_WIDTH_IN_PERCENT` | `UPDATE_WIDTH_UNIT` | 4.7 | Renamed, works alongside `width_unit` type change |
 
 ## Methods & Properties
 
@@ -30,6 +31,7 @@ with the "Use Instead" column.
 | `Skeleton3D` signal `bone_pose_updated` | `skeleton_updated` | 4.3 | Renamed |
 | `AnimationPlayer.method_call_mode` | `AnimationMixer.callback_mode_method` | 4.3 | Moved to base class |
 | `AnimationPlayer.playback_active` | `AnimationMixer.active` | 4.3 | Moved to base class |
+| Hardcoded mouse/keyboard device ID `0` | `InputEvent.DEVICE_ID_MOUSE` / `InputEvent.DEVICE_ID_KEYBOARD` | 4.7 | Device ID `0` is no longer guaranteed to mean mouse/keyboard |
 
 ## Patterns (Not Just APIs)
 

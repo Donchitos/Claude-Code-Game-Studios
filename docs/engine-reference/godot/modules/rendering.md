@@ -1,8 +1,16 @@
 # Godot Rendering — Quick Reference
 
-Last verified: 2026-02-12 | Engine: Godot 4.6
+Last verified: 2026-07-09 | Engine: Godot 4.7-stable
 
 ## What Changed Since ~4.3 (LLM Cutoff)
+
+### 4.7 Changes
+- **HDR output support**: Windows, macOS, iOS, visionOS, Linux/Wayland can output HDR instead of compressing bright effects into SDR
+- **AreaLight3D**: New node — real-time light emitted from a rectangular surface
+- **DrawableTexture2D**: Runtime-drawable textures (fog-of-war, decals, minimaps, paint mechanics)
+- **`LinearToSRGB` visual shader**: No longer clamps output to `[0.0, 1.0]` in Mobile/Forward+ renderers
+- **`CanvasItem` line drawing**: No longer includes antialiasing feather by default
+- **GridMap**: New dedicated MeshLibrary editor (see current-best-practices.md — Building/GridMap section)
 
 ### 4.6 Changes
 - **D3D12 is the default rendering backend on Windows** (was Vulkan)

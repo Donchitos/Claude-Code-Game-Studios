@@ -1,0 +1,10 @@
+[gd_resource type="Resource" script_class="BuildValidationConfig" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/build_validation/build_validation_config.gd" id="1_buildvalidation"]
+
+[resource]
+script = ExtResource("1_buildvalidation")
+min_room_cells = 2
+max_room_height = 8
+unsheltered_bed_multiplier = 0.7
+room_cue_cooldown_ticks = 20

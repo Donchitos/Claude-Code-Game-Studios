@@ -1,0 +1,22 @@
+[gd_resource type="Resource" script_class="VoxelWorldConfig" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/voxel_world/voxel_world_config.gd" id="1_vxwcfg"]
+
+[resource]
+script = ExtResource("1_vxwcfg")
+world_width_cells = 2000
+world_depth_cells = 2000
+min_y = 0
+max_y = 16
+base_height = 4
+amplitude = 3.0
+frequency = 0.05
+terrain_seed = 12345
+region_directory = "user://regions"
+region_size_chunks = 32
+view_radius_chunks = 12
+boot_mesh_radius_chunks = 8
+settlement_radius_chunks = 8
+max_concurrent_async_tasks = 32
+max_chunk_generation_cost_ms = 1.0
+mesh_build_budget_ms = 4.0

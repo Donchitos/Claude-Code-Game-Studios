@@ -1,0 +1,8 @@
+[gd_resource type="Resource" script_class="PlacementPickConfig" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/building_system/placement_pick_config.gd" id="1_placementpick"]
+
+[resource]
+script = ExtResource("1_placementpick")
+max_pick_distance = 200.0
+drag_threshold_px = 6.0

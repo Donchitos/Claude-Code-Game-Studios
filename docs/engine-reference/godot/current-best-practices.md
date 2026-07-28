@@ -1,9 +1,41 @@
 # Godot — Current Best Practices
 
-Last verified: 2026-02-12 | Engine: Godot 4.6
+Last verified: 2026-07-09 | Engine: Godot 4.7-stable
 
 Practices that are **new or changed** since the model's training data (~4.3).
 This supplements (not replaces) the agent's built-in knowledge.
+
+## Building / GridMap (4.7) — relevant to this project's voxel pipeline
+
+- **Dedicated MeshLibrary editor**: GridMap now has a purpose-built MeshLibrary
+  editor (mirrors the TileSet editor for 2D), replacing the old scene-import
+  workflow for adding/editing tiles. Use it directly when authoring the
+  block/furniture kit rather than hand-editing `.tres` MeshLibrary resources.
+- GridMap still favors a small MeshLibrary for instanced rendering via
+  MultiMeshInstance — the underlying rendering approach is unchanged in 4.7,
+  only the authoring workflow improved. The GridMap vs MultiMesh vs baked-mesh
+  decision for this project is still open (see game-concept.md); this editor
+  makes the GridMap path more viable to prototype quickly.
+
+## Rendering (4.7)
+
+- **HDR output support**: Windows, macOS, iOS, visionOS, and Linux/Wayland can
+  now output HDR — bright effects reach the display instead of being
+  compressed into SDR. Opt-in via Project Settings.
+- **AreaLight3D**: New node renders real-time light from a rectangular surface
+  in 3D — useful for the "warm light" sensation goal in the concept doc.
+- **DrawableTexture2D**: Draw onto textures at runtime — fog-of-war masks,
+  minimap markings, dynamic decals.
+- **`LinearToSRGB` visual shader no longer clamps** to `[0.0, 1.0]` in
+  Mobile/Forward+ — verify any shaders relying on the old implicit clamp.
+- **`CanvasItem` line drawing** no longer includes antialiasing feather by
+  default — thin UI/debug lines may render differently.
+
+## Input (4.7)
+
+- **Device ID constants**: Mouse and keyboard events now report
+  `InputEvent.DEVICE_ID_MOUSE` / `InputEvent.DEVICE_ID_KEYBOARD` instead of
+  hardcoded `0`. Any code branching on `event.device == 0` must be updated.
 
 ## GDScript (4.5+)
 

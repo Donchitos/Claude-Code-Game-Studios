@@ -1,0 +1,16 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://tools/ambient_life_evidence.gd" id="1_evidence"]
+
+[node name="AmbientLifeEvidence" type="Node3D"]
+script = ExtResource("1_evidence")
+
+[node name="Camera3D" type="Camera3D" parent="."]
+current = true
+far = 500.0
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)
+shadow_enabled = true
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]

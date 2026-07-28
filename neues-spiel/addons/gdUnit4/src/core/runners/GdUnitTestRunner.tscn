@@ -1,0 +1,34 @@
+[gd_scene load_steps=3 format=3 uid="uid://belidlfknh74r"]
+
+[ext_resource type="Script" path="res://addons/gdUnit4/src/core/runners/GdUnitTestRunner.gd" id="1"]
+[ext_resource type="Script" path="res://addons/gdUnit4/src/network/GdUnitTcpClient.gd" id="2"]
+
+[node name="Control" type="Node"]
+script = ExtResource("1")
+
+[node name="GdUnitTcpClient" type="Node" parent="."]
+script = ExtResource("2")
+
+[node name="HBoxContainer" type="HBoxContainer" parent="."]
+custom_minimum_size = Vector2(0, 24)
+layout_direction = 2
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 0
+size_flags_horizontal = 3
+size_flags_vertical = 10
+alignment = 2
+
+[node name="Version" type="RichTextLabel" parent="HBoxContainer"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(128, 0)
+layout_mode = 2
+size_flags_horizontal = 10
+bbcode_enabled = true
+scroll_active = false
+shortcut_keys_enabled = false
+horizontal_alignment = 1
+justification_flags = 0

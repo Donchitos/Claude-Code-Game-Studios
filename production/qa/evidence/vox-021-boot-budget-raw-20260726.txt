@@ -1,0 +1,13 @@
+vox021: VSync explicitly DISABLED (this story's mandated methodology; does not affect the synchronous-call timings below, recorded for compliance)
+vox021: config -- world=2000x2000 view_radius_chunks=12 boot_mesh_radius_chunks=8 region_directory=user://vox021_boot_regions_primary_916739
+vox021: [boot_mesh_radius_chunks=8] residency page-in: 113.1 ms, 625 chunks resident
+vox021: [boot_mesh_radius_chunks=8] initial mesh window: 2405.3 ms, 289 chunks tracked
+vox021: ==== PRIMARY VERDICT (boot_mesh_radius_chunks=8, shipped default) ====
+vox021: residency_page_in_ms=113.1 mesh_window_ms=2405.3 total_boot_ms=2518.4
+vox021: ceilings: mesh_phase<=2500.0 total<=3000.0
+vox021: VERDICT = PASS
+vox021: ---- honest phase-scope note ----
+vox021: nav-graph build (VillagerNavGraph.build()) and roster spawn (Valley.spawn_starting_roster()) contribute 0 ms -- NEITHER is called from GameWorld's landed synchronous boot chain today (both deliberately deferred to a future world-generation story, per valley.gd's own doc comments); not fabricated here.
+vox021: (POST-MEASUREMENT, NOT part of the timed boot phase) grew mesh window to the full steady-state radius=12 for the AC-EXTENT-EVIDENCE screenshot in 2983.3 ms, 625 chunks tracked
+vox021: saved F:/Neues_Spiel/neues-spiel/../production/qa/evidence/vox-021-boot-radius12-topdown-20260726.png
+vox021: saved F:/Neues_Spiel/neues-spiel/../production/qa/evidence/vox-021-boot-radius12-oblique-20260726.png

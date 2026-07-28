@@ -1,0 +1,2046 @@
+[
+ {
+  "channel": "Struktur / Baumaterial",
+  "slug": "timber_oak",
+  "label": "Eiche (kanonisch)",
+  "step": "S4",
+  "hex": "#2A0F0D"
+ },
+ {
+  "channel": "Struktur / Baumaterial",
+  "slug": "timber_oak",
+  "label": "Eiche (kanonisch)",
+  "step": "S3",
+  "hex": "#3F1B15"
+ },
+ {
+  "channel": "Struktur / Baumaterial",
+  "slug": "timber_oak",
+  "label": "Eiche (kanonisch)",
+  "step": "S2",
+  "hex": "#552C1F"
+ },
+ {
+  "channel": "Struktur / Baumaterial",
+  "slug": "timber_oak",
+  "label": "Eiche (kanonisch)",
+  "step": "S1",
+  "hex": "#6E412B"
+ },
+ {
+  "channel": "Struktur / Baumaterial",
+  "slug": "timber_oak",
+  "label": "Eiche (kanonisch)",
+  "step": "BASE",
+  "hex": "#8B5E3C"
+ },
+ {
+  "channel": "Struktur / Baumaterial",
+  "slug": "timber_oak",
+  "label": "Eiche (kanonisch)",
+  "step": "L1",
+  "hex": "#A67F52"
+ },
+ {
+  "channel": "Struktur / Baumaterial",
+  "slug": "timber_oak",
+  "label": "Eiche (kanonisch)",
+  "step": "L2",
+  "hex": "#BD9C67"
+ },
+ {
+  "channel": "Struktur / Baumaterial",
+  "slug": "timber_oak",
+  "label": "Eiche (kanonisch)",
+  "step": "L3",
+  "hex": "#D2B87D"
+ },
+ {
+  "channel": "Struktur / Baumaterial",
+  "slug": "timber_oak",
+  "label": "Eiche (kanonisch)",
+  "step": "L4",
+  "hex": "#E5D292"
+ },
+ {
+  "channel": "Struktur / Baumaterial",
+  "slug": "timber_birch",
+  "label": "Birke",
+  "step": "S4",
+  "hex": "#2E1D18"
+ },
+ {
+  "channel": "Struktur / Baumaterial",
+  "slug": "timber_birch",
+  "label": "Birke",
+  "step": "S3",
+  "hex": "#4F372B"
+ },
+ {
+  "channel": "Struktur / Baumaterial",
+  "slug": "timber_birch",
+  "label": "Birke",
+  "step": "S2",
+  "hex": "#745743"
+ },
+ {
+  "channel": "Struktur / Baumaterial",
+  "slug": "timber_birch",
+  "label": "Birke",
+  "step": "S1",
+  "hex": "#9C7D5F"
+ },
+ {
+  "channel": "Struktur / Baumaterial",
+  "slug": "timber_birch",
+  "label": "Birke",
+  "step": "BASE",
+  "hex": "#CBAE84"
+ },
+ {
+  "channel": "Struktur / Baumaterial",
+  "slug": "timber_birch",
+  "label": "Birke",
+  "step": "L1",
+  "hex": "#D4C197"
+ },
+ {
+  "channel": "Struktur / Baumaterial",
+  "slug": "timber_birch",
+  "label": "Birke",
+  "step": "L2",
+  "hex": "#DBD0A8"
+ },
+ {
+  "channel": "Struktur / Baumaterial",
+  "slug": "timber_birch",
+  "label": "Birke",
+  "step": "L3",
+  "hex": "#E2DBB8"
+ },
+ {
+  "channel": "Struktur / Baumaterial",
+  "slug": "timber_birch",
+  "label": "Birke",
+  "step": "L4",
+  "hex": "#E9E3C7"
+ },
+ {
+  "channel": "Struktur / Baumaterial",
+  "slug": "timber_pine",
+  "label": "Kiefer",
+  "step": "S4",
+  "hex": "#2C1610"
+ },
+ {
+  "channel": "Struktur / Baumaterial",
+  "slug": "timber_pine",
+  "label": "Kiefer",
+  "step": "S3",
+  "hex": "#48291B"
+ },
+ {
+  "channel": "Struktur / Baumaterial",
+  "slug": "timber_pine",
+  "label": "Kiefer",
+  "step": "S2",
+  "hex": "#67422A"
+ },
+ {
+  "channel": "Struktur / Baumaterial",
+  "slug": "timber_pine",
+  "label": "Kiefer",
+  "step": "S1",
+  "hex": "#89613D"
+ },
+ {
+  "channel": "Struktur / Baumaterial",
+  "slug": "timber_pine",
+  "label": "Kiefer",
+  "step": "BASE",
+  "hex": "#B08A55"
+ },
+ {
+  "channel": "Struktur / Baumaterial",
+  "slug": "timber_pine",
+  "label": "Kiefer",
+  "step": "L1",
+  "hex": "#C0A569"
+ },
+ {
+  "channel": "Struktur / Baumaterial",
+  "slug": "timber_pine",
+  "label": "Kiefer",
+  "step": "L2",
+  "hex": "#CEBC7B"
+ },
+ {
+  "channel": "Struktur / Baumaterial",
+  "slug": "timber_pine",
+  "label": "Kiefer",
+  "step": "L3",
+  "hex": "#DBCE8E"
+ },
+ {
+  "channel": "Struktur / Baumaterial",
+  "slug": "timber_pine",
+  "label": "Kiefer",
+  "step": "L4",
+  "hex": "#E7DB9F"
+ },
+ {
+  "channel": "Struktur / Baumaterial",
+  "slug": "timber_darkoak",
+  "label": "Dunkle Eiche",
+  "step": "S4",
+  "hex": "#270D0C"
+ },
+ {
+  "channel": "Struktur / Baumaterial",
+  "slug": "timber_darkoak",
+  "label": "Dunkle Eiche",
+  "step": "S3",
+  "hex": "#321511"
+ },
+ {
+  "channel": "Struktur / Baumaterial",
+  "slug": "timber_darkoak",
+  "label": "Dunkle Eiche",
+  "step": "S2",
+  "hex": "#3F1F17"
+ },
+ {
+  "channel": "Struktur / Baumaterial",
+  "slug": "timber_darkoak",
+  "label": "Dunkle Eiche",
+  "step": "S1",
+  "hex": "#4C2C1E"
+ },
+ {
+  "channel": "Struktur / Baumaterial",
+  "slug": "timber_darkoak",
+  "label": "Dunkle Eiche",
+  "step": "BASE",
+  "hex": "#5C3D28"
+ },
+ {
+  "channel": "Struktur / Baumaterial",
+  "slug": "timber_darkoak",
+  "label": "Dunkle Eiche",
+  "step": "L1",
+  "hex": "#846341"
+ },
+ {
+  "channel": "Struktur / Baumaterial",
+  "slug": "timber_darkoak",
+  "label": "Dunkle Eiche",
+  "step": "L2",
+  "hex": "#A6885B"
+ },
+ {
+  "channel": "Struktur / Baumaterial",
+  "slug": "timber_darkoak",
+  "label": "Dunkle Eiche",
+  "step": "L3",
+  "hex": "#C6AC76"
+ },
+ {
+  "channel": "Struktur / Baumaterial",
+  "slug": "timber_darkoak",
+  "label": "Dunkle Eiche",
+  "step": "L4",
+  "hex": "#E2CE91"
+ },
+ {
+  "channel": "Struktur / Baumaterial",
+  "slug": "stone_hearth",
+  "label": "Herdstein (kanonisch)",
+  "step": "S4",
+  "hex": "#23252A"
+ },
+ {
+  "channel": "Struktur / Baumaterial",
+  "slug": "stone_hearth",
+  "label": "Herdstein (kanonisch)",
+  "step": "S3",
+  "hex": "#373A40"
+ },
+ {
+  "channel": "Struktur / Baumaterial",
+  "slug": "stone_hearth",
+  "label": "Herdstein (kanonisch)",
+  "step": "S2",
+  "hex": "#4E5257"
+ },
+ {
+  "channel": "Struktur / Baumaterial",
+  "slug": "stone_hearth",
+  "label": "Herdstein (kanonisch)",
+  "step": "S1",
+  "hex": "#696D71"
+ },
+ {
+  "channel": "Struktur / Baumaterial",
+  "slug": "stone_hearth",
+  "label": "Herdstein (kanonisch)",
+  "step": "BASE",
+  "hex": "#8A8D8F"
+ },
+ {
+  "channel": "Struktur / Baumaterial",
+  "slug": "stone_hearth",
+  "label": "Herdstein (kanonisch)",
+  "step": "L1",
+  "hex": "#A4A7A9"
+ },
+ {
+  "channel": "Struktur / Baumaterial",
+  "slug": "stone_hearth",
+  "label": "Herdstein (kanonisch)",
+  "step": "L2",
+  "hex": "#B6BDBF"
+ },
+ {
+  "channel": "Struktur / Baumaterial",
+  "slug": "stone_hearth",
+  "label": "Herdstein (kanonisch)",
+  "step": "L3",
+  "hex": "#C5D1D3"
+ },
+ {
+  "channel": "Struktur / Baumaterial",
+  "slug": "stone_hearth",
+  "label": "Herdstein (kanonisch)",
+  "step": "L4",
+  "hex": "#D2E4E5"
+ },
+ {
+  "channel": "Struktur / Baumaterial",
+  "slug": "stone_granite",
+  "label": "Granit",
+  "step": "S4",
+  "hex": "#22242B"
+ },
+ {
+  "channel": "Struktur / Baumaterial",
+  "slug": "stone_granite",
+  "label": "Granit",
+  "step": "S3",
+  "hex": "#373A42"
+ },
+ {
+  "channel": "Struktur / Baumaterial",
+  "slug": "stone_granite",
+  "label": "Granit",
+  "step": "S2",
+  "hex": "#4F535C"
+ },
+ {
+  "channel": "Struktur / Baumaterial",
+  "slug": "stone_granite",
+  "label": "Granit",
+  "step": "S1",
+  "hex": "#6B7178"
+ },
+ {
+  "channel": "Struktur / Baumaterial",
+  "slug": "stone_granite",
+  "label": "Granit",
+  "step": "BASE",
+  "hex": "#8E9499"
+ },
+ {
+  "channel": "Struktur / Baumaterial",
+  "slug": "stone_granite",
+  "label": "Granit",
+  "step": "L1",
+  "hex": "#ABAEB0"
+ },
+ {
+  "channel": "Struktur / Baumaterial",
+  "slug": "stone_granite",
+  "label": "Granit",
+  "step": "L2",
+  "hex": "#BAC1C3"
+ },
+ {
+  "channel": "Struktur / Baumaterial",
+  "slug": "stone_granite",
+  "label": "Granit",
+  "step": "L3",
+  "hex": "#C7D3D5"
+ },
+ {
+  "channel": "Struktur / Baumaterial",
+  "slug": "stone_granite",
+  "label": "Granit",
+  "step": "L4",
+  "hex": "#D2E4E6"
+ },
+ {
+  "channel": "Struktur / Baumaterial",
+  "slug": "stone_slate",
+  "label": "Schiefer",
+  "step": "S4",
+  "hex": "#1D1E28"
+ },
+ {
+  "channel": "Struktur / Baumaterial",
+  "slug": "stone_slate",
+  "label": "Schiefer",
+  "step": "S3",
+  "hex": "#282B36"
+ },
+ {
+  "channel": "Struktur / Baumaterial",
+  "slug": "stone_slate",
+  "label": "Schiefer",
+  "step": "S2",
+  "hex": "#363A45"
+ },
+ {
+  "channel": "Struktur / Baumaterial",
+  "slug": "stone_slate",
+  "label": "Schiefer",
+  "step": "S1",
+  "hex": "#464C56"
+ },
+ {
+  "channel": "Struktur / Baumaterial",
+  "slug": "stone_slate",
+  "label": "Schiefer",
+  "step": "BASE",
+  "hex": "#5A6169"
+ },
+ {
+  "channel": "Struktur / Baumaterial",
+  "slug": "stone_slate",
+  "label": "Schiefer",
+  "step": "L1",
+  "hex": "#82888D"
+ },
+ {
+  "channel": "Struktur / Baumaterial",
+  "slug": "stone_slate",
+  "label": "Schiefer",
+  "step": "L2",
+  "hex": "#A4AAAC"
+ },
+ {
+  "channel": "Struktur / Baumaterial",
+  "slug": "stone_slate",
+  "label": "Schiefer",
+  "step": "L3",
+  "hex": "#BCC5C9"
+ },
+ {
+  "channel": "Struktur / Baumaterial",
+  "slug": "stone_slate",
+  "label": "Schiefer",
+  "step": "L4",
+  "hex": "#D0DFE3"
+ },
+ {
+  "channel": "Struktur / Baumaterial",
+  "slug": "stone_sandstone",
+  "label": "Sandstein",
+  "step": "S4",
+  "hex": "#2D1C16"
+ },
+ {
+  "channel": "Struktur / Baumaterial",
+  "slug": "stone_sandstone",
+  "label": "Sandstein",
+  "step": "S3",
+  "hex": "#4E3527"
+ },
+ {
+  "channel": "Struktur / Baumaterial",
+  "slug": "stone_sandstone",
+  "label": "Sandstein",
+  "step": "S2",
+  "hex": "#72543D"
+ },
+ {
+  "channel": "Struktur / Baumaterial",
+  "slug": "stone_sandstone",
+  "label": "Sandstein",
+  "step": "S1",
+  "hex": "#997A57"
+ },
+ {
+  "channel": "Struktur / Baumaterial",
+  "slug": "stone_sandstone",
+  "label": "Sandstein",
+  "step": "BASE",
+  "hex": "#C7AA79"
+ },
+ {
+  "channel": "Struktur / Baumaterial",
+  "slug": "stone_sandstone",
+  "label": "Sandstein",
+  "step": "L1",
+  "hex": "#D1BE8C"
+ },
+ {
+  "channel": "Struktur / Baumaterial",
+  "slug": "stone_sandstone",
+  "label": "Sandstein",
+  "step": "L2",
+  "hex": "#DACF9D"
+ },
+ {
+  "channel": "Struktur / Baumaterial",
+  "slug": "stone_sandstone",
+  "label": "Sandstein",
+  "step": "L3",
+  "hex": "#E1D9AE"
+ },
+ {
+  "channel": "Struktur / Baumaterial",
+  "slug": "stone_sandstone",
+  "label": "Sandstein",
+  "step": "L4",
+  "hex": "#E8E1BD"
+ },
+ {
+  "channel": "Struktur / Baumaterial",
+  "slug": "clay_ochre",
+  "label": "Lehm",
+  "step": "S4",
+  "hex": "#2C110D"
+ },
+ {
+  "channel": "Struktur / Baumaterial",
+  "slug": "clay_ochre",
+  "label": "Lehm",
+  "step": "S3",
+  "hex": "#482218"
+ },
+ {
+  "channel": "Struktur / Baumaterial",
+  "slug": "clay_ochre",
+  "label": "Lehm",
+  "step": "S2",
+  "hex": "#673825"
+ },
+ {
+  "channel": "Struktur / Baumaterial",
+  "slug": "clay_ochre",
+  "label": "Lehm",
+  "step": "S1",
+  "hex": "#895536"
+ },
+ {
+  "channel": "Struktur / Baumaterial",
+  "slug": "clay_ochre",
+  "label": "Lehm",
+  "step": "BASE",
+  "hex": "#B07C4C"
+ },
+ {
+  "channel": "Struktur / Baumaterial",
+  "slug": "clay_ochre",
+  "label": "Lehm",
+  "step": "L1",
+  "hex": "#C0985F"
+ },
+ {
+  "channel": "Struktur / Baumaterial",
+  "slug": "clay_ochre",
+  "label": "Lehm",
+  "step": "L2",
+  "hex": "#CEB071"
+ },
+ {
+  "channel": "Struktur / Baumaterial",
+  "slug": "clay_ochre",
+  "label": "Lehm",
+  "step": "L3",
+  "hex": "#DBC582"
+ },
+ {
+  "channel": "Struktur / Baumaterial",
+  "slug": "clay_ochre",
+  "label": "Lehm",
+  "step": "L4",
+  "hex": "#E7D894"
+ },
+ {
+  "channel": "Struktur / Baumaterial",
+  "slug": "thatch_umber",
+  "label": "Reet (kanonisch)",
+  "step": "S4",
+  "hex": "#2C0A06"
+ },
+ {
+  "channel": "Struktur / Baumaterial",
+  "slug": "thatch_umber",
+  "label": "Reet (kanonisch)",
+  "step": "S3",
+  "hex": "#46160C"
+ },
+ {
+  "channel": "Struktur / Baumaterial",
+  "slug": "thatch_umber",
+  "label": "Reet (kanonisch)",
+  "step": "S2",
+  "hex": "#632815"
+ },
+ {
+  "channel": "Struktur / Baumaterial",
+  "slug": "thatch_umber",
+  "label": "Reet (kanonisch)",
+  "step": "S1",
+  "hex": "#834120"
+ },
+ {
+  "channel": "Struktur / Baumaterial",
+  "slug": "thatch_umber",
+  "label": "Reet (kanonisch)",
+  "step": "BASE",
+  "hex": "#A8642F"
+ },
+ {
+  "channel": "Struktur / Baumaterial",
+  "slug": "thatch_umber",
+  "label": "Reet (kanonisch)",
+  "step": "L1",
+  "hex": "#BB8240"
+ },
+ {
+  "channel": "Struktur / Baumaterial",
+  "slug": "thatch_umber",
+  "label": "Reet (kanonisch)",
+  "step": "L2",
+  "hex": "#CB9D50"
+ },
+ {
+  "channel": "Struktur / Baumaterial",
+  "slug": "thatch_umber",
+  "label": "Reet (kanonisch)",
+  "step": "L3",
+  "hex": "#D9B660"
+ },
+ {
+  "channel": "Struktur / Baumaterial",
+  "slug": "thatch_umber",
+  "label": "Reet (kanonisch)",
+  "step": "L4",
+  "hex": "#E7CD70"
+ },
+ {
+  "channel": "Struktur / Baumaterial",
+  "slug": "shingle_brown",
+  "label": "Holzschindel",
+  "step": "S4",
+  "hex": "#291B18"
+ },
+ {
+  "channel": "Struktur / Baumaterial",
+  "slug": "shingle_brown",
+  "label": "Holzschindel",
+  "step": "S3",
+  "hex": "#3A2A23"
+ },
+ {
+  "channel": "Struktur / Baumaterial",
+  "slug": "shingle_brown",
+  "label": "Holzschindel",
+  "step": "S2",
+  "hex": "#4D3B31"
+ },
+ {
+  "channel": "Struktur / Baumaterial",
+  "slug": "shingle_brown",
+  "label": "Holzschindel",
+  "step": "S1",
+  "hex": "#625042"
+ },
+ {
+  "channel": "Struktur / Baumaterial",
+  "slug": "shingle_brown",
+  "label": "Holzschindel",
+  "step": "BASE",
+  "hex": "#7A6A57"
+ },
+ {
+  "channel": "Struktur / Baumaterial",
+  "slug": "shingle_brown",
+  "label": "Holzschindel",
+  "step": "L1",
+  "hex": "#9A8D77"
+ },
+ {
+  "channel": "Struktur / Baumaterial",
+  "slug": "shingle_brown",
+  "label": "Holzschindel",
+  "step": "L2",
+  "hex": "#B5AC95"
+ },
+ {
+  "channel": "Struktur / Baumaterial",
+  "slug": "shingle_brown",
+  "label": "Holzschindel",
+  "step": "L3",
+  "hex": "#CDC9B4"
+ },
+ {
+  "channel": "Struktur / Baumaterial",
+  "slug": "shingle_brown",
+  "label": "Holzschindel",
+  "step": "L4",
+  "hex": "#E4E1D1"
+ },
+ {
+  "channel": "Struktur / Baumaterial",
+  "slug": "plaster_cream",
+  "label": "Putz",
+  "step": "S4",
+  "hex": "#2F241F"
+ },
+ {
+  "channel": "Struktur / Baumaterial",
+  "slug": "plaster_cream",
+  "label": "Putz",
+  "step": "S3",
+  "hex": "#53443A"
+ },
+ {
+  "channel": "Struktur / Baumaterial",
+  "slug": "plaster_cream",
+  "label": "Putz",
+  "step": "S2",
+  "hex": "#7B6A59"
+ },
+ {
+  "channel": "Struktur / Baumaterial",
+  "slug": "plaster_cream",
+  "label": "Putz",
+  "step": "S1",
+  "hex": "#A6957F"
+ },
+ {
+  "channel": "Struktur / Baumaterial",
+  "slug": "plaster_cream",
+  "label": "Putz",
+  "step": "BASE",
+  "hex": "#D9CBAE"
+ },
+ {
+  "channel": "Struktur / Baumaterial",
+  "slug": "plaster_cream",
+  "label": "Putz",
+  "step": "L1",
+  "hex": "#DED7C0"
+ },
+ {
+  "channel": "Struktur / Baumaterial",
+  "slug": "plaster_cream",
+  "label": "Putz",
+  "step": "L2",
+  "hex": "#E2DFCF"
+ },
+ {
+  "channel": "Struktur / Baumaterial",
+  "slug": "plaster_cream",
+  "label": "Putz",
+  "step": "L3",
+  "hex": "#E6E3D7"
+ },
+ {
+  "channel": "Struktur / Baumaterial",
+  "slug": "plaster_cream",
+  "label": "Putz",
+  "step": "L4",
+  "hex": "#EAE6D6"
+ },
+ {
+  "channel": "Terrain",
+  "slug": "band_lowland",
+  "label": "Band 1 Tiefland (kanonisch)",
+  "step": "S4",
+  "hex": "#2C2A16"
+ },
+ {
+  "channel": "Terrain",
+  "slug": "band_lowland",
+  "label": "Band 1 Tiefland (kanonisch)",
+  "step": "S3",
+  "hex": "#474726"
+ },
+ {
+  "channel": "Terrain",
+  "slug": "band_lowland",
+  "label": "Band 1 Tiefland (kanonisch)",
+  "step": "S2",
+  "hex": "#626639"
+ },
+ {
+  "channel": "Terrain",
+  "slug": "band_lowland",
+  "label": "Band 1 Tiefland (kanonisch)",
+  "step": "S1",
+  "hex": "#7D8750"
+ },
+ {
+  "channel": "Terrain",
+  "slug": "band_lowland",
+  "label": "Band 1 Tiefland (kanonisch)",
+  "step": "BASE",
+  "hex": "#9CAD6E"
+ },
+ {
+  "channel": "Terrain",
+  "slug": "band_lowland",
+  "label": "Band 1 Tiefland (kanonisch)",
+  "step": "L1",
+  "hex": "#B5BE85"
+ },
+ {
+  "channel": "Terrain",
+  "slug": "band_lowland",
+  "label": "Band 1 Tiefland (kanonisch)",
+  "step": "L2",
+  "hex": "#C9CD9A"
+ },
+ {
+  "channel": "Terrain",
+  "slug": "band_lowland",
+  "label": "Band 1 Tiefland (kanonisch)",
+  "step": "L3",
+  "hex": "#DBDBAF"
+ },
+ {
+  "channel": "Terrain",
+  "slug": "band_lowland",
+  "label": "Band 1 Tiefland (kanonisch)",
+  "step": "L4",
+  "hex": "#E7E4C3"
+ },
+ {
+  "channel": "Terrain",
+  "slug": "band_midland",
+  "label": "Band 2 Hügel (kanonisch)",
+  "step": "S4",
+  "hex": "#2C1A13"
+ },
+ {
+  "channel": "Terrain",
+  "slug": "band_midland",
+  "label": "Band 2 Hügel (kanonisch)",
+  "step": "S3",
+  "hex": "#462F20"
+ },
+ {
+  "channel": "Terrain",
+  "slug": "band_midland",
+  "label": "Band 2 Hügel (kanonisch)",
+  "step": "S2",
+  "hex": "#644830"
+ },
+ {
+  "channel": "Terrain",
+  "slug": "band_midland",
+  "label": "Band 2 Hügel (kanonisch)",
+  "step": "S1",
+  "hex": "#846744"
+ },
+ {
+  "channel": "Terrain",
+  "slug": "band_midland",
+  "label": "Band 2 Hügel (kanonisch)",
+  "step": "BASE",
+  "hex": "#A98F5E"
+ },
+ {
+  "channel": "Terrain",
+  "slug": "band_midland",
+  "label": "Band 2 Hügel (kanonisch)",
+  "step": "L1",
+  "hex": "#BBAA74"
+ },
+ {
+  "channel": "Terrain",
+  "slug": "band_midland",
+  "label": "Band 2 Hügel (kanonisch)",
+  "step": "L2",
+  "hex": "#CBC088"
+ },
+ {
+  "channel": "Terrain",
+  "slug": "band_midland",
+  "label": "Band 2 Hügel (kanonisch)",
+  "step": "L3",
+  "hex": "#DACF9C"
+ },
+ {
+  "channel": "Terrain",
+  "slug": "band_midland",
+  "label": "Band 2 Hügel (kanonisch)",
+  "step": "L4",
+  "hex": "#E7DEB0"
+ },
+ {
+  "channel": "Terrain",
+  "slug": "band_highland",
+  "label": "Band 3 Fels (kanonisch)",
+  "step": "S4",
+  "hex": "#20202A"
+ },
+ {
+  "channel": "Terrain",
+  "slug": "band_highland",
+  "label": "Band 3 Fels (kanonisch)",
+  "step": "S3",
+  "hex": "#32333E"
+ },
+ {
+  "channel": "Terrain",
+  "slug": "band_highland",
+  "label": "Band 3 Fels (kanonisch)",
+  "step": "S2",
+  "hex": "#464855"
+ },
+ {
+  "channel": "Terrain",
+  "slug": "band_highland",
+  "label": "Band 3 Fels (kanonisch)",
+  "step": "S1",
+  "hex": "#5E626D"
+ },
+ {
+  "channel": "Terrain",
+  "slug": "band_highland",
+  "label": "Band 3 Fels (kanonisch)",
+  "step": "BASE",
+  "hex": "#7C818A"
+ },
+ {
+  "channel": "Terrain",
+  "slug": "band_highland",
+  "label": "Band 3 Fels (kanonisch)",
+  "step": "L1",
+  "hex": "#9EA1A5"
+ },
+ {
+  "channel": "Terrain",
+  "slug": "band_highland",
+  "label": "Band 3 Fels (kanonisch)",
+  "step": "L2",
+  "hex": "#B3B8BC"
+ },
+ {
+  "channel": "Terrain",
+  "slug": "band_highland",
+  "label": "Band 3 Fels (kanonisch)",
+  "step": "L3",
+  "hex": "#C4CCD1"
+ },
+ {
+  "channel": "Terrain",
+  "slug": "band_highland",
+  "label": "Band 3 Fels (kanonisch)",
+  "step": "L4",
+  "hex": "#D1DFE5"
+ },
+ {
+  "channel": "Terrain",
+  "slug": "band_peak",
+  "label": "Band 4 Gipfel (kanonisch)",
+  "step": "S4",
+  "hex": "#25282F"
+ },
+ {
+  "channel": "Terrain",
+  "slug": "band_peak",
+  "label": "Band 4 Gipfel (kanonisch)",
+  "step": "S3",
+  "hex": "#444A53"
+ },
+ {
+  "channel": "Terrain",
+  "slug": "band_peak",
+  "label": "Band 4 Gipfel (kanonisch)",
+  "step": "S2",
+  "hex": "#69717A"
+ },
+ {
+  "channel": "Terrain",
+  "slug": "band_peak",
+  "label": "Band 4 Gipfel (kanonisch)",
+  "step": "S1",
+  "hex": "#949EA6"
+ },
+ {
+  "channel": "Terrain",
+  "slug": "band_peak",
+  "label": "Band 4 Gipfel (kanonisch)",
+  "step": "BASE",
+  "hex": "#C9D3D8"
+ },
+ {
+  "channel": "Terrain",
+  "slug": "band_peak",
+  "label": "Band 4 Gipfel (kanonisch)",
+  "step": "L1",
+  "hex": "#D8DCDD"
+ },
+ {
+  "channel": "Terrain",
+  "slug": "band_peak",
+  "label": "Band 4 Gipfel (kanonisch)",
+  "step": "L2",
+  "hex": "#D7E0E2"
+ },
+ {
+  "channel": "Terrain",
+  "slug": "band_peak",
+  "label": "Band 4 Gipfel (kanonisch)",
+  "step": "L3",
+  "hex": "#D6E5E6"
+ },
+ {
+  "channel": "Terrain",
+  "slug": "band_peak",
+  "label": "Band 4 Gipfel (kanonisch)",
+  "step": "L4",
+  "hex": "#D6E9E9"
+ },
+ {
+  "channel": "Terrain",
+  "slug": "valley_ochre",
+  "label": "Talocker (kanonisch)",
+  "step": "S4",
+  "hex": "#2D1F17"
+ },
+ {
+  "channel": "Terrain",
+  "slug": "valley_ochre",
+  "label": "Talocker (kanonisch)",
+  "step": "S3",
+  "hex": "#4D3829"
+ },
+ {
+  "channel": "Terrain",
+  "slug": "valley_ochre",
+  "label": "Talocker (kanonisch)",
+  "step": "S2",
+  "hex": "#70583F"
+ },
+ {
+  "channel": "Terrain",
+  "slug": "valley_ochre",
+  "label": "Talocker (kanonisch)",
+  "step": "S1",
+  "hex": "#967E5A"
+ },
+ {
+  "channel": "Terrain",
+  "slug": "valley_ochre",
+  "label": "Talocker (kanonisch)",
+  "step": "BASE",
+  "hex": "#C2AD7C"
+ },
+ {
+  "channel": "Terrain",
+  "slug": "valley_ochre",
+  "label": "Talocker (kanonisch)",
+  "step": "L1",
+  "hex": "#CDC190"
+ },
+ {
+  "channel": "Terrain",
+  "slug": "valley_ochre",
+  "label": "Talocker (kanonisch)",
+  "step": "L2",
+  "hex": "#D7CEA2"
+ },
+ {
+  "channel": "Terrain",
+  "slug": "valley_ochre",
+  "label": "Talocker (kanonisch)",
+  "step": "L3",
+  "hex": "#E0D9B4"
+ },
+ {
+  "channel": "Terrain",
+  "slug": "valley_ochre",
+  "label": "Talocker (kanonisch)",
+  "step": "L4",
+  "hex": "#E8E2C4"
+ },
+ {
+  "channel": "Vegetation / Organik",
+  "slug": "veg_grass",
+  "label": "Wiese",
+  "step": "S4",
+  "hex": "#172B10"
+ },
+ {
+  "channel": "Vegetation / Organik",
+  "slug": "veg_grass",
+  "label": "Wiese",
+  "step": "S3",
+  "hex": "#29431B"
+ },
+ {
+  "channel": "Vegetation / Organik",
+  "slug": "veg_grass",
+  "label": "Wiese",
+  "step": "S2",
+  "hex": "#3F5D28"
+ },
+ {
+  "channel": "Vegetation / Organik",
+  "slug": "veg_grass",
+  "label": "Wiese",
+  "step": "S1",
+  "hex": "#5A7A38"
+ },
+ {
+  "channel": "Vegetation / Organik",
+  "slug": "veg_grass",
+  "label": "Wiese",
+  "step": "BASE",
+  "hex": "#7E9B4E"
+ },
+ {
+  "channel": "Vegetation / Organik",
+  "slug": "veg_grass",
+  "label": "Wiese",
+  "step": "L1",
+  "hex": "#9CB164"
+ },
+ {
+  "channel": "Vegetation / Organik",
+  "slug": "veg_grass",
+  "label": "Wiese",
+  "step": "L2",
+  "hex": "#B6C479"
+ },
+ {
+  "channel": "Vegetation / Organik",
+  "slug": "veg_grass",
+  "label": "Wiese",
+  "step": "L3",
+  "hex": "#CED68E"
+ },
+ {
+  "channel": "Vegetation / Organik",
+  "slug": "veg_grass",
+  "label": "Wiese",
+  "step": "L4",
+  "hex": "#E4E6A3"
+ },
+ {
+  "channel": "Vegetation / Organik",
+  "slug": "veg_leaf_summer",
+  "label": "Laub Sommer",
+  "step": "S4",
+  "hex": "#0F2A0D"
+ },
+ {
+  "channel": "Vegetation / Organik",
+  "slug": "veg_leaf_summer",
+  "label": "Laub Sommer",
+  "step": "S3",
+  "hex": "#1B3E15"
+ },
+ {
+  "channel": "Vegetation / Organik",
+  "slug": "veg_leaf_summer",
+  "label": "Laub Sommer",
+  "step": "S2",
+  "hex": "#2C551F"
+ },
+ {
+  "channel": "Vegetation / Organik",
+  "slug": "veg_leaf_summer",
+  "label": "Laub Sommer",
+  "step": "S1",
+  "hex": "#416D2B"
+ },
+ {
+  "channel": "Vegetation / Organik",
+  "slug": "veg_leaf_summer",
+  "label": "Laub Sommer",
+  "step": "BASE",
+  "hex": "#5E8A3C"
+ },
+ {
+  "channel": "Vegetation / Organik",
+  "slug": "veg_leaf_summer",
+  "label": "Laub Sommer",
+  "step": "L1",
+  "hex": "#7FA552"
+ },
+ {
+  "channel": "Vegetation / Organik",
+  "slug": "veg_leaf_summer",
+  "label": "Laub Sommer",
+  "step": "L2",
+  "hex": "#9DBC67"
+ },
+ {
+  "channel": "Vegetation / Organik",
+  "slug": "veg_leaf_summer",
+  "label": "Laub Sommer",
+  "step": "L3",
+  "hex": "#B9D17D"
+ },
+ {
+  "channel": "Vegetation / Organik",
+  "slug": "veg_leaf_summer",
+  "label": "Laub Sommer",
+  "step": "L4",
+  "hex": "#D3E593"
+ },
+ {
+  "channel": "Vegetation / Organik",
+  "slug": "veg_leaf_spring",
+  "label": "Laub Frühling",
+  "step": "S4",
+  "hex": "#2D2C0E"
+ },
+ {
+  "channel": "Vegetation / Organik",
+  "slug": "veg_leaf_spring",
+  "label": "Laub Frühling",
+  "step": "S3",
+  "hex": "#494C1A"
+ },
+ {
+  "channel": "Vegetation / Organik",
+  "slug": "veg_leaf_spring",
+  "label": "Laub Frühling",
+  "step": "S2",
+  "hex": "#656E29"
+ },
+ {
+  "channel": "Vegetation / Organik",
+  "slug": "veg_leaf_spring",
+  "label": "Laub Frühling",
+  "step": "S1",
+  "hex": "#80933C"
+ },
+ {
+  "channel": "Vegetation / Organik",
+  "slug": "veg_leaf_spring",
+  "label": "Laub Frühling",
+  "step": "BASE",
+  "hex": "#9CBE55"
+ },
+ {
+  "channel": "Vegetation / Organik",
+  "slug": "veg_leaf_spring",
+  "label": "Laub Frühling",
+  "step": "L1",
+  "hex": "#B5CA67"
+ },
+ {
+  "channel": "Vegetation / Organik",
+  "slug": "veg_leaf_spring",
+  "label": "Laub Frühling",
+  "step": "L2",
+  "hex": "#C9D578"
+ },
+ {
+  "channel": "Vegetation / Organik",
+  "slug": "veg_leaf_spring",
+  "label": "Laub Frühling",
+  "step": "L3",
+  "hex": "#DADF88"
+ },
+ {
+  "channel": "Vegetation / Organik",
+  "slug": "veg_leaf_spring",
+  "label": "Laub Frühling",
+  "step": "L4",
+  "hex": "#E8E698"
+ },
+ {
+  "channel": "Vegetation / Organik",
+  "slug": "veg_leaf_autumn",
+  "label": "Laub Herbst",
+  "step": "S4",
+  "hex": "#2D0B05"
+ },
+ {
+  "channel": "Vegetation / Organik",
+  "slug": "veg_leaf_autumn",
+  "label": "Laub Herbst",
+  "step": "S3",
+  "hex": "#4D1809"
+ },
+ {
+  "channel": "Vegetation / Organik",
+  "slug": "veg_leaf_autumn",
+  "label": "Laub Herbst",
+  "step": "S2",
+  "hex": "#712D11"
+ },
+ {
+  "channel": "Vegetation / Organik",
+  "slug": "veg_leaf_autumn",
+  "label": "Laub Herbst",
+  "step": "S1",
+  "hex": "#974B1B"
+ },
+ {
+  "channel": "Vegetation / Organik",
+  "slug": "veg_leaf_autumn",
+  "label": "Laub Herbst",
+  "step": "BASE",
+  "hex": "#C4762B"
+ },
+ {
+  "channel": "Vegetation / Organik",
+  "slug": "veg_leaf_autumn",
+  "label": "Laub Herbst",
+  "step": "L1",
+  "hex": "#CF923A"
+ },
+ {
+  "channel": "Vegetation / Organik",
+  "slug": "veg_leaf_autumn",
+  "label": "Laub Herbst",
+  "step": "L2",
+  "hex": "#D8AA48"
+ },
+ {
+  "channel": "Vegetation / Organik",
+  "slug": "veg_leaf_autumn",
+  "label": "Laub Herbst",
+  "step": "L3",
+  "hex": "#E1BF56"
+ },
+ {
+  "channel": "Vegetation / Organik",
+  "slug": "veg_leaf_autumn",
+  "label": "Laub Herbst",
+  "step": "L4",
+  "hex": "#E8D263"
+ },
+ {
+  "channel": "Vegetation / Organik",
+  "slug": "veg_conifer",
+  "label": "Nadelholz",
+  "step": "S4",
+  "hex": "#142724"
+ },
+ {
+  "channel": "Vegetation / Organik",
+  "slug": "veg_conifer",
+  "label": "Nadelholz",
+  "step": "S3",
+  "hex": "#1B342E"
+ },
+ {
+  "channel": "Vegetation / Organik",
+  "slug": "veg_conifer",
+  "label": "Nadelholz",
+  "step": "S2",
+  "hex": "#254239"
+ },
+ {
+  "channel": "Vegetation / Organik",
+  "slug": "veg_conifer",
+  "label": "Nadelholz",
+  "step": "S1",
+  "hex": "#305143"
+ },
+ {
+  "channel": "Vegetation / Organik",
+  "slug": "veg_conifer",
+  "label": "Nadelholz",
+  "step": "BASE",
+  "hex": "#3E6350"
+ },
+ {
+  "channel": "Vegetation / Organik",
+  "slug": "veg_conifer",
+  "label": "Nadelholz",
+  "step": "L1",
+  "hex": "#5E896F"
+ },
+ {
+  "channel": "Vegetation / Organik",
+  "slug": "veg_conifer",
+  "label": "Nadelholz",
+  "step": "L2",
+  "hex": "#7EAA8B"
+ },
+ {
+  "channel": "Vegetation / Organik",
+  "slug": "veg_conifer",
+  "label": "Nadelholz",
+  "step": "L3",
+  "hex": "#9DC7A6"
+ },
+ {
+  "channel": "Vegetation / Organik",
+  "slug": "veg_conifer",
+  "label": "Nadelholz",
+  "step": "L4",
+  "hex": "#BDE2C2"
+ },
+ {
+  "channel": "Vegetation / Organik",
+  "slug": "veg_moss",
+  "label": "Moos",
+  "step": "S4",
+  "hex": "#2A2811"
+ },
+ {
+  "channel": "Vegetation / Organik",
+  "slug": "veg_moss",
+  "label": "Moos",
+  "step": "S3",
+  "hex": "#3F3F1B"
+ },
+ {
+  "channel": "Vegetation / Organik",
+  "slug": "veg_moss",
+  "label": "Moos",
+  "step": "S2",
+  "hex": "#525627"
+ },
+ {
+  "channel": "Vegetation / Organik",
+  "slug": "veg_moss",
+  "label": "Moos",
+  "step": "S1",
+  "hex": "#656F36"
+ },
+ {
+  "channel": "Vegetation / Organik",
+  "slug": "veg_moss",
+  "label": "Moos",
+  "step": "BASE",
+  "hex": "#7A8C4A"
+ },
+ {
+  "channel": "Vegetation / Organik",
+  "slug": "veg_moss",
+  "label": "Moos",
+  "step": "L1",
+  "hex": "#9BA662"
+ },
+ {
+  "channel": "Vegetation / Organik",
+  "slug": "veg_moss",
+  "label": "Moos",
+  "step": "L2",
+  "hex": "#B8BD7A"
+ },
+ {
+  "channel": "Vegetation / Organik",
+  "slug": "veg_moss",
+  "label": "Moos",
+  "step": "L3",
+  "hex": "#D2D291"
+ },
+ {
+  "channel": "Vegetation / Organik",
+  "slug": "veg_moss",
+  "label": "Moos",
+  "step": "L4",
+  "hex": "#E5E1A8"
+ },
+ {
+  "channel": "Vegetation / Organik",
+  "slug": "veg_bloom_violet",
+  "label": "Blüte Violett",
+  "step": "S4",
+  "hex": "#1D162C"
+ },
+ {
+  "channel": "Vegetation / Organik",
+  "slug": "veg_bloom_violet",
+  "label": "Blüte Violett",
+  "step": "S3",
+  "hex": "#302546"
+ },
+ {
+  "channel": "Vegetation / Organik",
+  "slug": "veg_bloom_violet",
+  "label": "Blüte Violett",
+  "step": "S2",
+  "hex": "#463863"
+ },
+ {
+  "channel": "Vegetation / Organik",
+  "slug": "veg_bloom_violet",
+  "label": "Blüte Violett",
+  "step": "S1",
+  "hex": "#644E83"
+ },
+ {
+  "channel": "Vegetation / Organik",
+  "slug": "veg_bloom_violet",
+  "label": "Blüte Violett",
+  "step": "BASE",
+  "hex": "#8A6BA8"
+ },
+ {
+  "channel": "Vegetation / Organik",
+  "slug": "veg_bloom_violet",
+  "label": "Blüte Violett",
+  "step": "L1",
+  "hex": "#A582BB"
+ },
+ {
+  "channel": "Vegetation / Organik",
+  "slug": "veg_bloom_violet",
+  "label": "Blüte Violett",
+  "step": "L2",
+  "hex": "#BB98CB"
+ },
+ {
+  "channel": "Vegetation / Organik",
+  "slug": "veg_bloom_violet",
+  "label": "Blüte Violett",
+  "step": "L3",
+  "hex": "#D0AED9"
+ },
+ {
+  "channel": "Vegetation / Organik",
+  "slug": "veg_bloom_violet",
+  "label": "Blüte Violett",
+  "step": "L4",
+  "hex": "#E1C3E7"
+ },
+ {
+  "channel": "Vegetation / Organik",
+  "slug": "veg_bloom_rose",
+  "label": "Blüte Rosé",
+  "step": "S4",
+  "hex": "#2B1C2E"
+ },
+ {
+  "channel": "Vegetation / Organik",
+  "slug": "veg_bloom_rose",
+  "label": "Blüte Rosé",
+  "step": "S3",
+  "hex": "#4E3450"
+ },
+ {
+  "channel": "Vegetation / Organik",
+  "slug": "veg_bloom_rose",
+  "label": "Blüte Rosé",
+  "step": "S2",
+  "hex": "#754F75"
+ },
+ {
+  "channel": "Vegetation / Organik",
+  "slug": "veg_bloom_rose",
+  "label": "Blüte Rosé",
+  "step": "S1",
+  "hex": "#9E709A"
+ },
+ {
+  "channel": "Vegetation / Organik",
+  "slug": "veg_bloom_rose",
+  "label": "Blüte Rosé",
+  "step": "BASE",
+  "hex": "#CE9AC4"
+ },
+ {
+  "channel": "Vegetation / Organik",
+  "slug": "veg_bloom_rose",
+  "label": "Blüte Rosé",
+  "step": "L1",
+  "hex": "#D6ADCA"
+ },
+ {
+  "channel": "Vegetation / Organik",
+  "slug": "veg_bloom_rose",
+  "label": "Blüte Rosé",
+  "step": "L2",
+  "hex": "#DDBED1"
+ },
+ {
+  "channel": "Vegetation / Organik",
+  "slug": "veg_bloom_rose",
+  "label": "Blüte Rosé",
+  "step": "L3",
+  "hex": "#E3CFDA"
+ },
+ {
+  "channel": "Vegetation / Organik",
+  "slug": "veg_bloom_rose",
+  "label": "Blüte Rosé",
+  "step": "L4",
+  "hex": "#E9D5DE"
+ },
+ {
+  "channel": "Vegetation / Organik",
+  "slug": "veg_bloom_yellow",
+  "label": "Blüte Gelb",
+  "step": "S4",
+  "hex": "#2F1B0A"
+ },
+ {
+  "channel": "Vegetation / Organik",
+  "slug": "veg_bloom_yellow",
+  "label": "Blüte Gelb",
+  "step": "S3",
+  "hex": "#553615"
+ },
+ {
+  "channel": "Vegetation / Organik",
+  "slug": "veg_bloom_yellow",
+  "label": "Blüte Gelb",
+  "step": "S2",
+  "hex": "#7E5A23"
+ },
+ {
+  "channel": "Vegetation / Organik",
+  "slug": "veg_bloom_yellow",
+  "label": "Blüte Gelb",
+  "step": "S1",
+  "hex": "#AB8735"
+ },
+ {
+  "channel": "Vegetation / Organik",
+  "slug": "veg_bloom_yellow",
+  "label": "Blüte Gelb",
+  "step": "BASE",
+  "hex": "#E0C24E"
+ },
+ {
+  "channel": "Vegetation / Organik",
+  "slug": "veg_bloom_yellow",
+  "label": "Blüte Gelb",
+  "step": "L1",
+  "hex": "#E3CD5D"
+ },
+ {
+  "channel": "Vegetation / Organik",
+  "slug": "veg_bloom_yellow",
+  "label": "Blüte Gelb",
+  "step": "L2",
+  "hex": "#E6D16A"
+ },
+ {
+  "channel": "Vegetation / Organik",
+  "slug": "veg_bloom_yellow",
+  "label": "Blüte Gelb",
+  "step": "L3",
+  "hex": "#E8D576"
+ },
+ {
+  "channel": "Vegetation / Organik",
+  "slug": "veg_bloom_yellow",
+  "label": "Blüte Gelb",
+  "step": "L4",
+  "hex": "#EAD982"
+ },
+ {
+  "channel": "Vegetation / Organik",
+  "slug": "veg_crop_grain",
+  "label": "Getreide",
+  "step": "S4",
+  "hex": "#2E190C"
+ },
+ {
+  "channel": "Vegetation / Organik",
+  "slug": "veg_crop_grain",
+  "label": "Getreide",
+  "step": "S3",
+  "hex": "#4F3116"
+ },
+ {
+  "channel": "Vegetation / Organik",
+  "slug": "veg_crop_grain",
+  "label": "Getreide",
+  "step": "S2",
+  "hex": "#735024"
+ },
+ {
+  "channel": "Vegetation / Organik",
+  "slug": "veg_crop_grain",
+  "label": "Getreide",
+  "step": "S1",
+  "hex": "#9B7636"
+ },
+ {
+  "channel": "Vegetation / Organik",
+  "slug": "veg_crop_grain",
+  "label": "Getreide",
+  "step": "BASE",
+  "hex": "#C9A94E"
+ },
+ {
+  "channel": "Vegetation / Organik",
+  "slug": "veg_crop_grain",
+  "label": "Getreide",
+  "step": "L1",
+  "hex": "#D2BF5F"
+ },
+ {
+  "channel": "Vegetation / Organik",
+  "slug": "veg_crop_grain",
+  "label": "Getreide",
+  "step": "L2",
+  "hex": "#DAC86E"
+ },
+ {
+  "channel": "Vegetation / Organik",
+  "slug": "veg_crop_grain",
+  "label": "Getreide",
+  "step": "L3",
+  "hex": "#E2D17C"
+ },
+ {
+  "channel": "Vegetation / Organik",
+  "slug": "veg_crop_grain",
+  "label": "Getreide",
+  "step": "L4",
+  "hex": "#E9D98A"
+ },
+ {
+  "channel": "Funktion (gesperrt)",
+  "slug": "hearth_gold",
+  "label": "Hearth Gold (gesperrt)",
+  "step": "S2",
+  "hex": "#DC932D"
+ },
+ {
+  "channel": "Funktion (gesperrt)",
+  "slug": "hearth_gold",
+  "label": "Hearth Gold (gesperrt)",
+  "step": "S1",
+  "hex": "#E89D34"
+ },
+ {
+  "channel": "Funktion (gesperrt)",
+  "slug": "hearth_gold",
+  "label": "Hearth Gold (gesperrt)",
+  "step": "BASE",
+  "hex": "#F5A83C"
+ },
+ {
+  "channel": "Funktion (gesperrt)",
+  "slug": "hearth_gold",
+  "label": "Hearth Gold (gesperrt)",
+  "step": "L1",
+  "hex": "#F5AD48"
+ },
+ {
+  "channel": "Magie / Emissiv",
+  "slug": "mag_arcane",
+  "label": "Arkan Violett",
+  "step": "OUTER",
+  "hex": "#310452"
+ },
+ {
+  "channel": "Magie / Emissiv",
+  "slug": "mag_arcane",
+  "label": "Arkan Violett",
+  "step": "GLOW",
+  "hex": "#530D85"
+ },
+ {
+  "channel": "Magie / Emissiv",
+  "slug": "mag_arcane",
+  "label": "Arkan Violett",
+  "step": "MID",
+  "hex": "#932CC7"
+ },
+ {
+  "channel": "Magie / Emissiv",
+  "slug": "mag_arcane",
+  "label": "Arkan Violett",
+  "step": "CORE",
+  "hex": "#D890F0"
+ },
+ {
+  "channel": "Magie / Emissiv",
+  "slug": "mag_arcane",
+  "label": "Arkan Violett",
+  "step": "FLARE",
+  "hex": "#F9E0FF"
+ },
+ {
+  "channel": "Magie / Emissiv",
+  "slug": "mag_rune",
+  "label": "Rune Cyan",
+  "step": "OUTER",
+  "hex": "#044C52"
+ },
+ {
+  "channel": "Magie / Emissiv",
+  "slug": "mag_rune",
+  "label": "Rune Cyan",
+  "step": "GLOW",
+  "hex": "#0D7D85"
+ },
+ {
+  "channel": "Magie / Emissiv",
+  "slug": "mag_rune",
+  "label": "Rune Cyan",
+  "step": "MID",
+  "hex": "#2CC7C4"
+ },
+ {
+  "channel": "Magie / Emissiv",
+  "slug": "mag_rune",
+  "label": "Rune Cyan",
+  "step": "CORE",
+  "hex": "#90F0E6"
+ },
+ {
+  "channel": "Magie / Emissiv",
+  "slug": "mag_rune",
+  "label": "Rune Cyan",
+  "step": "FLARE",
+  "hex": "#E0FFFA"
+ },
+ {
+  "channel": "Magie / Emissiv",
+  "slug": "mag_vital",
+  "label": "Vital Grün",
+  "step": "OUTER",
+  "hex": "#04521E"
+ },
+ {
+  "channel": "Magie / Emissiv",
+  "slug": "mag_vital",
+  "label": "Vital Grün",
+  "step": "GLOW",
+  "hex": "#0D8535"
+ },
+ {
+  "channel": "Magie / Emissiv",
+  "slug": "mag_vital",
+  "label": "Vital Grün",
+  "step": "MID",
+  "hex": "#2CC753"
+ },
+ {
+  "channel": "Magie / Emissiv",
+  "slug": "mag_vital",
+  "label": "Vital Grün",
+  "step": "CORE",
+  "hex": "#90F0A0"
+ },
+ {
+  "channel": "Magie / Emissiv",
+  "slug": "mag_vital",
+  "label": "Vital Grün",
+  "step": "FLARE",
+  "hex": "#E0FFE3"
+ },
+ {
+  "channel": "Magie / Emissiv",
+  "slug": "mag_ember",
+  "label": "Glut Amber",
+  "step": "OUTER",
+  "hex": "#522404"
+ },
+ {
+  "channel": "Magie / Emissiv",
+  "slug": "mag_ember",
+  "label": "Glut Amber",
+  "step": "GLOW",
+  "hex": "#853F0D"
+ },
+ {
+  "channel": "Magie / Emissiv",
+  "slug": "mag_ember",
+  "label": "Glut Amber",
+  "step": "MID",
+  "hex": "#C7792C"
+ },
+ {
+  "channel": "Magie / Emissiv",
+  "slug": "mag_ember",
+  "label": "Glut Amber",
+  "step": "CORE",
+  "hex": "#F0C890"
+ },
+ {
+  "channel": "Magie / Emissiv",
+  "slug": "mag_ember",
+  "label": "Glut Amber",
+  "step": "FLARE",
+  "hex": "#FFF4E0"
+ },
+ {
+  "channel": "Magie / Emissiv",
+  "slug": "mag_frost",
+  "label": "Frost",
+  "step": "OUTER",
+  "hex": "#041452"
+ },
+ {
+  "channel": "Magie / Emissiv",
+  "slug": "mag_frost",
+  "label": "Frost",
+  "step": "GLOW",
+  "hex": "#0D2585"
+ },
+ {
+  "channel": "Magie / Emissiv",
+  "slug": "mag_frost",
+  "label": "Frost",
+  "step": "MID",
+  "hex": "#2C58C7"
+ },
+ {
+  "channel": "Magie / Emissiv",
+  "slug": "mag_frost",
+  "label": "Frost",
+  "step": "CORE",
+  "hex": "#90B3F0"
+ },
+ {
+  "channel": "Magie / Emissiv",
+  "slug": "mag_frost",
+  "label": "Frost",
+  "step": "FLARE",
+  "hex": "#E0EEFF"
+ },
+ {
+  "channel": "Magie / Emissiv",
+  "slug": "mag_corruption",
+  "label": "Corruption (5.5)",
+  "step": "OUTER",
+  "hex": "#52042D"
+ },
+ {
+  "channel": "Magie / Emissiv",
+  "slug": "mag_corruption",
+  "label": "Corruption (5.5)",
+  "step": "GLOW",
+  "hex": "#850D4D"
+ },
+ {
+  "channel": "Magie / Emissiv",
+  "slug": "mag_corruption",
+  "label": "Corruption (5.5)",
+  "step": "MID",
+  "hex": "#C72C72"
+ },
+ {
+  "channel": "Magie / Emissiv",
+  "slug": "mag_corruption",
+  "label": "Corruption (5.5)",
+  "step": "CORE",
+  "hex": "#F090B3"
+ },
+ {
+  "channel": "Magie / Emissiv",
+  "slug": "mag_corruption",
+  "label": "Corruption (5.5)",
+  "step": "FLARE",
+  "hex": "#FFE0EA"
+ },
+ {
+  "channel": "Magie / Emissiv",
+  "slug": "mag_void",
+  "label": "Leere",
+  "step": "OUTER",
+  "hex": "#470452"
+ },
+ {
+  "channel": "Magie / Emissiv",
+  "slug": "mag_void",
+  "label": "Leere",
+  "step": "GLOW",
+  "hex": "#750D85"
+ },
+ {
+  "channel": "Magie / Emissiv",
+  "slug": "mag_void",
+  "label": "Leere",
+  "step": "MID",
+  "hex": "#BF2CC7"
+ },
+ {
+  "channel": "Magie / Emissiv",
+  "slug": "mag_void",
+  "label": "Leere",
+  "step": "CORE",
+  "hex": "#F090ED"
+ },
+ {
+  "channel": "Magie / Emissiv",
+  "slug": "mag_void",
+  "label": "Leere",
+  "step": "FLARE",
+  "hex": "#FFE0FC"
+ },
+ {
+  "channel": "Magie / Emissiv",
+  "slug": "mag_spirit",
+  "label": "Geist Warmweiß",
+  "step": "OUTER",
+  "hex": "#665A35"
+ },
+ {
+  "channel": "Magie / Emissiv",
+  "slug": "mag_spirit",
+  "label": "Geist Warmweiß",
+  "step": "GLOW",
+  "hex": "#998959"
+ },
+ {
+  "channel": "Magie / Emissiv",
+  "slug": "mag_spirit",
+  "label": "Geist Warmweiß",
+  "step": "MID",
+  "hex": "#D9D0A9"
+ },
+ {
+  "channel": "Magie / Emissiv",
+  "slug": "mag_spirit",
+  "label": "Geist Warmweiß",
+  "step": "CORE",
+  "hex": "#F5F1DC"
+ },
+ {
+  "channel": "Magie / Emissiv",
+  "slug": "mag_spirit",
+  "label": "Geist Warmweiß",
+  "step": "FLARE",
+  "hex": "#FFFEF7"
+ },
+ {
+  "channel": "UI / State (gesperrt)",
+  "slug": "ui_chrome",
+  "label": "Panel-Füllung (kanonisch)",
+  "step": "BASE",
+  "hex": "#262220"
+ },
+ {
+  "channel": "UI / State (gesperrt)",
+  "slug": "ui_text",
+  "label": "Text (kanonisch)",
+  "step": "BASE",
+  "hex": "#EDE6DA"
+ },
+ {
+  "channel": "UI / State (gesperrt)",
+  "slug": "state_blue",
+  "label": "State Blue (nur UI)",
+  "step": "BASE",
+  "hex": "#4A90C4"
+ },
+ {
+  "channel": "UI / State (gesperrt)",
+  "slug": "state_orange",
+  "label": "State Orange (nur UI)",
+  "step": "BASE",
+  "hex": "#E1752E"
+ },
+ {
+  "channel": "UI / State (gesperrt)",
+  "slug": "threshold_cool",
+  "label": "Threshold Cool (nur Nebel)",
+  "step": "BASE",
+  "hex": "#6B8593"
+ }
+]

@@ -1,0 +1,7 @@
+[gd_resource type="Resource" script_class="CommitPipelineConfig" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/building_system/commit_pipeline_config.gd" id="1_commitpipeline"]
+
+[resource]
+script = ExtResource("1_commitpipeline")
+max_cells_per_command = 512

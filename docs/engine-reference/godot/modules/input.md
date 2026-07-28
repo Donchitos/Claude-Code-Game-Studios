@@ -1,8 +1,14 @@
 # Godot Input — Quick Reference
 
-Last verified: 2026-02-12 | Engine: Godot 4.6
+Last verified: 2026-07-09 | Engine: Godot 4.7-stable
 
 ## What Changed Since ~4.3 (LLM Cutoff)
+
+### 4.7 Changes
+- **Device ID constants**: Mouse and keyboard events now report
+  `InputEvent.DEVICE_ID_MOUSE` / `InputEvent.DEVICE_ID_KEYBOARD` instead of
+  hardcoded `0`. Code that compared `event.device == 0` to detect
+  mouse/keyboard breaks — use the new constants instead.
 
 ### 4.6 Changes
 - **Dual-focus system**: Mouse/touch focus is now separate from keyboard/gamepad focus

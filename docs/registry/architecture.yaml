@@ -30,7 +30,7 @@
 #   Superseded entries:     Grep pattern="status: superseded"
 
 version: 1
-last_updated: ""
+last_updated: "2026-07-11"
 
 # ─── STATE OWNERSHIP ─────────────────────────────────────────────────────────
 # Who is the authoritative owner of each piece of shared game state.
@@ -71,7 +71,126 @@ state_ownership: []
 #
 # pattern options: signal | direct_call | event_bus | shared_resource | rpc | none
 
-interfaces: []
+interfaces:
+  - contract: resource_item_database_ready
+    status: active
+    pattern: signal
+    producer: resource-item-database (Autoload)
+    consumers:
+      - GameWorld (Scene/World Management's World Root — gates injected-tier setup())
+    adr: docs/architecture/adr-0005-boot-sequencing-initialization-gate.md
+    signal_signature: "validation_complete(result: ValidationResult)  # result.success: bool, result.issues: Array[ValidationIssue]"
+    referenced_by:
+      - docs/architecture/adr-0005-boot-sequencing-initialization-gate.md
+    added: 2026-07-11
+    revised: ""
+
+  - contract: walkability_predicates
+    status: active
+    pattern: direct_call
+    producer: villager-ai (is_standable, is_step_legal — pure functions)
+    consumers:
+      - villager-ai (its own AStar3D-based pathfinding)
+      - build-validation-navigability (its own independent BFS)
+    adr: docs/architecture/adr-0007-ai-pathfinding-navigation-room-analysis.md
+    signal_signature: "is_standable(cell: Vector3i) -> bool ; is_step_legal(from_cell: Vector3i, to_cell: Vector3i) -> bool"
+    referenced_by:
+      - docs/architecture/adr-0007-ai-pathfinding-navigation-room-analysis.md
+    added: 2026-07-11
+    revised: ""
+
+  - contract: voxel_write_repath_ordering
+    status: active
+    pattern: signal
+    producer: voxel-world (cell_changed / cells_changed_batch)
+    consumers:
+      - villager-ai (re-path filter — must be a DIRECT, non-deferred connection so it fires synchronously, same call stack as the write)
+    adr: docs/architecture/adr-0009-deterministic-movement-occupancy-ordering.md
+    signal_signature: "cell_changed(cell: Vector3i, before: CellData, after: CellData)"
+    referenced_by:
+      - docs/architecture/adr-0009-deterministic-movement-occupancy-ordering.md
+    added: 2026-07-11
+    revised: ""
+
+  - contract: hover_suppression_flag
+    status: active
+    pattern: direct_call
+    producer: building-ui (is_hover_suppressing_world_pick, event-driven via mouse_entered/exited)
+    consumers:
+      - building-system (before starting a new pick/drag)
+      - villager-info-ui (before a new select/deselect)
+    adr: docs/architecture/adr-0010-cross-system-ui-world-input-arbitration.md
+    signal_signature: "is_hover_suppressing_world_pick() -> bool"
+    referenced_by:
+      - docs/architecture/adr-0010-cross-system-ui-world-input-arbitration.md
+    added: 2026-07-11
+    revised: ""
+
+  - purpose: ui_timer_management
+    status: active
+    api: "Centralized expiry-timestamp manager: Dictionary[key, TimerRecord] + one shared _process(delta) loop, gated by a single _suspended boolean"
+    not: "N per-issue Godot Timer nodes (one per active toast/warning/debounce subject)"
+    adr: docs/architecture/adr-0011-ui-timer-expiry-management-pattern.md
+    reason: "Zero per-timer Node-lifecycle overhead at potentially-dozens-of-subjects scale; direct consistency with Time & Tick System's own 'no per-consumer timers anywhere' precedent. Note: both approaches achieve equally exact pause fidelity (Timer.paused natively preserves time_left) — the choice is about overhead/consistency, not pause correctness."
+    referenced_by:
+      - docs/architecture/adr-0011-ui-timer-expiry-management-pattern.md
+    added: 2026-07-11
+    revised: ""
+
+  - purpose: save_load_file_format
+    status: active
+    api: "Plain Dictionary serialized via FileAccess.store_var()/get_var() to a single binary file"
+    not: "Custom Resource-derived class saved via ResourceSaver/ResourceLoader (ADR-0002/0006's pattern for a DIFFERENT data category — authored/designer-edited config and item data, not runtime save state)"
+    adr: docs/architecture/adr-0012-save-load-serialization-strategy.md
+    reason: "Save data is never designer-authored, Inspector-edited, or git-tracked — the Inspector-editability/diff-friendliness rationale that motivated ADR-0002/0006 doesn't apply here; store_var/get_var natively round-trips nested Dictionary/Array/Variant data with far less code"
+    referenced_by:
+      - docs/architecture/adr-0012-save-load-serialization-strategy.md
+    added: 2026-07-11
+    revised: ""
+
+  - purpose: save_load_orchestration
+    status: active
+    api: "Each serializing system exposes serialize() -> Dictionary / deserialize(data: Dictionary) -> void; a Save/Load orchestrator module collects/distributes these under per-system keys, never inspecting contents"
+    not: "A central Save/Load module that understands or reaches into any individual system's internal data format"
+    adr: docs/architecture/adr-0012-save-load-serialization-strategy.md
+    reason: "Honors the 'each system serializes itself' carry-forward directive structurally, not by convention"
+    referenced_by:
+      - docs/architecture/adr-0012-save-load-serialization-strategy.md
+    added: 2026-07-11
+    revised: ""
+
+  - purpose: save_load_scale_strategy
+    status: active
+    api: "No chunking (single monolithic save file); no threading (synchronous save/load) for MVP/VS"
+    not: "Spatial chunk partitioning; WorkerThreadPool-based async save"
+    adr: docs/architecture/adr-0012-save-load-serialization-strategy.md
+    reason: "World is bounded (ADR-0014 large world: packed-chunk payload ~150-250 MB worst case, re-measure at VS; chunked/async saves remain the named escape hatch); saves are transition-triggered so any brief synchronous cost hides behind the already-visible loading overlay. Both named as escape hatches if Full Vision scale later proves otherwise, matching ADR-0003/0008's identical reasoning pattern."
+    referenced_by:
+      - docs/architecture/adr-0012-save-load-serialization-strategy.md
+    added: 2026-07-11
+    revised: ""
+
+  - purpose: multi_scene_world_model
+    status: active
+    api: "Shared World3D for Valley + Dungeon, with Dungeon content instantiated at a large fixed spatial offset (e.g. Vector3(100_000, 0, 0)) from Valley's origin"
+    not: "Separate SubViewports (each with its own World3D) — narrower isolation benefit than assumed, given this project's near-zero physics/NavigationServer3D usage (ADR-0003/0004/0007) and the confirmed-false 'free input isolation' claim"
+    adr: docs/architecture/adr-0013-multi-scene-concurrency-model.md
+    reason: "No extra Viewport/render-target overhead; this project's already-minimal physics/navigation footprint narrows the isolation gap versus SubViewports to near zero"
+    referenced_by:
+      - docs/architecture/adr-0013-multi-scene-concurrency-model.md
+    added: 2026-07-11
+    revised: ""
+
+  - purpose: global_rendering_state_toggle
+    status: active
+    api: "One persistent WorldEnvironment node with .environment resource swapped per active scene; Camera3D.current, AudioListener3D (make_current()), and each scene's DirectionalLight3D.visible explicitly toggled per active scene"
+    not: "Multiple WorldEnvironment nodes relying on Godot's tree-proximity stacking rule; assuming spatial offset alone isolates DirectionalLight3D (it does not — directional lights are not distance-limited)"
+    adr: docs/architecture/adr-0013-multi-scene-concurrency-model.md
+    reason: "Explicit, unambiguous control over the few genuinely global (non-distance-limited) rendering/audio concerns, rather than relying on implicit engine stacking rules"
+    referenced_by:
+      - docs/architecture/adr-0013-multi-scene-concurrency-model.md
+    added: 2026-07-11
+    revised: ""
 
 # Example:
 #
@@ -131,7 +250,193 @@ performance_budgets: []
 # Register an API decision when the choice is non-obvious and other ADRs might
 # make a different choice for the same purpose without knowing this was decided.
 
-api_decisions: []
+api_decisions:
+  - purpose: inter_system_reference_resolution
+    status: active
+    api: "Autoload singleton (TimeTickSystem, ResourceItemDatabase ONLY) + typed @export node-reference injection (all other MVP modules), wired via GameWorld.tscn scene file at deserialization time"
+    not: "Autoload for all modules; code-assigned wiring inside GameWorld._ready(); service-locator/reflection-based DI"
+    adr: docs/architecture/adr-0001-inter-system-reference-dependency-injection-pattern.md
+    reason: "Matches the project's dependency-injection-over-singletons coding standard while keeping the 2 genuinely-global, no-mock-requirement Foundation services low-boilerplate"
+    referenced_by:
+      - docs/architecture/adr-0001-inter-system-reference-dependency-injection-pattern.md
+    added: 2026-07-11
+    revised: ""
+
+  - purpose: tuning_config_data_format
+    status: active
+    api: "Custom Resource-derived config classes, one per module, stored as .tres (text, never binary .res) under res://data/config/"
+    not: "ConfigFile (untyped, stringly-typed key lookups); plain JSON/custom-parsed files"
+    adr: docs/architecture/adr-0002-tuning-config-data-strategy.md
+    reason: "Typed @export fields (static-typing-enforced), native Inspector editing, git-diff-friendly text format, consistent with Resource & Item Database's own 'external data resources' idiom"
+    referenced_by:
+      - docs/architecture/adr-0002-tuning-config-data-strategy.md
+    added: 2026-07-11
+    revised: ""
+
+  - purpose: voxel_rendering
+    status: active
+    api: "GridMap (use_collision = false), populated from Voxel World's own Dictionary[Vector3i, CellData] data layer"
+    not: "Manual MultiMeshInstance3D; chunked/greedy mesher"
+    adr: docs/architecture/adr-0003-voxel-world-rendering-approach.md
+    reason: "PROVISIONAL pending pre-VS performance spike. GridMap's data model (fixed cell_size, one item per cell) matches Voxel World's own contract almost exactly; chunked mesher's remesh-per-edit cost fights the already-validated live-editing interaction feel."
+    referenced_by:
+      - docs/architecture/adr-0003-voxel-world-rendering-approach.md
+    added: 2026-07-11
+    revised: ""
+
+  - purpose: block_picking
+    status: active
+    api: "Manual DDA (digital differential analyzer) grid-walk against Voxel World's own Dictionary[Vector3i, CellData], via Voxel World's raycast_cells() API"
+    not: "PhysicsServer3D / RayCast3D against GridMap-generated or hand-spawned colliders"
+    adr: docs/architecture/adr-0003-voxel-world-rendering-approach.md
+    reason: "GridMap collision is disabled (nothing needs it); DDA against the authoritative data layer is cheaper and preserves the concept prototype's already-validated picking feel unmodified"
+    referenced_by:
+      - docs/architecture/adr-0003-voxel-world-rendering-approach.md
+    added: 2026-07-11
+    revised: ""
+
+  - purpose: physics_backend
+    status: active
+    api: "Jolt Physics 3D (Godot 4.6+ default, no override)"
+    not: "GodotPhysics3D (legacy) — no GDD needs a GodotPhysics3D-specific feature (no joints used anywhere)"
+    adr: docs/architecture/adr-0004-physics-backend-picking-strategy.md
+    reason: "Zero-configuration engine default; better determinism/stability generally; the only physics usage in the project (villager hit-testing) has no backend-specific requirement either way"
+    referenced_by:
+      - docs/architecture/adr-0004-physics-backend-picking-strategy.md
+    added: 2026-07-11
+    revised: ""
+
+  - purpose: villager_hit_testing
+    status: active
+    api: "Area3D + CollisionShape3D (capsule) per villager, collision_layer=1, collision_mask=0; queried via PhysicsDirectSpaceState3D.intersect_ray() with collision_mask=1, collide_with_areas=true, collide_with_bodies=false"
+    not: "StaticBody3D/CharacterBody3D (implies unwanted physical collision response); querying without collide_with_areas=true (silently returns no hit — a real bug found during ADR-0004's validation)"
+    adr: docs/architecture/adr-0004-physics-backend-picking-strategy.md
+    reason: "Villagers need ray-detectability for click-to-select only, never physical collision response (movement is cell-interpolated, not physics-simulated)"
+    referenced_by:
+      - docs/architecture/adr-0004-physics-backend-picking-strategy.md
+    added: 2026-07-11
+    revised: ""
+
+  - purpose: collision_layer_numbering
+    status: active
+    api: "Layer 1 = villagers (ADR-0004). Layers 2-8 reserved for future gameplay physics (e.g. Squad & Combat hitboxes, VS+) — future ADRs claim a layer here, not redefine Layer 1. Layers 9-20 reserved for editor/engine internal conventions, left untouched."
+    not: "Ad-hoc layer assignment per system without checking this convention first"
+    adr: docs/architecture/adr-0004-physics-backend-picking-strategy.md
+    reason: "No collision-layer convention existed before this ADR; establishing one now prevents future layer conflicts as more physics-using systems are added post-MVP"
+    referenced_by:
+      - docs/architecture/adr-0004-physics-backend-picking-strategy.md
+    added: 2026-07-11
+    revised: ""
+
+  - purpose: boot_gate_mechanism
+    status: active
+    api: "Unified check-then-connect gate in GameWorld._ready(): check ResourceItemDatabase.is_ready() synchronously first, fall back to .connect(validation_complete, CONNECT_ONE_SHOT) if not yet ready. ALL injected-tier modules' setup() calls wait for this gate, not just Building System/Villager AI."
+    not: "Per-module allowlist gating (narrow scope matching only the GDDs' literally-named modules); polling is_ready() every frame/Timer"
+    adr: docs/architecture/adr-0005-boot-sequencing-initialization-gate.md
+    reason: "Eliminates 'forgot to gate the new module' as a bug class; RID validation cost expected negligible at MVP scale; matches the project's event-driven-not-polled architecture principle"
+    referenced_by:
+      - docs/architecture/adr-0005-boot-sequencing-initialization-gate.md
+    added: 2026-07-11
+    revised: ""
+
+  - purpose: item_definition_data_format
+    status: active
+    api: "One .tres ItemDefinitionResource file per entry (matches ADR-0002's config-data idiom); visual_asset typed as @export var visual_asset: Mesh, not a path string"
+    not: "Consolidated data tables (one file, many entries); path-string asset references"
+    adr: docs/architecture/adr-0006-data-definition-immutability-reference-format.md
+    reason: "Matches ADR-0002's established authoring idiom; typed Mesh reference feeds directly into ADR-0003's MeshLibrary-population boot step with no translation layer"
+    referenced_by:
+      - docs/architecture/adr-0006-data-definition-immutability-reference-format.md
+    added: 2026-07-11
+    revised: ""
+
+  - purpose: item_definition_query_type
+    status: active
+    api: "get_by_id() returns a getter-only ItemDefinition (RefCounted) wrapper around the shared internal ItemDefinitionResource — no duplication"
+    not: "Returning the internal ItemDefinitionResource directly; a defensive-copy via duplicate()"
+    adr: docs/architecture/adr-0006-data-definition-immutability-reference-format.md
+    reason: "Closes off idiomatic mutation paths (no setters exist) at lower per-query cost than duplication; deliberate Object.get()/set() reflection bypass remains a documented residual risk, not fully closed"
+    referenced_by:
+      - docs/architecture/adr-0006-data-definition-immutability-reference-format.md
+    added: 2026-07-11
+    revised: ""
+
+  - purpose: pathfinding_algorithm
+    status: active
+    api: "AStar3D — manually-built graph (one point per standable cell, connections only between legal-step pairs), incrementally patched on Voxel World writes via a deterministic Vector3i->int64 ID packing scheme"
+    not: "NavigationServer3D/navmesh baking (doesn't map cleanly onto the custom clearance/step/no-corner-cut rules, and rebake cost is the flagged risk this avoids); AStarGrid3D (does not exist in Godot 4.7 — verified)"
+    adr: docs/architecture/adr-0007-ai-pathfinding-navigation-room-analysis.md
+    reason: "PROVISIONAL pending pre-VS performance spike. Custom movement rules are a tile/grid model, not a navmesh-agent problem; AStar3D gives exact control with no lossy geometric approximation."
+    referenced_by:
+      - docs/architecture/adr-0007-ai-pathfinding-navigation-room-analysis.md
+    added: 2026-07-11
+    revised: ""
+
+  - purpose: room_analysis_algorithm
+    status: active
+    api: "Build Validation's own independent BFS/flood-fill, calling Villager AI's shared is_standable/is_step_legal predicates directly"
+    not: "Sharing Villager AI's internal AStar3D graph object; NavigationServer3D navmesh-region-membership queries"
+    adr: docs/architecture/adr-0007-ai-pathfinding-navigation-room-analysis.md
+    reason: "Reachability tracing is a different traversal shape than shortest-path; sharing predicates (not the graph object) satisfies 'exact same rules' while keeping the two systems' internals decoupled"
+    referenced_by:
+      - docs/architecture/adr-0007-ai-pathfinding-navigation-room-analysis.md
+    added: 2026-07-11
+    revised: ""
+
+  - purpose: villager_ai_architecture
+    status: active
+    api: "Plain explicit FSM (enum state + one function per state via match)"
+    not: "Behavior tree (framework overhead for a fixed 6-state/strict-priority design); utility AI / scored candidates (this project's priorities are discrete and strict, never blended)"
+    adr: docs/architecture/adr-0008-villager-ai-execution-threading-strategy.md
+    reason: "villager-ai-behavior.md already fixes the state set and priority order; a framework built for open-ended/blended decision spaces adds no value here"
+    referenced_by:
+      - docs/architecture/adr-0008-villager-ai-execution-threading-strategy.md
+    added: 2026-07-11
+    revised: ""
+
+  - purpose: deciding_pass_scheduling
+    status: active
+    api: "Tick-staggered budget (max_deciding_per_tick config knob) + stable-order FIFO queue; villagers beyond budget wait for subsequent ticks"
+    not: "Unstaggered same-tick processing of all eligible villagers; WorkerThreadPool-based parallelism"
+    adr: docs/architecture/adr-0008-villager-ai-execution-threading-strategy.md
+    reason: "PROVISIONAL pending pre-VS spike. Bounds worst-case per-tick cost at mass-Deciding events (e.g. after scene load); single-threaded staggering is expected sufficient at the 20-30 villager ceiling"
+    referenced_by:
+      - docs/architecture/adr-0008-villager-ai-execution-threading-strategy.md
+    added: 2026-07-11
+    revised: ""
+
+  - purpose: villager_occupancy_model
+    status: active
+    api: "Discrete current_cell (tick-boundary-quantized) — a villager occupies from_cell for the entire transit, becomes to_cell only at tick-boundary arrival. Separate continuous _visual_position, interpolated every frame, cosmetic only."
+    not: "Deriving occupancy from interpolation progress; occupying both cells weighted by progress; flipping occupancy at the interpolation midpoint"
+    adr: docs/architecture/adr-0009-deterministic-movement-occupancy-ordering.md
+    reason: "Gives every consumer (Building System's occupancy check, F4 targeting, walled-in detection) one unambiguous cell, always; matches F1's existing tick-boundary-only crediting principle"
+    referenced_by:
+      - docs/architecture/adr-0009-deterministic-movement-occupancy-ordering.md
+    added: 2026-07-11
+    revised: ""
+
+  - purpose: click_ownership_arbitration
+    status: active
+    api: "Native Godot GUI-before-unhandled-input propagation (_input -> Control._gui_input -> _unhandled_input) — Camera & Input needs zero special code, an HUD-consumed click simply never reaches its _unhandled_input handler. Explicit hover flag is a redundant safety net checked only when STARTING a new pick/selection."
+    not: "Camera & Input checking any flag or interpreting click targets itself (would violate its existing opaque-passthrough contract)"
+    adr: docs/architecture/adr-0010-cross-system-ui-world-input-arbitration.md
+    reason: "Preserves Camera & Input's already-accepted 'never interpret the action name' contract unchanged while still guaranteeing exactly-one-owner-per-click"
+    referenced_by:
+      - docs/architecture/adr-0010-cross-system-ui-world-input-arbitration.md
+    added: 2026-07-11
+    revised: ""
+
+  - purpose: drag_release_capture
+    status: active
+    api: "Building System listens via _input() (not _unhandled_input()) for the release of an already-in-progress world-space drag, claimed via get_viewport().set_input_as_handled(); reverts to _unhandled_input() once the drag completes"
+    not: "Restructuring HUD mouse_filter zones to try to avoid releases landing on them; Input capture (MOUSE_MODE_CAPTURED)"
+    adr: docs/architecture/adr-0010-cross-system-ui-world-input-arbitration.md
+    reason: "_input() fires before Control consumption regardless of cursor position, guaranteeing the release is never swallowed by the HUD — scoped narrowly to the Dragging state only"
+    referenced_by:
+      - docs/architecture/adr-0010-cross-system-ui-world-input-arbitration.md
+    added: 2026-07-11
+    revised: ""
 
 # Example:
 #
@@ -157,7 +462,83 @@ api_decisions: []
 # Register a pattern when an ADR explicitly bans it AND other ADRs might
 # unknowingly use it (i.e., it's a tempting but wrong approach for this project).
 
-forbidden_patterns: []
+forbidden_patterns:
+  - pattern: export_injected_autoload
+    status: active
+    description: "Injecting ResourceItemDatabase or TimeTickSystem via an @export property. These are called by their global Autoload name directly in method bodies, everywhere, with no injection layer."
+    why: "A partial exemption (sometimes injected, sometimes global) creates a dual-access-path bug risk — a future contributor could reach the same service two different ways with different mocking behavior."
+    adr: docs/architecture/adr-0001-inter-system-reference-dependency-injection-pattern.md
+    added: 2026-07-11
+
+  - pattern: ready_order_dependent_injection
+    status: active
+    description: "Reading an @export-injected dependency inside a module's own _ready() under the assumption another script (e.g. GameWorld) assigned it there."
+    why: "Godot resolves the scene tree bottom-up — children's _ready() runs BEFORE their parent's — so code-assigned wiring in a parent's _ready() has not happened yet when a child's _ready() reads it. Scene-file-assigned exports are safe (resolved at deserialization); code-assigned wiring is not. Use an explicit setup() call instead."
+    adr: docs/architecture/adr-0001-inter-system-reference-dependency-injection-pattern.md
+    added: 2026-07-11
+
+  - pattern: config_runtime_mutation
+    status: active
+    description: "Writing to a field on an injected/loaded config Resource at runtime, from any module, for any reason."
+    why: "load()/preload() return Godot's ResourceLoader-cached, shared instance for as long as a strong reference is alive — a mutation by one holder is silently visible to every other holder of that same Resource, project-wide. Config must be read-only after boot-time validate()/clamp. A runtime-adjustable value needs its own explicitly-owned, non-shared state instead."
+    adr: docs/architecture/adr-0002-tuning-config-data-strategy.md
+    added: 2026-07-11
+
+  - pattern: binary_config_resource
+    status: active
+    description: "Saving a tuning-config Resource as .res (binary) instead of .tres (text)."
+    why: "Config data must stay git-diff-friendly for designer/tuner iteration; binary resources are opaque in diffs. Godot's export pipeline converts .tres to binary inside the built .pck automatically — that's expected and not a violation of this rule, which applies to source-controlled files."
+    adr: docs/architecture/adr-0002-tuning-config-data-strategy.md
+    added: 2026-07-11
+
+  - pattern: gridmap_collision_reliance
+    status: active
+    description: "Any gameplay system depending on GridMap-generated physics collision against voxel blocks (raycasts, CharacterBody3D movement, Area3D overlap detection, etc.)."
+    why: "GridMap's use_collision is explicitly disabled (ADR-0003) — nothing needs it, and relying on it would silently break since no collider exists. Villager movement is cell-based interpolation, not physics; block picking uses manual DDA against the data layer, not physics raycasts."
+    adr: docs/architecture/adr-0003-voxel-world-rendering-approach.md
+    added: 2026-07-11
+
+  - pattern: injected_tier_setup_outside_boot_gate
+    status: active
+    description: "Calling any injected-tier module's setup() from anywhere other than GameWorld's boot-gate resolution path (i.e., before ResourceItemDatabase reports Ready, or from a location other than the single WIRING-state loop)."
+    why: "The unified boot gate (ADR-0005) exists specifically to guarantee no module runs its setup logic before RID is ready. A second, uncontrolled setup() call site would bypass that guarantee silently."
+    adr: docs/architecture/adr-0005-boot-sequencing-initialization-gate.md
+    added: 2026-07-11
+
+  - pattern: exposed_item_definition_resource
+    status: active
+    description: "Resource & Item Database returning its internal ItemDefinitionResource directly from any public method, instead of the getter-only ItemDefinition wrapper."
+    why: "The immutability guarantee (ADR-0006) depends entirely on callers only ever holding the getter-only wrapper, never the underlying settable Resource. Exposing the internal type anywhere breaks the guarantee for every consumer, not just the call site that leaked it."
+    adr: docs/architecture/adr-0006-data-definition-immutability-reference-format.md
+    added: 2026-07-11
+
+  - pattern: villager_ai_threading
+    status: active
+    description: "Using Thread or WorkerThreadPool anywhere in Villager AI's implementation for MVP/VS."
+    why: "ADR-0008 explicitly rejected threading as premature — tick-staggering alone is expected sufficient at the 20-30 villager ceiling, and retrofitting thread-safety onto Voxel World's occupancy dict / AStar3D's graph / Needs & Mood's per-villager state is a real, avoidable complexity cost. WorkerThreadPool remains a named escape hatch only if the pre-VS spike proves staggering insufficient — not adopted now."
+    adr: docs/architecture/adr-0008-villager-ai-execution-threading-strategy.md
+    added: 2026-07-11
+
+  - pattern: visual_position_as_logic_source
+    status: active
+    description: "Reading a villager's continuous _visual_position (or any interpolation-progress value) for an occupancy, targeting, or walled-in logic decision."
+    why: "ADR-0009's whole resolution depends on every logic consumer reading the discrete current_cell, never the cosmetic interpolated position. A single stray read would reintroduce the exact ambiguity the ADR closed."
+    adr: docs/architecture/adr-0009-deterministic-movement-occupancy-ordering.md
+    added: 2026-07-11
+
+  - pattern: per_issue_timer_nodes
+    status: active
+    description: "Instantiating a new Godot Timer node per active toast/warning/debounce subject in Building UI."
+    why: "ADR-0011 chose a centralized expiry-timestamp manager specifically to avoid per-instance Node-lifecycle overhead at potentially-dozens-of-subjects scale, and to stay consistent with Time & Tick System's own no-per-consumer-timers precedent."
+    adr: docs/architecture/adr-0011-ui-timer-expiry-management-pattern.md
+    added: 2026-07-11
+
+  - pattern: multiple_world_environment_nodes
+    status: active
+    description: "Adding a second (or more) WorldEnvironment node to the project instead of swapping a single persistent node's .environment resource."
+    why: "Godot's rule for resolving which WorldEnvironment wins when more than one exists in a scene is a real footgun (tree-proximity/stacking-priority based, not simply 'first found') — confirmed during ADR-0013's engine validation. Swapping one node's resource sidesteps needing to reason about that rule entirely."
+    adr: docs/architecture/adr-0013-multi-scene-concurrency-model.md
+    added: 2026-07-11
 
 # Example:
 #

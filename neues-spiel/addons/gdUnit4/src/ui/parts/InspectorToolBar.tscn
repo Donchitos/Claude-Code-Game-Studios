@@ -1,0 +1,202 @@
+[gd_scene load_steps=17 format=3 uid="uid://dx7xy4dgi3wwb"]
+
+[ext_resource type="Script" path="res://addons/gdUnit4/src/ui/parts/InspectorToolBar.gd" id="3"]
+
+[sub_resource type="DPITexture" id="DPITexture_c7rhl"]
+_source = "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"16\" height=\"16\"><path fill=\"#e0e0e0\" d=\"M6.973 7.441a4 4 0 1 0-1.414-1.414L3.293 8.293l1.414 1.414zM9 2a2 2 0 0 1 0 4 2 2 0 0 1 0-4zm-9 8v6h2a3 3 0 1 0 0-6zm5 3a3 3 0 1 0 6 0 3 3 0 0 0-6 0zm6 0a3 3 0 0 0 3 3h1v-2h-1a1 1 0 0 1 0-2h1v-2h-1a3 3 0 0 0-3 3zm-9-1a1 1 0 0 1 0 2zm6 0a1 1 0 1 1 0 2 1 1 0 0 1 0-2z\"/></svg>
+"
+color_map = {
+Color(1, 0.37254903, 0.37254903, 1): Color(1, 0.47, 0.42, 1),
+Color(0.37254903, 1, 0.5921569, 1): Color(0.45, 0.95, 0.5, 1),
+Color(1, 0.8666667, 0.39607844, 1): Color(1, 0.87, 0.4, 1)
+}
+
+[sub_resource type="DPITexture" id="DPITexture_3erui"]
+_source = "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"16\" height=\"16\"><path fill=\"#e0e0e0\" d=\"M4 1 3 3l1 2v4H2v3.5a2.5 2.5 0 0 0 5 0V9H5V5l1-2-1-2zm6 .174a3 3 0 0 0 0 5.652V14a1 1 0 0 0 2 0V6.824a3 3 0 0 0 0-5.648V4a1 1 0 0 1-2 0z\"/></svg>
+"
+color_map = {
+Color(1, 0.37254903, 0.37254903, 1): Color(1, 0.47, 0.42, 1),
+Color(0.37254903, 1, 0.5921569, 1): Color(0.45, 0.95, 0.5, 1),
+Color(1, 0.8666667, 0.39607844, 1): Color(1, 0.87, 0.4, 1)
+}
+
+[sub_resource type="InputEventKey" id="InputEventKey_p22nw"]
+alt_pressed = true
+pressed = true
+keycode = 4194338
+physical_keycode = 4194338
+
+[sub_resource type="Shortcut" id="Shortcut_3lcek"]
+events = [SubResource("InputEventKey_p22nw")]
+
+[sub_resource type="Image" id="Image_ndw0i"]
+data = {
+"data": PackedByteArray(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 224, 224, 224, 195, 224, 224, 224, 210, 224, 224, 224, 56, 0, 0, 0, 0, 0, 0, 0, 0, 224, 224, 224, 195, 224, 224, 224, 210, 224, 224, 224, 56, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 224, 224, 224, 255, 224, 224, 224, 255, 224, 224, 224, 253, 224, 224, 224, 139, 224, 224, 224, 8, 224, 224, 224, 255, 224, 224, 224, 255, 224, 224, 224, 253, 224, 224, 224, 139, 224, 224, 224, 8, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 224, 224, 224, 255, 224, 224, 224, 255, 224, 224, 224, 255, 224, 224, 224, 255, 225, 225, 225, 215, 224, 224, 224, 255, 224, 224, 224, 255, 224, 224, 224, 255, 224, 224, 224, 255, 225, 225, 225, 215, 224, 224, 224, 56, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 224, 224, 224, 255, 224, 224, 224, 255, 224, 224, 224, 255, 224, 224, 224, 255, 224, 224, 224, 255, 224, 224, 224, 255, 224, 224, 224, 255, 224, 224, 224, 255, 224, 224, 224, 255, 224, 224, 224, 255, 224, 224, 224, 253, 224, 224, 224, 139, 224, 224, 224, 8, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 224, 224, 224, 255, 224, 224, 224, 255, 224, 224, 224, 255, 224, 224, 224, 255, 224, 224, 224, 255, 224, 224, 224, 255, 224, 224, 224, 255, 224, 224, 224, 255, 224, 224, 224, 255, 224, 224, 224, 255, 224, 224, 224, 255, 224, 224, 224, 255, 225, 225, 225, 183, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 224, 224, 224, 255, 224, 224, 224, 255, 224, 224, 224, 255, 224, 224, 224, 255, 224, 224, 224, 255, 224, 224, 224, 255, 224, 224, 224, 255, 224, 224, 224, 255, 224, 224, 224, 255, 224, 224, 224, 255, 224, 224, 224, 255, 224, 224, 224, 255, 225, 225, 225, 182, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 224, 224, 224, 255, 224, 224, 224, 255, 224, 224, 224, 255, 224, 224, 224, 255, 224, 224, 224, 255, 224, 224, 224, 255, 224, 224, 224, 255, 224, 224, 224, 255, 224, 224, 224, 255, 224, 224, 224, 255, 224, 224, 224, 252, 225, 225, 225, 134, 255, 255, 255, 6, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 224, 224, 224, 255, 224, 224, 224, 255, 224, 224, 224, 255, 224, 224, 224, 255, 224, 224, 224, 212, 224, 224, 224, 255, 224, 224, 224, 255, 224, 224, 224, 255, 224, 224, 224, 255, 224, 224, 224, 212, 226, 226, 226, 52, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 224, 224, 224, 255, 224, 224, 224, 255, 224, 224, 224, 252, 225, 225, 225, 134, 255, 255, 255, 6, 224, 224, 224, 255, 224, 224, 224, 255, 224, 224, 224, 252, 225, 225, 225, 134, 255, 255, 255, 6, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 225, 225, 225, 191, 224, 224, 224, 206, 226, 226, 226, 52, 0, 0, 0, 0, 0, 0, 0, 0, 225, 225, 225, 191, 224, 224, 224, 206, 226, 226, 226, 52, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
+"format": "RGBA8",
+"height": 16,
+"mipmaps": false,
+"width": 16
+}
+
+[sub_resource type="ImageTexture" id="ImageTexture_eoihf"]
+image = SubResource("Image_ndw0i")
+
+[sub_resource type="InputEventKey" id="InputEventKey_6gwbs"]
+alt_pressed = true
+pressed = true
+keycode = 4194336
+physical_keycode = 4194336
+
+[sub_resource type="Shortcut" id="Shortcut_2i8uq"]
+events = [SubResource("InputEventKey_6gwbs")]
+
+[sub_resource type="DPITexture" id="DPITexture_87jj1"]
+_source = "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"16\" height=\"16\"><path fill=\"#e0e0e0\" d=\"M4 12a1 1 0 0 0 1.555.832l6-4a1 1 0 0 0 0-1.664l-6-4A1 1 0 0 0 4 4z\"/></svg>
+"
+color_map = {
+Color(1, 0.37254903, 0.37254903, 1): Color(1, 0.47, 0.42, 1),
+Color(0.37254903, 1, 0.5921569, 1): Color(0.45, 0.95, 0.5, 1),
+Color(1, 0.8666667, 0.39607844, 1): Color(1, 0.87, 0.4, 1)
+}
+
+[sub_resource type="InputEventKey" id="InputEventKey_fewwl"]
+alt_pressed = true
+pressed = true
+keycode = 4194337
+physical_keycode = 4194337
+
+[sub_resource type="Shortcut" id="Shortcut_f3lkx"]
+events = [SubResource("InputEventKey_fewwl")]
+
+[sub_resource type="DPITexture" id="DPITexture_7oobd"]
+_source = "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"16\" height=\"16\"><path fill=\"#e0e0e0\" d=\"M3 3a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h1a1 1 0 0 0 1-1V4a1 1 0 0 0-1-1zm4.975 0A1 1 0 0 0 7 3.998v8a1 1 0 0 0 1.625.781l5-4a1 1 0 0 0 0-1.56l-5-4A1 1 0 0 0 7.975 3z\"/></svg>
+"
+color_map = {
+Color(1, 0.37254903, 0.37254903, 1): Color(1, 0.47, 0.42, 1),
+Color(0.37254903, 1, 0.5921569, 1): Color(0.45, 0.95, 0.5, 1),
+Color(1, 0.8666667, 0.39607844, 1): Color(1, 0.87, 0.4, 1)
+}
+
+[sub_resource type="InputEventKey" id="InputEventKey_lvbnb"]
+alt_pressed = true
+pressed = true
+keycode = 4194339
+physical_keycode = 4194339
+
+[sub_resource type="Shortcut" id="Shortcut_6idxu"]
+events = [SubResource("InputEventKey_lvbnb")]
+
+[sub_resource type="DPITexture" id="DPITexture_qf2s1"]
+_source = "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"16\" height=\"16\"><rect width=\"10\" height=\"10\" x=\"3\" y=\"3\" fill=\"#e0e0e0\" rx=\"1\"/></svg>
+"
+color_map = {
+Color(1, 0.37254903, 0.37254903, 1): Color(1, 0.47, 0.42, 1),
+Color(0.37254903, 1, 0.5921569, 1): Color(0.45, 0.95, 0.5, 1),
+Color(1, 0.8666667, 0.39607844, 1): Color(1, 0.87, 0.4, 1)
+}
+
+[node name="ToolBar" type="PanelContainer"]
+anchors_preset = 10
+anchor_right = 1.0
+offset_right = -894.0
+offset_bottom = 24.0
+grow_horizontal = 2
+size_flags_horizontal = 3
+size_flags_vertical = 4
+script = ExtResource("3")
+
+[node name="HBoxContainer" type="HBoxContainer" parent="."]
+layout_mode = 2
+
+[node name="tools" type="HBoxContainer" parent="HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 0
+size_flags_vertical = 4
+
+[node name="help" type="Button" parent="HBoxContainer/tools"]
+unique_name_in_owner = true
+layout_mode = 2
+icon = SubResource("DPITexture_c7rhl")
+
+[node name="tool" type="Button" parent="HBoxContainer/tools"]
+unique_name_in_owner = true
+layout_mode = 2
+tooltip_text = "GdUnit Settings"
+icon = SubResource("DPITexture_3erui")
+
+[node name="controls" type="HBoxContainer" parent="HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 6
+size_flags_vertical = 4
+alignment = 1
+
+[node name="VSeparator3" type="VSeparator" parent="HBoxContainer/controls"]
+layout_mode = 2
+
+[node name="run_overall" type="Button" parent="HBoxContainer/controls"]
+unique_name_in_owner = true
+use_parent_material = true
+layout_mode = 2
+tooltip_text = "Run overall tests"
+shortcut = SubResource("Shortcut_3lcek")
+icon = SubResource("ImageTexture_eoihf")
+metadata/GdUnitCommand = "Run Tests Overall"
+
+[node name="run" type="Button" parent="HBoxContainer/controls"]
+unique_name_in_owner = true
+use_parent_material = true
+layout_mode = 2
+tooltip_text = "Rerun unit tests"
+disabled = true
+shortcut = SubResource("Shortcut_2i8uq")
+icon = SubResource("DPITexture_87jj1")
+metadata/GdUnitCommand = "Run Inspector Tests"
+
+[node name="debug" type="Button" parent="HBoxContainer/controls"]
+unique_name_in_owner = true
+use_parent_material = true
+layout_mode = 2
+tooltip_text = "Rerun unit tests (Debug)"
+disabled = true
+shortcut = SubResource("Shortcut_f3lkx")
+icon = SubResource("DPITexture_7oobd")
+metadata/GdUnitCommand = "Debug Inspector Tests"
+
+[node name="stop" type="Button" parent="HBoxContainer/controls"]
+unique_name_in_owner = true
+use_parent_material = true
+layout_mode = 2
+tooltip_text = "Stops runing unit tests"
+disabled = true
+shortcut = SubResource("Shortcut_6idxu")
+icon = SubResource("DPITexture_qf2s1")
+metadata/GdUnitCommand = "Stop Test Session"
+
+[node name="VSeparator4" type="VSeparator" parent="HBoxContainer/controls"]
+layout_mode = 2
+
+[node name="CenterContainer" type="HBoxContainer" parent="HBoxContainer"]
+use_parent_material = true
+layout_mode = 2
+size_flags_horizontal = 10
+size_flags_vertical = 4
+alignment = 2
+
+[node name="version" type="Label" parent="HBoxContainer/CenterContainer"]
+unique_name_in_owner = true
+auto_translate_mode = 2
+use_parent_material = true
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 13
+localize_numeral_system = false
+text = "gdUnit4 6.1.0"
+horizontal_alignment = 1
+justification_flags = 160
+
+[connection signal="pressed" from="HBoxContainer/tools/help" to="." method="_on_wiki_pressed"]
+[connection signal="pressed" from="HBoxContainer/tools/tool" to="." method="_on_btn_tool_pressed"]
+[connection signal="pressed" from="HBoxContainer/controls/run_overall" to="." method="_on_button_pressed" flags=18]
+[connection signal="pressed" from="HBoxContainer/controls/run" to="." method="_on_button_pressed" flags=18]
+[connection signal="pressed" from="HBoxContainer/controls/debug" to="." method="_on_button_pressed" flags=18]
+[connection signal="pressed" from="HBoxContainer/controls/stop" to="." method="_on_button_pressed" flags=18]

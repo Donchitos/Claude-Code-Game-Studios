@@ -1,0 +1,240 @@
+[gd_scene format=3 uid="uid://bqfpidewtpeg0"]
+
+[ext_resource type="Script" path="res://addons/gdUnit4/src/ui/parts/InspectorTreeMainPanel.gd" id="1"]
+[ext_resource type="PackedScene" path="res://addons/gdUnit4/src/ui/menu/GdUnitInspectorContextMenu.tscn" id="2_o6s0p"]
+
+[sub_resource type="DPITexture" id="DPITexture_miuuy"]
+_source = "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"16\" height=\"16\"><path fill=\"#e0e0e0\" d=\"M4 12a1 1 0 0 0 1.555.832l6-4a1 1 0 0 0 0-1.664l-6-4A1 1 0 0 0 4 4z\"/></svg>
+"
+saturation = 2.0
+color_map = {
+Color(1, 0.37254903, 0.37254903, 1): Color(1, 0.47, 0.42, 1),
+Color(0.37254903, 1, 0.5921569, 1): Color(0.45, 0.95, 0.5, 1),
+Color(1, 0.8666667, 0.39607844, 1): Color(0.83, 0.78, 0.62, 1)
+}
+
+[sub_resource type="DPITexture" id="DPITexture_ern2r"]
+_source = "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"16\" height=\"16\"><path fill=\"#e0e0e0\" d=\"M3 3a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h1a1 1 0 0 0 1-1V4a1 1 0 0 0-1-1zm4.975 0A1 1 0 0 0 7 3.998v8a1 1 0 0 0 1.625.781l5-4a1 1 0 0 0 0-1.56l-5-4A1 1 0 0 0 7.975 3z\"/></svg>
+"
+saturation = 2.0
+color_map = {
+Color(1, 0.37254903, 0.37254903, 1): Color(1, 0.47, 0.42, 1),
+Color(0.37254903, 1, 0.5921569, 1): Color(0.45, 0.95, 0.5, 1),
+Color(1, 0.8666667, 0.39607844, 1): Color(0.83, 0.78, 0.62, 1)
+}
+
+[sub_resource type="DPITexture" id="DPITexture_qdci2"]
+_source = "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"16\" height=\"16\"><path fill=\"#e0e0e0\" d=\"m8 9.669-3.536 2.583H7v2.537h2v-2.537h2.536zm0-3.314L4.464 3.772H7V1.235h2v2.537h2.536zm-7.296.73h14.591v1.831H.704z\"/></svg>
+"
+saturation = 2.0
+color_map = {
+Color(1, 0.37254903, 0.37254903, 1): Color(1, 0.47, 0.42, 1),
+Color(0.37254903, 1, 0.5921569, 1): Color(0.45, 0.95, 0.5, 1),
+Color(1, 0.8666667, 0.39607844, 1): Color(0.83, 0.78, 0.62, 1)
+}
+
+[sub_resource type="DPITexture" id="DPITexture_hed0i"]
+_source = "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"16\" height=\"16\"><path fill=\"#e0e0e0\" d=\"m8 16-3.5-2.5H7V11h2v2.5h2.5zM8 0 4.5 2.5H7V5h2V2.5h2.5zM1 7h14v2H1z\"/></svg>
+"
+saturation = 2.0
+color_map = {
+Color(1, 0.37254903, 0.37254903, 1): Color(1, 0.47, 0.42, 1),
+Color(0.37254903, 1, 0.5921569, 1): Color(0.45, 0.95, 0.5, 1),
+Color(1, 0.8666667, 0.39607844, 1): Color(0.83, 0.78, 0.62, 1)
+}
+
+[sub_resource type="DPITexture" id="DPITexture_8v04w"]
+_source = "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"16\" height=\"16\"><g fill=\"#e0e0e0\"><path d=\"M9 1v3.055a4 4 0 0 1 1.027.426l2.159-2.159A7 7 0 0 0 9 1z\"/><path fill-opacity=\".2\" d=\"M7 1.08A7 7 0 0 0 3.814 2.4l2.159 2.159A4 4 0 0 1 7 4.13V1.08zM2.4 3.814A7 7 0 0 0 1.078 7h3.055a4 4 0 0 1 .426-1.027L2.4 3.815zm11.2 0-2.159 2.159A4 4 0 0 1 11.869 7h3.05a7 7 0 0 0-1.32-3.186zM1.08 9a7 7 0 0 0 1.32 3.186l2.158-2.159A4 4 0 0 1 4.13 9H1.08zm10.786 0a4 4 0 0 1-.425 1.027l2.158 2.159A7 7 0 0 0 14.921 9h-3.055zm-5.894 2.441L3.814 13.6a7 7 0 0 0 3.185 1.322v-3.055a4 4 0 0 1-1.027-.426zm4.055 0a4 4 0 0 1-1.028.428v3.05a7 7 0 0 0 3.186-1.32l-2.158-2.158z\"/></g></svg>
+"
+saturation = 2.0
+color_map = {
+Color(1, 0.37254903, 0.37254903, 1): Color(1, 0.47, 0.42, 1),
+Color(0.37254903, 1, 0.5921569, 1): Color(0.45, 0.95, 0.5, 1),
+Color(1, 0.8666667, 0.39607844, 1): Color(0.83, 0.78, 0.62, 1)
+}
+
+[sub_resource type="DPITexture" id="DPITexture_arwmg"]
+_source = "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"16\" height=\"16\"><g fill=\"#e0e0e0\"><path fill-opacity=\".2\" d=\"M9 1.078v3.055a4 4 0 0 1 1.027.426L12.186 2.4A7 7 0 0 0 9 1.078zM7 1.08A7 7 0 0 0 3.814 2.4l2.159 2.159A4 4 0 0 1 7 4.13V1.079zM2.4 3.814A7 7 0 0 0 1.078 7h3.055a4 4 0 0 1 .426-1.027L2.4 3.814zM1.08 9a7 7 0 0 0 1.32 3.185l2.159-2.158A4 4 0 0 1 4.131 9H1.08zm10.787 0a4 4 0 0 1-.426 1.027l2.159 2.158A7 7 0 0 0 14.922 9h-3.055zm-5.894 2.441L3.814 13.6A7 7 0 0 0 7 14.922v-3.055a4 4 0 0 1-1.027-.426zm4.054 0A4 4 0 0 1 9 11.869v3.05a7 7 0 0 0 3.186-1.32l-2.159-2.158z\"/><path d=\"m13.6 3.8-2.158 2.158a4 4 0 0 1 .428 1.028h3.05A7 7 0 0 0 13.6 3.8z\"/></g></svg>
+"
+saturation = 2.0
+color_map = {
+Color(1, 0.37254903, 0.37254903, 1): Color(1, 0.47, 0.42, 1),
+Color(0.37254903, 1, 0.5921569, 1): Color(0.45, 0.95, 0.5, 1),
+Color(1, 0.8666667, 0.39607844, 1): Color(0.83, 0.78, 0.62, 1)
+}
+
+[sub_resource type="DPITexture" id="DPITexture_rqglq"]
+_source = "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"16\" height=\"16\"><g fill=\"#e0e0e0\"><path fill-opacity=\".2\" d=\"M9 1.078v3.055a4 4 0 0 1 1.027.426L12.186 2.4A7 7 0 0 0 9 1.078zM7 1.08A7 7 0 0 0 3.814 2.4l2.159 2.159A4 4 0 0 1 7 4.13V1.079zM2.4 3.814A7 7 0 0 0 1.078 7h3.055a4 4 0 0 1 .426-1.027L2.4 3.814zm11.2 0-2.159 2.159A4 4 0 0 1 11.869 7h3.05a7 7 0 0 0-1.32-3.186zM1.08 9a7 7 0 0 0 1.32 3.185l2.158-2.158A4 4 0 0 1 4.13 9H1.08zm4.892 2.441L3.814 13.6a7 7 0 0 0 3.185 1.322v-3.055a4 4 0 0 1-1.027-.426zm4.055 0a4 4 0 0 1-1.028.428v3.05a7 7 0 0 0 3.186-1.32l-2.158-2.158z\"/><path d=\"M11.867 9a4 4 0 0 1-.426 1.027l2.158 2.159A7 7 0 0 0 14.922 9h-3.055z\"/></g></svg>
+"
+saturation = 2.0
+color_map = {
+Color(1, 0.37254903, 0.37254903, 1): Color(1, 0.47, 0.42, 1),
+Color(0.37254903, 1, 0.5921569, 1): Color(0.45, 0.95, 0.5, 1),
+Color(1, 0.8666667, 0.39607844, 1): Color(0.83, 0.78, 0.62, 1)
+}
+
+[sub_resource type="DPITexture" id="DPITexture_ltb1l"]
+_source = "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"16\" height=\"16\"><g fill=\"#e0e0e0\"><path fill-opacity=\".2\" d=\"M9 1.078v3.055a4 4 0 0 1 1.027.426L12.186 2.4A7 7 0 0 0 9 1.078zM7 1.08A7 7 0 0 0 3.814 2.4l2.159 2.159A4 4 0 0 1 7 4.13V1.079zM2.4 3.814A7 7 0 0 0 1.078 7h3.055a4 4 0 0 1 .426-1.027L2.4 3.814zm11.2 0-2.159 2.159A4 4 0 0 1 11.869 7h3.05a7 7 0 0 0-1.32-3.186zM1.08 9a7 7 0 0 0 1.32 3.185l2.158-2.158A4 4 0 0 1 4.13 9H1.08zm10.786 0a4 4 0 0 1-.425 1.027l2.158 2.158A7 7 0 0 0 14.921 9h-3.055zm-5.894 2.441L3.814 13.6a7 7 0 0 0 3.185 1.322v-3.055a4 4 0 0 1-1.027-.426z\"/><path d=\"M10.027 11.4A4 4 0 0 1 9 11.828v3.05a7 7 0 0 0 3.185-1.32z\"/></g></svg>
+"
+saturation = 2.0
+color_map = {
+Color(1, 0.37254903, 0.37254903, 1): Color(1, 0.47, 0.42, 1),
+Color(0.37254903, 1, 0.5921569, 1): Color(0.45, 0.95, 0.5, 1),
+Color(1, 0.8666667, 0.39607844, 1): Color(0.83, 0.78, 0.62, 1)
+}
+
+[sub_resource type="DPITexture" id="DPITexture_2lq8w"]
+_source = "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"16\" height=\"16\"><g fill=\"#e0e0e0\"><path fill-opacity=\".2\" d=\"M9 1.078v3.055a4 4 0 0 1 1.027.426L12.186 2.4A7 7 0 0 0 9 1.078zM7 1.08A7 7 0 0 0 3.814 2.4l2.159 2.159A4 4 0 0 1 7 4.13V1.079zM2.4 3.814A7 7 0 0 0 1.078 7h3.055a4 4 0 0 1 .426-1.027L2.4 3.814zm11.2 0-2.159 2.159A4 4 0 0 1 11.869 7h3.05a7 7 0 0 0-1.32-3.186zM1.08 9a7 7 0 0 0 1.32 3.185l2.158-2.158A4 4 0 0 1 4.13 9H1.08zm10.786 0a4 4 0 0 1-.425 1.027l2.158 2.158A7 7 0 0 0 14.921 9h-3.055zm-1.84 2.441a4 4 0 0 1-1.027.428v3.05a7 7 0 0 0 3.186-1.32l-2.158-2.158z\"/><path d=\"m5.973 11.4-2.159 2.158A7 7 0 0 0 7 14.88v-3.054a4 4 0 0 1-1.027-.426z\"/></g></svg>
+"
+saturation = 2.0
+color_map = {
+Color(1, 0.37254903, 0.37254903, 1): Color(1, 0.47, 0.42, 1),
+Color(0.37254903, 1, 0.5921569, 1): Color(0.45, 0.95, 0.5, 1),
+Color(1, 0.8666667, 0.39607844, 1): Color(0.83, 0.78, 0.62, 1)
+}
+
+[sub_resource type="DPITexture" id="DPITexture_kwwmp"]
+_source = "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"16\" height=\"16\"><g fill=\"#e0e0e0\"><path fill-opacity=\".2\" d=\"M9 1.078v3.055a4 4 0 0 1 1.027.426L12.186 2.4A7 7 0 0 0 9 1.078zM7 1.08A7 7 0 0 0 3.814 2.4l2.159 2.159A4 4 0 0 1 7 4.13V1.079zM2.4 3.814A7 7 0 0 0 1.078 7h3.055a4 4 0 0 1 .426-1.027L2.4 3.814zm11.2 0-2.159 2.159A4 4 0 0 1 11.869 7h3.05a7 7 0 0 0-1.32-3.186zM11.867 9a4 4 0 0 1-.426 1.027l2.158 2.158A7 7 0 0 0 14.922 9h-3.055zm-5.895 2.441L3.814 13.6A7 7 0 0 0 7 14.922v-3.055a4 4 0 0 1-1.028-.426zm4.055 0A4 4 0 0 1 9 11.869v3.05a7 7 0 0 0 3.185-1.32l-2.158-2.158z\"/><path d=\"M1.08 9a7 7 0 0 0 1.32 3.186l2.159-2.159A4 4 0 0 1 4.131 9H1.08z\"/></g></svg>
+"
+saturation = 2.0
+color_map = {
+Color(1, 0.37254903, 0.37254903, 1): Color(1, 0.47, 0.42, 1),
+Color(0.37254903, 1, 0.5921569, 1): Color(0.45, 0.95, 0.5, 1),
+Color(1, 0.8666667, 0.39607844, 1): Color(0.83, 0.78, 0.62, 1)
+}
+
+[sub_resource type="DPITexture" id="DPITexture_t1rin"]
+_source = "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"16\" height=\"16\"><g fill=\"#e0e0e0\"><path fill-opacity=\".2\" d=\"M9 1.078v3.055a4 4 0 0 1 1.027.426L12.186 2.4A7 7 0 0 0 9 1.078zM7 1.08A7 7 0 0 0 3.814 2.4l2.159 2.159A4 4 0 0 1 7 4.13V1.079zm6.6 2.734-2.159 2.159A4 4 0 0 1 11.869 7h3.05a7 7 0 0 0-1.32-3.186zM1.08 9a7 7 0 0 0 1.32 3.185l2.158-2.158A4 4 0 0 1 4.13 9H1.08zm10.787 0a4 4 0 0 1-.426 1.027l2.158 2.158A7 7 0 0 0 14.921 9h-3.054zm-5.895 2.441L3.814 13.6a7 7 0 0 0 3.185 1.322v-3.055a4 4 0 0 1-1.027-.426zm4.055 0A4 4 0 0 1 9 11.869v3.05a7 7 0 0 0 3.185-1.32l-2.158-2.158z\"/><path d=\"M2.4 3.8a7 7 0 0 0-1.322 3.186h3.055a4 4 0 0 1 .426-1.028L2.4 3.8z\"/></g></svg>
+"
+saturation = 2.0
+color_map = {
+Color(1, 0.37254903, 0.37254903, 1): Color(1, 0.47, 0.42, 1),
+Color(0.37254903, 1, 0.5921569, 1): Color(0.45, 0.95, 0.5, 1),
+Color(1, 0.8666667, 0.39607844, 1): Color(0.83, 0.78, 0.62, 1)
+}
+
+[sub_resource type="DPITexture" id="DPITexture_pi1kv"]
+_source = "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"16\" height=\"16\"><g fill=\"#e0e0e0\"><path fill-opacity=\".2\" d=\"M9 1.078v3.055a4 4 0 0 1 1.027.426L12.186 2.4A7 7 0 0 0 9 1.078zM2.4 3.814A7 7 0 0 0 1.078 7h3.055a4 4 0 0 1 .426-1.027L2.4 3.814zm11.2 0-2.159 2.159A4 4 0 0 1 11.869 7h3.05a7 7 0 0 0-1.32-3.186zM1.08 9a7 7 0 0 0 1.32 3.185l2.158-2.158A4 4 0 0 1 4.13 9H1.08zm10.786 0a4 4 0 0 1-.425 1.027l2.158 2.158A7 7 0 0 0 14.921 9h-3.055zm-5.894 2.441L3.814 13.6a7 7 0 0 0 3.185 1.322v-3.055a4 4 0 0 1-1.027-.426zm4.055 0a4 4 0 0 1-1.028.428v3.05a7 7 0 0 0 3.186-1.32l-2.158-2.158z\"/><path d=\"M7 1a7 7 0 0 0-3.186 1.32l2.159 2.159A4 4 0 0 1 7 4.05z\"/></g></svg>
+"
+saturation = 2.0
+color_map = {
+Color(1, 0.37254903, 0.37254903, 1): Color(1, 0.47, 0.42, 1),
+Color(0.37254903, 1, 0.5921569, 1): Color(0.45, 0.95, 0.5, 1),
+Color(1, 0.8666667, 0.39607844, 1): Color(0.83, 0.78, 0.62, 1)
+}
+
+[sub_resource type="AnimatedTexture" id="AnimatedTexture_eor1x"]
+frames = 8
+speed_scale = 2.5
+frame_0/texture = SubResource("DPITexture_8v04w")
+frame_0/duration = 0.2
+frame_1/texture = SubResource("DPITexture_arwmg")
+frame_1/duration = 0.2
+frame_2/texture = SubResource("DPITexture_rqglq")
+frame_2/duration = 0.2
+frame_3/texture = SubResource("DPITexture_ltb1l")
+frame_3/duration = 0.2
+frame_4/texture = SubResource("DPITexture_2lq8w")
+frame_4/duration = 0.2
+frame_5/texture = SubResource("DPITexture_kwwmp")
+frame_5/duration = 0.2
+frame_6/texture = SubResource("DPITexture_t1rin")
+frame_6/duration = 0.2
+frame_7/texture = SubResource("DPITexture_pi1kv")
+frame_7/duration = 0.2
+
+[node name="MainPanel" type="VSplitContainer" unique_id=1044515559]
+use_parent_material = true
+clip_contents = true
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_right = -924.0
+grow_horizontal = 2
+grow_vertical = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+split_offsets = PackedInt32Array(200)
+split_offset = 200
+script = ExtResource("1")
+
+[node name="contextMenu" parent="." unique_id=73764904 instance=ExtResource("2_o6s0p")]
+visible = false
+item_0/icon = SubResource("DPITexture_miuuy")
+item_1/icon = SubResource("DPITexture_ern2r")
+item_2/text = "Run Tests Until Fail"
+item_2/icon = SubResource("DPITexture_miuuy")
+item_4/icon = SubResource("DPITexture_qdci2")
+item_5/icon = SubResource("DPITexture_hed0i")
+
+[node name="Panel" type="PanelContainer" parent="." unique_id=641912870]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="Tree" type="Tree" parent="Panel" unique_id=741772884]
+use_parent_material = true
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_constants/icon_max_width = 16
+columns = 2
+allow_reselect = true
+allow_rmb_select = true
+hide_root = true
+select_mode = 1
+
+[node name="discover_hint" type="HBoxContainer" parent="Panel" unique_id=555683311]
+unique_name_in_owner = true
+visible = false
+use_parent_material = true
+layout_mode = 2
+alignment = 1
+
+[node name="spinner" type="Button" parent="Panel/discover_hint" unique_id=200472082]
+unique_name_in_owner = true
+clip_contents = true
+custom_minimum_size = Vector2(64, 64)
+layout_mode = 2
+size_flags_stretch_ratio = 1.94
+disabled = true
+button_mask = 0
+text = "Discover Tests"
+icon = SubResource("AnimatedTexture_eor1x")
+flat = true
+alignment = 2
+
+[node name="report" type="PanelContainer" parent="." unique_id=503703488]
+clip_contents = true
+layout_mode = 2
+size_flags_horizontal = 11
+size_flags_vertical = 11
+
+[node name="report_template" type="RichTextLabel" parent="report" unique_id=817912164]
+auto_translate_mode = 2
+use_parent_material = true
+clip_contents = false
+layout_mode = 2
+size_flags_horizontal = 3
+localize_numeral_system = false
+focus_mode = 2
+bbcode_enabled = true
+fit_content = true
+selection_enabled = true
+
+[node name="ScrollContainer" type="ScrollContainer" parent="report" unique_id=1479075289]
+use_parent_material = true
+custom_minimum_size = Vector2(0, 80)
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 11
+
+[node name="list" type="VBoxContainer" parent="report/ScrollContainer" unique_id=1104634565]
+clip_contents = true
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[connection signal="item_activated" from="Panel/Tree" to="." method="_on_Tree_item_activated"]
+[connection signal="item_mouse_selected" from="Panel/Tree" to="." method="_on_tree_item_mouse_selected"]
+[connection signal="item_selected" from="Panel/Tree" to="." method="_on_Tree_item_selected"]

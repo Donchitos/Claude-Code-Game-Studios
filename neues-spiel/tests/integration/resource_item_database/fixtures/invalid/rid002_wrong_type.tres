@@ -1,0 +1,9 @@
+[gd_resource type="Resource" script_class="TimeTickConfig" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/time_tick_system/time_tick_config.gd" id="1_wrongtype"]
+
+[resource]
+script = ExtResource("1_wrongtype")
+ticks_per_second = 4.0
+max_ticks_per_frame = 10
+max_raw_delta = 0.1

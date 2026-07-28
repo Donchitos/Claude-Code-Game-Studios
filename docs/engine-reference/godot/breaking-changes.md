@@ -1,8 +1,33 @@
 # Godot — Breaking Changes
 
-Last verified: 2026-02-12
+Last verified: 2026-07-09
 
 Changes between Godot versions, focused on post-LLM-cutoff changes (4.4+).
+
+## 4.6 → 4.7 (Jun 2026 — POST-CUTOFF, HIGH RISK)
+
+| Subsystem | Change | Details |
+|-----------|--------|---------|
+| Input | Mouse/keyboard device IDs changed | Was `0`; now `InputEvent.DEVICE_ID_MOUSE` / `InputEvent.DEVICE_ID_KEYBOARD` constants. Code hardcoding device ID `0` breaks. |
+| UI | `RichTextLabel.add_image()` / `update_image()` | Width/height params changed `int` → `float`; `width_in_percent`/`height_in_percent` renamed to `width_unit`/`height_unit`, type changed to `RichTextLabel.ImageUnit` |
+| UI | `RichTextLabel.ImageUpdateMask.UPDATE_WIDTH_IN_PERCENT` | Renamed to `UPDATE_WIDTH_UNIT` |
+| UI | `Control.accessibility_live` | Type changed from `DisplayServer.AccessibilityLiveMode` to `AccessibilityServer.AccessibilityLiveMode` |
+| Rendering | `LinearToSRGB` visual shader | No longer clamps to `[0.0, 1.0]` in Mobile/Forward+ renderers |
+| Rendering | `CanvasItem` line drawing | No longer includes antialiasing feather by default |
+| Rendering | `ImageTexture.get_format()` / `PortableCompressedTexture2D.get_format()` | Moved to base class `Texture2D` |
+| Particles | `CPUParticles2D/3D`, `GPUParticles2D/3D` `.request_particles_process()` | Added optional `process_time_residual` param |
+| Physics | Jolt `SoftBody3D` | Default mass changed `0` → `1` kg; `linear_stiffness` application modified |
+| Physics | Jolt `WorldBoundaryShape3D` | Plane distance sign convention reversed |
+| Physics | Jolt `Area3D` | Now reports overlaps with `SoftBody3D` |
+| Physics | `AudioStreamPlayer` | Default `area_mask` changed `1` → `0` |
+| Animation | `Animation.length` | Type metadata changed `float` → `double` |
+| Animation | `LookAtModifier3D.relative` | Default changed `true` → `false` |
+| Audio | `AudioEffectSpectrumAnalyzer.tap_back_pos` | Property removed |
+| Core | `Object.is_class()` | Parameter type changed `String` → `StringName` |
+| GDScript | Packed array element assignment | No longer invokes the entire array property setter |
+| GDScript | Inherited method overrides | Now require explicit `return` statements for typed return values |
+| Platform | Android OBB support | Removed — migrate to Play Asset Delivery or PCK split |
+| XR | `OpenXRExtensionWrapper._on_register_metadata()` | Added required `interaction_profile_metadata` param (incompatible override) |
 
 ## 4.5 → 4.6 (Jan 2026 — POST-CUTOFF, HIGH RISK)
 

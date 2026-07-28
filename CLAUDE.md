@@ -5,11 +5,16 @@ Each agent owns a specific domain, enforcing separation of concerns and quality.
 
 ## Technology Stack
 
-- **Engine**: [CHOOSE: Godot 4 / Unity / Unreal Engine 5]
-- **Language**: [CHOOSE: GDScript / C# / C++ / Blueprint]
+- **Engine**: Godot 4.7-stable
+- **Language**: GDScript (static typing enforced)
 - **Version Control**: Git with trunk-based development
-- **Build System**: [SPECIFY after choosing engine]
-- **Asset Pipeline**: [SPECIFY after choosing engine]
+- **Build System**: Godot headless export; GUT for headless test runs
+- **Asset Pipeline**: Voxel — MagicaVoxel `.vox` / Blender → Godot (GridMap/MultiMesh)
+- **Game**: Voxel colony-builder + squad tactics (see `design/gdd/game-concept.md`)
+
+> Use the **Godot** engine-specialist agents (`godot-specialist`,
+> `godot-gdscript-specialist`, `godot-shader-specialist`, …) — not the Unity/
+> Unreal sets. Engine reference: `docs/engine-reference/godot/`.
 
 > **Note**: Engine-specialist agents exist for Godot, Unity, and Unreal with
 > dedicated sub-specialists. Use the set matching your engine.

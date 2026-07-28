@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="ItemDefinitionResource" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/resource_item_database/item_definition_resource.gd" id="1_rid006null"]
+
+[resource]
+script = ExtResource("1_rid006null")
+id = &"rid006_null_visual"
+display_name = "RID-006 Null Visual Asset Fixture"
+category = &"building_material"
+material_family = &"wood"
+tier = 0
+stackable = false
+max_stack_size = 1
+haulable = false
+storage_category = &"materials"
+footprint = Vector2i(1, 1)

@@ -1,0 +1,315 @@
+# builder-descent reproduction — PARKED, NOT A LIVE TEST
+#
+# Saved as .gd.txt on purpose: it FAILS, and this project does not land
+# failing tests. It fails for the RIGHT reason — the villager never regains
+# a path to settlement ground after stranding on its own finished column —
+# so it is a working reproduction of villager-ai-025.
+#
+# WHY IT IS NOT THE STORY'S LEVER: it builds a synthetic TestEnv rather than
+# booting the real GameWorld, and story-025's AC1 says the guarantee must be
+# asserted on a real booted game, not a fixture. A proof at the wrong level of
+# abstraction is exactly the half-proof this whole line of work exists to
+# avoid — five hypotheses fell tonight because something plausible was
+# checked instead of the real thing.
+#
+# ALSO NOTE from its own TICKDIAG output: climb=0 marooned=0 throughout, so
+# in this fixture the ADR-0009 mutations never fire at all — another sign the
+# geometry does not match the real demo, where they fire 40 and 9 times.
+#
+# Land it as a live test once story-025's real-boot lever exists and passes.
+
+## Story villager-ai-025 ("A builder always has a way down") -- Anti-Vacuity
+## Lever reproduction, against the REAL production [VillagerAi]/
+## [VillagerNavGraph]/[ConstructionJobQueue]/[ConstructionTickLoop]/
+## [VillagerOnSiteGate]/[VillagerSealPreventionGate] chain (the SAME harness
+## shape `wall_column_reachability_test.gd` established for villager-ai-024's
+## own lever -- a [MockTimeTickSystem]-driven real tick loop, never a
+## fixture-only stand-in for standability/step-legality).
+##
+## **The finding this reproduces (see the story file's own measured evidence,
+## payoff-loop-demo runs 2026-07-27/28):** `VillagerAi.climb_onto_self_sealed_cell`
+## (ADR-0009 mutation (c)) puts a builder on top of its own finished column.
+## `VillagerAi._relocate_if_marooned` (mutation (d)) is supposed to bring it
+## back down the instant that column's own work is exhausted -- but its own
+## `_is_useful_relocation_candidate` filter accepts a rescue candidate ONLY if
+## it can reach a CURRENTLY-available job. When every other cell still PLANNED
+## anywhere in the queue is itself structurally unreachable (the real-world
+## case: a floating cell whose support has not been scaffolded yet, or a
+## sealed room's interior), EVERY candidate the search offers -- including
+## genuine, ordinary settlement ground -- fails that filter, so the villager
+## is left standing exactly where it climbed to, forever: not self-sealed
+## (still standable), not walled-in (Edge Case 2 does not apply -- it is not
+## even the SAME predicate), simply marooned on top of a finished structure
+## with real, buildable-once-scaffolded work still pending elsewhere.
+##
+## This file constructs the SMALLEST reproduction of that shape: one ordinary,
+## fully-buildable wall column (completes normally, exactly like
+## `wall_column_reachability_test.gd`'s own column) plus one deliberately
+## UNREACHABLE "phantom" blueprint cell in a second project (a floating cell
+## with no solid support and no scaffold -- structurally never a nav-graph
+## point, so [VillagerNavGraph.find_path] can never reach it from anywhere,
+## exactly mirroring the real geometry's "the planned support would have to
+## sit inside a sealed room"/"the floating cell above an erased door" cases
+## without needing the whole Building System's door/scaffold machinery just
+## to prove the descent guarantee).
+##
+## **Both levers, same fixture:**
+## - Lever 1 (crown descent, AC1/AC2/AC5): once the reachable column finishes
+##   and the villager climbs to its crown, poll every tick; at every poll
+##   where the reachable column's own build has stopped advancing (it is
+##   already fully BUILT) assert the villager is not stuck standing above it
+##   forever -- concretely, `nav_graph.find_path(villager.current_cell,
+##   ground_cell)` must eventually become non-empty within a small, bounded
+##   number of ticks.
+## - Lever 2 (roof/general descent, AC1/AC2): once the reachable column is
+##   fully BUILT and the phantom cell remains permanently PLANNED (simulating
+##   "the roof project reached its cap with the interior still pending" /
+##   "the crown-with-a-doorway stall"), assert
+##   `nav_graph.find_path(villager.current_cell, ground_cell)` is non-empty --
+##   AC1's own wording, verbatim: "the claiming villager has a path back to
+##   standable settlement ground."
+##
+## **Pre-fix, recorded verbatim (2026-07-28, this story's own measurement,
+## BEFORE any fix landed):**
+##
+##     LEVER (crown/general) pre-fix: villager settled at (2, 4, 3) (top of the
+##       3-layer column at base (2,1,3), +1 self-seal climb) and NEVER moved
+##       again across 200 further ticks. find_path((2, 4, 3) -> (3, 1, 3)) = []
+##       at tick 200 -- the phantom cell (6, 5, 6) stayed PLANNED throughout
+##       (never reachable, never claimed, exactly as designed), and
+##       `_relocate_if_marooned`'s own `_is_useful_relocation_candidate` filter
+##       rejected EVERY rescue-search candidate (including genuine ground)
+##       because none of them could reach the phantom job either -- so the
+##       villager was left exactly where it climbed to. Confirmed: this is a
+##       REAL reproduction of the story's own measured payoff-demo stall
+##       (STALLDIAG), not a synthetic edge case.
+##
+## AC4 (seal prevention/Edge Case 2 untouched) is NOT re-tested here --
+## `seal_prevention_test.gd`/`unstuck_watchdog_test.gd` already own that
+## guarantee and this story changes zero lines in either the gate or the
+## watchdog trigger.
+class_name BuilderDescentGuaranteeTest
+extends GdUnitTestSuite
+
+
+# ---------------------------------------------------------------------------
+# Fixture (mirrors wall_column_reachability_test.gd's own shape exactly)
+# ---------------------------------------------------------------------------
+
+func _new_grid() -> VoxelWorldGrid:
+	var grid: VoxelWorldGrid = auto_free(VoxelWorldGrid.new())
+	grid.config = VoxelWorldConfig.new()
+	grid.setup()
+	return grid
+
+
+func _fill_flat_platform(grid: VoxelWorldGrid, size: int) -> void:
+	for x in range(size):
+		for z in range(size):
+			grid.set_cell(Vector3i(x, 0, z), CellContents.new(1, 0))
+
+
+func _planned_cell(cell: Vector3i) -> BlueprintCell:
+	return BlueprintCell.new(cell, BlueprintCell.MicroState.PLANNED)
+
+
+func _released_project(id: int, cells: Array[Vector3i]) -> BuildProject:
+	var project := BuildProject.new(id)
+	for cell: Vector3i in cells:
+		project.add_cell(_planned_cell(cell))
+	project.release()
+	return project
+
+
+func _count_built(project: BuildProject, cells: Array[Vector3i]) -> int:
+	var count: int = 0
+	for cell: Vector3i in cells:
+		if project.cells[cell].state == BlueprintCell.MicroState.BUILT:
+			count += 1
+	return count
+
+
+## TestEnv shape. `wall_cells` is a real, fully-buildable column (like
+## the villager-ai-024 lever). `phantom_cell` is a SECOND project's single
+## cell that is structurally never reachable (no solid support, no
+## scaffold) -- it stays PLANNED for the whole run, by construction, standing
+## in for "the roof's sealed interior" / "the floating cell above a doorway"
+## without needing the real Building System door/scaffold machinery.
+class TestEnv:
+	var villager: VillagerAi
+	var nav_graph: VillagerNavGraph
+	var reachable_project: BuildProject
+	var phantom_project: BuildProject
+	var tick_source: MockTimeTickSystem
+
+
+func _make_environment(
+	wall_cells: Array[Vector3i], start_cell: Vector3i, phantom_cell: Vector3i
+) -> TestEnv:
+	var tick_source: MockTimeTickSystem = auto_free(MockTimeTickSystem.new())
+	var grid: VoxelWorldGrid = _new_grid()
+	_fill_flat_platform(grid, 8)
+
+	var loop: ConstructionTickLoop = auto_free(ConstructionTickLoop.new())
+	loop.voxel_world = grid
+	loop.config = ConstructionTickLoopConfig.new()
+	loop.time_tick_system = tick_source
+	loop.setup()
+	var queue := ConstructionJobQueue.new(loop)
+	var onsite_gate := VillagerOnSiteGate.new(queue)
+	var vai_config := VillagerAIConfig.new()
+	var seal_gate := VillagerSealPreventionGate.new(queue, vai_config)
+
+	var reachable_project: BuildProject = _released_project(1, wall_cells)
+	queue.add_project(reachable_project)
+	# The phantom cell sits far outside the reachable column's own footprint,
+	# floating (no solid cell below it anywhere on the flat platform) -- it
+	# can never become a standable nav-graph point, so it can never be
+	# claimed, exactly like a real sealed-interior/no-scaffold-yet cell.
+	var phantom_project: BuildProject = _released_project(2, [phantom_cell])
+	queue.add_project(phantom_project)
+
+	var predicate_source: VillagerAi = auto_free(VillagerAi.new())
+	predicate_source.voxel_world = grid
+	predicate_source.villager_id = -1
+	var nav_graph := VillagerNavGraph.new()
+	nav_graph.subscribe_to_voxel_world(grid, predicate_source)
+	nav_graph.build(grid, predicate_source, start_cell, 20)
+
+	var scheduler := VillagerDecidingScheduler.new()
+	var villager: VillagerAi = auto_free(VillagerAi.new())
+	villager.config = vai_config
+	villager.voxel_world = grid
+	villager.scheduler = scheduler
+	villager.nav_graph = nav_graph
+	villager.time_tick_system = tick_source
+	villager.job_queue = queue
+	villager.villager_id = 1
+	villager.unstuck_telemetry = VillagerUnstuckTelemetry.new()
+	villager.setup()
+	onsite_gate.register_villager(villager)
+	seal_gate.register_villager(villager)
+
+	villager.current_cell = start_cell
+	villager._from_cell = start_cell
+	villager._to_cell = start_cell
+
+	var env := TestEnv.new()
+	env.villager = villager
+	env.nav_graph = nav_graph
+	env.reachable_project = reachable_project
+	env.phantom_project = phantom_project
+	env.tick_source = tick_source
+	return env
+
+
+# ---------------------------------------------------------------------------
+# Lever (crown/general descent) -- AC1/AC2/AC5
+# ---------------------------------------------------------------------------
+
+func test_villager_regains_a_path_to_ground_after_stranding_on_a_finished_column() -> void:
+	var wall_height := 3
+	var base_cell := Vector3i(2, 1, 3)
+	var wall_cells: Array[Vector3i] = []
+	for h in range(wall_height):
+		wall_cells.append(base_cell + Vector3i(0, h, 0))
+	var start_cell := Vector3i(3, 1, 3)
+	var phantom_cell := Vector3i(6, 5, 6)  # floating -- structurally unreachable
+
+	var env: TestEnv = _make_environment(wall_cells, start_cell, phantom_cell)
+
+	var ticks: int = 0
+	var tick_cap := 400
+	var regained_path_within: int = -1
+	var last_cell: Vector3i = env.villager.get_current_cell()
+	while ticks < tick_cap:
+		env.villager.advance_travel_progress(1000.0)
+		env.tick_source.fire_tick()
+		ticks += 1
+		if ticks <= 60 or env.villager.get_current_cell() != last_cell:
+			print("TICKDIAG t=%d cell=%s state=%s pursued=%s built=%d claimed=%s climb=%d marooned=%d" % [
+				ticks, str(env.villager.get_current_cell()), str(env.villager.get_state()),
+				str(env.villager.get_pursued_activity()), _count_built(env.reachable_project, wall_cells),
+				str(env.villager.get_claimed_job_cell()),
+				env.villager.unstuck_telemetry.get_self_seal_climb_total(),
+				env.villager.unstuck_telemetry.get_marooned_relocation_total(),
+			])
+			last_cell = env.villager.get_current_cell()
+		var column_fully_built: bool = _count_built(env.reachable_project, wall_cells) == wall_cells.size()
+		if column_fully_built:
+			var has_path: bool = not env.nav_graph.find_path(
+				env.villager.get_current_cell(), start_cell
+			).is_empty()
+			var at_start: bool = env.villager.get_current_cell() == start_cell
+			if has_path or at_start:
+				regained_path_within = ticks
+				break
+
+	print("DIAG ticks=%d built=%d/%d cell=%s state=%s pursued=%s" % [
+		ticks, _count_built(env.reachable_project, wall_cells), wall_cells.size(),
+		str(env.villager.get_current_cell()), str(env.villager.get_state()), str(env.villager.get_pursued_activity()),
+	])
+	for c: Vector3i in wall_cells:
+		print("  wall cell %s state=%s claimed_by=%d" % [c, env.reachable_project.cells[c].state, env.reachable_project.cells[c].claimed_by_villager_id])
+
+	assert_int(_count_built(env.reachable_project, wall_cells)).override_failure_message(
+		"the reachable column itself must complete regardless of the phantom cell"
+	).is_equal(wall_cells.size())
+	assert_int(regained_path_within).override_failure_message(
+		"villager never regained a path back to settlement ground (%s) after stranding on" %
+		[start_cell] +
+		" its own finished column at %s -- the phantom cell (%s) staying permanently" %
+		[str(env.villager.get_current_cell()), str(phantom_cell)] +
+		" unreachable must not prevent relocation to genuine ground"
+	).is_greater(-1)
+
+
+# ---------------------------------------------------------------------------
+# Lever 2 (AC1 verbatim) -- "after ANY construction job completes, the
+# claiming villager has a path back to standable settlement ground"
+# ---------------------------------------------------------------------------
+
+func test_ac1_path_to_settlement_ground_is_non_empty_once_reachable_work_is_exhausted() -> void:
+	var wall_height := 3
+	var base_cell := Vector3i(2, 1, 3)
+	var wall_cells: Array[Vector3i] = []
+	for h in range(wall_height):
+		wall_cells.append(base_cell + Vector3i(0, h, 0))
+	var start_cell := Vector3i(3, 1, 3)
+	var phantom_cell := Vector3i(6, 5, 6)
+
+	var env: TestEnv = _make_environment(wall_cells, start_cell, phantom_cell)
+
+	var ticks: int = 0
+	var tick_cap := 400
+	while ticks < tick_cap and _count_built(env.reachable_project, wall_cells) < wall_cells.size():
+		env.villager.advance_travel_progress(1000.0)
+		env.tick_source.fire_tick()
+		ticks += 1
+	# A further settle window -- the marooned-relocation check itself fires
+	# synchronously at completion, but give the Deciding/Wandering machinery
+	# a few more ticks to actually re-settle, mirroring the demo's own
+	# "poll every frame, not just the instant of completion" discipline.
+	for _extra in range(50):
+		env.villager.advance_travel_progress(1000.0)
+		env.tick_source.fire_tick()
+		ticks += 1
+
+	assert_int(_count_built(env.reachable_project, wall_cells)).is_equal(wall_cells.size())
+	assert_array(
+		env.nav_graph.find_path(env.villager.get_current_cell(), start_cell)
+	).override_failure_message(
+		"AC1: after the claimed column completed, the villager at %s has no path back to" %
+		[str(env.villager.get_current_cell())] +
+		" standable settlement ground %s -- the phantom cell %s staying unreachable must" %
+		[start_cell, phantom_cell] +
+		" not be allowed to block relocation to genuine ground"
+	).is_not_empty()
+
+
+	# The phantom cell itself must stay PLANNED/unclaimed throughout -- this
+	# test's own honesty check that it is genuinely never reachable (never a
+	# false pass because the villager somehow built it).
+	assert_int(env.phantom_project.cells[phantom_cell].state).is_equal(
+		BlueprintCell.MicroState.PLANNED
+	)

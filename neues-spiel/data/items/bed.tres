@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="ItemDefinitionResource" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://src/resource_item_database/item_definition_resource.gd" id="1_bed"]
+[ext_resource type="BoxMesh" path="res://assets/models/items/bed_mesh.tres" id="2_bed"]
+
+[resource]
+script = ExtResource("1_bed")
+id = &"bed"
+display_name = "Bed"
+category = &"furniture_fixture"
+material_family = &"none"
+tier = 0
+visual_asset = ExtResource("2_bed")
+stackable = false
+max_stack_size = 1
+haulable = false
+storage_category = &"furniture"
+footprint = Vector2i(1, 2)

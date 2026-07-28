@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="WorldLightingConfig" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/presentation/world_lighting_config.gd" id="1_worldlighting"]
+
+[resource]
+script = ExtResource("1_worldlighting")
+light_energy = 0.95
+light_color = Color(1, 0.93, 0.8, 1)
+light_rotation_degrees = Vector3(-42, -35, 0)
+ambient_light_color = Color(0.98, 0.94, 0.86, 1)
+ambient_light_energy = 0.28
+background_color = Color(0.85, 0.68, 0.5, 1)
+shadow_enabled = true
+shadow_max_distance = 400.0
+shadow_blur = 1.0

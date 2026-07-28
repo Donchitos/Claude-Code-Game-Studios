@@ -1,0 +1,13 @@
+; Storage/Residency Spike (ADR-0015) — throwaway prototype (see README.md)
+config_version=5
+
+[application]
+
+config/name="StorageResidencySpike"
+run/main_scene="res://SpikeTest.tscn"
+config/features=PackedStringArray("4.7", "Forward Plus")
+
+[display]
+
+window/size/viewport_width=800
+window/size/viewport_height=600

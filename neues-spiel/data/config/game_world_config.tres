@@ -1,0 +1,7 @@
+[gd_resource type="Resource" script_class="GameWorldConfig" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/scene_world_management/game_world_config.gd" id="1_gameworldcfg"]
+
+[resource]
+script = ExtResource("1_gameworldcfg")
+genesis_wall_clock_ceiling_ms = 1000.0

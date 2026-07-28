@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://tools/payoff_loop_demo.gd" id="1_payoff"]
+
+[node name="PayoffLoopDemo" type="Node3D"]
+script = ExtResource("1_payoff")

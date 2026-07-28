@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://tools/vox017_completion_driven_drain_measurement.gd" id="1"]
+
+[node name="Vox017CompletionDrivenDrainMeasurement" type="Node"]
+script = ExtResource("1")

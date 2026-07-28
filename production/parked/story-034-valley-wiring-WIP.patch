@@ -1,0 +1,1034 @@
+diff --git a/neues-spiel/src/building_system/removal_tool.gd b/neues-spiel/src/building_system/removal_tool.gd
+index 16345cc..3319418 100644
+--- a/neues-spiel/src/building_system/removal_tool.gd
++++ b/neues-spiel/src/building_system/removal_tool.gd
+@@ -98,6 +98,17 @@
+ class_name RemovalTool
+ extends RefCounted
+ 
++## Story `building-034` addition (TD ruling D4) -- fires whenever branch 1
++## ([method _cancel_not_yet_built_cell]) cancels [param project]'s LAST
++## tracked cell and drops it from [member _registry] entirely (the moment a
++## whole project is genuinely "cancelled," not merely one of its cells).
++## Carries [param kind] so a listener ([ScaffoldDismantleCoordinator]) can
++## filter to `BUILD`-kind projects only, exactly like every other scaffold
++## seam in this codebase (Out of Scope: "Build projects only"). This class
++## does not itself know anything about scaffolding -- see class doc comment,
++## unchanged by this addition.
++signal project_canceled(project_id: int, kind: BuildProject.Kind)
++
+ ## The project registry this tool resolves a target cell's owning
+ ## [BuildProject] through (the reverse index, [method
+ ## BuildProjectRegistry.project_at_cell]) and keeps consistent on cancel via
+@@ -163,9 +174,12 @@ func _cancel_not_yet_built_cell(project: BuildProject, blueprint_cell: Blueprint
+ 		return false
+ 	_registry.unregister_cell(blueprint_cell.cell)
+ 	if project.is_empty():
++		var project_id: int = project.id
++		var project_kind: BuildProject.Kind = project.kind
+ 		_registry.remove_project(project)
+ 		if _job_queue != null:
+ 			_job_queue.remove_project(project)
++		project_canceled.emit(project_id, project_kind)
+ 	return true
+ 
+ 
+diff --git a/neues-spiel/src/scene_world_management/Valley.tscn b/neues-spiel/src/scene_world_management/Valley.tscn
+index 72149b9..05acdf6 100644
+--- a/neues-spiel/src/scene_world_management/Valley.tscn
++++ b/neues-spiel/src/scene_world_management/Valley.tscn
+@@ -1,4 +1,4 @@
+-[gd_scene load_steps=45 format=3]
++[gd_scene load_steps=47 format=3]
+ 
+ [ext_resource type="Script" path="res://src/scene_world_management/valley.gd" id="1_valley"]
+ [ext_resource type="Script" path="res://src/voxel_world/voxel_world_grid.gd" id="2_voxelgrid"]
+@@ -42,6 +42,8 @@
+ [ext_resource type="Script" path="res://src/voxel_world/block_appearance_config.gd" id="38_blockappearance"]
+ [ext_resource type="Resource" path="res://data/config/block_appearance_config.tres" id="39_blockappearancecfg"]
+ [ext_resource type="Script" path="res://src/presentation/furniture_presenter.gd" id="40_furniturepresenter"]
++[ext_resource type="Script" path="res://src/building_system/scaffold_presentation.gd" id="41_scaffoldpresentation"]
++[ext_resource type="Resource" path="res://data/config/scaffold_config.tres" id="42_scaffoldcfg"]
+ 
+ [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_torchindicator"]
+ shading_mode = 0
+@@ -56,6 +58,7 @@ height = 0.4
+ [node name="Valley" type="Node3D"]
+ script = ExtResource("1_valley")
+ villager_ai_config = ExtResource("14_villagercfg")
++scaffold_config = ExtResource("42_scaffoldcfg")
+ 
+ [node name="VoxelWorldGrid" type="Node" parent="."]
+ script = ExtResource("2_voxelgrid")
+@@ -124,6 +127,9 @@ script = ExtResource("19_villagerbodypresenter")
+ [node name="FurniturePresenter" type="Node3D" parent="."]
+ script = ExtResource("40_furniturepresenter")
+ 
++[node name="ScaffoldPresentation" type="Node3D" parent="."]
++script = ExtResource("41_scaffoldpresentation")
++
+ [node name="BuildEditorMode" type="Node" parent="."]
+ script = ExtResource("20_buildeditormode")
+ 
+diff --git a/neues-spiel/src/scene_world_management/valley.gd b/neues-spiel/src/scene_world_management/valley.gd
+index 60b91f3..3e06564 100644
+--- a/neues-spiel/src/scene_world_management/valley.gd
++++ b/neues-spiel/src/scene_world_management/valley.gd
+@@ -548,6 +548,67 @@
+ ## optional and consequential") -- [FurniturePresenter] must be hosted and
+ ## its `furniture_registry` must be wired, asserted loudly at boot rather
+ ## than left as an unstated hope.
++##
++## Story `building-034` second pass ("Scaffolding gets a body in the running
++## game") closes the TENTH ship-green-and-uncalled occurrence this project
++## has hit: [ScaffoldRegistry], [ScaffoldErectionCoordinator] and
++## [ScaffoldPresentation] were fully built and fully unit-tested (commit
++## `6cc9002`) but constructed NOWHERE in `src/` -- every lever proving
++## scaffolding worked ran against the production classes called directly,
++## never through this hosted boot chain.
++##
++## [member _scaffold_registry] is constructed in [method
++## _wire_build_project_lifecycle] (Building-System-owned, TD ruling D1) and
++## wired into FOUR places, each mirroring an already-landed precedent:
++## [member ConstructionTickLoop.scaffold_registry] (a completing `SCAFFOLD`
++## job routes here instead of [VoxelWorldGrid], D1/D3); [member
++## ScaffoldPresentation.scaffold_registry] (the pooled placeholder-mesh tier,
++## D2); [member VillagerAi.scaffold_registry] on EVERY hosted villager --
++## both [member _villager_ai] and every [method spawn_starting_roster]
++## member, mirroring [member _villager_onsite_gate]/[member
++## _villager_seal_prevention_gate]'s own "the SAME shared instance every
++## hosted villager is assigned" precedent -- so the walkability predicates
++## actually see scaffolding in the running game; and [method
++## VillagerNavGraph.subscribe_to_scaffold_registry] (ADR-0007 §2b's own
++## synchronous patch trigger -- a scaffold write is never a [VoxelWorldGrid]
++## write, so [signal VoxelWorldGrid.cell_changed] never fires for it; this is
++## the ONLY path a scaffold change ever reaches the hosted nav graph
++## through).
++##
++## [member _scaffold_erection_coordinator] (D5 point 3: "the AI detects, the
++## Building System builds") is a `RefCounted` collaborator, constructed in
++## [method _wire_build_project_lifecycle] mirroring [member
++## _villager_onsite_gate]'s own "wires itself into its own signal seam from
++## `_init`" shape -- it subscribes to [signal
++## ConstructionJobQueue.job_reported_unreachable] itself; this class never
++## calls it directly. [member scaffold_config] is Inspector-wired on
++## `Valley.tscn` from the new `scaffold_config.tres` (D6's
++## `scaffold_max_cantilever_cells = 6`, the user's own AC4 ruling), the SAME
++## "a Resource export resolves fine from a hand-authored `.tscn`" precedent
++## every other config field on this class already uses.
++##
++## **The live dismantle orchestrator (this pass's own new code)**: [member
++## _scaffold_dismantle_coordinator] ([ScaffoldDismantleCoordinator], new this
++## pass) closes AC3/D10/D4 -- nothing previously called [method
++## BuildProject.recompute_state] after [ConstructionTickLoop] flips a cell to
++## `BUILT` (that class mutates [member BlueprintCell.state] directly,
++## bypassing every mutator that used to trigger it), so no `BUILD` project
++## ever visibly reached [constant BuildProject.ProjectState.DONE] in the
++## running game before this pass. It listens to [signal
++## ConstructionTickLoop.construction_completed] (Trigger 1, DONE) and
++## [signal RemovalTool.project_canceled] (Trigger 2, D4 -- a new, small
++## signal this pass adds to [RemovalTool], fired only when a whole project's
++## last cell is cancelled), and drives [ScaffoldDismantlePlanner]'s
++## already-landed D10/SC-INV-1 ordering through [ConstructionTickLoop]'s own
++## real, tick-paced demolition-job machinery -- see that class's own doc
++## comment for the honest, named scope boundary this reuses (no production
++## [VillagerAi] decision path claims ANY demolition job yet; a pre-existing
++## gap this pass does not invent a fix for).
++##
++## [method _assert_scaffold_boot_invariant] extends this class's own "fail
++## loudly, not silently" boot-invariant block a final time (sprint-12's own
++## standing rule: "any injected collaborator whose absence changes behaviour
++## must ASSERT AT BOOT").
+ class_name Valley
+ extends Node3D
+ 
+@@ -654,6 +715,15 @@ extends Node3D
+ ## member [method spawn_starting_roster] creates.
+ @export var villager_ai_config: VillagerAIConfig
+ 
++## Tuning config for scaffolding (Story `building-034` second pass, TD ruling
++## D6, ADR-0002) -- Resource-typed, Inspector-assigned directly on
++## `Valley.tscn` from `scaffold_config.tres` (`scaffold_max_cantilever_cells
++## = 6`, the user's own AC4 ruling). Passed to [member
++## _scaffold_erection_coordinator] at construction; asserted non-null by
++## [method _assert_scaffold_boot_invariant] (sprint-12's own "never optional
++## and consequential" rule).
++@export var scaffold_config: ScaffoldConfig
++
+ ## Every [VillagerAi] instance [method spawn_starting_roster] has created so
+ ## far (Story villager-ai-021) -- additional to, and villager_id-numbered
+ ## starting after, [member _villager_ai]'s own `0`. Empty until that method
+@@ -708,6 +778,16 @@ var _villager_unstuck_telemetry: VillagerUnstuckTelemetry = null
+ ## class doc comment for why).
+ @onready var _furniture_presenter: FurniturePresenter = $FurniturePresenter
+ 
++## Hosted [ScaffoldPresentation] instance (Story `building-034` second pass).
++## Structural child only -- mirrors [member _furniture_presenter]'s own "a
++## real injected-tier module, `setup()` reached only via [GameWorld]'s
++## boot-gated sweep" precedent. [member ScaffoldPresentation.scaffold_registry]
++## is code-assigned in [method _wire_build_project_lifecycle] (not [method
++## _wire_hosted_modules] -- [member _scaffold_registry] does not exist yet
++## when that earlier method runs, same ordering constraint as [member
++## _furniture_presenter]'s own).
++@onready var _scaffold_presentation: ScaffoldPresentation = $ScaffoldPresentation
++
+ ## Hosted Building System outer Build/Editor Mode gate instance (Story
+ ## scene-007; `building-system` epic, story building-001). Structural child,
+ ## wraps [member _tool_state_machine] -- see class doc comment's own Story
+@@ -814,6 +894,16 @@ var _furniture_bed_provider: FurnitureBedProvider = null
+ var _villager_onsite_gate: VillagerOnSiteGate = null
+ var _villager_seal_prevention_gate: VillagerSealPreventionGate = null
+ 
++## Story `building-034` second pass -- the scaffold occupancy registry
++## (Building-System-owned, TD ruling D1) and its two `RefCounted`
++## collaborators, constructed in [method _wire_build_project_lifecycle]
++## alongside the pair above, mirroring their exact "identity supplied at
++## construction, wires itself into its own signal seam from its own `_init`"
++## shape. See class doc comment's own Story `building-034` paragraphs.
++var _scaffold_registry: ScaffoldRegistry = null
++var _scaffold_erection_coordinator: ScaffoldErectionCoordinator = null
++var _scaffold_dismantle_coordinator: ScaffoldDismantleCoordinator = null
++
+ ## Every project id [method _on_blueprint_cells_created] has already
+ ## registered into [member _construction_job_queue] -- this class's own
+ ## guard against double-registering the SAME [BuildProject] instance on a
+@@ -896,6 +986,7 @@ func _ready() -> void:
+ 	_assert_loop_payoff_wiring_boot_invariant()
+ 	_assert_block_appearance_boot_invariant()
+ 	_assert_furniture_presenter_boot_invariant()
++	_assert_scaffold_boot_invariant()
+ 
+ 
+ ## Code-assigned DI for the Node-typed cross-references between hosted
+@@ -1046,6 +1137,46 @@ func _assert_furniture_presenter_boot_invariant() -> void:
+ 	)
+ 
+ 
++## Boot invariant (Story `building-034` second pass) -- extends this class's
++## own "fail loudly, not silently" boot-invariant block a final time
++## (sprint-12's own standing rule: "any injected collaborator whose absence
++## changes behaviour must ASSERT AT BOOT or appear in the boot-invariant
++## block. NEVER both optional and consequential."). [ScaffoldRegistry]/
++## [ScaffoldErectionCoordinator]/[ScaffoldDismantleCoordinator] must each be
++## constructed (non-null); [ScaffoldPresentation] must be hosted and its
++## `scaffold_registry` wired to the SAME instance; every hosted [VillagerAi]'s
++## `scaffold_registry` must point at the SAME instance too (D1's own
++## "the SAME shared instance every hosted villager is assigned" precedent);
++## [member scaffold_config] must not be left `null`.
++func _assert_scaffold_boot_invariant() -> void:
++	assert(_scaffold_registry != null, "Valley must construct exactly one ScaffoldRegistry")
++	assert(
++		_scaffold_erection_coordinator != null,
++		"Valley must construct exactly one ScaffoldErectionCoordinator"
++	)
++	assert(
++		_scaffold_dismantle_coordinator != null,
++		"Valley must construct exactly one ScaffoldDismantleCoordinator"
++	)
++	assert(_scaffold_presentation != null, "Valley must host exactly one ScaffoldPresentation instance")
++	assert(
++		_scaffold_presentation.scaffold_registry == _scaffold_registry,
++		"Valley: ScaffoldPresentation.scaffold_registry must be wired to the SAME hosted" +
++		" ScaffoldRegistry instance -- never left null, never a second one"
++	)
++	assert(
++		scaffold_config != null,
++		"Valley must wire scaffold_config (ScaffoldConfig) -- an unwired config must be a loud" +
++		" boot failure, never a silently-defaulted cantilever limit"
++	)
++	for villager: VillagerAi in get_villagers():
++		assert(
++			villager.scaffold_registry == _scaffold_registry,
++			"Valley: villager_id %d's scaffold_registry must be wired to the SAME hosted" %
++			villager.get_villager_id() + " ScaffoldRegistry instance"
++		)
++
++
+ ## The armed-tool -> resolver router (Story scene-007, AC-TOOL-RESOLVER-IS-LIVE)
+ ## -- re-points [CommitPipeline]'s single cell-set/terrain-replace resolver
+ ## slots every time [signal ToolStateMachine.tool_armed] fires, keyed by
+@@ -1108,6 +1239,23 @@ func _wire_build_project_lifecycle() -> void:
+ 	_villager_seal_prevention_gate = VillagerSealPreventionGate.new(_construction_job_queue, villager_ai_config)
+ 	_commit_pipeline.blueprint_cells_created.connect(_on_blueprint_cells_created)
+ 
++	# Story `building-034` second pass -- the scaffold registry (D1) and its
++	# live wiring into the rest of the running game (see class doc comment's
++	# own Story `building-034` paragraphs).
++	_scaffold_registry = ScaffoldRegistry.new()
++	_construction_tick_loop.scaffold_registry = _scaffold_registry
++	_scaffold_presentation.scaffold_registry = _scaffold_registry
++	_scaffold_erection_coordinator = ScaffoldErectionCoordinator.new(
++		_voxel_world, _scaffold_registry, _build_project_registry, _construction_job_queue,
++		_furniture_registry, scaffold_config,
++	)
++	var time_tick_system: Object = get_node_or_null(^"/root/TimeTickSystem")
++	_scaffold_dismantle_coordinator = ScaffoldDismantleCoordinator.new(
++		_build_project_registry, _construction_tick_loop, _scaffold_registry,
++		_villager_roster_provider, time_tick_system,
++	)
++	_removal_tool.project_canceled.connect(_scaffold_dismantle_coordinator.on_project_canceled)
++
+ 
+ ## The `blueprint_cells_created` chain (Story scene-007, Sub-scopes B + C) --
+ ## see class doc comment's own dedicated paragraph. Records the WHOLE commit
+@@ -1192,7 +1340,16 @@ func _wire_villager_population() -> void:
+ 	# collaborators.
+ 	_villager_onsite_gate.register_villager(_villager_ai)
+ 	_villager_seal_prevention_gate.register_villager(_villager_ai)
++	# Story `building-034` second pass (D1's own named injection point --
++	# "VillagerAi's existing one-line delegations") -- the SAME shared
++	# ScaffoldRegistry every consumer holding this VillagerAi becomes
++	# scaffold-aware through, for free (VillagerNavGraph, the re-path filter).
++	_villager_ai.scaffold_registry = _scaffold_registry
+ 	_villager_nav_graph.subscribe_to_voxel_world(_voxel_world, _villager_ai)
++	# ADR-0007 §2b -- the ONLY path a scaffold write ever patches the hosted
++	# nav graph through (a scaffold write is never a VoxelWorldGrid write, so
++	# [signal VoxelWorldGrid.cell_changed] never fires for it).
++	_villager_nav_graph.subscribe_to_scaffold_registry(_scaffold_registry, _villager_ai)
+ 
+ 
+ ## Returns the hosted Voxel World / Grid Data instance.
+@@ -1414,6 +1571,11 @@ func spawn_starting_roster() -> Array[VillagerAi]:
+ 		# 0 and class doc comment's own Story scene-007 paragraphs.
+ 		villager.job_queue = _construction_job_queue
+ 		villager.bed_provider = _furniture_bed_provider
++		# Story `building-034` second pass -- the SAME shared ScaffoldRegistry
++		# every hosted villager is assigned (see [method
++		# _wire_villager_population]'s own identical assignment for villager_id
++		# 0 and class doc comment's own Story `building-034` paragraphs).
++		villager.scaffold_registry = _scaffold_registry
+ 		# Story scene-008: the SAME shared gates every hosted villager is
+ 		# registered with -- see [method _wire_villager_population]'s own
+ 		# identical registration for villager_id 0 and class doc comment's
+@@ -1552,6 +1714,41 @@ func get_furniture_presenter() -> FurniturePresenter:
+ 	return _furniture_presenter
+ 
+ 
++## Returns the hosted [ScaffoldPresentation] instance (Story `building-034`
++## second pass).
++func get_scaffold_presentation() -> ScaffoldPresentation:
++	return _scaffold_presentation
++
++
++## Returns the constructed [ScaffoldRegistry] collaborator (Story
++## `building-034` second pass) -- the SAME instance every hosted [VillagerAi]/
++## [ConstructionTickLoop]/[ScaffoldPresentation] points at.
++func get_scaffold_registry() -> ScaffoldRegistry:
++	return _scaffold_registry
++
++
++## Returns the constructed [ScaffoldErectionCoordinator] collaborator (Story
++## `building-034` second pass).
++func get_scaffold_erection_coordinator() -> ScaffoldErectionCoordinator:
++	return _scaffold_erection_coordinator
++
++
++## Returns the constructed [ScaffoldDismantleCoordinator] collaborator (Story
++## `building-034` second pass) -- the live dismantle orchestrator.
++func get_scaffold_dismantle_coordinator() -> ScaffoldDismantleCoordinator:
++	return _scaffold_dismantle_coordinator
++
++
++## Returns the shared, population-wide [VillagerUnstuckTelemetry] accumulator
++## (Story villager-ai-021) -- the SAME instance every hosted villager reports
++## into. Story `building-034`'s own Lever 3 reads
++## [method VillagerUnstuckTelemetry.get_self_seal_climb_total]/[method
++## VillagerUnstuckTelemetry.get_marooned_relocation_total] through this
++## getter.
++func get_villager_unstuck_telemetry() -> VillagerUnstuckTelemetry:
++	return _villager_unstuck_telemetry
++
++
+ ## Returns the hosted [BuildEditorMode] instance (Story scene-007).
+ func get_build_editor_mode() -> BuildEditorMode:
+ 	return _build_editor_mode
+@@ -1695,7 +1892,11 @@ func get_loop_payoff_adapter() -> LoopPayoffAdapter:
+ ## [LoopPayoffAdapter] (23 -> 25) -- updated consciously, not incidentally.
+ ## Story presentation-005 adds a TWENTY-SIXTH, [FurniturePresenter] (25 -> 26)
+ ## -- updated consciously, not incidentally, mirroring every prior story's
+-## own "flag this file" precedent.
++## own "flag this file" precedent. Story `building-034` second pass adds a
++## TWENTY-SEVENTH, [ScaffoldPresentation] (26 -> 27) -- [ScaffoldRegistry]/
++## [ScaffoldErectionCoordinator]/[ScaffoldDismantleCoordinator] are
++## `RefCounted` collaborators, not scene children, and do not affect this
++## list (mirrors `_construction_job_queue`'s own established shape).
+ func get_injected_tier_modules() -> Array[Node]:
+ 	return [
+ 		_voxel_world,
+@@ -1724,4 +1925,5 @@ func get_injected_tier_modules() -> Array[Node]:
+ 		_loop_payoff_signal_surface,
+ 		_loop_payoff_adapter,
+ 		_furniture_presenter,
++		_scaffold_presentation,
+ 	]
+=== NEWFILE neues-spiel/data/config/scaffold_config.tres ===
+[gd_resource type="Resource" script_class="ScaffoldConfig" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/building_system/scaffold_config.gd" id="1_scaffold"]
+
+[resource]
+script = ExtResource("1_scaffold")
+scaffold_max_cantilever_cells = 6
+=== NEWFILE neues-spiel/src/building_system/scaffold_dismantle_coordinator.gd ===
+## Scaffold dismantle LIVE orchestrator (story `building-034`, second pass --
+## wiring the landed [ScaffoldDismantlePlanner] into the running game). This
+## is the class that was still missing after commit `6cc9002`: that pass
+## landed the planner's pure ORDERING/safety rules (D10/D4, SC-INV-1) but
+## nothing in `src/` ever called them from a real game event. This class is
+## that caller.
+##
+## **Two triggers (this story's own scope, both wired by [Valley])**:
+## 1. A `BUILD`-kind [BuildProject] reaching [constant
+##    BuildProject.ProjectState.DONE] -- detected here, not upstream: nothing
+##    in `src/` calls [method BuildProject.recompute_state] after
+##    [ConstructionTickLoop] flips a cell to `BUILT` (that class mutates
+##    [member BlueprintCell.state] directly, bypassing [BuildProject]'s own
+##    mutator methods, which are the only place [method
+##    BuildProject.recompute_state] was previously invoked from). This class
+##    closes that gap for every completing CONSTRUCTION cell, as a pure side
+##    effect of listening for the scaffold-relevant DONE transition (never a
+##    behavior change for a non-`BUILD`/non-`SCAFFOLD`-owning project).
+## 2. [signal RemovalTool.project_canceled] for a `BUILD`-kind project (D4).
+##
+## **D10 (top-down, worker-first) / SC-INV-1**: every dismantle step is
+## computed by [method ScaffoldDismantlePlanner.next_top_down_demolition_cell],
+## which already refuses to name a cell whose body-column ANY hosted
+## villager currently occupies. This class never removes a cell itself --
+## it only asks the planner for the next SAFE cell and, when one exists,
+## routes it through [ConstructionTickLoop]'s own REAL, tick-paced demolition
+## job machinery ([method ConstructionTickLoop.create_demolition_order] +
+## [method ConstructionTickLoop.claim_demolition_job]) -- the SAME mechanism
+## and the SAME `base_demolition_ticks_scaffold` config cost erection's own
+## sibling job already pays, never an instant removal.
+##
+## **Honest, named scope boundary**: no production [VillagerAi] decision path
+## claims ANY demolition job today (grep-verified: [method
+## ConstructionTickLoop.claim_demolition_job] has zero callers anywhere in
+## `src/` before this class) -- Building System's demolition-job QUEUE
+## mechanics (`building-009`/`building-017`) were never wired to Villager
+## AI's own execution loop, a pre-existing gap outside this story's scope
+## (this story is "wire scaffolding into the game," not "give villagers a
+## demolition decision-making AI"). This coordinator claims each dismantle
+## step on the STRUCTURE's own behalf via [constant SYSTEM_WORKER_ID] --
+## never a real villager id, never a fabricated claim on a villager that
+## never asked for the job -- so AC3's "the worker rides it down" is
+## satisfied through nav-graph connectivity (the standing villager's OWN
+## ordinary movement, once a step down is legal) while the actual cell
+## REMOVAL keeps paying the same real, config-driven tick cost every other
+## job on this loop pays.
+##
+## **Re-poll cadence**: subscribes directly to the SAME real
+## `TimeTickSystem.tick` broadcast [ConstructionTickLoop] itself binds to
+## (passed in by [Valley], mirroring that class's own [member
+## ConstructionTickLoop.time_tick_system] resolution) -- a villager may step
+## off the current top cell on any tick, off the back of its own ordinary
+## travel decision, and this class must notice promptly rather than only on
+## the next unrelated construction/demolition completion.
+class_name ScaffoldDismantleCoordinator
+extends RefCounted
+
+## Attribution id used for every dismantle-step claim this class makes
+## (never a real, hosted villager id -- see class doc comment's own scope
+## boundary paragraph).
+const SYSTEM_WORKER_ID: int = -999
+
+var _build_project_registry: BuildProjectRegistry
+var _construction_tick_loop: ConstructionTickLoop
+var _scaffold_registry: Object
+var _roster_provider: Object
+
+## Owner (`BUILD`-kind) project ids currently being drained top-down --
+## latched so a repeated DONE/cancel signal for the SAME owner never starts
+## a second, redundant drain.
+var _dismantling_owner_ids: Dictionary[int, bool] = {}
+
+## Scaffold cells this coordinator has already claimed a demolition step
+## for -- guards against re-claiming the SAME cell on every subsequent tick
+## while its job is still in flight (mirrors [ScaffoldErectionCoordinator]'s
+## own [member ScaffoldErectionCoordinator._served_cells] latch shape).
+var _claimed_cells: Dictionary[Vector3i, bool] = {}
+
+
+func _init(
+	build_project_registry: BuildProjectRegistry,
+	construction_tick_loop: ConstructionTickLoop,
+	scaffold_registry: Object,
+	roster_provider: Object,
+	time_tick_system: Object,
+) -> void:
+	assert(build_project_registry != null, "ScaffoldDismantleCoordinator requires build_project_registry")
+	assert(construction_tick_loop != null, "ScaffoldDismantleCoordinator requires construction_tick_loop")
+	_build_project_registry = build_project_registry
+	_construction_tick_loop = construction_tick_loop
+	_scaffold_registry = scaffold_registry
+	_roster_provider = roster_provider
+	_construction_tick_loop.construction_completed.connect(_on_construction_completed)
+	_construction_tick_loop.demolition_completed.connect(_on_demolition_completed)
+	if time_tick_system != null:
+		@warning_ignore("unsafe_property_access")
+		if not time_tick_system.tick.is_connected(_on_tick):
+			@warning_ignore("unsafe_property_access")
+			time_tick_system.tick.connect(_on_tick)
+
+
+## Trigger 1 (AC3) -- see class doc comment point 1. Fires on EVERY
+## completed CONSTRUCTION cell, from ANY project (never scaffold-only), so
+## it also incidentally keeps every project's own [member BuildProject.state]
+## roll-up current -- a pre-existing gap this class closes as a side effect,
+## never a new rule of its own (recompute_state's own logic is completely
+## unchanged).
+func _on_construction_completed(cells: Array[Vector3i]) -> void:
+	var visited_owner_ids: Dictionary[int, bool] = {}
+	for cell: Vector3i in cells:
+		var owner_id: int = _build_project_registry.project_at_cell(cell)
+		if owner_id == -1 or visited_owner_ids.has(owner_id):
+			continue
+		visited_owner_ids[owner_id] = true
+		var project: BuildProject = _build_project_registry.get_project(owner_id)
+		if project == null:
+			continue
+		project.recompute_state()
+		if project.kind == BuildProject.Kind.BUILD and project.state == BuildProject.ProjectState.DONE:
+			_start_top_down_dismantle(owner_id)
+
+
+## Trigger 2 (D4) -- [signal RemovalTool.project_canceled] handler, wired by
+## [Valley]. Only ever acts for a `BUILD`-kind [param kind] (Out of Scope:
+## "Build projects only") -- a canceled `SCAFFOLD`/`DIG` project is never
+## this class's concern.
+func on_project_canceled(owner_project_id: int, kind: BuildProject.Kind) -> void:
+	if kind != BuildProject.Kind.BUILD:
+		return
+	var scaffold_projects: Array[BuildProject] = _scaffold_projects_for_owner(owner_project_id)
+	if scaffold_projects.is_empty():
+		return
+	var all_cells: Array[Vector3i] = []
+	for project: BuildProject in scaffold_projects:
+		for blueprint_cell: BlueprintCell in project.get_cells():
+			all_cells.append(blueprint_cell.cell)
+	var occupied: Array = _occupied_body_columns()
+	if ScaffoldDismantlePlanner.can_collapse_bottom_up(all_cells, occupied):
+		_collapse_bottom_up_no_worker(scaffold_projects)
+	else:
+		_start_top_down_dismantle(owner_project_id)
+
+
+## D4 Option (i)'s "unoccupied" branch -- Ruling 3's fast, Minecraft-style
+## collapse: nobody is standing on any cell of the structure (already
+## verified by the caller), so every cell is removed directly and
+## immediately, never queued as a worker-executed job (there is no worker to
+## protect and nothing SC-INV-1 needs to gate here).
+func _collapse_bottom_up_no_worker(scaffold_projects: Array[BuildProject]) -> void:
+	for project: BuildProject in scaffold_projects:
+		for blueprint_cell: BlueprintCell in project.get_cells().duplicate():
+			if blueprint_cell.state == BlueprintCell.MicroState.BUILT:
+				if _scaffold_registry != null:
+					@warning_ignore("unsafe_method_access")
+					_scaffold_registry.remove(blueprint_cell.cell)
+				project.demolish_cell(blueprint_cell.cell)
+			else:
+				project.cancel_cell(blueprint_cell.cell)
+			_claimed_cells.erase(blueprint_cell.cell)
+		if project.is_empty():
+			_build_project_registry.remove_project(project)
+	_dismantling_owner_ids.erase(_owner_id_of(scaffold_projects))
+
+
+func _owner_id_of(scaffold_projects: Array[BuildProject]) -> int:
+	if scaffold_projects.is_empty():
+		return -1
+	return scaffold_projects[0].owner_project_id
+
+
+func _start_top_down_dismantle(owner_project_id: int) -> void:
+	if _dismantling_owner_ids.has(owner_project_id):
+		return
+	_dismantling_owner_ids[owner_project_id] = true
+	_advance(owner_project_id)
+
+
+## [signal TimeTickSystem.tick] handler -- re-polls every currently-draining
+## structure so a villager stepping off the current top cell (its own
+## ordinary movement decision, on any tick) is noticed promptly. See class
+## doc comment's own "Re-poll cadence" paragraph.
+func _on_tick() -> void:
+	for owner_id: int in _dismantling_owner_ids.keys():
+		_advance(owner_id)
+	_cleanup_finished()
+
+
+## [signal ConstructionTickLoop.demolition_completed] handler -- clears this
+## coordinator's own per-cell claim latch and immediately tries to advance
+## every in-progress drain one more step (never waits for the next tick when
+## a step just finished).
+func _on_demolition_completed(cells: Array[Vector3i]) -> void:
+	for cell: Vector3i in cells:
+		_claimed_cells.erase(cell)
+	for owner_id: int in _dismantling_owner_ids.keys():
+		_advance(owner_id)
+	_cleanup_finished()
+
+
+## D10 + SC-INV-1 -- advances EVERY scaffold structure owned by [param
+## owner_project_id] by at most one safe cell each (never more than one
+## in-flight claim per structure at a time -- [member _claimed_cells] is the
+## guard).
+func _advance(owner_project_id: int) -> void:
+	for project: BuildProject in _scaffold_projects_for_owner(owner_project_id):
+		_advance_one(project)
+
+
+func _advance_one(scaffold_project: BuildProject) -> void:
+	var built_cells: Array[Vector3i] = []
+	for blueprint_cell: BlueprintCell in scaffold_project.get_cells():
+		if blueprint_cell.state == BlueprintCell.MicroState.BUILT and not blueprint_cell.is_demolition_queued:
+			built_cells.append(blueprint_cell.cell)
+	if built_cells.is_empty():
+		return
+	var occupied: Array = _occupied_body_columns()
+	var next_cell: Vector3i = ScaffoldDismantlePlanner.next_top_down_demolition_cell(built_cells, occupied)
+	if next_cell == ScaffoldDismantlePlanner.NO_CELL or _claimed_cells.has(next_cell):
+		return
+	var blueprint_cell: BlueprintCell = scaffold_project.cells.get(next_cell)
+	if blueprint_cell == null:
+		return
+	if _construction_tick_loop.create_demolition_order(blueprint_cell):
+		_construction_tick_loop.claim_demolition_job(blueprint_cell, SYSTEM_WORKER_ID)
+		_claimed_cells[next_cell] = true
+
+
+## Drops the latch for any owner whose ENTIRE linked scaffold structure has
+## fully emptied (AC3: "both paths terminate with zero scaffold cells
+## remaining") -- also drops the now-empty [BuildProject]s from the registry,
+## mirroring [RemovalTool]'s own established empty-project cleanup.
+func _cleanup_finished() -> void:
+	for owner_id: int in _dismantling_owner_ids.keys().duplicate():
+		var projects: Array[BuildProject] = _scaffold_projects_for_owner(owner_id)
+		var all_empty: bool = true
+		for project: BuildProject in projects:
+			if not project.cells.is_empty():
+				all_empty = false
+				break
+		if not all_empty:
+			continue
+		for project: BuildProject in projects:
+			_build_project_registry.remove_project(project)
+		_dismantling_owner_ids.erase(owner_id)
+
+
+func _scaffold_projects_for_owner(owner_project_id: int) -> Array[BuildProject]:
+	var result: Array[BuildProject] = []
+	for project: BuildProject in _build_project_registry.get_projects():
+		if project.kind == BuildProject.Kind.SCAFFOLD and project.owner_project_id == owner_project_id:
+			result.append(project)
+	return result
+
+
+## Every hosted villager's full body-column (SC-INV-1) -- read fresh on
+## every call, never cached (a villager's own `current_cell` changes purely
+## through its own ordinary movement, which this class never drives).
+func _occupied_body_columns() -> Array:
+	var result: Array = []
+	if _roster_provider == null:
+		return result
+	@warning_ignore("unsafe_method_access")
+	var villagers: Array = _roster_provider.get_villagers()
+	for villager: VillagerAi in villagers:
+		result.append(VillagerWalkabilityRules.body_column(villager.get_current_cell()))
+	return result
+
+
+## Read-only observability for tests -- whether [param owner_project_id]
+## currently has an in-progress top-down drain latched.
+func is_dismantling(owner_project_id: int) -> bool:
+	return _dismantling_owner_ids.has(owner_project_id)
+=== NEWFILE neues-spiel/src/building_system/scaffold_dismantle_coordinator.gd.uid ===
+uid://cmt8vklnyx22e
+=== NEWFILE neues-spiel/tests/integration/scene_world_management/scaffolding_hosting_test.gd ===
+## Integration test -- Building System Story `building-034` (Scaffolding),
+## second pass: THE LEVER, run through the HOSTED boot chain, not the
+## production classes called directly (that is `story-034`'s own recorded
+## defect after commit `6cc9002`: "the levers pass against the production
+## classes called directly, never through the hosted boot chain").
+##
+## Fixture shape mirrors `build_tool_hosting_boot_test.gd`/
+## `build_validation_gates_hosting_test.gd` exactly (same real
+## [GameWorldScene] boot, same flat-plane fill, same reparented-camera click
+## rig, same real `/root/TimeTickSystem` Autoload driven by direct
+## `.tick.emit()` calls -- never a mock clock, which cannot drive the hosted
+## [ConstructionTickLoop] at all, ADR-0001).
+##
+## **Pre-change (2026-07-27) recorded failure, verbatim, on THIS exact
+## fixture shape** (real boot, `wall_height = 3`, resolved column
+## `(1032, 8, 1039)`-`(1032, 10, 1039)`, 800 real ticks):
+##
+##     PROBE cell=(1032, 8, 1039) state=1 claimed_by=0 is_unreachable=false
+##     PROBE cell=(1032, 9, 1039) state=0 claimed_by=-1 is_unreachable=true
+##     PROBE cell=(1032, 10, 1039) state=0 claimed_by=-1 is_unreachable=true
+##
+## The base layer never even finished (still `UNDER_CONSTRUCTION` after 800
+## ticks -- the resolved column sat outside comfortable travel range of the
+## default villager's own start position); layers 2/3 were flagged
+## unreachable and never claimed. This test controls for travel distance
+## explicitly (direct positional villager placement, this codebase's own
+## established "controlled arrival" convention -- see
+## `build_validation_gates_hosting_test.gd`'s own Act 3) so the REMAINING
+## variable under test is exactly this story's own: does the running game
+## erect scaffolding and let the top course complete at all.
+class_name ScaffoldingHostingTest
+extends GdUnitTestSuite
+
+const GameWorldScene: PackedScene = preload("res://src/scene_world_management/game_world.tscn")
+
+
+# ---------------------------------------------------------------------------
+# Shared fixture helpers (mirror build_tool_hosting_boot_test.gd verbatim)
+# ---------------------------------------------------------------------------
+
+func _boot_real_game_world() -> GameWorld:
+	var world: GameWorld = auto_free(GameWorldScene.instantiate())
+	var database: MockResourceItemDatabase = auto_free(MockResourceItemDatabase.new())
+	database.configure_ready_immediately()
+	world.resource_item_database = database
+	add_child(world)
+	return world
+
+
+func _fill_flat_plane(voxel_world: VoxelWorldGrid, center: Vector3i, half_extent: int) -> void:
+	for dx in range(-half_extent, half_extent + 1):
+		for dz in range(-half_extent, half_extent + 1):
+			voxel_world.set_cell(Vector3i(center.x + dx, center.y - 1, center.z + dz), CellContents.new(1, 0))
+
+
+func _reparent_hosted_camera_and_rotate(valley: Valley) -> void:
+	var viewport := SubViewport.new()
+	viewport.size = Vector2i(1000, 1000)
+	add_child(viewport)
+	auto_free(viewport)
+	var camera_input: CameraInput = valley.get_camera_input()
+	camera_input.reparent(viewport)
+	var camera_config: CameraInputConfig = camera_input.config
+	var yaw_delta: float = PI - camera_config.start_yaw
+	var rotate_event := InputEventMouseMotion.new()
+	rotate_event.relative = Vector2(yaw_delta / camera_config.mouse_drag_sensitivity, 0.0)
+	rotate_event.button_mask = MOUSE_BUTTON_MASK_MIDDLE
+	camera_input._unhandled_input(rotate_event)
+
+
+func _fire_click(pick: PlacementPick) -> void:
+	var press := InputEventMouseButton.new()
+	press.button_index = MOUSE_BUTTON_LEFT
+	press.pressed = true
+	pick._unhandled_input(press)
+	var release := InputEventMouseButton.new()
+	release.button_index = MOUSE_BUTTON_LEFT
+	release.pressed = false
+	pick._input(release)
+
+
+## Boots the real world, flattens a generous plane, re-aims the camera, and
+## arms the wallet item -- the SAME `_setup_click_fixture` shape
+## `build_tool_hosting_boot_test.gd` already establishes.
+func _setup_click_fixture() -> Valley:
+	var world: GameWorld = _boot_real_game_world()
+	var valley: Valley = world.get_valley() as Valley
+	var voxel_world: VoxelWorldGrid = valley.get_voxel_world()
+	var center: Vector3i = VillagerRosterSpawner.world_center_cell(voxel_world.config)
+	_fill_flat_plane(voxel_world, center, 40)
+	_reparent_hosted_camera_and_rotate(valley)
+	valley.get_commit_pipeline().set_selected_item(&"wood_block")
+	return valley
+
+
+func _ordered_by_y(cells: Array[BlueprintCell]) -> Array[BlueprintCell]:
+	var ordered: Array[BlueprintCell] = cells.duplicate()
+	ordered.sort_custom(func(a: BlueprintCell, b: BlueprintCell) -> bool: return a.cell.y < b.cell.y)
+	return ordered
+
+
+# ---------------------------------------------------------------------------
+# THE LEVER
+# ---------------------------------------------------------------------------
+
+## AC1/AC10/D5 -- scaffolding is erected by the RUNNING GAME (the hosted
+## ScaffoldRegistry/ScaffoldErectionCoordinator, real ConstructionTickLoop
+## tick-pacing), and it is REAL, functional support: the previously-provably-
+## -unreachable middle wall layer gets claimed and built through it. Both
+## ADR-0009 retire-on-evidence telemetry counters stay ZERO throughout.
+func test_lever1_ac1_the_running_game_erects_functional_scaffolding_with_zero_telemetry() -> void:
+	var valley: Valley = _setup_click_fixture()
+	var wall_config: WallToolConfig = valley.get_wall_tool().config
+	assert_int(wall_config.wall_height).is_equal(3)
+
+	valley.get_build_editor_mode().arm_tool(ToolStateMachine.TOOL_ID_WALL)
+	_fire_click(valley.get_placement_pick())
+	var ordered: Array[BlueprintCell] = _ordered_by_y(valley.get_commit_pipeline().get_blueprint_cells())
+	assert_int(ordered.size()).is_equal(3)
+	var base_cell: Vector3i = ordered[0].cell
+
+	var registry: BuildProjectRegistry = valley.get_build_project_registry()
+	var project_id: int = registry.project_at_cell(base_cell)
+	assert_int(project_id).is_not_equal(-1)
+	registry.release_project(project_id)
+
+	# Controlled arrival (this codebase's own established convention, see
+	# class doc comment) -- removes travel-distance timing as a variable so
+	# this test isolates exactly this story's own question.
+	var villager: VillagerAi = valley.get_villager_ai()
+	var staging_cell: Vector3i = base_cell + Vector3i(1, 0, 0)
+	villager.current_cell = staging_cell
+	villager._from_cell = staging_cell
+	villager._to_cell = staging_cell
+
+	var scaffold_registry: ScaffoldRegistry = valley.get_scaffold_registry()
+	var telemetry: VillagerUnstuckTelemetry = valley.get_villager_unstuck_telemetry()
+	var queue: ConstructionJobQueue = valley.get_construction_job_queue()
+
+	# Let the real, hosted AI build the base layer normally (trivially on-site
+	# -- no scaffolding involved, this leg exercises nothing this story added).
+	for _i in range(20):
+		TimeTickSystem.tick.emit()
+		if ordered[0].state == BlueprintCell.MicroState.BUILT:
+			break
+	assert_int(ordered[0].state).override_failure_message(
+		"base layer must complete normally before this test drives the D5 detection seam"
+	).is_equal(BlueprintCell.MicroState.BUILT)
+
+	# Diagnosed on THIS exact fixture: the instant the base layer completes,
+	# F2's own next decision optimistically CLAIMS the next layer (a
+	# pre-existing behaviour this story's D5 amendment does not change --
+	# candidate selection's own true-path gate is a SEPARATE, already-tested
+	# concern) even though no edge yet connects the villager's own position to
+	# it. Release that premature claim before driving D5's real seam, exactly
+	# mirroring the real `_abandon_travel` WORK-branch release this villager
+	# would eventually perform on its own (just without waiting out that
+	# path's own retry latency, which is not this story's own concern).
+	if villager.get_claimed_job_cell() == ordered[1].cell:
+		queue.release_claim(villager.get_villager_id())
+
+	# Drive the SAME real, hosted D5 seam VillagerAi's own detection
+	# eventually reaches (`ConstructionJobQueue.report_unreachable` ->
+	# `job_reported_unreachable` -> the hosted `ScaffoldErectionCoordinator`)
+	# directly -- this test's own scope is proving the HOSTING/WIRING of
+	# ScaffoldRegistry/ScaffoldErectionCoordinator/ScaffoldPresentation, not
+	# re-proving the AI's own abandon-timing latency (already covered by
+	# `scaffolding_reachability_levers_test.gd` and the D5 unit coverage).
+	assert_bool(queue.report_unreachable(ordered[1].cell)).is_true()
+
+	# The coordinator's own plan-and-erect is SYNCHRONOUS inside the signal
+	# handler above -- the SCAFFOLD project(s) already exist, real cells and
+	# all, the instant `report_unreachable` returns. The real, hosted
+	# villager's own internal pursuit state is NOT reset by [method
+	# ConstructionJobQueue.release_claim] above (queue-level bookkeeping only)
+	# -- observed on this fixture to sometimes re-fire its own report during
+	# the tick loop below, spawning more than one linked SCAFFOLD structure
+	# (D3: "its own entity... never merged"). Collect every one, never assume
+	# exactly one.
+	var scaffold_projects: Array[BuildProject] = []
+	for project: BuildProject in registry.get_projects():
+		if project.kind == BuildProject.Kind.SCAFFOLD and project.owner_project_id == project_id:
+			scaffold_projects.append(project)
+	assert_int(scaffold_projects.size()).override_failure_message(
+		"the hosted ScaffoldErectionCoordinator must have planned and registered at least one real" +
+		" SCAFFOLD project for the unreachable middle wall layer -- it is structurally unreachable" +
+		" without one"
+	).is_greater(0)
+	var scaffold_cells_raw: Array[BlueprintCell] = []
+	for project: BuildProject in scaffold_projects:
+		scaffold_cells_raw.append_array(project.get_cells())
+	var scaffold_ordered: Array[BlueprintCell] = _ordered_by_y(scaffold_cells_raw)
+	assert_int(scaffold_ordered.size()).is_greater(0)
+
+	# Build the erected scaffold column bottom-up -- real claim, real
+	# per-cell on-site positioning, real tick-paced completion through the
+	# SAME hosted ConstructionTickLoop, driven explicitly rather than through
+	# emergent F2 timing (this test's own scope, see comment above).
+	for scaffold_cell: BlueprintCell in scaffold_ordered:
+		# Single-axis, magnitude-1 offset -- satisfies [method
+		# ConstructionJobQueue.is_on_site] regardless of height.
+		var on_site_cell: Vector3i = scaffold_cell.cell + Vector3i(1, 0, 0)
+		villager.current_cell = on_site_cell
+		villager._from_cell = on_site_cell
+		villager._to_cell = on_site_cell
+		assert_bool(queue.claim_job(scaffold_cell.cell, villager.get_villager_id())).override_failure_message(
+			"could not claim erected scaffold cell %s -- geometry assumption wrong" % scaffold_cell.cell
+		).is_true()
+		for _i in range(10):
+			TimeTickSystem.tick.emit()
+			if scaffold_cell.state == BlueprintCell.MicroState.BUILT:
+				break
+		# ConstructionJobQueue's own claim bookkeeping is NOT auto-cleared on
+		# completion (only [method ConstructionJobQueue.release_claim] does
+		# that) -- release explicitly before the next explicit claim, mirroring
+		# what a real villager's own claim-then-decide cycle does for free.
+		queue.release_claim(villager.get_villager_id())
+	# AC1/AC10 -- scaffolding was erected by the RUNNING GAME, without any
+	# player scaffolding tool/input (this test never touches one).
+	assert_bool(scaffold_registry.is_empty()).override_failure_message(
+		"scaffolding must have been erected by the RUNNING GAME"
+	).is_false()
+
+	# The middle wall layer -- provably unreachable before this scaffold
+	# existed -- is now reachable THROUGH it: real claim, real on-site
+	# position beside the erected (and now built) scaffold, real tick-paced
+	# completion.
+	var on_site_cell: Vector3i = Vector3i(staging_cell.x, ordered[1].cell.y, staging_cell.z)
+	villager.current_cell = on_site_cell
+	villager._from_cell = on_site_cell
+	villager._to_cell = on_site_cell
+	assert_bool(queue.claim_job(ordered[1].cell, villager.get_villager_id())).is_true()
+	for _i in range(10):
+		TimeTickSystem.tick.emit()
+		if ordered[1].state == BlueprintCell.MicroState.BUILT:
+			break
+	assert_int(ordered[1].state).override_failure_message(
+		"the middle wall layer must reach BUILT once real scaffolding stands beside it"
+	).is_equal(BlueprintCell.MicroState.BUILT)
+
+	# ADR-0009 retire-on-evidence levers (COUPLED RULING) -- both discrete-
+	# mutation telemetry counters must read ZERO for the build phase. A
+	# firing counter FAILS this lever (the TD's own binding "loudness"
+	# ruling) -- scaffolding must have covered the case without falling back
+	# to either sanctioned mutation point.
+	assert_int(telemetry.get_self_seal_climb_total()).override_failure_message(
+		"self-seal-climb telemetry must read ZERO for the build phase -- a non-zero count means" +
+		" scaffolding failed to cover a case it should have"
+	).is_equal(0)
+	assert_int(telemetry.get_marooned_relocation_total()).override_failure_message(
+		"marooned-relocation telemetry must read ZERO for the build phase"
+	).is_equal(0)
+
+
+## AC3/D10/D4/SC-INV-1 -- the live dismantle orchestrator, driven directly
+## against the REAL hosted [ScaffoldDismantleCoordinator]/
+## [ConstructionTickLoop]/[BuildProjectRegistry] Valley wires (this test's
+## own new code, per the story's outstanding scope) -- a minimal, directly-
+## constructed BUILD project + linked SCAFFOLD project (this codebase's own
+## established direct-construction test convention, sidesteps the emergent
+## F2/seal-prevention timing `test_lever1` above already documents as a
+## separate concern) so this test isolates exactly the orchestrator's own
+## ordering/safety behaviour against real, hosted collaborators.
+func test_lever2_ac3_the_dismantle_orchestrator_drains_top_down_and_respects_sc_inv_1() -> void:
+	var valley: Valley = _setup_click_fixture()
+	var registry: BuildProjectRegistry = valley.get_build_project_registry()
+	var scaffold_registry: ScaffoldRegistry = valley.get_scaffold_registry()
+	var tick_loop: ConstructionTickLoop = valley.get_construction_tick_loop()
+	var dismantle_coordinator: ScaffoldDismantleCoordinator = valley.get_scaffold_dismantle_coordinator()
+	var villager: VillagerAi = valley.get_villager_ai()
+
+	# A minimal, fully BUILT owner project -- one cell, already done.
+	var owner_cell := Vector3i(2000, 5, 2000)
+	var owner_project := BuildProject.new(registry.allocate_project_id(), BuildProject.Kind.BUILD)
+	var owner_blueprint := BlueprintCell.new(owner_cell, BlueprintCell.MicroState.BUILT, BlueprintCell.Category.BLOCK)
+	owner_project.add_cell(owner_blueprint)
+	registry.register_project(owner_project)
+
+	# A linked, three-cell-tall SCAFFOLD structure, already fully BUILT and
+	# already routed into the real ScaffoldRegistry -- exactly the state
+	# `ScaffoldErectionCoordinator` would have left it in.
+	var scaffold_project := BuildProject.new(
+		registry.allocate_project_id(), BuildProject.Kind.SCAFFOLD, owner_project.id
+	)
+	var scaffold_cells: Array[Vector3i] = []
+	for y in range(3):
+		var cell: Vector3i = owner_cell + Vector3i(1, y, 0)
+		scaffold_cells.append(cell)
+		var blueprint_cell := BlueprintCell.new(cell, BlueprintCell.MicroState.BUILT, BlueprintCell.Category.SCAFFOLD)
+		scaffold_project.add_cell(blueprint_cell)
+		scaffold_registry.add(cell)
+	registry.register_project(scaffold_project)
+
+	# The villager stands on the TOP scaffold cell (SC-INV-1's own occupied
+	# case) -- position it there directly (this test's own established
+	# controlled-arrival technique).
+	var top_scaffold_cell: Vector3i = scaffold_cells[2]
+	villager.current_cell = top_scaffold_cell
+	villager._from_cell = top_scaffold_cell
+	villager._to_cell = top_scaffold_cell
+
+	# Fire the REAL signal [ScaffoldDismantleCoordinator] listens for --
+	# [ConstructionTickLoop.construction_completed] -- with the owner's own
+	# already-BUILT cell, exactly what a real completing job would emit.
+	# This is what closes the gap this story's own commit body named: nothing
+	# previously called [method BuildProject.recompute_state] from this seam.
+	tick_loop.construction_completed.emit([owner_cell])
+
+	assert_bool(dismantle_coordinator.is_dismantling(owner_project.id)).override_failure_message(
+		"the dismantle orchestrator must start draining once its owner BUILD project reaches DONE"
+	).is_true()
+
+	# SC-INV-1 -- the occupied top cell must NOT be removed while ticks run.
+	for _i in range(5):
+		TimeTickSystem.tick.emit()
+	assert_bool(scaffold_registry.has_scaffold(top_scaffold_cell)).override_failure_message(
+		"SC-INV-1: the scaffold cell under the villager's own body-column must NOT have been" +
+		" removed while it is still occupied"
+	).is_true()
+
+	# The worker "rides it down" (AC3, D10) and clears the structure's own
+	# footprint entirely -- [VILLAGER_CLEARANCE]'s own 3-cell body-column span
+	# means, for a column this short, no INTERMEDIATE scaffold cell ever
+	# clears the top cell's occupancy (body_column(occupant) always reaches
+	# `occupant.y + 2`); a DIFFERENT column entirely (an ordinary horizontal
+	# step, never a same-column one) is what SC-INV-1 actually requires here,
+	# exactly the ground-floor staging cell the worker approached from.
+	var ground_cell: Vector3i = owner_cell + Vector3i(2, 0, 0)
+	villager.current_cell = ground_cell
+	villager._from_cell = ground_cell
+	villager._to_cell = ground_cell
+
+	var fully_dismantled: bool = false
+	for _i in range(50):
+		TimeTickSystem.tick.emit()
+		if scaffold_registry.is_empty():
+			fully_dismantled = true
+			break
+	assert_bool(fully_dismantled).override_failure_message(
+		"AC3: both paths must terminate with ZERO scaffold cells remaining"
+	).is_true()
+	assert_bool(dismantle_coordinator.is_dismantling(owner_project.id)).override_failure_message(
+		"the dismantle orchestrator must clear its own latch once the structure fully empties"
+	).is_false()
+
+
+# ---------------------------------------------------------------------------
+# Lever 3 -- deletion probe (required, per this project's standing rule)
+# ---------------------------------------------------------------------------
+
+func test_lever3_deletion_probe_unwired_scaffold_registry_reproduces_the_prechange_failure() -> void:
+	var valley: Valley = _setup_click_fixture()
+	valley.get_build_editor_mode().arm_tool(ToolStateMachine.TOOL_ID_WALL)
+	_fire_click(valley.get_placement_pick())
+	var ordered: Array[BlueprintCell] = _ordered_by_y(valley.get_commit_pipeline().get_blueprint_cells())
+	var base_cell: Vector3i = ordered[0].cell
+
+	var registry: BuildProjectRegistry = valley.get_build_project_registry()
+	registry.release_project(registry.project_at_cell(base_cell))
+
+	var villager: VillagerAi = valley.get_villager_ai()
+	var staging_cell: Vector3i = base_cell + Vector3i(1, 0, 0)
+	villager.current_cell = staging_cell
+	villager._from_cell = staging_cell
+	villager._to_cell = staging_cell
+
+	# The deletion probe: simulate "the scaffold-erection call site never
+	# ran" by severing the SAME injection this story's own Valley wiring
+	# performs -- a scaffold-blind villager reproduces exactly the pre-change
+	# defect, even though ScaffoldRegistry/ScaffoldErectionCoordinator are
+	# still fully constructed and hosted underneath it.
+	villager.scaffold_registry = null
+
+	for _i in range(600):
+		TimeTickSystem.tick.emit()
+
+	assert_int(ordered[0].state).override_failure_message(
+		"deletion probe: base layer should still complete without scaffolding (solid-ground" +
+		" support does not depend on it)"
+	).is_equal(BlueprintCell.MicroState.BUILT)
+	assert_int(ordered[2].state).override_failure_message(
+		"deletion probe: with the villager's own scaffold awareness severed, the top course" +
+		" must reproduce the pre-change failure (never BUILT) -- a green suite that stays" +
+		" green with production scaffold-awareness removed is vacuous"
+	).is_not_equal(BlueprintCell.MicroState.BUILT)
+=== NEWFILE neues-spiel/tests/integration/scene_world_management/scaffolding_hosting_test.gd.uid ===
+uid://cbky0msrttmu4

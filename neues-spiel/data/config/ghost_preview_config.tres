@@ -1,0 +1,9 @@
+[gd_resource type="Resource" script_class="GhostPreviewConfig" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/building_system/ghost_preview_config.gd" id="1_ghostpreview"]
+
+[resource]
+script = ExtResource("1_ghostpreview")
+preview_degradation_threshold = 128
+draft_ghost_alpha = 0.5
+queued_ghost_alpha = 0.7

@@ -1,0 +1,97 @@
+[gd_scene load_steps=4 format=3 uid="uid://0xyeci1tqebj"]
+
+[ext_resource type="Script" path="res://addons/gdUnit4/src/update/GdUnitUpdateNotify.gd" id="1_112wo"]
+[ext_resource type="Script" path="res://addons/gdUnit4/src/update/GdUnitUpdateClient.gd" id="2_18asx"]
+[ext_resource type="PackedScene" path="res://addons/gdUnit4/src/update/GdUnitUpdate.tscn" id="3_x87h6"]
+
+[node name="Control" type="MarginContainer"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+script = ExtResource("1_112wo")
+
+[node name="GdUnitUpdateClient" type="Node" parent="."]
+script = ExtResource("2_18asx")
+
+[node name="Panel" type="Panel" parent="."]
+layout_mode = 2
+
+[node name="GridContainer" type="VBoxContainer" parent="Panel"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+alignment = 1
+
+[node name="PanelContainer" type="MarginContainer" parent="Panel/GridContainer"]
+layout_mode = 2
+theme_override_constants/margin_left = 4
+theme_override_constants/margin_top = 4
+theme_override_constants/margin_right = 4
+theme_override_constants/margin_bottom = 4
+
+[node name="header" type="Label" parent="Panel/GridContainer/PanelContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 9
+
+[node name="PanelContainer2" type="PanelContainer" parent="Panel/GridContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="ScrollContainer" type="ScrollContainer" parent="Panel/GridContainer/PanelContainer2"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="MarginContainer" type="MarginContainer" parent="Panel/GridContainer/PanelContainer2/ScrollContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="content" type="RichTextLabel" parent="Panel/GridContainer/PanelContainer2/ScrollContainer/MarginContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+bbcode_enabled = true
+
+[node name="update_banner" parent="Panel/GridContainer" instance=ExtResource("3_x87h6")]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+size_flags_horizontal = 1
+size_flags_vertical = 8
+
+[node name="Panel" type="MarginContainer" parent="Panel/GridContainer"]
+layout_mode = 2
+size_flags_vertical = 8
+theme_override_constants/margin_left = 4
+theme_override_constants/margin_top = 4
+theme_override_constants/margin_right = 4
+theme_override_constants/margin_bottom = 4
+
+[node name="HBoxContainer" type="HBoxContainer" parent="Panel/GridContainer/Panel"]
+use_parent_material = true
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="update" type="Button" parent="Panel/GridContainer/Panel/HBoxContainer"]
+custom_minimum_size = Vector2(100, 40)
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 4
+text = "Update"
+
+[connection signal="visibility_changed" from="." to="." method="_on_visibility_changed"]
+[connection signal="meta_clicked" from="Panel/GridContainer/PanelContainer2/ScrollContainer/MarginContainer/content" to="." method="_on_content_meta_clicked"]
+[connection signal="meta_hover_ended" from="Panel/GridContainer/PanelContainer2/ScrollContainer/MarginContainer/content" to="." method="_on_content_meta_hover_ended"]
+[connection signal="meta_hover_started" from="Panel/GridContainer/PanelContainer2/ScrollContainer/MarginContainer/content" to="." method="_on_content_meta_hover_started"]
+[connection signal="pressed" from="Panel/GridContainer/Panel/HBoxContainer/update" to="." method="_on_update_pressed"]

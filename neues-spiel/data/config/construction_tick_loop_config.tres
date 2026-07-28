@@ -1,0 +1,8 @@
+[gd_resource type="Resource" script_class="ConstructionTickLoopConfig" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/building_system/construction_tick_loop_config.gd" id="1_constructiontickloop"]
+
+[resource]
+script = ExtResource("1_constructiontickloop")
+base_build_ticks_block = 4
+base_build_ticks_furniture = 8

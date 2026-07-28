@@ -1,0 +1,12 @@
+[gd_resource type="Resource" script_class="AmbientLifeConfig" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/presentation/ambient_life_config.gd" id="1_ambientlife"]
+
+[resource]
+script = ExtResource("1_ambientlife")
+chimney_smoke_particle_amount = 24
+chimney_smoke_lifetime_seconds = 4.0
+chimney_smoke_rise_speed = 1.2
+chimney_smoke_spread_degrees = 12.0
+torch_flicker_base_energy = 1.0
+torch_flicker_amplitude = 0.25

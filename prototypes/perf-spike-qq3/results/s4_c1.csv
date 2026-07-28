@@ -1,0 +1,17 @@
+key,value
+meta/scenario,s4
+meta/config,c1
+meta/world,64x16x64
+meta/seed,1337
+build/populate_ms,110.9
+build/cells,19664
+build/houses,16
+s4/bfs_ms_footprint_1000,1.12
+s4/bfs_visited_1000,1000
+s4/bfs_ms_footprint_5000,3.90
+s4/bfs_visited_5000,4096
+s4/bfs_ms_footprint_20000,3.90
+s4/bfs_visited_20000,4096
+s4/bfs_ms_footprint_60000,3.65
+s4/bfs_visited_60000,4096
+meta/mem_static_mb,31.0

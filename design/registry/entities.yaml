@@ -37,7 +37,7 @@
 #   Each entry: name, status, source, referenced_by[], attributes{}, added, revised
 
 version: 1
-last_updated: ""
+last_updated: "2026-07-09"
 
 # ─── ENTITIES ────────────────────────────────────────────────────────────────
 # Named game-world objects: enemies, NPCs, characters, factions, bosses.
@@ -77,7 +77,65 @@ entities: []
 # Attribute fields: value_gold, weight, stackable, category, and any stat
 #   modifiers that another system (e.g., economy, crafting) might reference.
 
-items: []
+items:
+  - name: wood_block
+    status: active
+    source: design/gdd/resource-item-database.md
+    referenced_by:
+      - design/gdd/resource-item-database.md
+      - design/art/visual-direction-note.md   # wood family = warm brown
+      - design/gdd/building-system.md         # tier-0 free MVP palette (its Core Rule 14, AC 18)
+    category: building_material
+    material_family: wood
+    tier: 0                       # free bootstrap material (MVP)
+    stackable: true
+    added: 2026-07-09
+    revised: ""
+
+  - name: stone_block
+    status: active
+    source: design/gdd/resource-item-database.md
+    referenced_by:
+      - design/gdd/resource-item-database.md
+      - design/art/visual-direction-note.md   # stone family = cool grey
+      - design/gdd/building-system.md         # tier-0 free MVP palette (its Core Rule 14, AC 18)
+    category: building_material
+    material_family: stone
+    tier: 0                       # free bootstrap material (MVP)
+    stackable: true
+    added: 2026-07-09
+    revised: ""
+
+  - name: thatch_block
+    status: active
+    source: design/gdd/resource-item-database.md
+    referenced_by:
+      - design/gdd/resource-item-database.md
+      - design/art/visual-direction-note.md   # thatch family = warm red-brown
+      - design/gdd/building-system.md         # tier-0 free MVP palette (its Core Rule 14, AC 18)
+    category: building_material
+    material_family: thatch
+    tier: 0                       # free bootstrap material (MVP)
+    stackable: true
+    added: 2026-07-09
+    revised: ""
+
+  - name: bed
+    status: active
+    source: design/gdd/resource-item-database.md   # definition lives in the DB
+    referenced_by:
+      - design/gdd/resource-item-database.md
+      - design/gdd/building-system.md   # names it as the entire MVP furniture list (Core Rule 8); build time 8 ticks (F3)
+      - design/gdd/villager-ai-behavior.md   # bed ownership/claiming = the move-in moment (its Core Rules 11-13); character-scale rationale (Rule 8a)
+      - design/gdd/needs-mood-system.md      # top rungs of the recovery ladder (sheltered/unsheltered bed)
+    category: furniture_fixture
+    material_family: none
+    tier: 0                       # free in MVP (Building System Core Rule 14)
+    stackable: false
+    footprint: [1, 2]             # width_cells x depth_cells — slice-validated, user-locked
+                                   # (2-cell-tall villagers need a 2-cell bed); resource-item-database.md Core Rule 10
+    added: 2026-07-09
+    revised: "2026-07-23"         # added footprint field — resource-item-database.md slice revision
 
 # Example:
 #
@@ -106,7 +164,31 @@ items: []
 #   output_range[min, max], added
 # Optional: expression (the actual formula), notes
 
-formulas: []
+formulas:
+  - name: procedural_terrain_height
+    status: active
+    source: design/gdd/voxel-world.md
+    referenced_by:
+      - design/gdd/voxel-world.md
+    variables:
+      - x
+      - z
+      - base_height
+      - amplitude
+      - frequency
+      - noise2D
+      - min_y
+      - max_y
+    output_range: [0, 16]   # = current min_y/max_y tuning knobs; revise if those change
+                            # was: [0, 15] before 2026-07-09 — corrected by /consistency-check
+                            # (source GDD voxel-world.md Tuning Knobs: max_y = 16)
+    expression: "clamp(round(base_height + amplitude * noise2D(x * frequency, z * frequency)), min_y, max_y)"
+    notes: "Defines only the height mechanism, not the 'hand-shaped valley'
+      silhouette (basin/radial falloff) — that's an open question owned by
+      level-designer/art-director. Output range moves if min_y/max_y tuning
+      knobs change."
+    added: 2026-07-09
+    revised: "2026-07-09"
 
 # Example:
 #
@@ -139,7 +221,177 @@ formulas: []
 #
 # Required fields: name, status, source, referenced_by, value, unit, added
 
-constants: []
+constants:
+  - name: loading_transition_duration
+    status: active
+    source: design/gdd/scene-world-management.md
+    referenced_by:
+      - design/gdd/scene-world-management.md
+    value: 1.2
+    unit: seconds
+    added: 2026-07-09
+    revised: ""
+
+  - name: cell_size
+    status: active
+    source: design/gdd/voxel-world.md
+    referenced_by:
+      - design/gdd/voxel-world.md
+      - design/art/visual-direction-note.md   # §2b locks flush blocks, no gap
+      - design/gdd/camera-input.md            # pan-bound clamp uses world extent × cell_size
+      - design/gdd/building-system.md         # flush-block rendering requirement
+    value: 1.0
+    unit: world units (cell edge length)
+    added: 2026-07-09
+    revised: ""
+
+  - name: ticks_per_second
+    status: active
+    source: design/gdd/time-tick-system.md
+    referenced_by:
+      - design/gdd/time-tick-system.md
+      - design/gdd/building-system.md        # F3 build-tick pacing
+      - design/gdd/needs-mood-system.md      # decay/recovery per tick
+      - design/gdd/villager-ai-behavior.md   # agent loop tick base
+    value: 4.0
+    unit: ticks/second (base rate at 1x time-warp)
+    # was: 2.0 before 2026-07-23 — raised by time-tick-system.md
+    # (Slice revision 2026-07-23, tick-rate/furniture resolution): the
+    # vertical slice ran at 4.0 throughout; user adopted that pace
+    # ("villagers should work more"). Required re-tuning pass flagged in
+    # that GDD's Open Questions for any downstream per-tick rate consumer
+    # (e.g. Needs & Mood System decay/recovery) documented as a real-time
+    # equivalent under the old 2.0 rate.
+    added: 2026-07-09
+    revised: "2026-07-23"
+
+  - name: max_ticks_per_frame
+    status: active
+    source: design/gdd/time-tick-system.md
+    referenced_by:
+      - design/gdd/time-tick-system.md
+      - design/gdd/building-system.md        # F3 burst rule
+      - design/gdd/needs-mood-system.md      # signal-ordering burst rule
+      - design/gdd/villager-ai-behavior.md   # per-villager burst handling
+    value: 12
+    unit: ticks
+    # Sprint 8 coordinated re-tune (10->12), story tick-007:
+    # design/quick-specs/tick-rate-retune-2026-07-25.md — ~50% margin over
+    # the 8 ticks strictly needed to keep a max_raw_delta-clamped frame
+    # "honest" under the debug 20x warp gear (vs ~25% margin at the old
+    # value of 10), still mid-range in the GDD's documented 5-30 safe band.
+    added: 2026-07-09
+    revised: "2026-07-25"
+
+  - name: villager_clearance
+    status: active
+    source: design/gdd/villager-ai-behavior.md
+    referenced_by:
+      - design/gdd/villager-ai-behavior.md
+      - design/gdd/build-validation-navigability.md   # consumed verbatim (its Rule 2)
+    value: 3
+    unit: cells (vertical: standing cell + 2 above must be empty)
+    # user decision 2026-07-10: raised from the drafted 2 to 3 —
+    # default wall_height 3 yields exactly minimum interior height
+    added: 2026-07-10
+    revised: ""
+
+  - name: max_step_height
+    status: active
+    source: design/gdd/villager-ai-behavior.md
+    referenced_by:
+      - design/gdd/villager-ai-behavior.md
+      - design/gdd/build-validation-navigability.md   # consumed verbatim (its Rule 2)
+    value: 1
+    unit: cells (max height difference per step)
+    added: 2026-07-10
+    revised: ""
+
+  - name: urgency_threshold
+    status: active
+    source: design/gdd/needs-mood-system.md
+    referenced_by:
+      - design/gdd/needs-mood-system.md
+      - design/gdd/villager-ai-behavior.md   # its Rule 2 consumes the "need urgent" signal at this value
+    value: 25
+    unit: need points (0-100 scale, downward cross)
+    added: 2026-07-10
+    revised: ""
+
+  - name: satisfied_threshold
+    status: active
+    source: design/gdd/needs-mood-system.md
+    referenced_by:
+      - design/gdd/needs-mood-system.md
+      - design/gdd/villager-ai-behavior.md   # its Rule 13 wake trigger
+    value: 95
+    unit: need points (0-100 scale, upward cross during recovery)
+    added: 2026-07-10
+    revised: ""
+
+  - name: ground_penalty
+    status: active
+    source: design/gdd/needs-mood-system.md
+    referenced_by:
+      - design/gdd/needs-mood-system.md
+      - design/gdd/villager-ai-behavior.md   # its Rule 12 ground-sleep fallback
+      - design/gdd/build-validation-navigability.md   # bottom rung of the 3-tier recovery ladder
+    value: 0.4
+    unit: recovery-rate multiplier (0-1; sheltered bed = 1.0)
+    added: 2026-07-10
+    revised: ""
+
+  - name: unsheltered_bed_multiplier
+    status: active
+    source: design/gdd/needs-mood-system.md   # value owned by the Needs source→rate table
+    referenced_by:
+      - design/gdd/needs-mood-system.md
+      - design/gdd/build-validation-navigability.md   # supplies the sheltered flag that selects this rung
+    value: 0.7
+    unit: recovery-rate multiplier
+    # invariant: ground_penalty (0.4) < this < 1.0 — else the ladder collapses
+    added: 2026-07-10
+    revised: ""
+
+  - name: max_room_height
+    status: active
+    source: design/gdd/build-validation-navigability.md
+    referenced_by:
+      - design/gdd/build-validation-navigability.md
+      - design/gdd/building-system.md   # lockstep invariant with its max wall_height (both 8)
+    value: 8
+    unit: cells (max roof height above an interior cell)
+    # invariant: must stay >= Building System's max wall_height — retune in lockstep
+    added: 2026-07-10
+    revised: ""
+
+  - name: unstuck_watchdog_threshold_ticks
+    status: active
+    source: design/gdd/villager-ai-behavior.md
+    referenced_by:
+      - design/gdd/villager-ai-behavior.md
+    value: 12
+    unit: ticks (= 3.0 game-seconds at 1x, ticks_per_second=4.0)
+    # slice-validated interim anti-stuck safety net (commit 64ff918, 2026-07-23)
+    # tick count (12) is authoritative and unchanged. Wall-clock equivalent
+    # updated 2026-07-23 (Slice revision, tick-rate/furniture resolution):
+    # ticks_per_second was raised 2.0 -> 4.0, so 12 ticks now = 3.0s, which
+    # now MATCHES the slice's own ad-hoc debug-clock "~3s" reading (that
+    # instrumentation ran an internal 4-ticks/sec timer) -- the prior
+    # discrepancy noted here is resolved, not just relabeled.
+    added: 2026-07-23
+    revised: "2026-07-23"
+
+  - name: seal_prevention_abandon_limit
+    status: active
+    source: design/gdd/villager-ai-behavior.md
+    referenced_by:
+      - design/gdd/villager-ai-behavior.md
+    value: 3
+    unit: refusals (per job+villager pair, before the write proceeds unconditionally)
+    # slice-validated interim anti-stuck safety net (commit 64ff918, 2026-07-23)
+    added: 2026-07-23
+    revised: ""
 
 # Example:
 #

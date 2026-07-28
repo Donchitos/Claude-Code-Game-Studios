@@ -1,0 +1,25 @@
+; Engine configuration file.
+; It's best edited using the editor UI and not directly,
+; since the parameters that go here are not all obvious.
+;
+; Format:
+;   [section] ; section goes between []
+;   param=value ; assign values to parameters
+
+config_version=5
+
+[application]
+
+config/name="Last Seal - Vertical Slice"
+run/main_scene="res://GameWorld.tscn"
+config/features=PackedStringArray("4.7")
+
+[autoload]
+
+TimeTickSystem="*res://time_tick_system.gd"
+ResourceItemDatabase="*res://resource_item_database.gd"
+
+[display]
+
+window/size/viewport_width=1600
+window/size/viewport_height=900

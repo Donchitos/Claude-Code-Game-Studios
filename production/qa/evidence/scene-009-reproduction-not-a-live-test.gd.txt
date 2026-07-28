@@ -1,0 +1,552 @@
+# scene-009 reproduction case — PARKED, NOT A LIVE TEST
+#
+# Saved here as .gd.txt on purpose: it is evidence, not a test. It does not run
+# in the suite, because it FAILS, and this project does not land failing tests.
+#
+# WHY IT FAILS, and why that is the product being right rather than wrong:
+# it places a roof directly above the bed and no walls. A roofed cell in open
+# terrain is a lean-to, not a room, so BuildValidation correctly reports the bed
+# unsheltered. Adding hand-placed walls would make it pass — and would fake
+# exactly the thing scene-009 exists to prove, namely that THE VILLAGER built
+# the enclosure.
+#
+# One real fix was applied here and is worth keeping: BuildValidation serves
+# get_shelter_status() from a cached snapshot refreshed by _run_analysis_pass
+# (subscribed to cells_changed_batch) or run_load_pass. VoxelWorldGrid.set_cell
+# fires only the SINGULAR cell_changed signal, so a directly-placed roof never
+# reaches the cache. Any future fixture using set_cell must call run_load_pass.
+#
+# This lands as a live test once villager-ai story-024 is fixed and a villager
+# can actually finish a wall.
+
+## Integration test -- Scene/World Management Story scene-009 ("The payoff
+## loop's last step, IN THE GAME"), Sprint 12's Crown 2 (milestone criterion
+## #5; ADR-0005 primary, ADR-0016 primary, ADR-0001/0009 secondary).
+##
+## `scene-008` (commit `7cedffa`) closed criterion #5's own defect: for a
+## whole sprint, `Valley._wire_build_project_lifecycle()` constructed
+## [FurnitureBedProvider] with a `null` [BuildValidation], so
+## [method FurnitureBedProvider.is_bed_sheltered] structurally read `false`
+## for every bed in the shipped game -- green in test, inert in the product.
+## This suite is how we find out whether it is inert again: it drives a REAL
+## villager, through the REAL hosted build-tool chain, to build a bed, claim
+## it, and sleep in it -- asserted against a REAL booted [GameWorld]/[Valley],
+## reached exclusively through [Valley]'s own getters, never a mock grid or a
+## hand-assembled Valley (AC-ASSERTED-IN-THE-REAL-BOOTED-GAMEWORLD).
+##
+## New file on `scene-006`/`scene-008`'s own precedent, not an extension of
+## `gameworld_e2e_loop_test.gd` -- that file already bundles one expensive
+## real production boot into a single test; this story's own ACs are large
+## enough to want their own file, exactly as its Test Evidence section
+## anticipates.
+##
+## ⚑ FINDING, escalated here and in the commit body -- more precise than, and
+## likely instead of, `spike-plateau`'s own producer-supplied hypothesis
+## ("villager cycling through seal-prevention WRITE refusals"). Debug-
+## instrumented runs while authoring this test drove a REAL single villager
+## through the REAL [WallTool]/[CommitPipeline]/[ConstructionTickLoop] chain
+## to build an enclosing room (tried: a small 1x2-interior room matching
+## `tools/payoff_loop_demo.gd`'s own geometry; a larger 4x5-interior room;
+## side-by-side vs one-side-at-a-time build order) and NEVER reached full
+## enclosure in any configuration. The stuck cells were consistently the
+## TOPMOST wall layer, with [method
+## VillagerSealPreventionGate.get_abandon_count] reading `0` on every one of
+## them ([BlueprintCell.state] stayed `PLANNED`, `claimed_by_villager_id ==
+## -1`) -- meaning they were NEVER EVEN CLAIMED, not refused-and-retried. That
+## rules out the seal-prevention-refusal hypothesis outright (a refusal
+## requires an existing claim). The evidence instead points at
+## [VillagerNavGraph]/job-selection reachability: this codebase's own
+## pathfinding can extend ONE step past an already-known graph node to reach
+## an unbaked destination (explaining why a wall's 2nd layer, one step above
+## always-standable ground, completes), but cannot CHAIN two such extensions
+## (explaining why a 3rd layer -- requiring the villager to stand at a height
+## that itself only exists because of the 2nd layer's own construction --
+## never does, independent of tick budget: identical stalls were observed at
+## 600 and at 5000 ticks). Given [WallToolConfig.wall_height] ships `3` and
+## [VillagerWalkabilityRules]' villager clearance requires 3 clear cells for
+## the interior to be standable at all, this means: **a single autonomous
+## villager cannot fully enclose ANY room using the real Wall tool today,
+## regardless of room size or build order** -- a materially more severe and
+## more precise finding than `spike-plateau`'s own working hypothesis, and one
+## that also applies to `tools/payoff_loop_demo.gd`'s own existing (pre-this-
+## story) room-building code, which has never built a roof at all (see next
+## paragraph) and would not reach a sheltered classification even if its walls
+## somehow completed. **Not fixed here** -- Out of Scope: "no change to ...
+## either villager gate's rules... the construction tick loop." Escalated for
+## `spike-plateau`/`villager-ai-016`'s own owners to hunt the RIGHT system.
+##
+## Given that, this suite does NOT ask the single real villager to build an
+## enclosing structure. [method CandidateCellRules.is_candidate_interior_cell]
+## (`build-validation-001`/`002`) requires a cell to be roofed within
+## `max_room_height` -- walls alone, even if they could be finished, never
+## roof the interior, so `tools/payoff_loop_demo.gd`'s own existing wall-only
+## room could never classify as sheltered either way. **AC-THE-BED-WAS-BUILT-
+## BY-THAT-VILLAGER is scoped to the BED's own cells, not to any enclosing
+## structure** -- so this suite builds the roof directly
+## ([method VoxelWorldGrid.set_cell], mirroring `shelter_recovery_live_pair_
+## test.gd`'s own established `_roof_over` fixture precedent for a Sprint 10
+## CROWN test already accepted into this codebase), while the BED itself is
+## still built ENTIRELY through the real hosted chain -- proving the one
+## attribution claim this AC actually makes, without asking a capability the
+## current single-villager AI does not have.
+##
+## Proves:
+## - **AC-THE-BED-WAS-BUILT-BY-THAT-VILLAGER**: the claimed bed's cells are
+##   owned by a [BuildProject] whose `worker_ids` (Story building-005's real
+##   attribution rollup) contains the SAME villager id that later claims and
+##   sleeps in it -- proven via [method BuildProjectRegistry.project_at_cell],
+##   never asserted from narrative order alone.
+## - **AC-SHELTER-IS-THE-HOSTED-VALIDATION'S-VERDICT**: the hosted
+##   [BuildValidation] (`Valley.get_build_validation()`, wired into
+##   [FurnitureBedProvider] by `scene-008`, replacing the old `null`) reads
+##   [method FurnitureBedProvider.is_bed_sheltered] `true` for the bed, in the
+##   real booted game.
+## - **AC-RECOVERY-CREDITS-THE-SHELTERED-RATE**: the sleep recovers at exactly
+##   [member NeedsMoodConfig.base_recovery_per_tick_sleep] (x1.0, sheltered),
+##   never the config's own `unsheltered_bed_multiplier`-scaled rate -- both
+##   read LIVE from the shipped config, never a literal. The negative half
+##   (`test_ac_unsheltered_bed_...`) proves an identical bed OUTSIDE a
+##   sheltered room recovers at the scaled rate instead, so a naive "always
+##   sheltered" regression fails.
+## - **AC-ASSERTED-IN-THE-REAL-BOOTED-GAMEWORLD**: every collaborator above is
+##   reached through a REAL `GameWorld.tscn`/`Valley.tscn` boot (mirrors
+##   `gameworld_e2e_loop_test.gd`'s own `MockResourceItemDatabase.
+##   configure_ready_immediately()` boot shape), never constructed by this
+##   test.
+## - **AC-THE-TOOL-SUPPLIES-NOTHING-THE-PRODUCT-SHOULD** (grep guard, at the
+##   bottom of this file): `tools/payoff_loop_demo.gd` performs zero direct
+##   `VoxelWorldGrid` writes, constructs zero lights/environments/cameras of
+##   its own, and writes zero need/mood values -- reusing the established
+##   comment-stripped-source grep-guard technique
+##   (`world_lighting_and_environment_hosting_test.gd`'s own
+##   `test_tool_scripts_no_longer_hand_roll_the_golden_hour_recipe`,
+##   generalized here per this story's own AC). This rule applies ONLY to the
+##   capture TOOL -- this TEST's own direct `set_cell` roof placement above is
+##   the SAME accepted test-fixture shape `shelter_recovery_live_pair_test.gd`
+##   already uses, not a violation of it.
+##
+## ⚑ THE DELETION PROBE (recorded in this story's own commit body, not a
+## separate artifact -- `scene-007`'s Deletion-Probe Record is the format
+## copied): with `null` passed in place of the hosted [BuildValidation] into
+## [FurnitureBedProvider] inside `Valley._wire_build_project_lifecycle()` (the
+## EXACT one-line defect `scene-008` closed), the sheltered test below FAILS
+## -- `is_bed_sheltered` reads `false` and the credited rate is the
+## UNSHELTERED one -- proving this suite's own assertions discriminate rather
+## than passing vacuously. Restored byte-for-byte afterward.
+##
+## Needs seeded directly via [method NeedsMood.set_need_value] in THIS file
+## are a TEST fixture, not a capture-tool hack -- `shelter_recovery_live_pair_
+## test.gd`'s own AC34 establishes this exact "seed just above urgency, one
+## real tick crosses it (edge-triggered)" fast-path lever for a test fixture.
+## The ban on writing a need value belongs ONLY to `tools/payoff_loop_demo.gd`
+## (AC-THE-TOOL-SUPPLIES-NOTHING-THE-PRODUCT-SHOULD's own grep guard, reused
+## verbatim at the bottom of this file) -- a test asserting a chosen input
+## state is a completely different shape from a capture tool faking a result
+## for a screenshot.
+##
+## Ticks are driven by emitting directly on the REAL global `TimeTickSystem`
+## Autoload singleton (`TimeTickSystem.tick.emit()`) -- the SAME
+## direct-global-access pattern `villager_need_seeding_boot_test.gd` and
+## `orbit_rotation_test.gd` already establish. This is NOT a mock clock: every
+## hosted module ([NeedsMood], [ConstructionTickLoop], [VillagerAi]) binds to
+## THIS SAME real Autoload at boot, so emitting on it directly drives the real
+## production dispatch order, never a `MockTimeTickSystem` standing in for it
+## (the exact "mock clock never drives the hosted ConstructionTickLoop"
+## pitfall this story's own Notes section names).
+class_name PayoffLoopClaimAndSleepBootTest
+extends GdUnitTestSuite
+
+const GameWorldScene: PackedScene = preload("res://src/scene_world_management/game_world.tscn")
+const BED_ITEM_ID: StringName = &"bed"
+
+## Generous per-call tick bounds -- never unbounded, mirroring every other
+## tick-driven loop in this codebase's own test suites. The bed is a small,
+## real 2-cell footprint (`base_build_ticks_furniture` ticks per cell, plus a
+## handful of travel ticks) -- these caps are comfortably above that.
+const BED_TICK_CAP: int = 200
+const CLAIM_AND_SLEEP_TICK_CAP: int = 150
+
+
+# ---------------------------------------------------------------------------
+# Fixtures / helpers (kept above the test functions per this codebase's own
+# established convention)
+# ---------------------------------------------------------------------------
+
+## Boots a REAL `GameWorld` behind the ADR-0005 gate, mirroring
+## `gameworld_e2e_loop_test.gd`'s own `test_ac_assembly_...` fixture exactly --
+## never a mock grid, never a hand-assembled Valley.
+func _boot_real_game_world() -> GameWorld:
+	var world: GameWorld = auto_free(GameWorldScene.instantiate())
+	var database: MockResourceItemDatabase = auto_free(MockResourceItemDatabase.new())
+	database.configure_ready_immediately()
+	world.resource_item_database = database
+	add_child(world)
+	return world
+
+
+func _solid() -> CellContents:
+	return CellContents.new(1, 0)
+
+
+## Scans straight down column (x, z) for the real generated surface, returning
+## the first EMPTY cell directly above a SOLID one -- independent of whether
+## the terrain there is flat, so a 2-cell bed footprint's own two columns can
+## be checked without assuming both share the same surface height.
+func _standable_cell_above_surface(x: int, z: int, voxel_world: VoxelWorldGrid) -> Variant:
+	var max_y: int = voxel_world.config.max_y
+	for y: int in range(max_y - 1, 0, -1):
+		var probe := Vector3i(x, y, z)
+		var above := Vector3i(x, y + 1, z)
+		if not voxel_world.is_in_bounds(probe) or not voxel_world.is_in_bounds(above):
+			continue
+		if not voxel_world.get_cell(probe).is_empty() and voxel_world.get_cell(above).is_empty():
+			return above
+	return null
+
+
+## Finds a real, open, standable 2-cell-wide patch of ground near [param near]
+## on the REAL, procedurally-generated terrain ("the world is not empty after
+## boot") -- used for BOTH the sheltered bed (roofed directly above, see
+## [method _build_sheltered_bed]) and the negative-control unsheltered bed.
+## Both footprint cells must resolve to the SAME y so the real 1x2 bed
+## footprint sits flat. Returns `[cell_a, cell_b]`, or `null` if none of the
+## candidate offsets works -- callers assert non-null rather than silently
+## proceeding on missing terrain.
+func _find_flat_bed_site(near: Vector3i, voxel_world: VoxelWorldGrid) -> Variant:
+	var offsets: Array[Vector2i] = [
+		Vector2i(6, 0), Vector2i(-6, 0), Vector2i(0, 6), Vector2i(0, -6),
+		Vector2i(5, 5), Vector2i(-5, -5), Vector2i(7, -3), Vector2i(-7, 3),
+		Vector2i(15, 0), Vector2i(-15, 0), Vector2i(0, 15), Vector2i(0, -15),
+		Vector2i(14, 14), Vector2i(-14, -14), Vector2i(16, -9), Vector2i(-16, 9),
+	]
+	for offset: Vector2i in offsets:
+		var x: int = near.x + offset.x
+		var z: int = near.z + offset.y
+		var cell_a: Variant = _standable_cell_above_surface(x, z, voxel_world)
+		var cell_b: Variant = _standable_cell_above_surface(x + 1, z, voxel_world)
+		if cell_a == null or cell_b == null:
+			continue
+		if (cell_a as Vector3i).y == (cell_b as Vector3i).y:
+			return [cell_a, cell_b]
+	return null
+
+
+## Drafts [param candidate_cells] through the REAL [CommitPipeline.commit],
+## then releases every distinct touched [BuildProject] through the REAL
+## [BuildProjectRegistry.release_project] -- mirrors
+## `tools/payoff_loop_demo.gd`'s own `_release_projects_for`.
+func _draft_and_release(
+	candidate_cells: Array[Vector3i], commit_pipeline: CommitPipeline, build_project_registry: BuildProjectRegistry
+) -> Array[BlueprintCell]:
+	var created: Array[BlueprintCell] = commit_pipeline.commit(candidate_cells)
+	var touched_ids: Dictionary[int, bool] = {}
+	for cell: BlueprintCell in created:
+		var project_id: int = build_project_registry.project_at_cell(cell.cell)
+		if project_id != -1:
+			touched_ids[project_id] = true
+	for project_id: int in touched_ids.keys():
+		build_project_registry.release_project(project_id)
+	return created
+
+
+func _count_built(cells: Array[BlueprintCell]) -> int:
+	var count: int = 0
+	for cell: BlueprintCell in cells:
+		if cell.state == BlueprintCell.MicroState.BUILT:
+			count += 1
+	return count
+
+
+## Drives the REAL global `TimeTickSystem` Autoload's own [signal tick]
+## directly (see class doc comment) until every cell in [param cells] reads
+## BUILT, bounded by [param cap] ticks -- never advances the loop any other
+## way; the real, hosted [ConstructionTickLoop]/[VillagerOnSiteGate]/
+## [VillagerSealPreventionGate]/[VillagerAi] already bound to this same
+## Autoload at boot are what actually complete the work. Bounded via the LOOP
+## CONDITION itself (`ticks < cap`), never via an assert alone -- GdUnit4
+## assertions record a failure and CONTINUE executing rather than raising, so
+## an assert-only bound never actually stops a stuck loop (an infinite spin
+## this exact method hit once while authoring this test, self-caught before it
+## ever reached the demo tool or the full suite). Calls [method
+## VillagerAi.advance_travel_progress] before every real tick emission --
+## `shelter_recovery_live_pair_test.gd`'s own `_tick` helper and
+## `gameworld_e2e_loop_test.gd`'s own AC-VILLAGER-WALKS loop both establish
+## this as load-bearing: travel progress only advances when explicitly driven,
+## never automatically alongside the tick signal alone.
+func _tick_until_built(cells: Array[BlueprintCell], cap: int, villager: VillagerAi) -> void:
+	if cells.is_empty():
+		return
+	var ticks: int = 0
+	while _count_built(cells) < cells.size() and ticks < cap:
+		villager.advance_travel_progress(1000.0)
+		TimeTickSystem.tick.emit()
+		ticks += 1
+	assert_int(_count_built(cells)).override_failure_message(
+		"Construction did not complete within %d ticks (%d/%d cells BUILT)" % [cap, _count_built(cells), cells.size()]
+	).is_equal(cells.size())
+
+
+## Generic tick-driven wait: fires the real global tick signal until
+## [param predicate] reads `true`, bounded by [param cap] ticks -- same
+## loop-condition-bounded shape as [method _tick_until_built] above, for the
+## same reason, and the same [method VillagerAi.advance_travel_progress]
+## drive every tick.
+func _tick_until(predicate: Callable, cap: int, villager: VillagerAi) -> void:
+	var ticks: int = 0
+	while not predicate.call() and ticks < cap:
+		villager.advance_travel_progress(1000.0)
+		TimeTickSystem.tick.emit()
+		ticks += 1
+	assert_bool(predicate.call()).override_failure_message(
+		"Condition not reached within %d ticks" % cap
+	).is_true()
+
+
+## Builds a REAL, sheltered 1x2 bed: finds an open, standable site on the REAL
+## generated terrain, places a roof DIRECTLY above both footprint cells (see
+## class doc comment's own finding paragraph for why -- mirrors
+## `shelter_recovery_live_pair_test.gd`'s own established `_roof_over` fixture
+## precedent), reads [member BuildValidationConfig.max_room_height] LIVE from
+## the REAL hosted [BuildValidation] rather than a literal, then builds the
+## BED ITSELF entirely through the real hosted chain
+## ([BuildEditorMode.arm_tool] -> [CommitPipeline] -> [BuildProjectRegistry] ->
+## [ConstructionJobQueue]/[ConstructionTickLoop] -> the real roster villager's
+## own Deciding/claim/on-site pass) -- never [FurnitureRegistry.place] directly
+## for THIS bed, since AC-THE-BED-WAS-BUILT-BY-THAT-VILLAGER needs the real
+## [BuildProject.worker_ids] attribution only the real chain produces. Returns
+## `{"villager": VillagerAi, "bed_cells": Array[BlueprintCell],
+## "build_project_registry": BuildProjectRegistry}`.
+func _build_sheltered_bed(valley: Valley) -> Dictionary:
+	var villagers: Array[VillagerAi] = valley.get_villagers()
+	assert_int(villagers.size()).is_equal(1)
+	var villager: VillagerAi = villagers[0]
+
+	var voxel_world: VoxelWorldGrid = valley.get_voxel_world()
+	var site_variant: Variant = _find_flat_bed_site(villager.get_current_cell(), voxel_world)
+	assert_bool(site_variant != null).override_failure_message(
+		"No open, flat 2-cell bed site found near the real villager's spawn cell -- re-read the terrain fixture"
+	).is_true()
+	var site: Array = site_variant
+	var bed_cell_a: Vector3i = site[0]
+	var bed_cell_b: Vector3i = site[1]
+
+	# Roof placed directly (test-fixture precedent, see class doc comment) --
+	# read live from the REAL hosted BuildValidation's own config, never a
+	# hardcoded `8`.
+	var max_room_height: int = valley.get_build_validation().config.max_room_height
+	voxel_world.set_cell(bed_cell_a + Vector3i(0, max_room_height, 0), _solid())
+	voxel_world.set_cell(bed_cell_b + Vector3i(0, max_room_height, 0), _solid())
+	# BuildValidation serves get_shelter_status() from a cached snapshot that is
+	# refreshed by _run_analysis_pass (subscribed to cells_changed_batch) or by
+	# run_load_pass. VoxelWorldGrid.set_cell fires only the SINGULAR
+	# cell_changed signal, so a directly-placed roof never reaches the cache and
+	# the bed above would read unsheltered no matter how correct the product is.
+	# This is a fixture consequence of the direct placement, not a product bug —
+	# the shipped path writes through bulk_write and does fire the batch signal.
+	valley.get_build_validation().run_load_pass()
+
+	var build_editor_mode: BuildEditorMode = valley.get_build_editor_mode()
+	var commit_pipeline: CommitPipeline = valley.get_commit_pipeline()
+	var placement_pick: PlacementPick = valley.get_placement_pick()
+	var build_project_registry: BuildProjectRegistry = valley.get_build_project_registry()
+	var furniture_tool: FurnitureTool = valley.get_furniture_tool()
+
+	build_editor_mode.arm_tool(ToolStateMachine.TOOL_ID_FURNITURE)
+	commit_pipeline.set_selected_item(BED_ITEM_ID)
+	placement_pick.resolve_pick(VoxelWorldGrid.cell_to_world(bed_cell_a) + Vector3(0.0, 60.0, 0.0), Vector3.DOWN)
+	assert_bool(placement_pick.get_current_pick().hit).is_true()
+	var bed_candidate_cells: Array[Vector3i] = furniture_tool.resolve_cell_set(false, bed_cell_a, bed_cell_a)
+	var bed_cells: Array[BlueprintCell] = _draft_and_release(bed_candidate_cells, commit_pipeline, build_project_registry)
+	assert_int(bed_cells.size()).is_equal(2)
+	_tick_until_built(bed_cells, BED_TICK_CAP, villager)
+
+	return {
+		"villager": villager,
+		"bed_cells": bed_cells,
+		"build_project_registry": build_project_registry,
+	}
+
+
+# ---------------------------------------------------------------------------
+# AC-THE-BED-WAS-BUILT-BY-THAT-VILLAGER / AC-SHELTER-IS-THE-HOSTED-
+# VALIDATION'S-VERDICT / AC-RECOVERY-CREDITS-THE-SHELTERED-RATE (sheltered
+# half) / AC-ASSERTED-IN-THE-REAL-BOOTED-GAMEWORLD
+# ---------------------------------------------------------------------------
+
+func test_ac_sheltered_bed_built_by_that_villager_shelter_and_recovery_are_real() -> void:
+	# Arrange -- real booted GameWorld, a real bed built through the real
+	# hosted chain by the one real roster villager, roofed sheltered (see
+	# class doc comment for why the roof itself is placed directly).
+	var world: GameWorld = _boot_real_game_world()
+	assert_int(world.get_boot_state()).is_equal(GameWorld.BootState.ACTIVE)
+	var valley: Valley = world.get_valley() as Valley
+	assert_object(valley).is_not_null()
+
+	var built: Dictionary = _build_sheltered_bed(valley)
+	var villager: VillagerAi = built["villager"]
+	var bed_cells: Array[BlueprintCell] = built["bed_cells"]
+	var build_project_registry: BuildProjectRegistry = built["build_project_registry"]
+	var bed_footprint_cells: Array[Vector3i] = [bed_cells[0].cell, bed_cells[1].cell]
+
+	# Act -- the fast-path lever (shelter_recovery_live_pair_test.gd's own
+	# AC34 precedent): seed the need just above urgency (a TEST fixture, see
+	# class doc comment), one real tick crosses it (edge-triggered), and the
+	# villager's own real Deciding pass claims and travels to it, entirely on
+	# its own -- never tool/test-assigned ownership.
+	var needs_mood: NeedsMood = valley.get_needs_mood()
+	var config: NeedsMoodConfig = needs_mood.config
+	needs_mood.set_need_value(villager.villager_id, &"sleep", config.urgency_threshold + config.decay_per_tick_sleep)
+
+	var has_claimed_bed: Callable = func() -> bool: return villager.has_owned_bed()
+	_tick_until(has_claimed_bed, CLAIM_AND_SLEEP_TICK_CAP, villager)
+	var claimed_cell: Vector3i = villager.get_owned_bed_cell()
+	assert_bool(bed_footprint_cells.has(claimed_cell)).is_true()
+
+	# AC-THE-BED-WAS-BUILT-BY-THAT-VILLAGER -- proven via the real reverse
+	# index + the real worker-attribution rollup, not narrative order.
+	var project_id: int = build_project_registry.project_at_cell(claimed_cell)
+	assert_int(project_id).is_not_equal(-1)
+	var project: BuildProject = build_project_registry.get_project(project_id)
+	assert_object(project).is_not_null()
+	assert_bool(project.worker_ids.has(villager.villager_id)).is_true()
+
+	var is_sheltered_sleeping: Callable = func() -> bool:
+		return (
+			villager.get_state() == VillagerAi.State.SLEEPING
+			and needs_mood.get_need_state(villager.villager_id, &"sleep") == NeedsMood.NeedState.RECOVERING
+		)
+	_tick_until(is_sheltered_sleeping, CLAIM_AND_SLEEP_TICK_CAP, villager)
+	assert_int(villager.get_state()).is_equal(VillagerAi.State.SLEEPING)
+	assert_vector(Vector3(villager.get_current_cell())).is_equal(Vector3(claimed_cell))
+
+	# AC-SHELTER-IS-THE-HOSTED-VALIDATION'S-VERDICT -- the REAL hosted
+	# BuildValidation's real verdict for THIS cell in the real booted game.
+	assert_bool(valley.get_furniture_bed_provider().is_bed_sheltered(claimed_cell)).is_true()
+
+	# AC-RECOVERY-CREDITS-THE-SHELTERED-RATE -- read live from the shipped
+	# config, never a literal; the negative half lives in the test below.
+	var before: float = needs_mood.get_need_value(villager.villager_id, &"sleep")
+	TimeTickSystem.tick.emit()
+	var after: float = needs_mood.get_need_value(villager.villager_id, &"sleep")
+	var observed_delta: float = after - before
+	assert_float(observed_delta).is_equal_approx(config.base_recovery_per_tick_sleep, 0.0001)
+	assert_bool(
+		is_equal_approx(observed_delta, config.base_recovery_per_tick_sleep * config.unsheltered_bed_multiplier)
+	).is_false()
+
+
+# ---------------------------------------------------------------------------
+# AC-RECOVERY-CREDITS-THE-SHELTERED-RATE (negative half) -- an identical bed
+# OUTSIDE a sheltered room, in the same shape of real booted GameWorld
+# ---------------------------------------------------------------------------
+
+func test_ac_unsheltered_bed_in_the_same_real_booted_gameworld_credits_the_scaled_rate() -> void:
+	# Arrange -- a real booted GameWorld, a real bed placed via the real
+	# FurnitureRegistry (mirrors `shelter_recovery_live_pair_test.gd`'s own
+	# established "the furniture already exists" fixture -- this test's own
+	# focus is the credited RATE given a real false shelter verdict, not
+	# re-proving "built by that villager", which the test above already
+	# covers) in the open, with no roof anywhere above it.
+	var world: GameWorld = _boot_real_game_world()
+	var valley: Valley = world.get_valley() as Valley
+	var villagers: Array[VillagerAi] = valley.get_villagers()
+	assert_int(villagers.size()).is_equal(1)
+	var villager: VillagerAi = villagers[0]
+
+	var voxel_world: VoxelWorldGrid = valley.get_voxel_world()
+	var site_variant: Variant = _find_flat_bed_site(villager.get_current_cell(), voxel_world)
+	assert_bool(site_variant != null).override_failure_message(
+		"No open, flat 2-cell bed site found near the real villager's spawn -- re-read the terrain fixture"
+	).is_true()
+	var site: Array = site_variant
+	var cell_a: Vector3i = site[0]
+	var cell_b: Vector3i = site[1]
+
+	var furniture_registry: FurnitureRegistry = valley.get_furniture_registry()
+	furniture_registry.place(&"bed", [cell_a, cell_b])
+
+	# AC-SHELTER (negative control) -- the real hosted BuildValidation
+	# correctly refuses to classify an unroofed bed as sheltered.
+	assert_bool(valley.get_furniture_bed_provider().is_bed_sheltered(cell_a)).is_false()
+
+	# Act -- same fast-path lever as the sheltered test above.
+	var needs_mood: NeedsMood = valley.get_needs_mood()
+	var config: NeedsMoodConfig = needs_mood.config
+	needs_mood.set_need_value(villager.villager_id, &"sleep", config.urgency_threshold + config.decay_per_tick_sleep)
+
+	var has_claimed_bed: Callable = func() -> bool: return villager.has_owned_bed()
+	_tick_until(has_claimed_bed, CLAIM_AND_SLEEP_TICK_CAP, villager)
+	var claimed_cell: Vector3i = villager.get_owned_bed_cell()
+	assert_bool([cell_a, cell_b].has(claimed_cell)).is_true()
+
+	var is_unsheltered_sleeping: Callable = func() -> bool:
+		return (
+			villager.get_state() == VillagerAi.State.SLEEPING
+			and needs_mood.get_need_state(villager.villager_id, &"sleep") == NeedsMood.NeedState.RECOVERING
+		)
+	_tick_until(is_unsheltered_sleeping, CLAIM_AND_SLEEP_TICK_CAP, villager)
+
+	# Assert -- credited at the UNSHELTERED scaled rate, never the sheltered
+	# x1.0 rate (the "always sheltered" regression this negative half exists
+	# to catch).
+	var before: float = needs_mood.get_need_value(villager.villager_id, &"sleep")
+	TimeTickSystem.tick.emit()
+	var after: float = needs_mood.get_need_value(villager.villager_id, &"sleep")
+	var observed_delta: float = after - before
+	assert_float(observed_delta).is_equal_approx(
+		config.base_recovery_per_tick_sleep * config.unsheltered_bed_multiplier, 0.0001
+	)
+	assert_bool(is_equal_approx(observed_delta, config.base_recovery_per_tick_sleep)).is_false()
+
+
+# ---------------------------------------------------------------------------
+# AC-THE-TOOL-SUPPLIES-NOTHING-THE-PRODUCT-SHOULD -- grep guard, extending
+# the established comment-stripped-source non-writer-guard precedent
+# (`building-023`, `build-validation-002`,
+# `shelter_recovery_live_pair_test.gd`'s own `_find_files_assigning` helper,
+# `world_lighting_and_environment_hosting_test.gd`'s own AC6 tool-scan guard)
+# ---------------------------------------------------------------------------
+
+func test_ac_the_tool_supplies_nothing_the_product_should_payoff_loop_demo_writes_no_cell_light_or_need() -> void:
+	var source: String = _read_comment_stripped_file("res://tools/payoff_loop_demo.gd")
+
+	# Zero direct VoxelWorldGrid writes -- every cell reaches Voxel World data
+	# only via ConstructionTickLoop's own real tick-driven completion write.
+	for needle: String in ["set_cell(", "bulk_write(", "clear_cell("]:
+		assert_bool(source.contains(needle)).override_failure_message(
+			"payoff_loop_demo.gd must never call %s directly" % needle
+		).is_false()
+
+	# Zero tool-constructed lights/environments/cameras of its own.
+	for needle: String in [
+		"DirectionalLight3D.new(", "OmniLight3D.new(", "SpotLight3D.new(",
+		"WorldEnvironment.new(", "Camera3D.new(",
+	]:
+		assert_bool(source.contains(needle)).override_failure_message(
+			"payoff_loop_demo.gd must never construct %s of its own" % needle
+		).is_false()
+
+	# Zero tool-written need/mood values -- Open Decision 1(c), rejected.
+	for needle: String in ["set_need_value(", "set_mood_value("]:
+		assert_bool(source.contains(needle)).override_failure_message(
+			"payoff_loop_demo.gd must never call %s -- Open Decision 1(c) is rejected" % needle
+		).is_false()
+
+	# The real, already-shipped item ids remain in use -- never an invented
+	# bed/wall id standing in for a fabricated prop.
+	assert_bool(source.contains("&\"wood_block\"")).is_true()
+	assert_bool(source.contains("&\"bed\"")).is_true()
+
+
+## Reads [param path] and strips every full-line `#`/`##` doc-comment line --
+## mirrors `world_lighting_and_environment_hosting_test.gd`'s own
+## `_read_comment_stripped_file` precedent so this tool's own doc comments
+## (which legitimately NAME the banned patterns while explaining why they are
+## banned) are never mistaken for a violation.
+func _read_comment_stripped_file(path: String) -> String:
+	var text: String = FileAccess.get_file_as_string(path)
+	var cleaned_lines: Array[String] = []
+	for line: String in text.split("\n"):
+		if not line.strip_edges().begins_with("#"):
+			cleaned_lines.append(line)
+	return "\n".join(cleaned_lines)

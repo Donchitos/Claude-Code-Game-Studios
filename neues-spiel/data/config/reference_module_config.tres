@@ -1,0 +1,9 @@
+[gd_resource type="Resource" script_class="ReferenceModuleConfig" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/foundation/reference_module_config.gd" id="1_refcfg"]
+
+[resource]
+script = ExtResource("1_refcfg")
+cadence_seconds = 1.0
+lower_bound = 0.0
+upper_bound = 100.0

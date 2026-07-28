@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="ItemDefinitionResource" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://src/resource_item_database/item_definition_resource.gd" id="1_wood_block"]
+[ext_resource type="BoxMesh" path="res://assets/models/items/wood_block_mesh.tres" id="2_wood_block"]
+
+[resource]
+script = ExtResource("1_wood_block")
+id = &"wood_block"
+display_name = "Wood Block"
+category = &"building_material"
+material_family = &"wood"
+tier = 0
+visual_asset = ExtResource("2_wood_block")
+stackable = true
+max_stack_size = 50
+haulable = true
+storage_category = &"materials"

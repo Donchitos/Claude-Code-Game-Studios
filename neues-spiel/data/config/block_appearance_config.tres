@@ -1,0 +1,8 @@
+[gd_resource type="Resource" script_class="BlockAppearanceConfig" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/voxel_world/block_appearance_config.gd" id="1_blockappearance"]
+
+[resource]
+script = ExtResource("1_blockappearance")
+block_type_ids = Array[int]([1, 2, 3, 4])
+block_colors_hex = Array[String](["9CAD6E", "A98F5E", "7C818A", "C9D3D8"])

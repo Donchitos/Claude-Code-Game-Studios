@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://tools/ui_mockup_backdrop_capture.gd" id="1_backdrop"]
+
+[node name="UiMockupBackdropCapture" type="Node"]
+script = ExtResource("1_backdrop")

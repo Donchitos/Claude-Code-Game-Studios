@@ -1,0 +1,14 @@
+; Chunked mesher feasibility prototype — throwaway (see README.md)
+config_version=5
+
+[application]
+
+config/name="ChunkedMesherProto"
+run/main_scene="res://Main.tscn"
+config/features=PackedStringArray("4.7", "Forward Plus")
+
+[display]
+
+window/size/viewport_width=1280
+window/size/viewport_height=720
+window/vsync/vsync_mode=0

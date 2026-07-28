@@ -1,0 +1,349 @@
+[gd_scene load_steps=9 format=3]
+
+[ext_resource type="Script" path="res://addons/gdUnit4/src/ui/settings/GdUnitSettingsDialog.gd" id="2"]
+[ext_resource type="Texture2D" path="res://addons/gdUnit4/src/ui/settings/logo.png" id="3_isfyl"]
+[ext_resource type="PackedScene" path="res://addons/gdUnit4/src/ui/templates/TestSuiteTemplate.tscn" id="4"]
+[ext_resource type="PackedScene" path="res://addons/gdUnit4/src/ui/settings/GdUnitSettingsTabHooks.tscn" id="4_nf72w"]
+[ext_resource type="PackedScene" path="res://addons/gdUnit4/src/update/GdUnitUpdateNotify.tscn" id="5_n1jtv"]
+[ext_resource type="PackedScene" path="res://addons/gdUnit4/src/ui/settings/GdUnitInputCapture.tscn" id="5_xu3j8"]
+[ext_resource type="Script" path="res://addons/gdUnit4/src/update/GdUnitUpdateClient.gd" id="8_2ggr0"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_hbbq5"]
+content_margin_left = 10.0
+content_margin_right = 10.0
+bg_color = Color(0.172549, 0.113725, 0.141176, 1)
+border_width_left = 4
+border_width_top = 4
+border_width_right = 4
+border_width_bottom = 4
+border_color = Color(0.87451, 0.0705882, 0.160784, 1)
+border_blend = true
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+shadow_color = Color(0, 0, 0, 0.756863)
+shadow_size = 10
+shadow_offset = Vector2(10, 10)
+
+[node name="GdUnitSettingsDialog" type="Window"]
+disable_3d = true
+gui_embed_subwindows = true
+title = "GdUnit4 Settings"
+initial_position = 1
+size = Vector2i(1400, 600)
+visible = false
+wrap_controls = true
+exclusive = true
+extend_to_title = true
+script = ExtResource("2")
+
+[node name="property_template" type="Control" parent="."]
+visible = false
+layout_mode = 3
+anchors_preset = 0
+offset_left = 4.0
+offset_top = 4.0
+offset_right = 4.0
+offset_bottom = 4.0
+size_flags_horizontal = 0
+
+[node name="Label" type="Label" parent="property_template"]
+layout_mode = 1
+anchors_preset = 4
+anchor_top = 0.5
+anchor_bottom = 0.5
+offset_top = -11.5
+offset_right = 1.0
+offset_bottom = 11.5
+grow_vertical = 2
+
+[node name="btn_reset" type="Button" parent="property_template"]
+layout_mode = 0
+offset_right = 12.0
+offset_bottom = 40.0
+tooltip_text = "Reset to default value"
+clip_text = true
+
+[node name="info" type="Label" parent="property_template"]
+clip_contents = true
+layout_mode = 1
+anchors_preset = 4
+anchor_top = 0.5
+anchor_bottom = 0.5
+offset_top = -11.5
+offset_right = 316.0
+offset_bottom = 11.5
+grow_vertical = 2
+size_flags_horizontal = 3
+max_lines_visible = 1
+
+[node name="sub_category" type="Panel" parent="property_template"]
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+offset_right = -220.0
+grow_horizontal = 2
+size_flags_horizontal = 3
+
+[node name="Label" type="Label" parent="property_template/sub_category"]
+layout_mode = 1
+anchors_preset = 4
+anchor_top = 0.5
+anchor_bottom = 0.5
+offset_left = 4.0
+offset_top = -11.5
+offset_right = 5.0
+offset_bottom = 11.5
+grow_vertical = 2
+theme_override_colors/font_color = Color(0.439216, 0.45098, 1, 1)
+
+[node name="GdUnitUpdateClient" type="Node" parent="."]
+script = ExtResource("8_2ggr0")
+
+[node name="Panel" type="Panel" parent="."]
+use_parent_material = true
+clip_contents = true
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="PanelContainer" type="PanelContainer" parent="Panel"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="v" type="VBoxContainer" parent="Panel/PanelContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="MarginContainer" type="MarginContainer" parent="Panel/PanelContainer/v"]
+use_parent_material = true
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/margin_left = 4
+theme_override_constants/margin_top = 4
+theme_override_constants/margin_right = 4
+
+[node name="GridContainer" type="HBoxContainer" parent="Panel/PanelContainer/v/MarginContainer"]
+use_parent_material = true
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="PanelContainer" type="MarginContainer" parent="Panel/PanelContainer/v/MarginContainer/GridContainer"]
+use_parent_material = true
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="Panel" type="VBoxContainer" parent="Panel/PanelContainer/v/MarginContainer/GridContainer/PanelContainer"]
+use_parent_material = true
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="CenterContainer" type="CenterContainer" parent="Panel/PanelContainer/v/MarginContainer/GridContainer/PanelContainer/Panel"]
+use_parent_material = true
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="logo" type="TextureRect" parent="Panel/PanelContainer/v/MarginContainer/GridContainer/PanelContainer/Panel/CenterContainer"]
+custom_minimum_size = Vector2(120, 120)
+layout_mode = 2
+size_flags_horizontal = 0
+size_flags_vertical = 4
+texture = ExtResource("3_isfyl")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="CenterContainer2" type="MarginContainer" parent="Panel/PanelContainer/v/MarginContainer/GridContainer/PanelContainer/Panel"]
+use_parent_material = true
+custom_minimum_size = Vector2(0, 30)
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="version" type="RichTextLabel" parent="Panel/PanelContainer/v/MarginContainer/GridContainer/PanelContainer/Panel/CenterContainer2"]
+unique_name_in_owner = true
+auto_translate_mode = 2
+use_parent_material = true
+clip_contents = false
+layout_mode = 2
+size_flags_horizontal = 3
+localize_numeral_system = false
+bbcode_enabled = true
+scroll_active = false
+meta_underlined = false
+
+[node name="VBoxContainer" type="VBoxContainer" parent="Panel/PanelContainer/v/MarginContainer/GridContainer/PanelContainer"]
+custom_minimum_size = Vector2(200, 0)
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+alignment = 2
+
+[node name="btn_report_bug" type="Button" parent="Panel/PanelContainer/v/MarginContainer/GridContainer/PanelContainer/VBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+tooltip_text = "Press to create a bug report"
+text = "Report Bug"
+
+[node name="btn_request_feature" type="Button" parent="Panel/PanelContainer/v/MarginContainer/GridContainer/PanelContainer/VBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+tooltip_text = "Press to create a feature request"
+text = "Request Feature"
+
+[node name="btn_install_examples" type="Button" parent="Panel/PanelContainer/v/MarginContainer/GridContainer/PanelContainer/VBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+tooltip_text = "Press to install the advanced test examples"
+disabled = true
+text = "Install Examples"
+
+[node name="Properties" type="TabContainer" parent="Panel/PanelContainer/v/MarginContainer/GridContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+current_tab = 0
+
+[node name="Common" type="ScrollContainer" parent="Panel/PanelContainer/v/MarginContainer/GridContainer/Properties"]
+layout_mode = 2
+metadata/_tab_index = 0
+
+[node name="common-content" type="VBoxContainer" parent="Panel/PanelContainer/v/MarginContainer/GridContainer/Properties/Common"]
+unique_name_in_owner = true
+clip_contents = true
+custom_minimum_size = Vector2(1026, 0)
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="Hooks" parent="Panel/PanelContainer/v/MarginContainer/GridContainer/Properties" instance=ExtResource("4_nf72w")]
+visible = false
+layout_mode = 2
+
+[node name="UI" type="ScrollContainer" parent="Panel/PanelContainer/v/MarginContainer/GridContainer/Properties"]
+visible = false
+layout_mode = 2
+metadata/_tab_index = 2
+
+[node name="ui-content" type="VBoxContainer" parent="Panel/PanelContainer/v/MarginContainer/GridContainer/Properties/UI"]
+unique_name_in_owner = true
+clip_contents = true
+custom_minimum_size = Vector2(741, 0)
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="Shortcuts" type="ScrollContainer" parent="Panel/PanelContainer/v/MarginContainer/GridContainer/Properties"]
+visible = false
+layout_mode = 2
+metadata/_tab_index = 3
+
+[node name="shortcut-content" type="VBoxContainer" parent="Panel/PanelContainer/v/MarginContainer/GridContainer/Properties/Shortcuts"]
+unique_name_in_owner = true
+clip_contents = true
+custom_minimum_size = Vector2(683, 0)
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="Report" type="ScrollContainer" parent="Panel/PanelContainer/v/MarginContainer/GridContainer/Properties"]
+visible = false
+layout_mode = 2
+metadata/_tab_index = 4
+
+[node name="report-content" type="VBoxContainer" parent="Panel/PanelContainer/v/MarginContainer/GridContainer/Properties/Report"]
+unique_name_in_owner = true
+clip_contents = true
+custom_minimum_size = Vector2(667, 0)
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="Templates" parent="Panel/PanelContainer/v/MarginContainer/GridContainer/Properties" instance=ExtResource("4")]
+visible = false
+layout_mode = 2
+metadata/_tab_index = 5
+
+[node name="Update" parent="Panel/PanelContainer/v/MarginContainer/GridContainer/Properties" instance=ExtResource("5_n1jtv")]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+metadata/_tab_index = 6
+
+[node name="GdUnitInputCapture" parent="Panel/PanelContainer/v/MarginContainer/GridContainer/Properties" instance=ExtResource("5_xu3j8")]
+unique_name_in_owner = true
+visible = false
+modulate = Color(1.54884e-09, 1.54884e-09, 1.54884e-09, 0.1)
+z_index = 1
+z_as_relative = false
+layout_mode = 2
+size_flags_horizontal = 1
+size_flags_vertical = 1
+
+[node name="propertyError" type="PopupPanel" parent="Panel/PanelContainer/v/MarginContainer/GridContainer/Properties"]
+unique_name_in_owner = true
+initial_position = 1
+size = Vector2i(400, 100)
+theme_override_styles/panel = SubResource("StyleBoxFlat_hbbq5")
+
+[node name="Label" type="Label" parent="Panel/PanelContainer/v/MarginContainer/GridContainer/Properties/propertyError"]
+offset_left = 10.0
+offset_top = 4.0
+offset_right = 390.0
+offset_bottom = 96.0
+theme_override_colors/font_color = Color(0.858824, 0, 0.109804, 1)
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="MarginContainer2" type="MarginContainer" parent="Panel/PanelContainer/v"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/margin_left = 4
+theme_override_constants/margin_right = 4
+theme_override_constants/margin_bottom = 4
+
+[node name="HBoxContainer" type="HBoxContainer" parent="Panel/PanelContainer/v/MarginContainer2"]
+layout_mode = 2
+size_flags_horizontal = 3
+alignment = 2
+
+[node name="ProgressBar" type="ProgressBar" parent="Panel/PanelContainer/v/MarginContainer2/HBoxContainer"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="progress_lbl" type="Label" parent="Panel/PanelContainer/v/MarginContainer2/HBoxContainer/ProgressBar"]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+clip_text = true
+
+[node name="btn_close" type="Button" parent="Panel/PanelContainer/v/MarginContainer2/HBoxContainer"]
+custom_minimum_size = Vector2(200, 0)
+layout_mode = 2
+text = "Close"
+
+[connection signal="close_requested" from="." to="." method="_on_btn_close_pressed"]
+[connection signal="pressed" from="Panel/PanelContainer/v/MarginContainer/GridContainer/PanelContainer/VBoxContainer/btn_report_bug" to="." method="_on_btn_report_bug_pressed"]
+[connection signal="pressed" from="Panel/PanelContainer/v/MarginContainer/GridContainer/PanelContainer/VBoxContainer/btn_request_feature" to="." method="_on_btn_request_feature_pressed"]
+[connection signal="pressed" from="Panel/PanelContainer/v/MarginContainer/GridContainer/PanelContainer/VBoxContainer/btn_install_examples" to="." method="_on_btn_install_examples_pressed"]
+[connection signal="pressed" from="Panel/PanelContainer/v/MarginContainer2/HBoxContainer/btn_close" to="." method="_on_btn_close_pressed"]

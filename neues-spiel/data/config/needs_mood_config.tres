@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="NeedsMoodConfig" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/needs_mood/needs_mood_config.gd" id="1_needsmood"]
+
+[resource]
+script = ExtResource("1_needsmood")
+decay_per_tick_sleep = 0.07
+base_recovery_per_tick_sleep = 0.5
+ground_penalty = 0.4
+unsheltered_bed_multiplier = 0.7
+urgency_threshold = 25.0
+satisfied_threshold = 95.0
+mood_smoothing_ticks = 40.0
+mood_band_happy = 70.0
+mood_band_content = 40.0
+band_display_hysteresis = 0.0

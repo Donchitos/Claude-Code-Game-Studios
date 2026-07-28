@@ -1,0 +1,23 @@
+[gd_resource type="Resource" script_class="CameraInputConfig" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/camera_input/camera_input_config.gd" id="1_camerainput"]
+
+[resource]
+script = ExtResource("1_camerainput")
+start_distance = 18.0
+start_yaw = 0.7
+start_pitch = 0.95
+distance_min = 4.0
+distance_max = 60.0
+zoom_factor_in = 0.9
+zoom_factor_out = 1.1
+pitch_min = 0.15
+pitch_max = 1.5
+q_e_rotate_step = 0.12
+mouse_drag_sensitivity = 0.008
+pan_speed_factor = 0.7
+max_delta_time = 0.1
+world_width_cells = 2000
+world_depth_cells = 2000
+cell_size = 1.0
+pan_bound_margin = 0.0

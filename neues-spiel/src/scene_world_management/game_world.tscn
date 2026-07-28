@@ -1,0 +1,10 @@
+[gd_scene load_steps=4 format=3 uid="uid://dqxwj3n4k7g8a"]
+
+[ext_resource type="Script" path="res://src/scene_world_management/game_world.gd" id="1_gwscript"]
+[ext_resource type="PackedScene" path="res://src/scene_world_management/Valley.tscn" id="2_valley"]
+[ext_resource type="Resource" path="res://data/config/game_world_config.tres" id="3_gwcfg"]
+
+[node name="GameWorld" type="Node3D"]
+script = ExtResource("1_gwscript")
+valley_scene = ExtResource("2_valley")
+config = ExtResource("3_gwcfg")

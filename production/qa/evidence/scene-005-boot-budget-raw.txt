@@ -1,0 +1,12 @@
+scene005: VSync explicitly DISABLED (mandated methodology)
+scene005: ==== REAL FULL BOOT (game_world.tscn, shipped configs) ====
+scene005: boot_state=2 (ACTIVE=2) total_boot_to_active_ms=2585.7
+scene005: resident_chunks=625 grid_state=1(GENERATED=1) villagers=2
+scene005: ==== PHASE BREAKDOWN (isolated primitives, genesis order) ====
+scene005: [phase 1] residency page-in: 108.7 ms, 625 chunks resident
+scene005: [phase 2] nav-graph build (nav_region_size=40): 266.6 ms, is_built=true
+scene005: [phase 3] initial mesh window: 2189.2 ms, 289 chunks tracked
+scene005: [phase 4] roster spawn (starting_villager_count=1): 0.4 ms, 1 placed
+scene005: ==== PHASE TOTAL vs technical-director ceiling ====
+scene005: residency=108.7 nav_graph=266.6 mesh=2189.2 roster=0.4 TOTAL=2564.9
+scene005: ceilings: mesh_phase<=2500.0 total<=3000.0 -- VERDICT=PASS

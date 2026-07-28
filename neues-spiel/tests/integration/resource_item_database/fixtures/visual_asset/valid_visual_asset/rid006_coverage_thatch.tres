@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="ItemDefinitionResource" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://src/resource_item_database/item_definition_resource.gd" id="1_rid006cov"]
+[ext_resource type="BoxMesh" path="res://tests/integration/resource_item_database/fixtures/_shared/placeholder_mesh.tres" id="2_rid006cov"]
+
+[resource]
+script = ExtResource("1_rid006cov")
+id = &"rid006_coverage_thatch"
+display_name = "RID-006 Tier-0 Coverage Filler (thatch)"
+category = &"building_material"
+material_family = &"thatch"
+tier = 0
+visual_asset = ExtResource("2_rid006cov")
+stackable = false
+max_stack_size = 1
+haulable = false
+storage_category = &"materials"
+footprint = Vector2i(1, 1)

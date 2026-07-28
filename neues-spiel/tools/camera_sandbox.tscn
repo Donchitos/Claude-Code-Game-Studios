@@ -1,0 +1,31 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://tools/camera_sandbox.gd" id="1_sandbox"]
+[ext_resource type="Script" path="res://src/camera_input/camera_input.gd" id="2_camerainput"]
+
+[node name="CameraSandbox" type="Node3D"]
+script = ExtResource("1_sandbox")
+
+[node name="Camera3D" type="Camera3D" parent="."]
+far = 1000.0
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
+shadow_enabled = true
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+
+[node name="CameraInput" type="Node" parent="."]
+script = ExtResource("2_camerainput")
+
+[node name="HUD" type="CanvasLayer" parent="."]
+
+[node name="Legend" type="Label" parent="HUD"]
+offset_left = 12.0
+offset_top = 8.0
+offset_right = 760.0
+offset_bottom = 34.0
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 4
+theme_override_font_sizes/font_size = 16
+text = "Q/E + Mitteltaste-Drag: Drehen · Rad: Zoom · WASD: Schwenken · Esc: Beenden"

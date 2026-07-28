@@ -1,0 +1,172 @@
+[gd_scene load_steps=47 format=3]
+
+[ext_resource type="Script" path="res://src/scene_world_management/valley.gd" id="1_valley"]
+[ext_resource type="Script" path="res://src/voxel_world/voxel_world_grid.gd" id="2_voxelgrid"]
+[ext_resource type="Resource" path="res://data/config/voxel_world_config.tres" id="3_voxelcfg"]
+[ext_resource type="Script" path="res://src/camera_input/camera_input.gd" id="4_camerainput"]
+[ext_resource type="Resource" path="res://data/config/camera_input_config.tres" id="5_cameracfg"]
+[ext_resource type="Script" path="res://src/voxel_world/voxel_world_mesher.gd" id="6_mesher"]
+[ext_resource type="Script" path="res://src/voxel_world/voxel_world_mesh_streamer.gd" id="6b_meshstreamer"]
+[ext_resource type="Script" path="res://src/building_system/tool_state_machine.gd" id="7_toolsm"]
+[ext_resource type="Script" path="res://src/building_system/placement_pick.gd" id="8_placementpick"]
+[ext_resource type="Resource" path="res://data/config/placement_pick_config.tres" id="9_placementcfg"]
+[ext_resource type="Script" path="res://src/building_system/commit_pipeline.gd" id="10_commitpipeline"]
+[ext_resource type="Resource" path="res://data/config/commit_pipeline_config.tres" id="10b_commitpipelinecfg"]
+[ext_resource type="Script" path="res://src/building_system/construction_tick_loop.gd" id="11_tickloop"]
+[ext_resource type="Resource" path="res://data/config/construction_tick_loop_config.tres" id="12_tickloopcfg"]
+[ext_resource type="Script" path="res://src/villager_ai/villager_ai.gd" id="13_villagerai"]
+[ext_resource type="Resource" path="res://data/config/villager_ai_config.tres" id="14_villagercfg"]
+[ext_resource type="Script" path="res://src/presentation/torch_flicker.gd" id="15_torchflicker"]
+[ext_resource type="Resource" path="res://data/config/ambient_life_config.tres" id="16_ambientcfg"]
+[ext_resource type="Script" path="res://src/needs_mood/needs_mood.gd" id="17_needsmood"]
+[ext_resource type="Resource" path="res://data/config/needs_mood_config.tres" id="18_needsmoodcfg"]
+[ext_resource type="Script" path="res://src/presentation/villager_body_presenter.gd" id="19_villagerbodypresenter"]
+[ext_resource type="Script" path="res://src/building_system/build_editor_mode.gd" id="20_buildeditormode"]
+[ext_resource type="Script" path="res://src/building_system/wall_tool.gd" id="21_walltool"]
+[ext_resource type="Resource" path="res://data/config/wall_tool_config.tres" id="22_walltoolcfg"]
+[ext_resource type="Script" path="res://src/building_system/floor_tool.gd" id="23_floortool"]
+[ext_resource type="Script" path="res://src/building_system/roof_tool.gd" id="24_rooftool"]
+[ext_resource type="Script" path="res://src/building_system/block_tool.gd" id="25_blocktool"]
+[ext_resource type="Script" path="res://src/building_system/furniture_tool.gd" id="26_furnituretool"]
+[ext_resource type="Script" path="res://src/building_system/ghost_preview.gd" id="27_ghostpreview"]
+[ext_resource type="Resource" path="res://data/config/ghost_preview_config.tres" id="28_ghostpreviewcfg"]
+[ext_resource type="Script" path="res://src/building_system/undo_redo_stack.gd" id="29_undoredostack"]
+[ext_resource type="Resource" path="res://data/config/undo_redo_stack_config.tres" id="30_undoredostackcfg"]
+[ext_resource type="Script" path="res://src/camera_input/camera_mirror.gd" id="31_cameramirror"]
+[ext_resource type="Script" path="res://src/presentation/world_lighting.gd" id="32_worldlighting"]
+[ext_resource type="Resource" path="res://data/config/world_lighting_config.tres" id="33_worldlightingcfg"]
+[ext_resource type="Script" path="res://src/build_validation/build_validation.gd" id="34_buildvalidation"]
+[ext_resource type="Resource" path="res://data/config/build_validation_config.tres" id="35_buildvalidationcfg"]
+[ext_resource type="Script" path="res://src/presentation/loop_payoff_signal_surface.gd" id="36_looppayoffsurface"]
+[ext_resource type="Script" path="res://src/presentation/loop_payoff_adapter.gd" id="37_looppayoffadapter"]
+[ext_resource type="Script" path="res://src/voxel_world/block_appearance_config.gd" id="38_blockappearance"]
+[ext_resource type="Resource" path="res://data/config/block_appearance_config.tres" id="39_blockappearancecfg"]
+[ext_resource type="Script" path="res://src/presentation/furniture_presenter.gd" id="40_furniturepresenter"]
+[ext_resource type="Script" path="res://src/building_system/scaffold_presentation.gd" id="41_scaffoldpresentation"]
+[ext_resource type="Resource" path="res://data/config/scaffold_config.tres" id="42_scaffoldcfg"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_torchindicator"]
+shading_mode = 0
+emission_enabled = true
+emission = Color(1, 0.75, 0.35, 1)
+
+[sub_resource type="SphereMesh" id="SphereMesh_torchindicator"]
+material = SubResource("StandardMaterial3D_torchindicator")
+radius = 0.2
+height = 0.4
+
+[node name="Valley" type="Node3D"]
+script = ExtResource("1_valley")
+villager_ai_config = ExtResource("14_villagercfg")
+scaffold_config = ExtResource("42_scaffoldcfg")
+
+[node name="VoxelWorldGrid" type="Node" parent="."]
+script = ExtResource("2_voxelgrid")
+config = ExtResource("3_voxelcfg")
+
+[node name="VoxelWorldMesher" type="Node3D" parent="."]
+script = ExtResource("6_mesher")
+appearance = ExtResource("39_blockappearancecfg")
+
+[node name="VoxelWorldMeshStreamer" type="Node" parent="."]
+script = ExtResource("6b_meshstreamer")
+
+[node name="CameraInput" type="Node" parent="."]
+script = ExtResource("4_camerainput")
+config = ExtResource("5_cameracfg")
+
+[node name="ValleyCamera" type="Camera3D" parent="."]
+current = true
+
+[node name="CameraMirror" type="Node" parent="."]
+script = ExtResource("31_cameramirror")
+
+[node name="ToolStateMachine" type="Node" parent="."]
+script = ExtResource("7_toolsm")
+
+[node name="PlacementPick" type="Node" parent="."]
+script = ExtResource("8_placementpick")
+config = ExtResource("9_placementcfg")
+
+[node name="CommitPipeline" type="Node" parent="."]
+script = ExtResource("10_commitpipeline")
+config = ExtResource("10b_commitpipelinecfg")
+
+[node name="ConstructionTickLoop" type="Node" parent="."]
+script = ExtResource("11_tickloop")
+config = ExtResource("12_tickloopcfg")
+
+[node name="BuildValidation" type="Node" parent="."]
+script = ExtResource("34_buildvalidation")
+config = ExtResource("35_buildvalidationcfg")
+
+[node name="VillagerAi" type="Node" parent="."]
+script = ExtResource("13_villagerai")
+config = ExtResource("14_villagercfg")
+villager_id = 0
+
+[node name="NeedsMood" type="Node" parent="."]
+script = ExtResource("17_needsmood")
+config = ExtResource("18_needsmoodcfg")
+
+[node name="AmbientTorchLight" type="OmniLight3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.5, 1.5, 0.5)
+light_color = Color(1, 0.93, 0.8, 1)
+omni_range = 6.0
+
+[node name="AmbientTorchIndicator" type="MeshInstance3D" parent="AmbientTorchLight"]
+mesh = SubResource("SphereMesh_torchindicator")
+
+[node name="TorchFlicker" type="Node" parent="."]
+script = ExtResource("15_torchflicker")
+config = ExtResource("16_ambientcfg")
+
+[node name="VillagerBodyPresenter" type="Node3D" parent="."]
+script = ExtResource("19_villagerbodypresenter")
+
+[node name="FurniturePresenter" type="Node3D" parent="."]
+script = ExtResource("40_furniturepresenter")
+
+[node name="ScaffoldPresentation" type="Node3D" parent="."]
+script = ExtResource("41_scaffoldpresentation")
+
+[node name="BuildEditorMode" type="Node" parent="."]
+script = ExtResource("20_buildeditormode")
+
+[node name="WallTool" type="Node" parent="."]
+script = ExtResource("21_walltool")
+config = ExtResource("22_walltoolcfg")
+
+[node name="FloorTool" type="Node" parent="."]
+script = ExtResource("23_floortool")
+
+[node name="RoofTool" type="Node" parent="."]
+script = ExtResource("24_rooftool")
+
+[node name="BlockTool" type="Node" parent="."]
+script = ExtResource("25_blocktool")
+
+[node name="FurnitureTool" type="Node" parent="."]
+script = ExtResource("26_furnituretool")
+
+[node name="GhostPreview" type="Node" parent="."]
+script = ExtResource("27_ghostpreview")
+config = ExtResource("28_ghostpreviewcfg")
+
+[node name="UndoRedoStack" type="Node" parent="."]
+script = ExtResource("29_undoredostack")
+config = ExtResource("30_undoredostackcfg")
+
+[node name="Sun" type="DirectionalLight3D" parent="."]
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+
+[node name="WorldLighting" type="Node" parent="."]
+script = ExtResource("32_worldlighting")
+config = ExtResource("33_worldlightingcfg")
+
+[node name="LoopPayoffSignalSurface" type="Node" parent="."]
+script = ExtResource("36_looppayoffsurface")
+
+[node name="LoopPayoffAdapter" type="Node" parent="."]
+script = ExtResource("37_looppayoffadapter")

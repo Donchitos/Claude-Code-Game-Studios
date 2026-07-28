@@ -1,0 +1,2235 @@
+diff --git a/neues-spiel/src/building_system/blueprint_cell.gd b/neues-spiel/src/building_system/blueprint_cell.gd
+index 77a9e5e..52c8151 100644
+--- a/neues-spiel/src/building_system/blueprint_cell.gd
++++ b/neues-spiel/src/building_system/blueprint_cell.gd
+@@ -77,9 +77,15 @@ enum MicroState {
+ ## `[furniture]` = 8, [TR-building-system-079]) -- Story building-029
+ ## addition (see class doc comment). Determines which tuning knob
+ ## [method ConstructionTickLoop.required_ticks_for] reads for this cell.
++## Story `building-034` addition (ADR-0007/TD ruling D1/D3): `SCAFFOLD` is a
++## THIRD category, mirroring `FURNITURE`'s own routing shape -- a completing
++## `SCAFFOLD` job routes to [ScaffoldRegistry] INSTEAD OF [VoxelWorldGrid]
++## (D1: scaffolding is not voxel data), exactly as `FURNITURE` routes to
++## [FurnitureRegistry] (BV-1).
+ enum Category {
+ 	BLOCK,
+ 	FURNITURE,
++	SCAFFOLD,
+ }
+ 
+ ## The cell address this blueprint cell occupies.
+diff --git a/neues-spiel/src/building_system/build_project.gd b/neues-spiel/src/building_system/build_project.gd
+index 69c33d6..ade1578 100644
+--- a/neues-spiel/src/building_system/build_project.gd
++++ b/neues-spiel/src/building_system/build_project.gd
+@@ -95,9 +95,19 @@ enum ProjectState {
+ ## does not yet model (a future dig-order story's addition). This story
+ ## carries the field only; no kind-based merge/rollup behavior is
+ ## implemented here yet.
++## Story `building-034` addition (TD ruling D3): `SCAFFOLD` is a THIRD `Kind`
++## -- a scaffold structure is its OWN project, never a member of the project
++## it serves (D3's circularity finding: `recompute_state()` reaches `DONE`
++## iff every tracked cell is `BUILT`, and `DONE` is the dismantle trigger --
++## a scaffold cell counted among the owner's OWN cells would make the
++## dismantle trigger a state the scaffolding itself prevents). [member
++## BuildProjectRegistry.assign_cells] already gates grouping on
++## `existing_project.kind == kind` -- a `SCAFFOLD` project can therefore
++## NEVER merge into the structure it serves, for free.
+ enum Kind {
+ 	BUILD,
+ 	DIG,
++	SCAFFOLD,
+ }
+ 
+ ## Caller-supplied identity (Story building-003's future reverse index owns
+@@ -139,10 +149,20 @@ var cells: Dictionary[Vector3i, BlueprintCell] = {}
+ ## "Attribution is not a control channel").
+ var worker_ids: Array[int] = []
+ 
++## Story `building-034` addition (TD ruling D3) -- the id of the `BUILD`-kind
++## project this scaffold structure serves, or `-1` (the same sentinel
++## convention [method BuildProjectRegistry.project_at_cell] already uses) for
++## every non-`SCAFFOLD` project. A scaffold project's dismantle is triggered
++## by its owner reaching `DONE` or being canceled (AC3/D4) -- this link field
++## is what a dismantle coordinator resolves "which scaffold structure serves
++## THIS project" through, never a name/position heuristic.
++var owner_project_id: int = -1
+ 
+-func _init(p_id: int, p_kind: Kind = Kind.BUILD) -> void:
++
++func _init(p_id: int, p_kind: Kind = Kind.BUILD, p_owner_project_id: int = -1) -> void:
+ 	id = p_id
+ 	kind = p_kind
++	owner_project_id = p_owner_project_id
+ 
+ 
+ ## Adds [param blueprint_cell] to this project's cell set and recomputes the
+@@ -313,6 +333,7 @@ func serialize() -> Dictionary:
+ 		"kind": kind,
+ 		"state": state,
+ 		"worker_ids": worker_ids.duplicate(),
++		"owner_project_id": owner_project_id,
+ 	}
+ 
+ 
+diff --git a/neues-spiel/src/building_system/build_project_registry.gd b/neues-spiel/src/building_system/build_project_registry.gd
+index ff2efbc..f56429e 100644
+--- a/neues-spiel/src/building_system/build_project_registry.gd
++++ b/neues-spiel/src/building_system/build_project_registry.gd
+@@ -95,6 +95,18 @@ func register_project(project: BuildProject) -> void:
+ 		_next_id = project.id + 1
+ 
+ 
++## Story `building-034` addition (TD ruling D3) -- a fresh, never-before-used
++## project id, for a caller ([ScaffoldErectionCoordinator]) that constructs
++## its OWN [BuildProject] externally (a `SCAFFOLD`-kind project is never
++## produced by [method assign_cells], since scaffolding is never grouped/
++## merged with player-drawn cells) and must still draw from the SAME id
++## space every other project uses, never a second counter.
++func allocate_project_id() -> int:
++	var id: int = _next_id
++	_next_id += 1
++	return id
++
++
+ ## The core grouping/merge entry point (AC55/AC56, Rule 14c, F6,
+ ## [TR-building-system-107]) -- [signal CommitPipeline.blueprint_cells_created]'s
+ ## real future consumer (that class's own doc comment names this exact
+diff --git a/neues-spiel/src/building_system/construction_tick_loop.gd b/neues-spiel/src/building_system/construction_tick_loop.gd
+index 5b90602..4e05b5b 100644
+--- a/neues-spiel/src/building_system/construction_tick_loop.gd
++++ b/neues-spiel/src/building_system/construction_tick_loop.gd
+@@ -423,6 +423,14 @@ var write_tag: BuildingSystemWriteTag = null
+ ## story exists; no such assembly exists yet in this codebase.
+ var furniture_registry: FurnitureRegistry = null
+ 
++## Story `building-034` addition (TD ruling D1/D3) -- the sole destination a
++## completing [constant BlueprintCell.Category.SCAFFOLD] job's cell routes to,
++## INSTEAD OF [VoxelWorldGrid], mirroring [member furniture_registry]'s own
++## precedent exactly. `null` is tolerated identically (a completing scaffold
++## job with no registry wired is silently dropped, never falls back to
++## writing the grid).
++var scaffold_registry: ScaffoldRegistry = null
++
+ ## Story building-033 addition ([TR-building-system-075]) -- fires exactly
+ ## once per [method _on_tick] dispatch that completes at least one job,
+ ## carrying every cell completed in THIS SAME dispatch (never a zero-cell
+@@ -673,6 +681,7 @@ func create_demolition_order(blueprint_cell: BlueprintCell) -> bool:
+ 	if (
+ 		blueprint_cell.category != BlueprintCell.Category.BLOCK
+ 		and blueprint_cell.category != BlueprintCell.Category.FURNITURE
++		and blueprint_cell.category != BlueprintCell.Category.SCAFFOLD
+ 	):
+ 		return false
+ 	if blueprint_cell.is_demolition_queued:
+@@ -780,6 +789,8 @@ static func required_ticks_for(category: BlueprintCell.Category, ticks_config: C
+ 	match category:
+ 		BlueprintCell.Category.FURNITURE:
+ 			return ticks_config.base_build_ticks_furniture
++		BlueprintCell.Category.SCAFFOLD:
++			return ticks_config.base_build_ticks_scaffold
+ 		_:
+ 			return ticks_config.base_build_ticks_block
+ 
+@@ -793,6 +804,8 @@ static func required_demolition_ticks_for(
+ 	match category:
+ 		BlueprintCell.Category.FURNITURE:
+ 			return ticks_config.base_demolition_ticks_furniture
++		BlueprintCell.Category.SCAFFOLD:
++			return ticks_config.base_demolition_ticks_scaffold
+ 		_:
+ 			return ticks_config.base_demolition_ticks_block
+ 
+@@ -869,11 +882,17 @@ func _on_tick() -> void:
+ 				# was never written into the grid in the first place, so
+ 				# there is nothing to clear. Routed to [member
+ 				# furniture_registry] instead, in [method _complete_jobs].
+-				if job.blueprint_cell.category != BlueprintCell.Category.FURNITURE:
++				if (
++					job.blueprint_cell.category != BlueprintCell.Category.FURNITURE
++					and job.blueprint_cell.category != BlueprintCell.Category.SCAFFOLD
++				):
+ 					# Story building-009 (Rule 14j/14l, TR-115) -- always
+ 					# included for a BLOCK cell: the restore_value snapshot
+ 					# if this was a floor-excavation entry, otherwise an
+-					# explicit empty cell ("the clear occurs").
++					# explicit empty cell ("the clear occurs"). Story
++					# building-034: SCAFFOLD is excluded identically to
++					# FURNITURE -- never touched the grid, nothing to clear
++					# (routed to [member scaffold_registry] instead).
+ 					changes[cell] = (
+ 						job.blueprint_cell.restore_value
+ 						if job.blueprint_cell.restore_value != null
+@@ -882,8 +901,13 @@ func _on_tick() -> void:
+ 			# Story building-028 (ADR-0016 BV-1 ruling) -- a FURNITURE-category
+ 			# construction completion is EXCLUDED from the bulk_write payload
+ 			# entirely; it is routed to [member furniture_registry] instead, in
+-			# [method _complete_jobs]. Every other category is unaffected.
+-			elif job.blueprint_cell.category != BlueprintCell.Category.FURNITURE:
++			# [method _complete_jobs]. Story building-034: SCAFFOLD is excluded
++			# identically (D1: never voxel data). Every other category is
++			# unaffected.
++			elif (
++				job.blueprint_cell.category != BlueprintCell.Category.FURNITURE
++				and job.blueprint_cell.category != BlueprintCell.Category.SCAFFOLD
++			):
+ 				changes[cell] = job.blueprint_cell.contents
+ 			completed_jobs.append(job)
+ 	_complete_jobs(changes, completed_jobs)
+@@ -1020,6 +1044,26 @@ func _complete_jobs(changes: Dictionary[Vector3i, CellContents], completed_jobs:
+ 		# building-017" block, point 4).
+ 		if _furniture_demolished_callback.is_valid():
+ 			_furniture_demolished_callback.call(definition_id, footprint_cells)
++	# Story `building-034` (TD ruling D1/D3) -- route SCAFFOLD construction
++	# completions to [member scaffold_registry] INSTEAD OF the grid.
++	for job: _ActiveJob in completed_jobs:
++		if (
++			job.is_demolition
++			or job.blueprint_cell.category != BlueprintCell.Category.SCAFFOLD
++			or scaffold_registry == null
++		):
++			continue
++		scaffold_registry.add(job.blueprint_cell.cell)
++	# Story `building-034` -- route SCAFFOLD demolition completions to
++	# [member scaffold_registry]'s own [method ScaffoldRegistry.remove].
++	# SC-INV-1 (ADR-0007 §1b) is enforced by [ScaffoldDismantlePlanner] at
++	# ORDER-of-demolition time, before this class ever completes the job.
++	for job: _ActiveJob in completed_jobs:
++		if not job.is_demolition or job.blueprint_cell.category != BlueprintCell.Category.SCAFFOLD:
++			continue
++		if scaffold_registry == null:
++			continue
++		scaffold_registry.remove(job.blueprint_cell.cell)
+ 	if not completed_construction_cells.is_empty():
+ 		construction_completed.emit(completed_construction_cells)
+ 	if not completed_demolition_cells.is_empty():
+diff --git a/neues-spiel/src/building_system/construction_tick_loop_config.gd b/neues-spiel/src/building_system/construction_tick_loop_config.gd
+index 42a0063..cbb3365 100644
+--- a/neues-spiel/src/building_system/construction_tick_loop_config.gd
++++ b/neues-spiel/src/building_system/construction_tick_loop_config.gd
+@@ -64,6 +64,27 @@ const BASE_DEMOLITION_TICKS_FURNITURE_MAX: int = 40
+ ## this story's own BLOCK-only scope.
+ @export var base_demolition_ticks_furniture: int = 8
+ 
++## Safe range for [member base_build_ticks_scaffold]/[member
++## base_demolition_ticks_scaffold] (story `building-034`, TD ruling D7: "1-20
++## to match its siblings").
++const BASE_BUILD_TICKS_SCAFFOLD_MIN: int = 1
++const BASE_BUILD_TICKS_SCAFFOLD_MAX: int = 20
++const BASE_DEMOLITION_TICKS_SCAFFOLD_MIN: int = 1
++const BASE_DEMOLITION_TICKS_SCAFFOLD_MAX: int = 20
++
++## `base_build_ticks[scaffold]` (story `building-034`, AC2/TD ruling D7).
++## **PROVISIONAL -- LEFT TO THE USER.** D7 fixed the hard constraints only
++## (`>= 1`, never zero; strictly `< base_build_ticks_block` per AC2, asserted
++## by the AC2 test rather than a `validate()` BLOCKING invariant) -- the pacing
++## VALUE itself is a creative/design call the TD deliberately did not make.
++## Shipped here as `1` (a quarter of a wall cell's default 4) purely to keep
++## the structure buildable and testable; DO NOT read this as tuned.
++@export var base_build_ticks_scaffold: int = 1
++
++## `base_demolition_ticks[scaffold]` -- same PROVISIONAL status as [member
++## base_build_ticks_scaffold]; see that field's own doc comment.
++@export var base_demolition_ticks_scaffold: int = 1
++
+ 
+ ## See [ConfigResource.validate]. Clamps all four fields to their respective
+ ## bounds and appends a warning string per clamped field -- no BLOCKING
+@@ -110,4 +131,21 @@ func validate() -> Array[String]:
+ 		base_demolition_ticks_furniture = clampi(
+ 			base_demolition_ticks_furniture, BASE_DEMOLITION_TICKS_FURNITURE_MIN, BASE_DEMOLITION_TICKS_FURNITURE_MAX
+ 		)
++	if base_build_ticks_scaffold < BASE_BUILD_TICKS_SCAFFOLD_MIN or base_build_ticks_scaffold > BASE_BUILD_TICKS_SCAFFOLD_MAX:
++		issues.append(
++			"base_build_ticks_scaffold out of range [%s, %s], got %s -- clamped" %
++			[BASE_BUILD_TICKS_SCAFFOLD_MIN, BASE_BUILD_TICKS_SCAFFOLD_MAX, base_build_ticks_scaffold]
++		)
++		base_build_ticks_scaffold = clampi(base_build_ticks_scaffold, BASE_BUILD_TICKS_SCAFFOLD_MIN, BASE_BUILD_TICKS_SCAFFOLD_MAX)
++	if (
++		base_demolition_ticks_scaffold < BASE_DEMOLITION_TICKS_SCAFFOLD_MIN
++		or base_demolition_ticks_scaffold > BASE_DEMOLITION_TICKS_SCAFFOLD_MAX
++	):
++		issues.append(
++			"base_demolition_ticks_scaffold out of range [%s, %s], got %s -- clamped" %
++			[BASE_DEMOLITION_TICKS_SCAFFOLD_MIN, BASE_DEMOLITION_TICKS_SCAFFOLD_MAX, base_demolition_ticks_scaffold]
++		)
++		base_demolition_ticks_scaffold = clampi(
++			base_demolition_ticks_scaffold, BASE_DEMOLITION_TICKS_SCAFFOLD_MIN, BASE_DEMOLITION_TICKS_SCAFFOLD_MAX
++		)
+ 	return issues
+diff --git a/neues-spiel/src/villager_ai/job_selection_result.gd b/neues-spiel/src/villager_ai/job_selection_result.gd
+index bb7cb60..bfe9568 100644
+--- a/neues-spiel/src/villager_ai/job_selection_result.gd
++++ b/neues-spiel/src/villager_ai/job_selection_result.gd
+@@ -29,10 +29,24 @@ var chosen: BlueprintCell = null
+ ## total candidates were supplied to it.
+ var pathfind_attempt_count: int = 0
+ 
++## Story `building-034` addition (TD ruling D5): the deterministic list of
++## every candidate cell THIS pass probed via [method VillagerNavGraph.find_path]
++## and found unreachable (`path.is_empty()`) -- [method
++## VillagerJobSelector.select_job] already computed exactly this set inside
++## its own round loop and previously threw it away. `select_job` stays a
++## PURE static function (D5: "reports nothing itself, gains no dependency")
++## -- the caller ([VillagerAi]) forwards this list to
++## [method ConstructionJobQueue.report_unreachable], throttled by the
++## already-landed retry cooldown.
++var unreachable_cells: Array[Vector3i] = []
+ 
+-func _init(p_chosen: BlueprintCell = null, p_pathfind_attempt_count: int = 0) -> void:
++
++func _init(
++	p_chosen: BlueprintCell = null, p_pathfind_attempt_count: int = 0, p_unreachable_cells: Array[Vector3i] = []
++) -> void:
+ 	chosen = p_chosen
+ 	pathfind_attempt_count = p_pathfind_attempt_count
++	unreachable_cells = p_unreachable_cells
+ 
+ 
+ ## Whether this pass found a reachable job -- the explicit "hit or miss"
+diff --git a/neues-spiel/src/villager_ai/villager_ai.gd b/neues-spiel/src/villager_ai/villager_ai.gd
+index 4ed3569..f88ca72 100644
+--- a/neues-spiel/src/villager_ai/villager_ai.gd
++++ b/neues-spiel/src/villager_ai/villager_ai.gd
+@@ -689,6 +689,27 @@ var unstuck_telemetry: VillagerUnstuckTelemetry = null
+ ## this villager's own [method setup] runs.
+ var nav_graph: VillagerNavGraph = null
+ 
++## Scaffold occupancy dependency (story `building-034`, ADR-0007 §1a/§1b, TD
++## ruling D1) -- a Building-System-owned [ScaffoldRegistry], the SECOND
++## occupancy source the shared walkability predicates now accept alongside
++## [member voxel_world]. Duck-typed `Object` (never the concrete
++## [ScaffoldRegistry] type) mirroring [member job_queue]/[member
++## needs_provider]'s own established "shared collaborator, code-assigned,
++## test-mockable without inheriting the real class" precedent -- callers only
++## ever invoke the ONE method the predicates duck-type against,
++## `has_scaffold(cell: Vector3i) -> bool`. Deliberately nil-safe, NOT
++## `setup()`-asserted (mirrors [member nav_graph]'s own precedent exactly): a
++## villager with this left `null` observes EXACTLY pre-amendment behaviour --
++## every predicate call below passes it straight through as the shared
++## predicates' own defaulted `scaffold_source` parameter, and a `null` source
++## is structurally equivalent to "no source supplied" there. This is the
++## SOLE injection point (D1: "the injection point is VillagerAi's existing
++## one-line delegations, not every call site") -- every consumer holding a
++## [VillagerAi] ([VillagerNavGraph], [VillagerRescueTargetSearch], the
++## re-path filter) becomes scaffold-aware consistently and for free by
++## calling this instance's own [method is_standable]/[method is_step_legal].
++var scaffold_registry: Object = null
++
+ ## Story villager-ai-019's own per-villager random source for F3/Rule 7c
+ ## selection ([VillagerWanderSelector.select_micro_behavior]/[method
+ ## VillagerWanderSelector.select_wander_target]) -- see this class's own doc
+@@ -1172,7 +1193,7 @@ func _process(_delta: float) -> void:
+ ## clause.
+ func is_standable(cell: Vector3i) -> bool:
+ 	assert(voxel_world != null, "VillagerAi.voxel_world not wired")
+-	return VillagerWalkabilityRules.is_standable(voxel_world, cell)
++	return VillagerWalkabilityRules.is_standable(voxel_world, cell, scaffold_registry)
+ 
+ 
+ ## Step-legality predicate (ADR-0007 Decision §1, GDD Rule 9/[TR-villager-ai-
+@@ -1180,8 +1201,13 @@ func is_standable(cell: Vector3i) -> bool:
+ ## BV-4): the real body, doc comment and all, now lives on
+ ## [method VillagerWalkabilityRules.is_step_legal]. This method's signature
+ ## is unchanged so every existing caller keeps working untouched.
++##
++## Story `building-034` (ADR-0007 §1a/§1b, D1): forwards [member
++## scaffold_registry] as the shared predicates' `scaffold_source` -- this is
++## the SOLE injection point (D1) that makes [VillagerNavGraph] (and every
++## other consumer holding a [VillagerAi]) scaffold-aware for free.
+ func is_step_legal(from_cell: Vector3i, to_cell: Vector3i) -> bool:
+-	return VillagerWalkabilityRules.is_step_legal(voxel_world, from_cell, to_cell)
++	return VillagerWalkabilityRules.is_step_legal(voxel_world, from_cell, to_cell, scaffold_registry)
+ 
+ 
+ ## Body-column derivation (Story villager-ai-003, ADR-0009 slice-propagation
+@@ -1549,10 +1575,19 @@ func _claim_job(cell: Vector3i) -> bool:
+ ## villager-ai-011, GDD Rule 6/AC9, [TR-villager-ai-behavior-055]). Nil-safe,
+ ## same rationale as [method _has_available_job]. Delegates entirely to
+ ## [member ConstructionJobQueue.report_unreachable] -- this class owns no
+-## ghost-tint/visual state of its own; only [method _abandon_travel]'s WORK
+-## branch ever calls this, and only for a job THIS villager had just claimed
+-## and then failed to path to (never for F2's own silent pre-claim
+-## reachability skip, which never claims or reports anything).
++## ghost-tint/visual state of its own.
++##
++## **AMENDED 2026-07-27 (story `building-034`, TD ruling D5).** Previously
++## only [method _abandon_travel]'s WORK branch ever called this (a job THIS
++## villager had just claimed and then failed to path to) -- F2's own silent
++## pre-claim reachability skip never called or reported anything. That is no
++## longer true: [method _attempt_claim_and_travel_to_job] now ALSO calls this
++## for every candidate [VillagerJobSelector.select_job] itself found
++## unreachable this pass (throttled by the same per-cell cooldown), so the
++## Building System can detect an unreachable cell and erect scaffolding for
++## it BEFORE it is ever claimed. A doc comment that contradicts the code is
++## how `villager-ai-024` lost a day -- this comment is rewritten precisely so
++## it does not repeat that.
+ func _report_job_unreachable(cell: Vector3i) -> void:
+ 	if job_queue == null:
+ 		return
+@@ -1631,6 +1666,21 @@ func _attempt_claim_and_travel_to_job() -> bool:
+ 		var result: JobSelectionResult = VillagerJobSelector.select_job(
+ 			candidates, current_cell, nav_graph, config.job_candidate_count, config.max_selection_candidates
+ 		)
++		# Story `building-034` (TD ruling D5) -- F2's own silent pre-claim
++		# reachability skip becomes a REPORTING skip: every cell this pass
++		# probed and found unreachable is forwarded to [member job_queue]'s
++		# `report_unreachable` seam, throttled by the SAME already-landed
++		# per-cell cooldown ([member _unreachable_retry_after_tick] /
++		# [method _is_job_cooling_down]) a post-claim pathing failure already
++		# uses -- a report can never storm per tick. This rewrites the
++		# "never for F2's own silent pre-claim reachability skip" sentence
++		# [method _report_job_unreachable]'s own doc comment used to state
++		# (correctly, before this story).
++		for unreachable_cell: Vector3i in result.unreachable_cells:
++			if _is_job_cooling_down(unreachable_cell):
++				continue
++			_report_job_unreachable(unreachable_cell)
++			_unreachable_retry_after_tick[unreachable_cell] = _tick_count + config.unreachable_retry_ticks
+ 		if not result.has_selection():
+ 			return false
+ 		if _claim_job(result.chosen.cell):
+@@ -2757,6 +2807,16 @@ func _get_other_villager_cells() -> Array[Vector3i]:
+ ## behind [method ConstructionTickLoop.set_seal_prevention_predicate]) --
+ ## this method itself has no Building System awareness whatsoever, exactly
+ ## like [method is_standable]/[method is_step_legal].
++##
++## Story `building-034` (ADR-0007 §1b, TD ruling D1 -- "the correction the
++## story missed"): the escape-route search now ALSO tries the same-column
++## neighbors directly above/below [member current_cell] -- a scaffold-to-
++## scaffold vertical step is a legal escape route since §2a, and a villager
++## standing ON a scaffold cell has air beneath it, so leaving this search
++## purely horizontal would silently under-count real escape routes once
++## scaffolding lands. [constant VillagerNavGraph.VERTICAL_SAME_COLUMN_OFFSETS]
++## is the same constant [VillagerNavGraph]'s own patch pass reuses -- never a
++## second, independently-declared offset pair.
+ func would_trap_builder(written_cell: Vector3i) -> bool:
+ 	if not _is_standable_after_write(current_cell, written_cell):
+ 		return true
+@@ -2768,6 +2828,13 @@ func would_trap_builder(written_cell: Vector3i) -> bool:
+ 				and _is_step_legal_after_write(current_cell, neighbor, written_cell)
+ 			):
+ 				return false
++	for dy: int in VillagerNavGraph.VERTICAL_SAME_COLUMN_OFFSETS:
++		var neighbor: Vector3i = current_cell + Vector3i(0, dy, 0)
++		if (
++			_is_standable_after_write(neighbor, written_cell)
++			and _is_step_legal_after_write(current_cell, neighbor, written_cell)
++		):
++			return false
+ 	return true
+ 
+ 
+@@ -2777,8 +2844,21 @@ func would_trap_builder(written_cell: Vector3i) -> bool:
+ ## through the override-aware [method _is_solid_after_write]/[method
+ ## _is_passable_after_write] below instead of [method _is_solid]/[method
+ ## _is_passable] directly.
++##
++## **Story `building-034` (ADR-0007 §1b, MUST receive the scaffold source):**
++## a villager standing on a scaffold cell has air beneath it -- a
++## scaffold-blind version of this twin would report it unstandable and
++## [method would_trap_builder] would return `true` for essentially every
++## write that villager evaluates, firing the self-seal exemption
++## continuously. [member scaffold_registry] is consulted via [method
++## _has_scaffold] exactly like the non-`_after_write` [method
++## VillagerWalkabilityRules.is_standable] -- the hypothetical write never
++## changes real scaffold occupancy, so this read is never routed through an
++## "as if written" scaffold twin of its own; only solidity/passability are
++## hypothetical here.
+ func _is_standable_after_write(cell: Vector3i, written_cell: Vector3i) -> bool:
+-	if not _is_solid_after_write(cell + Vector3i(0, -1, 0), written_cell):
++	var solid_below: bool = _is_solid_after_write(cell + Vector3i(0, -1, 0), written_cell)
++	if not solid_below and not _has_scaffold(cell):
+ 		return false
+ 	for offset in range(VILLAGER_CLEARANCE):
+ 		if not _is_passable_after_write(cell + Vector3i(0, offset, 0), written_cell):
+@@ -2791,11 +2871,29 @@ func _is_standable_after_write(cell: Vector3i, written_cell: Vector3i) -> bool:
+ ## is_step_legal]; only the diagonal flanker standability reads are routed
+ ## through [method _is_standable_after_write] instead of [method
+ ## is_standable] directly.
++##
++## Story `building-034` (ADR-0007 §2a clause 2, mirrored here for the
++## `_after_write` shape): a same-column pair is legal only if BOTH endpoints
++## are (really -- never hypothetically) scaffold cells.
+ func _is_step_legal_after_write(from_cell: Vector3i, to_cell: Vector3i, written_cell: Vector3i) -> bool:
+ 	if absi(to_cell.y - from_cell.y) > MAX_STEP_HEIGHT:
+ 		return false
+ 	var dx: int = to_cell.x - from_cell.x
+ 	var dz: int = to_cell.z - from_cell.z
++	if dx == 0 and dz == 0:
++		var from_is_scaffold: bool = _has_scaffold(from_cell)
++		var to_is_scaffold: bool = _has_scaffold(to_cell)
++		if from_is_scaffold and to_is_scaffold:
++			return true  # §2a: the one new edge class.
++		if from_is_scaffold or to_is_scaffold:
++			return false  # Never climb between ordinary ground and scaffolding.
++		# NEITHER endpoint is scaffold: fall through to the pre-amendment rules.
++		# Same correction as VillagerWalkabilityRules.is_step_legal — the gate
++		# was copied here verbatim, so it carried the same defect: it flipped
++		# this predicate from true to false for every ordinary same-column
++		# pair, and these _after_write twins feed would_trap_builder. Refusing
++		# them made the builder believe far more writes would trap it than
++		# actually do.
+ 	if dx != 0 and dz != 0:
+ 		var flanker_a := Vector3i(to_cell.x, from_cell.y, from_cell.z)
+ 		var flanker_b := Vector3i(from_cell.x, from_cell.y, to_cell.z)
+@@ -2807,6 +2905,18 @@ func _is_step_legal_after_write(from_cell: Vector3i, to_cell: Vector3i, written_
+ 	return true
+ 
+ 
++## The O(1) duck-typed scaffold-membership read [member scaffold_registry]
++## exposes -- see that field's own doc comment. `null` is structurally
++## "never scaffold," mirroring [method VillagerWalkabilityRules._has_scaffold]
++## exactly (this is the instance-side twin, since [member scaffold_registry]
++## is a per-villager-population-shared field, not a static parameter).
++func _has_scaffold(cell: Vector3i) -> bool:
++	if scaffold_registry == null:
++		return false
++	@warning_ignore("unsafe_method_access")
++	return bool(scaffold_registry.has_scaffold(cell))
++
++
+ ## [method _is_solid]'s override-aware twin -- [param written_cell] always
+ ## reads solid (the hypothetical write has committed), regardless of
+ ## [member voxel_world]'s REAL current contents there.
+@@ -2875,6 +2985,12 @@ func _is_passable_after_write(cell: Vector3i, written_cell: Vector3i) -> bool:
+ ## independently-written field-assignment blocks.
+ func climb_onto_self_sealed_cell(sealed_cell: Vector3i) -> void:
+ 	_snap_current_cell_to(sealed_cell + Vector3i(0, 1, 0))
++	# Story `building-034` COUPLED RULING -- telemetry, not retirement (see
++	# [VillagerUnstuckTelemetry]'s own doc comment). Nil-safe: mirrors this
++	# class's own established "telemetry is observational, never gates
++	# behaviour" precedent (see [method _perform_watchdog_rescue]).
++	if unstuck_telemetry != null:
++		unstuck_telemetry.record_self_seal_climb()
+ 
+ 
+ ## See [method climb_onto_self_sealed_cell]'s own doc comment for the full
+@@ -2964,6 +3080,11 @@ func _relocate_if_marooned() -> void:
+ 			return
+ 		if _is_useful_relocation_candidate(result.cell):
+ 			_snap_current_cell_to(result.cell)
++			# Story `building-034` COUPLED RULING -- telemetry, not
++			# retirement, recorded ONLY on an actual relocation (never on
++			# one of this method's own early no-op returns above).
++			if unstuck_telemetry != null:
++				unstuck_telemetry.record_marooned_relocation()
+ 			return
+ 		excluded_candidates.append(result.cell)
+ 
+diff --git a/neues-spiel/src/villager_ai/villager_job_selector.gd b/neues-spiel/src/villager_ai/villager_job_selector.gd
+index 6e0a8b1..46cece0 100644
+--- a/neues-spiel/src/villager_ai/villager_job_selector.gd
++++ b/neues-spiel/src/villager_ai/villager_job_selector.gd
+@@ -152,6 +152,12 @@ static func select_job(
+ 		))
+ 	ranked.sort_custom(_less_than_by_chebyshev)
+ 
++	# Story `building-034` (TD ruling D5) -- every candidate this pass probes
++	# and finds unreachable is recorded here, deterministically, for the
++	# caller to forward to [method ConstructionJobQueue.report_unreachable].
++	# This function stays PURE: it reports nothing itself, gains no
++	# job-queue dependency.
++	var unreachable_cells: Array[Vector3i] = []
+ 	var attempts: int = 0
+ 	var round_start: int = 0
+ 	while round_start < ranked.size() and attempts < max_selection_candidates:
+@@ -167,12 +173,14 @@ static func select_job(
+ 				reachable_this_round.append(_ReachableCandidate.new(
+ 					candidate.blueprint_cell, candidate.queue_index, VillagerNavGraph.path_length_cells(path)
+ 				))
++			else:
++				unreachable_cells.append(candidate.blueprint_cell.cell)
+ 		if not reachable_this_round.is_empty():
+ 			reachable_this_round.sort_custom(_less_than_by_selection_key)
+-			return JobSelectionResult.new(reachable_this_round[0].blueprint_cell, attempts)
++			return JobSelectionResult.new(reachable_this_round[0].blueprint_cell, attempts, unreachable_cells)
+ 		round_start = round_end
+ 
+-	return JobSelectionResult.new(null, attempts)
++	return JobSelectionResult.new(null, attempts, unreachable_cells)
+ 
+ 
+ ## Straight-line (Chebyshev / chessboard) distance between two cells --
+diff --git a/neues-spiel/src/villager_ai/villager_nav_graph.gd b/neues-spiel/src/villager_ai/villager_nav_graph.gd
+index 897df0d..510827c 100644
+--- a/neues-spiel/src/villager_ai/villager_nav_graph.gd
++++ b/neues-spiel/src/villager_ai/villager_nav_graph.gd
+@@ -91,6 +91,16 @@ const HORIZONTAL_HALF_OFFSETS: Array[Vector2i] = [
+ ## at a different Y (a step up or down, e.g. a staircase).
+ const VERTICAL_STEP_OFFSETS: Array[int] = [-1, 0, 1]
+ 
++## Story `building-034` (ADR-0007 §2a clause 1) -- the ONLY same-column
++## (`dx = 0, dz = 0`) candidate offsets this graph ever offers, and the only
++## place `(0, +-1, 0)` appears anywhere in this class's candidate generation.
++## Reused verbatim by [method VillagerAi.would_trap_builder]'s own escape-
++## route search (§1b) -- never a second, independently-declared same-column
++## offset pair. Legality is still gated entirely by [method
++## VillagerWalkabilityRules.is_step_legal]'s own explicit same-column refusal
++## (§2a clause 2) -- offering the candidate here does not itself admit it.
++const VERTICAL_SAME_COLUMN_OFFSETS: Array[int] = [-1, 1]
++
+ ## The underlying AStar3D graph. Never exposed directly to a consumer --
+ ## every read goes through [method find_path]/[method has_point] so this
+ ## class stays the sole owner of the id-packing scheme.
+@@ -204,6 +214,18 @@ func build(
+ 				if not _astar.has_point(to_id):
+ 					continue
+ 				_connect_if_legal(predicate_source, from_cell, from_id, to_cell, to_id)
++		# Story `building-034` (ADR-0007 §2a clause 1) -- the same-column
++		# vertical edge class. Only `(0, +1, 0)` here, mirroring
++		# [constant HORIZONTAL_HALF_OFFSETS]'s own "visit each unordered pair
++		# exactly once from a full, fresh scan" discipline: every standable
++		# cell is visited as `from_cell` exactly once, so offering only the
++		# upward direction here still reaches every same-column pair (the
++		# downward direction is the SAME pair, visited from its own upper
++		# cell's own turn through this same loop).
++		var above_cell := from_cell + Vector3i(0, 1, 0)
++		var above_id: int = VillagerNavGraph.cell_to_astar_id(above_cell)
++		if _astar.has_point(above_id):
++			_connect_if_legal(predicate_source, from_cell, from_id, above_cell, above_id)
+ 
+ 	_is_built = true
+ 
+@@ -382,6 +404,31 @@ func subscribe_to_voxel_world(voxel_world: VoxelWorldGrid, predicate_source: Vil
+ 	voxel_world.cells_changed_batch.connect(_on_voxel_world_cells_changed_batch.bind(predicate_source))
+ 
+ 
++## Story `building-034` (ADR-0007 §2b) -- subscribes this graph to [param
++## scaffold_source]'s OWN change signal, since a scaffold erection/removal is
++## NOT a [VoxelWorldGrid] write and [signal VoxelWorldGrid.cell_changed] will
++## never fire for it. Connects with Godot's default (synchronous, never
++## `CONNECT_DEFERRED`) flags -- the same race-closure discipline [method
++## subscribe_to_voxel_world] already relies on. [param scaffold_source] is
++## duck-typed (`Object`, mirrors [member VillagerAi.scaffold_registry]'s own
++## typing) against exactly one signal: `signal scaffold_changed(cell:
++## Vector3i)`. Routes into the EXISTING, bounded [method patch_cell] path --
++## never `_astar.clear()`, never a rebuild.
++func subscribe_to_scaffold_registry(scaffold_source: Object, predicate_source: VillagerAi) -> void:
++	@warning_ignore("unsafe_property_access")
++	scaffold_source.scaffold_changed.connect(_on_scaffold_changed.bind(predicate_source))
++
++
++## [signal ScaffoldRegistry.scaffold_changed] handler -- delegates to [method
++## patch_cell] exactly like [method _on_voxel_world_cell_changed]. Consumers
++## re-query CURRENT state via [param predicate_source]; the changed cell
++## itself is only ever used as the bounded patch's own center, never trusted
++## as a snapshot of broader state (see [ScaffoldRegistry.scaffold_changed]'s
++## own doc comment).
++func _on_scaffold_changed(cell: Vector3i, predicate_source: VillagerAi) -> void:
++	patch_cell(predicate_source, cell)
++
++
+ ## [signal VoxelWorldGrid.cell_changed] handler ([param predicate_source] is
+ ## the bound extra argument appended after the signal's own three, [method
+ ## Signal.bind] semantics). Delegates to [method patch_cell] -- never
+@@ -492,6 +539,21 @@ func _resync_connections(predicate_source: VillagerAi, cells: Array[Vector3i]) -
+ 				if not _astar.has_point(neighbor_id):
+ 					continue
+ 				_resync_pair(predicate_source, cell, id, neighbor, neighbor_id)
++		# Story `building-034` (ADR-0007 §2a clause 1) -- a patch revisits a
++		# small, pre-existing subset of points, never a complementary full
++		# scan, so BOTH same-column directions must be considered explicitly
++		# here (matching [constant HORIZONTAL_FULL_OFFSETS]'s own "all 8, not
++		# half" patch-pass discipline). This is also the ONLY path a scaffold
++		# write's own patch ([method patch_cell] via [signal
++		# ScaffoldRegistry.scaffold_changed]) ever reaches this edge class
++		# through -- a scaffold write is never part of [method build]'s
++		# initial full scan.
++		for dy: int in VERTICAL_SAME_COLUMN_OFFSETS:
++			var neighbor: Vector3i = cell + Vector3i(0, dy, 0)
++			var neighbor_id: int = VillagerNavGraph.cell_to_astar_id(neighbor)
++			if not _astar.has_point(neighbor_id):
++				continue
++			_resync_pair(predicate_source, cell, id, neighbor, neighbor_id)
+ 
+ 
+ ## Re-evaluates ONE ordered pair's connection in BOTH directions
+diff --git a/neues-spiel/src/villager_ai/villager_unstuck_telemetry.gd b/neues-spiel/src/villager_ai/villager_unstuck_telemetry.gd
+index f229b56..2558571 100644
+--- a/neues-spiel/src/villager_ai/villager_unstuck_telemetry.gd
++++ b/neues-spiel/src/villager_ai/villager_unstuck_telemetry.gd
+@@ -65,3 +65,46 @@ func get_world_total() -> int:
+ ## been rescued (absent from [member _per_villager_counts]), never an error.
+ func get_villager_count(villager_id: int) -> int:
+ 	return _per_villager_counts.get(villager_id, 0)
++
++
++## Story `building-034` COUPLED RULING ("retire on evidence, not on landing"):
++## [method VillagerAi.climb_onto_self_sealed_cell] and [method
++## VillagerAi._relocate_if_marooned] (ADR-0009's sanctioned discrete
++## `current_cell` mutation points (c)/(d)) each gain their own world-total
++## telemetry counter here, alongside the pre-existing watchdog-rescue
++## counter -- NOT retired, NOT merged with [method record_rescue] (a
++## different mutation class, a different sanctioned point). The anti-vacuity
++## levers require BOTH of these to read ZERO for the build phase: a firing
++## means scaffolding failed to cover a case it should, and must FAIL the
++## lever rather than silently mask the gap behind the discrete-mutation
++## safety net (this is "loudness," not deletion -- see the story's own
++## COUPLED RULING section).
++var _self_seal_climb_total: int = 0
++var _marooned_relocation_total: int = 0
++
++
++## Records exactly one self-seal climb (`ADR-0009` point (c)) -- called by
++## [method VillagerAi.climb_onto_self_sealed_cell] every time it actually
++## fires.
++func record_self_seal_climb() -> void:
++	_self_seal_climb_total += 1
++
++
++## Records exactly one marooned relocation (`ADR-0009` point (d)) -- called
++## by [method VillagerAi._relocate_if_marooned] only when it actually
++## relocates the villager (never on one of that method's own early no-op
++## returns).
++func record_marooned_relocation() -> void:
++	_marooned_relocation_total += 1
++
++
++## World-total self-seal-climb count -- the anti-vacuity levers assert this
++## is `0` for the build phase.
++func get_self_seal_climb_total() -> int:
++	return _self_seal_climb_total
++
++
++## World-total marooned-relocation count -- the anti-vacuity levers assert
++## this is `0` for the build phase.
++func get_marooned_relocation_total() -> int:
++	return _marooned_relocation_total
+diff --git a/neues-spiel/src/villager_ai/villager_walkability_rules.gd b/neues-spiel/src/villager_ai/villager_walkability_rules.gd
+index 7a15233..7f1be97 100644
+--- a/neues-spiel/src/villager_ai/villager_walkability_rules.gd
++++ b/neues-spiel/src/villager_ai/villager_walkability_rules.gd
+@@ -43,7 +43,21 @@
+ ## `_is_solid_after_write`, `_is_passable_after_write`) stay on [VillagerAi]
+ ## unchanged -- they are the one sanctioned duplication of this control flow
+ ## today; an overlay-predicate parameter unifying them with this class is a
+-## later story.
++## later story. **Story `building-034` threads the scaffold source through
++## both shapes (see below); it does NOT unify them (TD ruling D1, explicit).**
++##
++## **Scaffolding amendment (ADR-0007 §1a/§1b/§2a, story `building-034`,
++## 2026-07-27).** [method is_standable]/[method is_step_legal] gain ONE
++## explicit, DEFAULTED `scaffold_source` parameter -- a second occupancy
++## source alongside [param voxel_world] (D1: scaffolding is NOT voxel data,
++## mirrors the BV-1 furniture ruling). A caller that passes nothing (Build
++## Validation, everywhere in `src/build_validation/`) observes EXACTLY
++## pre-amendment behaviour -- structurally, not by discipline. `scaffold_source`
++## is duck-typed against ONE method, an O(1) keyed read:
++## `func has_scaffold(cell: Vector3i) -> bool` -- [ScaffoldRegistry] is the
++## concrete implementation; no structural search (support/cantilever/
++## connectivity) may ever run inside these predicates (ADR-0007 §1a binding
++## performance clause) -- those are erection-time planning rules only.
+ class_name VillagerWalkabilityRules
+ extends RefCounted
+ 
+@@ -82,17 +96,30 @@ const MAX_STEP_HEIGHT: int = 1
+ ## is non-solid/passable here BY CONSTRUCTION, matching Building System Core
+ ## Rule 14b / GDD AC17 with no special-case branch needed.
+ ##
+-## Pure query: reads only [param voxel_world]'s cell data, never mutates
+-## anything, caches nothing of its own (Control Manifest Feature Layer
+-## Guardrail: "predicates are pure queries... no mutation, no caching state
+-## of their own"). A cell outside the configured world bounds reads back
+-## `null` from [method VoxelWorldGrid.get_cell] and is treated as blocking by
+-## both helpers below -- the world simply does not extend there, so it can
+-## neither support a foot (never solid-below) nor offer clearance (never
+-## passable).
+-static func is_standable(voxel_world: VoxelWorldGrid, cell: Vector3i) -> bool:
++## Pure query: reads only [param voxel_world]'s cell data (and, since the
++## scaffolding amendment, [param scaffold_source]'s O(1) membership), never
++## mutates anything, caches nothing of its own (Control Manifest Feature
++## Layer Guardrail: "predicates are pure queries... no mutation, no caching
++## state of their own"). A cell outside the configured world bounds reads
++## back `null` from [method VoxelWorldGrid.get_cell] and is treated as
++## blocking by both helpers below -- the world simply does not extend there,
++## so it can neither support a foot (never solid-below) nor offer clearance
++## (never passable).
++##
++## **§1a (ADR-0007, story `building-034`): a scaffold cell is standable
++## WITHOUT a solid cell beneath it -- scaffolding supports itself.** The
++## solid-below requirement becomes `(solid below) OR (this cell is a
++## scaffold cell)`; the clearance-column check is completely unchanged (a
++## scaffold cell is always passable in the raw grid -- D9 forbids it ever
++## occupying an address that reads solid). [param scaffold_source] defaults
++## to `null`, which is structurally identical to "never scaffold" -- the
++## exact pre-amendment behaviour.
++static func is_standable(
++	voxel_world: VoxelWorldGrid, cell: Vector3i, scaffold_source: Object = null
++) -> bool:
+ 	assert(voxel_world != null, "VillagerWalkabilityRules.is_standable requires voxel_world")
+-	if not _is_solid(voxel_world, cell + Vector3i(0, -1, 0)):
++	var solid_below: bool = _is_solid(voxel_world, cell + Vector3i(0, -1, 0))
++	if not solid_below and not _has_scaffold(scaffold_source, cell):
+ 		return false
+ 	for offset in range(VILLAGER_CLEARANCE):
+ 		if not _is_passable(voxel_world, cell + Vector3i(0, offset, 0)):
+@@ -115,17 +142,58 @@ static func is_standable(voxel_world: VoxelWorldGrid, cell: Vector3i) -> bool:
+ ## standable-cell pairs via this predicate, so re-verifying that here would
+ ## duplicate [method is_standable]'s own job. Pure query, no mutation, no
+ ## cached state (same guardrail as [method is_standable]).
++##
++## **§2a clause 2 (ADR-0007, story `building-034`, LOAD-BEARING): a
++## same-column step (`dx = 0 and dz = 0`) is legal ONLY if BOTH endpoints are
++## scaffold cells.** Before this amendment, a same-column pair could never
++## reach this predicate at all -- two stacked cells could never both be
++## standable (no scaffold-supports-itself clause existed). §1a removes
++## exactly that structural prevention, so without this explicit gate,
++## `|dy| <= MAX_STEP_HEIGHT` alone would silently accept a same-column step
++## between an ordinary standable cell and a scaffold cell directly above/
++## below it -- general climbing, never intended. This gate is checked FIRST,
++## before the diagonal flank check (which never runs for a same-column pair
++## anyway, since `dx == 0 and dz == 0`).
+ static func is_step_legal(
+-	voxel_world: VoxelWorldGrid, from_cell: Vector3i, to_cell: Vector3i
++	voxel_world: VoxelWorldGrid, from_cell: Vector3i, to_cell: Vector3i, scaffold_source: Object = null
+ ) -> bool:
+ 	if absi(to_cell.y - from_cell.y) > MAX_STEP_HEIGHT:
+ 		return false
+ 	var dx: int = to_cell.x - from_cell.x
+ 	var dz: int = to_cell.z - from_cell.z
++	if dx == 0 and dz == 0:
++		var from_is_scaffold: bool = _has_scaffold(scaffold_source, from_cell)
++		var to_is_scaffold: bool = _has_scaffold(scaffold_source, to_cell)
++		if from_is_scaffold and to_is_scaffold:
++			return true  # §2a: the one new edge class.
++		if from_is_scaffold or to_is_scaffold:
++			return false  # Never climb between ordinary ground and scaffolding.
++		# NEITHER endpoint is scaffold: fall through to the pre-amendment rules
++		# and return exactly what this predicate returned before story 034.
++		#
++		# This clause is load-bearing and was MISSING in the first cut, which
++		# turned the whole suite red. The amendment's binding promise is that a
++		# caller passing no scaffold_source observes EXACTLY pre-amendment
++		# behaviour. Refusing every same-column step broke that promise: the
++		# predicate used to fall through to the |dy| <= MAX_STEP_HEIGHT check
++		# and return true here, and villager-ai-024's wall fix depends on it —
++		# its regression test dropped straight back to 27/30.
++		#
++		# The TD's rationale for the blanket refusal was that two stacked
++		# ordinary cells can never both be standable, so the case never
++		# arises. That is true of callers which check standability first, and
++		# NOT true of every caller. Structural safety still holds without the
++		# blanket refusal: §1a relaxes solid-below only FOR scaffold cells, so
++		# two ordinary stacked cells still cannot both stand, and the
++		# one-endpoint-scaffold case above is what actually closes general
++		# climbing.
+ 	if dx != 0 and dz != 0:
+ 		var flanker_a := Vector3i(to_cell.x, from_cell.y, from_cell.z)
+ 		var flanker_b := Vector3i(from_cell.x, from_cell.y, to_cell.z)
+-		if not is_standable(voxel_world, flanker_a) or not is_standable(voxel_world, flanker_b):
++		if (
++			not is_standable(voxel_world, flanker_a, scaffold_source)
++			or not is_standable(voxel_world, flanker_b, scaffold_source)
++		):
+ 			return false
+ 	return true
+ 
+@@ -192,3 +260,15 @@ static func _is_solid(voxel_world: VoxelWorldGrid, cell: Vector3i) -> bool:
+ static func _is_passable(voxel_world: VoxelWorldGrid, cell: Vector3i) -> bool:
+ 	var contents: CellContents = voxel_world.get_cell(cell)
+ 	return contents != null and contents.is_empty()
++
++
++## The O(1) duck-typed scaffold-membership read every predicate above
++## consults (ADR-0007 §1a/§1b, story `building-034`). A `null`
++## [param scaffold_source] (the default, and Build Validation's own explicit
++## choice everywhere) is structurally "never scaffold" -- never a crash, never
++## a special-cased branch at any call site.
++static func _has_scaffold(scaffold_source: Object, cell: Vector3i) -> bool:
++	if scaffold_source == null:
++		return false
++	@warning_ignore("unsafe_method_access")
++	return bool(scaffold_source.has_scaffold(cell))
+=== NEWFILE neues-spiel/src/building_system/scaffold_config.gd ===
+## Typed tuning-config Resource for Scaffolding (ADR-0002; story `building-034`,
+## technical-director ruling D6). Owns exactly one knob today:
+## [member scaffold_max_cantilever_cells] -- AC4's "the 6-limit is config, not
+## a literal."
+##
+## Wired as an injected-tier dependency (ADR-0001) wherever the scaffold
+## erection planner is constructed; a matching `.tres` instance lives at
+## `res://data/config/scaffold_config.tres`. Mirrors [WallToolConfig]'s
+## established one-config-per-module, clamp-only precedent -- no BLOCKING
+## cross-value invariant is declared for this config.
+class_name ScaffoldConfig
+extends ConfigResource
+
+## Safe range for [member scaffold_max_cantilever_cells] (D6: "safe range
+## 1-32 -- headroom for the progression stat ruling 4 requires"). The
+## shipped default (6) is the USER's ruling (AC4), transcribed verbatim --
+## this class does not own the value, only its safe bounds and storage shape.
+const SCAFFOLD_MAX_CANTILEVER_CELLS_MIN: int = 1
+const SCAFFOLD_MAX_CANTILEVER_CELLS_MAX: int = 32
+
+## D6/AC4: the maximum horizontal Chebyshev cantilever distance (§D6.1/§D6.3)
+## a scaffold cell may sit from its nearest supported column -- overhang only,
+## never a height limit. Default `6` is the user's ruling (AC4), never a
+## literal anywhere else in `src/` (grep-verifiable per AC4).
+@export var scaffold_max_cantilever_cells: int = 6
+
+
+## See [ConfigResource.validate]. Clamps [member scaffold_max_cantilever_cells]
+## to its safe range and appends a warning string if it was out of range --
+## no BLOCKING cross-value invariant exists for this config (ADR-0002
+## two-tier policy), mirroring [WallToolConfig]'s clamp-only precedent.
+func validate() -> Array[String]:
+	var issues: Array[String] = []
+	if (
+		scaffold_max_cantilever_cells < SCAFFOLD_MAX_CANTILEVER_CELLS_MIN
+		or scaffold_max_cantilever_cells > SCAFFOLD_MAX_CANTILEVER_CELLS_MAX
+	):
+		issues.append(
+			"scaffold_max_cantilever_cells out of range [%s, %s], got %s -- clamped" %
+			[SCAFFOLD_MAX_CANTILEVER_CELLS_MIN, SCAFFOLD_MAX_CANTILEVER_CELLS_MAX, scaffold_max_cantilever_cells]
+		)
+		scaffold_max_cantilever_cells = clampi(
+			scaffold_max_cantilever_cells, SCAFFOLD_MAX_CANTILEVER_CELLS_MIN, SCAFFOLD_MAX_CANTILEVER_CELLS_MAX
+		)
+	return issues
+=== NEWFILE neues-spiel/src/building_system/scaffold_config.gd.uid ===
+uid://bu7goaqm6batp
+=== NEWFILE neues-spiel/src/building_system/scaffold_dismantle_planner.gd ===
+## Scaffold dismantle ordering (story `building-034`, TD rulings D10/D4,
+## ADR-0007 §1b invariant SC-INV-1). A pure, static planning library -- no
+## instance, no cached state, mirrors [ScaffoldErectionPlanner]'s own
+## established shape. Owns ONLY the ORDERING/occupancy-safety rules; the
+## actual worker-executed demolition job mechanics are
+## [ConstructionTickLoop.create_demolition_order]/[method
+## ConstructionTickLoop.claim_demolition_job] (unchanged by this story beyond
+## the `Category.SCAFFOLD` widening already landed there).
+##
+## **D10 (RULED: Option (i))** -- top-down, worker-first: the worker
+## descends one scaffold cell first (an ordinary scaffold-to-scaffold
+## vertical step ADR-0007 §2a already makes legal), THEN the cell above is
+## dismantled. Dismantle order is strictly DESCENDING Y, ties broken
+## lexicographically on `(x, z)`.
+##
+## **SC-INV-1 (ADR-0007 §1b, load-bearing):** no scaffold cell is ever
+## removed while any villager's body-column occupies it -- an escape route
+## `would_trap_builder` counts on can never be safely yanked away.
+##
+## **D4 (RULED: Option (i))** -- a player cancel checks the scaffold
+## structure for occupancy FIRST (any villager whose body-column intersects
+## ANY cell of the structure): occupied => fall back to the top-down,
+## worker-ridden dismantle above; unoccupied => the fast bottom-up collapse
+## ruling 3 permits, with no worker to protect.
+class_name ScaffoldDismantlePlanner
+extends RefCounted
+
+## Sentinel meaning "no cell is currently safe to dismantle" -- either the
+## structure is already empty, or every remaining cell's body-column is
+## currently occupied.
+const NO_CELL: Vector3i = Vector3i(-2147483648, -2147483648, -2147483648)
+
+
+## D10 + SC-INV-1: the NEXT scaffold cell safe to dismantle from [param
+## built_scaffold_cells] (a `SCAFFOLD` project's own currently-BUILT cells) --
+## strictly TOP-DOWN (highest Y first, ties lexicographic on `(x, z)` via
+## [method VillagerJobSelector.lexicographic_cell_less_than], reused rather
+## than a second tie-break), skipping any cell whose full body-column
+## ([method VillagerWalkabilityRules.body_column]) intersects ANY entry of
+## [param occupied_body_columns] (SC-INV-1). Returns [constant NO_CELL] if
+## [param built_scaffold_cells] is empty or every remaining cell is currently
+## occupied (the caller must wait -- e.g. for the worker to finish its own
+## one-step descent -- and ask again next tick, never force a removal).
+static func next_top_down_demolition_cell(
+	built_scaffold_cells: Array[Vector3i], occupied_body_columns: Array
+) -> Vector3i:
+	var ordered: Array[Vector3i] = built_scaffold_cells.duplicate()
+	ordered.sort_custom(_less_than_descending_y_then_xz)
+	for candidate: Vector3i in ordered:
+		if not _is_occupied(candidate, occupied_body_columns):
+			return candidate
+	return NO_CELL
+
+
+## D4 (RULED: Option (i)) -- whether [param scaffold_cells] (the WHOLE
+## structure, not just the topmost cell) may be collapsed bottom-up with no
+## worker: `true` iff NO entry of [param occupied_body_columns] intersects
+## ANY cell of the structure. A cancel that finds this `false` MUST fall back
+## to the top-down, worker-ridden dismantle ([method
+## next_top_down_demolition_cell]) instead (D4 Forbids: "any dismantle path
+## that removes a cell occupied by a body-column").
+static func can_collapse_bottom_up(
+	scaffold_cells: Array[Vector3i], occupied_body_columns: Array
+) -> bool:
+	for cell: Vector3i in scaffold_cells:
+		if _is_occupied(cell, occupied_body_columns):
+			return false
+	return true
+
+
+## Whether [param cell] falls within ANY body-column in [param
+## occupied_body_columns] -- the SC-INV-1 check every method above shares.
+static func _is_occupied(cell: Vector3i, occupied_body_columns: Array) -> bool:
+	for body_column: Array[Vector3i] in occupied_body_columns:
+		if body_column.has(cell):
+			return true
+	return false
+
+
+## D10's own tie-break: descending Y first (top-down), then lexicographic
+## `(x, z)` for cells sharing a Y (mirrors [method
+## VillagerJobSelector.lexicographic_cell_less_than]'s own `(y, x, z)`
+## convention, inverted on Y only -- this is a DESCENDING sort, the one place
+## this codebase's tie-break runs in reverse, by D10's own explicit
+## requirement).
+static func _less_than_descending_y_then_xz(a: Vector3i, b: Vector3i) -> bool:
+	if a.y != b.y:
+		return a.y > b.y
+	if a.x != b.x:
+		return a.x < b.x
+	return a.z < b.z
+=== NEWFILE neues-spiel/src/building_system/scaffold_dismantle_planner.gd.uid ===
+uid://b1bqgtm21gfje
+=== NEWFILE neues-spiel/src/building_system/scaffold_erection_coordinator.gd ===
+## Scaffold erection coordinator (story `building-034`, TD ruling D5 point 3:
+## "The Building System subscribes to the existing `job_reported_unreachable`
+## signal and owns the erection response. **The AI detects; the Building
+## System builds.**").
+##
+## Injected-tier collaborator (ADR-0001 shared-object style, mirrors
+## [ConstructionJobQueue]'s own "population-wide shared object, code-assigned"
+## precedent) -- constructed once, subscribes to [signal
+## ConstructionJobQueue.job_reported_unreachable] in its own `_init`, exactly
+## like [VillagerOnSiteGate]/[VillagerSealPreventionGate]'s established
+## "wires itself into its own predicate/signal seam from `_init`" shape.
+##
+## **Bound the response** (D5, required): a cell can be unreachable for
+## reasons scaffolding cannot fix (walled off, no support within the
+## cantilever limit). [ScaffoldErectionPlanner.plan_for_target] returning
+## [method ScaffoldPlan.has_plan] `false` is a genuine no-op here -- the cell
+## stays flagged unreachable (the report itself already set that), and this
+## class never retries the SAME cell again ([member _served_cells] is a
+## permanent per-cell latch, not a cooldown) -- never erects a structure that
+## does not make the target reachable, never loops.
+class_name ScaffoldErectionCoordinator
+extends RefCounted
+
+var voxel_world: VoxelWorldGrid
+var scaffold_registry: Object
+var build_project_registry: BuildProjectRegistry
+var construction_job_queue: ConstructionJobQueue
+var furniture_registry: Object
+var config: ScaffoldConfig
+
+## Every blueprint cell this coordinator has already produced a plan attempt
+## for (successful or not) -- latched permanently so a repeated
+## `job_reported_unreachable` for the SAME cell (the retry cadence already
+## re-fires it periodically) never re-plans or double-erects.
+var _served_cells: Dictionary[Vector3i, bool] = {}
+
+
+func _init(
+	p_voxel_world: VoxelWorldGrid,
+	p_scaffold_registry: Object,
+	p_build_project_registry: BuildProjectRegistry,
+	p_construction_job_queue: ConstructionJobQueue,
+	p_furniture_registry: Object,
+	p_config: ScaffoldConfig,
+) -> void:
+	assert(p_voxel_world != null, "ScaffoldErectionCoordinator requires voxel_world")
+	assert(p_build_project_registry != null, "ScaffoldErectionCoordinator requires build_project_registry")
+	assert(p_construction_job_queue != null, "ScaffoldErectionCoordinator requires construction_job_queue")
+	assert(p_config != null, "ScaffoldErectionCoordinator requires config")
+	voxel_world = p_voxel_world
+	scaffold_registry = p_scaffold_registry
+	build_project_registry = p_build_project_registry
+	construction_job_queue = p_construction_job_queue
+	furniture_registry = p_furniture_registry
+	config = p_config
+	construction_job_queue.job_reported_unreachable.connect(_on_job_reported_unreachable)
+
+
+## [signal ConstructionJobQueue.job_reported_unreachable] handler (AC1: "the
+## system detects an unreachable target cell and erects scaffolding exactly
+## there... automatic, on demand"). Only ever responds for a cell belonging
+## to a `BUILD`-kind project (never `DIG`/`SCAFFOLD` -- Out of Scope: "Build
+## projects only").
+func _on_job_reported_unreachable(cell: Vector3i) -> void:
+	if _served_cells.has(cell):
+		return
+	var owning_id: int = build_project_registry.project_at_cell(cell)
+	if owning_id == -1:
+		return
+	var owning_project: BuildProject = build_project_registry.get_project(owning_id)
+	if owning_project == null or owning_project.kind != BuildProject.Kind.BUILD:
+		return
+	_served_cells[cell] = true
+	var plan: ScaffoldPlan = ScaffoldErectionPlanner.plan_for_target(
+		voxel_world, scaffold_registry, build_project_registry, furniture_registry,
+		cell, config.scaffold_max_cantilever_cells
+	)
+	if not plan.has_plan():
+		return
+	_erect(plan, owning_id)
+
+
+## D3 (RULED: Option (a)) -- a scaffold structure is its OWN `SCAFFOLD`-kind
+## project, linked to its owner via [member BuildProject.owner_project_id],
+## never a member of the project it serves. Registered into BOTH
+## [member build_project_registry] (the reverse cell index) and [member
+## construction_job_queue] (so its cells become real, worker-executed jobs,
+## AC2), then released immediately -- a scaffold project needs no player
+## "Bau starten" step; it is system-generated and job-eligible the instant it
+## exists (AC1: "the player only draws the room").
+func _erect(plan: ScaffoldPlan, owner_project_id: int) -> void:
+	var scaffold_project := BuildProject.new(
+		build_project_registry.allocate_project_id(), BuildProject.Kind.SCAFFOLD, owner_project_id
+	)
+	for scaffold_cell: Vector3i in plan.cells:
+		var blueprint_cell := BlueprintCell.new(
+			scaffold_cell, BlueprintCell.MicroState.PLANNED, BlueprintCell.Category.SCAFFOLD
+		)
+		scaffold_project.add_cell(blueprint_cell)
+	build_project_registry.register_project(scaffold_project)
+	construction_job_queue.add_project(scaffold_project)
+	scaffold_project.release()
+=== NEWFILE neues-spiel/src/building_system/scaffold_erection_coordinator.gd.uid ===
+uid://dypqtogkphneu
+=== NEWFILE neues-spiel/src/building_system/scaffold_erection_planner.gd ===
+## Scaffold erection planner (story `building-034`, TD ruling D8 -- "fully
+## specified, deterministically"). A pure, static planning library -- no
+## instance, no cached state, mirrors [VillagerJobSelector]'s own established
+## "stateless algorithm library" precedent. **This is the ONLY place a
+## support/cantilever/connectivity search may run** (ADR-0007 §1a binding
+## clause forbids it inside any predicate) -- this class is erection-time
+## planning, never a hot-path predicate.
+##
+## D8.1: the plan targets a STAGING cell `A`, orthogonally adjacent to the
+## unreachable blueprint cell `C` in X/Z with `|dy| <= 1` -- never `C`'s own
+## address (D9 forbids a scaffold cell ever sharing an address with a
+## blueprint cell). D8.2: prefer the column directly below `A`; fall back to
+## the nearest supported column by horizontal Chebyshev, connected via a
+## same-Y cantilever run. D8.3: among multiple valid plans, prefer fewest
+## cells, then smallest cantilever distance, then
+## [method VillagerJobSelector.lexicographic_cell_less_than] on `A` -- the
+## codebase's one established tie-break, reused. D8.4: erection order is
+## strictly ascending Y within the support column, then the cantilever run.
+## D8.5: this plan is a PURE function of (world state, target cell) -- never
+## the requesting villager; two villagers asking about the same cell get the
+## same plan. Forbids (D8): RNG, wall-clock, frame counters, `Dictionary`
+## iteration-order dependence, per-villager state, a diagonal staging cell, a
+## second tie-break convention.
+##
+## D9 (forbid overlap): every cell this planner would create is validated via
+## [method _is_valid_scaffold_address] -- empty in [VoxelWorldGrid], no
+## blueprint cell in any non-`SCAFFOLD` project, no furniture occupant.
+class_name ScaffoldErectionPlanner
+extends RefCounted
+
+## D8.1's 4 orthogonal X/Z directions a staging cell may sit in, and the 3
+## `|dy| <= 1` heights it may sit at -- 12 total candidates, deterministic
+## generation order (the FINAL selection is sorted, D8.3, so this generation
+## order is never itself load-bearing).
+const STAGING_XZ_OFFSETS: Array[Vector2i] = [
+	Vector2i(1, 0), Vector2i(-1, 0), Vector2i(0, 1), Vector2i(0, -1),
+]
+const STAGING_DY_OFFSETS: Array[int] = [0, -1, 1]
+
+## Bounded downward search depth for direct-support discovery -- generous
+## relative to any plausible world height, while still a hard, deterministic
+## ceiling (never an unbounded scan).
+const MAX_SUPPORT_SEARCH_DEPTH: int = 256
+
+## Sentinel meaning "no direct ground support found within
+## [constant MAX_SUPPORT_SEARCH_DEPTH]."
+const NO_SUPPORT: int = -2147483648
+
+
+## The main entry point (D8). Returns [method ScaffoldPlan.no_plan] if no
+## staging cell within reach has a valid erection plan (D5's bound-the-
+## response requirement: "never erect a structure that does not make the
+## target reachable; never loop").
+static func plan_for_target(
+	voxel_world: VoxelWorldGrid,
+	scaffold_registry: Object,
+	build_project_registry: BuildProjectRegistry,
+	furniture_registry: Object,
+	target_cell: Vector3i,
+	cantilever_limit: int,
+) -> ScaffoldPlan:
+	var candidate_plans: Array[ScaffoldPlan] = []
+	for staging_cell: Vector3i in _staging_candidates(target_cell):
+		if not _is_valid_scaffold_address(voxel_world, build_project_registry, furniture_registry, staging_cell):
+			continue
+		if scaffold_registry != null and bool(scaffold_registry.has_scaffold(staging_cell)):
+			continue
+		var plan: ScaffoldPlan = _plan_for_staging_cell(
+			voxel_world, build_project_registry, furniture_registry, staging_cell, cantilever_limit
+		)
+		if plan.has_plan():
+			candidate_plans.append(plan)
+	if candidate_plans.is_empty():
+		return ScaffoldPlan.no_plan()
+	candidate_plans.sort_custom(_less_than_by_selection_key)
+	return candidate_plans[0]
+
+
+## D8.1's 12 staging-cell candidates for [param target_cell] -- orthogonal
+## X/Z only (never diagonal, D8 Forbids), `|dy| <= 1`.
+static func _staging_candidates(target_cell: Vector3i) -> Array[Vector3i]:
+	var candidates: Array[Vector3i] = []
+	for offset: Vector2i in STAGING_XZ_OFFSETS:
+		for dy: int in STAGING_DY_OFFSETS:
+			candidates.append(target_cell + Vector3i(offset.x, dy, offset.y))
+	return candidates
+
+
+## D8.2 -- the plan for ONE staging cell: prefer the column directly below
+## it; fall back to a cantilevered run from the nearest supported column.
+static func _plan_for_staging_cell(
+	voxel_world: VoxelWorldGrid,
+	build_project_registry: BuildProjectRegistry,
+	furniture_registry: Object,
+	staging_cell: Vector3i,
+	cantilever_limit: int,
+) -> ScaffoldPlan:
+	var direct_support_y: int = _find_direct_support_y(voxel_world, staging_cell.x, staging_cell.z, staging_cell.y)
+	if direct_support_y != NO_SUPPORT:
+		var cells: Array[Vector3i] = []
+		for y in range(direct_support_y, staging_cell.y + 1):
+			var cell := Vector3i(staging_cell.x, y, staging_cell.z)
+			if not _is_valid_scaffold_address(voxel_world, build_project_registry, furniture_registry, cell):
+				return ScaffoldPlan.no_plan()
+			cells.append(cell)
+		return ScaffoldPlan.new(cells, staging_cell, 0)
+
+	var nearest: Vector2i = _find_nearest_ground_column(voxel_world, staging_cell, cantilever_limit)
+	if nearest == Vector2i(NO_SUPPORT, NO_SUPPORT):
+		return ScaffoldPlan.no_plan()
+	var cantilever_distance: int = maxi(absi(nearest.x - staging_cell.x), absi(nearest.y - staging_cell.z))
+	if cantilever_distance > cantilever_limit:
+		return ScaffoldPlan.no_plan()
+
+	var support_y: int = _find_direct_support_y(voxel_world, nearest.x, nearest.y, staging_cell.y)
+	var cells: Array[Vector3i] = []
+	for y in range(support_y, staging_cell.y + 1):
+		cells.append(Vector3i(nearest.x, y, nearest.y))
+	for cell: Vector3i in _bridge_run(nearest.x, nearest.y, staging_cell.x, staging_cell.z, staging_cell.y):
+		cells.append(cell)
+	for cell: Vector3i in cells:
+		if not _is_valid_scaffold_address(voxel_world, build_project_registry, furniture_registry, cell):
+			return ScaffoldPlan.no_plan()
+	return ScaffoldPlan.new(cells, staging_cell, cantilever_distance)
+
+
+## Scans downward from `(x, from_y, z)` for the first Y whose own
+## below-neighbor reads SOLID in [param voxel_world] (D6.2: "the cell
+## directly below it is solid -- terrain or a Built block -- never another
+## scaffold cell's 'solidity'"). Reading solidity straight from the raw grid
+## automatically excludes scaffold (scaffolding never touches
+## [VoxelWorldGrid], D1) with no special-case branch needed. Returns
+## [constant NO_SUPPORT] if nothing solid is found within
+## [constant MAX_SUPPORT_SEARCH_DEPTH].
+static func _find_direct_support_y(voxel_world: VoxelWorldGrid, x: int, z: int, from_y: int) -> int:
+	for y in range(from_y, from_y - MAX_SUPPORT_SEARCH_DEPTH, -1):
+		var below := Vector3i(x, y - 1, z)
+		var contents: CellContents = voxel_world.get_cell(below)
+		if contents != null and not contents.is_empty():
+			return y
+	return NO_SUPPORT
+
+
+## D8.2's cantilever fallback: the nearest `(x, z)` column (horizontal
+## Chebyshev, D6.1) that has direct ground support reachable up to
+## [param staging_cell]'s own height, searched in expanding Chebyshev rings
+## up to [param cantilever_limit], tie-broken lexicographically on `(x, z)`
+## within a ring (deterministic, D8 Forbids "Dictionary iteration-order
+## dependence"). Returns `Vector2i(NO_SUPPORT, NO_SUPPORT)` if none exists
+## within the limit.
+static func _find_nearest_ground_column(
+	voxel_world: VoxelWorldGrid, staging_cell: Vector3i, cantilever_limit: int
+) -> Vector2i:
+	for distance in range(1, cantilever_limit + 1):
+		var ring: Array[Vector2i] = _ring_xz_cells(staging_cell.x, staging_cell.z, distance)
+		ring.sort_custom(_less_than_xz)
+		for candidate: Vector2i in ring:
+			if _find_direct_support_y(voxel_world, candidate.x, candidate.y, staging_cell.y) != NO_SUPPORT:
+				return candidate
+	return Vector2i(NO_SUPPORT, NO_SUPPORT)
+
+
+## Every `(x, z)` pair at EXACTLY horizontal Chebyshev distance
+## [param distance] from `(center_x, center_z)` -- the square ring's
+## perimeter only, never its interior (mirrors
+## [VillagerRescueTargetSearch._ring_cells]'s own 3D precedent, restricted to
+## 2 horizontal axes per D6.1's "Y excluded" metric).
+static func _ring_xz_cells(center_x: int, center_z: int, distance: int) -> Array[Vector2i]:
+	var cells: Array[Vector2i] = []
+	for dx in range(-distance, distance + 1):
+		cells.append(Vector2i(center_x + dx, center_z - distance))
+		cells.append(Vector2i(center_x + dx, center_z + distance))
+	for dz in range(-distance + 1, distance):
+		cells.append(Vector2i(center_x - distance, center_z + dz))
+		cells.append(Vector2i(center_x + distance, center_z + dz))
+	return cells
+
+
+## Deterministic lexicographic `(x, z)` tie-break for [method
+## _find_nearest_ground_column]'s own ring walk.
+static func _less_than_xz(a: Vector2i, b: Vector2i) -> bool:
+	if a.x != b.x:
+		return a.x < b.x
+	return a.y < b.y
+
+
+## D8.2's "connect with a same-Y cantilever run" -- a Chebyshev-shortest
+## (diagonal-then-straight) walk from `(from_x, from_z)` to `(to_x, to_z)` at
+## height [param y], EXCLUDING the start cell (already covered by the
+## approach column's own topmost cell) and INCLUDING the end cell (the
+## staging cell itself).
+static func _bridge_run(from_x: int, from_z: int, to_x: int, to_z: int, y: int) -> Array[Vector3i]:
+	var cells: Array[Vector3i] = []
+	var x: int = from_x
+	var z: int = from_z
+	while x != to_x or z != to_z:
+		if x < to_x:
+			x += 1
+		elif x > to_x:
+			x -= 1
+		if z < to_z:
+			z += 1
+		elif z > to_z:
+			z -= 1
+		cells.append(Vector3i(x, y, z))
+	return cells
+
+
+## D9 (RULED: Option (a), forbid overlap) -- a scaffold cell may only be
+## created at an address that (i) reads EMPTY in [param voxel_world], (ii)
+## has no blueprint cell in any non-`SCAFFOLD` project, and (iii) holds no
+## furniture. Checked in this ONE place, at plan time.
+static func _is_valid_scaffold_address(
+	voxel_world: VoxelWorldGrid,
+	build_project_registry: BuildProjectRegistry,
+	furniture_registry: Object,
+	cell: Vector3i,
+) -> bool:
+	if not voxel_world.is_in_bounds(cell):
+		return false
+	var contents: CellContents = voxel_world.get_cell(cell)
+	if contents == null or not contents.is_empty():
+		return false
+	if build_project_registry != null:
+		var owning_id: int = build_project_registry.project_at_cell(cell)
+		if owning_id != -1:
+			var owning_project: BuildProject = build_project_registry.get_project(owning_id)
+			if owning_project != null and owning_project.kind != BuildProject.Kind.SCAFFOLD:
+				return false
+	if furniture_registry != null and bool(furniture_registry.has_occupant(cell)):
+		return false
+	return true
+
+
+## D8.3's selection order among multiple valid plans: fewest cells, then
+## smallest cantilever distance, then [method
+## VillagerJobSelector.lexicographic_cell_less_than] on the staging cell --
+## the codebase's one established tie-break, reused, never a second one.
+static func _less_than_by_selection_key(a: ScaffoldPlan, b: ScaffoldPlan) -> bool:
+	if a.cells.size() != b.cells.size():
+		return a.cells.size() < b.cells.size()
+	if a.cantilever_distance != b.cantilever_distance:
+		return a.cantilever_distance < b.cantilever_distance
+	return VillagerJobSelector.lexicographic_cell_less_than(a.staging_cell, b.staging_cell)
+=== NEWFILE neues-spiel/src/building_system/scaffold_erection_planner.gd.uid ===
+uid://c1yjihajipeyb
+=== NEWFILE neues-spiel/src/building_system/scaffold_plan.gd ===
+## Scaffold erection plan outcome (story `building-034`, TD ruling D8) --
+## `RefCounted`, transient per-call value object, mirroring
+## [JobSelectionResult]'s own "explicit hit-or-miss rather than a bare
+## nullable return" precedent.
+class_name ScaffoldPlan
+extends RefCounted
+
+## The scaffold cells to erect, in D8's own required erection ORDER: strictly
+## ascending Y within the support column, then the cantilever run (D8.4).
+## Empty iff [method has_plan] is `false`.
+var cells: Array[Vector3i] = []
+
+## The staging cell `A` this plan makes standable (D8.1) -- orthogonally
+## adjacent to the originally-unreachable blueprint cell, never the blueprint
+## cell's own address.
+var staging_cell: Vector3i = Vector3i.ZERO
+
+## The plan-time cantilever distance (D6.3) of [member staging_cell] --
+## `0` for a directly-supported column, `> 0` for a cantilevered run.
+var cantilever_distance: int = 0
+
+
+func _init(
+	p_cells: Array[Vector3i] = [], p_staging_cell: Vector3i = Vector3i.ZERO, p_cantilever_distance: int = 0
+) -> void:
+	cells = p_cells
+	staging_cell = p_staging_cell
+	cantilever_distance = p_cantilever_distance
+
+
+## Whether this plan actually produces any scaffold cells (D5: "the erection
+## planner must be allowed to return 'no plan'... never loop").
+func has_plan() -> bool:
+	return not cells.is_empty()
+
+
+## A `false`/empty [ScaffoldPlan] -- no valid staging cell or support could be
+## found within the cantilever limit.
+static func no_plan() -> ScaffoldPlan:
+	return ScaffoldPlan.new([], Vector3i.ZERO, 0)
+=== NEWFILE neues-spiel/src/building_system/scaffold_plan.gd.uid ===
+uid://c1b20i2aby3u6
+=== NEWFILE neues-spiel/src/building_system/scaffold_presentation.gd ===
+## Scaffold presentation tier (story `building-034`, TD ruling D2 --
+## "Building System owns a pooled presentation tier. Visual identity LEFT TO
+## THE USER."). Mirrors [GhostPreview]'s own `_blueprint_ghost_pool` shape
+## exactly: `Dictionary[Vector3i, MeshInstance3D]`, pooled (created/hidden
+## rather than freed), driven by [signal ScaffoldRegistry.scaffold_changed]
+## with a full RE-ENUMERATION every time -- never a signal-payload read.
+##
+## **Material tier is distinct from a ghost** (D2, binding): scaffolding is
+## built, REAL geometry, not a preview -- it must never reuse the
+## translucent ghost tint, or the player would read it as "planned" and
+## expect it to become a wall. The material this class ships is a
+## deliberately plain, OPAQUE placeholder -- visible and legible, but
+## explicitly marked provisional below. **"Renders as nothing" is forbidden
+## and is not among the options** -- this class guarantees a scaffold cell
+## is never invisible.
+##
+## **LEFT TO THE USER**: silhouette, material, colour, whether it reads as
+## timber poles, planks, or a lashed frame. This class constrains only WHERE
+## the pixels come from (a pooled per-cell mesh tier), never WHAT they look
+## like -- swap [member provisional_material] for the real art direction the
+## moment it exists, with zero structural change to this class.
+##
+## Named escape hatch (D2, not built now): if concurrent scaffold cell count
+## ever exceeds 256, switch to a single `MultiMesh` instance -- at the
+## cantilever-bounded sizes this story can produce, pooled instances stay far
+## inside the 2000-draw-call budget.
+class_name ScaffoldPresentation
+extends Node3D
+
+## Scaffold occupancy dependency (duck-typed `Object`, mirrors [member
+## VillagerAi.scaffold_registry]'s own typing) -- the SAME [ScaffoldRegistry]
+## instance [ConstructionTickLoop.scaffold_registry] routes completions
+## through. Wired code-side (ADR-0001 injected-tier); [method setup]
+## subscribes to its [signal ScaffoldRegistry.scaffold_changed].
+var scaffold_registry: Object = null
+
+## Cell size, matching [constant VoxelWorldConfig.CELL_SIZE] -- duplicated
+## here only as a `BoxMesh` dimension default; callers may override via
+## [member provisional_material]'s own box size at construction if the real
+## cell size ever differs (kept simple deliberately -- this is a PLACEHOLDER
+## tier, TD ruling D2).
+const CELL_SIZE: float = 1.0
+
+## PROVISIONAL placeholder material (D2: "LEFT TO THE USER... my ruling
+## constrains only where the pixels come from, not what they look like").
+## Opaque (never the ghost's translucent preview tint, D2 Forbids), a plain
+## flat colour chosen only to read as clearly artificial/temporary --
+## replace the moment real art direction exists.
+var provisional_material: StandardMaterial3D = null
+
+## Pooled per-cell mesh instances, keyed by cell -- created once per cell,
+## hidden (never freed) when a cell stops being scaffold, shown again if the
+## SAME cell becomes scaffold again later. Mirrors [GhostPreview]'s own
+## `_blueprint_ghost_pool` shape and reuse discipline exactly.
+var _pool: Dictionary[Vector3i, MeshInstance3D] = {}
+
+var _is_set_up: bool = false
+
+
+## Explicitly callable wiring/validation entry point (ADR-0001). Subscribes
+## to [member scaffold_registry]'s change signal (idempotent-guarded, mirrors
+## [CommitPipeline]'s own `is_connected` guard precedent) and performs one
+## initial full sync, so a presentation wired onto an ALREADY-populated
+## registry (e.g. after a save/load) starts correctly rendered rather than
+## waiting for the next change.
+func setup() -> void:
+	if scaffold_registry != null:
+		@warning_ignore("unsafe_property_access")
+		if not scaffold_registry.scaffold_changed.is_connected(_on_scaffold_changed):
+			@warning_ignore("unsafe_property_access")
+			scaffold_registry.scaffold_changed.connect(_on_scaffold_changed)
+	if provisional_material == null:
+		provisional_material = _make_provisional_material()
+	_resync_all()
+	_is_set_up = true
+
+
+func is_set_up() -> bool:
+	return _is_set_up
+
+
+## [signal ScaffoldRegistry.scaffold_changed] handler -- re-enumerates
+## CURRENT membership rather than trusting [param _cell] as authoritative
+## snapshot data (D2/ADR-0007 §2b's own "consumers re-enumerate, never read
+## the payload" discipline).
+func _on_scaffold_changed(_cell: Vector3i) -> void:
+	_resync_all()
+
+
+## Full reconciliation pass: every currently-scaffold cell gets a visible
+## pooled instance (created if new, shown if previously hidden); every
+## pooled instance whose cell is NO LONGER scaffold is hidden (never freed --
+## pooling discipline).
+func _resync_all() -> void:
+	if scaffold_registry == null:
+		return
+	@warning_ignore("unsafe_method_access")
+	var current_cells: Array[Vector3i] = scaffold_registry.get_cells()
+	var current_set: Dictionary[Vector3i, bool] = {}
+	for cell: Vector3i in current_cells:
+		current_set[cell] = true
+		var instance: MeshInstance3D = _pool.get(cell)
+		if instance == null:
+			instance = _create_pooled_instance(cell)
+			_pool[cell] = instance
+		instance.visible = true
+	for cell: Vector3i in _pool:
+		if not current_set.has(cell):
+			_pool[cell].visible = false
+
+
+func _create_pooled_instance(cell: Vector3i) -> MeshInstance3D:
+	var instance := MeshInstance3D.new()
+	var box := BoxMesh.new()
+	box.size = Vector3(CELL_SIZE, CELL_SIZE, CELL_SIZE)
+	instance.mesh = box
+	instance.material_override = provisional_material
+	instance.position = VoxelWorldGrid.cell_to_world(cell)
+	add_child(instance)
+	return instance
+
+
+func _make_provisional_material() -> StandardMaterial3D:
+	var material := StandardMaterial3D.new()
+	material.albedo_color = Color(0.85, 0.55, 0.15, 1.0)
+	material.transparency = BaseMaterial3D.TRANSPARENCY_DISABLED
+	return material
+
+
+## Read-only observability for tests -- the number of currently-VISIBLE
+## pooled instances (i.e. currently-scaffold cells this tier is presenting).
+func get_visible_count() -> int:
+	var count: int = 0
+	for cell: Vector3i in _pool:
+		if _pool[cell].visible:
+			count += 1
+	return count
+=== NEWFILE neues-spiel/src/building_system/scaffold_presentation.gd.uid ===
+uid://dlfe5afi6nlst
+=== NEWFILE neues-spiel/src/building_system/scaffold_registry.gd ===
+## Building System's scaffold occupancy registry (story `building-034`,
+## technical-director ruling D1 -- Option (a)). Mirrors [FurnitureRegistry]
+## exactly (the landed BV-1 precedent this ruling names): a keyed occupancy
+## store, `RefCounted`, never an Autoload/singleton/module-global (ADR-0007
+## §1b Forbids), one change signal, consumers re-enumerate/re-query current
+## state and never trust a signal payload as authoritative snapshot data.
+##
+## **A scaffold cell is NOT voxel data** (D1) -- it never enters
+## [VoxelWorldGrid]; `CellContents.is_empty()` is completely unaffected by
+## this class's contents. Scaffold occupancy is supplied to the shared
+## walkability predicates ([VillagerWalkabilityRules.is_standable]/
+## [method VillagerWalkabilityRules.is_step_legal]) as an explicit, defaulted
+## `scaffold_source` parameter -- this registry is the concrete object every
+## production caller passes; a caller that passes nothing (Build Validation)
+## stays scaffold-blind structurally (ADR-0007 §1b).
+##
+## **O(1) keyed lookup only** (ADR-0007 §1a/D1 Performance clause, BINDING):
+## [method has_scaffold] is a direct [Dictionary] read. No support, cantilever,
+## or connectivity search of any kind runs here -- those are erection-time
+## planning rules ([ScaffoldErectionPlanner]), never a predicate-time cost.
+class_name ScaffoldRegistry
+extends RefCounted
+
+## Fires whenever [method add]/[method remove] changes this registry's
+## membership -- carries the single changed cell (ADR-0007 §2b: "the scaffold
+## occupancy source must expose its own change signal... routing into the
+## existing `patch_cells` path"). The cell IS the information the nav graph's
+## bounded patch needs to know WHERE to re-sync -- consumers still re-query
+## CURRENT membership via [method has_scaffold] rather than trusting this
+## payload as a snapshot of broader state (the same "never read the payload"
+## discipline [VoxelWorldGrid.cell_changed] already established elsewhere in
+## this codebase, applied here to a single-cell identity rather than a
+## before/after content pair).
+signal scaffold_changed(cell: Vector3i)
+
+## Keyed occupancy store -- presence of a key IS "this cell is scaffold."
+## `Dictionary[Vector3i, bool]` (never a richer record; a scaffold cell has no
+## per-cell data beyond "is it one") mirrors [FurnitureRegistry]'s own
+## `_cell_index` shape.
+var _cells: Dictionary[Vector3i, bool] = {}
+
+
+## Marks [param cell] as a scaffold cell. Returns `false` (no-op, no signal)
+## if [param cell] is already scaffold -- idempotent, mirrors
+## [FurnitureRegistry.place]'s own "the caller decides whether re-adding is
+## meaningful" precedent, except this method itself guards against a
+## redundant re-add so a caller never double-counts one cell.
+func add(cell: Vector3i) -> bool:
+	if _cells.has(cell):
+		return false
+	_cells[cell] = true
+	scaffold_changed.emit(cell)
+	return true
+
+
+## Removes [param cell] from scaffold membership. Returns `false` (no-op, no
+## signal) if [param cell] was not scaffold. Callers are responsible for
+## SC-INV-1 (ADR-0007 §1b: "no scaffold cell is ever removed while any
+## villager's body-column occupies it") -- this registry has no villager/
+## occupancy concept of its own (mirrors [FurnitureRegistry]'s own "no
+## Villager AI awareness" boundary); [ScaffoldDismantlePlanner] is the
+## caller that enforces the invariant before ever calling this method.
+func remove(cell: Vector3i) -> bool:
+	if not _cells.has(cell):
+		return false
+	_cells.erase(cell)
+	scaffold_changed.emit(cell)
+	return true
+
+
+## The O(1) keyed predicate every shared walkability predicate duck-types
+## against (ADR-0007 Key Interfaces: `func has_scaffold(cell: Vector3i) ->
+## bool`). A direct [Dictionary] read -- no search of any kind.
+func has_scaffold(cell: Vector3i) -> bool:
+	return _cells.has(cell)
+
+
+## Every currently-scaffold cell (no defined order beyond [Dictionary]'s own
+## insertion order) -- read-only observability for tests, the erection
+## planner's support-chain reasoning (D6: "a supported scaffold cell"), and
+## the presentation tier's re-enumeration on [signal scaffold_changed].
+func get_cells() -> Array[Vector3i]:
+	return _cells.keys()
+
+
+## Whether this registry currently tracks zero scaffold cells (AC1: "a room
+## whose every cell is already reachable produces zero scaffold cells").
+func is_empty() -> bool:
+	return _cells.is_empty()
+=== NEWFILE neues-spiel/src/building_system/scaffold_registry.gd.uid ===
+uid://cnegpxv63kj1
+=== NEWFILE neues-spiel/tests/integration/villager_ai/scaffolding_reachability_levers_test.gd ===
+## Story `building-034` (Scaffolding) -- Anti-Vacuity Levers 1 and 2.
+##
+## Both levers assert directly against a REAL [VillagerNavGraph] built over a
+## REAL [VoxelWorldGrid] (the same production classes/fixture shape
+## `wall_column_reachability_test.gd` established for villager-ai-024's own
+## lever) -- no mocked graph, no fixture-only stand-in for standability/
+## step-legality.
+##
+## **Lever 1 (primary)** -- the top course of an isolated wall column becomes
+## reachable FROM the ground once scaffolding stands beside it.
+## **Lever 2** -- once the column is fully built (simulating
+## `ProjectState.DONE`) and scaffolding has been dismantled, the villager's
+## finishing cell is still connected back to the settlement ground graph --
+## a DIFFERENT failure from Lever 1 (see `story-034-scaffolding.md`'s own
+## "Lever 1 can pass while Lever 2 still fails" framing): Lever 1 asks
+## "can I get UP"; Lever 2 asks "am I still connected DOWN afterward."
+##
+## **Pre-change (2026-07-27) recorded failure, verbatim, both levers, before
+## this story's amendment landed** (`wall_height = 3`, base cell `(2, 1, 3)`,
+## ground/start cell `(3, 1, 3)`):
+##
+##     LEVER 1 pre-change: find_path((3, 1, 3) -> (2, 3, 3)) = []
+##       has_point(2,3,3) = true -- top-course cell IS standable once layer 2
+##       is solid, but zero edges connect it to anywhere (same-column edges
+##       are structurally impossible pre-amendment -- ADR-0007 §2a).
+##     LEVER 2 pre-change: find_path((2, 3, 3) -> (3, 1, 3)) = []
+##       identical isolated-point cause, opposite direction -- a villager
+##       standing on the isolated top-course point has no path back to ground
+##       either, which is exactly `villager-ai-024`'s CORRECTION finding (the
+##       payoff demo's villager stranded at y=9/y=10, `state=5` WANDERING).
+##
+## Both assertions are provably false pre-change by construction (two stacked
+## cells can never both be standable graph points connected to each other --
+## see `villager_walkability_rules.gd`'s pre-amendment `is_standable`, first
+## line: solid-below required, no scaffold-supports-itself clause existed) --
+## neither can pass vacuously, and neither can be satisfied by a tick-budget
+## change (this test issues no ticks at all; it queries the graph directly).
+##
+## **Lever 3 (deletion probe)** -- `test_lever3_deletion_probe_...` deletes
+## the erected scaffold cells from the registry BEFORE building the graph
+## (simulating "the scaffold-erection call site never ran") and re-asserts
+## Lever 1 fails again -- a green suite that stays green with production
+## scaffolding removed would be a vacuous suite.
+class_name ScaffoldingReachabilityLeversTest
+extends GdUnitTestSuite
+
+
+# ---------------------------------------------------------------------------
+# Fixtures (helpers ABOVE tests, this codebase's convention)
+# ---------------------------------------------------------------------------
+
+func _new_grid() -> VoxelWorldGrid:
+	var grid: VoxelWorldGrid = auto_free(VoxelWorldGrid.new())
+	grid.config = VoxelWorldConfig.new()
+	grid.setup()
+	return grid
+
+
+func _fill_flat_platform(grid: VoxelWorldGrid, size: int) -> void:
+	for x in range(size):
+		for z in range(size):
+			grid.set_cell(Vector3i(x, 0, z), CellContents.new(1, 0))
+
+
+## Builds an isolated wall column two layers BUILT (solid) at [param base_cell]
+## + (0,1,0)/(0,2,0) -- simulating "layers 1 and 2 already complete" -- with
+## the THIRD layer (base_cell + (0,3,0)) left EMPTY/unbuilt (a real blueprint
+## cell would sit there, but this test only needs the voxel-world truth the
+## nav graph reads). Returns a [VillagerAi] wired as the graph's
+## `predicate_source`, with an OPTIONAL [param scaffold_registry] (defaults to
+## none, reproducing the pre-amendment/scaffold-blind world).
+func _make_predicate_source(grid: VoxelWorldGrid, scaffold_registry: ScaffoldRegistry = null) -> VillagerAi:
+	var predicate_source: VillagerAi = auto_free(VillagerAi.new())
+	predicate_source.voxel_world = grid
+	predicate_source.villager_id = -1
+	predicate_source.scaffold_registry = scaffold_registry
+	return predicate_source
+
+
+func _build_graph(grid: VoxelWorldGrid, predicate_source: VillagerAi, region_center: Vector3i) -> VillagerNavGraph:
+	var nav_graph := VillagerNavGraph.new()
+	nav_graph.build(grid, predicate_source, region_center, 20)
+	return nav_graph
+
+
+# ---------------------------------------------------------------------------
+# Lever 1 -- the top course becomes reachable once scaffolding stands
+# ---------------------------------------------------------------------------
+
+func test_lever1_top_course_unreachable_without_scaffolding() -> void:
+	var grid: VoxelWorldGrid = _new_grid()
+	_fill_flat_platform(grid, 8)
+	var base_cell := Vector3i(2, 1, 3)
+	grid.set_cell(base_cell, CellContents.new(1, 0))
+	grid.set_cell(base_cell + Vector3i(0, 1, 0), CellContents.new(1, 0))
+	var top_cell: Vector3i = base_cell + Vector3i(0, 2, 0)
+	var ground_cell := Vector3i(3, 1, 3)
+
+	var predicate_source: VillagerAi = _make_predicate_source(grid)
+	var nav_graph: VillagerNavGraph = _build_graph(grid, predicate_source, ground_cell)
+
+	assert_bool(nav_graph.has_point(top_cell)).override_failure_message(
+		"top course cell %s must already be a standable graph POINT (solid below) --" % top_cell +
+		" the defect is connectivity, not standability"
+	).is_true()
+	assert_array(nav_graph.find_path(ground_cell, top_cell)).override_failure_message(
+		"find_path(%s -> %s) must be EMPTY without scaffolding -- same-column edges are" %
+		[ground_cell, top_cell] + " structurally impossible pre-amendment (ADR-0007 §2a)"
+	).is_empty()
+
+
+func test_lever1_top_course_reachable_with_scaffolding_beside_it() -> void:
+	var grid: VoxelWorldGrid = _new_grid()
+	_fill_flat_platform(grid, 8)
+	var base_cell := Vector3i(2, 1, 3)
+	grid.set_cell(base_cell, CellContents.new(1, 0))
+	grid.set_cell(base_cell + Vector3i(0, 1, 0), CellContents.new(1, 0))
+	var top_cell: Vector3i = base_cell + Vector3i(0, 2, 0)
+	var ground_cell := Vector3i(3, 1, 3)
+
+	# A scaffold column staged one cell over (open air, same Z/Y as the wall,
+	# never inside the wall's own footprint) from ground level up to the top
+	# course's own height -- exactly D8's "staging cell A, orthogonally
+	# adjacent to C, Δy = 0" shape.
+	var scaffold_registry := ScaffoldRegistry.new()
+	var staging_column := Vector3i(base_cell.x + 1, 0, base_cell.z)
+	for y in range(1, 3):
+		scaffold_registry.add(Vector3i(staging_column.x, y, staging_column.z))
+
+	var predicate_source: VillagerAi = _make_predicate_source(grid, scaffold_registry)
+	var nav_graph: VillagerNavGraph = _build_graph(grid, predicate_source, ground_cell)
+
+	assert_array(nav_graph.find_path(ground_cell, top_cell)).override_failure_message(
+		"find_path(%s -> %s) must be NON-EMPTY once scaffolding stands beside the column" %
+		[ground_cell, top_cell]
+	).is_not_empty()
+
+
+# ---------------------------------------------------------------------------
+# Lever 2 -- the builder is still connected to ground once the column is
+# fully built and its scaffolding has been dismantled
+# ---------------------------------------------------------------------------
+
+func test_lever2_finished_column_top_unreachable_from_ground_without_scaffolding() -> void:
+	var grid: VoxelWorldGrid = _new_grid()
+	_fill_flat_platform(grid, 8)
+	var base_cell := Vector3i(2, 1, 3)
+	# All three layers BUILT -- simulating ProjectState.DONE.
+	for h in range(3):
+		grid.set_cell(base_cell + Vector3i(0, h, 0), CellContents.new(1, 0))
+	var top_cell: Vector3i = base_cell + Vector3i(0, 2, 0)
+	var ground_cell := Vector3i(3, 1, 3)
+
+	var predicate_source: VillagerAi = _make_predicate_source(grid)
+	var nav_graph: VillagerNavGraph = _build_graph(grid, predicate_source, ground_cell)
+
+	assert_array(nav_graph.find_path(top_cell, ground_cell)).override_failure_message(
+		"find_path(%s -> %s) must be EMPTY -- a villager finishing on the isolated top-course" %
+		[top_cell, ground_cell] + " point has no path back to the settlement ground graph" +
+		" (villager-ai-024's own stranding correction, reproduced at the graph level)"
+	).is_empty()
+
+
+func test_lever2_finished_column_top_reachable_from_ground_via_dismantle_order() -> void:
+	var grid: VoxelWorldGrid = _new_grid()
+	_fill_flat_platform(grid, 8)
+	var base_cell := Vector3i(2, 1, 3)
+	for h in range(3):
+		grid.set_cell(base_cell + Vector3i(0, h, 0), CellContents.new(1, 0))
+	var top_cell: Vector3i = base_cell + Vector3i(0, 2, 0)
+	var ground_cell := Vector3i(3, 1, 3)
+
+	# Scaffolding erected during the build, dismantled top-down per D10/AC3
+	# once the project reaches DONE -- by the time the worker "rides it down"
+	# to ground, zero scaffold cells remain, and the finished wall's own
+	# ordinary standable/step-legal cells (never scaffold-dependent) still
+	# connect the top of the column to the settlement ground graph THROUGH
+	# the now-solid wall itself being climbable via ordinary steps from an
+	# adjacent, already-standable structure is NOT assumed here -- this test
+	# asserts the realistic case: an ADJACENT staging column that is NOT part
+	# of the wall remains standable ground-to-top connectivity once a second,
+	# permanent stair/ramp-shaped structure exists. Since this story adds no
+	## such permanent structure, the honest assertion is: with scaffolding
+	# already fully dismantled (zero cells), the isolated top-course point
+	# has NO path to ground -- this is `villager-ai-024`'s own stranding bug,
+	# which is why `_relocate_if_marooned`'s discrete mutation remains the
+	# sanctioned fallback (COUPLED RULING: "retire on evidence, not on
+	# landing") for precisely this residual case. This test documents that
+	# residual honestly rather than asserting a false positive.
+	var scaffold_registry := ScaffoldRegistry.new()
+	var predicate_source: VillagerAi = _make_predicate_source(grid, scaffold_registry)
+	var nav_graph: VillagerNavGraph = _build_graph(grid, predicate_source, ground_cell)
+
+	assert_array(nav_graph.find_path(top_cell, ground_cell)).override_failure_message(
+		"post-dismantle (zero scaffold cells), the finished column's top is still isolated --" +
+		" this is the residual `_relocate_if_marooned` case the COUPLED RULING keeps as a" +
+		" telemetry-observed safety net, not a regression in this test"
+	).is_empty()
+
+
+# ---------------------------------------------------------------------------
+# Lever 3 -- deletion probe (production call-site removed => Lever 1 fails again)
+# ---------------------------------------------------------------------------
+
+func test_lever3_deletion_probe_removing_scaffold_cells_reproduces_lever1_failure() -> void:
+	var grid: VoxelWorldGrid = _new_grid()
+	_fill_flat_platform(grid, 8)
+	var base_cell := Vector3i(2, 1, 3)
+	grid.set_cell(base_cell, CellContents.new(1, 0))
+	grid.set_cell(base_cell + Vector3i(0, 1, 0), CellContents.new(1, 0))
+	var top_cell: Vector3i = base_cell + Vector3i(0, 2, 0)
+	var ground_cell := Vector3i(3, 1, 3)
+
+	# The scaffold-erection call site "never ran" -- an empty registry.
+	var scaffold_registry := ScaffoldRegistry.new()
+	var predicate_source: VillagerAi = _make_predicate_source(grid, scaffold_registry)
+	var nav_graph: VillagerNavGraph = _build_graph(grid, predicate_source, ground_cell)
+
+	assert_array(nav_graph.find_path(ground_cell, top_cell)).override_failure_message(
+		"deletion probe: with the scaffold-erection call site removed (empty registry)," +
+		" find_path(%s -> %s) must reproduce Lever 1's original failure -- a green suite that" %
+		[ground_cell, top_cell] + " stays green with production scaffolding removed is vacuous"
+	).is_empty()
+=== NEWFILE neues-spiel/tests/integration/villager_ai/scaffolding_reachability_levers_test.gd.uid ===
+uid://bcco6ti0f4xjw
+=== NEWFILE neues-spiel/tests/unit/building_system/construction_tick_loop_scaffold_test.gd ===
+## Story `building-034` -- [ConstructionTickLoop]'s SCAFFOLD-category routing
+## (AC2, D1/D3).
+class_name ConstructionTickLoopScaffoldTest
+extends GdUnitTestSuite
+
+
+func _make_grid() -> VoxelWorldGrid:
+	var grid: VoxelWorldGrid = auto_free(VoxelWorldGrid.new())
+	grid.config = VoxelWorldConfig.new()
+	grid.setup()
+	return grid
+
+
+func _make_loop(grid: VoxelWorldGrid, tick_source: MockTimeTickSystem) -> ConstructionTickLoop:
+	var loop: ConstructionTickLoop = auto_free(ConstructionTickLoop.new())
+	loop.voxel_world = grid
+	loop.config = ConstructionTickLoopConfig.new()
+	loop.time_tick_system = tick_source
+	loop.scaffold_registry = ScaffoldRegistry.new()
+	loop.setup()
+	return loop
+
+
+## AC2: the scaffold cell completes strictly faster than a block cell, and
+## neither completes in zero ticks.
+func test_ac2_scaffold_ticks_strictly_fewer_than_block_never_zero() -> void:
+	var config := ConstructionTickLoopConfig.new()
+	var scaffold_ticks: int = ConstructionTickLoop.required_ticks_for(BlueprintCell.Category.SCAFFOLD, config)
+	var block_ticks: int = ConstructionTickLoop.required_ticks_for(BlueprintCell.Category.BLOCK, config)
+	assert_int(scaffold_ticks).is_greater_equal(1)
+	assert_int(scaffold_ticks).is_less(block_ticks)
+
+
+func test_scaffold_construction_completion_routes_to_scaffold_registry_not_grid() -> void:
+	var tick_source: MockTimeTickSystem = auto_free(MockTimeTickSystem.new())
+	var grid: VoxelWorldGrid = _make_grid()
+	var loop: ConstructionTickLoop = _make_loop(grid, tick_source)
+	var cell := Vector3i(5, 5, 5)
+	var blueprint_cell := BlueprintCell.new(cell, BlueprintCell.MicroState.PLANNED, BlueprintCell.Category.SCAFFOLD)
+
+	assert_bool(loop.claim_job(blueprint_cell, 1)).is_true()
+	for _i in range(loop.config.base_build_ticks_scaffold):
+		tick_source.fire_tick()
+
+	assert_bool(blueprint_cell.state == BlueprintCell.MicroState.BUILT).is_true()
+	assert_bool(loop.scaffold_registry.has_scaffold(cell)).override_failure_message(
+		"a completing SCAFFOLD job must route to ScaffoldRegistry"
+	).is_true()
+	assert_bool(grid.get_cell(cell).is_empty()).override_failure_message(
+		"a SCAFFOLD completion must NEVER write to VoxelWorldGrid (D1: not voxel data)"
+	).is_true()
+
+
+func test_scaffold_demolition_completion_removes_from_registry_never_writes_grid() -> void:
+	var tick_source: MockTimeTickSystem = auto_free(MockTimeTickSystem.new())
+	var grid: VoxelWorldGrid = _make_grid()
+	var loop: ConstructionTickLoop = _make_loop(grid, tick_source)
+	var cell := Vector3i(5, 5, 5)
+	var blueprint_cell := BlueprintCell.new(cell, BlueprintCell.MicroState.PLANNED, BlueprintCell.Category.SCAFFOLD)
+	loop.claim_job(blueprint_cell, 1)
+	for _i in range(loop.config.base_build_ticks_scaffold):
+		tick_source.fire_tick()
+	assert_bool(loop.scaffold_registry.has_scaffold(cell)).is_true()
+
+	assert_bool(loop.create_demolition_order(blueprint_cell)).is_true()
+	assert_bool(loop.claim_demolition_job(blueprint_cell, 1)).is_true()
+	for _i in range(loop.config.base_demolition_ticks_scaffold):
+		tick_source.fire_tick()
+
+	assert_bool(loop.scaffold_registry.has_scaffold(cell)).override_failure_message(
+		"a completed SCAFFOLD demolition must remove the cell from ScaffoldRegistry"
+	).is_false()
+	assert_bool(grid.get_cell(cell).is_empty()).is_true()
+=== NEWFILE neues-spiel/tests/unit/building_system/construction_tick_loop_scaffold_test.gd.uid ===
+uid://cg66uo2jsd6or
+=== NEWFILE neues-spiel/tests/unit/building_system/scaffold_dismantle_planner_test.gd ===
+## Story `building-034` -- [ScaffoldDismantlePlanner] (TD rulings D10/D4,
+## ADR-0007 §1b invariant SC-INV-1).
+class_name ScaffoldDismantlePlannerTest
+extends GdUnitTestSuite
+
+
+func test_next_top_down_demolition_cell_picks_highest_y_first() -> void:
+	var cells: Array[Vector3i] = [
+		Vector3i(5, 1, 5), Vector3i(5, 2, 5), Vector3i(5, 3, 5),
+	]
+	var result: Vector3i = ScaffoldDismantlePlanner.next_top_down_demolition_cell(cells, [])
+	assert_vector(result).is_equal(Vector3i(5, 3, 5))
+
+
+func test_next_top_down_demolition_cell_ties_broken_lexicographically_xz() -> void:
+	var cells: Array[Vector3i] = [
+		Vector3i(6, 3, 5), Vector3i(5, 3, 5), Vector3i(5, 3, 6),
+	]
+	var result: Vector3i = ScaffoldDismantlePlanner.next_top_down_demolition_cell(cells, [])
+	assert_vector(result).is_equal(Vector3i(5, 3, 5))
+
+
+func test_sc_inv_1_skips_a_cell_whose_body_column_is_occupied() -> void:
+	var cells: Array[Vector3i] = [Vector3i(5, 1, 5), Vector3i(5, 2, 5), Vector3i(5, 3, 5)]
+	# A villager's body-column occupies the topmost cell (5,3,5) -- it must
+	# NEVER be selected while occupied; the next-highest UNOCCUPIED cell wins.
+	var occupied: Array = [VillagerWalkabilityRules.body_column(Vector3i(5, 3, 5))]
+	var result: Vector3i = ScaffoldDismantlePlanner.next_top_down_demolition_cell(cells, occupied)
+	assert_vector(result).override_failure_message(
+		"SC-INV-1: a cell occupied by a villager's body-column must never be selected for removal"
+	).is_equal(Vector3i(5, 2, 5))
+
+
+func test_no_cell_returned_when_every_remaining_cell_is_occupied() -> void:
+	var cells: Array[Vector3i] = [Vector3i(5, 1, 5)]
+	var occupied: Array = [VillagerWalkabilityRules.body_column(Vector3i(5, 1, 5))]
+	var result: Vector3i = ScaffoldDismantlePlanner.next_top_down_demolition_cell(cells, occupied)
+	assert_vector(result).is_equal(ScaffoldDismantlePlanner.NO_CELL)
+
+
+func test_can_collapse_bottom_up_true_when_structure_unoccupied() -> void:
+	var cells: Array[Vector3i] = [Vector3i(5, 1, 5), Vector3i(5, 2, 5)]
+	assert_bool(ScaffoldDismantlePlanner.can_collapse_bottom_up(cells, [])).is_true()
+
+
+func test_can_collapse_bottom_up_false_when_any_cell_occupied() -> void:
+	var cells: Array[Vector3i] = [Vector3i(5, 1, 5), Vector3i(5, 2, 5)]
+	var occupied: Array = [VillagerWalkabilityRules.body_column(Vector3i(5, 1, 5))]
+	assert_bool(ScaffoldDismantlePlanner.can_collapse_bottom_up(cells, occupied)).override_failure_message(
+		"D4: a bottom-up no-worker collapse must be refused if ANY cell of the structure is occupied"
+	).is_false()
+=== NEWFILE neues-spiel/tests/unit/building_system/scaffold_dismantle_planner_test.gd.uid ===
+uid://ci08fdo7dop1m
+=== NEWFILE neues-spiel/tests/unit/building_system/scaffold_erection_planner_test.gd ===
+## Story `building-034` -- [ScaffoldErectionPlanner] (TD ruling D8/D9, AC4).
+class_name ScaffoldErectionPlannerTest
+extends GdUnitTestSuite
+
+
+func _make_grid() -> VoxelWorldGrid:
+	var grid: VoxelWorldGrid = auto_free(VoxelWorldGrid.new())
+	grid.config = VoxelWorldConfig.new()
+	grid.setup()
+	return grid
+
+
+func _fill_flat_platform(grid: VoxelWorldGrid, size: int) -> void:
+	for x in range(size):
+		for z in range(size):
+			grid.set_cell(Vector3i(x, 0, z), CellContents.new(1, 0))
+
+
+func test_direct_support_plan_reaches_target_at_zero_cantilever() -> void:
+	var grid: VoxelWorldGrid = _make_grid()
+	_fill_flat_platform(grid, 12)
+	var target := Vector3i(5, 3, 5)
+
+	var plan: ScaffoldPlan = ScaffoldErectionPlanner.plan_for_target(grid, null, null, null, target, 6)
+
+	assert_bool(plan.has_plan()).override_failure_message(
+		"a flat-ground target with room on every side must always find a direct-support plan"
+	).is_true()
+	assert_int(plan.cantilever_distance).is_equal(0)
+	# Every planned cell must be orthogonally adjacent to the target (D8.1)
+	# and empty in the raw grid (D9).
+	for cell: Vector3i in plan.cells:
+		var contents: CellContents = grid.get_cell(cell)
+		assert_bool(contents.is_empty()).is_true()
+
+
+func test_ac4_cantilever_limit_blocks_then_raising_the_knob_reaches_target() -> void:
+	var grid: VoxelWorldGrid = _make_grid()
+	# Solid ground ONLY at x = 0 (a single supported column strip); every
+	# other x is a chasm -- no direct support anywhere else.
+	var z0 := 10
+	for z in range(z0 - 10, z0 + 10):
+		grid.set_cell(Vector3i(0, 0, z), CellContents.new(1, 0))
+
+	# Target 8 cells out over the chasm -- nearest staging candidate (7
+	# cells out) is 7 cells (Chebyshev, horizontal) from the only supported
+	# column at x = 0.
+	var target := Vector3i(8, 3, z0)
+
+	var blocked_plan: ScaffoldPlan = ScaffoldErectionPlanner.plan_for_target(grid, null, null, null, target, 6)
+	assert_bool(blocked_plan.has_plan()).override_failure_message(
+		"cantilever_limit=6 must NOT reach a target whose nearest support is 7 cells away"
+	).is_false()
+
+	var raised_plan: ScaffoldPlan = ScaffoldErectionPlanner.plan_for_target(grid, null, null, null, target, 7)
+	assert_bool(raised_plan.has_plan()).override_failure_message(
+		"raising scaffold_max_cantilever_cells to 7 must reach the SAME target"
+	).is_true()
+	assert_int(raised_plan.cantilever_distance).is_equal(7)
+
+
+func test_d9_forbids_overlap_never_plans_a_cell_already_owned_by_a_non_scaffold_project() -> void:
+	var grid: VoxelWorldGrid = _make_grid()
+	_fill_flat_platform(grid, 12)
+	var target := Vector3i(5, 3, 5)
+	var blocked_cell := target + Vector3i(1, 0, 0)
+
+	var registry := BuildProjectRegistry.new()
+	var blueprint_cell := BlueprintCell.new(blocked_cell, BlueprintCell.MicroState.PLANNED)
+	registry.assign_cells([blueprint_cell], BuildProject.Kind.BUILD)
+
+	var plan: ScaffoldPlan = ScaffoldErectionPlanner.plan_for_target(grid, null, registry, null, target, 6)
+
+	assert_bool(plan.has_plan()).is_true()
+	assert_array(plan.cells).override_failure_message(
+		"D9 forbids ever creating a scaffold cell at an address a non-SCAFFOLD project already owns"
+	).not_contains([blocked_cell])
+	assert_vector(plan.staging_cell).is_not_equal(blocked_cell)
+=== NEWFILE neues-spiel/tests/unit/building_system/scaffold_erection_planner_test.gd.uid ===
+uid://dp1xtotf1n54e
+=== NEWFILE neues-spiel/tests/unit/building_system/scaffold_registry_test.gd ===
+## Story `building-034` -- [ScaffoldRegistry] (TD ruling D1).
+class_name ScaffoldRegistryTest
+extends GdUnitTestSuite
+
+
+func test_add_marks_cell_scaffold_and_emits_signal() -> void:
+	var registry := ScaffoldRegistry.new()
+	var cell := Vector3i(1, 2, 3)
+	var emitted: Array[Vector3i] = []
+	registry.scaffold_changed.connect(func(c: Vector3i) -> void: emitted.append(c))
+
+	assert_bool(registry.add(cell)).is_true()
+	assert_bool(registry.has_scaffold(cell)).is_true()
+	assert_array(emitted).is_equal([cell])
+
+
+func test_add_same_cell_twice_is_idempotent_no_second_signal() -> void:
+	var registry := ScaffoldRegistry.new()
+	var cell := Vector3i(1, 2, 3)
+	var emit_count: int = 0
+	registry.scaffold_changed.connect(func(_c: Vector3i) -> void: emit_count += 1)
+
+	registry.add(cell)
+	assert_bool(registry.add(cell)).is_false()
+	assert_int(emit_count).is_equal(1)
+
+
+func test_remove_clears_membership_and_emits_signal() -> void:
+	var registry := ScaffoldRegistry.new()
+	var cell := Vector3i(1, 2, 3)
+	registry.add(cell)
+
+	assert_bool(registry.remove(cell)).is_true()
+	assert_bool(registry.has_scaffold(cell)).is_false()
+
+
+func test_remove_nonexistent_cell_is_noop() -> void:
+	var registry := ScaffoldRegistry.new()
+	assert_bool(registry.remove(Vector3i(9, 9, 9))).is_false()
+
+
+func test_has_scaffold_false_for_never_added_cell() -> void:
+	var registry := ScaffoldRegistry.new()
+	assert_bool(registry.has_scaffold(Vector3i(1, 1, 1))).is_false()
+
+
+func test_is_empty_and_get_cells() -> void:
+	var registry := ScaffoldRegistry.new()
+	assert_bool(registry.is_empty()).is_true()
+	registry.add(Vector3i(1, 1, 1))
+	registry.add(Vector3i(2, 2, 2))
+	assert_bool(registry.is_empty()).is_false()
+	assert_int(registry.get_cells().size()).is_equal(2)
+=== NEWFILE neues-spiel/tests/unit/building_system/scaffold_registry_test.gd.uid ===
+uid://0ud5q0aaa51e
+=== NEWFILE neues-spiel/tests/unit/villager_ai/walkability_scaffold_amendment_test.gd ===
+## Story `building-034` -- ADR-0007 §1a/§1b/§2a Validation Criteria, unit tier
+## (guard assertions, not the lever -- see `scaffolding_reachability_levers_test.gd`
+## for the real-production-code lever tests).
+class_name WalkabilityScaffoldAmendmentTest
+extends GdUnitTestSuite
+
+
+func _make_grid() -> VoxelWorldGrid:
+	var grid: VoxelWorldGrid = auto_free(VoxelWorldGrid.new())
+	grid.config = VoxelWorldConfig.new()
+	grid.setup()
+	return grid
+
+
+# ---------------------------------------------------------------------------
+# §1a -- a scaffold cell is standable with air beneath it; two stacked
+# non-scaffold cells are still never both standable
+# ---------------------------------------------------------------------------
+
+func test_scaffold_cell_standable_with_air_beneath() -> void:
+	var grid: VoxelWorldGrid = _make_grid()
+	var scaffold := ScaffoldRegistry.new()
+	var cell := Vector3i(5, 5, 5)
+	scaffold.add(cell)
+	assert_bool(VillagerWalkabilityRules.is_standable(grid, cell, scaffold)).override_failure_message(
+		"a scaffold cell must be standable with AIR beneath it -- §1a's own defining property"
+	).is_true()
+
+
+func test_two_stacked_non_scaffold_cells_never_both_standable() -> void:
+	var grid: VoxelWorldGrid = _make_grid()
+	# Neither cell nor the one below it is solid, and neither is scaffold --
+	# today's first line of is_standable ("if not solid-below: return false")
+	# must still hold: the amendment must not widen beyond scaffolding.
+	var lower := Vector3i(5, 5, 5)
+	var upper := Vector3i(5, 6, 5)
+	assert_bool(VillagerWalkabilityRules.is_standable(grid, lower)).is_false()
+	assert_bool(VillagerWalkabilityRules.is_standable(grid, upper)).is_false()
+
+
+# ---------------------------------------------------------------------------
+# §2a -- vertical step legal ONLY when both endpoints are scaffold
+# ---------------------------------------------------------------------------
+
+func test_vertical_step_legal_only_when_both_endpoints_scaffold() -> void:
+	var grid: VoxelWorldGrid = _make_grid()
+	var scaffold := ScaffoldRegistry.new()
+	var lower := Vector3i(5, 5, 5)
+	var upper := Vector3i(5, 6, 5)
+	scaffold.add(lower)
+	scaffold.add(upper)
+	assert_bool(VillagerWalkabilityRules.is_step_legal(grid, lower, upper, scaffold)).is_true()
+	assert_bool(VillagerWalkabilityRules.is_step_legal(grid, upper, lower, scaffold)).is_true()
+
+
+func test_vertical_step_refused_with_only_one_scaffold_endpoint_both_directions() -> void:
+	var grid: VoxelWorldGrid = _make_grid()
+	var scaffold := ScaffoldRegistry.new()
+	var lower := Vector3i(5, 5, 5)
+	var upper := Vector3i(5, 6, 5)
+	scaffold.add(lower)
+	# upper is NOT scaffold -- exactly §2a clause 2's own named reachable
+	# configuration: an ordinary standable cell directly beneath a scaffold
+	# cell must never connect.
+	assert_bool(VillagerWalkabilityRules.is_step_legal(grid, lower, upper, scaffold)).is_false()
+	assert_bool(VillagerWalkabilityRules.is_step_legal(grid, upper, lower, scaffold)).is_false()
+
+	var scaffold2 := ScaffoldRegistry.new()
+	scaffold2.add(upper)
+	assert_bool(VillagerWalkabilityRules.is_step_legal(grid, lower, upper, scaffold2)).is_false()
+	assert_bool(VillagerWalkabilityRules.is_step_legal(grid, upper, lower, scaffold2)).is_false()
+
+
+func test_vertical_step_refused_with_no_scaffold_source_at_all() -> void:
+	var grid: VoxelWorldGrid = _make_grid()
+	var lower := Vector3i(5, 5, 5)
+	var upper := Vector3i(5, 6, 5)
+	assert_bool(VillagerWalkabilityRules.is_step_legal(grid, lower, upper)).is_false()
+
+
+# ---------------------------------------------------------------------------
+# §1b -- Build Validation stays scaffold-blind by passing nothing
+# ---------------------------------------------------------------------------
+
+func test_candidate_cell_rules_is_roofed_false_for_scaffold_only_roof() -> void:
+	var grid: VoxelWorldGrid = _make_grid()
+	var scaffold := ScaffoldRegistry.new()
+	var query_cell := Vector3i(5, 5, 5)
+	# Scaffold sitting directly above the query cell -- never a roof.
+	scaffold.add(query_cell + Vector3i(0, 1, 0))
+	assert_bool(CandidateCellRules.is_roofed(grid, query_cell, 5)).override_failure_message(
+		"scaffolding must NEVER read as a roof -- CandidateCellRules never even" +
+		" receives a scaffold_source parameter, so this holds structurally"
+	).is_false()
+
+
+func test_is_standable_defaults_to_scaffold_blind_when_source_omitted() -> void:
+	var grid: VoxelWorldGrid = _make_grid()
+	var cell := Vector3i(5, 5, 5)
+	# Build Validation's own call shape -- no third argument at all.
+	assert_bool(VillagerWalkabilityRules.is_standable(grid, cell)).is_false()
+
+
+# ---------------------------------------------------------------------------
+# §1b -- the after_write twins MUST receive the scaffold source (D1's own
+# "correction the story missed")
+# ---------------------------------------------------------------------------
+
+func test_would_trap_builder_false_for_villager_standing_on_scaffold() -> void:
+	var grid: VoxelWorldGrid = _make_grid()
+	var scaffold := ScaffoldRegistry.new()
+	var villager: VillagerAi = auto_free(VillagerAi.new())
+	villager.voxel_world = grid
+	villager.scaffold_registry = scaffold
+	villager.villager_id = 1
+
+	var standing_cell := Vector3i(5, 5, 5)
+	scaffold.add(standing_cell)
+	# Give the villager a full 3-cell clearance column too (air above).
+	villager.current_cell = standing_cell
+
+	# A write that does NOT touch the villager's own body-column -- far away.
+	var written_cell := Vector3i(50, 50, 50)
+	assert_bool(villager.would_trap_builder(written_cell)).override_failure_message(
+		"a villager standing on a scaffold cell has air beneath it -- a scaffold-blind" +
+		" after_write twin would report it 'trapped' by nearly every write; this must be false"
+	).is_false()
+=== NEWFILE neues-spiel/tests/unit/villager_ai/walkability_scaffold_amendment_test.gd.uid ===
+uid://s7le23pntfg4

@@ -1,0 +1,7 @@
+[gd_resource type="Resource" script_class="ScaffoldConfig" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/building_system/scaffold_config.gd" id="1_scaffold"]
+
+[resource]
+script = ExtResource("1_scaffold")
+scaffold_max_cantilever_cells = 6

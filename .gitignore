@@ -42,6 +42,10 @@ dist/
 .godot/
 *.translation
 export_presets.cfg
+# GdUnit4 test reports (auto-generated on every test run)
+neues-spiel/reports/
+# Re-include the GdUnit4 runner (global "bin/" rule above would exclude it)
+!neues-spiel/addons/gdUnit4/bin/
 # Uncomment if using Godot:
 # *.import
 
@@ -142,3 +146,12 @@ $RECYCLE.BIN/
 *.msm
 *.msp
 *.lnk
+
+# === Godot MCP tooling (machine-specific, third-party) ===
+/tools/godot-mcp/
+.mcp.json
+prototypes/**/addons/godot_mcp/
+
+# Ephemeral session state (per .claude/docs/directory-structure.md)
+/production/session-state/
+/production/session-logs/

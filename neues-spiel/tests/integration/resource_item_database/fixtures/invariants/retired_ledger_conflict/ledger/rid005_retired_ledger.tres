@@ -1,0 +1,7 @@
+[gd_resource type="Resource" script_class="RetiredIdsLedgerResource" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/resource_item_database/retired_ids_ledger_resource.gd" id="1_rid005ledger"]
+
+[resource]
+script = ExtResource("1_rid005ledger")
+retired_ids = Array[StringName]([&"old_plank"])
