@@ -670,6 +670,117 @@ cp .claude/docs/CLAUDE-local-template.md CLAUDE.local.md
 
 ---
 
+## 关键机制：这些文档运行时怎么"生效"？被 `@` 引用 vs 给人读
+
+读到这里你可能有疑问：上面说了 `coordination-rules.md` 的 5 条规则"对所有智能体生效"，但**怎么生效的**？而 [agent-roster.md](file:///workspace/.claude/docs/agent-roster.md)、[agent-coordination-map.md](file:///workspace/.claude/docs/agent-coordination-map.md) 这两个文件，翻遍 CLAUDE.md、agents/、skills/ 都看不到对它们的引用——那它们到底什么时候发挥作用？
+
+这是这套架构里**最容易让初学者困惑**的一点。答案是：`.claude/docs/` 里的文件分**两类**，生效方式完全不同。
+
+### 两类文件的分野
+
+| 类别 | 生效方式 | 谁读它 | 例子 |
+|------|---------|--------|------|
+| **A. 运行时注入类** | 被 CLAUDE.md 用 `@路径` 引用 → 每次会话启动，内容被自动注入 AI 上下文 → 对所有智能体生效 | AI（自动） | coordination-rules、coding-standards、technical-preferences、context-management、directory-structure |
+| **B. 人读参考类** | 不被 `@` 引用，不进运行时上下文 → 给**人**理解全局用，或给维护者改架构时参考 | 人（手动翻） | agent-roster、agent-coordination-map、quick-start、skills-reference、hooks-reference、director-gates、templates、两个 local-template |
+
+验证方法：打开根 [CLAUDE.md](file:///workspace/CLAUDE.md)，看它的 `@` 引用——
+
+```
+@.claude/docs/directory-structure.md
+@.claude/docs/technical-preferences.md
+@.claude/docs/coordination-rules.md      ← 5 条规则从这里进上下文
+@.claude/docs/coding-standards.md
+@.claude/docs/context-management.md
+```
+
+**只有这 5 个文件被 `@` 引用**。它们的内容会在每次会话启动时注入 AI 的上下文窗口，所以它们的规则"对所有智能体自动生效"——不需要智能体主动去读。
+
+### 那 `agent-roster.md` 和 `agent-coordination-map.md` 呢？
+
+这两个文件**没有被 `@` 引用，也没有被任何 agent 定义文件或 skill 文件引用**。我用搜索验证过：它们只出现在 `CONTRIBUTING.md`、`UPGRADING.md`、`.github/PULL_REQUEST_TEMPLATE.md`、`docs/examples/README.md` 这些**项目维护/人读**文档里。
+
+那它们是不是没用？**不是**。它们是**给人读的"全局参考图"**——
+
+- **你是人**，你想一眼看清"49 个智能体怎么分工、谁向谁汇报、9 种工作流怎么走"时，翻这两个文件。AI 不需要读它们，因为 AI 运行时用的是**另一套机制**（见下）。
+- **类比**：公司的组织架构图挂在墙上给员工看。但员工实际干活时，不需要每次抬头看图——他知道"我是游戏设计师，我向创意总监汇报，我能找系统设计师帮忙"，因为这些信息**写在每个岗位的岗位职责书里**（内嵌），不必查墙上的图。
+
+### 运行时委派规则到底从哪来？——内嵌在每个 agent 文件里
+
+这是关键。每个智能体定义文件（`.claude/agents/*.md`）底部都有一段 **"Delegation Map"**，**内嵌**了"我能委派给谁、我向谁汇报、我是谁的升级目标"。智能体被召唤时，Claude Code 读它的定义文件，它就知道自己的委派边界——**不需要读 `agent-coordination-map.md`**。
+
+举例（来自 [lead-programmer.md](file:///workspace/.claude/agents/lead-programmer.md) 第 100-111 行）：
+
+```markdown
+### Delegation Map
+
+Delegates to:
+- `gameplay-programmer` for gameplay feature implementation
+- `engine-programmer` for core engine systems
+- `ai-programmer` for AI and behavior systems
+- `network-programmer` for networking features
+- `tools-programmer` for development tools
+- `ui-programmer` for UI system implementation
+
+Reports to: `technical-director`
+Coordinates with: `game-designer` for feature specs, `qa-lead` for testability
+```
+
+我搜索过，**38 处** "Delegation Map / Delegates to / Escalation" 散落在各个 agent 文件里。每个智能体自带"我能找谁、我向谁报"的局部视图。
+
+`agent-coordination-map.md` 是把这些**局部视图汇总成一张全局图**，方便**你**一眼看懂。它和 agent 文件里的 Delegation Map 是**同一套信息的两种呈现**：
+
+| | agent-coordination-map.md | 各 agent 文件的 Delegation Map |
+|---|---------------------------|------------------------------|
+| 形式 | 一张全局图 | 49 份局部片段 |
+| 谁读 | 人（理解全局） | AI（被召唤时读自己的那份） |
+| 更新时 | 改一处全图更新 | 要改 49 处（容易漂移） |
+| 风险 | 和实际 agent 定义可能不同步 | 这才是运行时"事实之源" |
+
+> ⚠️ **维护提醒**：因为运行时用的是 agent 文件里的内嵌 Delegation Map，如果你改了 `agent-coordination-map.md` 但没改对应 agent 文件，**实际行为不会变**。`agent-coordination-map.md` 是"地图"，agent 文件是"地形"——地图可能过时，地形才是真的。
+
+### 运行时怎么知道"该召唤哪个智能体"？
+
+这是另一个相关问题。`.claude/docs/` 里没有任何文件告诉 AI "现在该召唤谁"。召唤发生在**技能（skill）文件**里，靠两种机制：
+
+1. **技能文件显式写死**：像 [team-combat/SKILL.md](file:///workspace/.claude/skills/team-combat/SKILL.md) 第 45-51 行那样，直接写 `subagent_type: game-designer`、`subagent_type: gameplay-programmer`——技能编排时按这个列表召唤。
+2. **靠 agent 的 `description` 字段路由**：每个 agent 文件 frontmatter 有 `description`（如 creative-director 的描述）。当主会话用 `Task` 工具且没指定具体 agent 时，Claude Code 根据 description 判断"用户这个请求该找谁"。`/dev-story` 这种路由型技能也靠 description 把任务派给"正确的程序员"。
+
+所以"有哪些智能体、各自干什么"的信息**存在每个 agent 文件的 frontmatter 里**，不靠 `agent-roster.md`。`agent-roster.md` 同样是给人看的汇总表。
+
+### 一张表总结：17 个文件各自怎么"生效"
+
+| 文件 | 类别 | 生效方式 |
+|------|------|---------|
+| [coordination-rules.md](file:///workspace/.claude/docs/coordination-rules.md) | **A 运行时** | CLAUDE.md `@` 引用 → 注入上下文 → 5 条规则对所有智能体自动生效 |
+| [coding-standards.md](file:///workspace/.claude/docs/coding-standards.md) | **A 运行时** | CLAUDE.md `@` 引用 → 注入上下文 → 写代码/文档/测试时自动遵守 |
+| [technical-preferences.md](file:///workspace/.claude/docs/technical-preferences.md) | **A 运行时** | CLAUDE.md `@` 引用 → 注入上下文 → AI 知道项目用哪个引擎、什么命名 |
+| [context-management.md](file:///workspace/.claude/docs/context-management.md) | **A 运行时** | CLAUDE.md `@` 引用 → 注入上下文 → AI 知道"文件即记忆、增量写入" |
+| [directory-structure.md](file:///workspace/.claude/docs/directory-structure.md) | **A 运行时** | CLAUDE.md `@` 引用 → 注入上下文 → AI 知道文件该放哪 |
+| [agent-roster.md](file:///workspace/.claude/docs/agent-roster.md) | **B 人读** | 不注入。给人查"有哪些智能体、什么级别"。运行时靠 agent 文件 frontmatter 的 `description` |
+| [agent-coordination-map.md](file:///workspace/.claude/docs/agent-coordination-map.md) | **B 人读** | 不注入。给人看全局组织图+9 种工作流。运行时靠各 agent 文件内嵌的 Delegation Map |
+| [quick-start.md](file:///workspace/.claude/docs/quick-start.md) | **B 人读** | 不注入。给新手入门读 |
+| [skills-reference.md](file:///workspace/.claude/docs/skills-reference.md) | **B 人读** | 不注入。给人查"有哪些命令"。AI 靠 `/help` 读 workflow-catalog 知道下一步 |
+| [workflow-catalog.yaml](file:///workspace/.claude/docs/workflow-catalog.yaml) | **B 但被技能读** | 不被 `@` 注入，但 `/help`、`/gate-check` 等技能**主动 Read 它**判断阶段和下一步 |
+| [director-gates.md](file:///workspace/.claude/docs/director-gates.md) | **B 但被技能读** | 不被 `@` 注入，但技能（如 `/architecture-decision`、`/gate-check`）**主动 Read 它**按门禁 ID 取 prompt |
+| [rules-reference.md](file:///workspace/.claude/docs/rules-reference.md) | **B 人读索引** | 不注入。它是 11 条规则的**索引表**。真正的规则在 `.claude/rules/*.md`，Claude Code 编辑对应路径文件时**自动套用**（机制独立于 `@`） |
+| [hooks-reference.md](file:///workspace/.claude/docs/hooks-reference.md) | **B 人读** | 不注入。钩子由 `settings.json` 配置自动触发，不靠 AI 读这个文件 |
+| [review-workflow.md](file:///workspace/.claude/docs/review-workflow.md) | **B 人读** | 不注入。评审靠技能（`/code-review`、`/story-done`）和门禁（LP-CODE-REVIEW）执行 |
+| [setup-requirements.md](file:///workspace/.claude/docs/setup-requirements.md) | **B 人读** | 不注入。给人装环境时查 |
+| [templates/](file:///workspace/.claude/docs/templates/) | **B 但被技能读** | 不被 `@` 注入，但技能（`/design-system`、`/architecture-decision`）**主动 Read 对应模板**创建文件 |
+| [hooks-reference/](file:///workspace/.claude/docs/hooks-reference/) | **B 人读** | 不注入。给维护钩子的人看。实际钩子脚本在 `.claude/hooks/*.sh` |
+| [CLAUDE-local-template.md](file:///workspace/.claude/docs/CLAUDE-local-template.md) | **B 人读模板** | 不注入。给人抄成 `CLAUDE.local.md`（这个文件才会被 Claude Code 读） |
+| [settings-local-template.md](file:///workspace/.claude/docs/settings-local-template.md) | **B 人读模板** | 不注入。给人抄成 `settings.local.json` |
+
+**三层生效机制**总结：
+
+1. **`@` 注入层**（最强）：CLAUDE.md `@` 引用的 5 个文件 → 每次会话自动进上下文 → 全局自动生效
+2. **技能主动读层**（按需）：workflow-catalog、director-gates、templates → 技能跑到需要时主动 Read → 该次调用生效
+3. **机制独立层**（不靠文档）：rules（按路径自动套）、hooks（settings.json 触发）、agent 的 description/Delegation Map（召唤时读 agent 文件）→ 各有独立机制，不依赖 `.claude/docs/` 里的索引或参考图
+
+`agent-roster.md` 和 `agent-coordination-map.md` 属于**第 3 层的"人读镜像"**——运行时事实在 agent 文件里，这两个文档是把运行时事实"翻译成人能一眼看懂的全局图"。
+
+---
+
 ## 在开发流程中何时碰到 `.claude/docs/`
 
 把所有文件映射到 7 阶段开发流程：
@@ -718,6 +829,15 @@ cp .claude/docs/CLAUDE-local-template.md CLAUDE.local.md
 
 **误区 9："`workflow-catalog.yaml` 里的 `required: false` 就是'不用做'。"**
 ❌ 是"可选"不是"不用做"。如 `/prototype` 标 `required: false`，但首次做高风险机制时**强烈建议做**。`required` 只决定是否阻塞下一阶段，不决定值不值得做。
+
+**误区 10（关键）："`agent-roster.md` 和 `agent-coordination-map.md` 没被引用，是没用的死文档。"**
+❌ 错。它们是**给人读的全局参考图**，不是给 AI 运行时读的。AI 运行时用的是：每个 agent 文件 frontmatter 的 `description`（决定路由）+ 每个 agent 文件底部的内嵌 `Delegation Map`（决定能委派给谁）。这两个汇总文档把分散在 49 个 agent 文件里的信息"翻译成人能一眼看懂的全局图"。判断一个 `.claude/docs/` 文件是否运行时生效，看它**有没有被 CLAUDE.md 用 `@` 引用**，或**有没有被技能主动 Read**——`agent-roster` 和 `agent-coordination-map` 两者都不是，所以是纯人读。
+
+**误区 11："改了 `agent-coordination-map.md` 的委派关系，智能体行为就会变。"**
+❌ 不会。运行时事实在 `.claude/agents/*.md` 各文件的内嵌 `Delegation Map` 里。`agent-coordination-map.md` 是"地图"，agent 文件是"地形"——改地图不动地形，行为不变。要改委派关系，必须改对应 agent 文件的 Delegation Map 段。这也是为什么地图可能和地形漂移——维护时要两边同步。
+
+**误区 12："所有规则都靠 AI 自觉读 `.claude/docs/` 生效。"**
+❌ 错。生效有三层机制（见上方"关键机制"一节）：① CLAUDE.md `@` 引用的 5 个文件自动注入；② 技能主动 Read 的文件（workflow-catalog、director-gates、templates）；③ 完全独立机制（rules 按路径套、hooks 由 settings.json 触发、agent 的 description/Delegation Map）。大多数规则**不靠 AI 主动读 `.claude/docs/`**，而是靠注入或独立机制。
 
 ---
 
@@ -795,6 +915,24 @@ cp .claude/docs/CLAUDE-local-template.md CLAUDE.local.md
 
 </details>
 
+**Q9**：你发现 `agent-coordination-map.md` 里写"creative-director 能委派给 prototyper"，但你想改成"creative-director 不能直接委派给 prototyper，必须经过 producer"。你改了 `agent-coordination-map.md`，智能体行为会变吗？该改哪里？
+
+<details>
+<summary>答案</summary>
+
+**不会变**。`agent-coordination-map.md` 是给人读的全局图（"地图"），运行时事实在每个 agent 文件的内嵌 `Delegation Map` 里（"地形"）。要真正改变行为，必须改 [.claude/agents/creative-director.md](file:///workspace/.claude/agents/creative-director.md) 底部的 "Delegates to" 段，把 prototyper 从列表里移除。改完 agent 文件后，**再同步更新 `agent-coordination-map.md`** 保持地图和地形一致，否则文档会漂移误导后来人。
+
+</details>
+
+**Q10**：为什么 `coordination-rules.md` 的 5 条规则对所有智能体自动生效，而 `agent-roster.md` 的智能体清单不会自动被 AI 读取？
+
+<details>
+<summary>答案</summary>
+
+因为 `coordination-rules.md` 被 CLAUDE.md 用 `@.claude/docs/coordination-rules.md` **引用**，每次会话启动时内容自动注入 AI 上下文，对所有智能体可见。而 `agent-roster.md` **没有被 `@` 引用**，不进运行时上下文——它是给人读的汇总表。AI 运行时知道"有哪些智能体"靠的是每个 agent 文件 frontmatter 的 `description` 字段（Claude Code 用它路由请求），不需要读 roster。判断一个 `.claude/docs/` 文件是否运行时生效，看它有没有被 `@` 引用或被技能主动 Read。
+
+</details>
+
 ---
 
 ## 动手
@@ -806,6 +944,8 @@ cp .claude/docs/CLAUDE-local-template.md CLAUDE.local.md
 5. 打开 [templates/game-design-document.md](file:///workspace/.claude/docs/templates/game-design-document.md)，数一下必填的 8 节是哪些，理解为什么每节都要（特别是 Edge Cases 和 Acceptance Criteria）。
 6. 打开 [context-management.md](file:///workspace/.claude/docs/context-management.md)，重点读"Incremental File Writing"和"Recovery After Session Crash"两节，理解长会话怎么不失忆。
 7. 打开 [coding-standards.md](file:///workspace/.claude/docs/coding-standards.md)，看"Test Evidence by Story Type"表，理解为什么 Logic 故事要自动单测而 Visual/Feel 只要截图。
+8. **验证运行时生效机制**：打开根 [CLAUDE.md](file:///workspace/CLAUDE.md)，数一下有几个 `@.claude/docs/...` 引用——这些才是运行时自动注入的文件。然后打开 [.claude/agents/lead-programmer.md](file:///workspace/.claude/agents/lead-programmer.md) 翻到底部 "Delegation Map" 段，对比 [.claude/docs/agent-coordination-map.md](file:///workspace/.claude/docs/agent-coordination-map.md) 的委派表，体会"内嵌局部视图（运行时用）" vs "全局汇总图（人读）"的关系。
+9. 在 [.claude/agents/](file:///workspace/.claude/agents/) 目录里用编辑器搜 "Delegation Map"，数一下有多少个 agent 文件自带这段——这就是"运行时委派事实"的真正所在。
 
 ---
 
