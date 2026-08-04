@@ -1,0 +1,8 @@
+# Pinned Python dependencies for the tools/ toolkit.
+# See individual subfolder READMEs for which deps each tool actually uses.
+
+# --- HTTP ---
+requests>=2.31
+
+# --- Vendor SDKs ---
+pixellab>=0.1          # tools/pixellab/
