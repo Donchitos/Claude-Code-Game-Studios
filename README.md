@@ -56,7 +56,7 @@ The result: you still make every decision, but now you have a team that asks the
 | **Skills** | 73 | Slash commands for every workflow phase (`/start`, `/design-system`, `/create-epics`, `/create-stories`, `/dev-story`, `/story-done`, etc.) |
 | **Hooks** | 12 | Automated validation on commits, pushes, asset changes, session lifecycle, agent audit trail, and gap detection |
 | **Rules** | 11 | Path-scoped coding standards enforced when editing gameplay, engine, AI, UI, network code, and more |
-| **Templates** | 41 | Document templates for GDDs, UX specs, ADRs, sprint plans, HUD design, accessibility, and more |
+| **Templates** | 40 | Document templates for GDDs, UX specs, ADRs, sprint plans, HUD design, accessibility, and more |
 
 ## Studio Hierarchy
 
