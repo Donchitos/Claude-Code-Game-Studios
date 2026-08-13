@@ -458,6 +458,53 @@ production/   生产管理（sprints/milestones/releases）+ session-state/（�
 
 ---
 
+#### 11 与 12 的关系澄清：两者本质都是规范，文件名有误导
+
+读到这里你可能觉得困惑——`technical-preferences.md`（"技术偏好"）里明明有命名规范、禁止模式、允许的库这些**代码规范**；而 `coding-standards.md`（"代码规范"）反而主要是**文档规范和测试规范**，真正的代码规范只有开头 6 条。文件名给人的感觉和实际内容对不上。
+
+这是这套架构里**命名最容易误导**的一对文件。下面讲清楚。
+
+**核心结论：两者本质上都是工程规范，差别不在"偏好 vs 规范"，而在另外几个维度。**
+
+**为什么说两者都是规范？**
+
+- `technical-preferences.md` 里的"命名规范""禁止模式""允许的库"——一旦 `/setup-engine` 填好，对开发者就是**硬约束**：你必须用 PascalCase、不能用 Singleton、不能引入未批准的库。这哪是"偏好"，分明是规范。
+- `coding-standards.md` 里的"用 Conventional Commits""数据驱动""依赖注入优于单例"——这些严格说也是**项目选择**（你也可以不用 Conventional Commits、可以硬编码数值、可以用单例），只是被框架预设成默认了。这哪是"铁律"，分明是偏好。
+
+所以"preferences"和"standards"的命名差异，造成的认知差异**大于**实际内容差异。两者共同构成项目的"工程规范全集"。
+
+**那真正的差异在哪？**
+
+| 维度 | coding-standards.md | technical-preferences.md |
+|------|---------------------|--------------------------|
+| **填入方式** | 框架预设，开箱即用 | `/setup-engine` 动态填，初始全 `[TO BE CONFIGURED]` |
+| **变化频率** | 基本不变 | 随项目演进（加 ADR 后更新禁止模式/允许库） |
+| **抽象层次** | 原则/方法论层（"要数据驱动""要可测试"） | 具体选择/配置层（"用 PascalCase""禁用 Singleton""允许 Godot Jolt"） |
+| **内容焦点** | 怎么写/怎么测/怎么提交的方法论 | 用什么引擎/什么命名/什么库的选型 |
+| **通用性** | 任何项目都建议这么做的工程方法论 | 这个项目具体选了什么的配置 |
+| **典型条目** | "public API 必须有 doc comments""先写测试""Conventional Commits" | "Engine: Godot 4""Classes: PascalCase""Forbidden: Singleton 模式""Allowed: godot-jolt" |
+
+一句话：**coding-standards 是"通用工程原则"，technical-preferences 是"项目技术决策"——但决策一旦定下就是规范。**
+
+**一条规则该放哪个文件？判断标准**：
+
+- 是"任何项目都建议这么做"的方法论原则 → `coding-standards.md`
+- 是"这个项目具体选了什么/禁了什么/允了什么"的配置 → `technical-preferences.md`
+
+举例：
+- "public API 必须有文档注释" → `coding-standards.md`（任何项目都该如此）
+- "类名用 PascalCase" → `technical-preferences.md`（下个项目可能用 snake_case）
+- "必须数据驱动，不硬编码" → `coding-standards.md`（方法论原则）
+- "禁止用 Singleton 模式" → `technical-preferences.md`（这个项目特定的架构决策，别的项目可能允许）
+- "用 Conventional Commits" → `coding-standards.md`（虽然严格说也是偏好，但框架预设成默认了）
+- "允许用 godot-jolt 插件" → `technical-preferences.md`（项目特定依赖）
+
+**灰色地带**：有些规则两边都说得通。比如"依赖注入优于单例"——既可以是通用方法论（放 coding-standards），也可以是这个项目的特定选择（放 technical-preferences 的 Forbidden Patterns）。遇到这种情况，**原则放 coding-standards，具体禁令放 technical-preferences**——两者互补不冲突。
+
+> 💡 **本质洞察**：别被文件名迷惑。把这两个文件看作"工程规范全集"的两半——coding-standards 是"方法论半"，technical-preferences 是"选型半"。写代码时两边都要查：先看 coding-standards 知道"该怎么做"，再看 technical-preferences 知道"这个项目具体怎么选"。
+
+---
+
 #### 13. `rules-reference.md` —— 路径规则索引
 
 **作用**：11 条规则的索引表——每条规则在哪个文件、匹配哪个路径模式、强制什么。
@@ -839,6 +886,12 @@ Coordinates with: `game-designer` for feature specs, `qa-lead` for testability
 **误区 12："所有规则都靠 AI 自觉读 `.claude/docs/` 生效。"**
 ❌ 错。生效有三层机制（见上方"关键机制"一节）：① CLAUDE.md `@` 引用的 5 个文件自动注入；② 技能主动 Read 的文件（workflow-catalog、director-gates、templates）；③ 完全独立机制（rules 按路径套、hooks 由 settings.json 触发、agent 的 description/Delegation Map）。大多数规则**不靠 AI 主动读 `.claude/docs/`**，而是靠注入或独立机制。
 
+**误区 13（关键）："`technical-preferences.md` 是'偏好'（软建议），`coding-standards.md` 是'规范'（硬约束）。"**
+❌ 错。文件名有误导。两者本质上**都是工程规范**——`technical-preferences` 里的命名规范、禁止模式、允许的库一旦定下就是硬约束；`coding-standards` 里的"用 Conventional Commits""数据驱动"严格说也是项目选择（偏好），只是被框架预设成默认了。命名差异造成的认知差异**大于**实际内容差异。真正的差别在另外几个维度：填入方式（预设 vs `/setup-engine` 动态填）、抽象层次（方法论原则 vs 具体选型配置）、变化频率（基本不变 vs 随项目演进）。把它们看作"工程规范全集"的两半——coding-standards 是方法论半，technical-preferences 是选型半——比"偏好 vs 规范"的脑补准确得多。
+
+**误区 14："`coding-standards.md` 是代码规范，`technical-preferences.md` 是技术偏好，两者井水不犯河水。"**
+❌ 错。两者内容有重叠交叉。比如"依赖注入优于单例"——既可以是通用方法论（coding-standards 里写了），也可以是这个项目的特定禁令（technical-preferences 的 Forbidden Patterns 里也写了"禁用 Singleton"）。遇到这种灰色地带，原则是：**通用原则放 coding-standards，项目具体禁令放 technical-preferences**，两者互补不冲突。写代码时两边都要查。
+
 ---
 
 ## 小测验
@@ -930,6 +983,15 @@ Coordinates with: `game-designer` for feature specs, `qa-lead` for testability
 <summary>答案</summary>
 
 因为 `coordination-rules.md` 被 CLAUDE.md 用 `@.claude/docs/coordination-rules.md` **引用**，每次会话启动时内容自动注入 AI 上下文，对所有智能体可见。而 `agent-roster.md` **没有被 `@` 引用**，不进运行时上下文——它是给人读的汇总表。AI 运行时知道"有哪些智能体"靠的是每个 agent 文件 frontmatter 的 `description` 字段（Claude Code 用它路由请求），不需要读 roster。判断一个 `.claude/docs/` 文件是否运行时生效，看它有没有被 `@` 引用或被技能主动 Read。
+
+</details>
+
+**Q11**：你要给项目加一条规则"禁止使用全局单例模式"。该写进 `coding-standards.md` 还是 `technical-preferences.md`？为什么？
+
+<details>
+<summary>答案</summary>
+
+写进 **`technical-preferences.md`** 的 "Forbidden Patterns" 段。判断依据不是"偏好 vs 规范"（两者都是规范），而是**抽象层次和通用性**：这条规则是"这个项目特定的架构决策"——别的项目可能允许单例，所以不是通用方法论。`coding-standards.md` 放的是"任何项目都建议这么做"的通用原则（如"public API 必须有文档注释""数据驱动"）。如果同时想表达通用原则，可以在 `coding-standards.md` 写"依赖注入优于单例"（方法论层），在 `technical-preferences.md` 写"禁用 Singleton 模式"（项目具体禁令）——两者互补不冲突。
 
 </details>
 
