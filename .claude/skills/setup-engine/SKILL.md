@@ -37,7 +37,7 @@ If no engine is specified, run an interactive engine selection process:
 
 **Question 1 — Prior experience** (ask this first, always, via `AskUserQuestion`):
 - Prompt: "Have you worked in any of these engines before?"
-- Options: `Godot` / `Unity` / `Unreal Engine 5` / `Multiple — I'll explain` / `None of them`
+- Options: `Godot` / `Unity` / `Unreal Engine 5` / `Web (PixiJS / Three.js)` / `Multiple — I'll explain` / `None of them`
 - If they pick a specific engine → recommend that engine. Prior experience outweighs all other factors. Confirm with them and skip the matrix.
 - If "None" or "Multiple" → continue to the questions below.
 
@@ -47,11 +47,11 @@ If no engine is specified, run an interactive engine selection process:
 - Prompt: "What platforms are you targeting for this game?"
 - Options: `PC (Steam / Epic)` / `Mobile (iOS / Android)` / `Console` / `Web / Browser` / `Multiple platforms`
 - Platform rules that feed directly into the recommendation:
-  - Mobile → Unity strongly preferred; Unreal is a poor fit; Godot is viable for simple mobile
-  - Console → Unity or Unreal; Godot console support requires third-party publishers or significant extra work
-  - Web → Godot exports cleanly to web; Unity WebGL is functional; Unreal has poor web support
+  - Mobile → Unity strongly preferred; Unreal is a poor fit; Godot is viable for simple mobile; Web is viable for casual/2D via mobile browser
+  - Console → Unity or Unreal; Godot console support requires third-party publishers or significant extra work; Web has no console path at all
+  - Web → **Web (PixiJS / Three.js) is the strong default** — it targets the browser natively with no export step and the smallest payload. Godot exports cleanly to web but ships a multi-MB runtime; Unity WebGL is functional but heavy; Unreal has poor web support
   - PC only → all engines viable; other factors decide
-  - Multiple → Unity is the most portable across PC/mobile/console
+  - Multiple → Unity is the most portable across PC/mobile/console; Web reaches every platform with a browser but none of the stores
 
 1. **What kind of game?** (2D, 3D, or both?)
 2. **Primary input method?** (keyboard/mouse, gamepad, touch, or mixed?)
@@ -83,17 +83,27 @@ Do NOT use a simple scoring matrix that eliminates engines. Instead, reason thro
 - Licensing reality: 5% royalty only applies AFTER $1M gross revenue per title. For a first game or any game that doesn't reach $1M, it costs nothing. This threshold is high enough that most indie developers will never pay it.
 - Best fit: AAA-quality 3D; large open-world games; photorealistic visuals; developers with C++ experience or willing to use Blueprint; games targeting high-end PC/console where visual fidelity is a core selling point
 
+**Web (PixiJS / Three.js)**
+- Genuine strengths: Zero-install play — the game is a URL, which is the lowest possible friction for players to try it; itch.io and Discord distribution work instantly; the tightest iteration loop of any engine (save and refresh, no build step); free and MIT with no revenue thresholds ever; best-in-class for jam games, puzzle, idle, card, and 2D of any scope; TypeScript is a mainstream professional language with an enormous ecosystem
+- Real limitations: No console path whatsoever; a hard mobile performance ceiling (thermal throttling on mid-range phones is the binding constraint); **no editor** — there is no scene view, inspector, or asset browser unless you build one, which is the single biggest day-to-day difference from the other three engines; no asset protection at all (everything shipped is downloadable); audio cannot start without a user gesture; the 3D asset pipeline is entirely DIY; payload size, not framerate, is usually what limits scope
+- Licensing reality: PixiJS and Three.js are both MIT. Truly free at any scale, with no thresholds and no policy risk.
+- Best fit: browser-first games; jam and prototype-to-ship projects; 2D of any scope; contained 3D scenes; games where distribution friction is the primary constraint; developers who already know TypeScript
+- Renderer choice: **PixiJS** for 2D, **Three.js** for 3D, or **both** (Three.js scene with a PixiJS HUD layer). This is asked as a follow-up question, like Godot's language choice.
+
 **Genre-specific guidance** (factor this into the recommendation):
-- 2D any style → Godot strongly preferred
-- 3D stylized / atmospheric / contained world → Godot viable, Unity solid alternative
-- 3D open world (large, seamless) → Unity or Unreal; Godot is not production-proven for this
+- 2D any style → Godot strongly preferred; **Web (PixiJS)** equally strong if browser distribution matters
+- 3D stylized / atmospheric / contained world → Godot viable, Unity solid alternative, **Web (Three.js)** viable for contained scenes
+- 3D open world (large, seamless) → Unity or Unreal; Godot is not production-proven for this; Web cannot do this
 - 3D photorealistic / AAA-quality → Unreal
-- Mobile-first → Unity strongly preferred
-- Console-first → Unity or Unreal; Godot console support requires extra work
+- Mobile-first → Unity strongly preferred; **Web** viable for casual/2D via mobile browser
+- Console-first → Unity or Unreal; Godot console support requires extra work; Web is not an option
 - Horror / narrative / walking sim → any engine; match to art style and team experience
 - Action RPG / Soulslike → Unity or Unreal for 3D; community support and assets matter here
-- Platformer 2D → Godot
-- Strategy / top-down / RTS → Godot or Unity depending on 2D vs 3D
+- Platformer 2D → Godot or **Web (PixiJS)**
+- Strategy / top-down / RTS → Godot or Unity depending on 2D vs 3D; **Web** strong for 2D strategy
+- Puzzle / card / turn-based → **Web (PixiJS)** strongly preferred — no timing sensitivity, and instant-play distribution is the biggest advantage
+- Idle / clicker / incremental → **Web (PixiJS)** strongly preferred — the genre lives in the browser
+- Game jam (any genre, <2 weeks) → **Web** — fastest iteration and the judges play it in one click
 
 **Recommendation format:**
 1. Show a comparison table with the user's specific factors as rows
@@ -141,6 +151,20 @@ If Godot was chosen, ask the user which language to use **before** showing the p
 
 Record the choice. It determines the CLAUDE.md template, naming conventions, specialist routing, and which agent is spawned for code files throughout the project.
 
+### Renderer Selection (Web only)
+
+If Web was chosen, ask the user which renderer to use **before** showing the proposed Technology Stack:
+
+> "Web games are built on a shared stack (TypeScript, Vite, WebGPU/WebGL2, Web Audio, DOM), but the rendering library depends on what you're building:
+>
+>   **A) PixiJS** — 2D only. Sprites, tilemaps, particles. Best-in-class 2D throughput and the smallest payload. Choose this for platformers, puzzle, card, strategy, idle, and anything sprite-based.
+>   **B) Three.js** — 3D only. Scene graph, PBR materials, GLTF pipeline. Choose this for any game with a 3D camera.
+>   **C) Both** — Three.js renders the 3D scene, PixiJS renders the HUD and 2D overlay layers. A legitimate and common setup, but it ships both libraries — only choose it if you genuinely need 2D rendering features on top of a 3D scene, since a DOM overlay handles most HUDs for free.
+>
+> Which will this project use?"
+
+Record the choice. It determines the CLAUDE.md template, which specialists are spawned for rendering code, and which reference modules matter.
+
 ---
 
 Read `CLAUDE.md` and show the user the proposed Technology Stack changes.
@@ -167,6 +191,8 @@ Update the Technology Stack section, replacing the `[CHOOSE]` placeholders with 
 - **Build System**: Unreal Build Tool (UBT)
 - **Asset Pipeline**: Unreal Content Pipeline
 ```
+
+**For Web** — use the template matching the renderer chosen above. See **Appendix B** at the bottom of this skill for all three variants (PixiJS, Three.js, Both).
 
 ---
 
@@ -196,6 +222,15 @@ engine-appropriate defaults. Read the existing template first, then fill in:
 - Functions: PascalCase (e.g., `TakeDamage()`)
 - Booleans: `b` prefix (e.g., `bIsAlive`)
 - Files: Match class without prefix (e.g., `PlayerController.h`)
+
+**For Web (TypeScript):**
+- Classes/types/interfaces: PascalCase (e.g., `PlayerController`, `EnemyStats`)
+- Variables/functions: camelCase (e.g., `moveSpeed`, `takeDamage()`)
+- Events: past-tense camelCase (e.g., `healthChanged`, `levelCompleted`) — parallels Godot's signal convention
+- Files: PascalCase for class modules (`PlayerController.ts`), camelCase for utility modules (`mathUtils.ts`)
+- Constants: UPPER_SNAKE_CASE (e.g., `MAX_HEALTH`)
+- Shaders: `[type]_[category]_[name].[ext]` (e.g., `post_env_water.frag`, `filter_ui_glow.wgsl`)
+- Booleans: `is` / `has` / `can` prefix (e.g., `isAlive`, `hasKey`)
 
 ### Input & Platform Section
 
@@ -292,6 +327,8 @@ Also populate the `## Engine Specialists` section in `technical-preferences.md` 
 | General architecture review | unreal-specialist |
 ```
 
+**For Web** — see **Appendix B** for the routing table matching the renderer chosen.
+
 ### Collaborative Step
 Present the filled-in preferences to the user. For Godot, include the chosen language and note where the full naming conventions and routing tables live:
 > "Here are the default technical preferences for [engine] ([language if Godot]). The naming conventions and specialist routing are in Appendix A of this skill — I'll apply the [GDScript/C#/Both] variant. Want to customize any of these, or shall I save the defaults?"
@@ -311,6 +348,7 @@ Check whether the engine version is likely beyond the LLM's training data.
 - Godot: training data likely covers up to ~4.3
 - Unity: training data likely covers up to ~2023.x / early 6000.x
 - Unreal: training data likely covers up to ~5.3 / early 5.4
+- Web: PixiJS up to ~v8.0–v8.10; Three.js up to ~r170–r178
 
 Compare the user's chosen version against these baselines:
 
@@ -319,6 +357,23 @@ Compare the user's chosen version against these baselines:
 - **Beyond training data** → `HIGH RISK` — reference docs required
 
 Inform the user which category they're in and why.
+
+### Web is a special case — risk is permanently HIGH
+
+Godot, Unity, and Unreal each pin a single binary, so their risk level drops
+after a model update. The web stack does not work this way:
+
+- **Three.js ships roughly monthly** and removes deprecated code in most releases
+  (r175 and r185 each ran a removal pass). Any cutoff will always sit several
+  releases behind current.
+- **PixiJS v8 iterates continuously**, and the v7 patterns saturating training
+  data are hard breaks in v8.
+- The stack pins **multiple independent tools** (PixiJS, Three.js, TypeScript,
+  Vite, Node), each on its own release cadence.
+
+For Web, always treat risk as **HIGH**, always create the full reference doc set,
+and assess risk **per library** rather than once for the stack. Never take the
+LOW RISK path for Web, regardless of how recent the versions look.
 
 ---
 
@@ -640,6 +695,8 @@ All Godot-specific variants for language-dependent configuration. Referenced fro
 **Both — GDScript + C#:**
 Use GDScript conventions for `.gd` files and C# conventions for `.cs` files. Mixed-language files do not exist — the boundary is per-file. When in doubt about which language a new system should use, ask the user and record the decision in `technical-preferences.md`.
 
+> **Note:** Web renderer configuration lives in **Appendix B** at the end of this document.
+
 ---
 
 ### A3. Engine Specialists Routing
@@ -714,3 +771,116 @@ Use GDScript conventions for `.gd` files and C# conventions for `.cs` files. Mix
 | Native extension / plugin files (.gdextension, C++) | godot-gdextension-specialist |
 | General architecture review | godot-specialist |
 ```
+
+---
+
+## Appendix B — Web Renderer Configuration
+
+All Web-specific variants for renderer-dependent configuration. Referenced from Sections 4 and 5 — only relevant when Web is the chosen engine. Use the subsection matching the renderer chosen in Section 4.
+
+---
+
+### B1. CLAUDE.md Technology Stack Templates
+
+**PixiJS (2D):**
+```markdown
+- **Engine**: Web (browser) — PixiJS [version]
+- **Language**: TypeScript [version]
+- **Rendering**: WebGPU with WebGL2 fallback (PixiJS auto-detects)
+- **Build System**: Vite [version] (Rolldown bundler)
+- **Asset Pipeline**: Vite asset handling + texture atlas packing (WebP/AVIF)
+- **Runtime**: Browser (no install); Node [version] for tooling only
+```
+
+**Three.js (3D):**
+```markdown
+- **Engine**: Web (browser) — Three.js [version]
+- **Language**: TypeScript [version]
+- **Rendering**: WebGPURenderer with WebGL2 fallback
+- **Build System**: Vite [version] (Rolldown bundler)
+- **Asset Pipeline**: GLTF + DRACO geometry compression, KTX2/Basis textures
+- **Runtime**: Browser (no install); Node [version] for tooling only
+```
+
+**Both — Three.js + PixiJS:**
+```markdown
+- **Engine**: Web (browser) — Three.js [version] (3D scene), PixiJS [version] (2D/HUD layer)
+- **Language**: TypeScript [version]
+- **Rendering**: WebGPU with WebGL2 fallback; Three.js owns the 3D scene, PixiJS owns 2D overlay layers
+- **Build System**: Vite [version] (Rolldown bundler)
+- **Asset Pipeline**: GLTF + DRACO, KTX2/Basis textures, packed 2D atlases
+- **Runtime**: Browser (no install); Node [version] for tooling only
+```
+
+> **Guardrail**: Shipping both libraries roughly doubles the rendering payload, and payload size is the web's binding constraint. Only use the "Both" template when the project genuinely needs 2D *rendering* features over a 3D scene — a DOM overlay handles most HUDs at zero bundle cost.
+
+---
+
+### B2. Testing Configuration
+
+All three variants use the same stack:
+
+- **Unit tests**: Vitest — simulation logic must be testable headlessly, with no canvas
+- **E2E tests**: Playwright
+- **CI note**: headless WebGL/WebGPU requires a software renderer (SwiftShader). Prefer keeping game logic GPU-free so the bulk of the suite runs without one.
+
+---
+
+### B3. Engine Specialists Routing
+
+The routing block is identical across renderer variants except for which renderer specialist is listed. Use the matching version.
+
+**PixiJS:**
+```markdown
+## Engine Specialists
+- **Primary**: web-specialist
+- **Language/Code Specialist**: web-typescript-specialist (all .ts/.tsx files)
+- **Renderer Specialist**: pixi-specialist (all PixiJS rendering code)
+- **Shader Specialist**: web-shader-specialist (GLSL/WGSL, Pixi filters, post-processing)
+- **UI Specialist**: web-ui-specialist (DOM overlay UI, input, accessibility, responsive)
+- **Additional Specialists**: web-platform-specialist (Vite, bundling, asset streaming, budgets, deployment)
+- **Routing Notes**: Invoke primary for architecture, game loop, and renderer strategy. Invoke TypeScript specialist for typing discipline and module boundaries. Invoke Pixi specialist for all rendering code. Invoke platform specialist for anything affecting bundle size or load time — on the web, payload IS the platform constraint.
+```
+
+**Three.js:**
+```markdown
+## Engine Specialists
+- **Primary**: web-specialist
+- **Language/Code Specialist**: web-typescript-specialist (all .ts/.tsx files)
+- **Renderer Specialist**: three-specialist (all Three.js rendering code)
+- **Shader Specialist**: web-shader-specialist (TSL/NodeMaterial, GLSL/WGSL, RenderPipeline)
+- **UI Specialist**: web-ui-specialist (DOM overlay UI, input, accessibility, responsive)
+- **Additional Specialists**: web-platform-specialist (Vite, bundling, asset streaming, budgets, deployment)
+- **Routing Notes**: Invoke primary for architecture, game loop, and renderer strategy. Invoke TypeScript specialist for typing discipline and module boundaries. Invoke Three specialist for all rendering code. Invoke shader specialist for TSL and post-processing. Invoke platform specialist for asset compression and budgets — GLTF/texture size dominates web 3D payloads.
+```
+
+**Both:**
+```markdown
+## Engine Specialists
+- **Primary**: web-specialist
+- **Language/Code Specialist**: web-typescript-specialist (all .ts/.tsx files)
+- **3D Renderer Specialist**: three-specialist (Three.js scene, materials, GLTF)
+- **2D Renderer Specialist**: pixi-specialist (PixiJS HUD and 2D overlay layers)
+- **Shader Specialist**: web-shader-specialist (TSL, GLSL/WGSL, Pixi filters, post-processing)
+- **UI Specialist**: web-ui-specialist (DOM overlay UI, input, accessibility, responsive)
+- **Additional Specialists**: web-platform-specialist (Vite, bundling, asset streaming, budgets, deployment)
+- **Routing Notes**: Invoke primary for the 2D/3D boundary — which layer owns what, and render ordering between canvases. Invoke Three specialist for the 3D scene, Pixi specialist for 2D overlays. Watch bundle size closely: shipping both libraries is a significant payload cost that the platform specialist must budget for.
+```
+
+### File Extension Routing
+
+Unlike the other engines, web routing **cannot key on file extension alone** — nearly every source file is `.ts`. Rows are evaluated **top to bottom, first match wins**, keying on imports and directory before falling through to the language specialist.
+
+| File Extension / Type | Specialist to Spawn |
+|-----------------------|---------------------|
+| `.ts` importing `three` | three-specialist |
+| `.ts` importing `pixi.js` | pixi-specialist |
+| `src/ui/**` (.ts, .tsx, .html, .css) | web-ui-specialist |
+| Build config (vite.config.ts, package.json, tsconfig.json) | web-platform-specialist |
+| Web Workers (.worker.ts) | web-platform-specialist |
+| Shader files (.glsl, .wgsl, .frag, .vert) | web-shader-specialist |
+| All other game code (.ts, .tsx) | web-typescript-specialist |
+| Scene / level data (.json, level definitions) | web-specialist |
+| General architecture review | web-specialist |
+
+> For a single-renderer project, drop the row for the renderer not in use.

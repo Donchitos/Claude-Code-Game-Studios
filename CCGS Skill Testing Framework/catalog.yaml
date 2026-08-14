@@ -970,6 +970,49 @@ agents:
     last_spec_result: ""
     category: engine
 
+  # Engine Specialists — Web (PixiJS / Three.js)
+  - name: web-specialist
+    spec: CCGS Skill Testing Framework/agents/engine/web/web-specialist.md
+    last_spec: ""
+    last_spec_result: ""
+    category: engine
+
+  - name: web-typescript-specialist
+    spec: CCGS Skill Testing Framework/agents/engine/web/web-typescript-specialist.md
+    last_spec: ""
+    last_spec_result: ""
+    category: engine
+
+  - name: pixi-specialist
+    spec: CCGS Skill Testing Framework/agents/engine/web/pixi-specialist.md
+    last_spec: ""
+    last_spec_result: ""
+    category: engine
+
+  - name: three-specialist
+    spec: CCGS Skill Testing Framework/agents/engine/web/three-specialist.md
+    last_spec: ""
+    last_spec_result: ""
+    category: engine
+
+  - name: web-shader-specialist
+    spec: CCGS Skill Testing Framework/agents/engine/web/web-shader-specialist.md
+    last_spec: ""
+    last_spec_result: ""
+    category: engine
+
+  - name: web-ui-specialist
+    spec: CCGS Skill Testing Framework/agents/engine/web/web-ui-specialist.md
+    last_spec: ""
+    last_spec_result: ""
+    category: engine
+
+  - name: web-platform-specialist
+    spec: CCGS Skill Testing Framework/agents/engine/web/web-platform-specialist.md
+    last_spec: ""
+    last_spec_result: ""
+    category: engine
+
   # Engine Specialists — Unity
   - name: unity-specialist
     spec: CCGS Skill Testing Framework/agents/engine/unity/unity-specialist.md

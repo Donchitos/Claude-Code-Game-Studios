@@ -34,7 +34,7 @@ A test framework installed at sprint four costs 3 sprints.
    - Glob `tests/unit/` and `tests/integration/` — do subdirectories exist?
    - Glob `.github/workflows/` — does a CI workflow file exist?
    - Glob `tests/gdunit4_runner.gd` (Godot) or `tests/EditMode/` (Unity) or
-     `Source/Tests/` (Unreal) for engine-specific artifacts.
+     `Source/Tests/` (Unreal) or `vitest.config.ts` (Web) for engine-specific artifacts.
 
 3. **Report findings**:
    - "Engine: [engine]. Test directory: [found / not found]. CI workflow: [found / not found]."
@@ -88,7 +88,7 @@ After approval, create the following files:
 # Test Infrastructure
 
 **Engine**: [engine name + version]
-**Test Framework**: [GdUnit4 | Unity Test Framework | UE Automation]
+**Test Framework**: [GdUnit4 | Unity Test Framework | UE Automation | Vitest + Playwright]
 **CI**: `.github/workflows/tests.yml`
 **Setup date**: [date]
 
@@ -200,6 +200,40 @@ Or headlessly: UnrealEditor -nullrhi -ExecCmds="Automation RunTests MyGame.; Qui
 
 Test class naming: F[SystemName]Test
 Test category naming: "MyGame.[System].[Feature]"
+```
+
+#### Web (`Engine: Web`)
+
+Create `vitest.config.ts`:
+```ts
+import { defineConfig } from 'vitest/config';
+
+export default defineConfig({
+  test: {
+    environment: 'node',        // simulation must be renderer-free
+    include: ['tests/unit/**/*.test.ts'],
+    globals: true,
+  },
+});
+```
+
+Create `tests/README.md`:
+```markdown
+# Web Tests
+
+- Unit (Vitest): `npm run test` — simulation, formulas, state machines
+- E2E (Playwright): `npx playwright test` — boot, input, full flows
+
+## The architectural rule that makes this work
+
+Game logic must be renderer-independent. `world.update(dt)` runs headlessly with
+no canvas, no WebGL context, and no DOM. If a unit test needs a GPU, the
+rendering boundary is in the wrong place — fix the architecture, not the test.
+
+Determinism comes free from the fixed timestep: assert on simulation state after
+N steps, never on rendered pixels.
+
+Test naming: `[system]_[feature].test.ts`, functions `test_[scenario]_[expected]`
 ```
 
 ---
@@ -341,7 +375,55 @@ jobs:
 Note: UE CI requires a self-hosted runner with Unreal Editor installed.
 Set the `UE_EDITOR_PATH` environment variable on the runner.
 
----
+### Web
+
+```yaml
+name: Tests
+on: [push, pull_request]
+
+jobs:
+  unit:
+    name: Unit Tests (Vitest)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '[VERSION FROM docs/engine-reference/web/VERSION.md]'
+          cache: 'npm'
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm run test -- --run
+
+  e2e:
+    name: E2E Tests (Playwright)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '[VERSION FROM docs/engine-reference/web/VERSION.md]'
+          cache: 'npm'
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - run: npx playwright test
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: playwright-report
+          path: playwright-report/
+```
+
+**Web CI notes:**
+- Unlike the other three engines, web CI needs **no engine binary, no license,
+  and no self-hosted runner** — it runs on a stock GitHub-hosted runner. This is
+  a genuine advantage worth taking
+- The unit job requires no GPU because simulation is renderer-free. Keep it that way
+- Any test that genuinely needs a canvas requires a software renderer. Launch
+  Chromium with `--use-gl=swiftshader --enable-unsafe-swiftshader`, and expect it
+  to be slow — minimize how many tests depend on it
+- WebGPU in headless CI is unreliable; prefer asserting on simulation state
+  rather than rendered output
 
 ## Phase 5: Create Smoke Test Seed
 

@@ -11,6 +11,13 @@ like Godot, Unity, and Unreal ship updates that introduce breaking API changes,
 new features, and deprecated patterns. Without these reference files, agents will
 suggest outdated code.
 
+**Web projects are a special case.** The `web/` directory pins a *stack*
+(PixiJS, Three.js, TypeScript, Vite, Node) rather than a single binary, and its
+knowledge-gap risk is **permanently HIGH** — Three.js ships roughly monthly and
+removes deprecated code in most releases, so any model cutoff will always sit
+several releases behind. Risk is assessed per library, not once for the stack.
+Web reference docs are never optional.
+
 ## Structure
 
 Each engine gets its own directory:

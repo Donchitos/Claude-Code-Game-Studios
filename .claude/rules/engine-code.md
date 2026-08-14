@@ -15,6 +15,25 @@ paths:
 - All engine systems must support graceful degradation
 - Before writing engine API code, consult `docs/engine-reference/` for the current engine version and verify APIs against the reference docs
 
+## Web projects (PixiJS / Three.js)
+
+On the web, "zero allocations in hot paths" means **avoiding GC pressure**, which
+is the platform's dominant source of frame stutter — a garbage collection pause
+is visible where an extra draw call is not.
+
+- No object/array literals, `.map()`/`.filter()`/spread, per-frame closures, or
+  template literals inside the update or render loop — all of them allocate
+- Pool vectors, matrices, particles, and projectiles; reuse scratch objects
+- **GPU resources are never freed automatically.** Three.js needs explicit
+  `.dispose()` on geometries, materials, and textures; PixiJS needs `.destroy()`.
+  Removing an object from the scene graph does not free its memory
+- Simulation must be renderer-independent and headlessly testable — isolate
+  rendering behind an interface so `update()` runs under Vitest with no canvas
+- Use a fixed timestep with an accumulator; clamp the delta to survive tab refocus
+- Consult `docs/engine-reference/web/` — the knowledge gap there is
+  **permanently HIGH** because Three.js ships monthly and removes deprecated code
+  in most releases
+
 ## Examples
 
 **Correct** (zero-alloc hot path):

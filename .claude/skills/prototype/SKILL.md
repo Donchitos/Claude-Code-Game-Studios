@@ -135,6 +135,13 @@ for action games, platformers, fighting games, or anything where input timing,
 jump arcs, or collision feel are what you're testing. If feel is the hypothesis,
 use the Engine path instead.
 
+> **Exception — when the project engine IS Web.** This limitation is *inverted*
+> for web projects. The browser latency that lies about feel for a Godot or Unity
+> game is the shipping reality for a PixiJS or Three.js game, which makes a
+> browser prototype the **most honest** feel test available — more honest than
+> any engine prototype could be. For web projects, the HTML path and the Engine
+> path converge: see "Path convergence for Web projects" below.
+
 **Alternative tools for this path:** PICO-8 (extreme constraints, great for retro
 arcade concepts, web-export in one command), Phaser.js (more capable browser game
 framework, still no install needed), or Twine (narrative/choice-based games).
@@ -233,6 +240,40 @@ recommendation pre-stated:
   - `HTML — browser prototype` — puzzle, card, turn-based, strategy, idle. Opens by double-clicking, no install. 85–90% reliable. **Not suitable for action games** — browser latency lies about feel.
   - `Engine — native prototype` — action, platformer, physics, or anything where feel IS the hypothesis. 50–60% one-shot; 2–4 iteration rounds are normal. Requires engine installed.
   - `Paper — rules document + play log` — strategy, economy, logic, board-game-style mechanics. 100% reliable. Cannot validate feel.
+
+---
+
+### Path convergence for Web projects
+
+If the project engine is **Web (PixiJS / Three.js)**, the HTML path and the
+Engine path are the same path. Do not present them as a choice.
+
+**What changes:**
+
+| Aspect | Other engines | Web engine |
+|--------|---------------|------------|
+| Feel fidelity | Browser latency lies — use Engine path | Browser latency **is** the shipping reality; the prototype is the most honest feel test available |
+| Reliability | HTML ~85–90%, Engine ~50–60% | ~85–90% — no engine install, no editor round-trip |
+| Action games | HTML unsuitable | **Suitable** — this is how the real game will feel |
+| Distribution | Engine builds are hard to share | Upload to itch.io in minutes, same as any HTML prototype |
+
+**What stays the same — and matters more:**
+
+The prototype runs on the *shipping stack*, which removes the natural barrier
+that stops prototype code reaching production. "Rewrite, don't migrate" still
+applies and is now harder to hold:
+
+- Build in `prototypes/`, with its own `package.json` or Vite config
+- Never point the production build at prototype source
+- Production code must not import from `prototypes/`, even though the module
+  system makes it trivially easy
+- When the prototype validates, the findings inform the design doc — the code
+  is still rewritten to production standards
+
+**Practical guidance:** use the project's actual renderer (PixiJS for 2D,
+Three.js for 3D) rather than raw canvas. There is no reliability penalty, and
+what you learn about the library transfers directly. See
+`.claude/rules/prototype-code.md`.
 
 ---
 

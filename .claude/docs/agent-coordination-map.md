@@ -48,6 +48,14 @@
       godot-csharp-specialist      -- C#: .NET patterns, [Signal] delegates, async, type-safe node access
       godot-shader-specialist      -- Shaders: Godot shading language, visual shaders, VFX
       godot-gdextension-specialist -- Native: C++/Rust bindings, GDExtension, build systems
+
+    web-specialist     -- Web lead: renderer choice, game loop, WebGPU/WebGL2, structure
+      web-typescript-specialist -- TypeScript: strict typing, unions, type-safe events, Zod
+      pixi-specialist           -- PixiJS 2D: containers, batching, spritesheets, ticker
+      three-specialist          -- Three.js 3D: scene graph, materials, GLTF, instancing
+      web-shader-specialist     -- Shaders: GLSL/WGSL, TSL/NodeMaterial, Pixi filters, post-FX
+      web-ui-specialist         -- UI/Input: DOM vs canvas, pointer events, a11y, responsive
+      web-platform-specialist   -- Delivery: Vite, bundling, asset streaming, budgets, deploy
 ```
 
 ### Legend

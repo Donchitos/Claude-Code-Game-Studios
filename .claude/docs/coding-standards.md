@@ -64,3 +64,6 @@ All stories must have appropriate test evidence before they can be marked Done:
   - **Godot**: `godot --headless --script tests/gdunit4_runner.gd`
   - **Unity**: `game-ci/unity-test-runner@v4` (GitHub Actions)
   - **Unreal**: headless runner with `-nullrhi` flag
+  - **Web**: `npm run test` (Vitest) and `npx playwright test` (E2E). Keep
+    simulation logic renderer-free so the unit suite runs without a GPU;
+    canvas-dependent tests need a software renderer (SwiftShader) in CI

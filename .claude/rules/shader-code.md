@@ -13,6 +13,7 @@ visual quality, performance, and cross-platform compatibility.
   - `spatial_env_water.gdshader` (Godot)
   - `SG_Env_Water` (Unity Shader Graph)
   - `M_Env_Water` (Unreal Material)
+  - `post_env_water.frag` / `filter_ui_glow.wgsl` (Web — GLSL and WGSL)
 - Use descriptive names that indicate the material purpose
 - Prefix with shader type: `spatial_`, `canvas_`, `particles_`, `post_`
 
@@ -42,3 +43,27 @@ visual quality, performance, and cross-platform compatibility.
 - Document all keywords/variants and their purpose
 - Use feature stripping where possible to reduce build size
 - Log and monitor total variant count per shader
+
+## Web (PixiJS / Three.js)
+
+Web projects target two graphics backends at once, and a shader supplying only
+one language silently breaks for a subset of users.
+
+- **PixiJS filters must ship both WGSL and GLSL sources.** v8 prefers WebGPU with
+  WebGL2 fallback; a filter with only `glProgram` or only `gpuProgram` fails on
+  the other backend
+- **Three.js on `WebGPURenderer` uses TSL / `NodeMaterial`**, not raw GLSL
+  `ShaderMaterial`. TSL compiles to both WGSL and GLSL, so it is the portable
+  choice — prefer it over hand-written GLSL strings
+- Declare precision explicitly in GLSL ES 3.0 — mobile GPUs default differently
+  than desktop. `mediump` for colors, `highp` for positions, depth, and
+  accumulated values
+- Post-processing is **`RenderPipeline`** in Three.js (renamed from
+  `PostProcessing` in r183)
+- Full-screen passes scale with resolution — cap `devicePixelRatio` and render
+  bloom/blur/AO at reduced resolution
+- Every shader carries a header comment stating its purpose, expected uniforms,
+  and which backends it targets
+- Verify effects on real mobile hardware, not just a desktop GPU
+
+See `docs/engine-reference/web/modules/rendering.md`.

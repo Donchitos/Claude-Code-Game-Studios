@@ -38,3 +38,24 @@ If a prototype validates a concept and the feature moves to production:
 ## Cleanup
 Concluded prototypes should be archived or deleted after findings are captured.
 Never let prototype code grow into production code through incremental "cleanup."
+
+## Web projects — the convergence trap
+
+For Godot, Unity, and Unreal, an HTML prototype is a *proxy* built in a different
+technology, so throwing it away is automatic. For a **Web** project it is not:
+the prototype runs on the same stack as the shipping game.
+
+This makes the rules above harder to hold and more important:
+
+- **"Rewrite, don't migrate" still applies.** The temptation to keep prototype
+  code because "it already works in the right language" is exactly how hardcoded
+  values, global state, and copy-pasted logic reach production
+- Prototypes still live in `prototypes/` with their own `package.json` or Vite
+  config. Never point the production build at prototype source
+- Production code must not import from `prototypes/`, even though the module
+  system makes it trivially possible
+
+Note also that the usual caveat about browser latency lying about game feel is
+**inverted** for web projects — that latency is the shipping reality, so a
+browser prototype is a more honest feel test than it would be for any other
+engine. See `.claude/skills/prototype/SKILL.md`.

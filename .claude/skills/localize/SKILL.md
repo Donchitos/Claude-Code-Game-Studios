@@ -279,8 +279,16 @@ just translating text. This mode validates the implementation.
 
 Read `.claude/docs/technical-preferences.md` to determine the engine. Then check:
 
+> **Web projects:** string catalogs are plain JSON per locale, loaded on demand
+> so unused locales never enter the bundle. Use the built-in `Intl` API for
+> number, date, plural, and list formatting rather than a dependency —
+> `Intl.PluralRules` and `Intl.NumberFormat` are in every target browser. RTL is
+> `dir="rtl"` on the root element plus CSS logical properties (`margin-inline-start`,
+> not `margin-left`). Subset fonts per locale; a full CJK font is multiple MB and
+> will dominate the payload budget.
+
 **Layout mirroring**
-- Is RTL layout enabled in the engine? (Godot: `Control.layout_direction`, Unity: `RTL Support` package, Unreal: text direction flags)
+- Is RTL layout enabled in the engine? (Godot: `Control.layout_direction`, Unity: `RTL Support` package, Unreal: text direction flags, Web: `dir="rtl"` on the root element plus CSS logical properties)
 - Are all UI containers set to auto-mirror, or are positions hardcoded?
 - Do progress bars, health bars, and directional indicators mirror correctly?
 

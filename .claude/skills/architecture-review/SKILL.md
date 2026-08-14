@@ -299,6 +299,26 @@ Across all ADRs, check for engine consistency:
 - Grep all ADRs for API names listed in `deprecated-apis.md`
 - Flag any ADR referencing a deprecated API
 
+### Web projects — additional checks
+
+Web pins a *stack*, not a single binary, so consistency must be checked per
+library and the deprecation risk is higher:
+
+- **Per-library version agreement**: do all ADRs agree on the PixiJS version,
+  the Three.js release, and the TypeScript/Vite versions independently?
+- **Renderer consistency**: do any two ADRs assume different renderers for the
+  same system, or assume PixiJS features in a Three.js-only project?
+- **Backend assumptions**: does any ADR assume WebGL-only behavior (raw GLSL
+  `ShaderMaterial`, no WebGPU path) while another assumes WebGPU? Flag it —
+  both libraries default to WebGPU with WebGL2 fallback
+- **Stale-by-default warning**: Three.js removes deprecated code in most
+  releases, so an ADR written even a few releases ago may reference an API that
+  no longer exists. Treat any Three.js ADR older than the pinned release as
+  requiring re-verification, not just a version-number check
+- **Payload implications**: does any ADR add a dependency without a stated
+  bundle-size impact? On the web, payload is the binding platform constraint —
+  an ADR that ignores it is incomplete
+
 ### Missing Engine Compatibility Sections
 - List all ADRs that are missing the Engine Compatibility section entirely
 - These are blind spots — their engine assumptions are unknown

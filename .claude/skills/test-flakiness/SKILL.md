@@ -53,6 +53,22 @@ Check `test-results/` for `.xml` files.
 For Unity projects: game-ci test runner outputs NUnit XML to `test-results/`
 by default.
 
+For Web projects: Vitest outputs JUnit XML with `--reporter=junit`; Playwright
+writes `playwright-report/`. Web-specific flake sources to check first:
+
+| Flake source | Symptom | Fix |
+|---|---|---|
+| `requestAnimationFrame` timing | Test passes locally, fails in CI | Assert on simulation state after N fixed steps, never on rAF timing |
+| Font loading race | Text metrics differ between runs | `await document.fonts.ready` before measuring |
+| Canvas readback | Pixel assertions differ by GPU/driver | Do not assert on pixels; assert on simulation state |
+| Software renderer variance | Only canvas tests are flaky | Expected with SwiftShader — move logic out of GPU-dependent tests |
+| Async asset loading | Intermittent undefined textures | Await the asset manager, never a fixed `setTimeout` |
+| Real timers | Tests fail under CI load | Use Vitest fake timers for anything time-dependent |
+
+The root cause is nearly always the same: a test that depends on the renderer or
+on wall-clock time. If simulation is properly renderer-independent, the unit
+suite is deterministic by construction.
+
 For Unreal projects: automation logs go to `Saved/Logs/`. Grep for
 `Result: Success` and `Result: Fail` patterns.
 

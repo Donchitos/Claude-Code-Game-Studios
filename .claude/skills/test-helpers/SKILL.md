@@ -373,7 +373,9 @@ After writing: Verdict: **COMPLETE** — helper files created.
 "Helper files created. To use them in a test:
 - Godot: `class_name` is auto-imported — no explicit import needed
 - Unity: Add `using` directive or reference the test assembly
-- Unreal: `#include \"tests/helpers/GameTestHelpers.h\"`"
+- Unreal: `#include \"tests/helpers/GameTestHelpers.h\"`
+- Web: `import { makeWorld, advance } from '@/tests/helpers'` — helpers must be
+  renderer-free so they run under Vitest with no canvas"
 
 ---
 

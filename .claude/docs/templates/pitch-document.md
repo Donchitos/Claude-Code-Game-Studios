@@ -119,7 +119,7 @@ player action."]
 | Launch | [Date] | Release build |
 
 **Team Size**: [X people, roles]
-**Engine**: [Godot / Unity / Unreal]
+**Engine**: [Godot / Unity / Unreal / Web (PixiJS or Three.js)]
 **Estimated Budget**: [Range if applicable]
 
 ---

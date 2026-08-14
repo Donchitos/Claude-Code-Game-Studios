@@ -81,6 +81,20 @@ to add "just one more system." Resist this. Cut, do not extend.
 
 Present scope to the user before building and get confirmation.
 
+> **Web projects:** the slice ships as a **URL**, not an installer. This is a
+> genuine advantage — deploy to itch.io, Netlify, or Cloudflare Pages and
+> playtesters play in one click, with no build distribution, no platform
+> binaries, and no install instructions. Expect a materially higher playtest
+> response rate than any other engine's slice.
+>
+> Two things the slice must validate that other engines get for free:
+> - **Load time on a real connection.** A slice that takes 20 seconds to load has
+>   already failed, regardless of how good the loop is. Measure it on throttled 4G
+> - **Mid-range mobile performance**, if mobile browsers are a target. Desktop
+>   numbers tell you nothing about thermal throttling
+>
+> Record both against the budgets in `technical-preferences.md`.
+
 ---
 
 ## Phase 3: Plan the Build

@@ -165,6 +165,14 @@ engine risk.
 | Godot 4 | `godot-specialist`, `godot-gdscript-specialist`, `godot-shader-specialist` |
 | Unity | `unity-specialist`, `unity-ui-specialist`, `unity-shader-specialist` |
 | Unreal Engine | `unreal-specialist`, `ue-gas-specialist`, `ue-blueprint-specialist`, `ue-umg-specialist`, `ue-replication-specialist` |
+| Web (PixiJS / Three.js) | `web-specialist`, `web-typescript-specialist`, `pixi-specialist`, `three-specialist`, `web-shader-specialist`, `web-ui-specialist`, `web-platform-specialist` |
+
+> **Web routing note:** web routing cannot key on file extension — nearly every
+> source file is `.ts`. Route by import and directory instead, first match wins:
+> imports `three` → `three-specialist`; imports `pixi.js` → `pixi-specialist`;
+> `src/ui/**` → `web-ui-specialist`; build config or `.worker.ts` →
+> `web-platform-specialist`; shaders → `web-shader-specialist`; everything else
+> → `web-typescript-specialist`. See Appendix B of `/setup-engine`.
 
 **When engine risk is HIGH** (from the ADR or VERSION.md): always spawn the engine
 specialist, even for non-engine-facing stories. High risk means the ADR records

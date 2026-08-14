@@ -60,6 +60,7 @@ domain lead) should delegate to specialists.
 | `unreal-specialist` | Unreal Engine 5 | Sonnet | Blueprint vs C++, GAS overview, UE subsystems, Unreal optimization |
 | `unity-specialist` | Unity | Sonnet | MonoBehaviour vs DOTS, Addressables, URP/HDRP, Unity optimization |
 | `godot-specialist` | Godot 4 | Sonnet | GDScript patterns, node/scene architecture, signals, Godot optimization |
+| `web-specialist` | Web (PixiJS / Three.js) | Sonnet | Renderer choice, game loop and fixed timestep, WebGPU vs WebGL2, project structure |
 
 ### Unreal Engine Sub-Specialists
 
@@ -87,3 +88,14 @@ domain lead) should delegate to specialists.
 | `godot-csharp-specialist` | C# / .NET | Sonnet | .NET patterns, [Signal] delegates, async, nullable types, type-safe node access |
 | `godot-shader-specialist` | Shaders/Rendering | Sonnet | Godot shading language, visual shaders, particles, post-processing |
 | `godot-gdextension-specialist` | GDExtension | Sonnet | C++/Rust bindings, native performance, custom nodes, build systems |
+
+### Web Sub-Specialists
+
+| Agent | Subsystem | Model | When to Use |
+| ---- | ---- | ---- | ---- |
+| `web-typescript-specialist` | TypeScript | Sonnet | Strict typing, discriminated unions, type-safe events, module boundaries, Zod validation |
+| `pixi-specialist` | PixiJS (2D) | Sonnet | Container hierarchy, batching and draw calls, spritesheets, ticker, text, culling |
+| `three-specialist` | Three.js (3D) | Sonnet | Scene graph, materials, GLTF/DRACO/KTX2, lights and shadows, instancing, RenderPipeline |
+| `web-shader-specialist` | Shaders/Post-FX | Sonnet | GLSL ES 3.0, WGSL, TSL/NodeMaterial, Pixi filters, cross-backend parity |
+| `web-ui-specialist` | UI/Input | Sonnet | DOM vs canvas UI, pointer events, gamepad polling, accessibility, responsive/safe areas |
+| `web-platform-specialist` | Delivery | Sonnet | Vite/bundling, code splitting, asset streaming, bundle and load budgets, deployment |
