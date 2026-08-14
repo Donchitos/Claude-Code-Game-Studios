@@ -30,7 +30,7 @@ await app.init({
   height: 600,
   antialias: true,
   autoDensity: true,
-  resolution: window.devicePixelRatio,
+  resolution: Math.min(window.devicePixelRatio, 2),
 });
 document.body.appendChild(app.canvas);   // NOT app.view
 ```
