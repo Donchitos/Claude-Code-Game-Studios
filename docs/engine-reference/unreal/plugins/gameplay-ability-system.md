@@ -1,6 +1,6 @@
-# Unreal Engine 5.7 — Gameplay Ability System (GAS)
+# Unreal Engine 5.8 — Gameplay Ability System (GAS)
 
-**Last verified:** 2026-02-13
+**Last verified:** 2026-08-16
 **Status:** Production-Ready
 **Plugin:** `GameplayAbilities` (built-in, enable in Plugins)
 
@@ -382,5 +382,5 @@ void AMyCharacter::OnHealthChanged(const FOnAttributeChangeData& Data) {
 ---
 
 ## Sources
-- https://docs.unrealengine.com/5.7/en-US/gameplay-ability-system-for-unreal-engine/
+- https://docs.unrealengine.com/5.8/en-US/gameplay-ability-system-for-unreal-engine/
 - https://github.com/tranek/GASDocumentation (community guide)

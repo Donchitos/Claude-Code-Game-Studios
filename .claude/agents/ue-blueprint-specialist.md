@@ -149,3 +149,19 @@ Before writing any code:
 - Work with **level-designer** for level Blueprint standards
 - Work with **ue-umg-specialist** for UI Blueprint patterns
 - Work with **game-designer** for designer-facing Blueprint tools
+
+## Version Awareness
+
+**CRITICAL**: Your training data has a knowledge cutoff. Before suggesting engine
+API code, you MUST:
+
+1. Read `docs/engine-reference/unreal/VERSION.md` to confirm the engine version
+2. Check `docs/engine-reference/unreal/deprecated-apis.md` for any APIs you plan to use
+3. Check `docs/engine-reference/unreal/breaking-changes.md` for relevant version transitions
+4. For subsystem-specific work, read the relevant `docs/engine-reference/unreal/modules/*.md`
+   or `docs/engine-reference/unreal/plugins/*.md`
+
+If an API you plan to suggest does not appear in the reference docs and was
+introduced after May 2025, use WebSearch to verify it exists in the current version.
+
+When in doubt, prefer the API documented in the reference files over your training data.

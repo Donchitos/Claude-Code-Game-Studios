@@ -1,6 +1,6 @@
-# Unreal Engine 5.7 — PCG (Procedural Content Generation)
+# Unreal Engine 5.8 — PCG (Procedural Content Generation)
 
-**Last verified:** 2026-02-13
+**Last verified:** 2026-08-16
 **Status:** Production-Ready (as of UE 5.7)
 **Plugin:** `PCG` (built-in, enable in Plugins)
 
@@ -24,6 +24,17 @@ foliage, rocks, props, buildings, and other environmental detail.
 - One-off manual placement (use editor tools)
 
 **⚠️ Note:** PCG was experimental in UE 5.0-5.6, became production-ready in UE 5.7.
+
+---
+
+## What's New in UE 5.8
+
+- **Manual editing**: non-destructive editing of PCG output via selection and exclusion — hand-tweak generated content without breaking regeneration
+- **Complex attributes**: arrays, structures, sets, and maps supported as metadata
+- **Embedded subgraphs**: custom subgraphs can be stored inside PCG graphs
+- **Graph Parameters Editor**: parameter categorization and hierarchy tools
+- **GPU runtime performance**: now within the same performance range as the landscape GPU grass system
+- **Procedural Vegetation Editor (Experimental)**: in-engine vegetation creation with growth, grafting, and trimming
 
 ---
 
@@ -351,6 +362,6 @@ Street Light Spawner
 ---
 
 ## Sources
-- https://docs.unrealengine.com/5.7/en-US/procedural-content-generation-in-unreal-engine/
-- https://docs.unrealengine.com/5.7/en-US/pcg-quick-start-in-unreal-engine/
+- https://docs.unrealengine.com/5.8/en-US/procedural-content-generation-in-unreal-engine/
+- https://docs.unrealengine.com/5.8/en-US/pcg-quick-start-in-unreal-engine/
 - UE 5.7 Release Notes (PCG Production-Ready announcement)

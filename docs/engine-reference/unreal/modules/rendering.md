@@ -1,17 +1,31 @@
-# Unreal Engine 5.7 — Rendering Module Reference
+# Unreal Engine 5.8 — Rendering Module Reference
 
-**Last verified:** 2026-02-13
-**Knowledge Gap:** UE 5.7 has Megalights, production-ready Substrate, and Lumen improvements
+**Last verified:** 2026-08-16
+**Knowledge Gap:** MegaLights (production-ready in 5.8), production-ready Substrate, Lumen Lite (new in 5.8), Mesh Terrain (experimental in 5.8)
 
 ---
 
 ## Overview
 
-UE 5.7 rendering stack:
+UE 5.8 rendering stack:
 - **Lumen**: Real-time global illumination (default)
+- **Lumen Lite**: Medium-quality GI via Irradiance Fields — 2x faster than Lumen high quality (Beta in 5.8)
 - **Nanite**: Virtualized geometry for millions of triangles
-- **Megalights**: Support for millions of dynamic lights (NEW in 5.5+)
-- **Substrate**: Production-ready modular material system (NEW in 5.7)
+- **MegaLights**: Hundreds of dynamic shadow-casting area lights (production-ready in 5.8)
+- **Substrate**: Production-ready modular material system (since 5.7)
+
+---
+
+## What's New in UE 5.8
+
+- **MegaLights production-ready**: reduced noise, transmission support, froxel translucency, debugging tools; 60fps target on PS5/XSX
+- **Lumen Lite (Beta)**: Irradiance Fields with Probe Occlusion; use when full Lumen exceeds the frame budget
+- **Substrate NPR shading (Experimental)**: toon/stylized shading within Substrate
+- **X-Rite AXF material import** via Substrate
+- **Mesh Terrain (Experimental)**: mesh-based terrain (caves, overhangs) on Nanite + virtual textures — not yet production-ready
+- **FSSS (Experimental)**: fog screen-space scattering approximation for volumetrics
+- **World Partition Insights**: per-cell streaming analysis and debugging for World Partition worlds
+- **Mobile**: multi-pass deferred rendering is now the mobile default (forward opt-in)
 
 ---
 
@@ -65,16 +79,17 @@ MeshComp->SetStaticMesh(NaniteMesh); // Automatically uses Nanite if enabled
 
 ---
 
-## Megalights (UE 5.5+)
+## MegaLights (UE 5.5+, Production-Ready in 5.8)
 
-### Enable Megalights
+### Enable MegaLights
 
 ```cpp
-// Project Settings > Engine > Rendering > Megalights = Enabled
-// Supports millions of dynamic lights with minimal performance cost
+// Project Settings > Engine > Rendering > MegaLights = Enabled
+// Hundreds of dynamic shadow-casting area lights with minimal noise
+// 5.8 adds transmission support, froxel translucency, and debugging tools
 ```
 
-### Megalights Usage
+### MegaLights Usage
 
 ```cpp
 // Add point lights as usual
@@ -82,7 +97,8 @@ UPointLightComponent* Light = CreateDefaultSubobject<UPointLightComponent>(TEXT(
 Light->SetIntensity(5000.0f);
 Light->SetAttenuationRadius(500.0f);
 
-// Megalights automatically handles thousands/millions of these
+// MegaLights handles hundreds of shadow-casting lights at 60fps on current-gen consoles —
+// orders of magnitude more than the ~100-200 limit of the traditional pipeline
 ```
 
 ---
@@ -292,6 +308,6 @@ Console commands:
 ---
 
 ## Sources
-- https://docs.unrealengine.com/5.7/en-US/lumen-global-illumination-and-reflections-in-unreal-engine/
-- https://docs.unrealengine.com/5.7/en-US/nanite-virtualized-geometry-in-unreal-engine/
-- https://docs.unrealengine.com/5.7/en-US/substrate-materials-in-unreal-engine/
+- https://docs.unrealengine.com/5.8/en-US/lumen-global-illumination-and-reflections-in-unreal-engine/
+- https://docs.unrealengine.com/5.8/en-US/nanite-virtualized-geometry-in-unreal-engine/
+- https://docs.unrealengine.com/5.8/en-US/substrate-materials-in-unreal-engine/

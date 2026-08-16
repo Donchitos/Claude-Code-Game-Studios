@@ -1,17 +1,30 @@
-# Unreal Engine 5.7 — Animation Module Reference
+# Unreal Engine 5.8 — Animation Module Reference
 
-**Last verified:** 2026-02-13
-**Knowledge Gap:** UE 5.7 animation authoring improvements, Control Rig 2.0
+**Last verified:** 2026-08-16
+**Knowledge Gap:** UE 5.7 animation authoring improvements, Control Rig 2.0; 5.8 Control Rig Physics/Dynamics, Mutable production-ready, Sequencer looping change
 
 ---
 
 ## Overview
 
-UE 5.7 animation systems:
+UE 5.8 animation systems:
 - **Animation Blueprint**: State machine-based animation logic
 - **Control Rig**: Runtime procedural animation (production-ready in UE5)
 - **IK Rig + Retargeter**: Modern retargeting system
 - **Sequencer**: Cinematic animation
+- **Mutable**: Runtime character customization (production-ready in 5.8)
+
+---
+
+## What's New in UE 5.8
+
+- **Mutable production-ready**: dataless customizable objects, skeletal mesh support — use for character/equipment customization
+- **Control Rig Physics (Beta)**: force-based functionality with layered rig compositing
+- **Control Rig Dynamics**: new lightweight particle-based solver, ~5x runtime performance improvement
+- **Animation Mixing in Sequencer (Experimental)**: layer/mask animations without separate Blueprint slots
+- **RigMapper (Beta)**: 5.7's Remap Curves Stack workflow replaced by rig mapper user data ops
+- **⚠️ Behavioral change**: Sequencer animation section looping redefined (completion-based); `KeepState`/`RestoreState` logic changed — re-test cinematics
+- **Skeletal Editor**: blendshape tools, joint locking, morph target editing, lattice deformers
 
 ---
 
@@ -287,6 +300,6 @@ DrawDebugCoordinateSystem(GetWorld(), BoneLocation, BoneRotation, 50.0f, false, 
 ---
 
 ## Sources
-- https://docs.unrealengine.com/5.7/en-US/animation-in-unreal-engine/
-- https://docs.unrealengine.com/5.7/en-US/control-rig-in-unreal-engine/
-- https://docs.unrealengine.com/5.7/en-US/ik-rig-in-unreal-engine/
+- https://docs.unrealengine.com/5.8/en-US/animation-in-unreal-engine/
+- https://docs.unrealengine.com/5.8/en-US/control-rig-in-unreal-engine/
+- https://docs.unrealengine.com/5.8/en-US/ik-rig-in-unreal-engine/

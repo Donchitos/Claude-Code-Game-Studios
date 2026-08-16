@@ -1,6 +1,6 @@
-# Unreal Engine 5.7 — CommonUI Plugin
+# Unreal Engine 5.8 — CommonUI Plugin
 
-**Last verified:** 2026-02-13
+**Last verified:** 2026-08-16
 **Status:** Production-Ready
 **Plugin:** `CommonUI` (built-in, enable in Plugins)
 
@@ -11,6 +11,11 @@
 **CommonUI** is a cross-platform UI framework that automatically handles input routing
 for gamepad, mouse, and touch. It's designed for games that need to work seamlessly
 across PC, console, and mobile platforms with minimal platform-specific code.
+
+> **UE 5.8 change — Unified Input:** CommonUI input routing is now unified with
+> Enhanced Input. One set of Input Actions drives both gameplay and UI; do NOT
+> create duplicate CommonUI-specific input data assets. Pre-5.8 guides that show
+> separate CommonUI input action data tables are outdated on this point.
 
 **Use CommonUI for:**
 - Multi-platform games (console + PC)
@@ -385,5 +390,5 @@ protected:
 ---
 
 ## Sources
-- https://docs.unrealengine.com/5.7/en-US/commonui-plugin-for-advanced-user-interfaces-in-unreal-engine/
-- https://docs.unrealengine.com/5.7/en-US/commonui-quickstart-guide-for-unreal-engine/
+- https://docs.unrealengine.com/5.8/en-US/commonui-plugin-for-advanced-user-interfaces-in-unreal-engine/
+- https://docs.unrealengine.com/5.8/en-US/commonui-quickstart-guide-for-unreal-engine/

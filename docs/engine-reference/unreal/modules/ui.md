@@ -1,16 +1,23 @@
-# Unreal Engine 5.7 — UI Module Reference
+# Unreal Engine 5.8 — UI Module Reference
 
-**Last verified:** 2026-02-13
-**Knowledge Gap:** UE 5.7 UMG and CommonUI improvements
+**Last verified:** 2026-08-16
+**Knowledge Gap:** UMG and CommonUI improvements; CommonUI input unified with Enhanced Input in 5.8
 
 ---
 
 ## Overview
 
-UE 5.7 UI systems:
+UE 5.8 UI systems:
 - **UMG (Unreal Motion Graphics)**: Visual widget-based UI (RECOMMENDED)
-- **CommonUI**: Cross-platform input-aware UI framework (console/PC)
+- **CommonUI**: Cross-platform input-aware UI framework (console/PC) — input unified with Enhanced Input in 5.8
 - **Slate**: Low-level C++ UI (engine/editor UI)
+
+---
+
+## What's New in UE 5.8
+
+- **Unified input**: CommonUI input routing now runs through Enhanced Input — one set of Input Actions for gameplay and UI, no duplicate input data assets
+- Subtitle UI: new `QueueSingleSubtitle()` / `QueueSubtitlesFromAsset()` APIs (Beta) with per-platform overrides
 
 ---
 
@@ -349,5 +356,5 @@ SetVisibility(ESlateVisibility::Collapsed); // Collapsed = not rendered
 ---
 
 ## Sources
-- https://docs.unrealengine.com/5.7/en-US/umg-ui-designer-for-unreal-engine/
-- https://docs.unrealengine.com/5.7/en-US/commonui-plugin-for-advanced-user-interfaces-in-unreal-engine/
+- https://docs.unrealengine.com/5.8/en-US/umg-ui-designer-for-unreal-engine/
+- https://docs.unrealengine.com/5.8/en-US/commonui-plugin-for-advanced-user-interfaces-in-unreal-engine/

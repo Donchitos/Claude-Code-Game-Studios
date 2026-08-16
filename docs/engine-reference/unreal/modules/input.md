@@ -1,15 +1,23 @@
-# Unreal Engine 5.7 — Input Module Reference
+# Unreal Engine 5.8 — Input Module Reference
 
-**Last verified:** 2026-02-13
-**Knowledge Gap:** UE 5.7 uses Enhanced Input as default (legacy input deprecated)
+**Last verified:** 2026-08-16
+**Knowledge Gap:** Enhanced Input default since 5.7; unified with CommonUI input in 5.8
 
 ---
 
 ## Overview
 
-UE 5.7 input systems:
+UE 5.8 input systems:
 - **Enhanced Input** (RECOMMENDED, default in UE5): Modular, rebindable, context-based
+- **Unified Input (5.8)**: Enhanced Input and CommonUI now share one input system — no duplicate input assets between gameplay and UI
 - **Legacy Input**: Deprecated, avoid for new projects
+
+---
+
+## What's New in UE 5.8
+
+- **Enhanced Input + CommonUI unified**: one set of Input Actions drives both gameplay and UI routing — do not author duplicate CommonUI input data assets
+- **Mobile**: gesture events system (Experimental); improved Android controller mapping; full keyboard/mouse support on iOS/iPadOS
 
 ---
 
@@ -284,5 +292,5 @@ if (GetWorld()->GetFirstPlayerController()->IsInputKeyDown(EKeys::SpaceBar)) {
 ---
 
 ## Sources
-- https://docs.unrealengine.com/5.7/en-US/enhanced-input-in-unreal-engine/
-- https://docs.unrealengine.com/5.7/en-US/enhanced-input-action-and-input-mapping-context-in-unreal-engine/
+- https://docs.unrealengine.com/5.8/en-US/enhanced-input-in-unreal-engine/
+- https://docs.unrealengine.com/5.8/en-US/enhanced-input-action-and-input-mapping-context-in-unreal-engine/

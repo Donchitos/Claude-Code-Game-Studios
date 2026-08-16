@@ -1,6 +1,6 @@
-# Unreal Engine 5.7 — Gameplay Camera System
+# Unreal Engine 5.8 — Gameplay Camera System
 
-**Last verified:** 2026-02-13
+**Last verified:** 2026-08-16
 **Status:** ⚠️ Experimental (introduced in UE 5.5)
 **Plugin:** `GameplayCameras` (built-in, enable in Plugins)
 
@@ -18,7 +18,7 @@ camera modes, blending, and context-aware camera behavior.
 - Smooth camera blending between modes
 - Procedural camera motion (camera shake, lag, offset)
 
-**⚠️ Warning:** This plugin is experimental in UE 5.5-5.7. Expect API changes in future versions.
+**⚠️ Warning:** This plugin is experimental in UE 5.5-5.8. Expect API changes in future versions.
 
 ---
 
@@ -316,6 +316,6 @@ UGameplayCameraComponent* CameraComponent;
 ---
 
 ## Sources
-- https://docs.unrealengine.com/5.7/en-US/gameplay-cameras-in-unreal-engine/
+- https://docs.unrealengine.com/5.8/en-US/gameplay-cameras-in-unreal-engine/
 - UE 5.5+ Release Notes
 - **Note:** This system is experimental. Always check latest official docs for API changes.
