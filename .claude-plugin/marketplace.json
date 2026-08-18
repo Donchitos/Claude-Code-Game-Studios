@@ -1,0 +1,21 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-marketplace.json",
+  "name": "ccgs",
+  "description": "Claude Code Game Studios — the studio agent set, its workflow skills, and its production hooks.",
+  "owner": {
+    "name": "Donchitos",
+    "url": "https://github.com/Donchitos"
+  },
+  "plugins": [
+    {
+      "name": "claude-code-game-studios",
+      "source": "./",
+      "displayName": "Claude Code Game Studios",
+      "description": "49 game studio agents and 73 workflow skills, from brainstorm to launch. Run /studio-init after installing to scaffold the project-side files.",
+      "version": "1.1.0",
+      "category": "game-development",
+      "tags": ["game-development", "godot", "unity", "unreal", "production"],
+      "license": "MIT"
+    }
+  ]
+}

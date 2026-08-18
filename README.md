@@ -3,17 +3,17 @@
   <p align="center">
     Turn a single Claude Code session into a full game development studio.
     <br />
-    49 agents. 73 skills. One coordinated AI team.
+    49 agents. 74 skills. One coordinated AI team.
   </p>
 </p>
 
 <p align="center">
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="MIT License"></a>
   <a href=".claude/agents"><img src="https://img.shields.io/badge/agents-49-blueviolet" alt="49 Agents"></a>
-  <a href=".claude/skills"><img src="https://img.shields.io/badge/skills-73-green" alt="73 Skills"></a>
-  <a href=".claude/hooks"><img src="https://img.shields.io/badge/hooks-12-orange" alt="12 Hooks"></a>
+  <a href=".claude/skills"><img src="https://img.shields.io/badge/skills-74-green" alt="74 Skills"></a>
+  <a href=".claude/hooks"><img src="https://img.shields.io/badge/hooks-17-orange" alt="17 Hooks"></a>
   <a href=".claude/rules"><img src="https://img.shields.io/badge/rules-11-red" alt="11 Rules"></a>
-  <a href="https://docs.anthropic.com/en/docs/claude-code"><img src="https://img.shields.io/badge/built%20for-Claude%20Code-f5f5f5?logo=anthropic" alt="Built for Claude Code"></a>
+  <a href="https://code.claude.com/docs/en/overview"><img src="https://img.shields.io/badge/built%20for-Claude%20Code-f5f5f5?logo=anthropic" alt="Built for Claude Code"></a>
   <a href="https://www.buymeacoffee.com/donchitos3"><img src="https://img.shields.io/badge/Buy%20Me%20a%20Coffee-Support%20this%20project-FFDD00?logo=buymeacoffee&logoColor=black" alt="Buy Me a Coffee"></a>
   <a href="https://github.com/sponsors/Donchitos"><img src="https://img.shields.io/badge/GitHub%20Sponsors-Support%20this%20project-ea4aaa?logo=githubsponsors&logoColor=white" alt="GitHub Sponsors"></a>
 </p>
@@ -53,10 +53,10 @@ The result: you still make every decision, but now you have a team that asks the
 | Category | Count | Description |
 |----------|-------|-------------|
 | **Agents** | 49 | Specialized subagents across design, programming, art, audio, narrative, QA, and production |
-| **Skills** | 73 | Slash commands for every workflow phase (`/start`, `/design-system`, `/create-epics`, `/create-stories`, `/dev-story`, `/story-done`, etc.) |
-| **Hooks** | 12 | Automated validation on commits, pushes, asset changes, session lifecycle, agent audit trail, and gap detection |
+| **Skills** | 74 | Slash commands for every workflow phase (`/start`, `/design-system`, `/create-epics`, `/create-stories`, `/dev-story`, `/story-done`, etc.) |
+| **Hooks** | 17 | Automated validation on commits, pushes, asset changes, session lifecycle, agent audit trail, gap detection, tool failures, permission denials, and design drift |
 | **Rules** | 11 | Path-scoped coding standards enforced when editing gameplay, engine, AI, UI, network code, and more |
-| **Templates** | 41 | Document templates for GDDs, UX specs, ADRs, sprint plans, HUD design, accessibility, and more |
+| **Templates** | 40 | Document templates for GDDs, UX specs, ADRs, sprint plans, HUD design, accessibility, and more |
 
 ## Studio Hierarchy
 
@@ -94,10 +94,10 @@ The template includes agent sets for all three major engines. Use the set that m
 
 ## Slash Commands
 
-Type `/` in Claude Code to access all 73 skills:
+Type `/` in Claude Code to access all 74 skills:
 
 **Onboarding & Navigation**
-`/start` `/help` `/project-stage-detect` `/setup-engine` `/adopt`
+`/start` `/help` `/studio-init` `/project-stage-detect` `/setup-engine` `/adopt`
 
 **Game Design**
 `/brainstorm` `/map-systems` `/design-system` `/quick-design` `/review-all-gdds` `/propagate-design-change`
@@ -137,31 +137,64 @@ Type `/` in Claude Code to access all 73 skills:
 ### Prerequisites
 
 - [Git](https://git-scm.com/)
-- [Claude Code](https://docs.anthropic.com/en/docs/claude-code) (`npm install -g @anthropic-ai/claude-code`)
+- [Claude Code](https://code.claude.com/docs/en/overview) — install with `curl -fsSL https://claude.ai/install.sh | bash`
+  (macOS/Linux/WSL), `irm https://claude.ai/install.ps1 | iex` (Windows PowerShell), or `brew install --cask claude-code`
 - **Recommended**: [jq](https://jqlang.github.io/jq/) (for hook validation) and Python 3 (for JSON validation)
 
 All hooks fail gracefully if optional tools are missing — nothing breaks, you just lose validation.
 
 ### Setup
 
-1. **Clone or use as template**:
-   ```bash
-   git clone https://github.com/Donchitos/Claude-Code-Game-Studios.git my-game
-   cd my-game
-   ```
+There are two ways to install. They give you the same studio; they differ in how
+upgrades work.
 
-2. **Open Claude Code** and start a session:
-   ```bash
-   claude
-   ```
+#### Option A — Plugin (recommended)
 
-3. **Run `/start`** — the system asks where you are (no idea, vague concept,
-   clear design, existing work) and guides you to the right workflow. No assumptions.
+The agents, skills, and hooks install as a Claude Code plugin and update in place.
+Nothing to merge, ever.
 
-   Or jump directly to a specific skill if you already know what you need:
-   - `/brainstorm` — explore game ideas from scratch
-   - `/setup-engine godot 4.6` — configure your engine if you already know
-   - `/project-stage-detect` — analyze an existing project
+```bash
+claude
+```
+```
+/plugin marketplace add Donchitos/Claude-Code-Game-Studios
+/plugin install claude-code-game-studios@ccgs
+/studio-init
+```
+
+`/studio-init` scaffolds the project side — `CLAUDE.md`, path-scoped rules, document
+templates, engine reference docs, permissions, and the directory tree — into your repo.
+Those files are then **yours**: edit them freely. Later, `/plugin update
+claude-code-game-studios` refreshes the studio without touching a line of your work.
+
+#### Option B — Clone the template
+
+Best if you want to fork the studio itself and edit agents or skills directly.
+
+```bash
+git clone https://github.com/Donchitos/Claude-Code-Game-Studios.git my-game
+cd my-game
+claude
+```
+
+Everything is already in place — `/studio-init` detects this and does nothing.
+Upgrades come via `git merge` (see [UPGRADING.md](UPGRADING.md)), which means resolving
+conflicts in files you have edited. That's the cost this option carries and Option A doesn't.
+
+> **Do not use both.** If you clone the template *and* install the plugin, every hook is
+> registered twice: two session banners, duplicated audit-log lines, and `active.md`
+> archived twice per session. Pick one. If you install the plugin into an existing clone,
+> delete the `hooks` block from your `.claude/settings.json` — the plugin supplies it.
+
+#### Then start work
+
+**Run `/start`** — the system asks where you are (no idea, vague concept, clear design,
+existing work) and guides you to the right workflow. No assumptions.
+
+Or jump directly to a specific skill if you already know what you need:
+- `/brainstorm` — explore game ideas from scratch
+- `/setup-engine godot 4.7` — configure your engine if you already know
+- `/project-stage-detect` — analyze an existing project
 
 ## Upgrading
 
@@ -173,16 +206,20 @@ versions, and which files are safe to overwrite vs. which need a manual merge.
 
 ```
 CLAUDE.md                           # Master configuration
+.claude-plugin/
+  plugin.json                       # Plugin manifest (agents, skills, hooks)
+  marketplace.json                  # Marketplace listing for /plugin marketplace add
 .claude/
-  settings.json                     # Hooks, permissions, safety rules
+  settings.json                     # Hooks, permissions, safety rules (clone mode)
   agents/                           # 49 agent definitions (markdown + YAML frontmatter)
-  skills/                           # 73 slash commands (subdirectory per skill)
-  hooks/                            # 12 hook scripts (bash, cross-platform)
+  skills/                           # 74 slash commands (subdirectory per skill)
+  hooks/                            # 17 hook scripts (bash, cross-platform)
+    hooks.json                      # Same hooks, plugin-root paths (plugin mode)
   rules/                            # 11 path-scoped coding standards
   statusline.sh                     # Status line script (context%, model, stage, epic breadcrumb)
   docs/
     workflow-catalog.yaml           # 7-phase pipeline definition (read by /help)
-    templates/                      # 41 document templates
+    templates/                      # 40 document templates
 src/                                # Game source code
 assets/                             # Art, audio, VFX, shaders, data files
 design/                             # GDDs, narrative docs, level designs
@@ -231,10 +268,15 @@ You stay in control. The agents provide structure and expertise, not autonomy.
 | `pre-compact.sh` | Before compaction | Preserves session progress notes |
 | `post-compact.sh` | After compaction | Reminds Claude to restore session state from `active.md` |
 | `notify.sh` | Notification event | Shows Windows toast notification via PowerShell |
-| `session-stop.sh` | Session close | Archives `active.md` to session log and records git activity |
+| `session-stop.sh` | SessionEnd (session close) | Archives `active.md` to session log and records git activity |
 | `log-agent.sh` | Agent spawned | Audit trail start — logs subagent invocation |
 | `log-agent-stop.sh` | Agent stops | Audit trail stop — completes subagent record |
 | `validate-skill-change.sh` | PostToolUse (Write/Edit) | Advises running `/skill-test` after any `.claude/skills/` change |
+| `validate-agent-manifest.sh` | PostToolUse (Write/Edit) | Warns when a new agent is not listed in the plugin manifest — plugin users would never see it |
+| `log-tool-failure.sh` | PostToolUseFailure | Records failed tool calls to `production/session-logs/tool-failures.log` for retrospectives |
+| `log-permission-denied.sh` | PermissionDenied | Records blocked operations (force push, `rm -rf`, `.env` reads) for the security audit trail |
+| `detect-design-drift.sh` | FileChanged (`design/**.md`) | Notices GDDs edited outside the session and suggests `/propagate-design-change` |
+| `log-turn-failure.sh` | StopFailure | Stamps `active.md` when a turn dies on an API error, so session recovery knows it resumed from a failure |
 
 > **Note**: `validate-commit.sh`, `validate-assets.sh`, and `validate-skill-change.sh` fire on every Bash/Write tool call and exit immediately (exit 0) when the command or file path is not relevant. This is normal hook behavior — not a performance concern.
 

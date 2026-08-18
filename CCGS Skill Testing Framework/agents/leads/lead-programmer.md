@@ -14,7 +14,7 @@ Verified by reading the agent's `.claude/agents/lead-programmer.md` frontmatter:
 
 - [ ] `description:` field is present and domain-specific (references code architecture, feasibility, code review, coding standards — not generic)
 - [ ] `allowed-tools:` list includes Read for source files; Bash may be included for static analysis or test runs; no write access outside `src/` without explicit delegation
-- [ ] Model tier is `claude-sonnet-4-6` per coordination-rules.md
+- [ ] Model tier is `sonnet` per coordination-rules.md
 - [ ] Agent definition does not claim authority over game design, creative direction, or production scheduling
 
 ---

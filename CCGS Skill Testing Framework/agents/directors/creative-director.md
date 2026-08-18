@@ -14,7 +14,7 @@ Verified by reading the agent's `.claude/agents/creative-director.md` frontmatte
 
 - [ ] `description:` field is present and domain-specific (references creative vision, pillars, GDD alignment — not generic)
 - [ ] `allowed-tools:` list is read-heavy; should not include Bash unless justified by a creative workflow need
-- [ ] Model tier is `claude-opus-4-6` per coordination-rules.md (directors with gate synthesis = Opus)
+- [ ] Model tier is `opus` per coordination-rules.md (directors with gate synthesis = Opus)
 - [ ] Agent definition does not claim authority over technical architecture or production scheduling
 
 ---

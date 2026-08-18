@@ -6,23 +6,36 @@
 | **Release Date** | December 2025 |
 | **Project Pinned** | 2026-02-13 |
 | **Last Docs Verified** | 2026-02-13 |
-| **LLM Knowledge Cutoff** | May 2025 |
+| **Version Pin Re-checked** | 2026-08-18 — still current |
+| **LLM Knowledge Cutoff** | May 2026 |
+
+> **Pin re-checked 2026-08-18:** Unity 6.4 shipped as a **Supported** (non-LTS) release
+> and has already reached end of life. **6.3 LTS remains the current LTS**, supported
+> until December 2027, so the pin is unchanged. Only the version status was re-verified
+> on this pass — the API content in this directory still carries its 2026-02-13
+> verification date.
 
 ## Knowledge Gap Warning
 
-The LLM's training data likely covers Unity up to ~2022 LTS (2022.3). The entire
-Unity 6 release series (formerly Unity 2023 Tech Stream) introduced significant
-changes that the model does NOT know about. Always cross-reference this directory
-before suggesting Unity API calls.
+The LLM's training data likely covers Unity through **~6.3 LTS**, which is the version
+this project is pinned to — so for Unity there is currently **no version gap**, unlike
+Godot and Unreal.
+
+That does not make this directory redundant. The model's Unity knowledge is weighted
+heavily toward the long 2019–2022 LTS era, so it still tends to reach for pre-Unity-6
+idioms (legacy Input Manager, Resources.Load, built-in render pipeline assumptions,
+pre-1.0 Entities APIs). Cross-reference `deprecated-apis.md` before accepting a
+suggested Unity API, even though the version itself is inside the training window.
 
 ## Post-Cutoff Version Timeline
 
 | Version | Release | Risk Level | Key Theme |
 |---------|---------|------------|-----------|
-| 6.0 | Oct 2024 | HIGH | Unity 6 rebrand, new rendering features, Entities 1.3, DOTS improvements |
-| 6.1 | Nov 2024 | MEDIUM | Bug fixes, stability improvements |
-| 6.2 | Dec 2024 | MEDIUM | Performance optimizations, new input system improvements |
-| 6.3 LTS | Dec 2025 | HIGH | First LTS since 6.0, production-ready DOTS, enhanced graphics features |
+| 6.0 | Oct 2024 | LOW (in training data) | Unity 6 rebrand, new rendering features, Entities 1.3, DOTS improvements |
+| 6.1 | Nov 2024 | LOW (in training data) | Bug fixes, stability improvements |
+| 6.2 | Dec 2024 | LOW (in training data) | Performance optimizations, new input system improvements |
+| 6.3 LTS | Dec 2025 | MEDIUM (in training data) | First LTS since 6.0, production-ready DOTS, enhanced graphics features |
+| 6.4 | 2026 | N/A — not adopted | Supported (non-LTS) release, now end-of-life. Stay on 6.3 LTS. |
 
 ## Major Changes from 2022 LTS to Unity 6.3 LTS
 

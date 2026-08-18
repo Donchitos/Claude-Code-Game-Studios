@@ -2,6 +2,10 @@
 
 Last verified: 2026-02-12 | Engine: Godot 4.6
 
+> **Version note:** this project is pinned to **Godot 4.7**. This file was last verified
+> against 4.6 — see `../VERSION.md` and the 4.6 → 4.7 section of `../breaking-changes.md`
+> before relying on anything version-sensitive.
+
 ## What Changed Since ~4.3 (LLM Cutoff)
 
 No major breaking changes to the audio API in 4.4–4.6. The core audio system

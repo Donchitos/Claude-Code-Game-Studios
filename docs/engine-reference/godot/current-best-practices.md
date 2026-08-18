@@ -1,9 +1,62 @@
 # Godot — Current Best Practices
 
-Last verified: 2026-02-12 | Engine: Godot 4.6
+Last verified: 2026-08-18 | Engine: Godot 4.7
 
-Practices that are **new or changed** since the model's training data (~4.3).
+Practices that are **new or changed** since the model's training data (~4.6).
 This supplements (not replaces) the agent's built-in knowledge.
+
+The 4.7 section below is the part the model has not seen. Sections tagged 4.5/4.6
+are inside the training window and are kept as a consistency check.
+
+## GDScript (4.7 — REQUIRED)
+
+- **Every override declares its return type.** Untyped overrides of an inherited
+  method no longer parse. This is the most common 4.7 upgrade failure.
+  ```gdscript
+  # ❌ Fails to parse in 4.7
+  func _physics_process(delta):
+      pass
+
+  # ✅
+  func _physics_process(delta: float) -> void:
+      pass
+  ```
+
+- **Packed array element assignment does not invoke property setters.** If a setter
+  needs to run, assign the whole array or call the setter explicitly.
+
+## Input (4.7)
+
+- **Never compare `event.device` to `0`.** Mouse and keyboard now report dedicated
+  constants:
+  ```gdscript
+  if event.device == InputEvent.DEVICE_ID_MOUSE:
+      ...
+  elif event.device == InputEvent.DEVICE_ID_KEYBOARD:
+      ...
+  ```
+
+## Rendering & Lighting (4.7)
+
+- **`AreaLight3D`** for rectangular sources — softer shadows and more plausible
+  reflections than faking it with a SpotLight3D and a large angle.
+- **HDR output** is available on Windows, macOS, iOS, visionOS, and Linux (Wayland).
+  Opt in per project; verify tonemapping on SDR displays before shipping.
+- **Clearcoat** now follows the Disney PBR standard — existing clearcoat materials
+  will look different and need re-tuning.
+- `LinearToSRGB` in visual shaders no longer clamps to `[0.0, 1.0]`. Clamp explicitly
+  if downstream nodes assume a normalized range.
+
+## UI (4.7)
+
+- **Animate `Control` offset transforms** instead of animating anchors or position
+  when the node lives in a container — offsets no longer perturb container layout.
+- `VirtualJoystick` is a built-in node now; drop custom touch-stick implementations.
+
+## Audio (4.7)
+
+- `AudioStreamPlayer.area_mask` defaults to **disabled**. Set it explicitly on any
+  player that relies on `Area3D`-driven reverb or effect buses.
 
 ## GDScript (4.5+)
 

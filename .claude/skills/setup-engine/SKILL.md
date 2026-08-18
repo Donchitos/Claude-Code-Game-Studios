@@ -13,7 +13,7 @@ When this skill is invoked:
 
 Four modes:
 
-- **Full spec**: `/setup-engine godot 4.6` — engine and version provided
+- **Full spec**: `/setup-engine godot 4.7` — engine and version provided
 - **Engine only**: `/setup-engine unity` — engine provided, version will be looked up
 - **No args**: `/setup-engine` — fully guided mode (engine recommendation + version)
 - **Refresh**: `/setup-engine refresh` — update reference docs (see Section 10)
@@ -306,11 +306,12 @@ Wait for approval before writing the file.
 
 Check whether the engine version is likely beyond the LLM's training data.
 
-**Known approximate coverage** (update this as models change):
-- LLM knowledge cutoff: **May 2025**
-- Godot: training data likely covers up to ~4.3
-- Unity: training data likely covers up to ~2023.x / early 6000.x
-- Unreal: training data likely covers up to ~5.3 / early 5.4
+**Known approximate coverage** (re-check this whenever the session model changes —
+a newer model moves every baseline below):
+- LLM knowledge cutoff: **May 2026**
+- Godot: training data likely covers up to ~4.6 (4.7 shipped June 2026 — beyond)
+- Unity: training data likely covers up to ~6.3 LTS
+- Unreal: training data likely covers up to ~5.7 (5.8 shipped June 2026 — beyond)
 
 Compare the user's chosen version against these baselines:
 
@@ -335,7 +336,7 @@ Create a minimal `docs/engine-reference/<engine>/VERSION.md`:
 |-------|-------|
 | **Engine Version** | [version] |
 | **Project Pinned** | [today's date] |
-| **LLM Knowledge Cutoff** | May 2025 |
+| **LLM Knowledge Cutoff** | May 2026 |
 | **Risk Level** | LOW — version is within LLM training data |
 
 ## Note

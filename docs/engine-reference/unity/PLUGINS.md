@@ -223,7 +223,7 @@ For packages NOT listed above, use the following approach when users ask:
 
 1. **WebSearch** for latest documentation: `"Unity 6.3 [package name]"`
 2. Verify if package is:
-   - Post-cutoff (beyond May 2025 training data)
+   - Post-cutoff (beyond May 2026 training data)
    - Preview vs Production-Ready
    - Still supported in Unity 6.3 LTS
 3. Optionally cache findings in `plugins/[package-name].md` for future reference
@@ -247,4 +247,4 @@ For packages NOT listed above, use the following approach when users ask:
 
 **Last Updated:** 2026-02-13
 **Engine Version:** Unity 6.3 LTS
-**LLM Knowledge Cutoff:** May 2025
+**LLM Knowledge Cutoff:** May 2026

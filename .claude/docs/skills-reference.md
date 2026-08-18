@@ -1,12 +1,13 @@
 # Available Skills (Slash Commands)
 
-73 slash commands organized by phase. Type `/` in Claude Code to access any of them.
+74 slash commands organized by phase. Type `/` in Claude Code to access any of them.
 
 ## Onboarding & Navigation
 
 | Command | Purpose |
 |---------|---------|
 | `/start` | First-time onboarding — asks where you are, then guides you to the right workflow |
+| `/studio-init` | Scaffold the project-side files (CLAUDE.md, rules, templates, engine reference, directory tree) — run once after installing the plugin |
 | `/help` | Context-aware "what do I do next?" — reads current stage and surfaces the required next step |
 | `/project-stage-detect` | Full project audit — detect phase, identify existence gaps, recommend next steps |
 | `/setup-engine` | Configure engine + version, detect knowledge gaps, populate version-aware reference docs |

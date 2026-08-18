@@ -169,7 +169,7 @@ API code, you MUST:
 4. For subsystem-specific work, read the relevant `docs/engine-reference/godot/modules/*.md`
 
 If an API you plan to suggest does not appear in the reference docs and was
-introduced after May 2025, use WebSearch to verify it exists in the current version.
+introduced after May 2026, use WebSearch to verify it exists in the current version.
 
 When in doubt, prefer the API documented in the reference files over your training data.
 

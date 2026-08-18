@@ -14,6 +14,7 @@ Or check `README.md` for the version badge.
 ## Table of Contents
 
 - [Upgrade Strategies](#upgrade-strategies)
+- [v1.0 → v1.1](#v10--v11)
 - [v1.0.0-beta → v1.0](#v100-beta--v10)
 - [v0.4.x → v1.0](#v04x--v10)
 - [v0.4.0 → v0.4.1](#v040--v041)
@@ -124,6 +125,72 @@ UPGRADING.md
 ### Files: Merge Carefully
 
 None — all changes are to infrastructure files with no user content.
+
+---
+
+## v1.0 → v1.1
+
+**Key themes:** Plugin distribution, five new hook events, currency fixes
+
+### What Changed
+
+**Plugin distribution (new).** The studio now installs as a Claude Code plugin:
+
+```
+/plugin marketplace add Donchitos/Claude-Code-Game-Studios
+/plugin install claude-code-game-studios@ccgs
+/studio-init
+```
+
+The plugin ships agents, skills, and hooks. `/studio-init` scaffolds the project side
+(`CLAUDE.md`, `.claude/rules/`, `.claude/docs/`, `docs/engine-reference/`, the directory
+tree) into your repo, where you own it. `/plugin update` then refreshes the studio without
+touching your files. **This is the recommended path for new projects** — it removes the
+merge-conflict problem that the strategies above exist to work around.
+
+Nothing moved to enable this. `.claude-plugin/plugin.json` points at the existing
+`.claude/agents/`, `.claude/skills/`, and `.claude/hooks/`, so the clone workflow is
+unchanged and this section is optional for existing projects.
+
+> **If you install the plugin into an existing clone**, delete the `hooks` block from
+> your `.claude/settings.json`. The plugin registers those hooks itself, and keeping both
+> makes every one fire twice.
+
+**Hook fix — `Stop` → `SessionEnd` (do apply this one).** `session-stop.sh` was wired to
+`Stop`, which fires *once per turn*, not at session close. Every reply appended a copy of
+`active.md` to `production/session-logs/session-log.md`. In `.claude/settings.json`,
+rename the `"Stop"` key to `"SessionEnd"`. Existing bloated logs can be truncated safely.
+
+**Five new hooks.** All advisory, none blocking:
+
+| Script | Event | What it buys you |
+|--------|-------|------------------|
+| `log-tool-failure.sh` | `PostToolUseFailure` | Failed builds and test runs land in `tool-failures.log` instead of vanishing at compaction — real input for `/retrospective` and `/test-flakiness` |
+| `log-permission-denied.sh` | `PermissionDenied` | Blocked force pushes, `rm -rf`, and `.env` reads get an audit line for `/security-audit` |
+| `detect-design-drift.sh` | `FileChanged` | A GDD edited outside the session prompts `/propagate-design-change` instead of going unnoticed until the next `/architecture-review` |
+| `log-turn-failure.sh` | `StopFailure` | A turn killed by an API error stamps `active.md`, so the next session knows it resumed from a failure |
+| `validate-agent-manifest.sh` | `PostToolUse` | Warns when a new agent is missing from the plugin manifest, where agents must be listed individually |
+
+To adopt them, copy the five scripts into `.claude/hooks/` and merge the matching event
+blocks from the new `.claude/settings.json`.
+
+**Currency fixes.** Engine pins moved to Godot 4.7 and Unreal 5.8 (Unity stays on 6.3 LTS
+— 6.4 shipped non-LTS and is already EOL). The assumed model knowledge cutoff moved from
+May 2025 to May 2026, which re-scoped every risk table in `docs/engine-reference/`. Model
+tiers in `coordination-rules.md` now use family aliases rather than pinned IDs. Dead
+`docs.anthropic.com` links repointed to `code.claude.com`.
+
+### Files Safe to Overwrite
+
+- `.claude/hooks/*.sh` (unless you customized them)
+- `.claude/docs/hooks-reference.md`, `.claude/docs/hooks-reference/hook-input-schemas.md`
+- `.claude-plugin/` (new)
+- `.claude/skills/studio-init/` (new)
+
+### Files Needing a Manual Merge
+
+- `.claude/settings.json` — you may have your own permissions; take the `hooks` block wholesale
+- `docs/engine-reference/**` — if you pinned a different engine version, keep yours
 
 ---
 
@@ -637,14 +704,14 @@ is safe. Otherwise, add this block manually:
 the terminal status line:
 
 ```
-ctx: 42% | claude-sonnet-4-6 | Systems Design
+ctx: 42% | claude-sonnet-5 | Systems Design
 ```
 
 In Production/Polish/Release stages, it also shows the active Epic/Feature/Task
 from `production/session-state/active.md` if a `<!-- STATUS -->` block is present:
 
 ```
-ctx: 42% | claude-sonnet-4-6 | Production | Combat System > Melee Combat > Hitboxes
+ctx: 42% | claude-sonnet-5 | Production | Combat System > Melee Combat > Hitboxes
 ```
 
 The current stage is auto-detected from project artifacts, or can be pinned by

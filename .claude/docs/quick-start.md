@@ -236,7 +236,7 @@ If you already know what you need, jump directly to the relevant path:
 If you already have a game concept and engine choice:
 
 1. **Set up the engine** — Run `/setup-engine [engine] [version]`
-   (e.g., `/setup-engine godot 4.6`) — also creates technical preferences
+   (e.g., `/setup-engine godot 4.7`) — also creates technical preferences
 2. **Write the Game Pillars** — delegate to `creative-director`
 3. **Decompose into systems** — Run `/map-systems` to enumerate systems and dependencies
 4. **Design each system** — Run `/design-system [system-name]` for GDDs in dependency order

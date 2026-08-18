@@ -1,6 +1,10 @@
 # Unreal Engine 5.7 — Optional Plugins & Systems
 
-**Last verified:** 2026-02-13
+**Last verified:** 2026-02-13 (against UE 5.7)
+
+> **Version note:** this project is pinned to **UE 5.8**. This file was last verified
+> against 5.7 and has not been re-checked for 5.8 changes — see `VERSION.md` and the
+> 5.7 → 5.8 section of `breaking-changes.md`.
 
 This document indexes **optional plugins and systems** available in Unreal Engine 5.7.
 These are NOT part of the core engine but are commonly used for specific game types.
@@ -184,7 +188,7 @@ For plugins NOT listed above, use the following approach when users ask:
 
 1. **WebSearch** for latest documentation: `"Unreal Engine 5.7 [plugin name]"`
 2. Verify if plugin is:
-   - Post-cutoff (beyond May 2025 training data)
+   - Post-cutoff (beyond May 2026 training data)
    - Experimental vs Production-Ready
    - Still supported in UE 5.7
 3. Optionally cache findings in `plugins/[plugin-name].md` for future reference
@@ -207,4 +211,4 @@ For plugins NOT listed above, use the following approach when users ask:
 
 **Last Updated:** 2026-02-13
 **Engine Version:** Unreal Engine 5.7
-**LLM Knowledge Cutoff:** May 2025
+**LLM Knowledge Cutoff:** May 2026

@@ -12,7 +12,7 @@
 
 - [ ] `description:` field is present and domain-specific (references CI/CD, build, deployment, version control)
 - [ ] `allowed-tools:` list matches the agent's role (Read/Write for pipeline config files, shell scripts, YAML; no game source editing tools)
-- [ ] Model tier is Sonnet (default for operations specialists)
+- [ ] Model tier is `haiku` (agent frontmatter sets haiku; coordination-rules.md assigns Haiku to read-and-format roles)
 - [ ] Agent definition does not claim authority over game logic, security audits, or QA test design
 
 ---

@@ -16,11 +16,19 @@
 
 Skills and agents are assigned to model tiers based on task complexity:
 
-| Tier | Model | When to use |
-|------|-------|-------------|
-| **Haiku** | `claude-haiku-4-5-20251001` | Read-only status checks, formatting, simple lookups — no creative judgment needed |
-| **Sonnet** | `claude-sonnet-4-6` | Implementation, design authoring, analysis of individual systems — default for most work |
-| **Opus** | `claude-opus-4-6` | Multi-document synthesis, high-stakes phase gate verdicts, cross-system holistic review |
+Agent and skill frontmatter uses the **family alias** (`haiku` / `sonnet` / `opus`),
+never a pinned model ID. Aliases resolve to the current model in that family, so this
+table does not need editing every time Anthropic ships a new generation.
+
+| Tier | Frontmatter value | Resolves to (as of 2026-08) | When to use |
+|------|-------------------|------------------------------|-------------|
+| **Haiku** | `haiku` | `claude-haiku-4-5-20251001` | Read-only status checks, formatting, simple lookups — no creative judgment needed |
+| **Sonnet** | `sonnet` | `claude-sonnet-5` | Implementation, design authoring, analysis of individual systems — default for most work |
+| **Opus** | `opus` | `claude-opus-5` | Multi-document synthesis, high-stakes phase gate verdicts, cross-system holistic review |
+
+`fable` and `inherit` are also valid frontmatter values. This template assigns neither:
+`inherit` would let a specialist silently run on whatever the session happens to be using,
+which defeats the point of tiering.
 
 Skills with `model: haiku`: `/help`, `/sprint-status`, `/story-readiness`, `/scope-check`,
 `/project-stage-detect`, `/changelog`, `/patch-notes`, `/onboard`
@@ -36,7 +44,9 @@ high-stakes output; otherwise leave unset (Sonnet).
 This project uses two distinct multi-agent patterns:
 
 ### Subagents (current, always active)
-Spawned via `Task` within a single Claude Code session. Used by all `team-*` skills
+Spawned via the `Agent` tool within a single Claude Code session (the tool was named
+`Task` before Claude Code v2.1.63; `Task` still resolves as an alias, which is why
+existing `allowed-tools: ... Task ...` entries keep working). Used by all `team-*` skills
 and orchestration skills. Subagents share the session's permission context, run
 sequentially or in parallel within the session, and return results to the parent.
 

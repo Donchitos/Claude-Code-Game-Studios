@@ -14,7 +14,7 @@ Verified by reading the agent's `.claude/agents/qa-lead.md` frontmatter:
 
 - [ ] `description:` field is present and domain-specific (references test strategy, story readiness, coverage, bug triage — not generic)
 - [ ] `allowed-tools:` list is read-focused; may include Read for story files, test files, and coding-standards; Bash only if running test commands is required
-- [ ] Model tier is `claude-sonnet-4-6` per coordination-rules.md
+- [ ] Model tier is `sonnet` per coordination-rules.md
 - [ ] Agent definition does not claim authority over implementation decisions or game design
 
 ---

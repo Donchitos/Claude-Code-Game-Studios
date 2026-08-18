@@ -1,6 +1,10 @@
 # Unreal Engine 5.7 — Current Best Practices
 
-**Last verified:** 2026-02-13
+**Last verified:** 2026-02-13 (against UE 5.7)
+
+> **Version note:** this project is pinned to **UE 5.8**. This file was last verified
+> against 5.7 and has not been re-checked for 5.8 changes — see `VERSION.md` and the
+> 5.7 → 5.8 section of `breaking-changes.md`.
 
 Modern UE5 patterns that may not be in the LLM's training data.
 These are production-ready recommendations as of UE 5.7.

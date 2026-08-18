@@ -1,36 +1,4 @@
 {
-  "$schema": "https://json.schemastore.org/claude-code-settings.json",
-  "statusLine": {
-    "type": "command",
-    "command": "bash .claude/statusline.sh"
-  },
-  "permissions": {
-    "allow": [
-      "Bash(git status*)",
-      "Bash(git diff*)",
-      "Bash(git log*)",
-      "Bash(git branch*)",
-      "Bash(git rev-parse*)",
-      "Bash(ls *)",
-      "Bash(dir *)",
-      "Bash(python -m json.tool*)",
-      "Bash(python -m pytest*)",
-      "Bash(py -m pytest*)"
-    ],
-    "deny": [
-      "Bash(rm -rf *)",
-      "Bash(git push --force*)",
-      "Bash(git push -f *)",
-      "Bash(git reset --hard*)",
-      "Bash(git clean -f*)",
-      "Bash(sudo *)",
-      "Bash(chmod 777*)",
-      "Bash(*>.env*)",
-      "Bash(cat *.env*)",
-      "Bash(type *.env*)",
-      "Read(**/.env*)"
-    ]
-  },
   "hooks": {
     "SessionStart": [
       {
@@ -38,12 +6,12 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash .claude/hooks/session-start.sh",
+            "command": "bash \"${CLAUDE_PLUGIN_ROOT}/.claude/hooks/session-start.sh\"",
             "timeout": 10
           },
           {
             "type": "command",
-            "command": "bash .claude/hooks/detect-gaps.sh",
+            "command": "bash \"${CLAUDE_PLUGIN_ROOT}/.claude/hooks/detect-gaps.sh\"",
             "timeout": 10
           }
         ]
@@ -55,12 +23,12 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash .claude/hooks/validate-commit.sh",
+            "command": "bash \"${CLAUDE_PLUGIN_ROOT}/.claude/hooks/validate-commit.sh\"",
             "timeout": 15
           },
           {
             "type": "command",
-            "command": "bash .claude/hooks/validate-push.sh",
+            "command": "bash \"${CLAUDE_PLUGIN_ROOT}/.claude/hooks/validate-push.sh\"",
             "timeout": 10
           }
         ]
@@ -72,17 +40,17 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash .claude/hooks/validate-assets.sh",
+            "command": "bash \"${CLAUDE_PLUGIN_ROOT}/.claude/hooks/validate-assets.sh\"",
             "timeout": 10
           },
           {
             "type": "command",
-            "command": "bash .claude/hooks/validate-skill-change.sh",
+            "command": "bash \"${CLAUDE_PLUGIN_ROOT}/.claude/hooks/validate-skill-change.sh\"",
             "timeout": 5
           },
           {
             "type": "command",
-            "command": "bash .claude/hooks/validate-agent-manifest.sh",
+            "command": "bash \"${CLAUDE_PLUGIN_ROOT}/.claude/hooks/validate-agent-manifest.sh\"",
             "timeout": 5
           }
         ]
@@ -94,7 +62,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash .claude/hooks/log-tool-failure.sh",
+            "command": "bash \"${CLAUDE_PLUGIN_ROOT}/.claude/hooks/log-tool-failure.sh\"",
             "timeout": 5
           }
         ]
@@ -106,7 +74,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash .claude/hooks/log-permission-denied.sh",
+            "command": "bash \"${CLAUDE_PLUGIN_ROOT}/.claude/hooks/log-permission-denied.sh\"",
             "timeout": 5
           }
         ]
@@ -118,7 +86,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash .claude/hooks/detect-design-drift.sh",
+            "command": "bash \"${CLAUDE_PLUGIN_ROOT}/.claude/hooks/detect-design-drift.sh\"",
             "timeout": 5
           }
         ]
@@ -130,7 +98,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash .claude/hooks/notify.sh",
+            "command": "bash \"${CLAUDE_PLUGIN_ROOT}/.claude/hooks/notify.sh\"",
             "timeout": 10
           }
         ]
@@ -142,7 +110,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash .claude/hooks/pre-compact.sh",
+            "command": "bash \"${CLAUDE_PLUGIN_ROOT}/.claude/hooks/pre-compact.sh\"",
             "timeout": 10
           }
         ]
@@ -154,7 +122,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash .claude/hooks/post-compact.sh",
+            "command": "bash \"${CLAUDE_PLUGIN_ROOT}/.claude/hooks/post-compact.sh\"",
             "timeout": 10
           }
         ]
@@ -166,7 +134,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash .claude/hooks/session-stop.sh",
+            "command": "bash \"${CLAUDE_PLUGIN_ROOT}/.claude/hooks/session-stop.sh\"",
             "timeout": 10
           }
         ]
@@ -178,7 +146,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash .claude/hooks/log-turn-failure.sh",
+            "command": "bash \"${CLAUDE_PLUGIN_ROOT}/.claude/hooks/log-turn-failure.sh\"",
             "timeout": 5
           }
         ]
@@ -190,7 +158,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash .claude/hooks/log-agent.sh",
+            "command": "bash \"${CLAUDE_PLUGIN_ROOT}/.claude/hooks/log-agent.sh\"",
             "timeout": 5
           }
         ]
@@ -202,7 +170,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash .claude/hooks/log-agent-stop.sh",
+            "command": "bash \"${CLAUDE_PLUGIN_ROOT}/.claude/hooks/log-agent-stop.sh\"",
             "timeout": 5
           }
         ]

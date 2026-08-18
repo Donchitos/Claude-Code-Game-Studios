@@ -1,10 +1,59 @@
 # Godot — Breaking Changes
 
-Last verified: 2026-02-12
+Last verified: 2026-08-18
 
-Changes between Godot versions, focused on post-LLM-cutoff changes (4.4+).
+Changes between Godot versions. With the current model cutoff (May 2026), the section
+that matters most is **4.6 → 4.7** — everything below it is inside the training window
+and is kept as a cross-check.
 
-## 4.5 → 4.6 (Jan 2026 — POST-CUTOFF, HIGH RISK)
+## 4.6 → 4.7 (Jun 2026 — POST-CUTOFF, HIGH RISK)
+
+The model has not seen this release. Verify anything 4.7-specific.
+
+### Signature & Type Changes
+
+| Subsystem | Change | Details |
+|-----------|--------|---------|
+| Core | `Object.is_class()` | Parameter type `String` → `StringName` |
+| Core | `OptimizedTranslation.generate()` | Return type `void` → `bool` |
+| Core | `ZIPPacker.start_file()` | Added optional `permissions` and `modified_time` parameters |
+| GUI | `Control.accessibility_live` | Type `DisplayServer.AccessibilityLiveMode` → `AccessibilityServer.AccessibilityLiveMode` |
+| GUI | `RichTextLabel.ImageUpdateMask` | Enum field `UPDATE_WIDTH_IN_PERCENT` renamed to `UPDATE_WIDTH_UNIT` |
+| GUI | `RichTextLabel.add_image()` / `update_image()` | Width/height params `int` → `float`; `width_in_percent`/`height_in_percent` renamed to `width_unit`/`height_unit` and retyped to `RichTextLabel.ImageUnit` |
+| Rendering | `ImageTexture.get_format()`, `PortableCompressedTexture2D.get_format()` | Moved up to the `Texture2D` base class |
+| Rendering | `RenderingServer.particles_request_process_time()` | Param `time` renamed to `process_time`; added optional `process_time_residual` |
+| Particles | `CPUParticles2D/3D`, `GPUParticles2D/3D` `request_particles_process()` | Added optional `process_time_residual` parameter |
+| Animation | `Animation.length` | Property type metadata `float` → `double` |
+| Animation | `AnimationNodeBlendSpace1D/2D.add_blend_point()` | Added optional `name` parameter |
+| Physics | `PhysicsServer2D.body_set_shape_as_one_way_collision()` | Added optional `direction` parameter |
+| Physics | `PhysicsServer2DExtension._body_set_shape_as_one_way_collision()` | Added **mandatory** `direction` parameter — breaks custom physics extensions |
+| Audio | `AudioEffectSpectrumAnalyzer.tap_back_pos` | Property **removed entirely** |
+| XR | `OpenXRExtensionWrapper._on_register_metadata()` | Added **mandatory** `interaction_profile_metadata` parameter |
+| XR | `OpenXRSpatialAnchorCapability.create_new_anchor()` | Added optional `next` parameter |
+| Editor | `EditorSceneFormatImporter` | Seven `IMPORT_*` constants moved into an `ImportFlags` enum |
+| Editor | `EditorVCSInterface._commit()` | Added **mandatory** `amend` parameter |
+
+### Behavior Changes (No Signature Change — Silent Breakage)
+
+| Subsystem | Change | Impact |
+|-----------|--------|--------|
+| GDScript | Inherited method overrides must explicitly declare return types | Existing subclasses that omitted the return type now fail to parse. Most likely source of upgrade errors. |
+| GDScript | Packed array element assignment no longer invokes property setters | Code relying on a setter firing on `packed_array[i] = x` silently stops working |
+| Input | Mouse/keyboard device IDs changed from `0` to `InputEvent.DEVICE_ID_MOUSE` / `InputEvent.DEVICE_ID_KEYBOARD` | Any `event.device == 0` check is now wrong |
+| Rendering | `LinearToSRGB` visual shader no longer clamps to `[0.0, 1.0]` (Mobile and Forward+) | Shader output can exceed the old range |
+| Rendering | Line drawing feather removed | Line thickness appearance changes |
+| Audio | `AudioStreamPlayer.area_mask` now defaults to disabled (was layer 1) | Area-based audio effects stop applying unless the mask is set explicitly |
+| Physics (Jolt) | `WorldBoundaryShape3D` plane distance signs, `SoftBody3D` mass calculation, and stiffness application all changed | Jolt scenes need re-tuning |
+
+### Changed Defaults
+
+| Setting | Old | New |
+|---------|-----|-----|
+| Display stretch mode | `disabled` | `canvas_items` |
+| Sky reflections roughness layers | 7 | 8 |
+| Font hinting | 1 | 3 |
+
+## 4.5 → 4.6 (Jan 2026 — EDGE OF TRAINING DATA, VERIFY)
 
 | Subsystem | Change | Details |
 |-----------|--------|---------|
@@ -22,7 +71,7 @@ Changes between Godot versions, focused on post-LLM-cutoff changes (4.4+).
 | C# | Automatic string extraction | Translation strings auto-extracted from C# code. |
 | Plugins | New EditorDock class | Specialized container for plugin docks with layout control. |
 
-## 4.4 → 4.5 (Late 2025 — POST-CUTOFF, HIGH RISK)
+## 4.4 → 4.5 (Late 2025 — IN TRAINING DATA, LOW RISK)
 
 | Subsystem | Change | Details |
 |-----------|--------|---------|
@@ -45,7 +94,7 @@ Changes between Godot versions, focused on post-LLM-cutoff changes (4.4+).
 | Platform | SDL3 gamepad driver | Delegated gamepad handling to SDL library |
 | Platform | Android 16KB page support | Required for Google Play targeting Android 15+ |
 
-## 4.3 → 4.4 (Mid 2025 — NEAR CUTOFF, VERIFY)
+## 4.3 → 4.4 (Mid 2025 — IN TRAINING DATA, LOW RISK)
 
 | Subsystem | Change | Details |
 |-----------|--------|---------|

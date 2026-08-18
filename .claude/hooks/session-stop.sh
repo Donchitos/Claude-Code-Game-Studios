@@ -1,6 +1,10 @@
 #!/bin/bash
-# Claude Code Stop hook: Log session summary when Claude finishes
-# Records what was worked on for audit trail and sprint tracking
+# Claude Code SessionEnd hook: Log session summary when the session terminates.
+# Records what was worked on for audit trail and sprint tracking.
+#
+# MUST be wired to SessionEnd, not Stop. Stop fires once per turn (every time
+# Claude finishes responding), which would append a copy of active.md to the
+# session log on every single reply.
 
 TIMESTAMP=$(date +%Y%m%d_%H%M%S)
 SESSION_LOG_DIR="production/session-logs"

@@ -225,7 +225,7 @@ Validates structure and completeness before you proceed.
 Or with a specific engine:
 
 ```
-/setup-engine godot 4.6
+/setup-engine godot 4.7
 ```
 
 **What /setup-engine does:**

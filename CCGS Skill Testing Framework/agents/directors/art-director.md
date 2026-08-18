@@ -14,7 +14,7 @@ Verified by reading the agent's `.claude/agents/art-director.md` frontmatter:
 
 - [ ] `description:` field is present and domain-specific (references visual identity, art bible, asset standards — not generic)
 - [ ] `allowed-tools:` list is read-focused; image review capability if supported; no Bash unless asset pipeline checks are justified
-- [ ] Model tier is `claude-sonnet-4-6` (NOT Opus — coordination-rules.md assigns Sonnet to art-director)
+- [ ] Model tier is `sonnet` (NOT Opus — coordination-rules.md assigns Sonnet to art-director)
 - [ ] Agent definition does not claim authority over UX interaction flows or audio direction
 
 ---
