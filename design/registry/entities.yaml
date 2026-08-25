@@ -37,7 +37,7 @@
 #   Each entry: name, status, source, referenced_by[], attributes{}, added, revised
 
 version: 1
-last_updated: ""
+last_updated: "2026-08-24"
 
 # ─── ENTITIES ────────────────────────────────────────────────────────────────
 # Named game-world objects: enemies, NPCs, characters, factions, bosses.
@@ -106,7 +106,112 @@ items: []
 #   output_range[min, max], added
 # Optional: expression (the actual formula), notes
 
-formulas: []
+formulas:
+  - name: projectile_swept_query_radius
+    status: active
+    source: design/gdd/spatial-grid.md
+    referenced_by:
+      - design/gdd/spatial-grid.md
+      - design/gdd/config-data-system.md
+      # ProjectileSystem GDD 创建后追加其路径
+    variables:
+      - segment_length
+      - midpoint_cast_error
+      - projectile_bound
+      - max_enemy_bound
+      - target_motion_bound
+    output_range: [0, .inf]
+    expression: "checked_sum(checked_mul(0.5, segment_length), midpoint_cast_error, projectile_bound, max_enemy_bound, target_motion_bound)"
+    notes: "全部输入与每步加法必须 checked finite。segment_length 与
+      midpoint_cast_error 使用 spatial-grid.md 的 float64 scalar canonical
+      distance helper；中点先以四个 float64 分量计算，再 cast/readback Vector2。
+      MVP target sampling 固定为 tick-end discrete committed snapshot，故
+      target_motion_bound=0；这不构成 continuous relative-sweep 保证。"
+    added: 2026-08-19
+    revised: 2026-08-19
+
+  - name: max_query_radius
+    status: active
+    source: design/gdd/spatial-grid.md
+    referenced_by:
+      - design/gdd/spatial-grid.md
+      - design/gdd/config-data-system.md
+      - design/gdd/enemy-system.md
+      # 待回填：PlayerController, SkillConfig, ProjectileSystem GDD
+      # 完成后将其路径追加至此
+    variables:
+      - pickup_radius_max
+      - target_range_max
+      - max_skill_effect_radius
+      - max_enemy_bound
+      - separation_radius
+      - max_projectile_segment_length
+      - max_midpoint_cast_error
+      - max_projectile_bound
+      - max_target_motion_bound
+    output_range: [0, .inf]
+    expression: "checked_max(pickup_radius_max, target_range_max, checked_add(max_skill_effect_radius, max_enemy_bound), checked_add(separation_radius, max_enemy_bound), checked_sum(checked_mul(0.5, max_projectile_segment_length), max_midpoint_cast_error, max_projectile_bound, max_enemy_bound, max_target_motion_bound), ...)"
+    notes: "所有依赖 SpatialGrid 查询接口的系统实际传入宽相半径的全集上界，
+      必须包含 target conservative bound 与 projectile swept segment expansion。
+      Projectile 项不得遗漏 max_midpoint_cast_error 或数值为 0 的
+      max_target_motion_bound 语义字段；MVP 分别固定为 sqrt(2)/32 与 0。
+      用于配置审计、CELL_SIZE benchmark 候选和 workload 规划，不是合法查询
+      半径上限；radius 大于 CELL_SIZE 仍须正确扫描，禁止 release clamp。
+      当前 pickup_radius_base=1.8、pickup_radius_max=1.98、
+      max_midpoint_cast_error=sqrt(2)/32、max_target_motion_bound=0 已冻结；
+      target range、skill radius、projectile segment/bound 待对应 GDD；
+      enemy/separation bound 由 EnemySystem GDD §4.6 定义上界（per-type 在
+      Config，数值待调参）。输入变化时重跑 F3 sweep，
+      不能未经 benchmark 直接令 CELL_SIZE=max_query_radius。"
+    added: 2026-08-14
+    revised: 2026-08-19
+
+  - name: index_margin_lower_bound
+    status: active
+    source: design/gdd/stage-map.md
+    referenced_by:
+      - design/gdd/stage-map.md
+      - design/gdd/spatial-grid.md
+      - design/gdd/enemy-system.md
+      # Combat/DamageSystem GDD 完成后追加其路径（knockback_max owner）
+    variables:
+      - player_overshoot
+      - enemy_overshoot_max
+      - knockback_max
+      - max_enemy_bound
+    output_range: [0, .inf]
+    expression: "checked_add(player_overshoot, enemy_overshoot_max, knockback_max, max_enemy_bound)"
+    notes: "越界容忍带下界。因 spawn 在 arena AABB 内侧（stage-map R3），下界不含
+      spawn overshoot，只覆盖移动/knockback/形状扩张。player_overshoot=4.5/60=0.075
+      已冻结；enemy_overshoot_max/max_enemy_bound 由 EnemySystem GDD §4.6 定义
+      （数值待 Config 调参），knockback_max 归 Combat/DamageSystem owner（Open
+      Question #2，待 DamageSystem GDD 确认）；三项数值未冻结前下界仅 0.075。
+      配置 index_margin=2.0 spike 安全高于下界；EnemySystem §4.7 约束
+      enemy_overshoot_max+knockback_max+max_enemy_bound ≤ 1.925；三项数值
+      冻结后须重跑 SpatialGrid F3 sweep，不得直接当生产承诺。
+      arena.grow(index_margin) 四边不得越 spatial_max_abs_world_coord。"
+    added: 2026-08-19
+    revised: 2026-08-19
+
+  - name: required_pool_capacity
+    status: active
+    source: design/gdd/object-pooling.md
+    referenced_by:
+      - design/gdd/object-pooling.md
+      - design/gdd/config-data-system.md
+    variables:
+      - max_concurrent_borrowed
+      - max_pause_replacement_overlap
+      - max_spawn_before_release_overlap
+      - safety_spare
+    output_range: [0, 512]
+    expression: "checked_sum(max_concurrent_borrowed, max_pause_replacement_overlap, max_spawn_before_release_overlap, safety_spare)"
+    notes: "Config schema v1的六key输出依次为320/6/1/448/320/96；
+      configured_capacity必须等于或高于required且不得超过per-key硬上限512。
+      enemy_elite 4→6：MVP 方案 5.3 两固定精英 + 8.1 冒险夺宝持久化精英最坏 4 并发，
+      safety_spare 1→3 吸收，Σ=6/total=1191。"
+    added: 2026-08-19
+    revised: 2026-08-24
 
 # Example:
 #
@@ -139,7 +244,438 @@ formulas: []
 #
 # Required fields: name, status, source, referenced_by, value, unit, added
 
-constants: []
+constants:
+  - name: max_midpoint_cast_error
+    status: active
+    source: design/gdd/spatial-grid.md
+    referenced_by:
+      - design/gdd/spatial-grid.md
+      - design/gdd/config-data-system.md
+      # ProjectileSystem GDD 创建后追加其路径
+    value: 0.04419417382415922
+    unit: world_units
+    added: 2026-08-19
+    revised: 2026-08-19
+    notes: "sqrt(2)/32；MVP production export 固定 real_t32，且
+      abs(world_coordinate)<=1000000。运行时查询使用逐次实际 cast error，
+      此值只用于配置全集上界。"
+
+  - name: max_target_motion_bound
+    status: active
+    source: design/gdd/spatial-grid.md
+    referenced_by:
+      - design/gdd/spatial-grid.md
+      - design/gdd/config-data-system.md
+      # ProjectileSystem GDD 创建后追加其路径
+    value: 0.0
+    unit: world_units_per_physics_tick
+    added: 2026-08-19
+    revised: 2026-08-19
+    notes: "MVP target sampling mode=tick_end_discrete；目标 shape 固定在本 tick
+      committed snapshot。升级 relative sweep 时必须修订本值、公式、narrowphase
+      与 golden tests，不能只改数值。"
+
+  - name: pickup_radius_base
+    status: active
+    source: design/凡人修仙掌天试炼-MVP设计方案.md
+    referenced_by:
+      - design/凡人修仙掌天试炼-MVP设计方案.md
+      - design/gdd/spatial-grid.md
+      - design/gdd/config-data-system.md
+    value: 1.8
+    unit: world_units
+    added: 2026-08-18
+    revised: ""
+
+  - name: pickup_radius_max
+    status: active
+    source: design/凡人修仙掌天试炼-MVP设计方案.md
+    referenced_by:
+      - design/凡人修仙掌天试炼-MVP设计方案.md
+      - design/gdd/spatial-grid.md
+      - design/gdd/config-data-system.md
+    value: 1.98
+    unit: world_units
+    added: 2026-08-18
+    revised: ""
+    notes: "1.8 * (1 + 5 * 0.02)；MVP pickup 使用 Drop center 距离语义。"
+
+  - name: pool_limits_max_pool_keys
+    status: active
+    source: design/gdd/config-data-system.md
+    referenced_by:
+      - design/gdd/config-data-system.md
+      - design/gdd/object-pooling.md
+    value: 16
+    unit: pool_keys
+    added: 2026-08-19
+    revised: 2026-08-19
+
+  - name: pool_limits_max_capacity_per_key
+    status: active
+    source: design/gdd/config-data-system.md
+    referenced_by:
+      - design/gdd/config-data-system.md
+      - design/gdd/object-pooling.md
+    value: 512
+    unit: slots
+    added: 2026-08-19
+    revised: 2026-08-19
+
+  - name: pool_limits_max_total_capacity
+    status: active
+    source: design/gdd/config-data-system.md
+    referenced_by:
+      - design/gdd/config-data-system.md
+      - design/gdd/object-pooling.md
+    value: 1536
+    unit: slots
+    added: 2026-08-19
+    revised: 2026-08-19
+
+  - name: pool_key_enemy_normal
+    status: active
+    source: design/gdd/config-data-system.md
+    referenced_by:
+      - design/gdd/config-data-system.md
+      - design/gdd/object-pooling.md
+    value: 1
+    unit: pool_key
+    added: 2026-08-19
+    revised: 2026-08-19
+
+  - name: pool_key_enemy_elite
+    status: active
+    source: design/gdd/config-data-system.md
+    referenced_by:
+      - design/gdd/config-data-system.md
+      - design/gdd/object-pooling.md
+    value: 2
+    unit: pool_key
+    added: 2026-08-19
+    revised: 2026-08-19
+
+  - name: pool_key_enemy_boss
+    status: active
+    source: design/gdd/config-data-system.md
+    referenced_by:
+      - design/gdd/config-data-system.md
+      - design/gdd/object-pooling.md
+    value: 3
+    unit: pool_key
+    added: 2026-08-19
+    revised: 2026-08-19
+
+  - name: pool_key_projectile_gameplay
+    status: active
+    source: design/gdd/config-data-system.md
+    referenced_by:
+      - design/gdd/config-data-system.md
+      - design/gdd/object-pooling.md
+    value: 4
+    unit: pool_key
+    added: 2026-08-19
+    revised: 2026-08-19
+
+  - name: pool_key_drop_gameplay
+    status: active
+    source: design/gdd/config-data-system.md
+    referenced_by:
+      - design/gdd/config-data-system.md
+      - design/gdd/object-pooling.md
+    value: 5
+    unit: pool_key
+    added: 2026-08-19
+    revised: 2026-08-19
+
+  - name: pool_key_damage_number
+    status: active
+    source: design/gdd/config-data-system.md
+    referenced_by:
+      - design/gdd/config-data-system.md
+      - design/gdd/object-pooling.md
+    value: 6
+    unit: pool_key
+    added: 2026-08-19
+    revised: 2026-08-19
+
+  - name: pool_capacity_enemy_normal
+    status: active
+    source: design/gdd/config-data-system.md
+    referenced_by:
+      - design/gdd/config-data-system.md
+      - design/gdd/object-pooling.md
+    value: 320
+    unit: slots
+    added: 2026-08-19
+    revised: 2026-08-19
+
+  - name: pool_capacity_enemy_elite
+    status: active
+    source: design/gdd/config-data-system.md
+    referenced_by:
+      - design/gdd/config-data-system.md
+      - design/gdd/object-pooling.md
+    value: 6  # was: 4 before 2026-08-24 — Object Pooling 三审 BL-5（冒险夺宝持久化精英并发）
+    unit: slots
+    added: 2026-08-19
+    revised: 2026-08-24
+
+  - name: pool_capacity_enemy_boss
+    status: active
+    source: design/gdd/config-data-system.md
+    referenced_by:
+      - design/gdd/config-data-system.md
+      - design/gdd/object-pooling.md
+    value: 1
+    unit: slots
+    added: 2026-08-19
+    revised: 2026-08-19
+
+  - name: pool_capacity_projectile_gameplay
+    status: active
+    source: design/gdd/config-data-system.md
+    referenced_by:
+      - design/gdd/config-data-system.md
+      - design/gdd/object-pooling.md
+    value: 448
+    unit: slots
+    added: 2026-08-19
+    revised: 2026-08-19
+
+  - name: pool_capacity_drop_gameplay
+    status: active
+    source: design/gdd/config-data-system.md
+    referenced_by:
+      - design/gdd/config-data-system.md
+      - design/gdd/object-pooling.md
+    value: 320
+    unit: slots
+    added: 2026-08-19
+    revised: 2026-08-19
+
+  - name: pool_capacity_damage_number
+    status: active
+    source: design/gdd/config-data-system.md
+    referenced_by:
+      - design/gdd/config-data-system.md
+      - design/gdd/object-pooling.md
+    value: 96
+    unit: slots
+    added: 2026-08-19
+    revised: 2026-08-19
+
+  - name: spatial_max_abs_world_coord
+    status: active
+    source: design/gdd/config-data-system.md
+    referenced_by:
+      - design/gdd/config-data-system.md
+      - design/gdd/spatial-grid.md
+      - design/gdd/stage-map.md
+    value: 1000000.0
+    unit: world_units
+    added: 2026-08-19
+    revised: 2026-08-19
+
+  - name: spatial_min_cell_size
+    status: active
+    source: design/gdd/config-data-system.md
+    referenced_by:
+      - design/gdd/config-data-system.md
+      - design/gdd/spatial-grid.md
+      - design/gdd/stage-map.md
+    value: 0.01
+    unit: world_units
+    added: 2026-08-19
+    revised: 2026-08-19
+
+  - name: spatial_max_grid_axis
+    status: active
+    source: design/gdd/config-data-system.md
+    referenced_by:
+      - design/gdd/config-data-system.md
+      - design/gdd/spatial-grid.md
+      - design/gdd/stage-map.md
+    value: 4096
+    unit: cells
+    added: 2026-08-19
+    revised: 2026-08-19
+
+  - name: spatial_max_grid_cells
+    status: active
+    source: design/gdd/config-data-system.md
+    referenced_by:
+      - design/gdd/config-data-system.md
+      - design/gdd/spatial-grid.md
+      - design/gdd/stage-map.md
+    value: 262144
+    unit: cells
+    added: 2026-08-19
+    revised: 2026-08-19
+
+  - name: spatial_max_indexed_entries
+    status: active
+    source: design/gdd/config-data-system.md
+    referenced_by:
+      - design/gdd/config-data-system.md
+      - design/gdd/spatial-grid.md
+      - design/gdd/game-root-scene-flow.md
+    value: 1000
+    unit: entries
+    added: 2026-08-19
+    revised: 2026-08-19
+
+  - name: spatial_max_registered_enemy
+    status: active
+    source: design/gdd/config-data-system.md
+    referenced_by:
+      - design/gdd/config-data-system.md
+      - design/gdd/spatial-grid.md
+    value: 303
+    unit: entries
+    added: 2026-08-19
+    revised: 2026-08-19
+
+  - name: spatial_max_registered_projectile
+    status: active
+    source: design/gdd/config-data-system.md
+    referenced_by:
+      - design/gdd/config-data-system.md
+      - design/gdd/spatial-grid.md
+    value: 0
+    unit: entries
+    added: 2026-08-19
+    revised: 2026-08-19
+
+  - name: spatial_max_registered_drop
+    status: active
+    source: design/gdd/config-data-system.md
+    referenced_by:
+      - design/gdd/config-data-system.md
+      - design/gdd/spatial-grid.md
+    value: 300
+    unit: entries
+    added: 2026-08-19
+    revised: 2026-08-19
+
+  - name: spatial_cell_size_spike_anchor
+    status: active
+    source: design/gdd/config-data-system.md
+    referenced_by:
+      - design/gdd/config-data-system.md
+      - design/gdd/spatial-grid.md
+      - design/gdd/stage-map.md
+    value: 2.0
+    unit: world_units
+    added: 2026-08-19
+    revised: 2026-08-19
+    notes: "Isolated benchmark fixture only；不是production StageConfig值。Stage GDD
+      引用为 cell_size spike slot，生产值 deferred 到 SpatialGrid F3 ADR + J0。"
+
+  - name: arena_width
+    status: active
+    source: design/gdd/stage-map.md
+    referenced_by:
+      - design/gdd/stage-map.md
+      - design/gdd/spatial-grid.md
+      - design/gdd/config-data-system.md
+    value: 22.0
+    unit: world_units
+    added: 2026-08-19
+    revised: 2026-08-19
+    notes: "单图固定竞技场宽度；原点居中 arena_min_x=−11。竖屏 9:16 比例（22:40）
+      以对齐相机一屏全显。MVP 不做循环拼接/回绕。"
+
+  - name: arena_height
+    status: active
+    source: design/gdd/stage-map.md
+    referenced_by:
+      - design/gdd/stage-map.md
+      - design/gdd/spatial-grid.md
+      - design/gdd/config-data-system.md
+    value: 40.0
+    unit: world_units
+    added: 2026-08-19
+    revised: 2026-08-19
+    notes: "单图固定竞技场高度；原点居中 arena_min_y=−20。竖屏比例 arena（22×40）。"
+
+  - name: arena_walkable_area
+    status: active
+    source: design/gdd/stage-map.md
+    referenced_by:
+      - design/gdd/stage-map.md
+      - design/gdd/spatial-grid.md
+    value: 880.0
+    unit: world_units_squared
+    added: 2026-08-19
+    revised: 2026-08-19
+    notes: "全矩形 walkable_region=arena AABB；=22×40。满足 0<area≤arena_w×arena_h。
+      运行时安全区收缩（毒雾）不属静态 walkable。"
+
+  - name: spawn_ring_depth
+    status: active
+    source: design/gdd/stage-map.md
+    referenced_by:
+      - design/gdd/stage-map.md
+    value: 4.0
+    unit: world_units
+    added: 2026-08-19
+    revised: 2026-08-19
+    notes: "边界内侧出生环带深度；per-axis inner_rect=[−7,7]×[−16,16]。安全范围
+      (0,min(arena_half_x=11,arena_half_y=20))=(0,11)。玩家贴边时怪距玩家≥4.0。
+      spawn 在 AABB 内 → 与 index_margin 解耦。"
+
+  - name: boss_region_center_x
+    status: active
+    source: design/gdd/stage-map.md
+    referenced_by:
+      - design/gdd/stage-map.md
+    value: 0.0
+    unit: world_units
+    added: 2026-08-19
+    revised: 2026-08-19
+    notes: "碧鳞蟒 12:00 生成锚点 x；居中。Boss 行为归 BossStateMachine。"
+
+  - name: boss_region_center_y
+    status: active
+    source: design/gdd/stage-map.md
+    referenced_by:
+      - design/gdd/stage-map.md
+    value: 0.0
+    unit: world_units
+    added: 2026-08-19
+    revised: 2026-08-19
+    notes: "碧鳞蟒 12:00 生成锚点 y；居中。Boss 行为归 BossStateMachine。"
+
+  - name: boss_region_half
+    status: active
+    source: design/gdd/stage-map.md
+    referenced_by:
+      - design/gdd/stage-map.md
+    value: 4.0
+    unit: world_units
+    added: 2026-08-19
+    revised: 2026-08-19
+    notes: "Boss 居中子矩形半边；boss_region=[−4,4]², area=64。per-axis 安全范围
+      (0,min(inner_rect_half_x,inner_rect_half_y)]=(0,min(7,16)]=(0,7]。
+      现值 4.0≤7 满足约束。两阶段表现归 BossStateMachine。"
+
+  - name: index_margin
+    status: active
+    source: design/gdd/stage-map.md
+    referenced_by:
+      - design/gdd/stage-map.md
+      - design/gdd/spatial-grid.md
+      - design/gdd/config-data-system.md
+    value: 2.0
+    unit: world_units
+    added: 2026-08-19
+    revised: 2026-08-19
+    notes: "越界容忍带；spike 锚点，非生产承诺。下界 index_margin_min=0.075（仅
+      player_overshoot=4.5/60 已冻结）；enemy_overshoot_max/max_enemy_bound 由
+      EnemySystem GDD §4.6 定义（数值待 Config 调参），knockback_max 归
+      Combat/DamageSystem owner；三项数值冻结后须重跑 SpatialGrid F3 sweep。
+      Stage/Spawn 共享拥有，不由 CELL_SIZE 派生。"
 
 # Example:
 #
