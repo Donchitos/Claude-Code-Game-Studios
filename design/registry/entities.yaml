@@ -150,7 +150,7 @@ formulas:
       - max_projectile_bound
       - max_target_motion_bound
     output_range: [0, .inf]
-    expression: "checked_max(pickup_radius_max, target_range_max, checked_add(max_skill_effect_radius, max_enemy_bound), checked_add(separation_radius, max_enemy_bound), checked_sum(checked_mul(0.5, max_projectile_segment_length), max_midpoint_cast_error, max_projectile_bound, max_enemy_bound, max_target_motion_bound), ...)"
+    expression: "checked_max(pickup_radius_max, target_range_max, checked_add(max_skill_effect_radius, max_enemy_bound), checked_add(separation_radius, separation_radius), checked_sum(checked_mul(0.5, max_projectile_segment_length), max_midpoint_cast_error, max_projectile_bound, max_enemy_bound, max_target_motion_bound), ...)"
     notes: "所有依赖 SpatialGrid 查询接口的系统实际传入宽相半径的全集上界，
       必须包含 target conservative bound 与 projectile swept segment expansion。
       Projectile 项不得遗漏 max_midpoint_cast_error 或数值为 0 的
@@ -177,18 +177,20 @@ formulas:
     variables:
       - player_overshoot
       - enemy_overshoot_max
+      - elite_charge_overshoot
       - knockback_max
       - max_enemy_bound
     output_range: [0, .inf]
-    expression: "checked_add(player_overshoot, enemy_overshoot_max, knockback_max, max_enemy_bound)"
+    expression: "checked_add(player_overshoot, max(enemy_overshoot_max, elite_charge_overshoot), knockback_max, max_enemy_bound)"
     notes: "越界容忍带下界。因 spawn 在 arena AABB 内侧（stage-map R3），下界不含
       spawn overshoot，只覆盖移动/knockback/形状扩张。player_overshoot=4.5/60=0.075
-      已冻结；enemy_overshoot_max/max_enemy_bound 由 EnemySystem GDD §4.6 定义
-      （数值待 Config 调参），knockback_max 归 Combat/DamageSystem owner（Open
-      Question #2，待 DamageSystem GDD 确认）；三项数值未冻结前下界仅 0.075。
+      已冻结；enemy_overshoot_max/elite_charge_overshoot/max_enemy_bound 由 EnemySystem
+      GDD §4.6 定义（数值待 Config 调参），knockback_max 归 Combat/DamageSystem owner
+      （Open Question #2，待 DamageSystem GDD 确认）；数值未冻结前下界仅 0.075。
       配置 index_margin=2.0 spike 安全高于下界；EnemySystem §4.7 约束
-      enemy_overshoot_max+knockback_max+max_enemy_bound ≤ 1.925；三项数值
-      冻结后须重跑 SpatialGrid F3 sweep，不得直接当生产承诺。
+      max(enemy_overshoot_max, elite_charge_overshoot)+knockback_max+max_enemy_bound
+      ≤ 1.925（F-1 fix 传播,第三轮复审 B-1:普通敌越界与精英冲刺越界取大者非相加）；
+      数值冻结后须重跑 SpatialGrid F3 sweep，不得直接当生产承诺。
       arena.grow(index_margin) 四边不得越 spatial_max_abs_world_coord。"
     added: 2026-08-19
     revised: 2026-08-19
