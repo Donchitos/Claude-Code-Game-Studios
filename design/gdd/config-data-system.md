@@ -20,9 +20,9 @@ Config/Data System 把编辑期 Godot Resource 数据校验并发布为每场战
 ### R1 — 权威格式、版本与单次发布
 
 - 编辑期权威资产为 Godot 4.7.1 typed Resource（`.tres`）；CSV/JSON只允许通过离线 importer 生成Resource，不能成为release runtime的第二套权威来源。
-- 根资源 `BattleConfigManifest` 固定包含：`schema_version`、非零 `content_revision:int64`、artifact `content_hash`、`PoolLimits`、定序 `PoolKeyConfig[]`、`SpatialGridLimits`、定序 `SpatialTypeLimit[]`、Stage/consumer config references。MVP `schema_version=1`；Stage/consumer引用可在foundation fixture中缺省，但不能达到battle_ready。`run_seed`不是内容调谐字段，不进入manifest/content hash。
-- `ConfigRepository.build_snapshot(manifest,required_readiness,run_start_request) -> ConfigStatus` 在BOOT/BATTLE_LOADING主线程执行 validate-then-build；BATTLE/BENCHMARK要求`run_start_request.run_seed:int64`存在并逐位复制到snapshot。成功生成新的非零、进程内单调`snapshot_id`并一次替换published snapshot；失败时旧snapshot保持不变。
-- `BattleConfigSnapshot` 是本局只读值快照，至少携带 `{snapshot_id,schema_version,content_revision,content_hash,run_seed,...flattened config}`。`run_seed`来源唯一为PREP冻结的`RunStartRequest`，同一局不可更改或重新派生；RNG只消费snapshot副本。
+- 根资源 `BattleConfigManifest` 固定包含：`schema_version`、非零 `content_revision:int64`、artifact `content_hash`、`PoolLimits`、定序 `PoolKeyConfig[]`、`SpatialGridLimits`、定序 `SpatialTypeLimit[]`、Stage/consumer config references。MVP `schema_version=1`；Stage/consumer引用可在foundation fixture中缺省，但不能达到battle_ready。`run_seed`与`battle_instance_id`均不是内容调谐字段，不进入manifest/content hash。
+- `ConfigRepository.build_snapshot(manifest,required_readiness,run_start_request) -> ConfigStatus` 在BOOT/BATTLE_LOADING主线程执行 validate-then-build；BATTLE/BENCHMARK要求`run_start_request.{run_seed,battle_instance_id}:int64`均存在、非零identity合法并逐位复制到snapshot。成功生成新的非零、进程内单调`snapshot_id`并一次替换published snapshot；失败时旧snapshot保持不变。
+- `BattleConfigSnapshot` 是本局只读值快照，至少携带 `{snapshot_id,battle_instance_id,schema_version,content_revision,content_hash,run_seed,...flattened config}`。跨文档 `config_snapshot_id` 精确等于本字段 `snapshot_id`，不是第二个ID。`run_seed/battle_instance_id`来源唯一为PREP冻结的`RunStartRequest`，同一局不可更改或重新派生；RNG只消费seed副本，GameRoot使用battle identity绑定runtime banks/tokens。
 - validator按pool/type ID排序并用固定字段/float位值序列化后重新计算canonical hash；hash输入明确排除`content_hash`自身、编辑器对象instance ID、绝对本地路径与注释，只包含schema/content revision、行为字段及稳定asset UID/contract ID，避免自引用与机器差异。重算值必须与manifest `content_hash`相等。同一`content_revision+content_hash`必须生成逐字段相同的snapshot与diagnostic；revision相同但hash不同、hash相同但revision倒退均为manifest错误。
 
 ### R2 — Public status、诊断与校验顺序
@@ -104,7 +104,7 @@ MVP schema v1冻结：
 
 ### R8 — Runtime immutable 与 reload policy
 
-- BOOT可以发布不含本局run_seed的基础snapshot；每次BATTLE_LOADING必须用manifest+`RunStartRequest.run_seed`构建本局`BattleConfigSnapshot`，并把同一snapshot ID传给GameRoot、BattlePoolSet、SpatialGrid及所有owner。
+- BOOT可以发布不含本局run_seed/battle identity的基础snapshot；每次BATTLE_LOADING必须用manifest+`RunStartRequest.{run_seed,battle_instance_id}`构建本局`BattleConfigSnapshot`，并把同一snapshot ID与battle identity传给GameRoot runtime banks；Pool/Grid/owners继续以同一snapshot ID做Config一致性预检。
 - 进入BATTLE_ACTIVE后，Config API只读；Resource changed通知、remote config、dev inspector编辑或文件变化不得修改当前snapshot。请求reload只设置“next battle rebuild”标志。
 - pause/resume沿用同一snapshot ID。Pool与Grid必须在init时复制该非零ID并提供无分配、只读scalar getter；owner authority bundle同样携带该ID。若owner、Grid或Pool报告的snapshot ID不同，GameRoot在开放consumer前或resume publish前进入ControlledGameplayFault；不得尝试合并两版配置。
 - Config snapshot teardown不拥有pooled Node或Grid handle；GameRoot先按既定Grid→Pool顺序teardown battle，再释放snapshot引用。
@@ -112,7 +112,7 @@ MVP schema v1冻结：
 ### R9 — Readiness 分级与缺失依赖
 
 - `foundation_ready`：schema、R4/R5/R6全部有效，可进行Object Pooling/SpatialGrid isolated implementation与测试。
-- `battle_ready`：foundation_ready，且合法`RunStartRequest.run_seed`、StageSpatialConfig、所有enabled pool factory/reset contract、Wave/Enemy/Projectile/Drop/Skill consumer references和其玩法上限全部存在。GameRoot只允许battle_ready snapshot进入BATTLE_ACTIVE。
+- `battle_ready`：foundation_ready，且合法`RunStartRequest.{run_seed,battle_instance_id}`、StageSpatialConfig、所有enabled pool factory/reset contract、Wave/Enemy/Projectile/Drop/Skill consumer references和其玩法上限全部存在。GameRoot只允许battle_ready snapshot进入BATTLE_ACTIVE。
 - `benchmark_ready`：battle_ready，且所有query producer提供完整有效宽相上界、production arena/CELL_SIZE已确定、min-spec设备与memory/performance manifest完整。只有该级别可关闭SpatialGrid production CELL_SIZE和pool memory gates。
 - 本GDD完成后foundation_ready契约闭环；Stage arena、各owner reset字段、spawn/overlap enforcement、完整query envelope及真机内存仍是明确integration gates，不得用当前spike值伪装battle/benchmark ready。
 
@@ -186,14 +186,14 @@ enabled producer的每个required变量必须present、finite且非负；缺失�
 | Godot 4.7.1 Resource | typed `.tres`、PackedScene/Resource引用、构建artifact | 引擎已固定；具体Resource class实现未开始 |
 | Build/import pipeline | 可选CSV/JSON离线导入、canonical hash、schema migration | 未设计；不阻塞手写fixture Resource |
 | StageConfig | arena、walkable area、CELL_SIZE、index_margin | `design/gdd/stage-map.md` Draft；静态几何/schema 已冻结，生产 CELL_SIZE/index_margin 收紧值 gated |
-| RunStartRequest / RNG | PREP生成`run_seed`，Config逐位冻结进每局snapshot，RNG只消费snapshot副本 | GameRoot/RNG GDD已登记；runtime evidence OPEN |
+| RunStartRequest / RNG | PREP生成`run_seed+battle_instance_id`，Config逐位冻结进每局snapshot；RNG只消费seed，GameRoot消费battle identity | GameRoot/RNG GDD已登记；runtime evidence OPEN |
 | Owner configs | Wave/Enemy/Projectile/Drop/Skill上限、factory/reset contract | GDD未设计；battle/benchmark gate |
 
 ### 下游
 
 - Object Pooling消费R3–R5，不得自行发明key或容量。
 - SpatialGrid消费R6–R7及F3–F5，不得把derived max_query_radius当合法性cap。
-- GameRoot只发布同一snapshot ID，按Config→carriers→Grid→Pool→owners顺序进入BATTLE_ACTIVE；失败清理按owner→Grid invalidation→Pool teardown→Grid reset→snapshot release收敛。
+- GameRoot只发布同一snapshot ID，按GameRoot R2的typed DAG执行`Config→carriers/banks→Stage scene/Camera assembly→Input→Grid→Pool→owners→identity preflight→activation`；失败清理按`consumer/input close→owner→Grid invalidation→Pool teardown→Grid reset→Input/Stage child→snapshot release`收敛，不得机械逆序。
 - Enemy/Projectile/Drop/Damage/BattleUI必须承接R4的active/overlap与factory/reset contract；若需求突破基线，先修订Config而非运行时fallback。
 - SaveSystem只保存稳定content revision/业务数据，不序列化Resource实例ID或整个runtime snapshot。
 
@@ -318,10 +318,10 @@ enabled producer的每个required变量必须present、finite且非负；缺失�
 - Then: consumer保持关闭、WRONG_STATE/ControlledFault；不合并或选择“较新”版本
 - 验证: three-system fault injection | Gate: BLOCKING
 
-**AC-D4 run_seed单一来源与不可变性**
-- Given: manifest相同而RunStartRequest seed分别为S1/S2，另构造缺失seed与Active期间篡改source request
+**AC-D4 run identity单一来源与不可变性**
+- Given: manifest相同而RunStartRequest分别为`{battle_instance_id=B1,seed=S1}`/`{B2,S2}`，另构造缺失/零identity与Active期间篡改source request
 - When: 分别build BATTLE snapshot并初始化RNG、pause/resume
-- Then: snapshot逐位携带对应S1/S2且content_hash不因seed变化；缺失seed不达battle_ready；本局RNG/GameRoot读取值始终等于snapshot seed，source request后改不影响本局；resume不重新派生seed
+- Then: snapshot逐位携带对应B/S且content_hash不因两者变化；缺失/零identity不达battle_ready；`config_snapshot_id==snapshot_id`且不存在第二ID；本局RNG读取seed、GameRoot bank header读取battle identity均与snapshot相等，source request后改不影响本局；resume不重新派生
 - 验证: Config+GameRoot+RNG integration | Gate: BLOCKING
 
 ### E. Diagnostics and Production Gates

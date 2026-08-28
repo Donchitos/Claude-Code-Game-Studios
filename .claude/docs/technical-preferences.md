@@ -51,13 +51,14 @@
   `call(method_string,…)` / `get_children()`(EnemySystem §3.4 零分配禁令;
   AC-E4-code 静态守卫)
 - gameplay phase participant 禁定义 `func _physics_process` / `func _process`（集中
-  `run_phase` 驱动；AC-E13）。唯一例外为场景中的单一 GameRoot 集中编排节点：它精确
-  使用 `PROCESS_MODE_ALWAYS`，并精确实现 `_physics_process(delta: float) -> void`，仅在
-  SceneTree 未暂停且状态允许技术 tick 时驱动七个 physics phase；精确实现
-  `_process(delta: float) -> void`，仅在 `BATTLE_PAUSED/RESUME_PREPARING`
-  驱动 control pump；两者必须先检查权威 state/pause predicate，禁止在 Paused 跑
-  gameplay phase、未暂停时跑 paused pump、双跑或由其他节点复制该例外（InputSystem
-  AC-IS2 / GameRoot AC-B1）。
+  `run_phase` 驱动；AC-E13）。唯一例外为从BOOT到应用退出保持同一live identity的
+  persistent GameRoot：它精确使用 `PROCESS_MODE_ALWAYS`，仅在
+  `SceneTree.paused==false && state==BATTLE_ACTIVE` 的 `_physics_process(delta: float) -> void`
+  驱动七phase，仅在 `SceneTree.paused==true && state in {BATTLE_PAUSED,RESUME_PREPARING}`
+  的 `_process(delta: float) -> void` 驱动control pump。GameRoot是`SceneTree.paused`与目标
+  battle Viewport gate的唯一项目writer；pause/unpause必须经私有helper调用并readback。
+  participant使用PAUSABLE mode；禁止在Paused跑gameplay、未暂停跑pump、双跑、per-scene
+  重建第二GameRoot或由其他节点复制该例外（InputSystem AC-IS2 / GameRoot AC-B1/C6）。
 - Godot 4.7.1 VirtualJoystick callback ABI 固定为引擎signal `pressed()`与
   `released(input_vector: Vector2)`；项目adapter用direct `Callable.bind(epoch)`形成
   `_on_vj_pressed(callback_epoch: int) -> void`与

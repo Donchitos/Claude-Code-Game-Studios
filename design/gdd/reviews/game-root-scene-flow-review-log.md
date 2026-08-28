@@ -167,3 +167,45 @@ Creative Director verdict: **NEEDS REVISION；不构成 MAJOR REVISION**
 Prior verdict resolved: 第二轮目标已大部闭合，B6/B8 证据纠偏；第三轮新根 blocker 已修订但尚未独立验收。
 
 ---
+
+## Review — 2026-08-28 — Verdict: MAJOR REVISION NEEDED（第四轮 full re-review）
+
+Scope signal: XL（中央FSM/lifetime/DAG/identity与AC重写；七phase核心保留）
+Specialists: game-designer, systems-designer, qa-lead, performance-analyst, godot-specialist, technical-director + creative-director终审
+Blocking items: 7个去重根因 | Recommended: 7项
+Prior verdict: 第三轮 NEEDS REVISION
+
+### Verdict 摘要
+
+第三轮6个修订目标均已落文，但系统性闭环仅3 CLOSED + 3 PARTIAL。Creative Director裁定七phase、Grid→Pool不可逆点、Input单一权威和fault-before-reward方向可保留；中央文档仍缺可枚举FSM与实际pause-on、GameRoot lifetime、合法load/teardown DAG、battle/publication/persistence identity、paused pump/reason仲裁，以及多个会false pass/fail的AC，因此升级为MAJOR REVISION NEEDED，scope XL。
+
+### 7个根 BLOCKING
+
+1. GameRoot lifetime、顶层FSM、CONTROLLED_FAULT边与`SceneTree.set_pause(true)` authority未闭合。
+2. Loading/teardown不是依赖DAG，遗漏BOOT Input bootstrap与Stage typed Camera/Viewport assembly。
+3. battle/config/authority/resolution identity与exact-once bank token链未闭合。
+4. immutable `RunOutcomeEnvelope`与mutable Save commit state冲突，缺稳定commit identity。
+5. paused/resume pump、复合reason仲裁与drain零gameplay-effect证明不足。
+6. phase failure AC错误要求回滚此前合法publish，failure矩阵不可独立定位。
+7. AC-F1～F4存在错误allocation/diagnostic/seed oracle或空workload假通过路径。
+
+### 用户授权与修订结果
+
+用户选择A并确认完整变更集及四项设计决策：persistent GameRoot；独立`battle_instance_id`与`outcome_commit_id`；pause reason按`priority→intent_sequence`；immutable outcome facts与mutable Save attempt分离，save失败安全退出HOME但不得谎报到账。
+
+已修订：
+
+- `game-root-scene-flow.md`：新增persistent lifetime、显式adjacency、pause truth table与唯一writer、typed load/cleanup DAG、Stage Camera/Viewport assembly、authority/resolution完整token、paused pump checkpoints、reason queue、held-drain substate、normal/fault Save状态、pre-battle fault无虚假outcome边界、即时Pending锁定反馈、F1-F6与row-addressable AC。
+- `technical-preferences.md`：同步persistent GameRoot与SceneTree pause writer边界。
+- `config-data-system.md`：逐位冻结`battle_instance_id`，明确`snapshot_id==config_snapshot_id`及DAG。
+- `input-system.md`：同步GameRoot公共pump/checkpoint/pause义务，不复制Input私有FSM。
+- `stage-map.md`：补typed Camera2D assembly、Viewport/active camera identity与AC-E3。
+- `systems-index.md`、`active.md`：同步当前状态与下一步。
+
+### 当前状态
+
+**Re-review Pending**。修订只闭环第四轮明列根因，尚未经过第五轮独立full re-review；无Godot runtime、Save integration、project asset、真机performance或GATE-OQ证据，不得标Approved、implementation-ready、battle-ready或benchmark-ready。
+
+Prior verdict resolved: 第四轮7根BLOCKING已按授权修订，待第五轮独立复审验证。
+
+---

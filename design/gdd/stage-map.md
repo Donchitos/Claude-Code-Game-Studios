@@ -1,9 +1,9 @@
 # Stage & Map（单图竞技场与空间配置）
 
-> **Status**: Re-review Pending — 2026-08-28 GameRoot 第三轮传播修订：Stage scene 重新确认为 Camera2D 规格与 identity owner，GameRoot 仅注册/注入；须独立复审
+> **Status**: Re-review Pending — 2026-08-28 GameRoot 第四轮传播修订：Stage-owned Camera2D 纳入 typed scene assembly、Viewport identity 与失败矩阵；须独立复审
 > **Author**: 用户 + Claude Code agents
 > **Created**: 2026-08-19
-> **Last Updated**: 2026-08-28（GameRoot 第三轮 camera ownership 传播）
+> **Last Updated**: 2026-08-28（GameRoot 第四轮 typed camera assembly 传播）
 > **Implements Pillar**: 单图固定竞技场为 SpatialGrid/Spawn/Boss 提供确定的空间几何与坐标域
 > **Scope**: MVP minimum；静态空间几何与 `StageSpatialConfig` schema；不定义波次/时长/奖励/运行时安全区规则
 
@@ -35,7 +35,7 @@ Stage 通过冻结 arena 为竖屏比例（`22×40`）使 spawn ring 贴近相�
 ### R1 — 单图固定竞技场 AABB 与居中坐标
 
 - MVP 固定为一张竖屏比例竞技场：`arena_size = Vector2(22.0, 40.0)`（宽 22 / 高 40，竖屏 9:16 一屏全显），原点居中，故 `arena_min = Vector2(−11.0, −20.0)`、`arena_max = Vector2(11.0, 20.0)`（均由 F1 从 `arena_size` 派生，非 schema 字段）。`spatial_max_abs_world_coord = 1_000_000.0` 约束的是 `arena_min`/`arena_max` 各坐标分量的绝对值（即 `arena_half` ≤ 1_000_000，`arena_size` ≤ 2_000_000），不是 arena 维度；两条维度 `≥ spatial_min_cell_size = 0.01`（遵 Config R7 域）。
-- **竖屏相机约束（Stage scene owner）**：Stage scene 固定拥有恰一个 battle Camera2D identity，其配置使相机一屏全显 arena（视口高度覆盖 40 高、宽度覆盖 22 宽）。9:16 竖屏一屏全显高 40 时可见宽 = 40×(9/16)=22.5 ≥ 22，故 arena 宽边 22 落在屏幕内、左右各余 ~0.25 单位——spawn ring 贴近屏幕边缘内侧而非游离屏外。GameRoot只在BATTLE_LOADING验证identity并注册/注入该实例，不创建第二相机、不改写zoom/position/limit；未来相机若改为跟随或动态缩放，必须先修订本GDD及其Player Fantasy。
+- **竖屏相机约束（Stage scene owner）**：Stage scene 固定拥有恰一个 battle Camera2D identity，其配置使相机一屏全显 arena（视口高度覆盖 40 高、宽度覆盖 22 宽）。9:16 竖屏一屏全显高 40 时可见宽 = 40×(9/16)=22.5 ≥ 22，故 arena 宽边 22 落在屏幕内、左右各余 ~0.25 单位。typed assembly至少返回 `{stage_root,stage_camera,battle_viewport}`；GameRoot在BATTLE_LOADING验证 `stage_camera.get_viewport()==battle_viewport`、`battle_viewport.get_camera_2d()==stage_camera` 且无第二个enabled battle camera，只保存non-owning引用，不创建相机、不改写zoom/position/limit/enabled。未来改为跟随或动态缩放须先修订本GDD及Player Fantasy。
 - `arena_min` 是 SpatialGrid F1 归格基准原点：`cell_x = floor((index_x − arena_min_x) / CELL_SIZE)`、`cell_y = floor((index_y − arena_min_y) / CELL_SIZE)`。`arena_min` 由 F1 派生（`−arena_size/2`，原点居中固定），不由独立字段存储、不由运行时坐标推导。
 - 拓扑为固定竞技场，MVP 不做循环拼接、世界回绕或镜像；查询半径跨越边界时仅返回边界内格子的实体（遵 SpatialGrid R7）。后续多地图/多境界属 Full Vision，不在本 GDD。
 - arena AABB 是 `walkable_region`、`spawn_region`、`boss_region` 的公共外接矩形；任何子区域必须 `⊆ arena AABB`，否则 `StageSpatialConfig` 校验失败。
@@ -280,7 +280,7 @@ Stage 不重定义行列数；引用 Config R7 / SpatialGrid F4 已冻结公式�
 |---|---|---|
 | Godot Resource/PackedScene | `StageConfig` 作为 typed `.tres`，含 `StageSpatialConfig` 字段，经 manifest 引用 | 引擎已固定；Resource class 实现未开始 |
 | Config/Data | Stage 经 `BattleConfigManifest` 引用打包进 immutable `BattleConfigSnapshot`；Config R7 校验 Stage 字段域上限 | `design/gdd/config-data-system.md` Draft；R7 Stage 校验关系已冻结 |
-| GameRoot | BATTLE_LOADING 按 R2 顺序注入 Stage 数据到 `SpatialGrid.init(config_snapshot, stage_spatial_config)`，并注册Stage-owned唯一Camera2D identity，不拥有其配置 | `design/gdd/game-root-scene-flow.md` Re-review Pending |
+| GameRoot | BATTLE_LOADING typed assembly注入Stage数据到Grid，并验证Stage-owned唯一Camera2D、battle Viewport与active camera identity；不拥有其配置 | `design/gdd/game-root-scene-flow.md` Re-review Pending |
 
 ### 下游消费者
 
@@ -434,6 +434,12 @@ Given-When-Then 格式。Logic 校验用 GDUnit4 debug unit/integration；当前
 - Then: Stage 侧派生值 snapshot ID == 注入时 snapshot S 的 ID；跨 Pool/Grid ID 不一致检测归 GameRoot（遵 GameRoot R2/AC-D1），本 GDD 仅验证 Stage 侧 ID 与注入一致
 - 验证: Stage-side snapshot ID unit | Gate: BLOCKING
 
+**AC-E3 typed Camera2D assembly（跨GameRoot集成）**
+- Given: 合法assembly `{stage_root,stage_camera=C,battle_viewport=V}`，以及missing/disabled/wrong-parent/wrong-Viewport/second-enabled-camera fixture
+- When: GameRoot在BATTLE_LOADING、Grid/Input init之前验证assembly
+- Then: 合法行满足`C.get_viewport()==V && V.get_camera_2d()==C`，GameRoot camera create与`zoom/position/limit/enabled`写次数均0；任一非法行使Grid/Input init与ACTIVE publish均0，并按GameRoot R2 DAG cleanup
+- 验证: real scene/Viewport/Camera2D integration harness | Gate: BLOCKING；Camera asset未存在前OPEN
+
 ### F. 不可热改与 teardown（R7）
 
 **AC-F1 Active 期间 Stage snapshot 逐字段不可变（含 PackedVector2Array mutation 隔离）**
@@ -452,7 +458,7 @@ Given-When-Then 格式。Logic 校验用 GDUnit4 debug unit/integration；当前
 
 | 规则/公式 | 覆盖标准 |
 |---|---|
-| R1 单图固定 arena AABB / 居中坐标 / 竖屏相机约束 | AC-A1（含居中不变式）, AC-A2（归格/clamp 运行时行为归 spatial-grid AC） |
+| R1 单图固定 arena AABB / 居中坐标 / 竖屏相机约束 | AC-A1（含居中不变式）, AC-A2（归格/clamp 运行时行为归 spatial-grid AC）, AC-E3（typed Camera/Viewport identity） |
 | R2 静态可行走区 / polygon schema 升级路径 | AC-B1 |
 | R3 边界内侧出生环带 / 分布策略约束 | AC-C1 |
 | R4 居中 Boss 子区 / 不重叠 / 前期空窗预警约束 / T_escape 几何地板 | AC-C2, AC-C3（前期预警实现归 BossStateMachine，Stage 仅冻结约束存在性与 T_escape 几何地板；T_escape 派生见 R4 文字） |

@@ -4,9 +4,9 @@
 
 <!-- STATUS -->
 Epic: 引擎与系统分解
-Feature: GameRoot (#1) 第三轮 full re-review → Re-review Pending（用户选择 A，已允许并完成文档修订）
-Task: 第三轮 verdict 为 NEEDS REVISION（scope XL，非 MAJOR REVISION）。6 specialist + creative-director 确认编排架构可保留；第二轮 B6 的“PackedArray indexed read 必然 heap allocation”证据链与 B8 的 setter 改名均纠偏，Godot 4.7.1 正确 setter 为 `set_disable_input(bool)`。第三轮 6 个根 blocker：fault reward事实边界 / run_seed+snapshot identity / authority published+consumed token / Grid→Pool matching publish failure domain / ALWAYS节点unpause observer / Window→Host geometry relay；并补 diagnostics、GATE-OQ、Stage camera ownership、RunOutcome/Save envelope。
-→ 已修订：`game-root-scene-flow.md` 主契约及独立 AC；`config-data-system.md` run_seed/max_query；`object-pooling.md` arm-final-validation+infallible publish；`input-system.md` explicit post-unpause observer+geometry relay；`stage-map.md` Stage-owned Camera2D identity；`spatial-grid.md`、`rng-system.md`、registry 传播；`systems-index.md` 与 review log 已同步。InputSystem/Object Pooling/Stage 因语义传播回到 In Review。下一步必须运行第四轮独立 `/design-review design/gdd/game-root-scene-flow.md`；在此之前不得写 Approved/runtime/battle_ready/benchmark_ready。
+Feature: GameRoot (#1) 第四轮 full re-review → Re-review Pending（用户选择 A 并确认完整变更集，7 个根 BLOCKING 已修订）
+Task: 第四轮 verdict 为 MAJOR REVISION NEEDED（scope XL）。根 blocker 为：GameRoot 生命周期/顶层 FSM/SceneTree pause authority；加载与 teardown 依赖 DAG；battle/config/authority/resolution identity 链；immutable outcome 与 mutable Save commit 状态分离；pause/resume pump、复合 reason 仲裁与零效果 drain；phase failure 验收语义；AC-F1~F4 allocation/workload/diagnostic/seed oracle。
+→ 已修订：`game-root-scene-flow.md` 主契约与独立 AC；`.claude/docs/technical-preferences.md`；`config-data-system.md`；`input-system.md`；`stage-map.md`；`systems-index.md`；review log。Object Pooling、SpatialGrid、RNG 的冻结公开契约未改。下一步必须运行第五轮独立 `/design-review design/gdd/game-root-scene-flow.md`；当前不得写 Approved/runtime/battle_ready/benchmark_ready。
 <!-- /STATUS -->
 
 
