@@ -317,8 +317,8 @@ gate-check             | gate     | YES      | never       | —        | never 
 design-review          | review   | YES      | never       | —        | never    | —        | critical
 ...
 
-AGENTS (49 total)
-Agent specs written: 49 (100%)
+AGENTS (53 total)
+Agent specs written: 53 (100%)
 
 Agent                  | Category   | Has Spec | Last Spec   | Result
 -----------------------|------------|----------|-------------|--------
@@ -330,7 +330,7 @@ Top 5 Priority Gaps (skills with no spec, critical/high priority):
 (none if all specs are written)
 
 Skill coverage:  72/72 specs (100%)
-Agent coverage:  49/49 specs (100%)
+Agent coverage:  53/53 specs (100%)
 ```
 
 No file writes in audit mode.

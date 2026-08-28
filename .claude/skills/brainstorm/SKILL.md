@@ -242,10 +242,10 @@ Ground the concept in reality:
 - **Target platform**: Use `AskUserQuestion` — "What platforms are you targeting for this game?"
   Options: `PC (Steam / Epic)` / `Mobile (iOS / Android)` / `Console` / `Web / Browser` / `Multiple platforms`
   Record the answer — it directly shapes the engine recommendation and will be passed to `/setup-engine`.
-  Note platform implications if relevant (e.g., mobile means Unity is strongly preferred; console means Godot has limitations; web means Godot exports cleanly).
+  Note platform implications if relevant (e.g., mobile means Unity is strongly preferred, Cocos Creator for mini-games; console means Godot/Cocos Creator have limitations; web means Godot exports cleanly, Cocos Creator is best for mini-games).
 
 - **Engine experience**: Use `AskUserQuestion` — "Do you already have an engine you work in?"
-  Options: `Godot` / `Unity` / `Unreal Engine 5` / `No preference — help me decide`
+  Options: `Godot` / `Unity` / `Unreal Engine 5` / `Cocos Creator` / `No preference — help me decide`
   - If they pick an engine → record it as their preference and move on. Do NOT second-guess it.
   - If "No preference" → tell them: "Run `/setup-engine` after this session — it will walk you through the full decision based on your concept and platform target." Do not make a recommendation here.
 - **Art pipeline**: What's the art style and how labor-intensive is it?
