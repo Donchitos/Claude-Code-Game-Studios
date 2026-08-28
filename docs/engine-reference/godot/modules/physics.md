@@ -1,8 +1,18 @@
 # Godot Physics — Quick Reference
 
-Last verified: 2026-02-12 | Engine: Godot 4.6
+Last verified: 2026-08-14 | Engine: Godot 4.7.1
 
 ## What Changed Since ~4.3 (LLM Cutoff)
+
+### 4.7 Changes
+- **`CollisionShape2D` 新增 `one_way_collision_direction` 属性**：单向碰撞方向可自定义（不再假定局部向上）。用于平台/单向碰撞。
+- **`PhysicsServer2D.body_set_shape_as_one_way_collision()` 新增 `direction` 可选参数**：兼容（GH-104736）。
+- **`PhysicsServer2DExtension._body_set_shape_as_one_way_collision()` 新增 `direction`（必填）**：GDScript/源码级破坏（GH-104736）——仅影响自定义 2D 物理扩展。
+- **Jolt Physics 3D 变更**（本项目 2D 不受影响，仅记录）：
+  - `WorldBoundaryShape3D.plane.d` 符号反转，需手动翻转符号
+  - `SoftBody3D` 质量默认值不再为 `0`，默认 1 kg 整体
+  - `SoftBody3D.linear_stiffness` 应用方式改变，需重新调参
+  - `Area3D` 现在会报告与 `SoftBody3D` 的重叠
 
 ### 4.6 Changes
 - **Jolt Physics is the DEFAULT 3D engine** for new projects

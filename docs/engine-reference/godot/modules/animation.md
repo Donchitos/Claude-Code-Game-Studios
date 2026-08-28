@@ -1,8 +1,19 @@
 # Godot Animation — Quick Reference
 
-Last verified: 2026-02-12 | Engine: Godot 4.6
+Last verified: 2026-08-14 | Engine: Godot 4.7.1
 
 ## What Changed Since ~4.3 (LLM Cutoff)
+
+### 4.7 Changes
+- **`Animation.length` 类型元数据 `float` → `double`**：源码级破坏。GDScript 项目需重测动画时长逻辑。
+- **`AnimationNodeBlendSpace1D/2D` 的 `sync`（bool）→ `sync_mode`（`SyncMode` 枚举）**：升级后动画过渡可能不正确，需手动设置 `sync_mode`。
+  - 新增 `SyncMode::CYCLIC` 模式
+- **`AnimationNodeBlendSpace1D/2D.add_blend_point()` 新增 `name` 可选参数**：兼容。
+- **`AnimatedSprite2D` / `AnimatedSprite3D` / `SpriteFrames` 新增 ping-pong 播放**：来回播放支持（GH-114556）。
+- **`Tween.tween_await()`**：暂停 tween 直到特定信号触发——适合对话/演出。
+- **`Tween.has_tweener()`**：新增查询方法。
+- **Animation 资源/库/Mixer/Player 性能优化**（GH-116394）。
+- **AnimationTree 优化**及 `Node::process_thread_group` 安全改进（GH-117277）。
 
 ### 4.6 Changes
 - **IK system fully restored**: Complete inverse kinematics for 3D skeletons

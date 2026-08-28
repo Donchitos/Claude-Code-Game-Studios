@@ -1,8 +1,19 @@
 # Godot UI — Quick Reference
 
-Last verified: 2026-02-12 | Engine: Godot 4.6
+Last verified: 2026-08-14 | Engine: Godot 4.7.1
 
 ## What Changed Since ~4.3 (LLM Cutoff)
+
+### 4.7 Changes
+- **Control 偏移变换**：Control 节点可平移/旋转/缩放而不影响容器布局（类似 CSS `transform`）。
+- **`RichTextLabel` 图片 API 大改**：`add_image`/`update_image` 的 `width_in_percent`/`height_in_percent`（bool）→ `width_unit`/`height_unit`（`ImageUnit` 类型）；width/height `int` → `float`。`UPDATE_WIDTH_IN_PERCENT` → `UPDATE_WIDTH_UNIT`。源码级破坏（GH-112617）。
+  - 新增 `[img height=1em]` 等字体尺寸相关图片缩放。
+- **`Control.accessibility_live` 类型变更**：`DisplayServer.AccessibilityLiveMode` → `AccessibilityServer.AccessibilityLiveMode`（GH-116839）。
+- **`TreeItem.select()` 新增 `set_as_cursor` 可选参数**：兼容（GH-119367）。
+- **PopupMenu 搜索栏**：长列表可选显示搜索栏。
+- **RichTextLabel `img=`/`font=` 标签解析改进**。
+- **`OptionButton` 宽度匹配弹出菜单**。
+- **无障碍地标导航**：屏幕阅读器可提供 UI 区域上下文。
 
 ### 4.6 Changes
 - **Dual-focus system**: Mouse/touch focus is now SEPARATE from keyboard/gamepad focus

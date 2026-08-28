@@ -1,9 +1,49 @@
 # Godot — Current Best Practices
 
-Last verified: 2026-02-12 | Engine: Godot 4.6
+Last verified: 2026-08-14 | Engine: Godot 4.7.1
 
 Practices that are **new or changed** since the model's training data (~4.3).
 This supplements (not replaces) the agent's built-in knowledge.
+
+## 2D / 移动端 (4.7) — 本项目重点
+
+- **内置 `VirtualJoystick` 节点**：Fixed / Dynamic / Following 三模式。本项目"虚拟摇杆移动"直接用此节点，无需自造或第三方插件。
+- **`DrawableTexture2D`**：简化在纹理上绘制的 API，替代基于 Viewport 的 hack。可用于技能范围预警贴图、动态伤害数字纹理等。
+- **`CollisionShape2D.one_way_collision_direction`**：单向碰撞方向可自定义（不再假定局部向上）。用于平台跳跃类单向平台。
+- **`GradientTexture2D` 新增 `FILL_CONIC`**：锥形渐变，可用于自定义 2D 着色器的真实感着色。
+- **`TextureRect` 支持 `AtlasTexture` tiling**：可将 AtlasTexture 的一部分作为九宫格重复纹理绘制。
+- **`AnimatedSprite2D` ping-pong 播放**：`SpriteFrames` / `AnimatedSprite2D` / `AnimatedSprite3D` 新增来回播放支持（GH-114556）。
+- **Android 独立导出（GABE）**：Godot Android Build Environment，改善移动端构建/发布链。自定义启动画面不再需要手动装 Gradle 文件，可在导出选项编辑。
+- **Android PiP（画中画）**：支持在小窗口渲染游戏。
+- **iOS SDL3 手柄驱动 + 陀螺仪瞄准**：加速计/陀螺仪输入可读。
+- **移动端 HDR 输出**：iOS 等。
+- **新项目默认 stretch**：mode `canvas_items`、aspect `expand`（仅新项目，适配竖屏多分辨率有用）。
+
+## GDScript (4.7)
+
+- **`Tween.tween_await()`**：暂停 tween 直到特定信号触发——适合对话/演出。
+- **覆盖带类型返回的父类方法**：现在继承返回类型，必须显式 `return`（否则报错，加 `return null` 修复）。
+- **packed array 元素 setter**：设置 packed array 元素不再触发整个 packed array 属性的 setter——若依赖 setter 副作用需改逻辑。
+
+## Input (4.7)
+
+- **鼠标/键盘 device ID**：用 `InputEvent.DEVICE_ID_MOUSE` / `DEVICE_ID_KEYBOARD` 判断，不要用 `device == 0`（某些手柄可能用 0 作 ID）。
+- **"失焦忽略手柄"新项目设置**：默认关，可开启让窗口失焦时不接收手柄输入。
+- **键盘/鼠标带设备 ID**：为未来多设备区分铺路。
+
+## Audio (4.7)
+
+- **`AudioStreamPlayer.area_mask` 默认 `0`（禁用）**：若用 `Area2D` 的 `audio_bus_override` 且依赖默认 mask，需手动重置为 layer 1。
+
+## Rendering (4.7)
+
+- **`CanvasItem` 画线不加抗锯齿羽化**：线变细，需手动加粗线宽。
+- **`LinearToSRGB` 视觉着色器**：不再 clamp 到 `[0,1]`（Mobile / Forward+）。
+- **`AreaLight3D`**：新矩形光源节点（3D，软阴影）。
+- **Control 偏移变换**：Control 节点可平移/旋转/缩放而不影响容器布局（类似 CSS `transform`）。
+
+## GDScript (4.5+)
+
 
 ## GDScript (4.5+)
 
