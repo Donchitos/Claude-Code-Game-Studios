@@ -4,9 +4,9 @@
 
 <!-- STATUS -->
 Epic: 引擎与系统分解
-Feature: GameRoot (#1) 首轮 design-review → In Review
-Task: GameRoot & Scene Flow（#1 Core）/design-review full 首轮 NEEDS REVISION（scope M）→ 本轮 5/7 修订批次闭环写入 design/gdd/game-root-scene-flow.md。编排模型健全（7-phase/双缓冲引用交换/事务 rollback/诚实停止 fault 路径自洽，8 节完整），不构成 MAJOR REVISION。CD 裁定 3 设计决策（用户已裁决）：TECHNICAL_ABORT 授予部分奖励（对齐概念 12.1）/ Scoped A 删除 InputSystem 内部 FSM 镜像 / R3 禁 dirty-patch 强制全量 copy。已闭环：RNG GATE-G3 集成（Dependencies/R2/R4/R5/AC-G2/跨文档块）/ TECHNICAL_ABORT 部分奖励（R9/AC-F1a/F1b/AC-F3）/ R3 全量 copy（R3/AC-G1b）/ F1-F4 变量表+语义修复 / AC-G1+AC-B1 守卫拆分。pending：Scoped A 删除（~2500 词 InputSystem 内部 FSM 镜像，R1 L25/L29/L31 + R7 step10）+ 9 巨型 AC 拆分+确定性+覆盖缺口（强耦合 L 级，待 /clear 新会话 clean context）。CD 裁定 VJ ABI=继承 evidence gate（非新阻挡项）；held-touch「松手重按」维持正确性机制降 RECOMMENDED。systems-index:GameRoot Draft→In Review, reviewed 7→8/approved 仍 5。新建 reviews/game-root-scene-flow-review-log.md。
-→ 交接：GameRoot(#1) In Review 待 re-review（建议 /clear 后新会话先做 Scoped A 删除 + AC 拆分，再复审）；或继续下一 MVP 系统（#8 PlayerController，依赖 InputSystem 已 Approved）。
+Feature: GameRoot (#1) 第二轮 design-review → In Review（待新会话修订 11 项 BLOCKING）
+Task: GameRoot & Scene Flow（#1 Core）/design-review full 第二轮 re-review NEEDS REVISION（scope L 偏 M-L，严于首轮，非 MAJOR REVISION——编排模型健全，6 specialist 一致）。首轮 5 BLOCKING 中 3 闭环维持无回归（RNG/TECHNICAL_ABORT/R3 全量 copy/F1-F4/AC-G1+AC-B1 守卫）；2 pending（Scoped A+AC 拆分）未执行且第 17-20 轮注入更多 InputSystem 镜像反向加重。本轮 11 BLOCKING：B1 Scoped A 执行（删 ~2500-3500 词内部 FSM 镜像，TD 唯一硬阻塞）/ B2 9 巨型 AC 拆分（依赖 B1）/ B3 resume+per-tick wallclock AC（GD+PERF 升回）/ B4 is_choice_input_blocked 玩家面反馈 AC（GD 新缺口）/ B5 pause-reason presentation AC（GD 升回）/ B6 R3 零装箱 bulk-copy 机制未命名（PERF 新发现，PackedInt64Array[i]→Variant 装箱，SYS"R3 已闭环"判定过窄）/ B7 三 counter instrument 粒度未定义（PERF）/ B8 set_disable_input→set_gui_disable_input（GODOT）/ B9 TECHNICAL_ABORT 种子源 hedge（GD，种子=仅已拾取）/ B10 3 覆盖缺口 AC（QA）/ B11 AC 确定性去 magic+注入式（QA，与 B2 耦合）。16 RECOMMENDED。CD 驳回 QA AC-K5 断引用（事实错误，spatial-grid.md line 1007 存在 AC-K5）。sys BL4 quarantine 闭合。8 引擎验证 GATE-OQ ADR defer。tracking 已写入 systems-index（#1 行 + 第二轮条目）+ review-log（追加第二轮 section）。
+→ 交接：用户选新会话执行全部 11 项 BLOCKING（/clear 后 clean context）。执行序：B1+B2 为 L 级强耦结构重写须先做（删镜像→定行为契约→拆 AC），B11 与 B2 耦合同会话执行；B3-B11 多为 S-M 端 hedge/补 AC/具体修可随后。全闭环后须第三轮 re-review。本会话不做修订。
 <!-- /STATUS -->
 
 
