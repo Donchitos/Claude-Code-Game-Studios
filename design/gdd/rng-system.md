@@ -14,7 +14,7 @@
 
 RNG System 是单场战斗中唯一的权威随机源。它从 Config 战斗快照提供的 per-run seed 派生出**独立、可复现的随机流**，服务每个消费子系统（怪潮生成、升级三选一候选池与刷新、暴击判定、掉落权重、雷爆符随机敌人、法宝匣随机提升、夺宝机缘、掌天瓶种子），并通过零分配 API 在 GameRoot physics tick 内消费。它保证三条不变量：
 
-1. **确定性**——相同 run seed + 相同有序调用序列跨运行产生相同结果，支撑 game-root AC-G2 可复现诊断与 MVP「每局生成随机种子，便于复现问题」要求；
+1. **确定性**——相同 run seed + 相同有序调用序列跨运行产生相同结果，支撑 game-root AC-F4 可复现诊断与 MVP「每局生成随机种子，便于复现问题」要求；
 2. **流隔离**——任一消费方的调用次数不偏移其他消费方结果，故任一子系统的结果可独立于其他子系统重放；
 3. **无 OS 熵**——gameplay stream 禁止调用 `randomize()`，不得引入墙钟/熵源。
 
@@ -62,7 +62,7 @@ RNG System 是单场战斗中唯一的权威随机源。它从 Config 战斗快�
 
 - 所有生成器在 BATTLE_LOADING 预实例化（每流一个 `RandomNumberGenerator`），复用到 BATTLE_ENDING；physics tick 内禁止 `RandomNumberGenerator.new()`。
 - roll 方法返回 primitive（int）；`roll_weighted_pick` 返回 index（消费方拥有 weights 数组，RNG 不分配新数组）；累积写入 RNG 持有的该流预分配 PackedInt64Array scratch buffer（F4，BL-I）。禁止 boxing、Dictionary、运行时 StringName、`Array` 与 `Packed*Array`（含 `range()` 返回的 PackedInt32Array、F4 scratch 的 `PackedInt64Array`）构造出现在 roll 路径——消费方与 RNG 内部累积循环均须用 `var i:=0; while i<count` 原位迭代（对齐 spatial-grid AC-J3）；PackedInt64Array scratch 的 element-write 须直接通过 `self.scratch_buffer[i]`，禁局部别名（含函数参数传递路径，如 `helper(self.scratch_buffer)` 内部写入——参数绑定亦使 refcount→2 触发 COW 堆分配，违 R4，见 F4——COW-on-write 触发为 Godot 4.7.1 行为断言待核验 defer rng-math.md/OQ3/GATE-G4，BL-7/GS-4）。**零分配覆盖边界（BL-1，待核验 defer OQ3/rng-math.md）**：上述禁列与 AC-B1 positive control 仅覆盖 **GDScript 侧**构造（boxing/Array/Packed*/Dictionary/StringName）；`gen.randi_range()`/`randf()`/`randi()` 等 Godot **native method 内部**是否分配未经源码核验（positive control 只证能抓 GDScript 侧分配，**不证能抓 C++ 侧 native-method 内部分配**）——若 native method 内部分配，R4 零分配静默崩塌且无 AC 报警（违 fail-fast pillar）。零分配源码核验进 OQ3/rng-math.md scope。另禁原生 String 构造（`str()`/`%`/`+`/`String.num_*` 等 native method 返回 String 的路径）出现在 roll 路径。
-- 流句柄 `stream_id` 是 primitive enum，非引用对象——消费方不持生成器实例引用，避免 RefCounted 泄漏。对齐 object-pooling R3（分配源清单）+ game-root AC-G1 零增长。
+- 流句柄 `stream_id` 是 primitive enum，非引用对象——消费方不持生成器实例引用，避免 RefCounted 泄漏。对齐 object-pooling R3（分配源清单）+ game-root AC-F2 零增长。
 
 ### R5 — API 面
 
@@ -96,7 +96,7 @@ RNG System 是单场战斗中唯一的权威随机源。它从 Config 战斗快�
   - 每流**调用计数**（int counter，roll 路径原地 ++，零分配；**per-battle 累计**——非 per-tick reset，counter 跨整个 battle 累积，telemetry 末次读取；per-tick reset + 仅末检会漏慢泄漏）
   - first-failure 时各流 state（`get_stream_state` 快照，capture 时机 = faulting roll 之前，因所有 fault 路径在 draw 前 latch；快照存储于 BATTLE_LOADING 预分配的 `PackedInt64Array[8]`（每流一 slot，8 流，fault 路径零分配）
 
-  供 game-root AC-G2 可复现诊断（telemetry schema 与 game-root AC-G2 消费 schema 的字段对齐归 GATE-G3，deferred until game-root 更新——本轮仅注 deferred，不越权定义 game-root 侧 schema）。本 telemetry 支持从故障点恢复重放；从 run 起点的 full replay 由 AC-A1 确定性 + 独立调用序列 instrumentation（测试构建路径，非 telemetry 职责）+ R2 调用顺序稳定性支持。
+  供 game-root AC-F4 可复现诊断（telemetry schema 与 game-root AC-F4 消费 schema 的字段对齐归 GATE-G3；设计侧已闭合，runtime evidence OPEN）。本 telemetry 支持从故障点恢复重放；从 run 起点的 full replay 由 AC-A1 确定性 + 独立调用序列 instrumentation（测试构建路径，非 telemetry 职责）+ R2 调用顺序稳定性支持。
 
 ### R8 — 非法参数与 fault
 
@@ -191,7 +191,7 @@ RNG System 是单场战斗中唯一的权威随机源。它从 Config 战斗快�
 4. **If** `derive(run_seed, stream_id)` 对固定 run_seed 的 8 项 stream_id 产生重复 stream_seed：**Then** 这是 fault 级 invariant 违反——`derive` 须对固定 run_seed 的 8 项单射；碰撞意味着 ADR 选的算法错误，AC-A3 强制验证单射性（分析论证 + 采样）。
 5. **If** 调用不在固定 8 项 enum 集的未知/未注册 `stream_id`：**Then** R8 fault（与 RNG-EC11 同路径）。per-consumer 归属（消费方误调非自己注册的流）由静态分析/lint 检测，运行时不校验。
 6. **If** pause intent 在一个跨 tick 的多 roll spawn 序列中途触发（如 5 roll 跨 5 tick，进行到第 3 tick 后 pause）：**Then** 已完成的 roll 保留，未完成的 roll 随 resume 从冻结 state 继续（R7：state 冻结于内存）；无 roll 丢失或被重摇。注：pause 在 tick 边界处理，单 tick 内多 roll burst 原子完成不可中途打断——AC-F2 验证跨 tick 序列场景。
-7. **If** GameRoot mid-battle 进入 ControlledGameplayFault：**Then** RNG 在 BATTLE_ENDING fault cleanup 时 teardown；各流 state + 调用计数写入 first-failure telemetry（供 game-root AC-G2 可复现诊断）。
+7. **If** GameRoot mid-battle 进入 ControlledGameplayFault：**Then** RNG 在 BATTLE_ENDING fault cleanup 时 teardown；各流 state + 调用计数写入 first-failure telemetry（供 game-root AC-F4 可复现诊断）。
 8. **If** `run_seed = 0` 或低熵值：**Then** 非 fault。`RandomNumberGenerator` 接受 seed=0 为合法（低熵但确定）起始态（Godot seed setter 对 0 的特殊处理须在 rng-math.md 核验）。dev 可强制 seed=0 作已知基线，无特殊处理。
 9. **If** 两局共享同一 `run_seed`（dev 强制 seed 或 OS 罕见碰撞）：**Then** 两局序列完全一致——这是确定性契约本身，非 bug。release OS seed 碰撞概率可忽略；dev 强制 seed 为复现意图。
 10. **If** 关键路径检测到 `roll_float_range` 跨架构 FMA 漂移：**Then** 该消费方改用整数域 roll + 映射（R3）。weighted_pick 已默认整数域（F4），不受此影响。此为运行期发现的风险，由 AC-A5 在签发前验证。
@@ -205,8 +205,8 @@ RNG System 是单场战斗中唯一的权威随机源。它从 Config 战斗快�
 
 | Dependency | RNG 使用方式 | 当前状态 |
 |---|---|---|
-| Config / Data | 消费 `run_seed`（PREP 建立、BATTLE_LOADING 冻结入不可变战斗快照）；在 BATTLE_LOADING 派生全部 `stream_seed` 并实例化生成器 | `design/gdd/config-data-system.md` Draft；**`run_seed` 字段尚未在 Config schema 显式声明**——须后续在 Config GDD 补 `run_seed` 字段并标 RNG 为消费方（GATE-G2） |
-| GameRoot & Scene Flow | 在 BATTLE_LOADING 被初始化为服务 participant；fault 由 GameRoot phase 边界检测与处置；pause/resume 冻结/恢复随 gameplay；telemetry 写 first-failure | `design/gdd/game-root-scene-flow.md` Draft（lean PASS） |
+| Config / Data | 消费 `run_seed`（PREP 建立、BATTLE_LOADING 逐位冻结入不可变战斗快照）；在 BATTLE_LOADING 派生全部 `stream_seed` 并实例化生成器 | `config-data-system.md` 已声明 RunStartRequest→BattleConfigSnapshot 单一来源；runtime evidence OPEN |
+| GameRoot & Scene Flow | 在 BATTLE_LOADING 被初始化为服务 participant；每个phase边界检查`has_fault()`；pause/resume不re-seed；telemetry 写 first-failure | `game-root-scene-flow.md` 第三轮修订已承接；第四轮复审 pending |
 
 **无硬编排依赖**（systems-index 标"无依赖"指无前置系统须先完成）；Config 的 `run_seed` 是数据依赖。
 
@@ -226,7 +226,7 @@ RNG System 是单场战斗中唯一的权威随机源。它从 Config 战斗快�
 ### 跨文档一致性契约（须尊重的已冻结决策）
 
 - **object-pooling R3**（零分配分配源清单）：RNG R4/R9 遵守——tick 内不 new 生成器、roll 路径无 boxing/Dictionary/Array/StringName/原生 String 构造。注：object-pooling R3 字面作用域是 slot reset hook，RNG 推广到 roll 路径——分配源清单一致，scope 为语义延伸。
-- **game-root AC-G2**（可复现诊断）：RNG R3/R7 遵守——`(run_seed, stream_id, 调用计数)` 可复现 + first-failure 时各流 state 入 telemetry。（修订：原误引为 spatial-grid AC-G2，已更正——spatial-grid AC-G2 是"完整 physics phase 顺序"，可复现诊断实属 game-root。）
+- **game-root AC-F4**（可复现诊断）：RNG R3/R7 遵守——`(run_seed, stream_id, 调用计数)` 可复现 + first-failure 时各流 state 入 telemetry。
 - **game-root R6/R7**（pause/resume）：RNG R7 遵守——BATTLE_PAUSED 流 state 冻结于内存，RESUME 不调 state API，无 roll 丢失/重摇。
 - **game-root R9**（SaveSystem gate）：RNG R7 遵守——中途存档须 SaveSystem 提供 state 持久化契约前为 BLOCKED。注：game-root R9 字面覆盖 pre-run 灵药 reservation + ControlledGameplayFault 路径，mid-battle state 持久化 gate 为语义延伸，待 SaveSystem GDD 显式定义。
 - **game-root R1**（participant 注册）：RNG R6 遵守——battle load 按固定表注册 `stream_id`，Active 后不可增删。
@@ -235,8 +235,8 @@ RNG System 是单场战斗中唯一的权威随机源。它从 Config 战斗快�
 
 ### bidirectional 一致性 flag
 
-- **Config GDD 须补**：`run_seed` 字段声明 + "RNG 消费 run_seed"标注。当前 Config 未提及 run_seed/RNG（仅 Player Fantasy 一处泛"seed"）。属 `propagate-design-change` 范畴，本轮记录，GATE-G2。
-- **game-root GDD 须补**：phase 边界检查 RNG `has_fault()` 义务（RNG 是 service participant，无独立 phase 边界检查机会——检查须由 game-root 在 phase 边界或 wrap roll 调用集中承担）+ 标 RNG 为 fault source。当前 game-root 全文无 `has_fault`/RNG/fault_reason（grep 确认），R5 fault path 只覆盖事务状态码。**GATE-G3**，BLOCKED until game-root 更新。此义务同时 gate AC-E1/AC-F3 可测性。
+- **Config GATE-G2（DESIGN-SIDE CLOSED）**：Config 已声明 `run_seed` 从 RunStartRequest 逐位冻结进每局 snapshot 并标 RNG 为消费方；仍需实现/集成证据。
+- **GameRoot GATE-G3（DESIGN-SIDE CLOSED）**：GameRoot R4 已声明每个 phase 边界集中检查 service `has_fault()` 并将 RNG 作为 fault source；仍需实现/集成证据。
 - **各下游消费方 GDD 须补**：roll 返回值用于 gameplay 决策（扣血/消耗/生成）前必须先检 `has_fault()`（二级防御，默认由 game-root wrap 兜底）；fault 零值不得进入 committed gameplay state。8 消费方落地时跟踪覆盖。
 - 下游 8 个消费方的 `stream_id` 枚举集须在各 GDD 设计时与 RNG R2 固定 enum 集一致——任一消费方 GDD 引入新 stream_id 时同步回 RNG R2/R5。下游 DropConfig/SkillDraft 候选池改用定点 int 权重（F4），其 GDD 须声明 scale factor K 对齐。
 
@@ -356,7 +356,7 @@ RNG System 没有玩法数值旋钮（暴击率/掉落权重/候选池规则归�
 - When: 调对应 roll 触发 fault
 - Then: `get_stream_state(stream_id)` 在 faulting roll 调用前 == 调用后（== s）；fault 路径不推进 gen state（R8 invariant：在任何 gen draw 前 latch）
 - 验证: state-diff test（fault injection × 各 roll 类型，前后 snapshot 对比） | Gate: BLOCKING
-- 注：此 invariant 保护 telemetry first-failure state 正确性（AC-F3 capture 时机）→ game-root AC-G2 可复现诊断；实现 bug（先 draw 再检参）会破此不变量且 schema test 抓不到。
+- 注：此 invariant 保护 telemetry first-failure state 正确性（AC-F3 capture 时机）→ game-root AC-F4 可复现诊断；实现 bug（先 draw 再检参）会破此不变量且 schema test 抓不到。
 
 **AC-E1c FAULTED 终态不可复活（unit，BL-2）**
 - Given: 任一流已处于 FAULTED（由任一 AC-E1/E1b fault 参数触发 latch 后），fault_reason=F
@@ -389,9 +389,9 @@ RNG System 没有玩法数值旋钮（暴击率/掉落权重/候选池规则归�
 **AC-F3 first-failure telemetry**
 - Given: 任一 fault 路径触发
 - When: 进入 ControlledGameplayFault
-- Then: telemetry 记录 `run_seed` + 全部 `stream_id` + 每流调用计数 + first-failure 时各流 state（get_stream_state 快照，capture == faulting roll 调用前 instrumentation snapshot 的 state，证明 fault 路径未推进 gen——见 AC-E1b）；schema 字段见 R7——充分性由 game-root AC-G2 判定，非本 AC（"足够供"非可测语言移出 Then，qa⑭）
+- Then: telemetry 记录 `run_seed` + 全部 `stream_id` + 每流调用计数 + first-failure 时各流 state（get_stream_state 快照，capture == faulting roll 调用前 instrumentation snapshot 的 state，证明 fault 路径未推进 gen——见 AC-E1b）；schema 字段见 R7——充分性由 game-root AC-F4 判定，非本 AC（"足够供"非可测语言移出 Then，qa⑭）
 - 验证: telemetry schema test（schema 字段见 R7）+ AC-E1b state-diff test（capture 时机正确性） | Gate: BLOCKING before schema frozen + on GATE-G3 解阻（game-root phase 边界 has_fault 检查落地，否则 fault 不进 ControlledGameplayFault→capture 路径不可测）
-- 注：本 telemetry 支持从故障点恢复重放；从 run 起点的 full replay 由 AC-A1 + R2 调用顺序稳定性支持，非本 telemetry 职责。原误引 spatial-grid AC-G2 已更正为 game-root AC-G2。
+- 注：本 telemetry 支持从故障点恢复重放；从 run 起点的 full replay 由 AC-A1 + R2 调用顺序稳定性支持，非本 telemetry 职责。当前消费方引用为 game-root AC-F4。
 
 ### G. SaveSystem 与 Config 集成 gate
 
@@ -404,16 +404,16 @@ RNG System 没有玩法数值旋钮（暴击率/掉落权重/候选池规则归�
 - 验证: SaveSystem integration contract test | Gate: BLOCKED on persistence integration
 
 **GATE-G2 Config run_seed 字段 gate**
-- Given: Config GDD 未声明 `run_seed` 字段、未标 RNG 为消费方
+- Given: Config GDD 已声明 `run_seed` 字段与 RNG 消费方，但实现尚不存在
 - When: RNG 依赖 run_seed 建立
-- Then: Config 须补 `run_seed` 字段声明 + RNG 消费标注；未补前 RNG↔Config 集成为 BLOCKED
-- 验证: consistency-check / propagate-design-change | Gate: BLOCKED until Config updated
+- Then: 文档字段、单一来源与不可变性保持一致；实现前仍须通过 Config AC-D4
+- 验证: consistency-check + Config AC-D4 | Gate: DESIGN-SIDE CLOSED / RUNTIME OPEN
 
 **GATE-G3 game-root has_fault 检查义务 gate**
-- Given: game-root GDD 未声明 phase 边界检查 RNG `has_fault()` 义务、未标 RNG 为 fault source（R8/AC-E1/AC-F3 依赖此检查）
+- Given: game-root GDD 已声明 phase 边界检查 RNG `has_fault()` 义务并标 RNG 为 service fault source
 - When: RNG fault latch 后须被 game-root 在 phase 边界捕获进 ControlledGameplayFault
-- Then: game-root 须补：phase 边界检 `has_fault()`（或 wrap roll 调用集中检查）+ 标 RNG 为 fault source；未补前 RNG fault 不被掩盖的玩家面承诺（故障诚实暴露）悬空，AC-E1/AC-F3 可测性 BLOCKED
-- 验证: consistency-check / propagate-design-change（game-root 侧响应） | Gate: BLOCKED until game-root updated
+- Then: 每个phase注入fault都在matching end后进入ControlledGameplayFault，fault零值不进入下一phase committed state
+- 验证: GameRoot AC-B3/AC-F4 integration | Gate: DESIGN-SIDE CLOSED / RUNTIME OPEN
 
 **GATE-G4 rng-math.md 存在性 gate**
 - Given: `docs/engine-reference/godot/` 现无 `rng-math.md`（grep 零命中），但 GDD 多处对 Godot 行为作事实断言（randi_range 参数类型、拒绝采样 vs simple modulo、FMA 行为、seed= 处理、state 往返性、`randi()` 输出域 uint32/uint64、native method `randi_range`/`randf`/`randi` 内部零分配、GDScript `>>` 算术 vs 逻辑移位、int64 `*` 溢出回绕 contract、int64 `-` 减法溢出回绕 contract（BL-6/SD-1→F2 fault guard bypass）、set_state 不隐式 re-seed（BL-9/GS-3→SaveSystem 跨实例语义）、PackedInt64Array COW-on-write element-write 触发堆分配（BL-7/GS-4——4.7 "packed array 元素不再触发整个 packed array 属性 setter" 相邻变更须核验 4.7.1 仍触发）

@@ -1,9 +1,9 @@
 # Object Pooling（对象池）
 
-> **Status**: Draft — minimum lifecycle contract
+> **Status**: Re-review Pending — 2026-08-28 GameRoot 第三轮复审传播修订：resume binding 的最终 Node identity/capacity 验证归 arm，matching publish 被收窄为无 Node API、不可失败的纯发布；须独立复审
 > **Author**: 用户 + Codex
 > **Created**: 2026-08-19
-> **Last Updated**: 2026-08-19
+> **Last Updated**: 2026-08-28
 > **Implements Pillar**: 300敌人、400投射物、300掉落物同屏时稳定且无复用幽灵
 > **Scope**: MVP gameplay Node pooling；presentation降级策略须由各自GDD显式批准
 
@@ -41,7 +41,7 @@ Object Pooling 为敌人、投射物、掉落物及后续伤害数字/VFX提供�
 
 - 每个成功init的PoolSet获得非零 signed 64-bit `pool_epoch`，每次成功borrow获得非零 signed 64-bit `borrow_id`；两者均由进程级checked allocator单调生成且永不复用，已保留后失败的ID永久burn。每个slot保存 `{pool_epoch,pool_key,slot_id,generation,borrow_id,object_instance_id,node_ref,slot_state,spatial_handle_id,quarantine_revision}`。
 - slot generation 使用 checked increment，永不回绕；即将耗尽的 slot 永久 `RETIRED`。pool epoch耗尽使init失败，borrow ID耗尽使整个PoolSet拒绝新borrow；两者均返回 `ID_EXHAUSTED`且不得复用旧ID。slot generation 与 borrow_id 的 checked 推进在 `borrow_into` 内逻辑原子：若 borrow_id 分配失败，slot 不从 free stack 取出、generation 不推进；若 borrow_id 已分配但后续 reset_for_borrow 失败，borrow_id 永久 burn、slot 退休（generation 不回滚）。
-- Godot ObjectDB 会回收已删除对象的 `instance_id` 并分配给新创建的对象；仅凭 `instance_id_valid` 不足以防御 ABA（同帧 N1 被 `queue_free`→ID I1 回收→创建 N2 复用 I1→owner 用 N1 的 borrow_id release→对活对象 N2 执行 reset_for_pool）。因此 slot 保存直接 `node_ref`（Node 引用，弱语义——Node 非 RefCounted，不阻止 `queue_free`，与 `spatial-grid.md` R6 对称）。Pool 内部权威定位一律用 `node_ref`；公开 carrier 中的 `object_instance_id` 仅作诊断与对端比对字段。所有 public API 入口（borrow/release/bind/unbind/replace/prepare_resume_bindings/publish_resume_bindings）必须三校验：`is_instance_valid(slot.node_ref) AND slot.node_ref.get_instance_id()==slot.object_instance_id AND not slot.node_ref.is_queued_for_deletion()`，且必须以 `is_instance_valid` 在前的短路 `and` 顺序求值——若第一项 false，禁止对 `node_ref` 调用任何方法（对已释放对象调用 `get_instance_id` 会产生 freed-instance error 并可能返回脏 ID）。对象被外部 `queue_free`/`free()`、queued-for-deletion或instance ID 不匹配时返回 `OBJECT_INVALID`，退休slot并对GAMEPLAY pool触发ControlledGameplayFault。无 per-tick sweep，故同帧回收窗口必须靠 Node identity 而非 instance_id 关闭。
+- Godot ObjectDB 会回收已删除对象的 `instance_id` 并分配给新创建的对象；仅凭 `instance_id_valid` 不足以防御 ABA（同帧 N1 被 `queue_free`→ID I1 回收→创建 N2 复用 I1→owner 用 N1 的 borrow_id release→对活对象 N2 执行 reset_for_pool）。因此 slot 保存直接 `node_ref`（Node 引用，弱语义——Node 非 RefCounted，不阻止 `queue_free`，与 `spatial-grid.md` R6 对称）。Pool 内部权威定位一律用 `node_ref`；公开 carrier 中的 `object_instance_id` 仅作诊断与对端比对字段。所有会读取/修改具体slot的 public API 入口（borrow/release/bind/unbind/replace/prepare_resume_bindings，以及R7的`arm_resume_bindings`最终检查）必须三校验：`is_instance_valid(slot.node_ref) AND slot.node_ref.get_instance_id()==slot.object_instance_id AND not slot.node_ref.is_queued_for_deletion()`，且必须以 `is_instance_valid` 在前的短路 `and` 顺序求值——若第一项 false，禁止对 `node_ref` 调用任何方法（对已释放对象调用 `get_instance_id` 会产生 freed-instance error 并可能返回脏 ID）。matching `publish_resume_bindings` 是明确例外：只校验primitive tx/substate并交换已arm metadata，禁止读取slot Node或调用Node API。对象被外部 `queue_free`/`free()`、queued-for-deletion或instance ID 不匹配时必须最迟在arm前返回 `OBJECT_INVALID`，退休slot并对GAMEPLAY pool触发ControlledGameplayFault。无 per-tick sweep，故同帧回收窗口必须靠 Node identity 而非 instance_id 关闭。
 - public API返回 primitive `PoolStatus`：`OK`、`OK_NOOP`、`OVERFLOW_DROPPED`、`INVALID_ARGUMENT`、`INIT_LIMIT_EXCEEDED`、`WRONG_STATE`、`THREAD_ERROR`、`POOL_EXHAUSTED`、`STALE_BORROW`、`OBJECT_INVALID`、`STILL_REGISTERED`、`QUARANTINED`、`RESET_FAILED`、`ID_EXHAUSTED`。前三项是success（`OVERFLOW_DROPPED` 仅 PRESENTATION pool 溢出时返回），其余是failure。
 - `borrow_into(pool_key,spawn_context,out_borrow: PoolBorrowBuffer) -> int` 使用caller-owned、跨帧复用carrier；字段为 `pool_epoch/borrow_id/object_instance_id/pool_key/slot_id/generation`（标量）外加 `node_ref`（Node 引用，弱语义——与 slot.node_ref 同一引用、零额外分配，owner 据此安全取得 pooled Node 而无需 `instance_from_id`，避免 R2 禁止的 ABA 入口）。Pool不创建Result/Dictionary/Array。
 - `spawn_context`同样必须是BATTLE_LOADING预分配、按pool_key版本化的caller-owned carrier；runtime只覆写固定primitive/Object-ID字段。禁止传临时Dictionary/Array/Callable，reset hook不得保留该carrier引用；具体字段由Enemy/Projectile/Drop owner GDD冻结。
@@ -120,13 +120,13 @@ Pool使用SpatialGrid `transaction_id`，不生成第二套公开tx ID。GameRoo
 
 1. Grid `resume_from`成功并给出完整remap后，调用`prepare_resume_bindings(tx,remap,authority_borrow_ids)`；Pool在预分配workspace构建candidate slot metadata，不改published slot table；
 2. Pool逐项验证indexed old handle属于正确frozen borrow、new handle唯一、0→new来自paused UNBOUND borrow、old→0可进入RELEASE_PENDING、old→same/new保持同borrow且pool_key兼容；同时以旧published borrow集合与新`authority_borrow_ids`做差，处理无Grid handle的UNBOUND survivor/removed/new，禁止投射物等unindexed对象逃逸quarantine；
-3. Grid arm success后调用`arm_resume_bindings(tx)`做最终Node identity/capacity检查；任何Pool failure都发生在Grid publish前，GameRoot abort Grid与Pool candidate并保留Frozen旧状态；
-4. GameRoot完成owner swap并调用matching Grid publish；随后`publish_resume_bindings(tx)`只交换预构建metadata引用，契约上不可失败——但在交换前必须复检 `is_instance_valid(slot.node_ref) AND not slot.node_ref.is_queued_for_deletion()`（主题 A 已持有 node_ref，零成本 belt-and-suspenders）；复检失败保持 ARMED 并进入 ControlledGameplayFault，不得把 binding 指向已释放/将被回收的 Node；
+3. Grid arm success后调用`arm_resume_bindings(tx)`完成**最后一次可失败检查**：逐项复检 `is_instance_valid(slot.node_ref) AND slot.node_ref.get_instance_id()==slot.object_instance_id AND not slot.node_ref.is_queued_for_deletion()`、capacity、candidate identity与tx；任一失败保持publish前状态，GameRoot abort Grid与Pool candidate并保留Frozen旧状态；
+4. GameRoot完成owner swap并调用matching Grid publish；随后`publish_resume_bindings(tx)`只校验primitive matching tx/state并交换已arm的metadata引用，契约上不可失败。matching tx 下禁止再次调用Node API、重新验证identity/capacity或发现新的可恢复failure；
 5. matching Grid resume end关闭lease后，Pool清除survivor/new quarantine；old→0进入RELEASE_PENDING并在consumer仍关闭时执行reset/release。
 
 - Pool私有resume-binding substate固定为`NONE`、`PREPARED(tx)`、`ARMED(tx)`；同一PoolSet最多一个candidate。prepare只允许NONE，matching arm只允许PREPARED，matching publish只允许ARMED，matching abort允许PREPARED/ARMED。substate不合法=`WRONG_STATE`；输入tx=0或非matching tx=`INVALID_ARGUMENT`且保持原substate。
 - Grid prepare/arm/owner swap failure时`abort_resume_bindings(tx)`丢弃Pool candidate：frozen old borrow保持quarantine，paused candidate-only borrow解除transaction quarantine后可由owner保留或release。
-- Grid matching publish后禁止Pool回滚旧binding；若Pool matching publish出现代码路径failure，视为invariant violation，保持consumer关闭并进入ControlledGameplayFault/teardown。
+- Grid matching publish后禁止Pool回滚旧binding；matching tx 的Pool publish必须OK。任何“matching publish内部failure”是实现违反arm不变量的不可达断言，不得保留Pool ARMED或形成运行时恢复分支。
 - 若故障注入先用wrong tx调用Pool publish，它必须返回INVALID_ARGUMENT并保持ARMED；由于Grid可能已matching publish，GameRoot必须立即用保存的正确tx完成一次Pool matching publish使三方收敛，再关闭lease并进入fault，禁止恢复旧Grid/owner状态。
 - omitted old Node只有在Grid+Pool publish后才解除binding并reset；new Node只有publish后才获得new handle。查询快照中不存在同一Node同时对应old/new borrow的窗口。
 - 双publish后的RELEASE_PENDING reset若返回RESET_FAILED，不回滚已发布Grid/Pool/owner状态；GameRoot保持consumer关闭并直接走ControlledGameplayFault teardown。
@@ -386,7 +386,7 @@ release_status =
 **AC-E3 matching publish不可失败**
 - Given: Grid与Pool均Armed且owner swap成功
 - When: matching Grid publish后matching Pool publish，并另先注入一次wrong Pool tx
-- Then: matching两次publish均OK且无allocation；wrong tx=INVALID_ARGUMENT并保持Pool ARMED，随后正确tx使三方收敛再fault；不存在Grid已发布而Pool回滚旧binding的路径；注入不可达内部failure时consumer保持关闭并fault/teardown
+- Then: Node invalid/queued/instance mismatch/capacity错误全部在arm返回failure且Grid publish调用数=0；arm成功后matching两次publish均OK且无allocation/Node API调用；wrong tx=INVALID_ARGUMENT并保持Pool ARMED，随后正确tx使三方收敛再fault；不存在Grid已发布而Pool保持ARMED或回滚旧binding的路径
 - 验证: invariant test + code review | Gate: BLOCKING
 
 **AC-E4 old→new pool_key 不兼容 fallback**

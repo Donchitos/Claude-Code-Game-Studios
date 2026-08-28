@@ -20,9 +20,9 @@ Config/Data System 把编辑期 Godot Resource 数据校验并发布为每场战
 ### R1 — 权威格式、版本与单次发布
 
 - 编辑期权威资产为 Godot 4.7.1 typed Resource（`.tres`）；CSV/JSON只允许通过离线 importer 生成Resource，不能成为release runtime的第二套权威来源。
-- 根资源 `BattleConfigManifest` 固定包含：`schema_version`、非零 `content_revision:int64`、artifact `content_hash`、`PoolLimits`、定序 `PoolKeyConfig[]`、`SpatialGridLimits`、定序 `SpatialTypeLimit[]`、Stage/consumer config references。MVP `schema_version=1`；Stage/consumer引用可在foundation fixture中缺省，但不能达到battle_ready。
-- `ConfigRepository.build_snapshot(manifest,required_readiness) -> ConfigStatus` 在BOOT/BATTLE_LOADING主线程执行 validate-then-build；`required_readiness`固定为`FOUNDATION/BATTLE/BENCHMARK`之一，并决定哪些references是必填。成功生成新的非零、进程内单调`snapshot_id`并一次替换published snapshot；失败时旧snapshot保持不变，若本次没有旧snapshot则保持NOT_READY。
-- `BattleConfigSnapshot` 是本局只读值快照，不保留可被编辑器或外部系统修改的 Resource 引用。具体深拷贝、flattened SoA或generated constants属于ADR，但公开行为必须是“源Resource随后被改动也不影响本局”。
+- 根资源 `BattleConfigManifest` 固定包含：`schema_version`、非零 `content_revision:int64`、artifact `content_hash`、`PoolLimits`、定序 `PoolKeyConfig[]`、`SpatialGridLimits`、定序 `SpatialTypeLimit[]`、Stage/consumer config references。MVP `schema_version=1`；Stage/consumer引用可在foundation fixture中缺省，但不能达到battle_ready。`run_seed`不是内容调谐字段，不进入manifest/content hash。
+- `ConfigRepository.build_snapshot(manifest,required_readiness,run_start_request) -> ConfigStatus` 在BOOT/BATTLE_LOADING主线程执行 validate-then-build；BATTLE/BENCHMARK要求`run_start_request.run_seed:int64`存在并逐位复制到snapshot。成功生成新的非零、进程内单调`snapshot_id`并一次替换published snapshot；失败时旧snapshot保持不变。
+- `BattleConfigSnapshot` 是本局只读值快照，至少携带 `{snapshot_id,schema_version,content_revision,content_hash,run_seed,...flattened config}`。`run_seed`来源唯一为PREP冻结的`RunStartRequest`，同一局不可更改或重新派生；RNG只消费snapshot副本。
 - validator按pool/type ID排序并用固定字段/float位值序列化后重新计算canonical hash；hash输入明确排除`content_hash`自身、编辑器对象instance ID、绝对本地路径与注释，只包含schema/content revision、行为字段及稳定asset UID/contract ID，避免自引用与机器差异。重算值必须与manifest `content_hash`相等。同一`content_revision+content_hash`必须生成逐字段相同的snapshot与diagnostic；revision相同但hash不同、hash相同但revision倒退均为manifest错误。
 
 ### R2 — Public status、诊断与校验顺序
@@ -104,7 +104,7 @@ MVP schema v1冻结：
 
 ### R8 — Runtime immutable 与 reload policy
 
-- BOOT可以发布基础snapshot；每次BATTLE_LOADING必须从published manifest构建本局`BattleConfigSnapshot`，并把同一snapshot ID传给GameRoot、BattlePoolSet、SpatialGrid及所有owner。
+- BOOT可以发布不含本局run_seed的基础snapshot；每次BATTLE_LOADING必须用manifest+`RunStartRequest.run_seed`构建本局`BattleConfigSnapshot`，并把同一snapshot ID传给GameRoot、BattlePoolSet、SpatialGrid及所有owner。
 - 进入BATTLE_ACTIVE后，Config API只读；Resource changed通知、remote config、dev inspector编辑或文件变化不得修改当前snapshot。请求reload只设置“next battle rebuild”标志。
 - pause/resume沿用同一snapshot ID。Pool与Grid必须在init时复制该非零ID并提供无分配、只读scalar getter；owner authority bundle同样携带该ID。若owner、Grid或Pool报告的snapshot ID不同，GameRoot在开放consumer前或resume publish前进入ControlledGameplayFault；不得尝试合并两版配置。
 - Config snapshot teardown不拥有pooled Node或Grid handle；GameRoot先按既定Grid→Pool顺序teardown battle，再释放snapshot引用。
@@ -112,7 +112,7 @@ MVP schema v1冻结：
 ### R9 — Readiness 分级与缺失依赖
 
 - `foundation_ready`：schema、R4/R5/R6全部有效，可进行Object Pooling/SpatialGrid isolated implementation与测试。
-- `battle_ready`：foundation_ready，且StageSpatialConfig、所有enabled pool factory/reset contract、Wave/Enemy/Projectile/Drop/Skill consumer references和其玩法上限全部存在。GameRoot只允许battle_ready snapshot进入BATTLE_ACTIVE。
+- `battle_ready`：foundation_ready，且合法`RunStartRequest.run_seed`、StageSpatialConfig、所有enabled pool factory/reset contract、Wave/Enemy/Projectile/Drop/Skill consumer references和其玩法上限全部存在。GameRoot只允许battle_ready snapshot进入BATTLE_ACTIVE。
 - `benchmark_ready`：battle_ready，且所有query producer提供完整有效宽相上界、production arena/CELL_SIZE已确定、min-spec设备与memory/performance manifest完整。只有该级别可关闭SpatialGrid production CELL_SIZE和pool memory gates。
 - 本GDD完成后foundation_ready契约闭环；Stage arena、各owner reset字段、spawn/overlap enforcement、完整query envelope及真机内存仍是明确integration gates，不得用当前spike值伪装battle/benchmark ready。
 
@@ -150,7 +150,9 @@ MVP结果：`ENEMY=303`、`PROJECTILE=0`、`DROP=300`、`ENEMY|PROJECTILE=303`�
 
 ### F5 — Query envelope 与 readiness
 
-`max_query_radius = checked_max(pickup_radius_max,target_range_max,checked_add(max_skill_effect_radius,max_enemy_bound),checked_add(separation_radius,max_enemy_bound),checked_sum(0.5×max_projectile_segment_length,max_midpoint_cast_error,max_projectile_bound,max_enemy_bound,max_target_motion_bound),...)`
+`max_query_radius = checked_max(pickup_radius_max,target_range_max,checked_add(max_skill_effect_radius,max_enemy_bound),checked_add(separation_radius,max_separation_radius),checked_sum(0.5×max_projectile_segment_length,max_midpoint_cast_error,max_projectile_bound,max_enemy_bound,max_target_motion_bound),...)`
+
+`separation_radius`是单个调用者的最大分离半径，`max_separation_radius`是候选邻居上界；MVP registry 将二者冻结为同一全局上界，因此该项等于`2×max_separation_radius`，不得退回shape bound `max_enemy_bound`。
 
 enabled producer的每个required变量必须present、finite且非负；缺失不是0，而是令`benchmark_ready=false`。已冻结输入只有`pickup_radius_max=1.98`、`max_midpoint_cast_error=0.04419417382415922`、`max_target_motion_bound=0`；因此本GDD不宣称完整production max_query_radius。
 
@@ -184,6 +186,7 @@ enabled producer的每个required变量必须present、finite且非负；缺失�
 | Godot 4.7.1 Resource | typed `.tres`、PackedScene/Resource引用、构建artifact | 引擎已固定；具体Resource class实现未开始 |
 | Build/import pipeline | 可选CSV/JSON离线导入、canonical hash、schema migration | 未设计；不阻塞手写fixture Resource |
 | StageConfig | arena、walkable area、CELL_SIZE、index_margin | `design/gdd/stage-map.md` Draft；静态几何/schema 已冻结，生产 CELL_SIZE/index_margin 收紧值 gated |
+| RunStartRequest / RNG | PREP生成`run_seed`，Config逐位冻结进每局snapshot，RNG只消费snapshot副本 | GameRoot/RNG GDD已登记；runtime evidence OPEN |
 | Owner configs | Wave/Enemy/Projectile/Drop/Skill上限、factory/reset contract | GDD未设计；battle/benchmark gate |
 
 ### 下游
@@ -314,6 +317,12 @@ enabled producer的每个required变量必须present、finite且非负；缺失�
 - When: BATTLE_LOADING或resume预检
 - Then: consumer保持关闭、WRONG_STATE/ControlledFault；不合并或选择“较新”版本
 - 验证: three-system fault injection | Gate: BLOCKING
+
+**AC-D4 run_seed单一来源与不可变性**
+- Given: manifest相同而RunStartRequest seed分别为S1/S2，另构造缺失seed与Active期间篡改source request
+- When: 分别build BATTLE snapshot并初始化RNG、pause/resume
+- Then: snapshot逐位携带对应S1/S2且content_hash不因seed变化；缺失seed不达battle_ready；本局RNG/GameRoot读取值始终等于snapshot seed，source request后改不影响本局；resume不重新派生seed
+- 验证: Config+GameRoot+RNG integration | Gate: BLOCKING
 
 ### E. Diagnostics and Production Gates
 

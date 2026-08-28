@@ -37,7 +37,7 @@
 #   Each entry: name, status, source, referenced_by[], attributes{}, added, revised
 
 version: 1
-last_updated: "2026-08-24"
+last_updated: "2026-08-28"
 
 # ─── ENTITIES ────────────────────────────────────────────────────────────────
 # Named game-world objects: enemies, NPCs, characters, factions, bosses.
@@ -145,12 +145,13 @@ formulas:
       - max_skill_effect_radius
       - max_enemy_bound
       - separation_radius
+      - max_separation_radius
       - max_projectile_segment_length
       - max_midpoint_cast_error
       - max_projectile_bound
       - max_target_motion_bound
     output_range: [0, .inf]
-    expression: "checked_max(pickup_radius_max, target_range_max, checked_add(max_skill_effect_radius, max_enemy_bound), checked_add(separation_radius, separation_radius), checked_sum(checked_mul(0.5, max_projectile_segment_length), max_midpoint_cast_error, max_projectile_bound, max_enemy_bound, max_target_motion_bound), ...)"
+    expression: "checked_max(pickup_radius_max, target_range_max, checked_add(max_skill_effect_radius, max_enemy_bound), checked_add(separation_radius, max_separation_radius), checked_sum(checked_mul(0.5, max_projectile_segment_length), max_midpoint_cast_error, max_projectile_bound, max_enemy_bound, max_target_motion_bound), ...)"
     notes: "所有依赖 SpatialGrid 查询接口的系统实际传入宽相半径的全集上界，
       必须包含 target conservative bound 与 projectile swept segment expansion。
       Projectile 项不得遗漏 max_midpoint_cast_error 或数值为 0 的
@@ -164,7 +165,7 @@ formulas:
       Config，数值待调参）。输入变化时重跑 F3 sweep，
       不能未经 benchmark 直接令 CELL_SIZE=max_query_radius。"
     added: 2026-08-14
-    revised: 2026-08-19
+    revised: 2026-08-28
 
   - name: index_margin_lower_bound
     status: active

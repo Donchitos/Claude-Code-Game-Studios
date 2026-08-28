@@ -1,9 +1,9 @@
 # Stage & Map（单图竞技场与空间配置）
 
-> **Status**: Draft — full-review revised（本轮 /design-review 8 项 BLOCKING 已闭环：arena 改竖屏 22×40、spawn_ring_depth→4.0、Section B 重写、boss 预警约束、AC 归属收窄、F4 上界修正、F3 per-axis、R6 误引修正）
+> **Status**: Re-review Pending — 2026-08-28 GameRoot 第三轮传播修订：Stage scene 重新确认为 Camera2D 规格与 identity owner，GameRoot 仅注册/注入；须独立复审
 > **Author**: 用户 + Claude Code agents
 > **Created**: 2026-08-19
-> **Last Updated**: 2026-08-19（full /design-review revision）
+> **Last Updated**: 2026-08-28（GameRoot 第三轮 camera ownership 传播）
 > **Implements Pillar**: 单图固定竞技场为 SpatialGrid/Spawn/Boss 提供确定的空间几何与坐标域
 > **Scope**: MVP minimum；静态空间几何与 `StageSpatialConfig` schema；不定义波次/时长/奖励/运行时安全区规则
 
@@ -20,7 +20,7 @@ Stage & Map 提供本局战斗唯一的静态空间几何：一张固定矩形�
 
 玩家不会直接看到"Stage 配置"，只会感到战场确定可信：怪潮始终从屏幕边缘内侧涌入而非凭空出现在身上、满屏妖兽下走位与命中判定的坐标基准稳定一致。
 
-Stage 通过冻结 arena 为竖屏比例（`22×40`）使 spawn ring 贴近相机一屏全显的屏幕边缘内侧——**相机固定一屏全显 arena** 是 Stage 声明的 cross-system 约束（归 GameRoot/Camera 实现，见 Deferred Fantasy 表），spawn ring 因此几何对齐屏幕边缘而非游离屏外。Stage 真正独立交付的 fantasy 是**坐标基准一致**：无论怪潮多密，玩家移动、命中、拾取的归格原点与越界容忍带在开战前即冻结、可复现、不漂移。
+Stage 通过冻结 arena 为竖屏比例（`22×40`）使 spawn ring 贴近相机一屏全显的屏幕边缘内侧——**相机固定一屏全显 arena** 是 Stage scene 拥有的 cross-system 约束与 Camera2D identity；GameRoot 只在 BATTLE_LOADING 注册/注入该实例，不重定义其内部配置。spawn ring 因此几何对齐屏幕边缘而非游离屏外。Stage 真正独立交付的 fantasy 是**坐标基准一致**：无论怪潮多密，玩家移动、命中、拾取的归格原点与越界容忍带在开战前即冻结、可复现、不漂移。
 
 "怪从屏幕边缘涌入""Boss 居中压场""走到边缘不外滑"的完整体验由 Stage 几何 + 下游（Camera/SpawnDirector/BossStateMachine/PlayerController）共同交付，Stage 不独自背其中任何一句（见 Deferred Fantasy 表）。技术异常时，系统宁可安全停止本局，也不靠放宽 arena 边界、静默收缩可行走区或临时改坐标域来掩盖 Stage 配置错误。
 
@@ -35,7 +35,7 @@ Stage 通过冻结 arena 为竖屏比例（`22×40`）使 spawn ring 贴近相�
 ### R1 — 单图固定竞技场 AABB 与居中坐标
 
 - MVP 固定为一张竖屏比例竞技场：`arena_size = Vector2(22.0, 40.0)`（宽 22 / 高 40，竖屏 9:16 一屏全显），原点居中，故 `arena_min = Vector2(−11.0, −20.0)`、`arena_max = Vector2(11.0, 20.0)`（均由 F1 从 `arena_size` 派生，非 schema 字段）。`spatial_max_abs_world_coord = 1_000_000.0` 约束的是 `arena_min`/`arena_max` 各坐标分量的绝对值（即 `arena_half` ≤ 1_000_000，`arena_size` ≤ 2_000_000），不是 arena 维度；两条维度 `≥ spatial_min_cell_size = 0.01`（遵 Config R7 域）。
-- **竖屏相机约束（cross-system，归 GameRoot/Camera 实现）**：相机固定一屏全显 arena（相机视口高度覆盖 40 高、宽度覆盖 22 宽）。9:16 竖屏一屏全显高 40 时可见宽 = 40×(9/16)=22.5 ≥ 22，故 arena 宽边 22 落在屏幕内、左右各余 ~0.25 单位——spawn ring 贴近屏幕边缘内侧而非游离屏外。此约束使 Player Fantasy 的"怪潮从屏幕边缘内侧涌入"几何可成立。相机方案（固定/跟随/缩放）的具体实现归 GameRoot/Camera GDD，落地时须反向引用本节声明其满足一屏全显约束，否则视为 fantasy 未交付。
+- **竖屏相机约束（Stage scene owner）**：Stage scene 固定拥有恰一个 battle Camera2D identity，其配置使相机一屏全显 arena（视口高度覆盖 40 高、宽度覆盖 22 宽）。9:16 竖屏一屏全显高 40 时可见宽 = 40×(9/16)=22.5 ≥ 22，故 arena 宽边 22 落在屏幕内、左右各余 ~0.25 单位——spawn ring 贴近屏幕边缘内侧而非游离屏外。GameRoot只在BATTLE_LOADING验证identity并注册/注入该实例，不创建第二相机、不改写zoom/position/limit；未来相机若改为跟随或动态缩放，必须先修订本GDD及其Player Fantasy。
 - `arena_min` 是 SpatialGrid F1 归格基准原点：`cell_x = floor((index_x − arena_min_x) / CELL_SIZE)`、`cell_y = floor((index_y − arena_min_y) / CELL_SIZE)`。`arena_min` 由 F1 派生（`−arena_size/2`，原点居中固定），不由独立字段存储、不由运行时坐标推导。
 - 拓扑为固定竞技场，MVP 不做循环拼接、世界回绕或镜像；查询半径跨越边界时仅返回边界内格子的实体（遵 SpatialGrid R7）。后续多地图/多境界属 Full Vision，不在本 GDD。
 - arena AABB 是 `walkable_region`、`spawn_region`、`boss_region` 的公共外接矩形；任何子区域必须 `⊆ arena AABB`，否则 `StageSpatialConfig` 校验失败。
@@ -280,7 +280,7 @@ Stage 不重定义行列数；引用 Config R7 / SpatialGrid F4 已冻结公式�
 |---|---|---|
 | Godot Resource/PackedScene | `StageConfig` 作为 typed `.tres`，含 `StageSpatialConfig` 字段，经 manifest 引用 | 引擎已固定；Resource class 实现未开始 |
 | Config/Data | Stage 经 `BattleConfigManifest` 引用打包进 immutable `BattleConfigSnapshot`；Config R7 校验 Stage 字段域上限 | `design/gdd/config-data-system.md` Draft；R7 Stage 校验关系已冻结 |
-| GameRoot | BATTLE_LOADING 按 R2 顺序注入 Stage 数据到 `SpatialGrid.init(config_snapshot, stage_spatial_config)` | `design/gdd/game-root-scene-flow.md` Draft |
+| GameRoot | BATTLE_LOADING 按 R2 顺序注入 Stage 数据到 `SpatialGrid.init(config_snapshot, stage_spatial_config)`，并注册Stage-owned唯一Camera2D identity，不拥有其配置 | `design/gdd/game-root-scene-flow.md` Re-review Pending |
 
 ### 下游消费者
 
@@ -302,7 +302,7 @@ Section B 的三句空间 fantasy 由 Stage 几何 + 下游共同交付。为避
 
 | Fantasy 句 | 依赖机制 | owning GDD | defer 契约 |
 |---|---|---|---|
-| "怪潮从屏幕边缘内侧涌入而非凭空出现在身上" | 相机/视野（相机固定一屏全显 arena）+ spawn 分布策略（arena-relative 固定方位） | GameRoot/Camera（相机）；SpawnDirector（分布策略） | **Stage 已冻结耦合约束**：arena 竖屏比例 22×40 使 spawn ring 对齐相机一屏全显的屏幕边缘内侧（R1）；spawn 分布 arena-relative 固定方位 + 玩家最小排除距离（spawn 距玩家 ≥ 4.0，R3）。相机实现归 GameRoot/Camera GDD，须反向引用本节声明满足一屏全显；分布策略细节归 SpawnDirector。下游若改相机为跟随或分布为 player-relative，须先修订 R1/R3 约束。 |
+| "怪潮从屏幕边缘内侧涌入而非凭空出现在身上" | Stage-owned固定Camera2D一屏全显 arena + spawn 分布策略（arena-relative 固定方位） | Stage（相机规格/identity）；GameRoot（注册/注入）；SpawnDirector（分布策略） | **Stage 已冻结耦合约束**：arena 竖屏比例 22×40 与唯一Camera2D配置使 spawn ring 对齐屏幕边缘内侧（R1）；spawn 分布 arena-relative 固定方位 + 玩家最小排除距离（spawn 距玩家 ≥ 4.0，R3）。GameRoot不得创建第二Camera或改写Stage配置；SpawnDirector负责分布细节。下游若改相机为跟随或分布为 player-relative，须先修订 R1/R3 约束。 |
 | "走到边缘不外滑" | 玩家边界 clamp（arena AABB 物理约束玩家 clamp 还是碰撞墙） | GameRoot/PlayerController | walkable_region 是"可行走区"非"碰撞墙"；玩家是否被 clamp 在 AABB 内归 GameRoot/PlayerController GDD。Stage 不独自背"不外滑"承诺。 |
 | "Boss 居中压场" | Boss 登场演出/预警/驱赶（boss_region 0:00–12:00 前期空窗） | BossStateMachine | **Stage 已冻结耦合约束**：boss_region 前期空窗预警约束（R4，Boss 生成前 ≥ N 秒须有预警/驱赶信号），防止玩家 12:00 贴脸扑咬。Boss 两阶段表现、预警形式、时机、"移动后是否回中"归 BossStateMachine GDD（OQ4）。Stage 不独自背"压场"持续行为承诺。 |
 
@@ -426,12 +426,12 @@ Given-When-Then 格式。Logic 校验用 GDUnit4 debug unit/integration；当前
 - Given: 合法 Config foundation 数据 + 合法/非法 StageConfig fixture（逐项注入：Stage reference 缺失、R5 扩展字段 `walkable_region_polygon`/`spawn_ring_depth`/`boss_region_center`/`boss_region_half` 非法、arena 非法、polygon schema 违规）
 - When: Config build_snapshot 校验 StageSpatialConfig
 - Then: 合法 fixture → snapshot 达 `battle_ready`；任一非法 fixture → snapshot 停 `foundation_ready` 不达 `battle_ready`，且 `SpatialGrid.init` 调用计数=0（spy 断言），GameRoot 不开放 BATTLE_ACTIVE
-- 验证: Stage reference validation unit + init-call-count spy | Gate: BLOCKING（BATTLE_LOADING 注入顺序、carrier/Pool/owner 层 failure、snapshot ID 跨 Pool/Grid 一致性的集成证据归 game-root-scene-flow.md AC-A2/D3，本 GDD 不重复）
+- 验证: Stage reference validation unit + init-call-count spy | Gate: BLOCKING（BATTLE_LOADING 注入顺序、carrier/Pool/owner 层 failure、snapshot ID 跨 Pool/Grid 一致性的集成证据归 game-root-scene-flow.md AC-A4/D1/D3，本 GDD 不重复）
 
 **AC-E2 Stage 侧 snapshot ID 一致性（Stage-owned 不变式）**
 - Given: Stage 数据随 snapshot S 注入 SpatialGrid.init
 - When: 读取 SpatialGrid 消费的 Stage 派生值与其绑定 snapshot ID
-- Then: Stage 侧派生值 snapshot ID == 注入时 snapshot S 的 ID；跨 Pool/Grid ID 不一致检测归 GameRoot（遵 GameRoot R2/AC-D3），本 GDD 仅验证 Stage 侧 ID 与注入一致
+- Then: Stage 侧派生值 snapshot ID == 注入时 snapshot S 的 ID；跨 Pool/Grid ID 不一致检测归 GameRoot（遵 GameRoot R2/AC-D1），本 GDD 仅验证 Stage 侧 ID 与注入一致
 - 验证: Stage-side snapshot ID unit | Gate: BLOCKING
 
 ### F. 不可热改与 teardown（R7）

@@ -93,10 +93,10 @@ SpatialGrid 是战斗场景的均匀空间索引，把需要被附近查询命�
 - `SpatialStatus` 固定为 primitive int enum：`OK`、`OK_NOOP`、`OK_REPLACED`、`STAGED_FOR_SUSPENSION`、`INVALID_ARGUMENT`、`INVALID_BENCHMARK_INPUT`、`INIT_LIMIT_EXCEEDED`、`CAPACITY_EXCEEDED`、`BUFFER_TOO_SMALL`、`PENDING_WORK`、`WRONG_STATE`、`PAUSED`、`PHASE_ERROR`、`STALE_HANDLE`、`OBJECT_INVALID`、`SYNC_FAILED`、`REBUILD_FAILED`、`ID_EXHAUSTED`。前四项为 success class，其余为 failure class；调用方按 enum 判定，不按字符串日志判定。
 - 所有 out carrier（Query/Nearest/Handle/Resolve/Lease/Remap）均由 owner 在 Active 前创建、定容并复用；Grid 不创建 carrier、不替换其内部数组。carrier 后置条件严格服从 R9 precedence：① main-thread/state/substate/lease 的 early failure **不得读取或写入 carrier**，其物理内容保持原样但全部不权威；②进入 carrier 层后才验证 class、PackedArray 元素类型、parallel-array size 与声明 capacity，malformed carrier 返回 `INVALID_ARGUMENT`、保持原样且不消耗 ID；③ carrier 验证成功后才将适用标量复位为 `count=0/required_capacity=0/has_handle=false/handle_id=0/lease_id=0/transaction_id=0/object=null`，随后再验证 gameplay arguments/entry，因此这些后续 failure 保持已复位零值且不权威。唯一 failure-output 例外是 `BUFFER_TOO_SMALL`：此时 `count=0`、旧数组槽位不权威，但 `required_capacity` 是权威诊断值。测试必须断言 carrier 与内部数组 identity/capacity 不变，并以污染标量覆盖三层 failure。
 - Grid 私有的 slot/entry/staging、bucket 与 Paused candidate build workspace 必须在进入 Active 前按批准上限预分配；GameRoot 拥有并预分配 authoritative input、out carrier 与 owner remap staging。Active query、insert/stage/remove/sync 以及 Paused resume prepare/publish 均不得因容器增长分配。ADR 可以选择私有容器，但不能把首次遇到新 cell 的 allocation 延后到 gameplay tick。
-- 任一 query failure、`resolve_active_into` failure，或 consumer GDD 明确声明的 fatal narrowphase/domain failure，都必须中止**整个本 tick query/collision phase**，而不只是当前 consumer。所有 consumer 只写本 phase 私有 resolution staging；全部 query、resolve 与窄相成功后，GameRoot 才一次发布 damage/pickup/targeting 结果。普通窄相“不相交/未命中”是合法结果而非 failure。任一较晚 fatal failure 必须丢弃包括先前成功 consumer 在内的全部 staging、关闭 open lease，再进入 `ControlledGameplayFault`；不得映射为空集合、部分集合或缩小半径。MVP 当前没有批准 fallback。该协议已由 `game-root-scene-flow.md` R5/AC-C1承接；实现与集成证据仍是 BLOCKING gate。
+- 任一 query failure、`resolve_active_into` failure，或 consumer GDD 明确声明的 fatal narrowphase/domain failure，都必须中止**整个本 tick query/collision phase**，而不只是当前 consumer。所有 consumer 只写本 phase 私有 resolution staging；全部 query、resolve 与窄相成功后，GameRoot 才一次发布 damage/pickup/targeting 结果。普通窄相“不相交/未命中”是合法结果而非 failure。任一较晚 fatal failure 必须丢弃包括先前成功 consumer 在内的全部 staging、关闭 open lease，再进入 `ControlledGameplayFault`；不得映射为空集合、部分集合或缩小半径。MVP 当前没有批准 fallback。该协议已由 `game-root-scene-flow.md` R5/AC-B3承接；实现与集成证据仍是 BLOCKING gate。
 - `CAPACITY_EXCEEDED` 只允许作为 fresh insert 的**发布前内容抑制结果**：SpawnDirector 在 borrow/可见化前先以 Config snapshot 的 ENEMY cap=303 做 admission check，并永久为 2 Elite + 1 Boss 保留 3 个槽，普通怪 active+pending 达 300 后不再借出/发布新普通怪。若 admission 与 insert 间仍因同 phase 排序得到 `CAPACITY_EXCEEDED`，caller 必须取消该 spawn intent、保持对象不进 active collection/SceneTree 可见分支并安全返池；现有战斗继续，telemetry 记录 suppressed spawn。阶段必需的 Elite/Boss 命中该 status，或任何 caller 已发布对象后才处理该 status，均是 contract violation：先撤销未发布 candidate并进入 `ControlledGameplayFault`。DROP 等其他类型由各 owner 用同一“先准入、后发布”协议处理。任何情况下都不得留下可见但不可索引实体。
 - 生命周期后置条件按操作区分：fresh、从未注册成功的 insert failure 由 caller 继续拥有，可返池；pending replace failure 保留旧注册且不得释放；remove failure 不得释放目标；remove success 后 owner 才可 release/queue_free；`SYNC_FAILED` 保持上一个 committed snapshot，pending/staged workspace 不清空且对象不得按未发布状态推进生命周期，并进入 ControlledGameplayFault。Paused mutation 返回 `PAUSED` 时 frozen registrant 必须 quarantine 到 resume publish 或 teardown，禁止 release/reborrow。warning rate-limit key 固定为 `(status,api,grid_epoch)`，每 epoch 最多一次；R2 未知 mask warning 的例外 key 为 `(unknown_mask_value,api,grid_epoch)`。
-- `ControlledGameplayFault` 的玩家可见与持久化行为是本系统的硬依赖，不是下游可选文案：进入后立即冻结 input/AI/spawn/timer/damage/reward，显示“战局状态异常，本局已安全停止。请返回洞府后重试。”且唯一操作为“返回洞府”；本局标记 `TECHNICAL_ABORT`，不得写胜负、死亡、奖励、纪录或教程完成度。权威细节由 `game-root-scene-flow.md` R9/AC-F1～F3维护；SpatialGrid 的 AC-G4/AC-K5 必须用真实 fault UI/cleanup strategy 做集成验证。
+- `ControlledGameplayFault` 的玩家可见与持久化行为是本系统硬依赖：进入后立即冻结 input/AI/spawn/timer/damage 与 fault tick 新 reward publication；本局标记 `TECHNICAL_ABORT`，不得写胜负、死亡、纪录或教程完成度。GameRoot 可按 fault 前已提交事实经 Save reservation/commit 尝试部分奖励与灵药补偿；Grid 既不计算也不禁止该补偿。权威细节由 `game-root-scene-flow.md` R9/AC-E3～E4维护。
 
 公开 API 的状态与后置条件固定如下；表外组合一律 failure 且内部状态不变：
 
@@ -172,7 +172,7 @@ Grid 在 init 时预分配容量 `MAX_INDEXED_ENTRIES` 的 private candidate bui
 2. **Arm + owner swap**：`arm_resume_commit(tx,lease)` 核对 candidate、frozen revision、lease、capacity，并 checked 计算待发布 `next_snapshot_revision`。任何可失败 Grid 校验都在此结束；failure 保持 Prepared且不改旧快照，GameRoot随后可 abort。matching arm=`OK` 后进入 PausedArmed。所有 consumer phase 关闭时，GameRoot 保存旧 authoritative collection/target-cache 引用，并把完整 staging 引用交换为当前 owner 引用；若 owner swap 自身失败，先恢复旧引用，再 `abort_resume`。
 3. **Publish/abort**：owner swap 成功后调用 `publish_resume(tx,lease)`；matching Armed publish 只执行预分配 Grid candidate/revision 的引用交换，契约上**不可失败且必返回 `OK`**，随后进入 Active。owner 新引用此时成为可消费权威状态，但必须等 resume lease `end_phase` 关闭后才允许下一 Active begin。wrong transaction/lease 在交换前返回 `PHASE_ERROR`、保持 Armed；GameRoot恢复旧 owner引用后以正确 tx/lease abort。`abort_resume` 在 Prepared/Armed 均丢弃 candidate回 Frozen。若 GameRoot 在 Prepared/Armed 直接 end，Grid 先 auto-abort；Armed cleanup 路径必须先由 GameRoot恢复 owner引用。成功 publish 后重复 publish按 state-first返回 `WRONG_STATE`。
 
-这里的“原子发布”是**对 gameplay consumer 的逻辑原子性**，不是跨两个 GDScript Object 的硬件事务：唯一依据是 resume-exclusive lease 期间 consumer phase 全关闭、所有 owner 变更均为 O(1) 可回滚引用交换、失败时在开放任何 consumer 前恢复旧引用。`game-root-scene-flow.md` R7已冻结该编排；仍须由其AC-E1/E2集成测试证明，SpatialGrid 单体测试不能代替。
+这里的“原子发布”是**对 gameplay consumer 的逻辑原子性**，不是跨两个 GDScript Object 的硬件事务：唯一依据是 resume-exclusive lease 期间 consumer phase 全关闭、所有 owner 变更均为 O(1) 可回滚引用交换、失败时在开放任何 consumer 前恢复旧引用。`game-root-scene-flow.md` R7已冻结该编排；仍须由其AC-D2/D3/D4集成测试证明，SpatialGrid 单体测试不能代替。
 
 `resume_from` 进入 carrier 层后的 duplicate、非法对象/位置、容量/ID 耗尽或内部构建失败均返回精确 failure status：Grid 回到/保持 PausedFrozen，旧 frozen snapshot、旧 epoch、旧公开 handles 与 authoritative collection revision 均不变；carrier 已验证时 `out_remap.count=0` 且不权威，state/lease 或 malformed-carrier early failure则按 R9 保持 carrier 原样。唯一允许变化是已保留的新 ID 被 burn。`arm_resume_commit` failure 保持 Prepared，wrong publish 保持 Armed，两者不得被本段误读为回 Frozen；其精确后置条件以 API 表与三阶段事务为准。暂停期间不存在 pending/staged 条目；恢复输入是唯一权威来源。Frozen registrant 在成功 publish 或 teardown 前必须 quarantine。PausedFrozen + open resume-exclusive 时 query/resolve=`PHASE_ERROR`；Prepared/Armed 时按 state-first query/resolve=`WRONG_STATE`。teardown 若仍有 open lease 先返回 `PHASE_ERROR`；GameRoot 必须 `end_phase`（必要时 auto-abort）后再 teardown。
 
@@ -259,7 +259,7 @@ benchmark sweep 以 checked multiply 生成 `{0.5×candidate, candidate, 1.25×c
 
 其中 `max_query_radius` 是所有依赖系统查询半径的全集上界：
 
-`max_query_radius = checked_max(pickup_radius_max, target_range_max, checked_add(max_skill_effect_radius,max_enemy_bound), checked_add(separation_radius,separation_radius), checked_sum(checked_mul(0.5,max_projectile_segment_length),max_midpoint_cast_error,max_projectile_bound,max_enemy_bound,max_target_motion_bound), ...)`
+`max_query_radius = checked_max(pickup_radius_max, target_range_max, checked_add(max_skill_effect_radius,max_enemy_bound), checked_add(separation_radius,max_separation_radius), checked_sum(checked_mul(0.5,max_projectile_segment_length),max_midpoint_cast_error,max_projectile_bound,max_enemy_bound,max_target_motion_bound), ...)`
 
 **变量：**
 
@@ -462,7 +462,7 @@ The update_cost_clear_rebuild formula is defined as:
 
 ### 上游依赖
 
-**无已实现的代码硬依赖**，但存在四个必须注入的集成契约：固定竞技场AABB + `index_margin`、GameRoot physics phase/暂停调度/**ControlledGameplayFault 玩家与持久化路径**、生命周期owner的active collection/对象池回收、Config snapshot提供的数值域/per-type数量/conservative bound上限。GameRoot、Object Pooling与Config/Data最小GDD已创建但尚无实现；Config已冻结基础limits，Stage arena与下游shape/query envelope仍未设计，因此当前只允许foundation isolated spike，不允许声明battle/integration story ready。Paused binding/quarantine与teardown顺序分别以`object-pooling.md` R6–R8和`game-root-scene-flow.md` R7–R9为集成权威；缺少后者 R9 的 fault UI、`TECHNICAL_ABORT` 与无奖励 cleanup 时，SpatialGrid battle integration 为 BLOCKED。
+**无已实现的代码硬依赖**，但存在四个必须注入的集成契约：固定竞技场AABB + `index_margin`、GameRoot physics phase/暂停调度/**ControlledGameplayFault 玩家与持久化路径**、生命周期owner的active collection/对象池回收、Config snapshot提供的数值域/per-type数量/conservative bound上限。GameRoot、Object Pooling与Config/Data最小GDD已创建但尚无实现；Config已冻结基础limits，Stage arena与下游shape/query envelope仍未设计，因此当前只允许foundation isolated spike，不允许声明battle/integration story ready。Paused binding/quarantine与teardown顺序分别以`object-pooling.md` R6–R8和`game-root-scene-flow.md` R7–R9为集成权威；缺少后者 R9 的 fault UI、`TECHNICAL_ABORT` 与 Save commit 状态机时，SpatialGrid battle integration 为 BLOCKED。
 
 ### 下游依赖（架构硬依赖 — 缺则无法工作）
 
@@ -481,7 +481,7 @@ The update_cost_clear_rebuild formula is defined as:
 | 系统 | 用途 | 调用接口 | 契约状态 |
 |------|------|----------|----------------|
 | DropSystem | 掉落物注册 / 中心点本地灵气吸取；引灵符全场效果走 DropSystem active collection | `insert_into/stage_position/remove(handle_id)` / `query_circle_into(pos, pickup_radius, DROP, buffer, lease_id)` | 本地吸取硬依赖 SpatialGrid；systems-index 已同步 |
-| GameRoot & Scene Flow | phase coordination、snapshot revision、Paused transaction 与 ControlledGameplayFault 玩家/持久化路径 | 独占 `begin_phase/end_phase` 调度权；在 consumer-closed window 内执行可回滚 owner 引用交换与 Grid publish；R9 显示低干扰故障层、标记 TECHNICAL_ABORT、禁止奖励并安全返回洞府 | `design/gdd/game-root-scene-flow.md` R5/R9 契约已冻结；实现/集成证据未完成，属于 battle integration 硬依赖 |
+| GameRoot & Scene Flow | phase coordination、snapshot revision、Paused transaction 与 ControlledGameplayFault 玩家/持久化路径 | 独占 `begin_phase/end_phase` 调度权；在 consumer-closed window 内执行 owner 引用交换与 Grid publish；R9 标记 TECHNICAL_ABORT、禁止 fault tick 新 reward，并可按此前 committed 事实尝试部分奖励 | `design/gdd/game-root-scene-flow.md` R5/R9 契约第三轮已修订；实现/集成证据未完成 |
 | Config/Data | 数值域、type caps、carrier/workspace上限与snapshot ID | schema v1固定1000000/0.01/4096/262144/1000及303/0/300；Grid init逐项复核 | `design/gdd/config-data-system.md` Draft |
 
 **一致性核对结论**：DropSystem 的本地吸取不可降级为高频全场遍历，因此是 SpatialGrid 硬依赖；`systems-index.md` 已同步该边。引灵符全场效果仍走 DropSystem 权威 active collection。
@@ -530,8 +530,8 @@ The update_cost_clear_rebuild formula is defined as:
 
 **G3 — `max_query_radius`（最大查询半径）** — derived（跨系统聚合）
 - **类型**：float，世界单位
-- **定义**：`checked_max(pickup_radius_max, target_range_max, checked_add(max_skill_effect_radius,max_enemy_bound), checked_add(separation_radius,separation_radius), checked_sum(checked_mul(0.5,max_projectile_segment_length),max_midpoint_cast_error,max_projectile_bound,max_enemy_bound,max_target_motion_bound), ...)`
-- **separation 项澄清（R4 根因3）**：`checked_add(separation_radius,separation_radius)` 中 `separation_radius` 是 registry 别名 == EnemySystem §4.6 的 `max_separation_radius`（所有敌人 sep_radius 上界），故此项 = `2×max_separation_radius` = max-sep 敌人的分离查询半径（§4.2 `sep_radius+max_separation_radius` 在 self 为 max-sep 敌时取此值）= 分离查询半径的全局上界，**正确**（非误用 `max_enemy_bound`；与 enemy §4.2 权威形式一致，仅以 max 形式聚合为全局上界）。
+- **定义**：`checked_max(pickup_radius_max, target_range_max, checked_add(max_skill_effect_radius,max_enemy_bound), checked_add(separation_radius,max_separation_radius), checked_sum(checked_mul(0.5,max_projectile_segment_length),max_midpoint_cast_error,max_projectile_bound,max_enemy_bound,max_target_motion_bound), ...)`
+- **separation 项澄清（2026-08-28 传播修订）**：公式显式使用 `checked_add(separation_radius,max_separation_radius)`，与调用侧 `sep_radius+max_separation_radius` 同形。registry 旧名 `separation_radius` 当前冻结为 EnemySystem §4.6 的同一全局上界，故预算值仍等于`2×max_separation_radius`；显式双变量避免未来 per-caller 值与全局上界分离时发生契约漂移。
 - **MVP projectile 固定项**：production export 为 real_t32，故 `max_midpoint_cast_error=sqrt(2)/32=0.04419417382415922`；target sampling 为 tick-end discrete，故 `max_target_motion_bound=0.0`。这两项必须出现在 registry expression 中，即使后一项数值为零也不得省略语义字段。
 - **当前下界**：1.98（仅 pickup_radius_max 支撑，其他输入未设计）
 - **影响维度**：生成 CELL_SIZE sweep 候选、发现异常配置与规划 workload；不限制合法查询。

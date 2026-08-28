@@ -119,3 +119,51 @@ set_gui_disable_input / set_pause 同步传播 / set_mouse_filter 4.6 dual-focus
 Prior verdict resolved: 部分回归 + 新发现。首轮 5 BLOCKING 中 3 闭环维持无回归；2 pending 未执行且 Scoped A 反向加重；新增 9 项 BLOCKING。
 
 ---
+
+## Review — 2026-08-28 — Verdict: NEEDS REVISION（第三轮 full re-review）
+
+Scope signal: XL（规范收敛与跨文档传播；非架构重做）
+Specialists: game-designer, systems-designer, qa-lead, performance-analyst, godot-specialist, technical-director + creative-director 终审
+Prior verdict: 第二轮 NEEDS REVISION
+Creative Director verdict: **NEEDS REVISION；不构成 MAJOR REVISION**
+
+### 前序 11 项闭环审计
+
+- B1 Scoped A、B2 AC 拆分、B3 wallclock gates、B4 choice-blocked feedback、B5 pause presentation、B7 instrumentation 边界、B9 seed reward source、B10 覆盖缺口、B11 注入式确定性：修订目标已落入主文或主体闭合。
+- B6：前序“`PackedArray[i]` 装箱等于 heap allocation、`clear()+append_array()`必然零分配”的证据链不成立。第三轮不沿用该结论，改为预分配 `AuthorityCopyManifest`、禁止 resize/clear/append/COW alias，并以容量/identity/growth counters + runtime evidence gate 验证；不能由语法臆断 native allocation。
+- B8：**false positive**。Godot 4.7.1 `Viewport.gui_disable_input` 属性的 setter 正是 `set_disable_input(bool)`；不得改成不存在的 `set_gui_disable_input`。第二轮对应 blocker 作废。
+
+### 第三轮根 blocker（CD 去重）
+
+1. **Fault reward source conflict**：Grid fault tick“不得产生新奖励”与 GameRoot TECHNICAL_ABORT 补偿表述混淆；须限定为只能从 fault 前已提交事实结算。
+2. **Run identity chain incomplete**：Config 缺 `RunStartRequest.run_seed→BattleConfigSnapshot` 单一来源；resume 前缺 owner/Grid/Pool `config_snapshot_id` 一致性复核；settlement 缺完整 RunOutcome envelope。
+3. **Authority/resolution publish token incomplete**：仅有 published revision，无法证明 consumer 已消费同一稳定 bank；须加入 consumed revision 与禁止 alias/COW 的 copy manifest。
+4. **Grid→Pool publish failure domain invalid**：matching Pool publish 若仍调用 Node/重新校验就可能在 Grid 已 publish 后失败，造成无法回滚的半提交；最终 Node identity/capacity 验证必须前移到 arm，matching publish 收窄为不可失败纯发布。
+5. **Pause lifecycle observer invalid**：`PROCESS_MODE_ALWAYS` Host/shield/VJ 不能作为 `NOTIFICATION_UNPAUSED` 必达观察者；`set_pause(false)` 返回后由 GameRoot 显式执行 post-unpause observer，通知语义另用 pausable probe 取证。
+6. **Geometry relay missing**：Control Host 不应被假定接收 Window-only resize/safe-area 通知；须由 InputSystem-owned Window/Viewport relay canonicalize geometry 并 typed-forward invalidation。
+
+### 同根追踪缺口
+
+- diagnostics 容器需预分配且不得依赖 runtime growth；GATE-OQ 必须进入主 GDD，不得只存在 review log。
+- Config `max_query_radius` 的 separation 项须与调用侧显式同形为 `separation_radius+max_separation_radius`。
+- Stage camera 由 Stage owner 持有，GameRoot 只在 BATTLE_LOADING 注册/注入，不反向吞并 owner。
+- TECHNICAL_ABORT 与正常结算均须通过 `RunOutcomeEnvelope`；Save commit 必须有 PENDING/SUCCESS/FAILURE 玩家面，不得把构造 outcome 当作已持久化。
+
+### 用户裁决与修订结果
+
+用户选择 **A：允许更新全部 blocker 与追踪文件**。已完成：
+
+- `game-root-scene-flow.md` 重写为唯一编排契约：保留七 phase，删除 Input FSM 镜像；加入 safe-boundary pause、RunStartRequest/run_seed、snapshot ID preflight、AuthorityCopyManifest、published/consumed revision、FailureDiagnosticBank、RunOutcomeEnvelope、Save commit 状态、GATE-OQ 与独立 AC A1-F4/GATE-F5。
+- `config-data-system.md`：冻结 run_seed 单一来源与 snapshot 逐位复制；修正 max_query_radius separation 项；补 AC-D4。
+- `object-pooling.md`：arm 完成最终 Node identity/capacity 验证；matching publish 无 Node API、不可失败；补 AC-E3 fixture。
+- `input-system.md`：移除 ALWAYS 节点 unpause 通知 oracle；冻结 GameRoot explicit second observer 与 Window/Viewport geometry relay。
+- `stage-map.md`：Stage scene 重新确认为唯一 Camera2D 规格/identity owner，GameRoot 只注册/注入。
+- `spatial-grid.md`、`rng-system.md`、registry：同步 fault/reward 边界、GATE 引用、run_seed 消费关系及显式 separation 公式。
+
+### 当前状态
+
+**Re-review Pending**。本次只完成设计文档与追踪闭环，尚未经过第四轮独立 full re-review；未执行 Godot runtime、真机性能、Save integration、项目 asset 或 GATE-OQ harness，因此不得标记 Approved、implementation-ready、battle-ready 或 benchmark-ready。
+
+Prior verdict resolved: 第二轮目标已大部闭合，B6/B8 证据纠偏；第三轮新根 blocker 已修订但尚未独立验收。
+
+---
