@@ -37,7 +37,7 @@
 #   Each entry: name, status, source, referenced_by[], attributes{}, added, revised
 
 version: 1
-last_updated: ""
+last_updated: "2026-08-21"   # +1 constant max_band_size (autorado por era; cierra F2-B5 tope de banda para rally — Tropas Fórmula E, Reliquias OQ-RB7). Prev 2026-08-18: reliquias-bendiciones.md design-review revision: effective_attack_damage note updated (refresh-on-repick per (relic_id,unit) replaces per-instance stacking; AC-RB31/RB31b). Prev 2026-08-17: +2 formulas (blessing_magnitude, effective_attack_damage-provisional) +3 constants (invocation_charges, draw_size, pool_cap); relic_record.referenced_by += reliquias-bendiciones.md
 
 # ─── ENTITIES ────────────────────────────────────────────────────────────────
 # Named game-world objects: enemies, NPCs, characters, factions, bosses.
@@ -48,7 +48,81 @@ last_updated: ""
 # Attribute fields: any key stats that could appear in another GDD
 #   (health, damage, drops, faction, etc.)
 
-entities: []
+entities:
+  - name: melee_infantry
+    status: active
+    source: design/gdd/sistema-de-tropas.md
+    referenced_by:
+      - design/gdd/sistema-de-tropas.md
+      - design/gdd/combate-dano.md      # CombatProfile (combat stats abajo) owned por Combate/Daño
+    max_health: 40
+    move_speed: 4.0            # world units/sec (camera_pan_speed × 0.133)
+    sprite_diameter_px: 44
+    unit_visual_radius_world: 0.4583   # 44/48/2
+    tactical_role: melee
+    # CombatProfile (source: combate-dano.md) — daño plano por golpe, sin armadura MVP
+    attack_damage: 8
+    attack_range: 1.0
+    attack_cooldown_s: 1.0
+    aggro_range: 5.0
+    leash_range: 8.0
+    added: 2026-07-23
+    revised: 2026-08-09        # combate-dano.md añadió CombatProfile
+
+  - name: ranged_troop
+    status: active
+    source: design/gdd/sistema-de-tropas.md
+    referenced_by:
+      - design/gdd/sistema-de-tropas.md
+      - design/gdd/combate-dano.md      # CombatProfile owned por Combate/Daño
+    max_health: 20
+    move_speed: 5.0            # world units/sec (camera_pan_speed × 0.167)
+    sprite_diameter_px: 32
+    unit_visual_radius_world: 0.3333   # 32/48/2
+    tactical_role: ranged
+    # CombatProfile (source: combate-dano.md) — rol ranged = mayor attack_range, sin física de proyectil MVP
+    attack_damage: 5
+    attack_range: 4.0
+    attack_cooldown_s: 1.2
+    aggro_range: 6.0
+    leash_range: 9.0
+    added: 2026-07-23
+    revised: 2026-08-09        # combate-dano.md añadió CombatProfile
+
+  - name: support_troop
+    status: active
+    source: design/gdd/sistema-de-tropas.md
+    referenced_by:
+      - design/gdd/sistema-de-tropas.md
+      - design/gdd/combate-dano.md      # CombatProfile owned por Combate/Daño
+    max_health: 28
+    move_speed: 4.5            # world units/sec (camera_pan_speed × 0.150)
+    sprite_diameter_px: 40
+    unit_visual_radius_world: 0.4167   # 40/48/2
+    tactical_role: support
+    # CombatProfile (source: combate-dano.md)
+    attack_damage: 4
+    attack_range: 2.5
+    attack_cooldown_s: 1.5
+    aggro_range: 5.0
+    leash_range: 8.0
+    added: 2026-07-23
+    revised: 2026-08-09        # combate-dano.md añadió CombatProfile
+
+  - name: kaiju
+    status: active
+    source: design/gdd/combate-dano.md
+    referenced_by:
+      - design/gdd/combate-dano.md
+      - design/gdd/encuentro-con-kaiju.md   # F2/F4 derivan directamente de attack_damage/attack_cooldown_s; Regla 2 anula leash_range
+    # CombatProfile (source: combate-dano.md) — daño plano por golpe, sin armadura MVP
+    attack_damage: 45
+    attack_range: 2.5
+    attack_cooldown_s: 4.5
+    aggro_range: 10.0
+    leash_range: "sin leash — Encuentro con Kaiju Regla 2 anula el campo por completo (persecución ilimitada durante CLIMAX); no se lee para decisiones de persecución (AC-K05)"
+    added: 2026-08-09        # combate-dano.md definió el CombatProfile del kaiju; entrada de registro faltaba, backfilleada aquí
+    revised: 2026-08-10       # encuentro-con-kaiju.md resolvió Combate/Daño OQ-7 (leash) y registró la entidad
 
 # Example (remove when first real entry is added):
 #
@@ -77,7 +151,33 @@ entities: []
 # Attribute fields: value_gold, weight, stackable, category, and any stat
 #   modifiers that another system (e.g., economy, crafting) might reference.
 
-items: []
+items:
+  - name: relic_record
+    status: active
+    source: design/gdd/forja-de-legado.md   # Forja construye y posee la RelicRecord (Regla 3); dueño canónico del dato de reliquia
+    referenced_by:
+      - design/gdd/forja-de-legado.md
+      - design/gdd/reliquias-bendiciones.md      # consumidor real: lee relic_category + tier + identidad (source_hero_name/epitaph/forge_index) para construir el pool de invocación (Regla 1); desbloquea Forja AC-FL19/OQ-FL2
+      # Consumidores futuros (sin GDD aún — añadir su path cuando existan):
+      #   Salón Conmemorativo/Panteón (#14): lee el registro para exhibición (OQ-FL3, AC-FL20 bloqueado)
+      #   Transición de Era (#15): arrastra el registro entre eras
+      #   Narrativa Ambiental (#17): consume relic_id vía EraDefinition.legacy_props
+      - design/gdd/datos-de-era-civilizacion.md  # EraDefinition.legacy_props referencia los relic_id que Forja asigna (Regla 4)
+      - design/gdd/guardado-persistencia.md      # persiste el registro por referencia (IDs + campos), nunca por copia (Guardado Regla 4)
+    category: legacy_relic
+    fields:                        # estructura de la RelicRecord (Forja Regla 3) — fuente de verdad, no redefinir en otro GDD
+      - relic_id                   # estable, único, derivado determinísticamente de forge_index; nunca get_instance_id() (Regla 4, OQ-FL5)
+      - source_hero_id             # transportado del veredicto de Permadeath
+      - source_hero_name           # transportado
+      - relic_category             # offensive | defensive | rally (fijo por héroe, owned por sistema-de-heroes.md)
+      - relic_quality              # float [0.10,1.00] exacto, transportado (ver formula relic_quality); NO recalculado
+      - tier                       # Delgada | Sólida | Legendaria, derivado vía FL1 de relic_quality (cortes owned por Héroes)
+      - origin_era_id              # era ACTIVE al forjar (leído de Datos de Era)
+      - forge_index                # int monótono persistido, orden de forja en el legado (FL2); nunca reiniciado entre eras
+      - epitaph                    # descriptor de procedencia derivado de relic_category × tier (epitaph_templates); narrativa, no efecto
+    notes: "Alcance DELGADO: Forja produce/persiste la RelicRecord pero NO define el efecto de combate (Reliquias/Bendiciones #12) ni la exhibición (Panteón #14). Una muerte de héroe → exactamente una reliquia, nunca cero (anti-nihilismo, Pilar 2, Regla 5), incluso en relic_quality=0.10 (Tier Delgada). Dedup defensivo por (source_hero_id, origin_era_id) (Regla 8). Cierra Permadeath OQ-P3/AC-P16."
+    added: 2026-08-16
+    revised: ""
 
 # Example:
 #
@@ -106,7 +206,187 @@ items: []
 #   output_range[min, max], added
 # Optional: expression (the actual formula), notes
 
-formulas: []
+formulas:
+  - name: screen_to_world_transform
+    status: active
+    source: design/gdd/control-y-seleccion-de-unidades.md
+    referenced_by:
+      - design/gdd/control-y-seleccion-de-unidades.md
+      - design/gdd/ui-hud.md      # UI/HUD define la inversa formal (world_to_screen_transform, F2) para anclar overlays
+    variables:
+      - screen_pos_px
+      - viewport_size_px
+      - camera_position_world
+      - zoom
+      - world_unit_scale
+    output_range: [null, null]   # acotado a los límites del mapa de la era activa
+    expression: "camera_position_world + (screen_pos_px - viewport_size_px/2) * (zoom / world_unit_scale)"
+    notes: "Convierte posición de clic de pantalla a coordenadas de mundo. CRÍTICO: el zoom de Camera2D en Godot es INVERSO (0.5=acercado, 1.5=alejado). La corrección del Pilar 1 depende de esto. Su inversa (px_per_world_unit = world_unit_scale/zoom) la necesitarán UI/HUD, minimapa y VFX para colocar marcadores sobre unidades."
+    added: 2026-07-23
+    revised: ""
+
+  - name: select_radius
+    status: active
+    source: design/gdd/control-y-seleccion-de-unidades.md
+    referenced_by:
+      - design/gdd/control-y-seleccion-de-unidades.md
+    variables:
+      - unit_visual_radius_world
+      - click_tolerance_px
+      - zoom
+      - world_unit_scale
+    output_range: [0.35, 1.2]   # world units, práctico dado los rangos de entrada
+    expression: "unit_visual_radius_world + (click_tolerance_px * zoom / world_unit_scale)"
+    notes: "Radio en el que un clic se considera 'sobre' una unidad. Proporcional al sprite (no plano) para acotar el aura de ambigüedad del héroe (Pilar 1). Sistema de Tropas y Sistema de Héroes (sin GDD aún) deberán proveer unit_visual_radius_world por tipo de unidad respetando este contrato."
+    added: 2026-07-23
+    revised: ""
+
+  - name: relic_quality
+    status: active
+    source: design/gdd/sistema-de-heroes.md
+    referenced_by:
+      - design/gdd/sistema-de-heroes.md
+      - design/gdd/permadeath.md   # transporta relic_quality del snapshot de Héroes al hand-off a Forja de Legado (Regla 1/5); NO recalcula (AC-P02)
+      - design/gdd/ui-hud.md       # renderiza los 3 tiers (Delgada/Sólida/Legendaria) en el readout de veredicto (U-1/U-2, Core Rule 6); solo lee, no recalcula
+      - design/gdd/forja-de-legado.md  # consume el output y lo mapea a tier vía FL1 (Regla 2); NO recalcula (AC-FL07). Almacena float exacto + tier en la RelicRecord (ver item relic_record)
+    variables:
+      - D                 # was_deliberate — bool {0,1}, provisto por Combate/Comando (OQ-2)
+      - T                 # kaiju_stakes = 1 − kaiju_timer_remaining_ratio — [0,1]; kaiju_timer_remaining_ratio lo POSEE Temporizador de Preparación/Ritual (ver formula homónima), consumido por Encuentro con Kaiju. Héroes OQ-3 resuelto 2026-08-07
+      - P                 # served_purpose — bool {0,1}, vía defensiva (guard_radius) u ofensiva (amenaza kaiju neutralizada); provisto por Combate/Kaiju (OQ-2)
+      - base_accidental   # const, MVP 0.10 (rango seguro 0.10–0.15; piso inferior estrechado 0.05→0.10 el 2026-08-17 — <0.10 emitiría relic_quality bajo el dominio [0.10,1.00] de Forja de Legado, rompiendo el piso anti-nihilismo compartido)
+      - base_deliberate   # const, MVP 0.40 (rango seguro 0.35–0.50; floor 0.35 enforced — ver nota)
+      - w_stakes          # const, MVP 0.35 (rango seguro 0.20–0.40)
+      - w_purpose         # const, MVP 0.25 (rango seguro 0.15–0.30)
+    output_range: [0.10, 1.00]   # nunca 0 — base_accidental es piso incondicional
+    expression: "clamp(base_accidental + D * (base_deliberate - base_accidental + w_stakes * T + w_purpose * P), 0.0, 1.0)"
+    notes: "GATED por D: una muerte accidental (D=0) queda topada a base_accidental (0.10) sin importar T/P — la intención es la compuerta (válvula anti-nihilismo). En D=1, base_accidental se CANCELA algebraicamente (no afecta la reachability de tiers). Tiers consumidos por Forja de Legado: Delgada [0.10,0.35), Sólida [0.35,0.70), Legendaria [0.70,1.00]. Inputs D/T/P se SNAPSHOTEAN en el cruce por 0 (health≤0), no se releen (ver Edge Cases/AC-H15). CONSTRAINTS ENFORZADOS en carga vía LOUD-FAIL uniforme (no se clampa/sustituye silenciosamente, coherente con AC-H02): (a) cada knob individual dentro de su rango; (b) suma base_deliberate + w_stakes + w_purpose ∈ [0.70, 1.00]; (c) floor individual base_deliberate ≥ 0.35. El piso de suma 0.70 garantiza que Tier 3 Legendaria sea alcanzable en D=1,T=1,P=1; el techo 1.00 preserva que Legendaria exija una muerte bien gastada. El floor (c) es INDEPENDIENTE de (b): en T=0,P=0, relic_quality = base_deliberate exactamente, así que <0.35 haría colisionar una muerte deliberada (D=1) con una accidental (D=0→base_accidental) en Tier 1 — la suma-check (b) no atrapa esto (solo inspecciona la suma). Ver AC-H23d. Snapshot expuesto a Permadeath en la transición DYING→DEAD. D=1 requiere comando Sacrificio activo + muerte dentro de sacrifice_radius (owned por sistema-de-heroes.md, provisto por Combate/Daño — ver OQ-2)."
+    added: 2026-08-06
+    revised: 2026-08-16   # forja-de-legado.md añadido a referenced_by (consume el output, mapea a tier vía FL1, no recalcula); reemplazado el comentario placeholder "sin GDD aún"
+    # revised: 2026-08-12   # permadeath.md añadido a referenced_by (consume/transporta relic_quality, no recalcula)
+    # revised: 2026-08-07   # re-review 2: base_deliberate rango 0.30→0.35 (floor enforced anti-colisión T=0,P=0, B1); política clamp→loud-fail uniforme; label Combate/Comando→Combate/Daño
+
+  - name: kaiju_timer_remaining_ratio
+    status: active
+    source: design/gdd/temporizador-de-preparacion-ritual.md
+    referenced_by:
+      - design/gdd/temporizador-de-preparacion-ritual.md
+      - design/gdd/sistema-de-heroes.md   # deriva T = 1 − kaiju_timer_remaining_ratio (Fórmula H4)
+      - design/gdd/encuentro-con-kaiju.md  # CONSUME read-only durante CLIMAX (fijado en 0); AC-K04, nunca escribe de vuelta
+      - design/gdd/ui-hud.md               # renderiza el timer ritual diegético (fase + tiempo restante), Core Rule 5 / HU-3
+    variables:
+      - elapsed_s               # tiempo de juego transcurrido desde el inicio de PREPARATION
+      - approach_duration_s     # config por era (EraDefinition); default MVP 600s, rango seguro 300–1800
+    output_range: [0.0, 1.0]    # 1.0 al inicio de PREPARATION → 0.0 al inicio de CLIMAX; fijado en 0 durante CLIMAX
+    expression: "clamp(max(approach_duration_s - elapsed_s, 0) / approach_duration_s, 0.0, 1.0)"
+    notes: "DUEÑO: Temporizador de Preparación/Ritual (Regla 3 / Fórmula F2). Fuente de verdad única del 'cuán cerca del clímax'. Sistema de Héroes deriva su input T = 1 − este ratio, leído en el frame de muerte del héroe (snapshot). Encuentro con Kaiju lo CONSUME (no lo posee) — read-only, confirmado por su AC-K04 (nunca escribe de vuelta). Cross-check Héroes: elapsed_s=30/approach=600 → 0.95 → T=0.05; elapsed_s=570 → 0.05 → T=0.95; CLIMAX → 0 → T=1. Config approach_duration_s e imminent_window_s son tuning knobs por era con loud-fail fuera de rango (approach>0; 0<imminent_window<approach). Distinto de time_to_death por héroe (ese lo provee Encuentro con Kaiju, U-3/AC-H29 de Héroes)."
+    added: 2026-08-07
+    revised: 2026-08-12          # /consistency-check: Encuentro con Kaiju (Approved) añadido a referenced_by
+
+  - name: time_to_death
+    status: active
+    source: design/gdd/encuentro-con-kaiju.md
+    referenced_by:
+      - design/gdd/encuentro-con-kaiju.md
+      - design/gdd/sistema-de-heroes.md   # consumido por el trigger de visibilidad del readout, AC-H29/U-3/AC-H32b
+      - design/gdd/ui-hud.md              # input de hero_risk_threshold (F1); rama kaiju-only del min() del readout de peligro
+    variables:
+      - telegraph_duration_s     # knob, MVP 14.0, rango seguro [12.5,17.0], mínimo matemático duro 12.0 exacto
+      - kill_time_hits_kaiju     # = ceil(hero_HP_at_telegraph_start / kaiju_attack_damage), Combate/Daño F2
+      - hero_HP_at_telegraph_start   # snapshoteado al entrar a TELEGRAPHING, no se re-lee
+      - attack_cooldown_s_kaiju  # = 4.5, locked (entidad kaiju)
+    output_range: [18.5, null]   # mínimo con telegraph_duration_s=14.0 (MVP) y kill_time_hits=1 (héroe a HP crítico); sin cota superior
+    expression: "telegraph_duration_s + (kill_time_hits_kaiju × attack_cooldown_s_kaiju)"
+    notes: "Proyección de tiempo hasta la muerte de un héroe bajo TELEGRAPHING del kaiju — resuelve Combate/Daño OQ-5 (la tensión de la ventana de ~30s). Garantía dura: con telegraph_duration_s en su mínimo matemático de 12.0s exacto, time_to_death=30.0s para el héroe de menor TTK crudo (Vanguardia/Portaestandarte) a HP completo — el piso que Héroes AC-H29 necesita. NO es un piso universal: un héroe ya dañado (kill_time_hits_kaiju bajo) puede proyectar menos de 30s, comportamiento esperado y documentado (Encuentro con Kaiju Edge Cases/AC-K24). No descuenta daño simultáneo de esbirros (AC-K25) — para eso está incoming_damage_rate_total (F6)."
+    added: 2026-08-10
+    revised: ""
+
+  - name: incoming_damage_rate_total
+    status: active
+    source: design/gdd/encuentro-con-kaiju.md
+    referenced_by:
+      - design/gdd/encuentro-con-kaiju.md
+      - design/gdd/sistema-de-heroes.md   # el readout U-3 refleja la fuente más peligrosa entre esto y time_to_death (AC-H29/H32b, contrato Encuentro AC-K68)
+      - design/gdd/ui-hud.md              # input de hero_risk_threshold (F1); rama todas-las-fuentes del min() del readout de peligro (dividido por hero_current_health)
+    variables:
+      - kaiju_projected_dps     # = attack_damage_effective / attack_cooldown_s_kaiju si el kaiju telegrafía/ataca a ese héroe, si no 0
+      - esbirro_dps             # por esbirro enganchado = attack_damage / attack_cooldown_s (CombatProfile del esbirro)
+    output_range: [0.0, null]   # ≥0; sin cota superior (suma sobre todas las fuentes que golpean al héroe)
+    expression: "kaiju_projected_dps(hero) + Σ esbirro_dps(e) para cada esbirro e enganchado a hero"
+    notes: "DUEÑO: Encuentro con Kaiju (F6, Regla 6b). Señal de honestidad de Pilar 4: DPS combinado de TODAS las fuentes (kaiju proyectado + esbirros enganchados), en paralelo a time_to_death (que es kaiju-only, F2). El readout de Héroes (U-3) DEBE reflejar la fuente más peligrosa: si hero_HP/incoming_damage_rate_total < time_to_death, la muerte real llega antes y no se presenta time_to_death como vida garantizada (Encuentro AC-K68). Sin divide-by-zero: el consumidor divide solo cuando rate>0. Cuando el kaiju no engancha al héroe, kaiju_projected_dps=0 y time_to_death se expone como 'no aplica' (AC-K78), no un centinela 0/∞."
+    added: 2026-08-12
+    revised: ""
+
+  - name: hero_risk_threshold
+    status: active
+    source: design/gdd/ui-hud.md
+    referenced_by:
+      - design/gdd/ui-hud.md
+    variables:
+      - time_to_death              # de Encuentro con Kaiju (F2), kaiju-only
+      - incoming_damage_rate_total # de Encuentro con Kaiju (F6), todas las fuentes
+      - hero_current_health        # stat en vivo del héroe
+      - danger_time_s              # = min(time_to_death, hero_current_health / max(incoming_damage_rate_total, ε))
+      - T_show                     # const UI/HUD, MVP 30.0s (rango 20.0–40.0)
+      - T_hide                     # const UI/HUD, MVP 38.0s (T_show+4 a T_show+15)
+      - min_visible_s              # const UI/HUD, MVP 4.0s (rango 2.0–8.0)
+      - debounce_on_s              # const UI/HUD, MVP 0.5s (rango 0.2–1.5)
+    output_range: [0, 1]           # booleano hero_risk_state {OFF=0, ON=1}
+    expression: "hero_risk_state = hysteresis(danger_time_s, T_show, T_hide, min_visible_s, debounce_on_s); danger_time_s = min(time_to_death, hero_current_health / max(incoming_damage_rate_total, ε))"
+    notes: "DUEÑO: UI/HUD (F1). Resuelve Héroes OQ-6 (valor concreto de la ventana de ~30s) y Encuentro con Kaiju OQ-14 (modelo de histéresis/anti-flicker). Controla la visibilidad del readout de veredicto del héroe (U-3). min() elige la fuente MÁS peligrosa (kaiju proyectado vs. enjambre de esbirros), nunca promedia — así una muerte rápida por esbirros no queda enmascarada por un timer de kaiju lento. El HP se divide por el DPS para volver incoming_damage_rate_total (una tasa) comensurable con time_to_death (un tiempo); ε=0.001 evita división por cero cuando no hay fuentes enganchadas. Histéresis: ON solo si danger_time_s≤T_show sostenido ≥debounce_on_s; OFF solo si danger_time_s≥T_hide Y llevaba visible ≥min_visible_s. Los 4 knobs son internos de UI/HUD (no registrados como constantes) y afinables en vertical slice (OQ-U6). Consume time_to_death e incoming_damage_rate_total — ambos owned por Encuentro con Kaiju."
+    added: 2026-08-12
+    revised: ""
+
+  - name: world_to_screen_transform
+    status: active
+    source: design/gdd/ui-hud.md
+    referenced_by:
+      - design/gdd/ui-hud.md
+    variables:
+      - world_position_world    # posición a proyectar (héroe/marcador)
+      - camera_position_world   # foco actual de la cámara
+      - viewport_size_px        # dimensiones del viewport
+      - zoom                    # [0.5, 1.5], zoom_min/zoom_max
+      - world_unit_scale        # 48 px/world unit a zoom 1.0
+    output_range: [null, null]  # px, SIN acotar — puede caer fuera del viewport (héroe fuera de pantalla)
+    expression: "viewport_size_px / 2 + (world_position_world - camera_position_world) * (world_unit_scale / zoom)"
+    notes: "DUEÑO: UI/HUD (F2). Inversa formal de screen_to_world_transform (owned por control-y-seleccion-de-unidades.md, cuya nota ya anticipaba que UI/HUD, minimapa y VFX necesitarían px_per_world_unit = world_unit_scale/zoom). Todo elemento anclado a mundo lo usa: barras de vida, ancla del readout de peligro, anillo de guard_radius. Salida SIN clamp — un resultado válido puede caer fuera de [0, viewport_size_px]; elementos que deben permanecer visibles fuera de pantalla (indicadores de borde) aplican su propio clamp aparte. Cross-check: cámara (100,50), zoom 1.0, viewport 1920×1080, objetivo (120,50) → (1920,540). Futuros consumidores esperados: minimapa y VFX (aún sin GDD)."
+    added: 2026-08-12
+    revised: ""
+
+  - name: blessing_magnitude
+    status: active
+    source: design/gdd/reliquias-bendiciones.md
+    referenced_by:
+      - design/gdd/reliquias-bendiciones.md
+      # Consumidor provisional: combate-dano.md aplica el bono plano resultante vía apply_damage / effective_attack_damage (OQ-RB1, sin read-hook aún)
+    variables:
+      - base_value          # magnitud Delgada del efecto por categoría (offensive 8, defensive 30, rally 2)
+      - solid_factor        # MVP 1.5 (rango 1.3–1.75)
+      - legendary_factor    # MVP 2.25 (rango 1.8–2.75)
+      - tier                # Delgada/Sólida/Legendaria (de Forja FL1) → tier_factor 1.0/solid_factor/legendary_factor
+    output_range: [1, null]   # ≥ base_value ≥ 1; sin cota superior de fórmula
+    expression: "round_half_up(base_value * tier_factor(tier))  con tier_factor(Delgada)=1.0, tier_factor(Sólida)=solid_factor, tier_factor(Legendaria)=legendary_factor"
+    notes: "DUEÑO: Reliquias/Bendiciones (F-RB2). Escala SOLO la magnitud del efecto por tier; el tier nunca cambia QUÉ hace la bendición (Regla 3). Consume el tier ya resuelto por Forja de Legado (FL1) — NUNCA recalcula relic_quality ni redefine los cortes de tier (esos los posee Héroes vía relic_quality). Invariante loud-fail: magnitude estrictamente creciente entre los 3 tiers para cada base_value (atrapa colapso por redondeo, p.ej. base=1/solid=1.3→round(1.3)=1=Delgada). Bonos MVP: offensive +8/+12/+18 (daño plano temporal), defensive +30/+45/+68 (vida máx temporal), rally 2/3/5 (refuerzos, redondea hacia arriba). Todo bono es aditivo plano — NUNCA multiplicador porcentual (respeta Combate Regla 5)."
+    added: 2026-08-16
+    revised: ""
+
+  - name: effective_attack_damage
+    status: active
+    source: design/gdd/reliquias-bendiciones.md
+    referenced_by:
+      - design/gdd/reliquias-bendiciones.md
+      - design/gdd/combate-dano.md   # PROVISIONAL — Combate deberá exponer el read-hook (no está en combate-dano.md hoy, OQ-RB1); aditivo a su contrato, no contradicción
+    variables:
+      - u                   # instancia de unidad (héroe/tropa), NO el tipo
+      - s                   # stat: {attack_damage, max_health} (MVP)
+      - base_stat           # de CombatProfile/HeroDefinition del TIPO (solo lectura, nunca mutado)
+      - active_modifiers    # modificadores de instancia efímeros activos sobre u para s (por invocation_id único)
+      - magnitude           # bono plano por modificador (de blessing_magnitude)
+    output_range: [1, null]   # ≥ base_stat ≥ 1; aditivo sin cap en MVP (limitador = economía de cargas)
+    expression: "effective_stat(u,s,t) = base_stat(u_type,s) + Σ magnitude(m) para cada m en active_modifiers(u,s,t)"
+    notes: "CONTRATO PROVISIONAL (OQ-RB1) — Reliquias/Bendiciones (F-RB1) lo define; Combate/Daño deberá exponer un read-hook effective_attack_damage(instancia) que capa los modificadores temporales sobre el CombatProfile del TIPO al resolver el golpe. combate-dano.md (Approved) NO lo tiene hoy: su CombatProfile es por-tipo, sin capa de instancia. Añadido pequeño/aditivo a su contrato, mismo patrón que Permadeath↔Kaiju con game_time_paused. Reliquias/Bendiciones NUNCA escribe en CombatProfile (Regla 8 / AC-RB26). Modificadores keyeados por (relic_id, unit_instance): re-elegir una reliquia YA activa sobre la misma unidad REFRESCA su duración, no apila una 2ª instancia (AC-RB31, revisión 2026-08-18 — acota el burst degenerado); reliquias DISTINTAS del mismo stat sí apilan aditivamente, acotadas por la cota worst-case computable de F-RB1 (AC-RB31b). A confirmar y capturar en el ADR de patrón de modificadores antes de implementar. Bloquea AC-RB32."
+    added: 2026-08-16
+    revised: ""
 
 # Example:
 #
@@ -139,7 +419,158 @@ formulas: []
 #
 # Required fields: name, status, source, referenced_by, value, unit, added
 
-constants: []
+constants:
+  - name: world_unit_scale
+    status: active
+    source: design/gdd/datos-de-era-civilizacion.md
+    referenced_by:
+      - design/gdd/datos-de-era-civilizacion.md
+      - design/gdd/input.md
+      - design/gdd/control-y-seleccion-de-unidades.md
+      - design/gdd/ui-hud.md      # world_to_screen_transform (F2) lo usa para proyectar overlays anclados a mundo
+    value: 48
+    unit: px_per_world_unit
+    added: 2026-07-23
+    revised: ""
+
+  - name: camera_pan_speed
+    status: active
+    source: design/gdd/datos-de-era-civilizacion.md
+    referenced_by:
+      - design/gdd/datos-de-era-civilizacion.md
+      - design/gdd/input.md
+      - design/gdd/control-y-seleccion-de-unidades.md
+    value: 30
+    unit: world_units_per_sec
+    added: 2026-07-23
+    revised: ""
+    # Nota: control-y-seleccion-de-unidades.md aplica compensación por zoom
+    # (effective_pan_speed = camera_pan_speed × zoom, Fórmula 4). El valor base 30 (a zoom 1.0) no cambia.
+
+  - name: zoom_min
+    status: active
+    source: design/gdd/datos-de-era-civilizacion.md
+    referenced_by:
+      - design/gdd/datos-de-era-civilizacion.md
+      - design/gdd/input.md
+      - design/gdd/control-y-seleccion-de-unidades.md
+      - design/gdd/ui-hud.md      # world_to_screen_transform (F2) opera con zoom en [zoom_min, zoom_max]
+    value: 0.5
+    unit: zoom_multiplier
+    added: 2026-07-23
+    revised: ""
+
+  - name: zoom_max
+    status: active
+    source: design/gdd/datos-de-era-civilizacion.md
+    referenced_by:
+      - design/gdd/datos-de-era-civilizacion.md
+      - design/gdd/input.md
+      - design/gdd/control-y-seleccion-de-unidades.md
+      - design/gdd/ui-hud.md      # world_to_screen_transform (F2) opera con zoom en [zoom_min, zoom_max]
+    value: 1.5
+    unit: zoom_multiplier
+    added: 2026-07-23
+    revised: ""
+
+  - name: reinforcement_ratio
+    status: active
+    source: design/gdd/sistema-de-tropas.md
+    referenced_by:
+      - design/gdd/sistema-de-tropas.md
+    value: 0.25
+    unit: fraction
+    added: 2026-07-23
+    revised: ""
+    # Rango tuneable 0.15–0.35. La UI de Preparación (sin GDD) consumirá max_reinforcements derivado de este ratio.
+
+  - name: telegraph_duration_s
+    status: active
+    source: design/gdd/encuentro-con-kaiju.md
+    referenced_by:
+      - design/gdd/encuentro-con-kaiju.md
+      - design/gdd/ui-hud.md      # telegraph_vignette_intensity (F3) reparte los 3 tercios de la viñeta periférica sobre esta duración
+    value: 14.0
+    unit: seconds
+    added: 2026-08-10
+    revised: 2026-08-12          # ui-hud.md añadido a referenced_by (F3 consume la duración para el canal periférico KV-1b)
+    # Rango seguro [12.5,17.0]. Mínimo matemático duro: 12.0s exacto (por debajo rompe la garantía de ~30s
+    # de Héroes AC-H29 para el héroe de menor TTK crudo — no es solo un valor de feel, ver Encuentro con
+    # Kaiju F2/AC-K21/AC-K22). Futuros consumidores esperados: Audio (KA-1) y UI/HUD (KU-1), sin GDD aún.
+
+  - name: guard_radius
+    status: active
+    source: design/gdd/sistema-de-heroes.md
+    referenced_by:
+      - design/gdd/sistema-de-heroes.md
+      - design/gdd/encuentro-con-kaiju.md   # KV-2 renderiza el radio; una muerte dentro de él satisface P=1 vía defensiva (Regla 5)
+      - design/gdd/combate-dano.md          # AC-C32 computa P=1 vía defensiva: muerte dentro de guard_radius de un marked_target
+      - design/gdd/ui-hud.md                # renderiza el anillo secundario de guard_radius (Core Rule 9 / HU-7); la runa de suelo la posee Encuentro (KV-2)
+    value: 4.0
+    unit: world_units
+    added: 2026-08-12
+    revised: ""
+    # Rango seguro 2.5–6.0 (Héroes). Radio alrededor de un objetivo/aliado marcado dentro del cual una
+    # muerte lo protege (vía defensiva de P). <2.5: proteger casi imposible; >6.0: estar vagamente cerca
+    # ya cuenta. Valor final confirmado con Combate/Kaiju (Héroes OQ-2). Encuentro con Kaiju lo cita como
+    # =4.0 (KV-2); Combate lo usa en la clasificación P (AC-C32).
+
+  - name: invocation_charges
+    status: active
+    source: design/gdd/reliquias-bendiciones.md
+    referenced_by:
+      - design/gdd/reliquias-bendiciones.md
+      # Posibles referenciadores (a confirmar): datos-de-era-civilizacion.md (EraDefinition puede autorar el valor por era, OQ-RB4); ui-hud.md (renderiza cargas restantes, RU-1)
+    value: 3
+    unit: charges_per_era
+    added: 2026-08-16
+    revised: ""
+    # Rango seguro 2–4. Recurso finito por era (anti-farmeo, Regla 5): invocar gasta 1; se resetea por era, NO se acumula.
+    # <2: una sola decisión en un CLIMAX largo. >4: erosiona escasez + carga cognitiva en tiempo real (sin pausa).
+
+  - name: draw_size
+    status: active
+    source: design/gdd/reliquias-bendiciones.md
+    referenced_by:
+      - design/gdd/reliquias-bendiciones.md
+      # Posibles referenciadores (a confirmar): datos-de-era-civilizacion.md (posible override por era); ui-hud.md (renderiza la oferta 3-choose-1, RU-3)
+    value: 3
+    unit: relics_per_draw
+    added: 2026-08-16
+    revised: ""
+    # Rango seguro 2–4 (≥1 duro). Sorteo Hades-style: gastar carga → ofrecer draw_size reliquias → elegir 1 (F-RB3).
+    # Si P<draw_size se ofrecen las que haya (nunca rellena). 1: no hay elección. >4: demasiadas opciones bajo presión sin pausa.
+
+  - name: pool_cap
+    status: active
+    source: design/gdd/reliquias-bendiciones.md
+    referenced_by:
+      - design/gdd/reliquias-bendiciones.md
+      # Posibles referenciadores futuros: salon-conmemorativo-panteon.md (#14, sin GDD — exhibe las reliquias retiradas del pool activo por FIFO); datos-de-era-civilizacion.md (posible override)
+    value: 16
+    unit: relics
+    added: 2026-08-16
+    revised: ""
+    # Rango seguro 10–24. Tope del pool invocable (F-RB5, Rule A): al exceder, la reliquia de menor forge_index se retira a
+    # solo-exhibición en Panteón (la RelicRecord NUNCA se borra). Acota el crecimiento del pool entre eras (riesgo ALTO flageado).
+    # <10: variedad de sorteo colapsa. >24: reliquias dejan de ser reconocibles/especiales.
+
+  - name: max_band_size
+    status: active
+    source: design/gdd/datos-de-era-civilizacion.md   # autorado por era en EraDefinition (dueño); NO cuenta héroes
+    referenced_by:
+      - design/gdd/datos-de-era-civilizacion.md
+      - design/gdd/sistema-de-tropas.md         # Fórmula E: enforcement + expone band_headroom = max(0, max_band_size − alive_troop_count); AC-32/33/34
+      - design/gdd/reliquias-bendiciones.md      # rally surte min(rally_N, band_headroom), read-only (OQ-RB7, F2-B5)
+    value: per-era   # autorado por EraDefinition; sin valor global único. Recom. ~1.5–2× el roster inicial de tropas
+    unit: troops
+    added: 2026-08-21
+    revised: ""
+    # Cierra F2-B5 (tope de banda para rally). Tope de TROPAS simultáneas vivas del jugador esta era; ambos grifos
+    # (reclutamiento de PREPARATION Fórmula C + rally de CLIMAX de Reliquias) respetan este techo total. Restricción de
+    # autoría (loud-fail al cargar EraDefinition, AC-34): max_band_size ≥ Σ starting_count_[tipo] del unit_roster.
+    # band_headroom es su salida derivada read-only (Fórmula E), no un knob independiente — no se registra por separado.
+    # = roster inicial: rally y reclutamiento siempre no-op. Muy alto: diluye escasez del Pilar 3 + presupuesto de entidades.
 
 # Example:
 #

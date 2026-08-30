@@ -1,0 +1,5 @@
+- [Project Overview](project_overview.md) — game pillars that override default story-type gating for save/permadeath work
+- [Save/Persistence GDD Status](project_save-persistence-status.md) — undesigned downstream systems; Temporizador↔Guardado reciprocity gap found 2026-08-09
+- [Troop System AC Status](project_troop-system-ac-status.md) — sistema-de-tropas.md AC draft status, Combate/Daño & Kaiju blockers, 2 undocumented dependency gaps
+- [Heroes System AC Status](project_heroes-system-ac-status.md) — sistema-de-heroes.md AC written & approved; AC-H11/H25/H29 blocked on Permadeath & Kaiju GDDs
+- [Input System AC Status](project_input-system-ac-status.md) — input.md AC17 vs. permadeath.md AC-P07c pause contradiction; AC22 not headlessly automatable; AC19-21 unclassified

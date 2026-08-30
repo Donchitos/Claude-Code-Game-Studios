@@ -1,0 +1,1 @@
+- [Input GDD perf gaps](project_input_gdd_perf_gaps.md) — AC 22 unfalsifiable, no Input budget row, gamepad cursor undesigned/unbudgeted (review 2026-08-19)

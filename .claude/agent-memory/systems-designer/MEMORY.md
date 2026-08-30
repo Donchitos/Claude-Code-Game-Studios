@@ -1,0 +1,1 @@
+- [Project context: What the Gods Left Behind](project_wtgleft_context.md) — pillars, GDD set, DEATH_HOLD/autosave coupling note
