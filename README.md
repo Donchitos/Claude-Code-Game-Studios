@@ -3,14 +3,14 @@
   <p align="center">
     Turn a single Claude Code session into a full game development studio.
     <br />
-    49 agents. 73 skills. One coordinated AI team.
+    49 agents. 74 skills. One coordinated AI team.
   </p>
 </p>
 
 <p align="center">
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="MIT License"></a>
   <a href=".claude/agents"><img src="https://img.shields.io/badge/agents-49-blueviolet" alt="49 Agents"></a>
-  <a href=".claude/skills"><img src="https://img.shields.io/badge/skills-73-green" alt="73 Skills"></a>
+  <a href=".claude/skills"><img src="https://img.shields.io/badge/skills-74-green" alt="74 Skills"></a>
   <a href=".claude/hooks"><img src="https://img.shields.io/badge/hooks-12-orange" alt="12 Hooks"></a>
   <a href=".claude/rules"><img src="https://img.shields.io/badge/rules-11-red" alt="11 Rules"></a>
   <a href="https://docs.anthropic.com/en/docs/claude-code"><img src="https://img.shields.io/badge/built%20for-Claude%20Code-f5f5f5?logo=anthropic" alt="Built for Claude Code"></a>
@@ -53,7 +53,7 @@ The result: you still make every decision, but now you have a team that asks the
 | Category | Count | Description |
 |----------|-------|-------------|
 | **Agents** | 49 | Specialized subagents across design, programming, art, audio, narrative, QA, and production |
-| **Skills** | 73 | Slash commands for every workflow phase (`/start`, `/design-system`, `/create-epics`, `/create-stories`, `/dev-story`, `/story-done`, etc.) |
+| **Skills** | 74 | Slash commands for every workflow phase (`/start`, `/design-system`, `/create-epics`, `/create-stories`, `/dev-story`, `/story-done`, etc.) |
 | **Hooks** | 12 | Automated validation on commits, pushes, asset changes, session lifecycle, agent audit trail, and gap detection |
 | **Rules** | 11 | Path-scoped coding standards enforced when editing gameplay, engine, AI, UI, network code, and more |
 | **Templates** | 41 | Document templates for GDDs, UX specs, ADRs, sprint plans, HUD design, accessibility, and more |
@@ -94,7 +94,7 @@ The template includes agent sets for all three major engines. Use the set that m
 
 ## Slash Commands
 
-Type `/` in Claude Code to access all 73 skills:
+Type `/` in Claude Code to access all 74 skills:
 
 **Onboarding & Navigation**
 `/start` `/help` `/project-stage-detect` `/setup-engine` `/adopt`
@@ -103,7 +103,7 @@ Type `/` in Claude Code to access all 73 skills:
 `/brainstorm` `/map-systems` `/design-system` `/quick-design` `/review-all-gdds` `/propagate-design-change`
 
 **Art & Assets**
-`/art-bible` `/asset-spec` `/asset-audit`
+`/art-bible` `/asset-spec` `/asset-generate` `/asset-audit`
 
 **UX & Interface Design**
 `/ux-design` `/ux-review`
@@ -176,7 +176,7 @@ CLAUDE.md                           # Master configuration
 .claude/
   settings.json                     # Hooks, permissions, safety rules
   agents/                           # 49 agent definitions (markdown + YAML frontmatter)
-  skills/                           # 73 slash commands (subdirectory per skill)
+  skills/                           # 74 slash commands (subdirectory per skill)
   hooks/                            # 12 hook scripts (bash, cross-platform)
   rules/                            # 11 path-scoped coding standards
   statusline.sh                     # Status line script (context%, model, stage, epic breadcrumb)
