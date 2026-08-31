@@ -786,6 +786,17 @@ skills:
     priority: low
     category: utility
 
+  - name: asset-generate
+    spec: CCGS Skill Testing Framework/skills/utility/asset-generate.md
+    last_static: ""
+    last_static_result: ""
+    last_spec: ""
+    last_spec_result: ""
+    last_category: ""
+    last_category_result: ""
+    priority: low
+    category: utility
+
   - name: day-one-patch
     spec: CCGS Skill Testing Framework/skills/utility/day-one-patch.md
     last_static: ""
