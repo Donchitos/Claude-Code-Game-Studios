@@ -15,7 +15,7 @@ Tests the skills and agents themselves — not any game built with them.
 CCGS Skill Testing Framework/
 ├── README.md              ← you are here
 ├── CLAUDE.md              ← tells Claude how to use this framework
-├── catalog.yaml           ← master registry: all 73 skills + 49 agents, coverage tracking
+├── catalog.yaml           ← master registry: all 73 skills + 53 agents, coverage tracking
 ├── quality-rubric.md      ← category-specific pass/fail metrics for /skill-test category
 │
 ├── skills/                ← behavioral spec files for skills (one per skill)
@@ -36,6 +36,7 @@ CCGS Skill Testing Framework/
 │   ├── godot/             ← Godot-specific specialists
 │   ├── unity/             ← Unity-specific specialists
 │   ├── unreal/            ← Unreal-specific specialists
+│   ├── cocos/             ← Cocos Creator-specific specialists
 │   ├── operations/        ← QA, live-ops, release, localization, etc.
 │   └── creative/          ← writer, world-builder, game-designer, etc.
 │

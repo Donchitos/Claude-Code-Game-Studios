@@ -46,8 +46,13 @@
     godot-specialist   -- Godot 4 lead: GDScript, node/scene, signals, resources
       godot-gdscript-specialist    -- GDScript: static typing, patterns, signals, performance
       godot-csharp-specialist      -- C#: .NET patterns, [Signal] delegates, async, type-safe node access
-      godot-shader-specialist      -- Shaders: Godot shading language, visual shaders, VFX
+      godot-shader-specialist      -- Shaders: Godot shading language, visual shaders, particles
       godot-gdextension-specialist -- Native: C++/Rust bindings, GDExtension, build systems
+
+    cocos-specialist  -- Cocos Creator 3.x lead: node/component, Asset Manager, mini-game targeting
+      cocos-ts-specialist         -- TypeScript: @ccclass/@property, async loading, event systems
+      cocos-shader-specialist     -- Shaders/Effects: .effect files, CCEffect, render pipeline
+      cocos-ui-specialist         -- UI: UITransform, Layout, Widget, multi-resolution, mini-game UI
 ```
 
 ### Legend
@@ -61,6 +66,9 @@ wrld = world-builder          ui  = ui-programmer
 snd  = sound-designer         qa-t = qa-tester
 narr-dir = narrative-director perf-a = performance-analyst
 art-dir = art-director
+cocos-ts  = cocos-ts-specialist
+cocos-sh  = cocos-shader-specialist
+cocos-ui  = cocos-ui-specialist
 ```
 
 ## Delegation Rules

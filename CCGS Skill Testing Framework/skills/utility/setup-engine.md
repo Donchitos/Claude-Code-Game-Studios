@@ -116,6 +116,36 @@ None. `/setup-engine` is a technical configuration skill. No director gates appl
 
 ---
 
+### Case 3b: Cocos Creator + TypeScript — Mini-game platform configuration
+
+**Fixture:**
+- `technical-preferences.md` contains only placeholders
+- Engine argument provided: `cocos`
+
+**Input:** `/setup-engine cocos`
+
+**Expected behavior:**
+1. Skill sets engine to Cocos Creator 3.8, language to TypeScript
+2. Specialist assignments reference cocos-specialist (primary), cocos-ts-specialist,
+   cocos-shader-specialist, cocos-ui-specialist
+3. Routing table: `.ts` → cocos-ts-specialist, `.effect` → cocos-shader-specialist,
+   `.scene` / `.prefab` → cocos-specialist or cocos-ui-specialist (for UI scenes)
+4. Performance budgets reflect mini-game constraints (≤200 draw calls on WeChat,
+   ≤32MB texture memory)
+5. Skill surfaces knowledge gap warning: Cocos Creator 3.8.6 has post-LLM-cutoff
+   features (Spine 4.2, Box2D JSB); reference docs required
+6. Skill asks "May I write" and writes on approval; verdict is COMPLETE
+
+**Assertions:**
+- [ ] Engine field is set to Cocos Creator 3.8
+- [ ] Language field is set to TypeScript
+- [ ] Routing table includes `.ts`, `.effect`, `.scene` entries
+- [ ] All four cocos specialists are referenced (primary + 3 sub-specialists)
+- [ ] Knowledge gap warning for 3.8.6 is surfaced
+- [ ] Verdict is COMPLETE
+
+---
+
 ### Case 4: Engine Already Configured — Offers to reconfigure specific sections
 
 **Fixture:**
@@ -180,3 +210,7 @@ None. `/setup-engine` is a technical configuration skill. No director gates appl
   from VERSION.md) is surfaced by the skill but not assertion-tested here.
 - Performance budget defaults per engine are noted as engine-specific but
   exact default values are not assertion-tested.
+- Cocos Creator mini-game platform targeting (WeChat / ByteDance / Alipay)
+  follows Case 3b with platform-specific performance budgets. The mini-game
+  ≤4MB main package constraint and engine separation plugin setup are surfaced
+  but not separately assertion-tested.
