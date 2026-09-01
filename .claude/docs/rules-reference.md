@@ -15,3 +15,4 @@ Rules in `.claude/rules/` are automatically enforced when editing files in match
 | `test-standards.md` | `tests/**` | Test naming, coverage requirements, fixture patterns |
 | `prototype-code.md` | `prototypes/**` | Relaxed standards, README required, hypothesis documented |
 | `shader-code.md` | `assets/shaders/**` | Naming conventions, performance targets, cross-platform rules |
+| `cocos-code.md` | `assets/**`, `**/*.ts`, `**/*.effect` | Cocos Creator 3.x: required `@ccclass`/`@property` decorators, asset load/release pairing, platform shims, no hot-updated executable code |
