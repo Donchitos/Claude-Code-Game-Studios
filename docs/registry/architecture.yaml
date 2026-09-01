@@ -30,7 +30,7 @@
 #   Superseded entries:     Grep pattern="status: superseded"
 
 version: 1
-last_updated: ""
+last_updated: "2026-08-21"   # ADR-0004 (Era lifecycle/init-ordering, Proposed) +1 state_ownership (era_lifecycle_state), +1 interface (era_lifecycle), +2 forbidden_patterns (reading_eradefinition_in_ready, era_lifecycle_driven_outside_eramanager). Prev 2026-08-21: ADR-0003 (Save/Persistencia, Proposed) +1 state_ownership (persisted_game_state), +1 interface (persistence_contract), +3 forbidden_patterns (json_for_int64_persistence, persisting_absolute_game_tick, deserializing_objects_from_save), +2 api_decisions (save_serialization store_var/get_var; save_corruption_checksum hash()). Prev 2026-08-21: ADR-0001 y ADR-0002 movidos Proposed->Accepted tras /architecture-review; cleanups aplicados (ADR-0001 tick source -> TimeControl.game_tick; ADR-0002 process_physics_priority=-1000 + PROCESS_MODE_ALWAYS). Prev 2026-08-18: ADR-0002 (TimeControl) +1 state_ownership (game_time_regime), +1 interface (time_regime), +2 forbidden_patterns; ADR-0001 instance_combat_stats.referenced_by += ADR-0002. Prev: ADR-0001 +1 state_ownership +1 interface +2 forbidden_patterns
 
 # ─── STATE OWNERSHIP ─────────────────────────────────────────────────────────
 # Who is the authoritative owner of each piece of shared game state.
@@ -43,7 +43,55 @@ last_updated: ""
 # interface: how other systems access this state (read-only property, method call,
 #   signal, shared resource, etc.) — this is the contract other ADRs depend on.
 
-state_ownership: []
+state_ownership:
+  - state: instance_combat_stats
+    status: active
+    owner_system: combate-dano
+    adr: docs/architecture/adr-0001-combat-stat-modifier-layer.md
+    interface: "CombatState.effective(stat) / effective_attack_damage() -> int (read-only pull, on-read over per-type CombatProfile + Array[StatModifier]). Base CombatProfile is a per-type Resource, read-only, never mutated at runtime."
+    write_access: combate-dano-only   # only Combate applies/expires modifiers and computes effective stats; sources call add_modifier
+    referenced_by:
+      - docs/architecture/adr-0001-combat-stat-modifier-layer.md
+      - docs/architecture/adr-0002-time-control-service.md   # expiry_tick / sweep_expired now read TimeControl.game_tick (supersedes provisional Engine.get_physics_frames())
+    added: 2026-08-18
+    revised: "2026-08-18"   # ADR-0002: tick source for expiry is TimeControl.game_tick (pause-aware/scale-aware), not Engine.get_physics_frames()
+
+  - state: game_time_regime
+    status: active
+    owner_system: time-control
+    adr: docs/architecture/adr-0002-time-control-service.md
+    interface: "TimeControl.time_scale (float, read-only), TimeControl.game_time_paused (bool, read-only; same semantics as Permadeath R4 game_time_paused), TimeControl.game_tick (int, monotonic game-time counter; advances scaled, freezes on pause). Regime set via request_regime(source_id, regime)/release_regime(source_id); effective = max precedence PAUSED>SLOWED>NORMAL."
+    write_access: time-control-only   # only TimeControl mutates the regime; sources request/release, everyone else reads
+    referenced_by:
+      - docs/architecture/adr-0002-time-control-service.md
+      - docs/architecture/adr-0001-combat-stat-modifier-layer.md   # blessing expiry reads game_tick
+    added: 2026-08-18
+    revised: ""
+
+  - state: persisted_game_state
+    status: active
+    owner_system: save-persistence
+    adr: docs/architecture/adr-0003-save-persistence-serialization.md
+    interface: "SaveService owns the on-disk save file, the versioned envelope {payload:{schema_version, sistemas:{...}}, checksum:int}, and the serialization mechanism. Each persistable system implements a symmetric serialize_state()->Dictionary / deserialize_state(Dictionary)->void; SaveService assembles sub-dicts under a per-system key without inspecting their meaning. Read/write via request_save()->bool / request_load()->LoadResult. Format: FileAccess.store_var/get_var (binary, native int64). No system persists TimeControl.game_tick or an absolute expiry_tick — only remaining_ticks (relative), rebased on load."
+    write_access: save-persistence-only   # only SaveService writes/reads the file; systems supply/receive plain-Variant dicts
+    referenced_by:
+      - docs/architecture/adr-0003-save-persistence-serialization.md
+      - docs/architecture/adr-0001-combat-stat-modifier-layer.md   # StatModifier persistence (remaining_ticks) resolved here
+      - docs/architecture/adr-0002-time-control-service.md          # expiry_tick rebasing defined against game_tick, resolved here
+    added: 2026-08-21
+    revised: ""
+
+  - state: era_lifecycle_state
+    status: active
+    owner_system: era-lifecycle
+    adr: docs/architecture/adr-0004-era-lifecycle-init-ordering.md
+    interface: "EraManager owns the era state machine (UNLOADED/LOADING/LOADED/ACTIVE/ARCHIVED/FAILED) and the active EraDefinition. Drive via load_era(era_id)/activate_era()/archive_active_era(); read the active era via get_active_era() -> EraDefinition (null if none ACTIVE) or by handling era_loaded(era). Signals: era_loaded(era) [only after the validation gate passes], era_activated(era), era_archived(era), era_load_failed(era_id, reasons). EraDefinition stays a read-only Resource; EraManager never mutates it. Exactly one era ACTIVE at a time; ARCHIVED->ACTIVE forbidden without a fresh LOADING->LOADED cycle."
+    write_access: era-lifecycle-only   # only EraManager drives transitions / loads eras; consumers read via signal or get_active_era()
+    referenced_by:
+      - docs/architecture/adr-0004-era-lifecycle-init-ordering.md
+      - docs/architecture/adr-0003-save-persistence-serialization.md   # boot: SaveService.request_load() supplies era_id; per-era persisted state applied on era_loaded
+    added: 2026-08-21
+    revised: ""
 
 # Example:
 #
@@ -71,7 +119,75 @@ state_ownership: []
 #
 # pattern options: signal | direct_call | event_bus | shared_resource | rpc | none
 
-interfaces: []
+interfaces:
+  - contract: combat_stat_modifiers
+    status: active
+    pattern: direct_call     # sources call Combate's API directly; Combate reads effective_* internally
+    producer: combate-dano   # owns CombatState, the modifier list, application, and expiry
+    consumers:
+      - reliquias-bendiciones   # writes flat additive modifiers; never reads/writes CombatProfile
+    adr: docs/architecture/adr-0001-combat-stat-modifier-layer.md
+    signal_signature: "add_modifier(mod: StatModifier) / remove_by_source(source_relic_id: String) / sweep_expired(current_tick: int); read: effective_attack_damage() -> int. StatModifier = {stat, magnitude:int>=1, expiry_tick:int, source_relic_id:String} (RefCounted). Dedup: one active modifier per (source_relic_id, stat) per unit — refresh-on-repick."
+    referenced_by:
+      - docs/architecture/adr-0001-combat-stat-modifier-layer.md
+    added: 2026-08-18
+    revised: ""
+
+  - contract: time_regime
+    status: active
+    pattern: shared_service   # readers poll TimeControl; regime sources use a request/release API
+    producer: time-control    # owns the game-time regime and the game_tick counter
+    consumers:
+      - permadeath            # request_regime(PAUSED) on DEATH_HOLD; beat clock is exempt (real-time)
+      - reliquias-bendiciones # request_regime(SLOWED) with offering_time_scale while OFFERING open
+      - combate-dano          # reads game_time_paused (AC-C52); reads game_tick for blessing expiry sweep
+      - encuentro-con-kaiju   # reads game_time_paused (Regla 11 / AC-K89)
+      - input                 # reads game_time_paused to suppress input
+      - temporizador-de-preparacion-ritual   # reads game_tick/time_scale (closes OQ-P4/F2-W4)
+    adr: docs/architecture/adr-0002-time-control-service.md
+    signal_signature: "request_regime(source_id: StringName, regime: TimeControl.Regime) / release_regime(source_id: StringName); reads: time_scale: float, game_time_paused: bool, game_tick: int. Precedence PAUSED>SLOWED>NORMAL; a superseded request is preserved, not dropped."
+    referenced_by:
+      - docs/architecture/adr-0002-time-control-service.md
+    added: 2026-08-18
+    revised: ""
+
+  - contract: persistence_contract
+    status: active
+    pattern: direct_call     # SaveService calls each system's serialize_state()/deserialize_state() via injected references (composition root), never node/autoload lookup by name
+    producer: save-persistence   # owns the file, envelope, checksum, migration chain
+    consumers:
+      - forja-de-legado         # forge_counter (int64) + relic_records
+      - reliquias-bendiciones   # invocation_charges_remaining + active_modifiers as remaining_ticks (NOT absolute expiry_tick); replaces the AC-RB46 mock on ADR acceptance
+      - temporizador-de-preparacion-ritual   # elapsed_s / current_phase
+      - datos-de-era-civilizacion   # active era_id (reference only, never copies EraDefinition)
+      - sistema-de-heroes       # pending-death payload with sealed:bool for crash recovery (AC-H27c)
+      - transicion-de-era       # era_id ACTIVE/ARCHIVED
+    adr: docs/architecture/adr-0003-save-persistence-serialization.md
+    signal_signature: "serialize_state() -> Dictionary (plain Variants only — no RefCounted/Resource/Object) / deserialize_state(data: Dictionary) -> void; SaveService.register_persistable(system_key: StringName, node: Node); request_save() -> bool; request_load() -> LoadResult{NO_SAVE_EXISTS,SAVE_EXISTS,CORRUPTED,VERSION_TOO_NEW}. Migrations run on raw Dictionary (pre-typed) before deserialize_state; schema_version>CURRENT -> VERSION_TOO_NEW (loud-fail, no migration)."
+    referenced_by:
+      - docs/architecture/adr-0003-save-persistence-serialization.md
+    added: 2026-08-21
+    revised: ""
+
+  - contract: era_lifecycle
+    status: active
+    pattern: shared_service   # EraManager Autoload injected by reference; consumers read on the era_loaded signal or via get_active_era()
+    producer: era-lifecycle   # owns the state machine, the sync load, and the centralized validation gate
+    consumers:
+      - sistema-de-tropas      # reads unit_roster + max_band_size on era_loaded
+      - sistema-de-heroes      # reads hero roster on era_loaded
+      - encuentro-con-kaiju    # reads kaiju_definition on era_loaded
+      - temporizador-de-preparacion-ritual   # reads approach_duration_s/imminent_window_s on era_loaded
+      - permadeath             # reads get_hero_roster_count() on era_loaded (not _ready()) — TR-permadeath-017
+      - reliquias-bendiciones  # reads invocation_charges per era on era_loaded
+      - forja-de-legado        # origin_era_id = era_id of the ACTIVE era (get_active_era())
+      - save-persistence       # boot: supplies era_id via request_load(); applies per-era state on era_loaded
+    adr: docs/architecture/adr-0004-era-lifecycle-init-ordering.md
+    signal_signature: "load_era(era_id: StringName) / activate_era() / archive_active_era() / get_active_era() -> EraDefinition; signals era_loaded(era: EraDefinition), era_activated(era), era_archived(era), era_load_failed(era_id: StringName, reasons: PackedStringArray). Sync ResourceLoader.load(); null return -> FAILED('era_resource_not_found'). Centralized validation gate runs before era_loaded; any violation -> FAILED, era_loaded NOT emitted, never ACTIVE. Boot: composition root must be ancestor of all era_loaded consumers and call load_era() from its own _ready() (avoids missed-signal race under sync load)."
+    referenced_by:
+      - docs/architecture/adr-0004-era-lifecycle-init-ordering.md
+    added: 2026-08-21
+    revised: ""
 
 # Example:
 #
@@ -131,7 +247,28 @@ performance_budgets: []
 # Register an API decision when the choice is non-obvious and other ADRs might
 # make a different choice for the same purpose without knowing this was decided.
 
-api_decisions: []
+api_decisions:
+  - purpose: save_serialization
+    status: active
+    api: FileAccess.store_var / FileAccess.get_var   # binary Variant serialization of a nested Dictionary
+    not: JSON.stringify / JSON.parse                 # explicitly rejected for save payloads
+    adr: docs/architecture/adr-0003-save-persistence-serialization.md
+    reason: "store_var/get_var preserves GDScript int (64-bit) with full fidelity; JSON represents all numbers as 53-bit doubles, which silently truncates forge_counter (Forja OQ-FL4 pt.3) in long legacies. Uniform across all fields — no per-field int64 encoding rule to forget. get_var(allow_objects=false) always; systems hand SaveService plain-Variant dicts, never RefCounted/Resource instances."
+    referenced_by:
+      - docs/architecture/adr-0003-save-persistence-serialization.md
+    added: 2026-08-21
+    revised: ""
+
+  - purpose: save_corruption_checksum
+    status: active
+    api: hash()   # @GlobalScope Variant hash over the payload Dictionary
+    not: manual CRC32
+    adr: docs/architecture/adr-0003-save-persistence-serialization.md
+    reason: "GDD requires corruption/partial-write detection only, not tamper resistance or cross-engine-version stability. hash() is built-in (no manual CRC32 code) and adequate. Note: 32-bit hash (~1-in-4e9 collision) — acceptable for the stated requirement; algorithm is an interchangeable detail if more margin is ever wanted. Checksum stored as a sibling key {payload, checksum}, never inside the hashed dict."
+    referenced_by:
+      - docs/architecture/adr-0003-save-persistence-serialization.md
+    added: 2026-08-21
+    revised: ""
 
 # Example:
 #
@@ -157,7 +294,113 @@ api_decisions: []
 # Register a pattern when an ADR explicitly bans it AND other ADRs might
 # unknowingly use it (i.e., it's a tempting but wrong approach for this project).
 
-forbidden_patterns: []
+forbidden_patterns:
+  - pattern: runtime_mutation_of_shared_combatprofile
+    status: active
+    description: "No system may mutate a CombatProfile Resource at runtime. It is
+      per-type shared content, read-only. Per-instance stat changes go through
+      CombatState modifiers instead. Keep CombatProfile.resource_local_to_scene = false."
+    why: "CombatProfile is shared across every instance of a unit type; mutating it
+      changes all instances and corrupts the source-of-truth balance data. Silent and
+      hard to trace."
+    adr: docs/architecture/adr-0001-combat-stat-modifier-layer.md
+    added: 2026-08-18
+
+  - pattern: effective_combat_stat_computed_outside_combate
+    status: active
+    description: "Only Combate/Daño computes a unit's effective combat stat and owns
+      the modifier lifecycle (apply + expiry). Other systems (e.g. Reliquias) supply
+      modifiers via add_modifier/remove_by_source but must not compute effective damage
+      themselves or hold the authoritative modifier stack."
+    why: "Combate Regla 1 = single damage path. Computing effective stats elsewhere
+      forks the damage math, and having a higher layer own the stack inverts the
+      Reliquias->Combate dependency into a cycle."
+    adr: docs/architecture/adr-0001-combat-stat-modifier-layer.md
+    added: 2026-08-18
+
+  - pattern: engine_native_pause_or_timescale_for_game_time
+    status: active
+    description: "Do not use SceneTree.paused or Engine.time_scale to implement the
+      game-time regime (pause / offering slow-mo). Sources request a regime from
+      TimeControl (request_regime/release_regime); consumers poll TimeControl.time_scale /
+      game_time_paused / game_tick."
+    why: "SceneTree.paused halts ALL process callbacks, making it impossible to
+      selectively exempt the death-beat clock and UI without per-node process_mode
+      gymnastics; Engine.time_scale scales physics globally (incl. systems that must run
+      real-time) and Engine.get_physics_frames() is not pause-aware. The cooperative
+      flag+scale model was chosen deliberately to allow selective exemption."
+    adr: docs/architecture/adr-0002-time-control-service.md
+    added: 2026-08-18
+
+  - pattern: wallclock_delta_for_game_time_simulation
+    status: active
+    description: "Game-time simulation logic must not advance on _process(delta) / wall-clock.
+      Read TimeControl (time_scale, game_tick, game_time_paused) instead. Exempt systems
+      (death-beat clock, UI/HUD) run real-time by design and explicitly do not read game_time."
+    why: "A system on wall-clock delta desyncs from pause and slow-mo — it keeps moving while
+      the world is paused/slowed. Enforced by CI grep for _process(delta) in game-time sim scripts."
+    adr: docs/architecture/adr-0002-time-control-service.md
+    added: 2026-08-18
+
+  - pattern: json_for_int64_persistence
+    status: active
+    description: "Do not serialize save data (or any int64 field) via JSON.stringify/parse.
+      Use FileAccess.store_var/get_var. JSON represents numbers as 53-bit doubles and
+      silently truncates 64-bit ints (e.g. forge_counter)."
+    why: "forge_counter (Forja OQ-FL4) guarantees relic_id uniqueness across a long legacy;
+      a silent truncation past 2^53 corrupts that uniqueness with no error. store_var
+      preserves GDScript's 64-bit int uniformly, with no per-field encoding rule to forget."
+    adr: docs/architecture/adr-0003-save-persistence-serialization.md
+    added: 2026-08-21
+
+  - pattern: persisting_absolute_game_tick
+    status: active
+    description: "No system's serialize_state() may persist TimeControl.game_tick or an
+      absolute StatModifier.expiry_tick. Persist remaining_ticks (relative: expiry_tick −
+      game_tick, computed at save time); on load, rebase as expiry_tick = game_tick (fresh 0)
+      + remaining_ticks."
+    why: "game_tick is a per-session counter by design (ADR-0002) — it freezes on pause,
+      scales with time_scale, and resets to 0 each session. An absolute tick persisted from a
+      prior session is meaningless against a reset counter. Enforced by CI grep for game_tick/
+      expiry_tick outside time_control.gd and the dedicated save-rebasing code."
+    adr: docs/architecture/adr-0003-save-persistence-serialization.md
+    added: 2026-08-21
+
+  - pattern: deserializing_objects_from_save
+    status: active
+    description: "serialize_state() must return only plain Dictionary/Array/primitive Variants —
+      never RefCounted/Resource/Object instances (e.g. a live StatModifier). store_var/get_var
+      keep full_objects/allow_objects at their default false. Systems convert state to plain
+      dicts before handing it to SaveService."
+    why: "Deserializing Objects from a file is an attack surface — a crafted save could
+      instantiate arbitrary objects, not just a style preference. Enforced by CI grep for
+      store_var(..., true) / get_var(..., true) in save code."
+    adr: docs/architecture/adr-0003-save-persistence-serialization.md
+    added: 2026-08-21
+
+  - pattern: reading_eradefinition_in_ready
+    status: active
+    description: "No system may read EraDefinition fields (unit_roster, max_band_size,
+      kaiju_definition, get_hero_roster_count, invocation_charges, approach_duration_s, etc.)
+      in its _ready()/Autoload init ASSUMING an era is already loaded at boot. Boot consumers
+      read in the era_loaded(era) handler. Legit exception: a node instantiated post-boot may
+      read via EraManager.get_active_era() in its _ready() once an era is ACTIVE."
+    why: "Autoload _ready() runs at engine boot, before any era is LOADED — a read there returns
+      null/garbage. Generalizes Permadeath's era-LOADED contract to all consumers. Enforced by
+      CI grep for EraDefinition field reads in _ready() (carving out get_active_era())."
+    adr: docs/architecture/adr-0004-era-lifecycle-init-ordering.md
+    added: 2026-08-21
+
+  - pattern: era_lifecycle_driven_outside_eramanager
+    status: active
+    description: "Only EraManager drives the era state machine and loads EraDefinition resources.
+      No system loads an EraDefinition directly, transitions era state, or emits era lifecycle
+      signals. Consumers read via era_loaded / get_active_era() and never instantiate/mutate eras."
+    why: "A single owner guarantees exactly-one-ACTIVE, the centralized validation gate (a broken
+      era never partially activates), and a canonical era_loaded emitter. Distributed loading is
+      the broken pre-ADR state (N loads, scattered loud-fail, no ownership of transitions)."
+    adr: docs/architecture/adr-0004-era-lifecycle-init-ordering.md
+    added: 2026-08-21
 
 # Example:
 #

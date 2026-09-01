@@ -1,0 +1,1 @@
+- [Art Bible Map](reference_art-bible-map.md) — section map + key rules (palette, shape hierarchy, UI frame-tier system) for design/art/art-bible.md

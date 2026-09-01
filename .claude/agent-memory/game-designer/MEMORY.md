@@ -1,0 +1,1 @@
+- [Input silent-discard pattern](project_input-silent-discard-pattern.md) — input.md discards ambiguous input with zero feedback cue; check sibling GDDs for same gap.
