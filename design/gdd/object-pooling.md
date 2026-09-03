@@ -1,9 +1,9 @@
 # Object Pooling（对象池）
 
-> **Status**: Re-review Pending — 2026-08-28 GameRoot 第三轮复审传播修订：resume binding 的最终 Node identity/capacity 验证归 arm，matching publish 被收窄为无 Node API、不可失败的纯发布；须独立复审
+> **Status**: Re-review Pending — 2026-08-31 GameRoot 第十轮传播：单`FINALIZE_POOL_RELEASE` closure exact-once；须第十一轮复审
 > **Author**: 用户 + Codex
 > **Created**: 2026-08-19
-> **Last Updated**: 2026-08-28
+> **Last Updated**: 2026-09-03
 > **Implements Pillar**: 300敌人、400投射物、300掉落物同屏时稳定且无复用幽灵
 > **Scope**: MVP gameplay Node pooling；presentation降级策略须由各自GDD显式批准
 
@@ -25,12 +25,12 @@ Object Pooling 为敌人、投射物、掉落物及后续伤害数字/VFX提供�
 - `init`先验证snapshot ID非零、snapshot readiness/config、checked capacity与workspace尺寸，再实例化Node。零snapshot ID=`INVALID_ARGUMENT`；其他config/domain失败=`INIT_LIMIT_EXCEEDED`。factory/instance/reset warmup任一步失败时，Pool停止并free本次已创建Node、清空private table、将保存的config snapshot ID复位为0且保持INACTIVE；不得留下可借用的部分PoolSet。factory/instance失败=`OBJECT_INVALID`，warmup reset失败=`RESET_FAILED`。
 - Active、PAUSE_PENDING、BATTLE_PAUSED resume transaction 与正常 spawn/despawn期间不得新增 slot、扩容 PackedArray/Array/Dictionary或临时 instantiate。只有下一场 battle 的 BATTLE_LOADING 可以用新 config重建PoolSet。
 - 当前压力锚点是 ENEMY active 303、PROJECTILE active 400、DROP active 300，但它们只是 `max_concurrent_borrowed` 下界，不等于最终 pool capacity；暂停替换重叠、同tick spawn-before-release与安全 spare 见F1。
-- Config schema v1已冻结六key：`enemy_normal=320`、`enemy_elite=6`、`enemy_boss=1`、`projectile_gameplay=448`、`drop_gameplay=320`、`damage_number=96`，总计1191；PoolLimits为`16 keys/512 per key/1536 total`。本GDD只执行这些值，不拥有或覆盖它们。`enemy_elite` 容量由 MVP 方案 5.3 节奏表 2 固定精英（6:00 巨甲蜈蚣、10:00 鬼雾修士）+ 8.1"冒险夺宝"持久化精英（未击杀随下一怪潮作战）驱动，最坏 4 并发精英，故 max_concurrent=2 之上 safety_spare=3 吸收持久化并发与 spawn 重叠。F1 四项输入项的冻结值（source = `config-data-system.md` R4）echo 如下，供本 GDD 自校验 checked sum：
+- Config schema v1已冻结六key：`enemy_normal=320`、`enemy_elite=6`、`enemy_boss=1`、`projectile_gameplay=448`、`drop_gameplay=320`、`damage_number=96`，总计1191；PoolLimits为`16 keys/512 per key/1536 total`。本GDD只执行这些值，不拥有或覆盖它们。RiskChoice裁决保持ENEMY总cap303并把class active上限改为298 Normal+4 Elite+1 Boss；`enemy_elite` 的4 active真实覆盖两只fixed与两只持久risk Elite，不再借用safety spare冒充active容量。F1 四项输入项的冻结值（source = `config-data-system.md` R4/R15）echo 如下，供本 GDD 自校验 checked sum：
 
   | pool_key | max_concurrent | pause_overlap | spawn_before_release | safety_spare | Σ=configured |
   |---|---|---|---|---|---|
-  | enemy_normal | 300 | 0 | 12 | 8 | 320 |
-  | enemy_elite | 2 | 0 | 1 | 3 | 6 |
+  | enemy_normal | 298 | 0 | 12 | 10 | 320 |
+  | enemy_elite | 4 | 0 | 1 | 1 | 6 |
   | enemy_boss | 1 | 0 | 0 | 0 | 1 |
   | projectile_gameplay | 400 | 0 | 32 | 16 | 448 |
   | drop_gameplay | 300 | 0 | 16 | 4 | 320 |
@@ -77,13 +77,15 @@ Pool-owned Node在READY期间禁止外部`queue_free`与`free()`（`free()` 立�
 2. reset success后out carrier权威，owner可把Node（取自`carrier.node_ref`）写入spawn intent；reset failure时slot退休且out不权威；
 3. 若对象需要SpatialGrid，owner在`insert_into` success后调用R5 bind；若fresh insert failure，对象仍UNBOUND，owner可立即release；
 4. 对象死亡/拾取/退出时，若BOUND先取得SpatialGrid remove success并R5 unbind；
-5. 只有UNBOUND且非quarantine时`release(borrow_id)`才原子进入RELEASE_PENDING并调用`reset_for_pool`；reset success清除borrow identity并回AVAILABLE，reset failure清除borrow identity、退休slot并返回RESET_FAILED。
+5. 只有UNBOUND且非quarantine时`release(borrow_id)`才原子进入RELEASE_PENDING并调用`reset_for_pool`；reset success清除borrow identity并回AVAILABLE，reset failure清除borrow identity、退休slot并返回RESET_FAILED。两种结果都使旧 borrow identity 永久 stale，属于不可回滚的已提交 lifecycle fact。
 
 - release进入RELEASE_PENDING后旧borrow ID即不再允许任何外部mutation；release success或reset failure返回后旧borrow ID均stale。同Node只有reset success回AVAILABLE后才可再次borrow，并得到新generation与新borrow ID。
 - double release、旧borrow、错误slot/generation统一`STALE_BORROW`且no-op。
 - `release`看到有效spatial handle返回`STILL_REGISTERED`；看到quarantine返回`QUARANTINED`。两者均不调用reset、不改free stack。
 - owner不得仅凭Node引用release；所有mutation都必须携带borrow ID，Pool内部再验证instance ID。外部长期缓存必须保存业务handle/borrow ID，不能把Node强引用视为生命周期证明。
 - Pool不签发第二套phase capability；它只校验main thread、PoolSet/transaction/slot状态。GameRoot/owner必须把普通borrow/bind限制在SPAWN_INTENT，把正常unbind/release限制在DEFERRED_REMOVAL；仅fresh insert failure可在同一SPAWN_INTENT立即release，Paused candidate borrow与post-resume cleanup按R6–R7执行。跨phase顺序由三系统integration trace gate，不得误称Pool可独立识别调用者phase。
+- `DEFERRED_REMOVAL` 使用 GameRoot 预分配的 `LifecycleCommitJournal`，每个稳定intent恰占一条mutable row，其公开`commit_state`只允许`RESERVED→GRID_REMOVED→POOL_UNBOUND→POOL_RELEASED|POOL_RETIRED`单调推进，每个状态最多进入一次。journal容量不足必须在处理首条intent前失败；处理中第N条失败时，已推进rows保持权威，之后不执行。cleanup/重试读取row当前state跳过已完成步骤，不得新增“每步骤一row”、重复reset、重复push free stack或恢复旧binding。Pool在公开`POOL_UNBOUND`之后以私有slot FSM `RELEASE_PENDING→RESET_COMPLETED→AVAILABLE_COMMITTED|RETIRED_COMMITTED`保证reset/free-stack exact-once；这些私有checkpoint不暴露为journal rows。
+- PausePending使用GameRoot canonical `FINALIZE_POOL_RELEASE` closure：一个closure绑定一个既有LifecycleCommitJournal row，可从`GRID_REMOVED`或`POOL_UNBOUND`继续，并在同次closure内exact-once完成剩余unbind与release/reset，最终到`POOL_RELEASED|POOL_RETIRED`。Pool内部checkpoint不生成第二个closure、不增加owner `PAUSE_CLOSURE`贡献；因此N条pending lifecycle row最多需要N条Pool closure，而不是2N。
 
 ### R5 — SpatialGrid binding matrix
 
@@ -98,7 +100,7 @@ Object Pooling不调用SpatialGrid，但记录binding以阻止错误release。ow
 | active/suspended变化式duplicate `INVALID_ARGUMENT` | 不改binding | 旧注册权威，不得release |
 | `stage_position=OK/STAGED_FOR_SUSPENSION` | 不改binding | 同borrow/handle继续有效 |
 | `sync=SYNC_FAILED/ID_EXHAUSTED` | 不改binding | workspace/旧snapshot仍权威，不得release |
-| `remove=OK` | `unbind_spatial_handle(borrow_id,old_handle)`：BOUND→UNBOUND，再release | owner可回收 |
+| `remove=OK` | 同一intent journal row推进到`GRID_REMOVED`，再`unbind_spatial_handle(borrow_id,old_handle)`并推进到`POOL_UNBOUND`，随后release/reset并把同一row推进到`POOL_RELEASED`或`POOL_RETIRED` | owner可回收；后续失败不得复活旧handle/borrow |
 | remove failure | 不unbind | release固定`STILL_REGISTERED` |
 
 - bind要求当前spatial_handle_id=0、新handle非零；错误组合`INVALID_ARGUMENT/STALE_BORROW`且不改状态。
@@ -121,15 +123,16 @@ Pool使用SpatialGrid `transaction_id`，不生成第二套公开tx ID。GameRoo
 1. Grid `resume_from`成功并给出完整remap后，调用`prepare_resume_bindings(tx,remap,authority_borrow_ids)`；Pool在预分配workspace构建candidate slot metadata，不改published slot table；
 2. Pool逐项验证indexed old handle属于正确frozen borrow、new handle唯一、0→new来自paused UNBOUND borrow、old→0可进入RELEASE_PENDING、old→same/new保持同borrow且pool_key兼容；同时以旧published borrow集合与新`authority_borrow_ids`做差，处理无Grid handle的UNBOUND survivor/removed/new，禁止投射物等unindexed对象逃逸quarantine；
 3. Grid arm success后调用`arm_resume_bindings(tx)`完成**最后一次可失败检查**：逐项复检 `is_instance_valid(slot.node_ref) AND slot.node_ref.get_instance_id()==slot.object_instance_id AND not slot.node_ref.is_queued_for_deletion()`、capacity、candidate identity与tx；任一失败保持publish前状态，GameRoot abort Grid与Pool candidate并保留Frozen旧状态；
-4. GameRoot完成owner swap并调用matching Grid publish；随后`publish_resume_bindings(tx)`只校验primitive matching tx/state并交换已arm的metadata引用，契约上不可失败。matching tx 下禁止再次调用Node API、重新验证identity/capacity或发现新的可恢复failure；
-5. matching Grid resume end关闭lease后，Pool清除survivor/new quarantine；old→0进入RELEASE_PENDING并在consumer仍关闭时执行reset/release。
+4. GameRoot 通过 `AuthorityResumeCommitPlan` 再次核对 battle/config/input/background/geometry/authority identity，完成 owner candidate 引用准备后调用 matching Grid publish；
+5. 随后 `publish_resume_bindings(tx)` 作为第二次发布，只校验 primitive matching tx/state 并交换已 arm 的 metadata 引用，契约上不可失败。matching tx 下禁止再次调用 Node API、重新验证 identity/capacity 或发现新的可恢复 failure；
+6. GameRoot 完成第三次 authority publish 后才关闭 Grid resume lease、清除 survivor/new quarantine并开放 consumer；old→0进入RELEASE_PENDING并在 consumer 仍关闭时执行 reset/release。任一 publish checkpoint 后发生 orchestration fault，必须完成尚可确定的 commit 收敛并保持 consumer closed，不能回到旧 Grid/Pool/owner 混合状态。
 
 - Pool私有resume-binding substate固定为`NONE`、`PREPARED(tx)`、`ARMED(tx)`；同一PoolSet最多一个candidate。prepare只允许NONE，matching arm只允许PREPARED，matching publish只允许ARMED，matching abort允许PREPARED/ARMED。substate不合法=`WRONG_STATE`；输入tx=0或非matching tx=`INVALID_ARGUMENT`且保持原substate。
 - Grid prepare/arm/owner swap failure时`abort_resume_bindings(tx)`丢弃Pool candidate：frozen old borrow保持quarantine，paused candidate-only borrow解除transaction quarantine后可由owner保留或release。
-- Grid matching publish后禁止Pool回滚旧binding；matching tx 的Pool publish必须OK。任何“matching publish内部failure”是实现违反arm不变量的不可达断言，不得保留Pool ARMED或形成运行时恢复分支。
+- Grid matching publish后禁止Pool回滚旧binding；matching tx 的Pool publish必须OK。任何“matching publish内部failure”是实现违反arm不变量的不可达断言，不得保留Pool ARMED或形成运行时恢复分支。Pool publish 后仍须等待第三次 authority publish，期间 consumer 继续关闭。
 - 若故障注入先用wrong tx调用Pool publish，它必须返回INVALID_ARGUMENT并保持ARMED；由于Grid可能已matching publish，GameRoot必须立即用保存的正确tx完成一次Pool matching publish使三方收敛，再关闭lease并进入fault，禁止恢复旧Grid/owner状态。
 - omitted old Node只有在Grid+Pool publish后才解除binding并reset；new Node只有publish后才获得new handle。查询快照中不存在同一Node同时对应old/new borrow的窗口。
-- 双publish后的RELEASE_PENDING reset若返回RESET_FAILED，不回滚已发布Grid/Pool/owner状态；GameRoot保持consumer关闭并直接走ControlledGameplayFault teardown。
+- 三次 publish 后的 RELEASE_PENDING reset 若返回 RESET_FAILED，不回滚已发布 Grid/Pool/authority 状态；slot 已退休、旧 borrow stale，GameRoot 将既有intent row单调推进到`POOL_RETIRED`、保持 consumer 关闭并直接走 ControlledGameplayFault teardown。
 
 ### R8 — Fault、drain 与 teardown
 
@@ -158,7 +161,7 @@ Pool使用SpatialGrid `transaction_id`，不生成第二套公开tx ID。GameRoo
 
 **`max_concurrent_borrowed` 的 scope 与 Grid cap 的关系**（防 pause 场景"Pool POOL_EXHAUSTED 但 Grid admission 通过"不一致）：`max_concurrent_borrowed` 是 Pool 的 borrowed 集合范围，包含 SpatialGrid per-type cap（Grid active+pending）的 BOUND 子集，还含 RELEASE_PENDING 与不入 Grid 的 borrowed（如 UNBOUND 投射物）。pause 期间 quarantined 的旧 published authority 仍是 borrowed 集合成员（resume publish 前不可 release），**已计入 `max_concurrent_borrowed`，不是该集合之外的额外 slot**——因此不得在 `max_concurrent_borrowed` 之上再把 `quarantine` 作为独立项叠加：quarantined 实体既是 Grid active handle 计入 per-type cap、又是 borrowed 成员计入 `max_concurrent_borrowed`，任一之上再叠都重复。`max_pause_replacement_overlap` 只建模 pause 期间**净增**的新 borrow（如"冒险夺宝"精英）超出稳态 `max_concurrent_borrowed` 的部分；当 Config v1 取 overlap=0 时，该净增预算转由 `safety_spare` 吸收（见下）。因此 Pool capacity ≠ Grid cap 的真正原因是 Pool 须容纳全部 borrowed（含 RELEASE_PENDING 与不入 Grid 类型），而 Grid cap 只反映注册在 Grid 的条目；权威容量公式即本节 `required_capacity`，**不得用 `Grid_cap + quarantine + ...` 形式重述**（该形式对非 Grid 键 Grid_cap=0 会丢 `max_concurrent`、对 boss 会算出 2>1 与 R1 boss 不变量冲突）。
 
-**`max_pause_replacement_overlap=0` 时的语义**（Config v1 全 6 key 均为 0）：pause 期间旧+新并存预算实际由 `safety_spare` 项吸收。例如 enemy_normal：`configured(320) − max_concurrent(300) − spawn_before_release(12) = 8 = safety_spare`。上界证明义务归 owner GDD + fixed-seed churn（owner GDD 完成前无法证明 spare 足够覆盖最坏 pause 场景）。`safety_spare` 的语义须保持纯净：不得被当作"掩盖泄漏的百分比魔法值"，须由 churn 与内存预算证明其同时承担 churn 缓冲与（pause_overlap=0 时）pause 替换预算两项职责。
+**`max_pause_replacement_overlap=0` 时的语义**（Config v1 全 6 key 均为 0）：pause 期间旧+新并存预算实际由 `safety_spare` 项吸收。例如 enemy_normal：`configured(320) − max_concurrent(298) − spawn_before_release(12) = 10 = safety_spare`；enemy_elite为`6−4−1=1`。上界证明义务归 owner GDD + fixed-seed churn。`safety_spare` 不得被当作active slot或“掩盖泄漏的百分比魔法值”。
 
 ### F2 — Slot conservation
 
@@ -234,7 +237,7 @@ release_status =
 |---|---|---|
 | Godot Node/PackedScene | 预实例化、process/visibility/collision reset、instance ID | 项目尚无运行工程；需Godot spike验证hook成本 |
 | Config/Data | per-key ID/factory contract/capacity/criticality/overlap与PoolLimits | `config-data-system.md` Draft；schema v1 foundation contract已冻结 |
-| GameRoot | main-thread时序、Paused transaction、fault与teardown授权 | `game-root-scene-flow.md` Draft |
+| GameRoot | main-thread时序、phase-6 lifecycle journal+gameplay fact ledger、visible-row exact batch authority publish、三段 Paused transaction、fault与teardown授权 | `game-root-scene-flow.md` Re-review Pending（seventh remediation） |
 | SpatialGrid | binding status/remap/teardown invalidation契约；Pool不直接调用 | `spatial-grid.md` core contract已冻结 |
 
 ### 下游
@@ -334,8 +337,14 @@ release_status =
 **AC-C3 remove success唯一顺序**
 - Given: BOUND borrow
 - When: 分别测试release-before-remove与remove OK→unbind→release
-- Then: 前者STILL_REGISTERED；后者三个动作各一次成功，旧handle/borrow均stale且同slot可安全新borrow
-- 验证: deterministic lifecycle trace | Gate: BLOCKING
+- Then: 前者STILL_REGISTERED；后者严格由同一intent row按`RESERVED→GRID_REMOVED→POOL_UNBOUND→POOL_RELEASED|POOL_RETIRED`推进，Pool私有slot trace为`RELEASE_PENDING→RESET_COMPLETED→AVAILABLE_COMMITTED|RETIRED_COMMITTED`；各动作一次，旧handle/borrow均stale且只有AVAILABLE slot可安全新borrow
+- 验证: deterministic Pool+Grid+journal lifecycle trace | Gate: BLOCKING
+
+**AC-C3b phase 6 第 N 条 failure 不重复/不回滚已提交生命周期**
+- Given: 多条 deferred removal intents，在每条 remove/unbind/reset/free-stack checkpoint 注入第 N 次 failure，并在 fault cleanup 中重放同一 intents
+- When: GameRoot 依据 journal 收敛 Pool/Grid authority
+- Then: 每个intent始终恰一条journal row且state不回退；free stack无重复slot，reset hook每borrow最多一次，retired slot不回AVAILABLE，旧handle/borrow不复活；未开始intents不执行。side effect前BatchPlan已arm，visible committed row=0时0 publish、>0时matching end或fault convergence恰一次batch authority publish，next authority精确排除已committed removals，禁止逐intent/逐state publish
+- 验证: exhaustive N-position fault injection + conservation equation | Gate: BLOCKING
 
 **AC-C4 pending replace原子binding**
 - Given: pending handle old，同borrow Grid insert返回OK_REPLACED/new
@@ -373,8 +382,8 @@ release_status =
 
 **AC-E1 survivor/new/removed remap发布**
 - Given: indexed E survivor old→same、F paused new 0→new、G removed old→0，及UNBOUND projectile H survivor、I removed、J paused new
-- When: Grid prepare/arm/publish与Pool prepare/arm/publish按R7执行
-- Then: E保持borrow并绑定same；F同paused borrow绑定new；G只在双publish后RELEASE_PENDING→AVAILABLE；H保持同borrow/UNBOUND，I只在双publish后回池，J保持新borrow/UNBOUND；所有quarantine正确清除
+- When: Grid prepare/arm 后按 Grid publish→Pool publish→authority publish 执行
+- Then: E保持borrow并绑定same；F同paused borrow绑定new；G/I只在三次 publish 收敛且 consumer 仍关闭时 RELEASE_PENDING→AVAILABLE/RETIRED；H保持同borrow/UNBOUND，J保持新borrow/UNBOUND；只有 authority publish 完成才清除 survivor/new quarantine
 - 验证: 三系统deterministic integration | Gate: BLOCKING
 
 **AC-E2 resume abort保持旧快照**
@@ -385,8 +394,8 @@ release_status =
 
 **AC-E3 matching publish不可失败**
 - Given: Grid与Pool均Armed且owner swap成功
-- When: matching Grid publish后matching Pool publish，并另先注入一次wrong Pool tx
-- Then: Node invalid/queued/instance mismatch/capacity错误全部在arm返回failure且Grid publish调用数=0；arm成功后matching两次publish均OK且无allocation/Node API调用；wrong tx=INVALID_ARGUMENT并保持Pool ARMED，随后正确tx使三方收敛再fault；不存在Grid已发布而Pool保持ARMED或回滚旧binding的路径
+- When: matching Grid publish后 matching Pool publish，再由 GameRoot matching authority publish；另在每个 checkpoint 前注入 identity/config mismatch，并先注入一次 wrong Pool tx
+- Then: Node invalid/queued/instance mismatch/capacity错误全部在arm返回failure且Grid publish调用数=0；arm成功后 matching Grid/Pool publish 均 OK 且 Pool publish 无 allocation/Node API调用；wrong tx=INVALID_ARGUMENT并保持Pool ARMED，随后正确tx使三方收敛再fault；authority publish 前 consumer 始终 closed，不存在 Grid 已发布而 Pool 保持 ARMED、authority 仍旧却开放 consumer 或回滚旧 binding 的路径
 - 验证: invariant test + code review | Gate: BLOCKING
 
 **AC-E4 old→new pool_key 不兼容 fallback**

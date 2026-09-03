@@ -1,11 +1,11 @@
 # Config/Data System（配置与运行时快照）
 
-> **Status**: Draft — minimum foundation contract
+> **Status**: Re-review Pending — 已同步“感知无限、技术有限”Stage V2、稀疏Grid与Player world-domain契约；须独立full复审
 > **Author**: 用户 + Codex
 > **Created**: 2026-08-19
-> **Last Updated**: 2026-08-19
+> **Last Updated**: 2026-09-03
 > **Implements Pillar**: 300敌人、400投射物、300掉落物压力目标可复现、可校验且不靠运行时魔法值
-> **Scope**: MVP battle foundation config；本轮只冻结 Object Pooling 与 SpatialGrid 所需数据
+> **Scope**: MVP battle foundation config；冻结 Pool/Grid、GameRoot orchestration limits、required manifests 与 outcome ABI 所需数据
 
 ## Overview
 
@@ -20,15 +20,15 @@ Config/Data System 把编辑期 Godot Resource 数据校验并发布为每场战
 ### R1 — 权威格式、版本与单次发布
 
 - 编辑期权威资产为 Godot 4.7.1 typed Resource（`.tres`）；CSV/JSON只允许通过离线 importer 生成Resource，不能成为release runtime的第二套权威来源。
-- 根资源 `BattleConfigManifest` 固定包含：`schema_version`、非零 `content_revision:int64`、artifact `content_hash`、`PoolLimits`、定序 `PoolKeyConfig[]`、`SpatialGridLimits`、定序 `SpatialTypeLimit[]`、Stage/consumer config references。MVP `schema_version=1`；Stage/consumer引用可在foundation fixture中缺省，但不能达到battle_ready。`run_seed`与`battle_instance_id`均不是内容调谐字段，不进入manifest/content hash。
-- `ConfigRepository.build_snapshot(manifest,required_readiness,run_start_request) -> ConfigStatus` 在BOOT/BATTLE_LOADING主线程执行 validate-then-build；BATTLE/BENCHMARK要求`run_start_request.{run_seed,battle_instance_id}:int64`均存在、非零identity合法并逐位复制到snapshot。成功生成新的非零、进程内单调`snapshot_id`并一次替换published snapshot；失败时旧snapshot保持不变。
-- `BattleConfigSnapshot` 是本局只读值快照，至少携带 `{snapshot_id,battle_instance_id,schema_version,content_revision,content_hash,run_seed,...flattened config}`。跨文档 `config_snapshot_id` 精确等于本字段 `snapshot_id`，不是第二个ID。`run_seed/battle_instance_id`来源唯一为PREP冻结的`RunStartRequest`，同一局不可更改或重新派生；RNG只消费seed副本，GameRoot使用battle identity绑定runtime banks/tokens。
+- 根资源 `BattleConfigManifest` 固定包含：`schema_version`、非零 `content_revision:int64`、artifact `content_hash`、`PoolLimits`、定序 `PoolKeyConfig[]`、`SpatialGridLimits`、定序 `SpatialTypeLimit[]`、`RuntimeOrchestrationLimits`、`PlayerConfigV1`、`ProgressionTreeConfigV1`、`ProgressionBattleProjectionV1`、`HerbConfigV1`、`ZhangtianProjectionRulesV1`、`SettlementRewardManifestV1`、`SettlementRecordManifestV1`、`SettingsConfigV1`、`DropConfigV1`、`LevelingConfigV1`、`EliteBehaviorConfigV1`及其FSM/attack/schedule/presentation表、required participant/phase/service/terminal-precollection-producer manifests、`GameplayCallbackAllowlist`、实际3-row `PauseDrainClosureTypeManifestV1`、实际2-row `FixedPauseClosureCapacityContributionManifestV1`、实际9-row `LoadStatusNormalizationManifestV1`、实际28-row `LoadFailureDispositionManifestV1`、实际54-row `TransitionGuardOracleManifestV1`、实际70-row `TransitionActionOutcomeV1`、实际31-row `TerminalPriorityGoldenV1`、`OwnerOrchestrationCapacityContributionManifest`、`RunOutcomeProducerManifest`、实际12-row `RuntimeWorkloadManifestV1`、实际4-row `PlayerRuntimeWorkloadSupplementV1`、实际3-row `PlayerPresentationConsumerManifestV1`、实际24-row `PlayerPhase6FaultMatrixV1`、实际33-row `PlayerContextStateMatrixV1`、`NativeAllocationCallAllowlistV1` 与 Stage/consumer references。MVP `schema_version=1`；range notation在导出artifact中必须展开为实际row，全部进入content hash。`run_seed`、reservation/profile identity与run-specific `ZhangtianBattleProjectionV1`不进入静态内容调谐hash。
+- `ConfigRepository.build_snapshot(manifest,required_readiness,run_start_request) -> ConfigStatus` 在BOOT/BATTLE_LOADING主线程执行 validate-then-build；BATTLE/BENCHMARK要求`run_start_request.{run_seed,battle_instance_id}:int64`均存在并逐位复制到snapshot，其中`battle_instance_id!=0`且为合法identity，`run_seed`允许完整int64位模式包括0、可重复且不是identity。成功生成新的非零、进程内单调`snapshot_id`并一次替换published snapshot；失败时旧snapshot保持不变。
+- `BattleConfigSnapshot` 是本局只读值快照，至少携带 `{snapshot_id,battle_instance_id,schema_version,content_revision,content_hash,run_seed,runtime_orchestration_limits,player_config,drop_config,leveling_config,zhangtian_battle_projection,required_participants,required_service_faults,pause_drain_closure_types,fixed_pause_closure_contributions,load_status_normalization,load_failure_dispositions,transition_guard_oracle,transition_action_outcomes,terminal_priority_golden,owner_capacity_contributions,outcome_producers,runtime_workloads,native_allocation_call_allowlist,...flattened config}`。跨文档 `config_snapshot_id==snapshot_id`。run-specific projection仅由matching durable profile+reservation与静态rules构建，不反写`BattleConfigManifest.content_hash`；各canonical table携带独立hash供runner比较，不允许运行时或fixture补行。
 - validator按pool/type ID排序并用固定字段/float位值序列化后重新计算canonical hash；hash输入明确排除`content_hash`自身、编辑器对象instance ID、绝对本地路径与注释，只包含schema/content revision、行为字段及稳定asset UID/contract ID，避免自引用与机器差异。重算值必须与manifest `content_hash`相等。同一`content_revision+content_hash`必须生成逐字段相同的snapshot与diagnostic；revision相同但hash不同、hash相同但revision倒退均为manifest错误。
 
 ### R2 — Public status、诊断与校验顺序
 
-- `ConfigStatus` 固定为primitive int enum：`OK`、`INVALID_ARGUMENT`、`SCHEMA_VERSION_MISMATCH`、`REVISION_ERROR`、`DUPLICATE_ID`、`MISSING_REFERENCE`、`LIMIT_EXCEEDED`、`DERIVATION_ERROR`、`ASSET_INVALID`、`ID_EXHAUSTED`、`WRONG_STATE`。只有OK为success。
-- 校验顺序固定为：`main-thread/state → manifest/schema/revision/hash → ID uniqueness/order → references/assets → scalar finite/domain → Pool F1与PoolLimits → Spatial limits/type caps → Stage grid derivation → query envelope/readiness → snapshot build/publish`。组合错误返回最先失败层的唯一status。
+- `ConfigStatus` 固定为primitive int enum：`OK`、`INVALID_ARGUMENT`、`INVALID_MANIFEST`、`SCHEMA_VERSION_MISMATCH`、`REVISION_ERROR`、`DUPLICATE_ID`、`MISSING_REFERENCE`、`LIMIT_EXCEEDED`、`DERIVATION_ERROR`、`ASSET_INVALID`、`ID_EXHAUSTED`、`WRONG_STATE`。只有OK为success。
+- 校验顺序固定为：`main-thread/state → manifest/schema/revision/hash → ID uniqueness/order → required role/service/callback/guard/capacity/outcome manifests → references/assets → scalar finite/domain → RuntimeOrchestrationLimits → Pool F1与PoolLimits → Spatial limits/type caps → Stage grid derivation → query envelope/readiness → snapshot build/publish`。组合错误返回最先失败层的唯一status。
 - build failure不得发布部分数组、部分pool key或“能用的那一半”。诊断保存 `{status,resource_id,field_path,expected,actual,content_revision}`；release UI只显示通用开战失败文案，具体字段仅进入dev log/telemetry。
 - validation不得加载网络内容、读取用户存档中的调谐值或依据设备实时性能改写容量。构建artifact、manifest hash和配置revision共同决定行为。
 
@@ -46,15 +46,15 @@ Config/Data System 把编辑期 Godot Resource 数据校验并发布为每场战
 
 | pool_key | stable_name | factory contract | criticality | max concurrent | pause overlap | spawn-before-release | spare | configured capacity |
 |---:|---|---|---|---:|---:|---:|---:|---:|
-| 1 | `enemy_normal` | `EnemyNormalPoolable/v1` | GAMEPLAY | 300 | 0 | 12 | 8 | 320 |
-| 2 | `enemy_elite` | `EnemyElitePoolable/v1` | GAMEPLAY | 2 | 0 | 1 | 3 | 6 |
+| 1 | `enemy_normal` | `EnemyNormalPoolable/v1` | GAMEPLAY | 298 | 0 | 12 | 10 | 320 |
+| 2 | `enemy_elite` | `EnemyElitePoolable/v1` | GAMEPLAY | 4 | 0 | 1 | 1 | 6 |
 | 3 | `enemy_boss` | `EnemyBossPoolable/v1` | GAMEPLAY | 1 | 0 | 0 | 0 | 1 |
 | 4 | `projectile_gameplay` | `ProjectilePoolable/v1` | GAMEPLAY | 400 | 0 | 32 | 16 | 448 |
 | 5 | `drop_gameplay` | `DropPoolable/v1` | GAMEPLAY | 300 | 0 | 16 | 4 | 320 |
 | 6 | `damage_number` | `DamageNumberPoolable/v1` | PRESENTATION | 64 | 0 | 16 | 16 | 96 |
 
 - 六种普通敌人必须在本基线下共享`EnemyNormalPoolable/v1`的pool/reset contract，以config behavior ID区分；两种精英共享elite contract；Boss独立。若EnemySystem GDD证明必须拆成更多PackedScene/script contract，必须先修订本表、总容量和PoolLimits，不能在实现中私自增加key。
-- ENEMY gameplay active压力锚点严格为`300 normal + 2 elite + 1 boss = 303`；PROJECTILE为400；DROP为300。damage number的64是合并后同时可见label上限，不进入SpatialGrid。
+- ENEMY gameplay active压力锚点严格为`298 normal + 4 elite + 1 boss = 303`；两次未击杀机缘精英与6:00/10:00固定精英可同时存在。PROJECTILE为400；DROP为300。damage number的64是合并后同时可见label上限，不进入SpatialGrid。
 - `spawn-before-release`是同一整tick内超过steady concurrent目标的暂态额度，不允许owner把它当永久提高active cap。owner超过该额度前必须通过自身聚合/排队规则保持业务价值，不能要求Pool动态扩容；具体聚合语义由Spawn/Drop/Projectile/Damage GDD承接。
 - `damage_number`虽为PRESENTATION，Object Pooling R1 已将该 criticality 的 overflow 默认行为定义为返回 `OVERFLOW_DROPPED`（success 类：丢弃本次借出的新对象、记 telemetry、不动态 instantiate、不触发 ControlledGameplayFault、gameplay 不中断），并以该 safe default 在 damage-number/BattleUI GDD 完成前兜底。Config 不越权细化 drop policy（合并窗口/cap 行为/drop 优先级仍归 owner GDD 显式批准），但 Config 声明 `criticality=PRESENTATION` 即采用该默认 drop 路径，不得错述为"默认 failure → ControlledFault"。
 
@@ -78,10 +78,10 @@ MVP schema v1冻结：
 
 | Field | Value | Owner/consumer semantics |
 |---|---:|---|
-| `max_abs_world_coord` | 1,000,000.0 world units | 任一arena边、insert/stage/query center的绝对坐标上限 |
-| `min_cell_size` | 0.01 world units | arena维度与CELL_SIZE共同下限 |
-| `max_grid_axis` | 4096 | rows和cols各自上限 |
-| `max_grid_cells` | 262,144 | checked `rows×cols`上限 |
+| `max_abs_world_coord` | 1,000,000.0 world units | 配置可声明坐标的绝对硬上限；不是可游玩边界 |
+| `world_safe_half_extent` | 16,384.0 world units | 本局有限安全域`[-H,H]²`；玩家不可见且不做wrap/rebase |
+| `min_cell_size` | 0.01 world units | `cell_size`下限 |
+| `max_query_cells_enumerated` | 262,144 | 单次局部格枚举上限；超过即切换全active-entry扫描 |
 | `max_indexed_entries` | 1000 | Grid slot/candidate workspace硬上限 |
 | `max_registered[ENEMY]` | 303 | normal+elite+Boss |
 | `max_registered[PROJECTILE]` | 0 | MVP投射物只作为查询caller，不注册 |
@@ -93,28 +93,100 @@ MVP schema v1冻结：
 - `Σmax_registered=603≤max_indexed_entries=1000`。`max_indexed_entries`控制private slot、authoritative carrier与resume workspace；per-type cap控制insert准入与query carrier required capacity，两者都必须检查。
 - `required_query_capacity(ALL)=603`；GameRoot/consumer至少预分配ENEMY 303、DROP 300、ALL 603的carrier。`SpatialRemapBuffer.capacity=2×max_indexed_entries=2000`。
 - `max_query_radius`是所有enabled consumer有效宽相半径的checked derived值，不是合法查询半径cap。当前只冻结pickup 1.98、midpoint cast error和target motion语义；Skill/Enemy/Projectile GDD未提供的producer字段不得按0吞掉，见R9 readiness。
-- Stage拥有arena AABB、walkable region、production CELL_SIZE与index_margin。Config schema只冻结它们的校验关系；当前`CELL_SIZE=2.0/index_margin=2.0`仍只是spike fixture，不能写成MVP地图production值。
+- Stage拥有world safe domain、镜头可见尺寸、生成环、退役边距、地表视觉参数与production `cell_size`。SpatialGrid必须是稀疏occupied-cell索引，内存只随已注册entry/cell增长，不能按world面积预分配。
 
-### R7 — StageSpatialConfig 校验关系
+### R7 — StageSpatialConfigV2 校验关系
 
-- `StageSpatialConfig`至少包含 `{arena_size:Vector2,walkable_region_polygon:PackedVector2Array,walkable_area:float,spawn_ring_depth:float,boss_region_center:Vector2,boss_region_half:float,cell_size:float,index_margin:float}`（8字段，遵 stage-map.md R5）。`arena_min`/`arena_max` **不入 schema**，由 F1 从 `arena_size` 派生，Config 不校验独立字段、消费者按 F1 派生。所有real_t输入先验证finite，再进入checked float64 derivation。
-- 必须满足：两条arena维度`≥min_cell_size`；四条arena边绝对值`≤max_abs_world_coord`；`min_cell_size≤cell_size≤max(arena_w,arena_h)`；`0<walkable_area≤arena_w×arena_h`；`walkable_area == shoelace(walkable_region_polygon)`（浮点容差内，不一致→`DERIVATION_ERROR`）；`walkable_region_polygon` schema：MVP 4 顶点、CCW 绕序、首尾不重复、非自交、外接矩形==arena AABB，位值绑定标准 real_t32 导出（遵 R1 canonical hash，double 精度构建重跑 golden）；`index_margin≥0`且checked `arena.grow(index_margin)`仍在世界坐标域。
-- `cols=max(1,ceil(arena_w/cell_size))`、`rows=max(1,ceil(arena_h/cell_size))`；必须满足`cols/rows≤max_grid_axis`且checked `cols×rows≤max_grid_cells`。任何失败=`LIMIT_EXCEEDED`或`DERIVATION_ERROR`，不得调用SpatialGrid.init。
-- Config只证明输入满足安全域；production CELL_SIZE仍须由SpatialGrid F3在真实arena、完整query envelope和目标设备上benchmark后写回StageConfig并提升content revision。
+- `StageSpatialConfigV2`精确包含 `{schema_version:int32=2,world_safe_half_extent:float64,max_battle_duration_seconds:float64,camera_visible_world_size:Vector2,spawn_visibility_padding:float64,spawn_ring_depth:float64,despawn_margin:float64,ground_tile_world_size:Vector2,ground_overscan:float64,cell_size:float64,max_query_cells_enumerated:int32}`，遵`stage-map.md`。V1或V1/V2混合字段必须`SCHEMA_VERSION_MISMATCH`，不得静默迁移。
+- 所有real_t输入先验证finite，再进入checked float64 derivation。必须满足：`0<H≤max_abs_world_coord`、`max_battle_duration_seconds=1800`、镜头两维/生成padding/ring depth/地表tile两维/cell size为正、`despawn_margin≥0`、`ground_overscan≥0`、`min_cell_size≤cell_size`、`1≤max_query_cells_enumerated≤262144`。
+- 派生矩形环：`visible_half=0.5×camera_visible_world_size`、`spawn_inner_half=visible_half+spawn_visibility_padding`、`spawn_outer_half=spawn_inner_half+spawn_ring_depth`。必须有`spawn_visibility_padding≥max_spawn_visual_bound`。Config按Stage F1计算`max_relative_runtime_extent`、`world_precision_guard`与`world_reachability_budget`并验证`budget≤H`；失败=`LIMIT_EXCEEDED`，不得靠运行时clamp修复。
+- `max_abs_cell_coord=ceil(H/cell_size)`必须可由signed 64-bit cell key安全表示；不派生或分配`rows×cols`。Config只证明数值域安全；production `cell_size`仍须由SpatialGrid F3在完整query envelope和目标设备上benchmark后写回并提升content revision。
 
 ### R8 — Runtime immutable 与 reload policy
 
 - BOOT可以发布不含本局run_seed/battle identity的基础snapshot；每次BATTLE_LOADING必须用manifest+`RunStartRequest.{run_seed,battle_instance_id}`构建本局`BattleConfigSnapshot`，并把同一snapshot ID与battle identity传给GameRoot runtime banks；Pool/Grid/owners继续以同一snapshot ID做Config一致性预检。
 - 进入BATTLE_ACTIVE后，Config API只读；Resource changed通知、remote config、dev inspector编辑或文件变化不得修改当前snapshot。请求reload只设置“next battle rebuild”标志。
-- pause/resume沿用同一snapshot ID。Pool与Grid必须在init时复制该非零ID并提供无分配、只读scalar getter；owner authority bundle同样携带该ID。若owner、Grid或Pool报告的snapshot ID不同，GameRoot在开放consumer前或resume publish前进入ControlledGameplayFault；不得尝试合并两版配置。
+- pause/resume沿用同一snapshot ID。Pool与Grid必须在init时复制该非零ID并提供无分配、只读scalar getter；owner authority bundle同样携带该ID。Config只引用GameRoot canonical resume attempt schema `{battle_instance_id,config_snapshot_id,input_revision,background_required_revision,background_acked_revision,geometry_revision,source_authority_revision,next_authority_revision,source_grid_snapshot_revision,next_grid_snapshot_revision,pool_epoch,topology_revision,resume_requested_latched}`，不得复制旧名或第二套字段。在 arm 与 `Grid→Pool→authority` 三次发布的expected tuple checkpoint分别核对；任一额外变化都保持consumer关闭并进入ControlledGameplayFault。
 - Config snapshot teardown不拥有pooled Node或Grid handle；GameRoot先按既定Grid→Pool顺序teardown battle，再释放snapshot引用。
 
 ### R9 — Readiness 分级与缺失依赖
 
 - `foundation_ready`：schema、R4/R5/R6全部有效，可进行Object Pooling/SpatialGrid isolated implementation与测试。
-- `battle_ready`：foundation_ready，且合法`RunStartRequest.{run_seed,battle_instance_id}`、StageSpatialConfig、所有enabled pool factory/reset contract、Wave/Enemy/Projectile/Drop/Skill consumer references和其玩法上限全部存在。GameRoot只允许battle_ready snapshot进入BATTLE_ACTIVE。
-- `benchmark_ready`：battle_ready，且所有query producer提供完整有效宽相上界、production arena/CELL_SIZE已确定、min-spec设备与memory/performance manifest完整。只有该级别可关闭SpatialGrid production CELL_SIZE和pool memory gates。
-- 本GDD完成后foundation_ready契约闭环；Stage arena、各owner reset字段、spawn/overlap enforcement、完整query envelope及真机内存仍是明确integration gates，不得用当前spike值伪装battle/benchmark ready。
+- `battle_ready`：foundation_ready，且合法RunStartRequest、`StageSpatialConfigV2/StageWorldDomainViewV2`、factory/reset contract、所有consumer references与玩法上限存在；required role覆盖11个role，七phase participant/service coverage非空，terminal precollection producer coverage complete，四required service exact-once；callback、3-row closure、2-row fixed closure、9-row load normalization、28-row load disposition、54-row guard oracle、70-row action outcome、31-row priority golden、12-row global workload、4-row Player supplement、Player fault/context matrices与34-row Outcome ABI的row count/order/hash完全匹配。每个required owner对`LIFECYCLE_INTENT/FACT_COMMIT/PAUSE_CLOSURE/BLOCKING_CHOICE`各恰一行（可显式0），每个Outcome SoA field有唯一producer贡献；`outcome_kind`producer必须为GAME_ROOT。空表、缺行、重复/未知、hash或checked sum不匹配均`INVALID_MANIFEST`。当前28/54/70-row V2表已在GameRoot枚举，但导出artifact、canonical Hash256 golden、BATTLE_RULES并入后的capacity/workload、`ReviveHazardSnapshotV2`总容量及runtime证据尚未实际生成，继续令`battle_ready=false`。
+- `benchmark_ready`：battle_ready，且所有query producer提供完整有效宽相上界、production `cell_size`已确定、min-spec设备与memory/performance manifest完整。只有该级别可关闭SpatialGrid production `cell_size`和pool memory gates。
+- 本GDD完成后foundation_ready契约闭环；SpawnDirector运行实现、各owner reset字段、完整query envelope及真机内存仍是明确integration gates，不得用当前spike值伪装battle/benchmark ready。
+
+### R10 — RuntimeOrchestrationLimits 与 manifest 完整性
+
+- `RuntimeOrchestrationLimits` 在 snapshot 中固定携带：`physics_ticks_per_second=60`、`engine_time_scale=1.0`、`max_pending_blocking_choices=checked_sum(required owner BLOCKING_CHOICE rows)`且`1..16`、`max_pending_reasons=3+max_pending_blocking_choices<=19`、diagnostic/lifecycle/pause/fact limits与`max_pending_save_commits=1`。RunOutcome每个SoA满足owner required capacity。所有和/乘法checked；禁止直接填写blocking choice aggregate。
+- `fixed_gameplay_dt=1.0/physics_ticks_per_second`；GameRoot只把该值或`0.0`传给gameplay。Godot callback delta仅作telemetry；Engine runtime tick rate/time scale漂移是dependency fault，不成为simulation时间源。
+- required manifest schema沿用GameRoot。`PauseDrainClosureTypeManifestV1`必须逐字段等于PDC01..03；fixed manifest必须等于FPCC01..02；load normalization逐字段等于LSN01..09，disposition等于LFD01..28并以LSN覆盖每个non-success class；guard oracle等于实际G00..G24共54行；action outcome等于TA01..70；priority等于TP01..31；workload逐字段等于RW01..12，RW07/08 sample unit固定CONTROL_PUMP_ITERATION，并绑定`NativeAllocationCallAllowlistV1` hash。`OwnerOrchestrationCapacityContributionManifest`排序键固定`{role_stable_order,kind_stable_order,field_stable_order}`且组合唯一；每个required role对四类capacity各一行，每个Outcome SoA field由唯一producer提供OUTCOME_FIELD行；`RunOutcomeProducerManifest`逐字段等于GameRoot 34-row。全部按canonical order进入hash，不接受runtime补行。
+- lifecycle/fact/blocking-choice三类required下界分别等于全required role对应kind的checked sum；pause closure下界等于owner PAUSE_CLOSURE checked sum加FPCC01..02固定贡献，且不要求小于lifecycle intent数。Outcome field下界等于唯一producer required_max。`RuntimeWorkloadManifestV1`只对`STEADY_ZERO_DELTA`要求零allocator/growth/COW/native-call；cold/memory只测量。缺行、排序键冲突、负数、overflow或越界均在首个allocation/side effect前fail closed。
+
+### R11 — PlayerConfig、PLAYER actual rows 与精确定容
+
+`PlayerConfigV1`最小schema固定为：
+
+`{schema_version:int32=1,player_speed:float64=4.5,base_max_hp:float64=100,progression_max_hp_bonus_ratio:float64,preparation_max_hp_bonus_ratio:float64,resolved_starting_max_hp:float64,player_collision_diameter:float64,revive_hp_ratio:float64=0.35,revive_relocation_radius:float64,revive_outer_ring_multiplier:int32=2,revive_candidate_capacity:int32=17,enemy_threat_capacity:int32=303,revive_clear_workspace_capacity:int32=300,player_fact_capacity:int32=2,player_transient_event_capacity:int32=1,player_critical_event_capacity:int32=2,revive_hazard_capacity:int32}`。
+
+- `player_collision_diameter`与`revive_relocation_radius`必须finite且分别落入Player GDD冻结域；`player_speed/revive_hp_ratio/outer multiplier/candidate/threat/clear/fact/transient-event/critical-event`逐值精确等于上述常量，artifact required−1或required+1均`INVALID_MANIFEST`，不得以“至少够用”接受漂移；Player initialize对已构造snapshot再作防御性复核，失败返回PlayerStatus `INVALID_CONFIG`，两层status不得混用。
+- Config接收战前已解析的`long_chun_level∈{0..5}`与`iron_body_pill_consumed:bool`，固定生成`progression_max_hp_bonus_ratio=0.03×long_chun_level`、`preparation_max_hp_bonus_ratio=iron_body_pill_consumed?0.15:0`，再按Player F3A计算`resolved_starting_max_hp=base_max_hp×(1+progression+preparation)`。所有输入/中间值/结果必须finite，结果必须在`[1,1,000,000]`；否则`INVALID_MANIFEST`。三字段进入content hash且只随新snapshot生效，Active不得热改maxHP。
+- `revive_hazard_capacity`必须为正整数，并逐字段等于所有hazard producer经worst-case workload证明的actual contribution checked sum。对应schema固定为`ReviveHazardSnapshotV2`：保留V1 header/identity/window并增加`shape_codes`，封闭enum至少含`CIRCLE/EXTERIOR_CIRCLE`；V1、unknown shape、缺array或parallel-array长度不等于capacity均`INVALID_MANIFEST`。当前总式为`400+EnemyNonProjectile_H+2+Stage_H`；未知项、workload或值未冻结时`battle_ready=false`，Config不得暂填402或从303/300任意推导。
+- 清除不配置独立距离旋钮。MVP所有NORMAL必须声明`shape_code=CIRCLE`，且`enemy_shape_bound`逐bit等于实际玩法碰撞圆半径；Player只按`player_radius + enemy_shape_bound`判断真实重叠/相切。非圆NORMAL或额外clear-distance字段均使battle load失败。
+- 标准Godot export的position/direction ABI为real_t32 `Vector2`；Config标量与计算域为float64。validator必须分别检查real_t32可表示/canonical边界与float64 finite/domain，不以float64 ULP替代runtime ABI。
+- artifact manifest必须登记export template precision=`single`及Player inward-rounding bit-golden hash；double-precision模板、±0/subnormal/最大finite golden不匹配或Stage parent/canvas identity contract缺失均令Player consumer reference无效。
+
+PLAYER participant actual row必须逐字段为`{participant_id=PLAYER,role_id=PLAYER,stable_order=2,allowed_phases={MOVEMENT_COMMIT,DEFERRED_REMOVAL},allowed_success_statuses={OK,OK_NOOP},owner_contract_id=PlayerController/v1,owner_gdd_path=design/gdd/player-controller.md,phase_row_id=PLAYER_PHASE_ROW_V1,required=true}`。
+
+PLAYER owner contribution actual rows共同字段为`required_role_id=PLAYER,outcome_field_id_or_none=NONE,owner_contract_id=PlayerController/v1,source_gdd_path=design/gdd/player-controller.md,role_stable_order=2,field_stable_order=0`，四行分别为`{LIFECYCLE_INTENT,0,kind_stable_order=1}`、`{FACT_COMMIT,2,2}`、`{PAUSE_CLOSURE,0,3}`、`{BLOCKING_CHOICE,0,4}`。Config只复制/验证actual rows，不补字段、不把Player row与Damage row合并。
+
+### R12 — Terminal precollection、Player typed artifacts 与 workload supplement
+
+- `TerminalPrecollectionProducerManifestV1`逐row冻结所有可对当前resolution产生`FATAL/VICTORY/PAUSE` contender的required producer，字段为`{producer_role_id,owner_contract_id,allowed_bits,stable_order,source_gdd_path}`；每个producer每token恰一条typed preview，可显式NONE。GameRoot只以这些actual rows的coverage hash接受precollection，禁止fixture补producer或phase7晚发现VICTORY。
+- `StageWorldDomainViewV2`、`PlayerMotionCommitCarrierBankV1`、`PlayerDamageResolutionViewV1`、`PlayerRecoveryResolutionViewV1`、`EnemyThreatSnapshotViewV1`、`ReviveHazardSnapshotViewV2`、16-field `Phase6AuthorityBatchPlanV1/ViewV1`、`Phase6PlayerBankBindingsV1`及其七个nested binding/bank/capability、`TerminalPrecollectionViewV1`、`Phase6PlayerPreparedOutputV1`、HUD/transient/critical wrapper schema逐字段采用Player/Stage/GameRoot GDD。`PlayerPresentationFrameV1`只允许由matching motion+HUD allocation-free copy-out联结生成，不得登记第三套backing/selector。phase不适用的RefCounted payload只允许`null`；缺schema、writable backing alias、可写view、空壳对象冒充unbound、generation或teardown失效规则均为`INVALID_MANIFEST`。
+- `PlayerRuntimeWorkloadSupplementV1`实际行恰为`PWM01..04`并按`workload_id`排序；PWM01/02/04的parent必须为RW01且使用相同1191-active counts，PWM03的`H`必须展开为hazard owner actual capacity。四行hash进入BattleConfig content hash与GameRoot RuntimeWorkload observer header。
+- `PlayerPhase6FaultMatrixV1`必须逐字段等于Player GDD的PFM01–24，`PlayerContextStateMatrixV1`必须逐字段等于PCM01–33；row-id、stable order、checkpoint、status、tx、writer vector和completion全部进入content hash。行数非24/33、缺行、多行、未知行或hash不匹配均`INVALID_MANIFEST`。实现代码不得读取expected status/writer vector；Config只验证schema/coverage/hash，不把oracle表注入production判定路径。
+- `PlayerPresentationConsumerManifestV1`实际三行固定为`PLAYER_VISUAL/BATTLE_UI/PLAYER_AUDIO`，stable order为1/2/3，`ack_word_capacity=1`且V1 `required_ack_mask=0b111`；每个consumer使用bit `1 << (stable_order-1)`。Player transient/critical event容量分别精确为1/2；consumer manifest hash、required/acked mask与event bank/ledger header必须逐字段matching。缺consumer、重复consumer、未知bit、bitset不足或Critical P0 fallback缺失均使battle load失败。
+
+### R13 — SpawnDirector actual rows 与精确定容
+
+- SPAWN participant row逐字段等于SpawnDirector R1：stable order 3，只允许`SPAWN_INTENT`，normal suppression status不得用于mandatory intent。
+- `spawn_candidate_attempts=8`、`max_spawn_intents_per_tick=23`、`max_normal_retire_intents_per_tick=300`；23来自`max(12 Wave+9 Elite summon+1 Elite+1 Boss,12 Wave+9 Elite summon+2 Boss summon)`。Boss召虫只在43200 Boss与fixed Elite rows均已消费后的P2合法，12:00后新普通Wave row为0；这一schedule互斥必须进入hash。candidate workspace=8、单tickspawn-position RNG word上限552，required±1均`INVALID_MANIFEST`；不改变298/4/1 active cap或Pool容量。
+- SPAWN四条owner contribution actual row共同字段为`required_role_id=SPAWN,owner_contract_id=SpawnDirector/v1,source_gdd_path=design/gdd/spawn-director.md,role_stable_order=3,field_stable_order=0`，四类`LIFECYCLE_INTENT/FACT_COMMIT/PAUSE_CLOSURE/BLOCKING_CHOICE` required_max均为0、kind stable order依次1..4。Normal退役的最多300条journal row归ENEMY contribution，禁止双计到SPAWN。
+- `max_spawn_visual_bound`、禁生区producer/capacity与完整WaveSchedule仍缺失时`battle_ready=false`；Config不得以0或空表补齐。
+
+### R14 — DropSystem + Leveling/XP actual rows 与精确定容
+
+- DROP participant逐字段等于`DROP_PHASE_ROW_V1`：stable order 7，allowed phases为`SPAWN_INTENT/QUERY/QUERY_CONSUME/DEFERRED_REMOVAL`；LEVELING逐字段等于`LEVELING_PHASE_ROW_V1`：stable order 10，只允许`DEFERRED_REMOVAL`。owner contract分别为`DropSystem/v1`与`LevelingSystem/v1`，共同source为`design/gdd/drop-leveling-system.md`。
+- DROP四条owner contribution actual row按kind 1..4为`300/300/300/0`；LEVELING四类均为0。SKILL_DRAFT的`BLOCKING_CHOICE` actual required max冻结为14，来源为10-row Leveling可见窗口+4-row Drop treasure窗口；Leveling其余29条升级债务留在39-row debt bank，不重复计入并发blocking choice。RISK_CHOICE四类actual row为`0/0/0/2`，故全局blocking checked sum精确为16。
+- `DropConfigV1`必须逐字段冻结behavior/provenance XP表、100000 utility权重与checked sum、`PlayerHpAuthorityViewV1` eligibility revision、5400/7200/10800 gameplay-tick cooldown、3/2/1 run cap、290/3/2/1/4 subtype caps、606-row award bank、300-row materialize/pickup plan、DropPoolable reset与blast ABI版本。`LevelingConfigV1`必须冻结`T(L)=8+5L+ceil(3L²/5)`、level cap40、cumulative cap16552、39-row debt、10-row可见窗口、300-row apply dispositions与terminal policy。
+- `PlayerHpAuthorityViewV1`必须逐字段等于Player/GameRoot定义且从每次full-copy后的published authority slice派生，不得绑定可能落后revision的HUD bank。BATTLE_RULES必须预分配capacity1 `CoreHerbRewardStageBankV1`并验证stable非零item ID及staging→通用REWARD ledger映射；缺row/header/join字段使`battle_ready=false`。
+- Config必须验证同一death的award kind order`XP=1,UTILITY=2,TREASURE_BOX=3`、Enemy 8-field death staging schema（含`source_choice_id`）、SkillDraft普通offer n=1/2/3时RNG calls=1/3/5；缺任一schema/capability/hash不得补默认。
+- 当前RW01..11的`{1,303,384,503}`与已冻结`PROJECTILE active=400`、`DROP active/Grid=300,pool=320`冲突，整张RuntimeWorkloadManifest必须连同operation vector/authority count/hash重生成；只改503或继续把1191 pool slots称为active object数均`INVALID_MANIFEST`并保持`BLOCKED-WORKLOAD-REGEN`。
+
+### R15 — RiskChoice actual rows 与精确定容
+
+- RISK_CHOICE participant逐字段等于`RISK_CHOICE_PHASE_ROW_V1`：stable order 9，仅允许`POST_DEFERRED_BARRIER`，success statuses为`OK/OK_NOOP`，owner/source为`RiskChoiceSystem/v1`与`design/gdd/risk-choice-system.md`。
+- 四类owner contribution按kind 1..4精确为`0/0/0/2`；Outcome producer rows精确为`risk_choice_count=1 scalar slot`、`risk_choice_ids=2`、`risk_choice_results=2`，field stable order分别19/28/29。Config不得把schema hard max1536当作Risk本地容量。
+- `RiskChoiceConfigV1`恰有两条event：due ticks `{14400,28800}`、两分支`SAFE/TREASURE`、恢复0.25、ward 600 ticks/0.80、risk Elite HP与base damage倍率1.30、behavior 6/7权重1/1、challenge2700 ticks、XP240、treasure eligible=true；缺行、多行、重复ID/due、非法权重/数值均`INVALID_MANIFEST`且不补默认。
+- ENEMY class caps逐字段冻结为`normal=298,elite=4,boss=1,total=303`。对应Pool F1 rows为`298+0+12+10=320`与`4+0+1+1=6`；仍沿用ENEMY query capacity303，不把pool spare计作active容量。
+- 两次risk treasure+两次fixed Elite treasure使每局宝匣provenance最多4，闭合Drop active/window cap4；第5个配置在battle load失败。宝匣耗尽后的奖励内容仍由SkillDraft/Drop保持`BLOCKED-TREASURE-EXHAUSTION`。
+
+### R16 — Elite Enemies content rows 与 producer上界
+
+- `EliteBehaviorConfigV1`恰有behavior 6/7两行并按ID排序；两行须引用完整FSM/attack/reward/presentation hash与预分配`EliteRuntimeStateV1`。所有duration使用整数gameplay ticks，禁止seconds/ticks双别名同时生效。
+- fixed schedule恰为`{21600,behavior6}`与`{36000,behavior7}`；共同arrival lock=60 ticks。蜈蚣三段6-unit/18 speed、24t telegraph、6t link、300t cooldown、150t weakened；鬼修360t period、18t blink预警、30t魂针预警、24t后摇、三针、三召唤。balance值按Elite GDD的PROVISIONAL标记进入revision/hash，不能省略。
+- Elite不是新participant/owner contribution。Elite hostile Projectile上界为9；Boss为8。global pending仍须加入Weapon与behavior2/4 Normal远程并证明`<=32`。Elite summon最多9 child，Boss P2最多2 child，按R13 schedule互斥共同保持23-row/552-word上界。
+- Enemy death staging schema升级为8字段并含`source_choice_id`；Risk行必须为matching非零ID，fixed/summon为0。缺Elite表、presentation P0 fallback、Projectile/Damage/hazard总量或完整WaveSchedule仍令`battle_ready=false`。
+
+### R17 — BossStateMachine content、shape ABI 与 producer上界
+
+- `BossBehaviorConfigV1`恰有behavior8一行；`BossScheduleV1`恰含`{due_tick=43200,class=BOSS,count=1}`。Boss为ENEMY stable-order4内部typed capability，不新增participant或owner contribution；缺capability时不得以基础追踪Boss进入production。
+- Boss profile须逐字段冻结120t arrival、P1 312t最短纯动作轮转、50% crossing与90t PHASE_SHIFT、P2 444t最短纯动作轮转、bite/fan/ring/fog/summon attack row及presentation hash；TRACK门外时间另计。所有时长只用Active gameplay ticks；base stats/伤害倍率保留PROVISIONAL-BALANCE标记但仍进入revision/hash。
+- Boss projectile pending/active contribution均为8；Elite为9，另需加入Weapon与behavior2/4 Normal projectile上界并验证总pending<=32、active<=400。缺任一producer枚举时`battle_ready=false`。
+- Boss direct damage单tick上界2，non-projectile revive hazard上界2，Boss summon为0/2 behavior0 cluster且BOSS_SUMMON奖励全0。`BossSummonClusterIntentV1`与12:00后schedule互斥证明必须逐字段验证；否则不能继续沿用23/552。
+- `ReviveHazardSnapshotV2`在V1 header/window基础上新增`shape_codes`，封闭enum至少含`CIRCLE/EXTERIOR_CIRCLE`。Player/Damage/Config schema版本、copy-out和hash必须一致；V1、unknown shape或以大圆冒充外圆毒域均`INVALID_MANIFEST`。总hazard公式为`400+EnemyNonProjectile_H+2+Stage_H`，后两项未冻结前`revive_hazard_capacity`继续BLOCKED，不得暂填402。
+- 扇形毒液要求typed cone area shape；Damage仅支持circle的旧artifact必须load失败。BATTLE_RULES的Boss lethal projection→VICTORY preview→Boss DEATH→核心灵药REWARD phase row、owner contribution与预留顺序现由Settlement作者GDD冻结；Config仍须生成actual rows/hash，本文Boss配置不得替它补默认。
 
 ## Formulas
 
@@ -138,15 +210,11 @@ MVP schema v1冻结：
 
 MVP结果：`ENEMY=303`、`PROJECTILE=0`、`DROP=300`、`ENEMY|PROJECTILE=303`、`ENEMY|DROP=603`、`PROJECTILE|DROP=300`、`ALL=603`、空/纯未知mask=0。每步checked sum且输出`[0,603]`。
 
-### F4 — Grid dimension derivation
+### F4 — Sparse cell-domain derivation
 
-`cols = max(1,ceil(arena_w/cell_size))`
+`max_abs_cell_coord = ceil(world_safe_half_extent / cell_size)`
 
-`rows = max(1,ceil(arena_h/cell_size))`
-
-`grid_cells = checked_mul(cols,rows)`
-
-输出必须满足`1≤cols,rows≤4096`及`1≤grid_cells≤262144`。示例fixture`arena=40×40,cell_size=2`得到`20×20=400`；这只是fixture，不冻结production arena。
+输出必须是signed 64-bit安全整数；cell key由signed `(cx,cy)`稳定编码。运行时只保存occupied cells且`occupied_cell_count≤max_indexed_entries`，禁止按`(2×max_abs_cell_coord+1)²`分配dense grid。局部query预计枚举cell数超过`max_query_cells_enumerated`时扫描最多1000个active entries，仍按相同过滤、排序与容量契约输出。
 
 ### F5 — Query envelope 与 readiness
 
@@ -168,8 +236,8 @@ enabled producer的每个required变量必须present、finite且非负；缺失�
 8. **If** PROJECTILE max_registered被设为400：**Then** manifest失败；400是pool/query-caller压力，不是MVP Grid注册数。
 9. **If** per-type cap总和603但ALL carrier只有602：**Then** BATTLE_LOADING失败，不进入Active、不运行时扩容。
 10. **If** max_indexed_entries低于603或remap carrier低于2000：**Then** LIMIT_EXCEEDED，snapshot不具battle_ready。
-11. **If** arena/cell含NaN、Infinity、0、负数或网格行列/总格数超限：**Then** DERIVATION_ERROR/LIMIT_EXCEEDED，不调用Grid init。
-12. **If** index_margin使grow后任一边越过±1,000,000：**Then** LIMIT_EXCEEDED，不clamp配置值。
+11. **If** Stage V2任一real_t含NaN/Infinity，`H/cell_size`无效或cell key不能安全表示：**Then** DERIVATION_ERROR/LIMIT_EXCEEDED，不调用Grid init。
+12. **If** 1800秒可达包络加生成环、退役边距与最大bound越过world safe domain：**Then** LIMIT_EXCEEDED，不缩短生成环或clamp运行时位置。
 13. **If** enabled query producer缺失上界：**Then** foundation snapshot可用于isolated test，但battle/benchmark readiness为false；不把缺失值当0。
 14. **If** radius大于derived max_query_radius但API输入合法：**Then** Config不拒绝或clamp；derived值只做审计与benchmark规划。
 15. **If** Resource在Active中被编辑/替换：**Then** 当前snapshot逐字段不变，只标记next battle rebuild。
@@ -185,22 +253,34 @@ enabled producer的每个required变量必须present、finite且非负；缺失�
 |---|---|---|
 | Godot 4.7.1 Resource | typed `.tres`、PackedScene/Resource引用、构建artifact | 引擎已固定；具体Resource class实现未开始 |
 | Build/import pipeline | 可选CSV/JSON离线导入、canonical hash、schema migration | 未设计；不阻塞手写fixture Resource |
-| StageConfig | arena、walkable area、CELL_SIZE、index_margin | `design/gdd/stage-map.md` Draft；静态几何/schema 已冻结，生产 CELL_SIZE/index_margin 收紧值 gated |
-| RunStartRequest / RNG | PREP生成`run_seed+battle_instance_id`，Config逐位冻结进每局snapshot；RNG只消费seed，GameRoot消费battle identity | GameRoot/RNG GDD已登记；runtime evidence OPEN |
-| Owner configs | Wave/Enemy/Projectile/Drop/Skill上限、factory/reset contract | GDD未设计；battle/benchmark gate |
+| StageConfig | V2 world domain、镜头/生成环、地表参数、`cell_size` | `design/gdd/stage-map.md` In Review/Re-review Pending；生产 `cell_size`仍由性能证据gated |
+| RunStartRequest / RNG | PREP冻结`RunStartRequestV2`；Loading preflight后RNG另冻结`ZhangtianSeedCandidateV1`，不得回写request | GameRoot/RNG/Zhangtian GDD已登记；runtime evidence OPEN |
+| Owner configs | Wave/Enemy/Projectile/Drop/Skill/Player/RiskChoice上限、factory/reset contract、participant phase rows、outcome producer rows | Input/Player/Spawn/Enemy/Projectile/Damage/Drop/SkillDraft/RiskChoice/Leveling owner contract已冻结；BattleRules、hazard producer与其余证据缺失继续阻塞 battle_ready |
 
 ### 下游
 
 - Object Pooling消费R3–R5，不得自行发明key或容量。
 - SpatialGrid消费R6–R7及F3–F5，不得把derived max_query_radius当合法性cap。
-- GameRoot只发布同一snapshot ID，按GameRoot R2的typed DAG执行`Config→carriers/banks→Stage scene/Camera assembly→Input→Grid→Pool→owners→identity preflight→activation`；失败清理按`consumer/input close→owner→Grid invalidation→Pool teardown→Grid reset→Input/Stage child→snapshot release`收敛，不得机械逆序。
-- Enemy/Projectile/Drop/Damage/BattleUI必须承接R4的active/overlap与factory/reset contract；若需求突破基线，先修订Config而非运行时fallback。
+- GameRoot只发布同一snapshot ID，按唯一DAG执行`Config最小schema→BOOT unbound backing→PREP命令/release run-seed candidate→Save+Zhangtian同槽分配battle/reservation/preparation identities、domain after-image、276-byte recovery与checkpoint2→Config完整manifest+run projection→Outcome backing READY→RNG logical draw+checkpoint6 candidate→Stage→Input→Grid→Pool→owners→durable pre-active choice或skip/checkpoint7→ActiveEntryFact/checkpoint8 durable→activation`；失败cleanup由lifecycle pump按staged destination、pause-off、frame barrier、expose、top-state commit、最终激活/held gate release收敛，不释放persistent root Window。
+- Enemy/Projectile/Drop/Damage/BattleUI必须承接R4的active/overlap与factory/reset contract；BattleUI作者GDD现已冻结damage label同时可见64、pool96及`OVERFLOW_DROPPED`语义，但Damage presentation bank/merge/ACK仍BLOCKED。若需求突破基线，先修订Config而非运行时fallback。
+
+**BattleUI static propagation（2026-09-03）**：Config snapshot后续必须登记`BattleUiFrameBundleV1` source-binding manifest、scene/topology identity、1 Boss+4 Elite方向identity cap5、foreground card cap4、pending count max16、damage label visible64/pool96，以及从`SupportedTouchEventOrderingManifest.max_concurrent_touches`派生的choice touch bank。最后一项当前为BLOCKED且禁止填默认。BattleUI不成为phase participant，四类gameplay contribution均为0；各producer HUD view、choice priority、text/glyph/native-allocation allowlist和P0 fallback未完整签发前`battle_ready=false`。
+
+**Audio Feedback static propagation（2026-09-03）**：Audio不成为phase participant，四类gameplay contribution均为0；继续使用`PLAYER_AUDIO stable_order=3, ack_bit=0b100`。Config后续必须登记`AudioFrameBundleV1` source-binding、`BattleAudioEventBankV1`、`AudioPriorityManifestV1`、`AudioCueProfileV1`、bus/effect/asset/import/fallback/duck/voice manifests及native-allocation allowlist。关键保留voice结构值为6；总voice node 22是`PROVISIONAL-AUDIO-CAPACITY`，不得作为event bank容量。`H_audio`只能由各producer同一sealed capture最大audio rows的checked sum生成；当前rows/包含关系未签全，禁止用22/303/400/606代填，继续令`battle_ready=false`。
+
+**SaveSystem static propagation（2026-09-03）**：Config必须登记`PersistentDomainManifestV1`、每domain codec/schema/version/max-bytes、连续migration step、canonical `SHA256_V1` domain-separated zero-field preimage/golden vectors、两槽介质版本与总slot byte checked sum。Save固定2个正式完整槽、同目录temp、单writer、pending outcome/reservation各最多1；success前要求同generation同bytes双镜像。resolved archive 64 rows为`PROVISIONAL-PRODUCT`。V1容量常量固定`ReservationMax=1004,SlotMax=65536,FileSystemSafetyMargin=65536,DiskPeakMin=262144`；任一generated owner checked sum或实际编码超限在写前失败。这些值不允许由Resource实例或运行时Dictionary推导。四个domain payload作者上限为176/132/136/60 bytes，对应已知DomainRecord总和728 bytes；actual codec/migration/golden与generated checked-sum仍保持`BLOCKED-PERSISTENT-DOMAIN-CODEC/CAPACITY-EVIDENCE`。
+
+**Progression Tree static propagation（2026-09-03）**：`ProgressionTreeConfigV1`必须有3个stable branch、每支5个actual cost/effect rows，`PROVISIONAL-ECONOMY-V1`成本为4/8/12/16/20。`ProgressionBattleProjectionV1`从同一durable profile/domain revision构建：青元attack ratio `0.03Q`、长春maxHP ratio `0.03L`、大衍crit points `0.01D`与pickup ratio `0.02D`、L5 perk分别pierce1/longchun charge1/extra refresh1；Active不热改。Progression domain payload max176 bytes并进入PersistentDomainManifest。SkillDraft初始refresh必须从固定2升级为`2或3`，单session最大page/call从3/15升级为4/20。青元hit workload、长春recovery ABI、BattleRules残页reward row与5400tick/cap8经济仍BLOCKED，缺任一actual row令battle_ready=false。
+
+**Zhangtian/Settlement/Home/Prep static propagation（2026-09-03）**：静态`HerbConfigV1={seed_kind_count=3,seed_held_cap=999,defeat_seed_eligible_ticks=43200,victory_seed_quantity=2,starter_seed_grant_per_kind=1,seed_weights=[1,1,1],recipe_rows[3],config_hash}`与`ZhangtianProjectionRulesV1`固定三seed→三pill一对一、cost1及`PROVISIONAL-ECONOMY-V3`。held cap只约束`available+reserved<=999`，lifetime `earned/consumed`只受non-negative int64与守恒约束。run-specific `ZhangtianBattleProjectionV1`由matching durable profile+reservation生成，只把聚气`starting_level_curve_credit=14`与普通ordinal1预开局选择、锻体maxHP+15%、明心crit+0.08写入下一局snapshot。聚气后到L40的remaining XP固定16538，offer/refresh/commit逐次写入276-byte recovery。Loading调用`roll_weighted_pick(ZHANGTIAN_HERB, preallocated PackedInt32Array([1,1,1]))`恰1 logical次，max len3、fault-before-use、canonical index `0/1/2→NINGQI_GRASS/TIELING_FLOWER/LEIYUAN_FRUIT`；VICTORY发candidate×2，DEFEAT仅`survival_ticks>=43,200`发×1，首次正常结算另发三类starter各1，ABANDONED/TECHNICAL为0。cap结果为`AT_CAP_PARTIAL/AT_CAP_NO_GRANT`且不能使Save永久失败。Settlement固定BATTLE_RULES stable11/phase6+7、贡献`0/6/0/0`、6-row reward与3-row record manifest；Settings固定四bus、三字体档和60-byte domain。GameRoot已枚举28-row load、54-row guard与70-row action表，但导出artifact/Hash256 golden、owner/workload/capacity表尚未生成，完成前`BLOCKED-MANIFEST-REGEN`且`battle_ready=false`。
 - SaveSystem只保存稳定content revision/业务数据，不序列化Resource实例ID或整个runtime snapshot。
 
 ### Integration gates
 
-- 单图arena尺寸、walkable region、production CELL_SIZE/index_margin尚未冻结。
+- production `cell_size`与稀疏cell容器实现尚未由min-spec性能证据冻结。
+- SpawnDirector虽已有V1静态契约，尚无runtime实现、固定RNG消费与视野外生成证据。
 - Enemy/Projectile/Drop/Skill GDD尚未提供完整shape bounds、query radii、每tickspawn/聚合规则和reset字段。
+- Revive hazard唯一producer、next-tick active语义、shape bounds与`revive_hazard_capacity`尚未冻结，Player复活production路径保持BLOCKED。
 - `max_total_capacity=1536`与当前1191 Node尚无min-spec Android内存实测；只关闭无界配置风险，不关闭memory/performance gate。
 
 ## Tuning Knobs
@@ -213,8 +293,20 @@ enabled producer的每个required变量必须present、finite且非负；缺失�
 | `max_total_capacity` | 1536 | HARD LIMIT | schema/ADR + memory evidence |
 | Spatial numeric/grid limits | R6 exact values | HARD LIMIT | SpatialGrid contract revision + golden tests |
 | per-type registered caps | 303/0/300 | LOCKED MVP baseline | owner GDD + carrier/workspace resize evidence |
-| Stage `cell_size/index_margin` | production TBD | Stage/performance tuning | only BATTLE_LOADING; F3 benchmark required |
+| Stage `cell_size` | production TBD | Stage/performance tuning | only BATTLE_LOADING; F3 benchmark required |
 | query producer maxima | partial/TBD | derived audit inputs | owning GDD supplies; missing blocks readiness |
+| `physics_ticks_per_second` | 60 | LOCKED MVP baseline | schema/content revision + deterministic replay |
+| `engine_time_scale` | 1.0 | LOCKED ENGINE GLOBAL | GameRoot唯一writer + pre-tick/resume readback |
+| Player exact capacities | candidate/threat/clear/fact=`17/303/300/2` | LOCKED ABI | required±1均拒绝；修改需Player/GameRoot/Config ABI revision |
+| `revive_hazard_capacity` | 未冻结 | OWNER-DERIVED BLOCKER | hazard workload + exact A/B bank evidence；禁止默认值 |
+| `max_pending_reasons` | `3+max_pending_blocking_choices` | DERIVED HARD LIMIT | checked build；Input/GameRoot consistency |
+| `max_pending_blocking_choices` | 四类贡献中`BLOCKING_CHOICE` required rows checked sum，1..16 | OWNER-DERIVED + SCHEMA MAX | 禁止手填aggregate；缺owner row则battle_ready=false |
+| `max_suppressed_diagnostics` | 1..16 | SCHEMA HARD LIMIT | preallocated bank + saturating counter evidence |
+| `max_lifecycle_intents_per_tick` | owner required..1536 | OWNER-DERIVED + SCHEMA MAX | Pool/owner manifest + batch authority AC |
+| `max_pause_drain_closures` | `checked_sum(owner PAUSE_CLOSURE)+2`，范围1..1538 | OWNER-DERIVED + FIXED CONTRIBUTION + SCHEMA MAX | PDC01..03 + FPCC01..02 + provenance AC |
+| `max_fact_commits_per_tick` | owner required..24576 | OWNER-DERIVED + SCHEMA MAX | producer manifest + fact ledger AC |
+| Outcome SoA capacities | owner required..1536/field | OWNER-DERIVED + SCHEMA MAX | V1 ABI + aggregate allocation preflight |
+| `max_pending_save_commits` | 1 | LOCKED APP LIMIT | Save/GameRoot ABI revision |
 
 `safety_spare`不能用来掩盖泄漏；high watermark、pool exhaustion和retirement必须单独观测。Config值可以在下一battle随content revision改变，但当前battle不可热更。
 
@@ -255,7 +347,7 @@ enabled producer的每个required变量必须present、finite且非负；缺失�
 - 验证: boundary table test | Gate: BLOCKING
 
 **AC-B3 gameplay压力与pool key映射**
-- Given: 300 normal、2 elite、1 Boss、400 projectile、300 drop及64 merged damage labels
+- Given: 298 normal、4 elite、1 Boss、400 projectile、300 drop及64 merged damage labels
 - When: owner按stable key borrow到各steady cap并执行R4 overlap fixture
 - Then: 无key串池；steady+overlap不耗尽；超过configured精确POOL_EXHAUSTED且不动态instantiate
 - 验证: Config+Pool integration | Gate: BLOCKING
@@ -313,16 +405,22 @@ enabled producer的每个required变量必须present、finite且非负；缺失�
 - 验证: runtime mutation integration | Gate: BLOCKING
 
 **AC-D3 snapshot ID不一致fail closed**
-- Given: GameRoot/Pool/Grid中一方注入不同snapshot ID
-- When: BATTLE_LOADING或resume预检
-- Then: consumer保持关闭、WRONG_STATE/ControlledFault；不合并或选择“较新”版本
-- 验证: three-system fault injection | Gate: BLOCKING
+- Given: GameRoot/Pool/Grid/owner 中一方注入不同 snapshot ID，或在 resume capture、arm、Grid publish、Pool publish、authority publish 任一 checkpoint 篡改 config identity
+- When: BATTLE_LOADING或resume预检/提交
+- Then: consumer保持关闭、WRONG_STATE/ControlledFault；已完成的 journal/publish 事实按 GameRoot authority plan 收敛，不合并或选择“较新”版本，不开放一帧旧 consumer
+- 验证: checkpoint-complete fault injection | Gate: BLOCKING
 
 **AC-D4 run identity单一来源与不可变性**
-- Given: manifest相同而RunStartRequest分别为`{battle_instance_id=B1,seed=S1}`/`{B2,S2}`，另构造缺失/零identity与Active期间篡改source request
+- Given: manifest相同而RunStartRequest分别为`{battle_instance_id=B1,run_seed=S1}`/`{B2,S2}`，并覆盖`run_seed={0,INT64_MIN,INT64_MAX}`；另构造缺失/零battle identity与Active期间篡改source request
 - When: 分别build BATTLE snapshot并初始化RNG、pause/resume
-- Then: snapshot逐位携带对应B/S且content_hash不因两者变化；缺失/零identity不达battle_ready；`config_snapshot_id==snapshot_id`且不存在第二ID；本局RNG读取seed、GameRoot bank header读取battle identity均与snapshot相等，source request后改不影响本局；resume不重新派生
+- Then: snapshot逐位携带对应B/S且content_hash不因两者变化；run_seed=0及完整int64域均合法，只有缺失/零battle_instance_id不达battle_ready；`config_snapshot_id==snapshot_id`且不存在第二ID；本局RNG读取run_seed、GameRoot bank header读取battle identity均与snapshot相等，source request后改不影响本局；resume不重新派生
 - 验证: Config+GameRoot+RNG integration | Gate: BLOCKING
+
+**AC-D5 orchestration limits、逐phase coverage与有限容量**
+- Given: 合法完整表，以及空/缺/重复的participant/service/coverage/callback、PDC 4行、LFD 28行、guard 54行、action 70行、priority 31行、workload 12行、owner contribution或Outcome 34行；任一required owner四类贡献或SoA producer贡献缺失/负数/overflow、outcome_kind producer非GAME_ROOT、hash不匹配，以及各capacity边界fixture
+- When: build battle snapshot
+- Then: 只有required owner四类逐kind exact-once覆盖、Outcome SoA逐field唯一producer、blocking choices aggregate恰为checked sum、全部实际oracle/workload/Outcome表逐行等于GameRoot且hash一致时生成battle-ready snapshot；其余在创建Stage/Pool/Grid Node前确定失败；全局及逐phase`all(empty)`不得成功
+- 验证: exhaustive manifest matrix + boundary unit | Gate: BLOCKING
 
 ### E. Diagnostics and Production Gates
 

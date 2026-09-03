@@ -21,6 +21,9 @@
 - **Gamepad Support**: None
 - **Touch Support**: Full
 - **Platform Notes**: 竖屏单手操作；所有交互必须单手可达；移动端无 hover，不得设计悬停态交互；升级 / 机缘选择时暂停战斗。
+- **Meta UI Baseline**: Home/Prep/Settlement采用safe-area响应式纵向布局，内容区最大宽600 logical px、交互目标最小56×56 logical px，并验证100%/115%/130%字体；touch与keyboard/screen-reader focus是两条独立路径。Android TalkBack/iOS VoiceOver需要单独bridge ADR、accessible tree与真机trace；签发前统一标`BLOCKED-MOBILE-A11Y-ARCHITECTURE`，静态Control属性或桌面读屏不得替代。
+- **Prep Safety**: 有可用种子才进入Prep且每次默认NONE；未解锁/available全0时Home主CTA用同一`PrepConfirmCommandV1`的`HOME_DIRECT_NONE`直接开局，不制造空Prep二次确认。不自动沿用、选择或消费丹药；只有Save durable reservation readback成功才进入Loading。`RunStartRequestV2`冻结后不可回写，Loading seed candidate与pre-active choice逐步写入固定276-byte recovery。
+- **Settlement Truth**: 奖励只来自sealed Outcome和matching immutable mutation bundle；durable success前统一显示待保存，UNCERTAIN只允许核对，不以超时或动画完成宣称到账。
 
 ## Naming Conventions
 
@@ -35,8 +38,10 @@
 
 - **Target Framerate**: 60 FPS (中端 Android 设备平均 50 FPS+)
 - **Frame Budget**: 16.6 ms
+- **Fixed Gameplay Timestep**: `physics/common/physics_ticks_per_second=60`且`Engine.time_scale=1.0`，gameplay只消费`1/60`或技术drain的0；callback delta仅作telemetry
 - **Draw Calls**: [待定 — 依赖后续渲染批处理 ADR]
 - **Memory Ceiling**: [待定 — 依赖目标设备基准确定]
+- **Runtime workload evidence**: 每个测量绑定实际`RuntimeWorkloadManifestV1` row、config/coverage/authority/owner/native-call-allowlist hash、start/end marker、sample protocol与exact operation vector。physics、control pump、complete operation使用不同sample unit；不得用paused `_process`冒充physics tick。`STEADY_ZERO_DELTA`才要求allocator/growth/COW/native-call逐run为0；cold loading/teardown为`COLD_MEASURE_ONLY`，Save为`MEMORY_IO`，二者只测量不宣称零分配。缺row/hash/marker或向量不匹配=`INCONCLUSIVE`。
 
 ## Testing
 
@@ -53,12 +58,57 @@
 - gameplay phase participant 禁定义 `func _physics_process` / `func _process`（集中
   `run_phase` 驱动；AC-E13）。唯一例外为从BOOT到应用退出保持同一live identity的
   persistent GameRoot：它精确使用 `PROCESS_MODE_ALWAYS`，仅在
-  `SceneTree.paused==false && state==BATTLE_ACTIVE` 的 `_physics_process(delta: float) -> void`
-  驱动七phase，仅在 `SceneTree.paused==true && state in {BATTLE_PAUSED,RESUME_PREPARING}`
-  的 `_process(delta: float) -> void` 驱动control pump。GameRoot是`SceneTree.paused`与目标
-  battle Viewport gate的唯一项目writer；pause/unpause必须经私有helper调用并readback。
+  `SceneTree.paused==false && state in {BATTLE_ACTIVE,PAUSE_PENDING}` 的 `_physics_process(delta: float) -> void`
+  驱动普通七phase或恰一次`gameplay_dt=0` allowlist drain，仅在
+  `SceneTree.paused==true && state in {BATTLE_PAUSED,RESUME_PREPARING}` 的
+  `_process(delta: float) -> void` 驱动control pump，并在`BATTLE_LOADING/BATTLE_ENDING/CONTROLLED_FAULT`
+  驱动无gameplay effect的lifecycle pump、cleanup checkpoint与frame barrier。GameRoot是`SceneTree.paused`与persistent
+  root Window gate、Engine runtime tick-rate/time-scale启动配置的唯一项目writer；pause/unpause必须经私有helper调用并readback。
   participant使用PAUSABLE mode；禁止在Paused跑gameplay、未暂停跑pump、双跑、per-scene
   重建第二GameRoot或由其他节点复制该例外（InputSystem AC-IS2 / GameRoot AC-B1/C6）。
+- GameRoot/Config所有runtime orchestration容量下界只能来自`OwnerOrchestrationCapacityContributionManifest`：
+  每个required role对`LIFECYCLE_INTENT/FACT_COMMIT/PAUSE_CLOSURE/BLOCKING_CHOICE`逐类exact-once贡献；lifecycle/fact/blocking-choice lower bound等于对应owner checked sum，pause closure等于owner sum再加fixed contribution。`MAX_PENDING_BLOCKING_CHOICES`禁止手填aggregate；`OUTCOME_FIELD`按canonical SoA field由唯一producer逐field贡献。
+  canonical排序键固定`{role_stable_order,kind_stable_order,field_stable_order}`且组合唯一。pause closure另加GameRoot cancel与SpatialGrid lease两条fixed contribution；一个lifecycle row最多一个`FINALIZE_POOL_RELEASE` closure，不把unbind/release拆成两条。缺/重行、排序冲突、overflow、低于下界或高于schema hard max均须在allocation前fail closed。
+- Outcome生产ABI固定为GameRoot canonical 34-row（22 scalar+12 SoA）`RunOutcomeProducerManifest`，`outcome_kind`producer只能是GAME_ROOT，BATTLE_RULES只提交terminal intent；
+  float归并只允许按`stable_id ASC,fact_sequence ASC`以float64顺序累加，禁止FMA/reorder并规范化`-0.0`。
+  转换guard真值只能来自独立`TransitionGuardOracleManifest`，转换动作失败只能来自实际展开的`TransitionActionOutcomeV1`；load状态须先经封闭的全status normalization，再查disposition，不得从target表或fixture反推。
+- PAUSABLE不会冻结普通signal或`_notification` callback。所有signal/notification/tree lifecycle callback
+  必须登记在load时冻结的`GameplayCallbackAllowlist`，暂停时只允许写row明确列出的control/
+  invalidation/diagnostic latch；不得写恢复后会生成HP/position/timer/authority/reward/spawn/remove的intent。
+  未登记callback、同步pause notification内直接权威写或绕过phase均为contract failure。
+- MVP不创建逐局SubViewport：应用persistent root `Window`同时是battle render与GUI input
+  Viewport；每局只detach/free Stage、BattleUI、Input child。Camera、Host、Shield、VJ、BattleUI
+  的`get_viewport()`必须逐项等于该root Window。GameRoot在load冻结唯一字段名的versioned
+  `BattleViewportTopologyManifest`；战局中禁止额外`make_current/reparent/set_enabled/custom_viewport`
+  writer与nested Window/SubViewport。cleanup在任何old child detach前必须由GameRoot执行`CLEANUP_PRE_ACQUIRE`：
+  gate已持有时`REUSED`且不得重复setter，未持有时验证root Window/owner/readback后`ACQUIRED`，acquire/readback
+  未持gate时固定最多重试3次；连续失败才进入`ACQUIRE_FAILED_SAFE`，旧writer/callback、新input target、release均为0，只可安装`SAFE_TERMINAL_NONINTERACTIVE`并要求重启。
+  `CleanupViewportHandoffManifest`仅证明old child已移交。`ActivationCommitJournalV1`逐点证明frame barrier、expose-or-NA、top-state、ACTIVE-or-safe与release-or-NA；lifecycle pump资格由journal未terminal决定，不因top-state已提交而停止。ACQUIRED/REUSED正常路release恰1，safe路始终release=0。
+- 战场空间采用“感知无限、技术有限”：Stage唯一Camera2D逐bit跟随matching已发布Player位置，地表用固定数量tile或world-UV连续表现；SpawnDirector只读Player carrier，在玩家相对视野外环生成。底层使用有限`world_safe_aabb`与稀疏occupied-cell Grid；禁止按世界面积预分配dense grid，禁止把技术域做成可见clamp/wrap/origin-rebase玩法边界。
+- `DEFERRED_REMOVAL` 禁止假设整phase可回滚：lifecycle一intent一mutable journal row；damage/heal/death/
+  pickup/reward进入独立fact ledger。各side effect exact-once推进但不逐step全量copy；consumer closed下在
+  side effect前先arm authority batch plan；visible committed row=0时0 publish，>0时matching end或fault
+  convergence恰一次不可失败publish。Pool私有release FSM保证reset/free-stack exact-once，不得复活旧handle/
+  borrow或重复side effect。PAUSE_PENDING closure必须引用锁定反馈前已有journal row/lease，禁止锁定后新fact。
+- resume point-of-no-return 固定为首次Grid publish；此前可abort Grid/Pool/authority plan，之后必须在
+  consumer closed下收敛`Grid→Pool→authority`三次publish。每次arm/publish前核对battle/config/input/
+  background/geometry/authority/Grid/Pool/topology identity及Engine 60Hz/time-scale readback，第三次publish前不得开放consumer。
+- 应用最多保留1个未完成Save commit；成功或durable discard tombstone完成前禁止开始新run；callback必须
+  matching commit/generation/request，uncertain先reconcile。ABANDONED不产出奖励、
+  纪录、教程或对有意消耗的prep资源作补偿；TECHNICAL_ABORT只允许fault前已提交事实+技术补偿。normal
+  outcome envelope seal后byte-identical，cleanup fault只写独立RunCompletionStatus，Save fault只写attempt状态。
+  DISCARD_PENDING timeout/lost callback保持同tombstone identity，可在Settlement/Fault/Home retry或reconcile；
+  `SaveCommitAttemptV1`存在性矩阵固定：NOT_STARTED的attempt/generation/request均0且in_flight=0；SAVE_PENDING的
+  attempt/generation/request均非零且in_flight=1；SAVE_UNCERTAIN/SAVE_FAILED/SAVE_SUCCEEDED保留这些ID且
+  in_flight=0，其中仅SAVE_SUCCEEDED要求非零receipt；DISCARD_PENDING保留非零tombstone且in_flight可0/1，
+  DISCARDED保留非零tombstone且in_flight=0。`SaveOperationResultV1`仅作为matching callback carrier处理，不并入
+  immutable outcome或伪装成Save attempt常驻字段。
+  callback reducer必须覆盖`source_state×operation_kind×durable_result_code`；DISCARD若发现commit已durable必须转SAVE_SUCCEEDED，`RECONCILE_NOT_FOUND`在SAVE路径回UNCERTAIN，在DISCARD路径保持DISCARD_PENDING。
+  所有ID先checked reserve并一次提交；失败不得部分覆盖旧carrier。`ResolvedRunArchiveV1`须有实际schema/hash/readback；`ArchiveRetireJournalV1`以expected mask与retired bitset支持partial retry，archive-entry guard与carriers-retired guard必须分离。PreOutcome reservation使用独立state/recovery carrier与CTA，不借用Outcome disposition。
+- Save durable介质固定为单writer+两个完整自校验槽，不使用独立current-pointer；槽含generation、canonical payload、Hash256与重复footer，只有flush/close后reopen逐位readback通过才可返回durable success。sealed Outcome/Completion、attempt、proposed profile必须作为`PendingOutcomeRecoveryV1`先落盘，重启只靠slot scan恢复。任一损坏槽存在时另一VALID槽只作只读恢复候选，显式恢复完成前禁止覆盖和新局；双坏、未来schema、同generation异payload或commit/tombstone冲突均fail closed。平台排他writer lock、durable barrier与kill-process证据未闭合前保持BLOCKED，不得以FileAccess返回OK代替durability。
+- Save线程拓扑固定：主线程只验证并移交不可变canonical bytes；唯一worker独占FileAccess、barrier/replace adapter与HashingContext，禁止访问Node/SceneTree/Resource/Signal或共享可变PackedArray；结果只进预分配SPSC mailbox，由GameRoot control pump按process epoch/executor generation/request ID唯一reducer排空，worker不得直调UI。V1固定`ReservationMax=1004,SlotMax=65536,FileSystemSafetyMargin=65536,DiskPeakMin=262144`，超限写前失败，不动态扩容。
+- app-scope服务固定`SAVE/PROGRESSION/ZHANGTIAN/SETTLEMENT_PROFILE/AUDIO_APP`五行，由persistent app root一次构造、逆序关闭，不加入七phase participant，不随battle销毁且不得持有battle Node/RID/Callable/可变bank引用；只有SAVE拥有worker。
+- Progression Tree使用唯一`ProgressionProfileDomainV1`保存统一功法残页与QINGYUAN/LONGCHUN/DAYAN 0..5等级；购买走独立generic ProfileDomainMutation ABI，不伪造outcome ID。battle projection只在Loading从同一durable profile revision构建：青元attack写Damage Attack输入一次、长春maxHP沿用加法比例且L5低血恢复由Damage→Player phase6原子消费、Dayan暴击为百分点加法/拾取半径1.8..1.98/L5初始refresh3。Active不得热改。青元pierce workload、长春receipt、SkillDraft 20-call上限、残页reward owner与balance/device证据未闭合前保持BLOCKED/OPEN。
 - Godot 4.7.1 VirtualJoystick callback ABI 固定为引擎signal `pressed()`与
   `released(input_vector: Vector2)`；项目adapter用direct `Callable.bind(epoch)`形成
   `_on_vj_pressed(callback_epoch: int) -> void`与
@@ -109,8 +159,19 @@
   `LOAD_ABORT_OR_FAULT_CLEANUP`；pre-acquire failure release=0。其他节点禁止写gate；activation
   生产callback禁止调用`Input.parse_input_event`、`Input.flush_buffered_events`、
   `Viewport.push_input/push_unhandled_input`或等价直接注入入口；hostile runtime harness仅证明containment。
-  GameRoot的APP_BACKGROUND resume gate必须以latest required/acked revision配对，每个新
+  true setter直接call-site只允许存在于支持`PRE_ACQUIRE/CLEANUP_PRE_ACQUIRE`的唯一acquire helper；
+  cleanup取得成功后必须一直持有至handoff predicate成立，safe failure不得伪造release。GameRoot的APP_BACKGROUND resume gate必须以latest required/acked revision配对，每个新
   background revision都使旧Continue失效，duplicate同revision不重复确认。
+
+- Player phase-6 terminal因果固定为：matching QUERY_CONSUME resolution publish后、任何DEFERRED_REMOVAL side effect前，GameRoot收齐Config列明producer对同一`ResolutionPublishTokenV1`的typed `FATAL/VICTORY/PAUSE/NONE` preview并冻结`TerminalPrecollectionViewV1`；Player只消费该不可变view决定VICTORY suppression/REVIVE/DEFEAT。phase7只seal同一precollection token与phase6 disposition，禁止首次发现VICTORY/FATAL或回滚已执行复活。
+- Player复活PONR前必须完成17点current+swept enemy/hazard评分、完整clear tuple copy与固定原地binary-insertion sort，再通过`ReviveClearLifecycleResolverCapabilityV1`让Enemy/GameRoot预留全部N条journal row/checked sequence；row固定`participant_id=ENEMY`并计入ENEMY 303，PLAYER lifecycle contribution恒为0。DAMAGE fact row及bundle/motion/HUD/event one-shot capability全部reservation后，DAMAGE fact首次COMMITTED才是唯一PONR；点后不得分配row/sequence/capability，只由resolver按保存plan收敛journal，再按`bundle→motion?→HUD→transient?→critical PUBLISHED?→Node`提交。Player不持journal backing、不执行Grid/Pool副作用。
+- Player real_t32 inward boundary helper只在Loading运行：float64 exact边界构造/readback最近binary32，越域时用符号感知IEEE-754 next-f32向域内推进并规范化`-0`；artifact必须是single-precision Vector2 ABI。Player gameplay root parent CanvasItem chain必须identity或由已验证ADR替代；selector后Node mirror/readback失败只fault，不回滚权威。RefCounted/PackedArray只读/独占用private backing、caller-owned copy-out与mutation-isolation证明，不返回alias。
+- Player clear canonical key固定`{enemy_id,object_instance_id,spatial_handle_id,borrow_id}`，不假定enemy_id单字段唯一；n≤300 binary insertion sort的comparison/row-move各≤44,850，禁止Array/Callable/native sort。候选总序固定`safety rank(SAFE_UNCONSTRAINED>SAFE>UNSAFE)→surface score DESC→clear_count ASC→index ASC`，clear count不得压过安全/净空。
+- 复活危险快照统一使用`ReviveHazardSnapshotV2`：`CIRCLE`按圆内及相切危险，`EXTERIOR_CIRCLE`按玩家完整足迹越出安全圆危险且内切安全；Player按shape计算signed surface clearance。V1、unknown shape或用大外接圆冒充外圆危险必须fail closed；总容量只能由Projectile、Enemy non-projectile、Boss与Stage contribution checked sum得出。
+- Player presentation使用capacity=1 transient DAMAGE bank与capacity=2 retained critical ledger；`PlayerPresentationFrameV1`不是第三套A/B bank，而是matching已发布motion+HUD的allocation-free caller-owned copy-out join。所有consumer必须先join matching frame/winner再ack；未ack transient不得覆盖，critical REVIVE/DEATH保留至全consumer ACKED。Presentation host保持PAUSABLE且无独立process callback；REVIVE+pause只由既有persistent GameRoot ALWAYS control pump调用typed presentation-only advance完成预加载P0 cue，不得写gameplay。UNSAFE必须在frame/HUD/P0 fallback以非颜色危险形态区分；VICTORY winner抑制HIT/DEATH/REVIVE/pause表现但不删除统计fact。
+- Player HP mutation固定唯一归Player：Config在Loading解析并冻结`resolved_starting_max_hp=base×(1+0.03×long_chun_level+(iron_body_pill?0.15:0))`；Active无maxHP热改。战斗内Longchun/Buff/RiskChoice只提交typed recovery intent，由唯一resolver在phase5聚合，phase6按`damage→lethal→仅非致命heal clamp`应用；致命同tick恢复抑制且不结转，实际HEAL使用canonical fact。
+- BattleUI固定为consumer-only presenter与typed command adapter，不是phase participant且不拥有gameplay `_process/_physics_process`。HUD只能消费GameRoot同一sealed capture形成的跨owner revision vector；各source revision不要求数值相等，但逐项identity/revision/generation必须matching，禁止Node introspection与新旧拼帧。Choice触控由全屏ALWAYS `ChoiceGestureSurface`在UI→shield→VJ固定顺序中按touch identity消费；bank容量必须来自`SupportedTouchEventOrderingManifest.max_concurrent_touches`，owner committed、全部touch terminal且Input即时blocked predicate=false前不得完成pause reason。被动HUD/marker为IGNORE，interactive overlay为STOP；不得只靠z_index。Active/Paused节点、卡片、marker与damage label预实例化，动态文本/native allocation必须进显式allowlist与真机预算。
+- Audio Feedback固定为consumer-only音频调度owner，不是phase participant；Active/control均由GameRoot显式presenter tick驱动。PLAYER_AUDIO继续使用stable order3/bit0b100，transient在STARTED/MERGED/EXPLICITLY_DROPPED/AUTHORIZED_SILENT处置后ACK，critical在播放或批准fallback完成后ACK；仅enqueue/play调用前不得ACK。预建bus/player/stream/callback，稳态禁load/new player/new Tween/Callable/容器增长；不要依赖Godot `max_polyphony`做优先级或缺bus自动回退Master。4.7.1 `AudioStreamPlayer.area_mask`默认0，当前不依赖Area bus override；pause/stream_paused/finished/device switch必须目标build验证。
 
 ## Allowed Libraries / Addons
 

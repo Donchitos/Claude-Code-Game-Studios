@@ -1,9 +1,9 @@
 # RNG System（随机种子与序列）
 
-> **Status**: Approved — full design-review verdict APPROVED（七审修订闭环）；首轮 10 项 A 级 blocker 已修订闭环 + 复审 4 项 BLOCKING（BL-A/B/C/D）已修订闭环 + 三审 4 项 BLOCKING（BL-E/F/G/H）已修订闭环 + 四审 6 项 BLOCKING（BL-I/J/K/L/M/N）+ 3 项 RECOMMENDED（GATE-G4/F3/承诺②）已修订闭环 + 五审 5 项 BLOCKING（BL-1 零分配未 hedge / BL-2 FAULTED 终态无 AC / BL-3 AC-E1 拆分 / BL-4 F2 范围守卫 / BL-5 derive int64 陷阱）+ 22 项 RECOMMENDED 已修订闭环 + 六审 5 项 BLOCKING（BL-6 减法溢出绕过 fault guard / BL-7 COW-on-write 4.7.1 未 hedge / BL-8 AC-E1c 矛盾回归 / BL-9 set_state re-seed 未 hedge / BL-10 R8→R9 错引）+ 若干同区域 RECOMMENDED（QA-2/GS-5/GS-12/GD-4）已修订闭环；七审（re-review 6）同 6 specialist + creative-director 终审，发现 1 项 BLOCKING（BL-七-1 fault_reason 不可测——R5 未暴露 `get_fault_reason` 致 R6/R7/AC-E1c"fault_reason 不变"声明 testability 悬空）+ 16 项 RECOMMENDED（P0-P6：R5 API 面补齐 8 公共 API + `FaultReason` enum / GATE-G4 Then + OQ3 scope 补 seed=+state 往返 / AC 措辞 / RNG-EC11-12 消歧 / 零分配边界 / F3 randf hedge / Player Fantasy 措辞），全为 spec/testability/hedge/对齐 修复——零新公式、零新 ADR、零设计意图变更，已修订闭环。CD 终审判定转 Approved（GATE-G2/3/4 + OQ1/3/6 为实现前置 gate，前向依赖须 RNG 先 Approved 下游才能引用，不阻止设计签发）
+> **Status**: Re-review Pending — RNG core与第五轮diagnostic sidecar契约维持冻结；第六轮无新增RNG blocker，随中央契约待第七轮复审
 > **Author**: 用户 + Codex
 > **Created**: 2026-08-24
-> **Last Updated**: 2026-08-25（full review 修订闭环 + 复审 4 项 BLOCKING 修订闭环 + 三审 4 项 BLOCKING（BL-E/F/G/H）修订闭环 + 四审 6 项 BLOCKING（BL-I/J/K/L/M/N）+ 3 项 RECOMMENDED 修订闭环 + 五审 5 项 BLOCKING（BL-1..BL-5）+ 22 项 RECOMMENDED 修订闭环 + 六审 5 项 BLOCKING（BL-6..BL-10）+ 若干同区域 RECOMMENDED 修订闭环 + 七审 1 项 BLOCKING（BL-七-1）+ 16 项 RECOMMENDED（P0-P6）修订闭环，转 Approved）
+> **Last Updated**: 2026-09-03（RiskChoice consumer call table传播；runtime evidence仍OPEN）
 > **Implements Pillar**: 稳定性硬约束（确定性/可复现是其根基）+ 肉鸽选择（随机性是重玩价值来源，但必须可控可复现）
 > **Scope**: MVP — 单线程主 physics tick 内的确定性随机；不含赌场式反作弊、网络同步随机或跨线程并发
 > **Review Mode**: full（首轮 design-review 6 specialist 对抗评审 + creative-director 终审，修订闭合 10 项 A 级 blocker；复审同 6 specialist + creative-director 终审，修订闭合 4 项新 BLOCKING；三审同 6 specialist + creative-director 终审，修订闭合 4 项新 BLOCKING；四审同 6 specialist + creative-director 终审，修订闭合 6 项新 BLOCKING + 3 项 RECOMMENDED；五审同 6 specialist + creative-director 终审，修订闭合 5 项新 BLOCKING（BL-1..BL-5）+ 22 项 RECOMMENDED；六审同 6 specialist + creative-director 终审，修订闭合 5 项新 BLOCKING（BL-6 减法溢出 / BL-7 COW-on-write / BL-8 AC-E1c 矛盾 / BL-9 set_state re-seed / BL-10 R8→R9）+ 若干同区域 RECOMMENDED；七审（re-review 6）同 6 specialist + creative-director 终审，发现 1 项 BLOCKING（BL-七-1 fault_reason testability 悬空）+ 16 项 RECOMMENDED（P0-P6），修订闭环转 Approved）
@@ -89,14 +89,9 @@ RNG System 是单场战斗中唯一的权威随机源。它从 Config 战斗快�
 - **前置（BL-N）**：仅 `READY` 态可调 `set_stream_state`；`FAULTED` 下调用→R8 fault（fault_reason 已存在不变（可由 R5 `get_fault_reason` 观测，first-failure-wins，AC-E1c 闭合 testability，BL-七-1），保持 FAULTED 终态；违承诺②"不被静默重摇"——FAULTED 流不允许通过改写 state 复活）。
 - 暴露 `get_stream_state(stream_id) -> int` 与 `set_stream_state(stream_id, state)`：取/存内部 state（PCG 原始 uint64，`set_state(v); get_state() == v` 可往返，不重置到 seed——**"不重置到 seed" 为 Godot 4.7.1 行为断言待核验** defer rng-math.md/OQ3/GATE-G4：set_state 内部是否隐式 re-seed 未核验，若 re-seed 则 SaveSystem 跨实例语义破坏；AC-H1 同实例 round-trip 不覆盖此——一个 set_state 内部隐式 re-seed 的实现能通过 AC-H1 却破坏 SaveSystem 跨实例存档/恢复语义，故补 AC-H1b 跨实例可移植性），供 telemetry 与未来 SaveSystem 中途存档。state 往返性见 AC-H1，跨实例可移植性见 AC-H1b。
 - pause/resume：BATTLE_PAUSED 冻结 gameplay，流状态随 gameplay 一并冻结于内存，RESUME 不调用 state API——流本就在内存，resume 后继续消费即可。
-- 复现只依赖 `(run_seed, 已记录调用计数, R2 调用顺序稳定性)`，不依赖内存 state。SaveSystem 中途存档（若支持）才需持久化 state；MVP SaveSystem 未设计，中途存档为 BLOCKED（对齐 game-root R9 SaveSystem gate；注：game-root R9 字面覆盖 pre-run 灵药 reservation + ControlledGameplayFault 路径，mid-battle state 持久化 gate 为语义延伸，待 SaveSystem GDD 显式定义）。
-- **telemetry schema（每局记录）**：
-  - `run_seed`
-  - 全部 `stream_id`（固定 enum）
-  - 每流**调用计数**（int counter，roll 路径原地 ++，零分配；**per-battle 累计**——非 per-tick reset，counter 跨整个 battle 累积，telemetry 末次读取；per-tick reset + 仅末检会漏慢泄漏）
-  - first-failure 时各流 state（`get_stream_state` 快照，capture 时机 = faulting roll 之前，因所有 fault 路径在 draw 前 latch；快照存储于 BATTLE_LOADING 预分配的 `PackedInt64Array[8]`（每流一 slot，8 流，fault 路径零分配）
-
-  供 game-root AC-F4 可复现诊断（telemetry schema 与 game-root AC-F4 消费 schema 的字段对齐归 GATE-G3；设计侧已闭合，runtime evidence OPEN）。本 telemetry 支持从故障点恢复重放；从 run 起点的 full replay 由 AC-A1 确定性 + 独立调用序列 instrumentation（测试构建路径，非 telemetry 职责）+ R2 调用顺序稳定性支持。
+- 复现只依赖 `(run_seed, 已记录调用计数, R2 调用顺序稳定性)`，不依赖内存 state。`save-system.md`已明确MVP不支持战斗中途存档，因此不持久化RNG runtime state；未来若扩展mid-run save，必须先新立Save/RNG schema与跨实例state证据，不能复用当前终局存档合同。
+- **telemetry sidecar（每局至多写一次）**：GameRoot 在 BATTLE_LOADING 预分配 versioned `RngFaultTelemetrySnapshot`，schema 精确为 `{diagnostic_id,battle_instance_id,config_snapshot_id,run_seed,stream_count,stream_ids[8],call_counts[8],pre_fault_states[8],fault_stream_id,fault_reason}`。`call_counts` 为 per-battle 累计 int counter；`pre_fault_states` 是 faulting roll draw 前各流 state；`diagnostic_id` 与 `FailureDiagnosticBank.first` 关联。RNG fault 时，GameRoot 必须在 RNG teardown 前、first failure capture 的同一 cleanup transaction 中恰写一次；无 RNG fault 时 `stream_count=0`。热路径不得创建 Dictionary/String/Array，也不得把 sidecar 字段塞进通用 first-failure row。
+- 本 sidecar 支持从故障点恢复重放；从 run 起点的 full replay 由 AC-A1 确定性 + 独立调用序列 instrumentation（测试构建路径，非 telemetry 职责）+ R2 调用顺序稳定性支持。schema 对齐归 GATE-G3；设计侧闭合，runtime evidence OPEN。
 
 ### R8 — 非法参数与 fault
 
@@ -215,20 +210,20 @@ RNG System 是单场战斗中唯一的权威随机源。它从 Config 战斗快�
 | Dependent | 使用的 RNG 服务 | 当前状态 |
 |---|---|---|
 | SpawnDirector(#10) | SPAWN 流：怪潮数量/波次/精英生成时机 roll | 未设计 |
-| SkillDraftSystem(#15) | SKILL_DRAFT 流：三选一候选池权重、免费刷新 | 未设计 |
-| Zhangtian Bottle(#22) | ZHANGTIAN_HERB 流：结算后随机灵药种子 | 未设计 |
+| SkillDraftSystem(#15) | SKILL_DRAFT 流：每页3次无放回权重抽取+2次display permutation=5 calls；免费刷新共享同流；Dayan L5令单session最多4页/20 calls，否则3页/15；候选scratch上界12 | Designed / Full Review Pending；Progression传播待复审 |
+| Zhangtian Bottle(#22) | ZHANGTIAN_HERB 流：BATTLE_LOADING preflight后以预分配`PackedInt32Array([1,1,1])`调用`roll_weighted_pick`，max len=3，先查fault再读index，成功call delta恰1；canonical index `0/1/2→NINGQI_GRASS/TIELING_FLOWER/LEIYUAN_FRUIT`，候选写入276-byte `RunStartRecoveryV1`并durable后才继续；VICTORY expose数量2，DEFEAT仅`survival_ticks>=43,200`时expose数量1 | Zhangtian In Review / Re-review Pending；runtime replay OPEN |
 | DamageSystem(#11，隐式) | CRIT 流：暴击判定 roll（5%，见 MVP 136） | 未设计 |
 | DropSystem(#16，隐式) | DROP 流：掉落权重 roll（DropConfig，定点 int 权重） | 未设计 |
 | 雷爆符(隐式) | LEI_TARGET 流：周期打击随机敌人 | 未设计 |
 | 法宝匣(隐式) | TREASURE_BOX 流：随机提升未满技能 | 未设计 |
-| RiskChoiceSystem(#17，隐式) | RISK_CHOICE 流：夺宝额外精英/强化 | 未设计 |
+| RiskChoiceSystem(#17，隐式) | RISK_CHOICE 流：每个已提交TREASURE分支对behavior 6/7权重1/1精确一次weighted pick；SAFE 0次，最多2 calls/run | Designed / Full Review Pending |
 
 ### 跨文档一致性契约（须尊重的已冻结决策）
 
 - **object-pooling R3**（零分配分配源清单）：RNG R4/R9 遵守——tick 内不 new 生成器、roll 路径无 boxing/Dictionary/Array/StringName/原生 String 构造。注：object-pooling R3 字面作用域是 slot reset hook，RNG 推广到 roll 路径——分配源清单一致，scope 为语义延伸。
 - **game-root AC-F4**（可复现诊断）：RNG R3/R7 遵守——`(run_seed, stream_id, 调用计数)` 可复现 + first-failure 时各流 state 入 telemetry。
 - **game-root R6/R7**（pause/resume）：RNG R7 遵守——BATTLE_PAUSED 流 state 冻结于内存，RESUME 不调 state API，无 roll 丢失/重摇。
-- **game-root R9**（SaveSystem gate）：RNG R7 遵守——中途存档须 SaveSystem 提供 state 持久化契约前为 BLOCKED。注：game-root R9 字面覆盖 pre-run 灵药 reservation + ControlledGameplayFault 路径，mid-battle state 持久化 gate 为语义延伸，待 SaveSystem GDD 显式定义。
+- **game-root R9 / SaveSystem**：RNG R7 遵守——Save作者GDD已裁决MVP不支持中途存档；当前终局/跨进程恢复合同不得持久化或恢复mid-battle RNG state。未来扩展须新立契约与跨实例证据。
 - **game-root R1**（participant 注册）：RNG R6 遵守——battle load 按固定表注册 `stream_id`，Active 后不可增删。
 - **game-root R4/R5**（phase 边界 fault 路径）：RNG R8 遵守——single-exit cleanup → CONTROLLED_FAULT，committed effect 随 phase abort 丢弃（前提消费方采纳 phase-staging，BLOCKING on 下游消费方落地）。
 - **spatial-grid AC-B7/J3 / object-pooling AC-F3**（共享 allocation harness）：RNG AC-B1 复用同一 allocation 测试工具（契约见 object-pooling AC-F3，其明示共享对象为 spatial-grid AC-B7/J3）；RNG AC-B1 positive control 参考并加强 spatial-grid **AC-J3** 思路：AC-J3 实际仅 2 个 positive control（A=`range(out.count)` 即 PackedInt32Array 路径、B="1 Object+1 Array" Object/Array 捆绑于同一 control，不含 Dictionary/StringName）；RNG AC-B1 扩展为 Object/Array/PackedInt32Array(含 `range()` 路径)/Dictionary/StringName/PackedInt64Array/原生 String **7 类各自独立 A/B 路径** delta>0（F4 迁 int 后 PackedInt32Array 为 weighted_pick 核心；object-pooling AC-F3 单一 Dictionary/Object 松标准不足以覆盖）。（修订：原误引为 spatial-grid AC-G1，已更正——AC-G1 是"每帧反映活动实体当前位置"的正确性 AC，非分配工具。）（BL-I 同步：RNG AC-B1 新增第 6 类 `PackedInt64Array`（F4 scratch buffer 类型）+ COW-on-write element-write positive control（禁局部别名约束可测）；**BL-1 同步：新增第 7 类 原生 String（`str()`/`%`/`+` 等 native method 返回 String 路径）+ COW-on-write parity 覆盖消费方 PackedInt32Array weights 别名写入（归消费方 GDD，AC-B1 提供范式参考）**；spatial-grid AC-J3 未含此类型/此 control，故 RNG AC-B1 非简单复用 AC-J3 而是加强扩展。）
@@ -247,7 +242,7 @@ RNG System 没有玩法数值旋钮（暴击率/掉落权重/候选池规则归�
 | Setting | MVP value | Owner | Rule |
 |---|---|---|---|
 | `forced_run_seed` | null（dev 可设固定 int） | Build config / dev menu | dev-only 复现工具；release 必为 null；release 非空=契约违规（R1 无 OS 熵的运行期保证） |
-| `max_weights_length_per_stream` | 待定（per-stream 值表，依赖下游 DropConfig / SkillDraft 候选池上界） | Config / performance ADR | 各流 scratch buffer 预分配上界（F4）；太小→battle load fault（RNG-EC12）；太大→浪费内存。值待下游 GDD 定上界后冻结，**当前 OPEN**（OQ2） |
+| `max_weights_length_per_stream` | SKILL_DRAFT=12、RISK_CHOICE=2、ZHANGTIAN_HERB=3已冻结；其余per-stream仍依赖Drop等下游 | Config / performance ADR | 各流scratch上界；Zhangtian必须复用预分配`PackedInt32Array([1,1,1])`，太小/超长→battle load fault。整体仍PARTIAL-OPEN（OQ2） |
 | `weighted_pick_scale_factor_K` | 待 ADR 冻结 | `/architecture-decision` | 定点整数权重缩放因子（消费方 float 权重 ×K → int）；K 须大到保精度且 Σw ≤ W_MAX_SAFE（保守 W-1≤2^31-1，见 F4——int64 累积器不溢，约束在 `randi_range` 参数域，**参数类型待核验** defer rng-math.md/OQ3）；归 ADR，**当前 OPEN** |
 | `weighted_pick_W_MAX_SAFE` | 待 OQ3 冻结（保守默认 W-1 ≤ 2^31-1=INT32_MAX） | OQ3 / rng-math.md | Σw 上界守卫值；超界→R8 fault 防输出域塌缩+modulo bias（**参数类型与机制待核验**，见 F4 fault——训练数据表明 `randi_range` 参数为 int64 非 int32，"int32 截断"很可能虚构，真实风险为 `randi()` uint32 输出域 modulo；BL-B/BL-E）；保守默认 2^31-1 本身安全（值无需改）。精确 bound 待 OQ3/rng-math.md 核验参数类型后放宽（更松 W-1≤2^32-1 须 F2 回退自研基于 `gen.randi()` uint32），**当前 OPEN** |
 | `roll_int_range_RANGE_MAX_SAFE` | 待 OQ3 冻结（保守默认 max-min ≤ 2^31-1=INT32_MAX） | OQ3 / rng-math.md | `roll_int_range` 范围上界守卫（对称 F4 `W_MAX_SAFE`，BL-4）；超界→R8 fault 防 `randi()` uint32 输出域塌缩 + fallback 拒绝采样 hang（**`randi()` 输出域待核验** defer rng-math.md/OQ3，见 F2 fault）。保守默认 2^31-1 本身安全；精确 bound 待 OQ3 核验后放宽，**当前 OPEN** |
@@ -307,7 +302,7 @@ RNG System 没有玩法数值旋钮（暴击率/掉落权重/候选池规则归�
 
 **AC-B1 steady-state 零增长**
 - Given: 全部生成器与 scratch buffer 在 BATTLE_LOADING 预分配
-- When: release 跑 10,000 Active ticks，固定 seed replay，峰值 303 ENEMY + 300 DROP + 400 projectile（对齐 spatial-grid AC-J6 fixture），含 wave 边界 burst（50 spawn roll + 20 drop roll 连发）；**另含 BATTLE_PAUSED 段（SKILL_DRAFT/RISK_CHOICE 流在 pause 内消费）+ BATTLE_ENDING 段（ZHANGTIAN_HERB 结算 roll），或附 consumer-coverage manifest（运行时 instrumentation 记录各流 roll 调用计数>0 证覆盖）标注各流在 10k tick 窗口内的执行覆盖**——防 SKILL_DRAFT/RISK_CHOICE/ZHANGTIAN_HERB 因仅在 pause/battle-end 执行而被 Active-only fixture 漏测（perf）
+- When: release 跑 10,000 Active ticks，固定 seed replay，峰值 303 ENEMY + 300 DROP + 400 projectile（对齐 spatial-grid AC-J6 fixture），含 wave 边界 burst（50 spawn roll + 20 drop roll 连发）；**另含 BATTLE_LOADING段（ZHANGTIAN_HERB在全部preflight后消费恰1次）+ BATTLE_PAUSED段（SKILL_DRAFT/RISK_CHOICE流消费），或附consumer-coverage manifest记录各流调用计数>0**——防非Active流被fixture漏测（perf）
 - Then: **whole-tick** allocation counter=0（含 RNG 自身 + 消费方 roll 路径构造）；无 `RandomNumberGenerator.new()`、无 boxing/Dictionary/Array/StringName 构造出现在 roll 路径
 - 验证: allocation instrumentation + positive control（须先 PASS 证明 harness 能观测分配——positive control 须**分别**断言 `Object`/`Array`/`PackedInt32Array`（含 `for i in range(n)` 路径）/`Dictionary`/`StringName`/`PackedInt64Array`（F4 scratch buffer 类型，BL-I）/原生 String（`str()`/`%`/`+` 等 native method 返回 String 的路径，BL-1）多类型创建，每类独立 A/B 路径（唯一差异为该类型一次创建）observed allocation delta>0；任一类型未覆盖→harness 不合格→结果 INCONCLUSIVE 修 harness 重跑，非系统 PASS/FAIL；参考 spatial-grid AC-J3 positive control 思路并加强为 7 类独立 A/B（AC-J3 实际仅 range(A)+Object+Array 捆绑于 B 两 control，无 Dictionary/StringName/PackedInt64Array；RNG AC-B1 扩展覆盖），非 object-pooling AC-F3 单一类型松标准；**另须 COW-on-write element-write positive control**：对预分配 `PackedInt64Array` 造局部别名 `var alias := scratch_buffer` 后 `alias[i] = v` 写入，断言 harness 能观测到分配 delta>0（refcount→2 触发 COW 堆分配——验证 BL-I/R4 "禁局部别名"约束可被测；若 harness 观测不到此 delta，INCONCLUSIVE 须区分三分支：(i) harness bug（能观测其他类型 delta 但漏 COW→修 harness 重跑）；(ii) COW 实际不触发（Godot 4.7.1 行为断言假→约束本身失效，转 GATE-G4 核验，非 harness 问题）；(iii) 技术上无法观测（C++ 侧 `_copy_on_write()` 无 GDScript 钩点）。**COW-on-write 触发本身为 Godot 4.7.1 行为断言待核验 defer rng-math.md/OQ3/GATE-G4（BL-7/GS-4）**；(iii) 分支退化方案为静态分析/lint 禁多类别名模式 + 代码审查（与 AC-C2/AC-E2 per-consumer 同 non-automated 路径）：lint 须覆盖 (a) 显式别名 `var alias := scratch_buffer`、(b) 隐式类型别名 `var alias = self.scratch_buffer`、(c) 函数参数传递 `helper(scratch_buffer)` 内部写入、(d) 方法返回值别名 `var x = get_buffer()`（若返回 PackedArray）——单一模式 lint 会漏 (b)(c)(d) 路径））。**parity（perf⑦）**：同范式 COW-on-write control 亦覆盖消费方 PackedInt32Array weights 别名写入（消费方 `var w = weights; w[i]=v` 触发 COW 堆分配，违 R4——此约束归消费方 GDD，AC-B1 仅提供 control 范式参考，消费方落地时复用）。与 spatial-grid AC-B7/J3 / object-pooling AC-F3 共享 allocation 测试工具 | Gate: BLOCKING before implementation Done
 - 注：scratch buffer sizing 正确性 BLOCKING on max_weights frozen（OQ2）；零运行时分配部分可先行验证。
@@ -388,9 +383,9 @@ RNG System 没有玩法数值旋钮（暴击率/掉落权重/候选池规则归�
 
 **AC-F3 first-failure telemetry**
 - Given: 任一 fault 路径触发
-- When: 进入 ControlledGameplayFault
-- Then: telemetry 记录 `run_seed` + 全部 `stream_id` + 每流调用计数 + first-failure 时各流 state（get_stream_state 快照，capture == faulting roll 调用前 instrumentation snapshot 的 state，证明 fault 路径未推进 gen——见 AC-E1b）；schema 字段见 R7——充分性由 game-root AC-F4 判定，非本 AC（"足够供"非可测语言移出 Then，qa⑭）
-- 验证: telemetry schema test（schema 字段见 R7）+ AC-E1b state-diff test（capture 时机正确性） | Gate: BLOCKING before schema frozen + on GATE-G3 解阻（game-root phase 边界 has_fault 检查落地，否则 fault 不进 ControlledGameplayFault→capture 路径不可测）
+- When: GameRoot 捕获 first failure 并在 RNG teardown 前执行 cleanup transaction
+- Then: versioned `RngFaultTelemetrySnapshot` 精确写入 R7 全字段一次，`diagnostic_id` 等于通用 first row，`battle/config identity` 与本局 snapshot 相等，`pre_fault_states` 等于 faulting draw 前 instrumentation snapshot；重复 fault/cleanup 不覆盖或二次写。非 RNG fault 控制组 `stream_count=0`
+- 验证: sidecar schema/identity/exact-once test + AC-E1b state-diff + teardown-order spy | Gate: BLOCKING on GATE-G3 runtime integration
 - 注：本 telemetry 支持从故障点恢复重放；从 run 起点的 full replay 由 AC-A1 + R2 调用顺序稳定性支持，非本 telemetry 职责。当前消费方引用为 game-root AC-F4。
 
 ### G. SaveSystem 与 Config 集成 gate
@@ -398,10 +393,10 @@ RNG System 没有玩法数值旋钮（暴击率/掉落权重/候选池规则归�
 > 本节为 integration/consistency **gate**（非 testable AC），前置依赖未就绪前 BLOCKED。
 
 **GATE-G1 中途存档 gate**
-- Given: SaveSystem 未提供 state 持久化契约
+- Given: SaveSystem明确MVP不提供mid-battle state持久化契约
 - When: 任何中途存档 story
-- Then: story 保持 BLOCKED（对齐 game-root R9 SaveSystem gate）；提供契约后测试中途存档恢复各流 state 各一次
-- 验证: SaveSystem integration contract test | Gate: BLOCKED on persistence integration
+- Then: story为OUT OF MVP且不得实现；未来若修订范围，先版本化Save/RNG schema并测试中途存档恢复各流state各一次
+- 验证: SaveSystem scope contract test | Gate: RESOLVED FOR MVP / BLOCKED for future expansion
 
 **GATE-G2 Config run_seed 字段 gate**
 - Given: Config GDD 已声明 `run_seed` 字段与 RNG 消费方，但实现尚不存在
@@ -412,8 +407,8 @@ RNG System 没有玩法数值旋钮（暴击率/掉落权重/候选池规则归�
 **GATE-G3 game-root has_fault 检查义务 gate**
 - Given: game-root GDD 已声明 phase 边界检查 RNG `has_fault()` 义务并标 RNG 为 service fault source
 - When: RNG fault latch 后须被 game-root 在 phase 边界捕获进 ControlledGameplayFault
-- Then: 每个phase注入fault都在matching end后进入ControlledGameplayFault，fault零值不进入下一phase committed state
-- 验证: GameRoot AC-B3/AC-F4 integration | Gate: DESIGN-SIDE CLOSED / RUNTIME OPEN
+- Then: 每个phase注入fault都在matching end后进入ControlledGameplayFault，fault零值不进入下一phase committed state；RNG sidecar 在 RNG teardown 前恰写一次并关联 first diagnostic
+- 验证: GameRoot AC-B3/AC-F4 integration + AC-F3 teardown-order spy | Gate: DESIGN-SIDE CLOSED / RUNTIME OPEN
 
 **GATE-G4 rng-math.md 存在性 gate**
 - Given: `docs/engine-reference/godot/` 现无 `rng-math.md`（grep 零命中），但 GDD 多处对 Godot 行为作事实断言（randi_range 参数类型、拒绝采样 vs simple modulo、FMA 行为、seed= 处理、state 往返性、`randi()` 输出域 uint32/uint64、native method `randi_range`/`randf`/`randi` 内部零分配、GDScript `>>` 算术 vs 逻辑移位、int64 `*` 溢出回绕 contract、int64 `-` 减法溢出回绕 contract（BL-6/SD-1→F2 fault guard bypass）、set_state 不隐式 re-seed（BL-9/GS-3→SaveSystem 跨实例语义）、PackedInt64Array COW-on-write element-write 触发堆分配（BL-7/GS-4——4.7 "packed array 元素不再触发整个 packed array 属性 setter" 相邻变更须核验 4.7.1 仍触发）
@@ -442,9 +437,9 @@ RNG System 没有玩法数值旋钮（暴击率/掉落权重/候选池规则归�
 | # | Question | Owner | Target | Affects |
 |---|---|---|---|---|
 | 1 | `derive()` 选 splitmix / PCG-DXSM / 其他？须单射、确定性、零分配、纯整数运算、跨架构一致。**GDScript int64 陷阱（BL-5；BL-6/SD-1 同类覆盖 `-` 减法）**：int 为 64-bit signed 无原生 uint64，`>>` 对负值算术移位（符号扩展）、`*` 与 `-` 溢出回绕无 contract——naive 移植依赖 uint64 逻辑右移的算法（splitmix64/PCG-DXSM）静默破坏单射+确定性；`-` 减法溢出另使 F2 fault guard `max-min` 可被绕过（BL-6/SD-1）。ADR 须选 32-bit 拆分 / 位掩码 / GDExtension 原生 uint64 路径之一并核验；F2 fault guard overflow-safe 比较式一并归此 ADR + OQ3 核验 GDScript int64 `-` 减法 contract。需 ADR 冻结算法 | `/architecture-decision` | 实现前 | AC-A3/A4, F1, F2 fault guard, BL-5, BL-6 |
-| 2 | `max_weights_length_per_stream` per-stream 值表确切值？依赖 DropConfig 掉落表上界 + SkillDraft 候选池上界 | Config + 下游 Drop/SkillDraft GDD | 下游 GDD 签发前 | AC-B1, F4 scratch buffer sizing |
+| 2 | `max_weights_length_per_stream`：SKILL_DRAFT=12、RISK_CHOICE=2已冻结；Drop等其余流仍待下游上界 | Config + 下游 Drop GDD | 下游 GDD 签发前 | AC-B1, F4 scratch buffer sizing |
 | 3 | Godot 4.7.1 `RandomNumberGenerator.randi()/randf()/randf_range()` 跨架构（x86↔ARM）逐位一致性？须补 `docs/engine-reference/godot/modules/rng-math.md`（疑 `random_pcg.*` 源文件，待核验）核验算法、state 往返、FMA 行为。**另须核验（BL-1/BL-4/BL-5/BL-6/BL-7/BL-9）**：(a) `randi()` 输出域 uint32 vs uint64（→RANGE_MAX_SAFE/W_MAX_SAFE bound）；(b) native method（`randi_range`/`randf`/`randi`）内部零分配（→R4 零分配覆盖边界）；(c) GDScript `>>` 算术 vs 逻辑移位 + int64 `*` 溢出回绕 + int64 `-` 减法溢出回绕 contract（→derive 实现路径 + F2 fault guard overflow-safe 形式）；(d) PackedInt64Array COW-on-write element-write 触发堆分配（4.7 packed-array setter 相邻变更须核验 4.7.1 仍触发，→R4 BL-I/AC-B1 COW control/禁局部别名）；(e) set_state 不隐式 re-seed（→SaveSystem 跨实例语义/AC-H1b）；(f) `RandomNumberGenerator.seed = 0` setter 特殊处理（EC8→低熵 seed 非故障契约核验）。weighted_pick 已整数域（不受 float 影响）；剩余浮点消费方哪些是"关键路径"须迁移到整数域 | godot-specialist + QA | min-spec 真机到位后 + rng-math.md 落地 | AC-A4/A5, R3, AC-H1/AC-H1b, BL-1/BL-4/BL-5/BL-6/BL-7/BL-9 |
-| 4 | `run_seed` 来源：PREP 时 OS 熵生成 vs 玩家输入 seed / 每日 seed（社交同 seed 竞速）？MVP L487 只说"每局生成随机种子"，未定来源。注：玩家面"每局不同"依赖 OS 熵；dev 面"可复现"依赖 seed 记录；二者不冲突，玩家 seed/每日 seed 是可选增强 | game-designer | PREP UI GDD 前 | R1, Tuning forced_run_seed |
+| 4 | `run_seed` 来源已裁决：release仅PREP/run-start的OS entropy producer，dev build可显式`forced_run_seed`；玩家输入seed/每日seed不属于MVP | game-designer | CLOSED-DESIGN；实现证据OPEN | R1, Tuning forced_run_seed |
 | 5 | stream_id 集是否 8 项即终？BossStateMachine 可能需独立流（boss 攻击模式随机）；SkillDraft 刷新是否需独立 refresh 流。须在各下游 GDD 落地前 resolved（一旦内容耦合进 enum 集，后续拆流破坏跨版本复现） | RNG + 下游各 GDD | 各下游 GDD 落地时 | R2/R5 enum 集, Tuning |
 | 6 | 固定 seed 分布 oracle 的规范捕获流程？F2 已定（委托 Godot `randi_range`，oracle=Godot 快照）；F4 weighted_pick oracle=定点 int 序列。参考序列如何冻结与版本化、跨架构 oracle 是否须分平台捕获（int 跨平台一致；float 须分平台） | qa-lead + godot-specialist | AC 签发前 | AC-D1/D2 |
 

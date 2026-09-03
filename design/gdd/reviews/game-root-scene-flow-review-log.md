@@ -209,3 +209,247 @@ Prior verdict: 第三轮 NEEDS REVISION
 Prior verdict resolved: 第四轮7根BLOCKING已按授权修订，待第五轮独立复审验证。
 
 ---
+
+## Review — 2026-08-28 — Verdict: MAJOR REVISION NEEDED（第五轮 full re-review）
+
+Scope signal: XL（pause drain、phase-6 commit、resume authority、viewport、outcome/save 与证据门）
+Specialists: game-designer, systems-designer, qa-lead, performance-analyst, godot-specialist, technical-director + creative-director终审
+Blocking items: 9个去重根因
+Prior verdict: 第四轮 MAJOR REVISION NEEDED，修订后 Re-review Pending
+
+### Verdict 摘要
+
+第四轮补入的 persistent lifetime、typed DAG、identity、reason queue 与 Save attempt 方向可保留，但第五轮在逐状态/逐 checkpoint 对抗复核中发现 9 个会形成 dead state、半提交、空表假通过或错误结算的根 blocker。Creative Director 判定继续 `MAJOR REVISION NEEDED`；不推翻七 phase 与 Input 私有 FSM 单一权威。
+
+### 9个根 BLOCKING
+
+1. `PAUSE_PENDING` 无实际可运行 callback，且误以为 PAUSABLE 会冻结普通 signal callback。
+2. typed FSM/event/status/fault cleanup 不可枚举，缺 pause-off finalizer 与 bootstrap retry/safe-exit 边。
+3. required participant/service manifest 允许空表，`all(empty)==true` 可伪造 battle-ready。
+4. resume latch 分裂，attempt 未完整捕获 config/authority identity，publish checkpoint 不足。
+5. phase 6 `remove→release` 中途失败无法整体回滚，旧文未定义 committed partial facts。
+6. battle render Viewport 与 GUI input Viewport 拓扑不确定，per-battle SubViewport 会引入独立输入路由。
+7. FailureDiagnosticBank/RNG telemetry 容量、schema、关联与 teardown 前 capture 不闭合。
+8. `RunOutcomeEnvelope` producer/primitive ABI 与 Save pending/backpressure/player truth 不完整。
+9. capacity/numeric/evidence AC 存在空 workload、错误样本域与 false-pass/false-fail。
+
+### 用户裁决（方案 A）
+
+用户同意推荐方案并授权写入全部受影响文件，冻结六项设计决策：
+
+1. 保留顶层 `PAUSE_PENDING`；GameRoot 允许且仅允许一个 `gameplay_dt=0` 技术 drain tick。
+2. phase 6 使用预分配、逐 intent exact-once `LifecycleCommitJournal`。
+3. MVP 使用 persistent root `Window` 同时承担 render 与 GUI input Viewport；不创建 per-battle SubViewport。
+4. 应用最多 1 个 pending Save commit；成功或显式 discard 前阻止新 run。
+5. `ABANDONED` 无奖励、纪录、教程，也不补偿玩家有意消耗的 prep 资源。
+6. physics 固定 60 Hz，gameplay `dt=1/60`；callback delta 仅校验 cadence。
+
+### 修订结果
+
+- `game-root-scene-flow.md`：补 `TopEvent/GameRootStatus` adjacency、required manifests、single Pending drain、signal allowlist、exact-once lifecycle journal、failure diagnostic/RNG sidecar、`AuthorityResumeCommitPlan`、Grid→Pool→authority 三次 publish、canonical `RunOutcomeEnvelopeV1`、单 pending Save backpressure、outcome matrix与扩展 AC。
+- `technical-preferences.md`、`input-system.md`：同步唯一 ALWAYS GameRoot、dt=0 drain、PAUSABLE signal边界、persistent root Window、唯一 resume latch与三次 publish；Input 私有 FSM 不复制。
+- `config-data-system.md`：新增 `RuntimeOrchestrationLimits`、required participant/service/outcome manifests、60 Hz/reason/diagnostic/journal/save limits 与完整性 AC。当前仅 Input/Enemy owner contract 已冻结，故 battle-ready 仍 false。
+- `stage-map.md`：typed assembly 改为 `{stage_root,stage_camera}` + 注入 root Window；禁止 per-battle SubViewport；`PackedVector2Array` 强制 `.duplicate()`。
+- `spatial-grid.md`、`object-pooling.md`、`enemy-system.md`：phase-6 remove/release/retire 成功是不可回滚 committed facts；第 N 条 failure 从 journal 收敛 authority，禁止复活旧 handle/borrow 或重复 reset/free-stack push。
+- `rng-system.md`：冻结 versioned `RngFaultTelemetrySnapshot` 与 RNG teardown 前 exact-once capture/diagnostic关联。
+- registry、systems-index、session state：登记60 Hz、fixed dt、reason公式、single pending Save、diagnostic下界；所有受影响文档回到 In Review/Re-review Pending。
+
+### 当前状态
+
+**Re-review Pending**。第五轮 9 根 blocker 已按用户授权完成设计修订，但尚未经过第六轮独立 full re-review。仓库仍无足够 runtime/project asset/Save integration/min-spec performance/GATE-OQ evidence；不得标记 Approved、implementation-ready、battle-ready 或 benchmark-ready。
+
+Prior verdict resolved: 第五轮明列根因已落入主契约与跨文档传播；待第六轮独立复审验证是否真正闭环。
+
+---
+
+## Review — 2026-08-28 — Verdict: MAJOR REVISION NEEDED（第六轮 full re-review）
+
+Scope signal: XL（callback/topology、phase-6 authority、Enemy时序、Outcome ABI、Save不确定提交与证据门）
+Specialists: game-designer, systems-designer, qa-lead, performance-analyst, godot-specialist, technical-director + creative-director终审
+Blocking items: 8个去重根因
+Prior verdict: 第五轮 MAJOR REVISION NEEDED，修订后 Re-review Pending
+
+### Verdict 摘要
+
+第五轮的persistent GameRoot、单次Pending drain、typed load/cleanup DAG与三段resume骨架可保留。第六轮对callback可达面、phase-6不可逆事实、Outcome逐字段ABI和Save完成竞态继续做对抗复核，发现8个根blocker；Creative Director裁定仍为`MAJOR REVISION NEEDED`、scope XL。用户选择完整变更集并采用推荐终局、Outcome ABI和Save策略。
+
+### 8个根 BLOCKING
+
+1. `GameplaySignalAllowlist`未覆盖Godot虚回调/notification，暂停通知仍可能越权写gameplay状态。
+2. `BattleViewportTopologyManifest`、唯一Camera/Viewport writer和resume期间拓扑revision未冻结。
+3. required participant的逐phase coverage与required service精确集合仍可能空表/漏phase假通过。
+4. phase 6把lifecycle步骤与gameplay facts混在journal中，且逐step authority publish/copy成本和故障收敛不闭合。
+5. Enemy在QUERY_CONSUME计算后声称回写同tick更早的MOVEMENT_COMMIT，七phase因果顺序不可实现。
+6. normal terminal seal、同tick Boss victory/player death优先级与cleanup fault是否改写outcome未冻结。
+7. `RunOutcomeEnvelopeV1`缺完整typed SoA、跨平台canonical float64/enum/int ABI与producer manifest。
+8. Save callback丢失/超时后的不确定提交、attempt correlation、reconcile与discard tombstone先后竞态未闭合；容量/证据schema也缺可证明上限。
+
+### 用户裁决（完整变更集）
+
+1. 同tick Boss胜利与玩家死亡并发时，`VICTORY`优先。
+2. 正常Outcome一旦seal，后续cleanup/Save fault不改写`outcome_kind`，只写独立`completion_fault_code`。
+3. Outcome ABI：ID/count/tick/amount为int64，enum为int32；damage totals/candidate值为finite IEEE754 float64 little-endian，`-0`规范化为`+0`，NaN/Infinity拒绝。
+4. Save使用attempt generation/request correlation、`SAVE_UNCERTAIN` reconcile与durable discard tombstone；success先于tombstone则成功有效，tombstone先持久化则迟到callback为stale。
+5. phase 6 lifecycle每intent一条mutable row，Pool私有release FSM承接reset/free-stack exact-once；gameplay facts进入独立`CommittedGameplayFactLedger`；每个phase end/fault convergence最多一次batch authority copy/publish。
+6. Enemy separation correction在tick T phase 5计算，tick T+1 phase 2消费。
+
+### 修订结果
+
+- `game-root-scene-flow.md`：冻结closed enum/guard-aware transition、callback allowlist、Engine 60Hz/time_scale readback、Viewport topology、load failure disposition、phase-6 journal+fact ledger+single batch、normal terminal seal、Outcome ABI、Save reconcile/tombstone及对应AC/evidence schema。
+- `config-data-system.md`、registry、technical preferences：同步required phase/service coverage、callback/topology/load manifests、所有runtime carrier上限、Engine全局量和Save/Outcome边界。
+- `input-system.md`、`stage-map.md`：同步callback writable set、MANUAL退出安全暂停、resume expected tuple、拓扑冻结与Stage gate不等于全局battle-ready。
+- `object-pooling.md`、`spatial-grid.md`、`enemy-system.md`：同步一intent一row、Pool私有release FSM、独立fact ledger、phase-6单batch authority；Enemy改为T→T+1分离修正。
+- `systems-index.md`与session state同步；所有受影响设计仍为In Review/Re-review Pending。
+
+### 当前状态
+
+**Re-review Pending**。第六轮8个根blocker已按授权完成静态设计修订，尚未经过第七轮独立full re-review。仓库仍缺完整Godot runtime/project asset、Save integration、target Android和benchmark/evidence artifact；不得标记Approved、implementation-ready、battle-ready或benchmark-ready。
+
+Prior verdict resolved: 第六轮明列8项已落入中央契约与跨文档传播；待第七轮独立复审验证。
+
+---
+
+## Review — 2026-08-31 — Verdict: MAJOR REVISION NEEDED（第七轮收敛性 full re-review）
+
+Scope signal: XL（typed FSM、topology cleanup handoff、phase-6 exact publish、terminal/Outcome/Save ABI）
+Specialists: game-designer, systems-designer, qa-lead, performance-analyst, godot-specialist, technical-director + creative-director终审
+Blocking items: 6个去重根因
+Prior verdict: 第六轮 MAJOR REVISION NEEDED，修订后 Re-review Pending
+
+### 闭环审计
+
+第六轮8项经终审裁定为3 CLOSED + 5 PARTIAL：callback/notification、required coverage与Enemy T→T+1已闭合；Viewport topology、phase-6 authority、terminal seal、Outcome ABI、Save活性仍为PARTIAL。runtime/project asset/Save GDD/真机/benchmark缺失继续是OPEN evidence gate，不是本轮MAJOR的原因。
+
+### 6个根 BLOCKING
+
+1. `TransitionKey`只有bool guard且转换表无显式status，无法区分同一PAUSE_REQUESTED下Grid OK/PENDING两个合法target。
+2. cleanup在release root Window gate前已detach Host/Shield/VJ/BattleUI，却仍要求按旧BattleViewportTopologyManifest逐字段readback，合法handoff会自报drift。
+3. phase 6只要求publish<=1，允许有COMMITTED row仍0 publish；PAUSE_PENDING closure也未绑定锁定前事实provenance。
+4. normal-end与fatal同barrier缺总序，sealed cleanup fault无可表达的FINISHED出边，outcome commit ID失败也无终局收敛。
+5. Outcome两组SoA重复`damage_totals`，count/enum/completeness/offset/producer rows与DEFEAT死亡原因未冻结为唯一wire ABI。
+6. DISCARD_PENDING tombstone timeout/lost callback无retry/reconcile活性；Settlement/Fault TopEvent、Save carrier presence/type/overflow与数值码不完整。
+
+### 用户授权与第七轮修订结果
+
+用户回复“继续”，视为对上一条完整6项变更集的修订授权。已完成：
+
+- `game-root-scene-flow.md`：新增封闭`TransitionGuardId`与显式status表；冻结fatal>normal总序、cleanup FINISHED边、outcome ID failure；拆分Battle topology与CleanupViewportHandoffManifest；phase6新增side-effect前arm plan及visible-row 0/恰1 publish；pause closure绑定锁定前journal/lease；Outcome冻结22 scalar+12 SoA runtime/wire ABI、enum/bit/offset/producer/death cause；Save冻结versioned carrier、presence、retry/reconcile/discard活性与三UI状态self-transition。
+- `config-data-system.md`：允许run_seed完整int64含0，只要求battle identity非零；新增PauseDrainClosureTypeManifest/容量、allowed success status与Outcome具体field/bit manifest验证。
+- `input-system.md`、`stage-map.md`、technical preferences：统一`topology_revision`字段与cleanup handoff边界。
+- `spatial-grid.md`、`object-pooling.md`、`enemy-system.md`：同步Phase6AuthorityBatchPlan与visible committed row exact publish，不改变既有公开API或Enemy T→T+1时序。
+- performance/diagnostic追踪项同步为明确sample单位、operation vector、完整counter header与单一饱和flag。
+
+### 当前状态
+
+**Re-review Pending**。第七轮6根BLOCKING已按授权完成静态设计修订，但尚未经过第八轮独立full re-review；未创建SaveSystem/BattleUI GDD，未执行Godot runtime、target Android、Save integration或benchmark/evidence gate。不得标记Approved、implementation-ready、battle_ready或benchmark-ready。
+
+Prior verdict resolved: 第七轮明列6项已落文并传播，待第八轮独立复审验证是否真正收敛。
+
+---
+
+## Review — 2026-08-31 — Verdict: MAJOR REVISION NEEDED（第八轮 full re-review）
+
+Scope signal: XL（六维转换真值、早期Fault totality、cleanup gate、Outcome/Save/capacity与AC oracle）
+Specialists: technical-director、performance-analyst + creative-director终审
+Blocking items: 8个去重根因
+Prior verdict: 第七轮 MAJOR REVISION NEEDED，修订后 Re-review Pending
+
+### Verdict 摘要
+
+第七轮已修复typed guard ID、topology/handoff分段、phase-6 visible-row谓词、terminal总序、Outcome字段冲突与Save discard入口；第八轮继续按完整source tuple与可证伪AC审计，确认这些方向可保留，但发现转换表仍未形成真正六维唯一真值、Config前Fault无carrier、cleanup未保证先持有root Window gate、Enemy验收仍可用`<=1`假通过、Outcome manifest仅声明数量而非实际34行、Save resolved carrier无退休边、容量下界缺owner逐行贡献，以及四组AC缺正例或覆盖不足。Creative Director维持`MAJOR REVISION NEEDED`、scope XL。
+
+### 8个根 BLOCKING
+
+1. canonical transition rows未逐行冻结完整`{top_state,resume_substate,fault_scope,event,guard_id,guard_result}` source/target，guard真值也缺独立oracle。
+2. BATTLE_LOADING在Config/Outcome carrier创建前的Fault没有total completion pipeline，可能永远无法expose/退出。
+3. ending/fault cleanup未保证detach前取得persistent root Window gate，合法旧input callback仍可能穿过handoff窗口。
+4. Enemy phase-6验收只断言copy/publish `<=1`，不能证明visible committed row为0时0 publish、为正时恰1 publish与revision `+1`。
+5. `RunOutcomeProducerManifest`只声称22+12行，未给实际canonical 34-row producer/bit/mask/capacity/order；float reduction顺序未冻结。
+6. Save仅定义state字段presence，未定义callback result carrier与resolved archive→retire边，新run仍可能被已完成carrier永久阻塞。
+7. orchestration required capacity仍来自抽象“owner max”，缺每个required role逐类贡献、exact coverage与checked sum schema。
+8. AC-B1/C1/D2/E3及性能workload存在缺positive control、未覆盖全部并发子集、零值fixture或空operation vector的false-pass/false-fail路径。
+
+### 用户授权与第八轮修订结果
+
+用户选择方案A，并明确“按推荐方案全部执行”。已按该范围修订：
+
+- `game-root-scene-flow.md`：冻结完整source/target transition rows、独立`TransitionGuardOracleManifest`及`FAULT_SAFE_EXIT_READY`；新增`OutcomeReadiness`、`PreOutcomeFaultCompletionV1`与Fault exposure total pipeline；cleanup加入`CLEANUP_PRE_ACQUIRE`和`ACQUIRED/REUSED/ACQUIRE_FAILED_SAFE`；实际列出canonical 34-row Outcome producer manifest与float64稳定归并；Save加入`SaveOperationResultV1`、全state presence matrix、`ResolvedRunArchiveV1` archive→retire；新增required owner前三类逐role贡献、Outcome逐SoA field贡献与`RuntimeWorkloadManifest`；重写相关AC positive control/全子集/非零fixture。
+- `config-data-system.md`：snapshot/hash/readiness同步独立guard oracle、owner capacity contribution与canonical 34-row Outcome exact-match验证。
+- `input-system.md`、`stage-map.md`、technical preferences：同步cleanup gate先取得/复用/安全失败、destination tuple及唯一Home/Prep/Fault/Settlement target；不复制Input私有FSM。
+- `enemy-system.md`：phase-6集成验收改为fact-only/lifecycle-only/both/neither和visible row 1/N/capacity，明确0/恰1 publish与revision delta。
+- registry、systems-index、session state：同步容量/Save生命周期、Round 8 verdict、Re-review Pending与下一步。
+
+### 当前状态
+
+**Re-review Pending**。第八轮8根blocker已按授权完成静态设计修订，但尚未经过第九轮独立full re-review；未执行Godot runtime、Save integration、project asset、target Android或benchmark evidence。未创建SaveSystem/BattleUI GDD，required owner contribution仍未全部落地，因此不得标记Approved、implementation-ready、battle_ready或benchmark-ready。
+
+Prior verdict resolved: 第八轮明列8项已落入中央契约与受影响文档，待第九轮独立复审验证。
+
+---
+
+## Review — 2026-08-31 — Verdict: MAJOR REVISION NEEDED（第九轮收敛性 full re-review）
+
+Scope signal: XL（oracle可执行性、identity bootstrap、cleanup活性、Save totality、owner authority与evidence workload）
+Specialists: game/QA、systems/performance、Godot/technical + creative-director独立终审
+Blocking items: 6个去重根因
+Prior verdict: 第八轮 MAJOR REVISION NEEDED，修订后 Re-review Pending；第八轮8项复核为3 CLOSED / 5 PARTIAL
+
+### Verdict 摘要
+
+第八轮建立的完整transition tuple、PreOutcome方向、cleanup gate、34-row Outcome、Save carrier与owner contribution骨架均可保留，但仍有六处不能被独立fixture证明或会卡住实际收敛：guard/load oracle没有实际行；Loading/Outcome backing与identity形成自举；cleanup缺持续driver与staged UI激活FSM；Save reducer/retire不是total exact-once；`outcome_kind` producer与owner贡献未闭合；allocation workload把cold/Save误纳入零分配且缺copy expected vector。Creative Director维持`MAJOR REVISION NEEDED`、scope XL。
+
+### 6个根 BLOCKING
+
+1. `TransitionGuardOracleManifest`与load disposition只声明schema/行数，缺canonical input values、稳定顺序和实际row。
+2. Loading先需要carrier READY、carrier又依赖Config/identity，终局ID耗尽没有不递归的完成路径。
+3. Ending/Fault cleanup缺ALWAYS lifecycle driver、staged noninteractive destination与frame-barrier后激活点；safe failure语义跨文档冲突。
+4. Save缺`source_state×operation×durable_result` total reducer、`RECONCILE_NOT_FOUND`语义与可重试archive-retire journal。
+5. `outcome_kind`错误归BATTLE_RULES；required owner缺`BLOCKING_CHOICE`及Input/Enemy实际贡献行。
+6. runtime workload未区分steady/cold/memory-I/O，cold loading/teardown/Save会被错误要求零分配；authority copy expected counter也未进入manifest。
+
+### 用户授权与第九轮修订结果
+
+用户选择方案A并明确“批准全部执行”。已按授权范围修订10个既有文件：
+
+- `game-root-scene-flow.md`：加入实际35-row guard oracle、24-row load disposition、31-rowpriority golden、TransitionActionOutcome；冻结BOOT unbound backing、OutcomeBindingState/PreOutcome identity-exhaustion收敛；加入ALWAYS lifecycle pump、CleanupSubstate、staged destination与DestinationActivationManifest；补Save total reducer和ArchiveRetireJournalV1；`outcome_kind` producer改GAME_ROOT；加入BLOCKING_CHOICE与12-row workload/class/sample/copy expected契约并重写相关AC。
+- `config-data-system.md`：同步实际row/hash、四类owner contribution、唯一backing/READY DAG与workload class验证。
+- `input-system.md`、`stage-map.md`：同步lifecycle pump、safe路径inert staged UI、frame barrier/expose/top-state之后才激活；Input补四条0贡献。
+- `enemy-system.md`：仅从既有303 active cap和behavior 0..8导出303/303/303/0与9/9实际贡献，无新增调参。
+- `technical-preferences.md`、registry、systems-index、session state：同步公共约束与追踪。
+
+### 当前状态
+
+**Re-review Pending**。第九轮6根blocker已按授权完成静态设计修订，但尚未经过第十轮独立full re-review；未执行Godot runtime、Save integration、project asset、target Android或benchmark evidence，未创建SaveSystem/BattleUI GDD，其他required owner贡献仍缺失，因此不得标记Approved、implementation-ready、battle_ready或benchmark-ready。
+
+Prior verdict resolved: 第九轮明列6项已落入中央契约与受影响文档，待第十轮独立复审验证。
+
+---
+
+## 第十轮 full re-review — 2026-08-31
+
+Verdict: **MAJOR REVISION NEEDED**
+Scope signal: XL
+Specialists: game/UX/UI/economy、systems/QA/performance、Godot/technical + creative-director独立终审
+Blocking items: 6个去重根因
+
+### 复审结论
+
+第九轮方向均可保留，但实际可执行性仍存在六个根缺口：guard/load/action oracle不是封闭total表；PreOutcome reservation没有独立恢复载体；cleanup gate失败路径与fallible activation可能失活；Pool closure把一个journal row拆成unbind/release两条导致容量不足；Save缺durable-discard reducer、实际archive schema与partial-retire bitset，且NOT_STARTED玩家面缺失；RW01..12只有名称/类别且RW07/08错误使用physics tick单位。Creative Director维持MAJOR REVISION NEEDED。
+
+### 用户授权与修订结果
+
+用户选择A并明确“批准全部执行”。按批准的11文件范围完成：
+
+- GameRoot：46-row guard oracle、9-row load status normalization、24-row disposition、61-row action outcome；battle ID与terminal commit ID失败分离。
+- PreOutcome：独立reservation state/recovery carrier、retry/reconcile self-edge与HOME/Fault CTA。
+- Cleanup：ActivationCommitJournal单调checkpoint、lifecycle pump按journal活性驱动、gate固定最多3次重试；连续失败进入`SAFE_TERMINAL_NONINTERACTIVE`并要求重启。
+- Pause drain：PDC缩为3行，Pool使用单`FINALIZE_POOL_RELEASE`；容量为owner贡献加GameRoot/Grid两条fixed contribution，schema上限1538。
+- Save：新增durable commit already found reducer、实际`ResolvedRunArchiveV1`、expected/retired bitset、archive-entry与carriers-retired guard分离、NOT_STARTED UI。
+- Evidence/UX：RW01..12实际向量与sample protocol、RW07/08 control-pump unit、native allowlist hash/marker；所有可交互Control blocked feedback与visible-to-interactive latency。
+- Config/Input/Stage/Enemy/Pool/technical preferences/registry/systems-index/session state同步镜像；未修改只读概念源，未创建Save/BattleUI GDD。
+
+### 当前状态
+
+**Re-review Pending**。本轮仅完成静态设计修订与一致性检查，不等于Godot runtime、Save integration、project asset、target Android或benchmark evidence通过；其他required owner贡献仍缺失，`battle_ready=false`。下一步必须在clean context运行第十一轮独立full review。
+
+---

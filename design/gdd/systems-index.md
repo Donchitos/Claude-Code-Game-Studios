@@ -2,7 +2,24 @@
 
 > **Status**: Draft
 > **Created**: 2026-08-14
-> **Last Updated**: 2026-08-28
+> **Last Updated**: 2026-09-03
+
+> 2026-09-03: Zhangtian full review的9组blocker按用户裁决A完成跨文档静态整改：`PrepConfirmCommandV1`封闭PREP/HOME_DIRECT_NONE来源、Save持久battle allocator+Zhangtian preparation allocator、276-byte recovery/1004-byte reservation/八checkpoint、可恢复candidate与pre-active choice、ABANDONED强制消费；经济改为VICTORY candidate×2、Boss线DEFEAT×1、首次正常结算三类starter各1，held cap仅约束available+reserved≤999，版本`PROVISIONAL-ECONOMY-V3`；另补Damage typed consumer、app-service/Save worker拓扑、V2 app音频semantic key/coalesce与移动读屏architecture blocker。`SlotMax=65536`等作者常量已签；generated Hash256/codec/migration/checked-sum、runtime/crash/device/经济试玩与clean-context full re-review仍BLOCKED/OPEN，全部受影响GDD保持In Review / Re-review Pending，`battle_ready=false`。
+
+> 2026-09-03: 剩余四个MVP系统的初始作者基线（经济与恢复口径已由上方方案A记录取代）完成，均为Designed / Full Review Pending：Zhangtian Bottle、Settlement、Home、Prep已有独立GDD。MVP 28/28已具作者设计覆盖（27个独立author GDD状态+1个Merged），但Config generated tables、codec/runtime/crash/device/accessibility/balance和clean-context full review仍BLOCKED/OPEN，`battle_ready=false`。
+
+> 2026-09-03: Progression Tree GDD完成作者设计→Designed / Full Review Pending。冻结三分支×五级、统一功法残页domain/max176 bytes、generic Save domain mutation、next-run projection、青元/长春/大衍9条公式、L5 perks、`PROVISIONAL-ECONOMY-V1`成本4/8/12/16/20与90秒1页cap8，以及30项AC。SkillDraft刷新2→2/3、最大calls15→20已静态传播；BattleRules/Settlement reward、Save generic mutation runtime、青元workload、长春phase6 receipt、Home UX、30局试玩与独立full review仍BLOCKED/OPEN，battle_ready=false。Design docs started21→22、MVP systems designed22→23/28。
+
+> 2026-09-03: SaveSystem GDD完成作者设计→Designed / Full Review Pending。冻结单writer、temp原子替换、同generation双槽镜像、durable pending Outcome/attempt、commit-vs-tombstone持久事实优先、跨进程reconcile、reservation、64-row provisional滚动archive、retire journal、损坏/迁移fail-closed与26项证据化AC。Progression/Zhangtian/Settlement domain schema、Hash/codec ADR、平台排他锁与durability、Godot真机强杀/性能及独立full review仍BLOCKED/OPEN，battle_ready=false。Design docs started20→21、MVP systems designed21→22/28。
+
+> 2026-09-03: Audio Feedback GDD完成作者设计→Designed / Full Review Pending。冻结consumer-only边界、PLAYER_AUDIO bit0b100 ACK、8级全局priority、6个关键保留voice、22 voice provisional基线、10-bus树、deterministic merge/steal/duck与静音/mono/fallback语义。非Player audio event rows及每capture容量、三组唯一semantic owner、Sound Bible/asset/mix、Godot4.7.1 pause/device行为、min-spec与独立full review仍BLOCKED/OPEN，battle_ready=false。Design docs started19→20、MVP systems designed20→21/28。
+
+> 2026-09-03: BattleUI GDD完成作者设计→Designed / Full Review Pending。冻结consumer-only边界、GameRoot原子跨owner revision-vector bundle、HUD/overlay双状态、1/2/3/4项选择、全屏fresh-touch drain、1 Boss+4 Elite方向身份、64可见damage labels/96 pool及21项证据化AC。Leveling/Weapon/Boss/Elite/Risk/Damage正式presentation ABI、touch manifest、choice priority、treasure exhaustion、project asset、移动无障碍、资产、min-spec与独立full review仍BLOCKED/OPEN，battle_ready=false。Design docs started18→19、MVP systems designed19→20/28。
+
+> 2026-09-03: BossStateMachine GDD完成作者设计→Designed / Full Review Pending。冻结43200-tick玩家相对mandatory入场与120t首伤门、P1最短312t三招纯动作轮转、50% exact-once安全节拍切换+90t PHASE_SHIFT、P2最短444t双扑咬/扇毒/八弹/0-or-2召虫及10→4.5/3600t外圆毒域；TRACK门外时间另计。Boss为Enemy内部capability不新增participant，BATTLE_RULES仍独立BLOCKED；Boss projectile pending/active=8、nonprojectile hazard=2。用12:00后schedule互斥保持Spawn 23/552不扩容；ReviveHazard升级V2 shape语义。Weapon+Normal远程Projectile和、Enemy/Stage hazard总量、cone ABI、BattleRules、Wave/平衡、资产/workload/runtime与独立full review仍BLOCKED/OPEN。Design docs started17→18、MVP systems designed18→19/28。
+> 2026-09-03: Elite Enemies GDD完成作者设计→Designed / Full Review Pending。将behavior 6/7内容唯一owner从Enemy基础设施中拆出，冻结所有Elite的60-tick入场无伤门、蜈蚣三段同轴冲刺+6t段界+150t破绽、鬼修18t blink预警+30t魂针预警+三针T+1原子batch+三血傀儡0/3 cluster、两条fixed schedule与Risk行为等价。由三鬼修同tick9召唤反例把Spawn intake 14/336升级为23/552且不改active/pool cap；death staging升级8字段含source_choice_id，闭合两次Risk同behavior归因。同步Enemy/Spawn/Config/Projectile/Damage/Drop/Risk/registry/session。Projectile/Damage/hazard总容量、behavior5自爆合同、Wave/平衡、presentation资产、workload/真机与独立full review仍BLOCKED/OPEN。Design docs started16→17、MVP systems designed17→18/28。
+> 2026-09-03: RiskChoiceSystem GDD完成作者设计→Designed / Full Review Pending。冻结4:00/8:00两条机缘、SAFE 25%恢复+600 Active ticks护身(0.80 provisional)、TREASURE精英HP/base damage×1.30、每次1个RISK_CHOICE roll、2700 ticks后持续追击且奖励不变、Outcome三字段与blocking contribution2；与SkillDraft14精确合计16。裁决旧容量冲突为Normal298+Elite4+Boss1=ENEMY303，Pool仍320/6/1；同步GameRoot/Config/Damage/Enemy/Spawn/Grid/Pool/Drop/SkillDraft/registry/session。BattleUI、Wave/平衡、treasure exhaustion、workload、runtime/perf/UX/audio与独立full review仍BLOCKED/OPEN。Design docs started15→16、MVP systems designed16→17/28。
+> 2026-09-03: DropSystem + Leveling/XP 合并GDD完成作者设计→Designed / Full Review Pending。冻结双owner stable order 7/10、300 active/320 pool、290+10物理分槽、固定DROP RNG、逐fact prefix PONR、XP曲线`8+5L+ceil(3L²/5)`、level cap40、39-row debt与SkillDraft 10+4=14窗口；同步Enemy 7-field death staging、SkillDraft reduced-choice 1/2/3 calls、GameRoot/Config/Damage/registry/session。GameRoot `{1,303,384,503}` workload与400 Projectile/300 Drop权威上限冲突，必须整表重生成；blast、RiskChoice、treasure exhaustion、15分钟数值与runtime证据仍BLOCKED/OPEN。Design docs started 14→15、MVP systems designed 14→16/28；作者上下文不构成独立review。
 > **Source Concept**: design/凡人修仙掌天试炼-MVP设计方案.md
 > **Review Mode**: lean（TD-SYSTEM-BOUNDARY / PR-SCOPE / CD-SYSTEMS 三个 director gate 均跳过）
 >
@@ -72,6 +89,18 @@
 
 > 2026-08-28: GameRoot & Scene Flow (#1 Core) 第二轮 full design-review（NEEDS REVISION, scope L 偏 M-L）— 6 specialist + creative-director 终审。严于首轮（非 MAJOR REVISION——编排模型健全，6 方一致确认无需重做）。首轮 5 BLOCKING 中 3 闭环（RNG/TECHNICAL_ABORT/R3 全量 copy/F1-F4/AC-G1+AC-B1 守卫）维持无回归；2 pending（Scoped A+AC 拆分）未执行且第 17-20 轮注入更多 InputSystem 镜像反向加重 Scoped A。本轮 11 BLOCKING：B1 Scoped A 执行（删 ~2500-3500 词内部 FSM 镜像，TD 唯一硬阻塞，新会话 clean context）/ B2 9 巨型 AC 拆分（依赖 B1，新会话）/ B3 resume+per-tick wallclock AC（GD+PERF，首轮 perf BL3 未闭合）/ B4 is_choice_input_blocked() 玩家面反馈 AC（GD 新缺口）/ B5 pause-reason presentation AC（GD 升回）/ B6 R3 零装箱 bulk-copy 机制未命名（PERF 新发现，PackedInt64Array[i]→Variant 装箱，SYS"R3 已闭环"判定过窄）/ B7 三 counter instrument 粒度未定义（PERF）/ B8 set_disable_input API 名→set_gui_disable_input（GODOT，S 端）/ B9 TECHNICAL_ABORT 种子源与概念 12.1 hedge（GD，种子=仅已拾取非按存活时间）/ B10 3 覆盖缺口补 AC（QA）/ B11 AC 确定性去 magic+注入式（QA，与 B2 耦合）。16 RECOMMENDED。CD 驳回 QA 的 AC-K5 断引用 BLOCKING（事实错误，spatial-grid.md line 1007 存在 AC-K5）。sys BL4 quarantine 可标闭合。8 项引擎验证以 GATE-OQ ADR defer 实现期实测。B1+B2 建议新会话 clean context，B3-B11 可本轮或新会话（用户选新会话执行全部 11 项）；全 BLOCKING 闭环后须第三轮 re-review。GameRoot 保持 In Review；reviewed 仍 8、approved 仍 5。详见 reviews/game-root-scene-flow-review-log.md。
 > 2026-08-28: GameRoot & Scene Flow (#1 Core) 第三轮 full re-review（NEEDS REVISION, scope XL；非 MAJOR REVISION）— 6 specialist + creative-director 确认第二轮 B1-B5/B7/B9-B11 已按目标闭合或主体闭合，B6 原“PackedArray indexed read必然heap allocation”与 B8“setter 应改名”证据错误，均按官方 API/可验证边界纠偏。终审聚合为 6 个根 blocker：resume fault 奖励事实冲突、run_seed/快照恢复链、authority/resolution token、Grid→Pool publish failure domain、ALWAYS 节点 unpause observer、Window→Host geometry relay；另有 diagnostics/GATE-OQ、Stage camera ownership、RunOutcome/Save envelope 等追踪缺口。用户选择 A 并授权全量修订；GameRoot 主契约、Config/Pool/Input/Grid/RNG 传播及 registry 已写入，所有受影响设计保持 Re-review Pending，待第四轮独立复审。第二轮 B8 明确记为 false positive：Godot 4.7.1 属性 `gui_disable_input` 的 setter 正是 `set_disable_input(bool)`。
+> 2026-08-28: GameRoot & Scene Flow 第五轮 full re-review（MAJOR REVISION NEEDED, scope XL）— 终审聚合 9 根 blocker：PAUSE_PENDING/signal freeze、typed FSM/fault cleanup、required manifests 空表、resume latch+authority/config commit、phase-6 half-commit、render/GUI topology、diagnostics/RNG sidecar、Outcome/Save ABI、capacity/numeric/evidence AC。用户选择推荐方案 A 并授权写入全部受影响文件；本轮冻结 `PAUSE_PENDING` 单次 dt=0 drain、exact-once `LifecycleCommitJournal`、persistent root Window、single pending Save commit、ABANDONED 零结算、60 Hz，以及 Grid→Pool→authority 三次 resume publish。GameRoot/Input/SpatialGrid/Pool/Config/Stage/RNG/Enemy 全部保持 In Review/Re-review Pending，待第六轮独立 full review；不代表 runtime、performance 或 evidence gate 已通过。
+> 2026-08-28: GameRoot & Scene Flow 第六轮 full re-review（MAJOR REVISION NEEDED, scope XL）— 终审聚合8根blocker：callback/notification越权面、Viewport topology与writer、required phase/service coverage、phase-6 lifecycle/fact混账及逐step publish、Enemy同tick逆序分离、normal terminal seal、Outcome逐字段ABI、Save uncertain/reconcile/tombstone及容量证据。用户授权完整变更集并采用推荐终局/ABI/Save策略：同tick胜利优先、sealed outcome不被cleanup fault改写、Outcome使用int64/int32/canonical float64 LE、Save按attempt correlation与durable tombstone仲裁、phase 6一intent一row+独立fact ledger+最多一次batch authority publish、Enemy分离T→T+1。受影响设计保持In Review/Re-review Pending，待第七轮独立full review；不代表runtime或evidence gate通过。
+> 2026-08-31: GameRoot & Scene Flow 第七轮收敛性 full re-review（MAJOR REVISION NEEDED, scope XL）— 第六轮8项经6 specialist+creative-director裁定3 CLOSED/5 PARTIAL，去重为6根blocker：typed TransitionKey/status、topology cleanup handoff、phase6 committed-row exact publish+pause closure provenance、terminal总序/cleanup convergence、Outcome唯一wire ABI+death cause、Save discard活性/TopEvent/carrier presence。用户回复“继续”并授权完整6项修订；GameRoot/Config/Input/Stage/Grid/Pool/Enemy/technical preferences已同步，保持In Review/Re-review Pending，待第八轮独立full review；未创建Save/BattleUI GDD，不代表runtime、Save integration或evidence gate通过。
+> 2026-08-31: GameRoot & Scene Flow 第八轮 full re-review（MAJOR REVISION NEEDED, scope XL）— 技术/性能专项与creative-director去重为8根blocker：完整六维转换+独立guard oracle、Config前Fault totality、cleanup gate先取得、Enemy phase6 exact propagation、实际canonical 34-row Outcome+float order、Save result carrier+resolved retire、owner逐类capacity contribution、AC false-pass/false-fail。用户选择A并明确按推荐方案全部执行；GameRoot/Config/Input/Stage/Enemy/technical preferences/registry与追踪文件已同步，保持In Review/Re-review Pending，待第九轮独立full review；未创建Save/BattleUI GDD，不代表runtime、Save integration或evidence gate通过。
+> 2026-08-31: GameRoot & Scene Flow 第九轮收敛性 full re-review（MAJOR REVISION NEEDED, scope XL）— 第八轮8项复核为3 CLOSED/5 PARTIAL，终审去重6根blocker：实际guard/load oracle、backing/identity bootstrap、cleanup lifecycle/staged activation、Save total reducer+retire journal、outcome/owner authority、workload class/copy oracle。用户选择A并“批准全部执行”；10个既有文件已同步，保持In Review/Re-review Pending，待第十轮独立full review；不代表runtime、Save integration、battle_ready或evidence gate通过。
+> 2026-08-31: GameRoot & Scene Flow 第十轮 full re-review（MAJOR REVISION NEEDED, scope XL）— 3路专项与creative-director独立终审去重为6根blocker：transition/load/action oracle仍不total、PreOutcome reservation恢复缺carrier/CTA、cleanup activation存在失活路径、pause drain closure double-count、Save archive/retire与NOT_STARTED不total、RW01..12缺实际向量且RW07/08单位错误。用户回复A并“批准全部执行”；已按11文件范围同步46-row guard、9-row status normalization、61-row action、独立reservation recovery、ActivationCommitJournal+三次gate retry/safe terminal、单`FINALIZE_POOL_RELEASE`、ResolvedRunArchive+retire bitset、实际12-row workload/native allowlist及UX反馈。保持In Review/Re-review Pending，待第十一轮独立full review；不代表runtime、Save integration、battle_ready或evidence gate通过。
+> 2026-09-01: PlayerController (#8 Core, lean) GDD 全章节完成→Designed（pending independent review）。冻结唯一玩家位置/HP/生命/替身符权威、4.5 units/s固定移动、完整足迹clamp、float64 HP、单局一次35%替身符复活、17点确定性选点、NORMAL-only clear、phase-6 PONR收敛、A/B carrier、53项带证据标签AC与11项Open Question。Damage/Enemy输入仍为provisional；跨文档传播、Enemy bound、tooling、asset/UX/audio spec与移动真机证据保持BLOCKED/OPEN。Design docs started 8→9、MVP systems designed 8→9/27；未执行runtime或独立design-review。
+> 2026-09-01: PlayerController 首轮full design-review（MAJOR REVISION NEEDED, scope L）— 9 specialist + creative-director终审去重为7组blocker：复活防滥用/hazard、typed orchestration ABI、real_t32/float64、fact与lifecycle PONR、Damage/Enemy carriers与容量、VICTORY+lethal表现投影、AC可执行性。用户批准D1-A/D2-A/D3-A/D4-A及10文件写入；修订冻结真实足迹重叠NORMAL清除、中心+双圈17候选、next-tick hazard表面净空与`UNSAFE_FALLBACK`、DAMAGE fact-first唯一PONR、VICTORY唯一player-facing winner、typed contexts/A-B readers/actual manifest rows与可执行证据协议，并同步GameRoot/Config/Input/Enemy/Grid/Stage/registry/session。PlayerController Designed→In Review（Re-review Pending）；reviewed 8→9，approved仍0。未创建DamageSystem/BattleUI GDD，未更新review log；静态传播不代表runtime、performance、Save或integration通过。
+> 2026-09-02: PlayerController 第二轮full re-review（MAJOR REVISION NEEDED, scope XL）— 9个specialist视角+独立creative-director复核首轮7组均PARTIAL，终审去重7根blocker：phase5后terminal precollection因果、phase6 typed I/O/双selector、Resolution token+完整PONR reservation、Godot real_t/ownership/sort、复活候选总序与swept threat、VICTORY/Critical presentation transport、AC/workload可执行性。用户选择A并授权完整整改；Player/GameRoot/Config/Stage/Enemy/technical-preferences/registry/追踪已同步，冻结`safety→score→clear_count→index`、full-tuple sort、current+swept snapshot、one-shot selector capability、retained critical ledger与PWM01..03。保持In Review/Re-review Pending，待第三轮clean-context独立full review；未创建Damage/Hazard/BattleUI GDD或runtime evidence，`battle_ready=false`。
+> 2026-09-02: PlayerController 第三轮lean re-review（MAJOR REVISION NEEDED, scope XL）— 用户将本轮改为lean，未委派specialist或creative-director；主评审确认terminal precollection静态因果已闭环，但识别4组文档blocker：phase6 nested view/binding/plan ABI未逐字段冻结、候选总序在Core/Edge/F7/AC间残留冲突且负float“逐bit较大”不可实现、critical/transient多consumer ACK backing未冻结、fault/context matrices只有声明没有actual rows。用户回复`A,授权`；已同步Player/GameRoot/Config/systems-index，冻结`Phase6AuthorityBatchPlanV1/ViewV1`、所有Player nested view/binding/capability与null-unbound、三consumer ACK manifest/bank/ledger、PFM01–24/PCM01–32 actual oracle，并统一`safety→numeric score DESC→clear_count ASC→index ASC`。保持In Review/Full Re-review Pending；lean整改不构成creative-director批准，Damage/Hazard/BattleUI/tooling/runtime证据仍BLOCKED/OPEN，`battle_ready=false`。
+> 2026-09-02: PlayerController 第四轮lean re-review（MAJOR REVISION NEEDED, scope L）— 未委派specialist或creative-director；识别3组文档blocker：Player独占HP/maxHP却缺战斗内恢复与战前maxHP解析契约、`PlayerPresentationFrameV1`只有row无合法发布/联结机制、`REVIVE_CLEAR` journal owner/容量在Player与Enemy/GameRoot间冲突。用户回复“修订，授权”；已同步Player/GameRoot/Config/Enemy/technical-preferences/registry/systems-index/session，冻结F3A/F3B、provisional `PlayerRecoveryResolutionV1`、PWM04与PCM33、matching motion+HUD派生copy-out frame、bundle后one-shot HUD/event commit，以及Player只写clear intent/ENEMY resolver拥有journal且计入303。保持In Review/Full Re-review Pending；Damage/Recovery/Hazard/BattleUI/tooling/runtime证据仍BLOCKED/OPEN，`battle_ready=false`。
+> 2026-09-02: 正式架构裁决采用“感知无限、技术有限”。Stage V2改为Camera2D锁定已发布Player位置、地表固定池/world-UV视觉无限延展、玩家相对视野外四strip生成环；底层保留`world_safe_half_extent=16384`与1800秒技术时限，不做数学无限、wrap/rebase或可见边界clamp。新增SpawnDirector V1初稿（固定8 attempts/24 RNG words、normal远距无奖励退役），并同步Player复活选点、SpatialGrid稀疏occupied-cell、Config、Enemy、GameRoot及registry AC。所有受影响文档保持In Review/Re-review Pending；本次作者整改不是独立复审、实现或runtime/performance evidence。
 
 ---
 
@@ -83,7 +112,7 @@
 掌天瓶催熟灵药携带下局增益，形成"战斗—结算—成长—备战—再开局"闭环。
 
 机械范围以"300 普通敌人 + 400 投射物 + 300 掉落物同屏、中端 Android 50FPS+"为
-硬性能约束，因此对象池、空间网格、屏幕外降频是 Foundation 级刚需，而非可选优化。
+硬性能约束，因此对象池、稀疏空间网格、固定容量生成/退役与视口draw-cull是Foundation级刚需。
 MVP 只验证三件事：①移动躲避+自动御剑+功法进化的爽快度；②避险或夺宝的风险决策
 是否体现韩立谨慎气质；③掌天瓶催熟→下局增益的局外循环是否简单明确。
 
@@ -93,40 +122,40 @@ MVP 只验证三件事：①移动躲避+自动御剑+功法进化的爽快度�
 
 | # | System Name | Category | Priority | Status | Design Doc | Depends On |
 |---|-------------|----------|----------|--------|------------|------------|
-| 1 | GameRoot & Scene Flow | Core | MVP | In Review | design/gdd/game-root-scene-flow.md | 第四轮 full re-review 为 MAJOR REVISION NEEDED（scope XL）：7 根 blocker 已按用户授权修订，补 persistent lifetime、可枚举FSM、SceneTree pause唯一writer、typed load/cleanup DAG、battle/authority/resolution identity、reason queue、held-drain substate、immutable outcome+Save attempt及可失败AC；当前 Re-review Pending，待第五轮独立复审。runtime/Save/performance/evidence gates仍OPEN。 |
-| 2 | InputSystem | Core | MVP | In Review | design/gdd/input-system.md | GameRoot 第四轮传播：persistent GameRoot、SceneTree pause唯一writer、paused pump及resume checkpoint公共义务已反向登记；Input私有FSM、三字段与Viewport gate不变；须独立复审。 |
-| 3 | SpatialGrid | Core | MVP | Approved | design/gdd/spatial-grid.md | —（无代码依赖）；Runtime prerequisites: GameRoot phase、Stage/Spawn arena、Object Pooling lifecycle、Config limits/bounds |
-| 4 | Object Pooling (inferred) | Core | MVP | In Review | design/gdd/object-pooling.md | Config per-key capacities；GameRoot/SpatialGrid lifecycle。第三轮传播将最终 Node identity/capacity 验证归 arm，matching publish 收窄为无 Node API、不可失败纯发布；须独立复审。 |
-| 5 | Config/Data System | Core | MVP | Draft | design/gdd/config-data-system.md | Godot Resource/build import；RunStartRequest的run_seed+battle_instance_id逐位冻结，snapshot_id=config_snapshot_id；Runtime consumers: GameRoot/Object Pooling/SpatialGrid/owners |
-| 6 | Stage & Map | Core | MVP | In Review | design/gdd/stage-map.md | Config snapshot（校验与域）；Stage scene拥有唯一Camera2D规格/identity；第四轮纳入typed assembly、battle Viewport与active camera验证，须独立复审。 |
-| 7 | RNG System | Core | MVP | Approved | design/gdd/rng-system.md | —（无代码依赖）；Runtime: Config run_seed 数据依赖、GameRoot battle-scope ownership；下游 SpawnDirector/SkillDraft/Zhangtian + 隐式（Damage/Drop/雷爆符/法宝匣/RiskChoice） |
-| 8 | PlayerController | Gameplay | MVP | Not Started | — | InputSystem, SpatialGrid, Object Pooling, Config |
-| 9 | EnemySystem | Gameplay | MVP | Approved | — | SpatialGrid, Object Pooling, Config |
-| 10 | SpawnDirector | Gameplay | MVP | Not Started | — | EnemySystem, Config, RNG |
-| 11 | DamageSystem | Gameplay | MVP | Not Started | — | SpatialGrid, Config |
-| 12 | BuffSystem | Gameplay | MVP | Not Started | — | DamageSystem |
-| 13 | ProjectileSystem | Gameplay | MVP | Not Started | — | Object Pooling, SpatialGrid, DamageSystem |
-| 14 | WeaponSystem | Gameplay | MVP | Not Started | — | ProjectileSystem, BuffSystem, Config |
-| 15 | SkillDraftSystem | Gameplay | MVP | Not Started | — | WeaponSystem, Config, RNG |
-| 16 | DropSystem | Economy | MVP | Not Started | — | EnemySystem, Object Pooling, SpatialGrid, Config |
-| 17 | RiskChoiceSystem | Gameplay | MVP | Not Started | — | SpawnDirector, EnemySystem, PlayerController |
-| 18 | BossStateMachine | Gameplay | MVP | Not Started | — | EnemySystem, DamageSystem, SpawnDirector |
-| 19 | Elite Enemies | Gameplay | MVP | Not Started | — | EnemySystem, DropSystem, Config |
-| 20 | Leveling/XP (inferred) | Progression | MVP | Not Started | — | DropSystem, PlayerController, SkillDraftSystem |
-| 21 | Progression Tree (功法树) | Progression | MVP | Not Started | — | SaveSystem, Config |
-| 22 | Zhangtian Bottle (掌天瓶) | Progression | MVP | Not Started | — | SaveSystem, Config, RNG |
-| 23 | SaveSystem | Persistence | MVP | Not Started | — | Config |
-| 24 | BattleUI | UI | MVP | Not Started | — | PlayerController, SkillDraftSystem, RiskChoiceSystem, GameRoot |
-| 25 | SettlementSystem | UI | MVP | Not Started | — | DamageSystem, EnemySystem, Leveling, SaveSystem |
-| 26 | Home UI (洞府首页) | UI | MVP | Not Started | — | Progression Tree, Zhangtian Bottle, GameRoot |
-| 27 | Prep UI (掌天瓶准备页) | UI | MVP | Not Started | — | Zhangtian Bottle, GameRoot |
-| 28 | Audio Feedback | Audio | MVP | Not Started | — | DamageSystem, WeaponSystem, GameRoot |
+| 1 | GameRoot & Scene Flow | Core | MVP | In Review | design/gdd/game-root-scene-flow.md | 第十轮6根blocker已按授权修订；Re-review Pending，待第十一轮独立full review。runtime/Save/performance/evidence gates仍OPEN。 |
+| 2 | InputSystem | Core | MVP | In Review | design/gdd/input-system.md | 第九轮传播：lifecycle pump、staged destination、Input四类0贡献；私有FSM不复制。 |
+| 3 | SpatialGrid | Core | MVP | In Review | design/gdd/spatial-grid.md | V2为signed cell坐标的稀疏occupied-cell索引；大查询超过262144格时扫描≤1000 active entries；无dense world allocation。Re-review Pending。 |
+| 4 | Object Pooling (inferred) | Core | MVP | In Review | design/gdd/object-pooling.md | 一intent一mutable lifecycle row、Pool私有release FSM与visible-row exact publish已传播。 |
+| 5 | Config/Data System | Core | MVP | In Review | design/gdd/config-data-system.md | 第九轮传播实际guard/load/priority/workload rows、四类owner贡献与hash；当前缺owner rows使battle_ready=false。 |
+| 6 | Stage & Map | Core | MVP | In Review | design/gdd/stage-map.md | “感知无限、技术有限”V2：Camera锁玩家、地表视觉延展、有限安全域与玩家相对生成/退役几何。Re-review Pending。 |
+| 7 | RNG System | Core | MVP | In Review | design/gdd/rng-system.md | Core RNG不变；versioned diagnostic sidecar及teardown前exact-once capture边界待复审。 |
+| 8 | PlayerController | Gameplay | MVP | In Review | design/gdd/player-controller.md | 已改为world-domain fail-fast、无玩法边界clamp；17个复活候选不clamp且全量域校验。Full Re-review Pending；Damage/Recovery/Hazard/BattleUI/runtime证据仍BLOCKED。 |
+| 9 | EnemySystem | Gameplay | MVP | In Review | design/gdd/enemy-system.md | T→T+1分离不变；303 owner贡献使用全局tuple排序且每intent单finalizer closure，待第十一轮复审。 |
+| 10 | SpawnDirector | Gameplay | MVP | Designed | design/gdd/spawn-director.md | 依赖Stage V2、Player published motion、Enemy、Config、RNG、Pool与Sparse Grid；固定8 attempts/24 RNG words、cap admission与normal远距无奖励退役。Full Review Pending。 |
+| 11 | DamageSystem | Gameplay | MVP | In Review | design/gdd/damage-system.md | 唯一伤害、恢复、Buff数值修正与复活危险快照结算域；已同步明心丹crit投影，Re-review Pending。 |
+| 12 | BuffSystem | Gameplay | MVP | Merged | design/gdd/damage-system.md | MVP Buff 数值修正与快照边界并入 DamageSystem；技能来源由 Weapon/SkillDraft 定义，不再单列 GDD。 |
+| 13 | ProjectileSystem | Gameplay | MVP | Designed | design/gdd/projectile-system.md | Pool/Grid/Damage；400 active、32 pending、448 pool；Full Review Pending。 |
+| 14 | WeaponSystem | Gameplay | MVP | Designed | design/gdd/weapon-system.md | Projectile capability + Damage + Config + Grid + RNG；六技能/四进化；Full Review Pending。 |
+| 15 | SkillDraftSystem | Gameplay | MVP | In Review | design/gdd/skill-draft-system.md | 最多三项reduced-choice、基础2次/大衍L5时3次刷新、双保底、宝匣进化与普通ordinal1 pre-active choice；Re-review Pending。 |
+| 16 | DropSystem | Economy | MVP | In Review | design/gdd/drop-leveling-system.md | Enemy死亡→Drop计划→Pool/Grid→exact-once拾取；聚气curve credit14/remaining XP16538已同步；与Leveling合并成文，Re-review Pending。 |
+| 17 | RiskChoiceSystem | Gameplay | MVP | Designed | design/gdd/risk-choice-system.md | 4:00/8:00安全暂停二选一、0/0/0/2 contribution、Risk Outcome cap2、298/4/1 ENEMY class cap；Full Review Pending。 |
+| 18 | BossStateMachine | Gameplay | MVP | Designed | design/gdd/boss-state-machine.md | Enemy内部capability；43200入场、两阶段确定性FSM、外圆毒域、Boss projectile8/hazard2与0/2召虫；Full Review Pending，BattleRules/global capacities/assets/runtime仍BLOCKED。 |
+| 19 | Elite Enemies | Gameplay | MVP | Designed | design/gdd/elite-enemies.md | EnemySystem载体/生命周期、Spawn V2 23-row、Projectile三魂针、Damage、Drop、RiskChoice与Config；Full Review Pending。 |
+| 20 | Leveling/XP (inferred) | Progression | MVP | In Review | design/gdd/drop-leveling-system.md | 逐fact XP、`8+5L+ceil(3L²/5)`、level cap40、39 debt/10 visible queue；聚气起始credit已同步，Re-review Pending。 |
+| 21 | Progression Tree (功法树) | Progression | MVP | In Review | design/gdd/progression-tree.md | SaveSystem, Config；3×5/domain/projection与稳定loadout资源边界已冻结，runtime/UX/balance re-review仍BLOCKED。 |
+| 22 | Zhangtian Bottle (掌天瓶) | Progression | MVP | In Review | design/gdd/zhangtian-bottle.md | 方案A静态整改：V3经济、276-byte recovery、八checkpoint；待clean-context full re-review。 |
+| 23 | SaveSystem | Persistence | MVP | In Review | design/gdd/save-system.md | 双槽/跨进程恢复、1004-byte reservation、65,536-byte slot、worker拓扑已同步；codec/runtime Re-review Pending。 |
+| 24 | BattleUI | UI | MVP | Designed | design/gdd/battle-ui.md | 只读presentation consumer+typed command adapter；atomic revision-vector bundle、fresh-touch drain、HUD/choice/terminal语义已冻结。Full Review Pending；producer views/input/assets/runtime证据BLOCKED。 |
+| 25 | SettlementSystem | UI | MVP | In Review | design/gdd/settlement-system.md | 含BATTLE_RULES；Victory×2/Boss线Defeat×1/starter、held-cap饱和与ABANDONED consume已同步；Re-review Pending。 |
+| 26 | Home UI (洞府首页) | UI | MVP | In Review | design/gdd/home-ui.md | 有库存进Prep、无库存direct NONE、恢复focus与60-byte Settings domain已冻结；Re-review Pending。 |
+| 27 | Prep UI (掌天瓶准备页) | UI | MVP | In Review | design/gdd/prep-ui.md | typed confirm/actions、八checkpoint durable handoff与page-owned touch retirement已冻结；Re-review Pending。 |
+| 28 | Audio Feedback | Audio | MVP | In Review | design/gdd/audio-feedback.md | 掌天app-scope V2 semantic key、唯一producer/coalesce与live-edge at-most-once已冻结；assets/mix/runtime Re-review Pending。 |
 | 29 | VFX System (inferred) | UI | Vertical Slice | Not Started | — | WeaponSystem, DamageSystem, Object Pooling |
 | 30 | Tutorial | Meta | Vertical Slice | Not Started | — | BattleUI, SkillDraftSystem, RiskChoiceSystem, GameRoot |
 | 31 | Perf & LOD (inferred) | Meta | Vertical Slice | Not Started | — | EnemySystem, SpawnDirector, VFX |
 | 32 | Analytics | Meta | Alpha | Not Started | — | SettlementSystem, SkillDraftSystem, RiskChoiceSystem |
 
-**显式 vs 隐式标注**：名称带 "(inferred)" 的系统是设计文档未单列但游戏必需的隐藏系统（#4 对象池、#19 升级经验、#28 特效、#30 性能降级）。其余 27 个源自设计方案第 15.2 节模块清单或各章节明述。
+**显式 vs 隐式标注**：名称带 "(inferred)" 的系统是设计文档未单列但游戏必需的隐藏系统（#4 对象池、#20 升级经验、#29 特效、#31 性能降级）。其余系统源自设计方案第15.2节模块清单或各章节明述。
 
 ---
 
@@ -151,7 +180,7 @@ MVP 只验证三件事：①移动躲避+自动御剑+功法进化的爽快度�
 
 | Tier | Definition | Target | Count |
 |------|------------|--------|-------|
-| **MVP** | 核心循环运转必需，缺则无法测"是否好玩" | 阶段一+二+三（局内循环+局外循环） | 27 |
+| **MVP** | 核心循环运转必需，缺则无法测"是否好玩" | 阶段一+二+三（局内循环+局外循环） | 28 |
 | **Vertical Slice** | 一个完整打磨区域的体验 | 阶段四（表现与测试） | 3 |
 | **Alpha** | 全功能粗版 | MVP 验证后 | 1 |
 | **Full Vision** | 打磨、边缘情况、内容完整 | — | 0 |
@@ -164,21 +193,21 @@ MVP 只验证三件事：①移动躲避+自动御剑+功法进化的爽快度�
 
 ### Foundation Layer（无 gameplay 代码依赖）
 
-本层可分别做 isolated design/spike；“无 gameplay 代码依赖”不等于 integration-ready 无前置。Config已冻结foundation limits；SpatialGrid/Object Pooling的battle-ready仍须Stage arena、owner query/reset/spawn上限与GameRoot编排闭环。
+本层可分别做 isolated design/spike；“无 gameplay 代码依赖”不等于 integration-ready 无前置。Config已冻结foundation limits；SpatialGrid/Object Pooling的battle-ready仍须Stage V2 world domain、owner query/reset/spawn上限与GameRoot编排闭环。
 
 1. **GameRoot & Scene Flow** — 从BOOT到退出保持唯一identity的persistent root；拥有可枚举顶层FSM、SceneTree pause/Viewport writer、typed loading/teardown DAG及battle/publication/outcome identity；按SpatialGrid/Pool/Input冻结public contract编排phase/pause/resume
 2. **InputSystem** — 使用4.7.1内置VirtualJoystick；运行时依赖唯一ALWAYS GameRoot的typed state publish/phase/lifecycle及目标battle Viewport input gate唯一所有权。BOOT先关闭Input accumulated、只读验证ProjectSettings agile=false并在项目input target激活前一次性flush；UNARMED→trusted tick seed→exact epoch-bound Callable connect→callbacks arm但runtime ingress与shield bank service均closed。三字段严格分工：callbacks=adapter生命周期、runtime=仅ACTIVE gameplay ingress、shield service=仅consumer-closed bank/FSM；loading/resume ACTIVE均按`PRE_ACQUIRE→SET_TRUE_IN_FLIGHT(ScreenTouch由shield containment)→GATE_HELD→Input/GameRoot局部ACTIVE→reasoned release`开放，Host bool不得替代物理gate。loading containment在service=false下走PREACTIVE_DISCARD，resume containment在runtime=false/service=true下写held bank并由first observer回drain，VJ/gameplay effect为0；ACTIVE guard原子翻转为runtime=true/service=false。PREACTIVE_DISCARD/lifecycle abort、paused fault service、不可逆resume+held-drain及choice/manual/geometry/background矩阵继续有效。纯foreground geometry可自动恢复；APP_BACKGROUND以latest required/acked revision要求玩家readiness/Continue，新revision会使旧确认失效且该press不兼作movement。rebuild使用immutable candidate-config与geometry完整canonical identity并返回精确status。可isolated code spike，但manifest真机trace通过前不具备implementation-ready；PlayerController/BattleUI GDD、choice touch terminal gate、全row/物理设备UX证据与project logical canvas/InputMap/scene Viewport route资产完成前不具备integration-ready状态
-3. **SpatialGrid** — 纯空间查询数据结构，无 gameplay 代码依赖；isolated spike 可独立进行，但 integration-ready 前必须注入 GameRoot phase capability、Stage/Spawn arena+margin、Object Pooling lifecycle 与 Config per-type limits/bounds
+3. **SpatialGrid** — 纯空间查询数据结构，无 gameplay 代码依赖；使用signed cell坐标与稀疏occupied-cell storage，内存不随world面积增长；integration-ready前必须注入GameRoot phase capability、Stage V2 domain、Object Pooling lifecycle与Config per-type limits/bounds
 4. **Object Pooling** — typed预分配池，无 gameplay 代码前置；按GameRoot/SpatialGrid public contract同步binding、Paused quarantine与teardown，六key capacity由Config snapshot注入
 5. **Config/Data System** — Resource(.tres)→immutable battle snapshot；无 gameplay 代码前置，foundation schema/limits已冻结，Stage/owner数据仍待补齐
-6. **Stage & Map** — 单图固定竞技场几何与 `StageSpatialConfig`；无 gameplay 代码依赖，静态几何/schema 已冻结，生产 `cell_size`/`index_margin` 收紧值 gated（遵 SpatialGrid F3/J0）
+6. **Stage & Map** — `StageSpatialConfigV2/StageWorldDomainViewV2`、锁玩家Camera与固定容量地表presentation；视觉无限但技术域有限，production `cell_size`仍由SpatialGrid F3/J0 gated
 7. **RNG System** — 种子与随机序列，无依赖
 
 ### Core Layer（依赖 Foundation）
 
-1. **PlayerController** — 依赖 InputSystem, SpatialGrid, Object Pooling, Config
+1. **PlayerController** — 直接依赖GameRoot、InputSystem、Config、Stage、DamageSystem（含唯一PlayerRecoveryResolver）、EnemySystem与provisional ReviveHazard producer；不直接依赖SpatialGrid或Object Pooling。Damage作者契约已建立但仍待full review，Hazard/BattleUI、tooling、asset/UX/audio与移动真机证据仍BLOCKED/OPEN。
 2. **EnemySystem** — 依赖 SpatialGrid, Object Pooling, Config
-3. **SpawnDirector** — 依赖 EnemySystem, Config, RNG
+3. **SpawnDirector** — 依赖Stage V2、EnemySystem、Config、RNG、Object Pooling、Sparse SpatialGrid与上一tick已发布Player motion；不直接读取Camera/Node transform
 4. **DamageSystem** — 依赖 SpatialGrid, Config
 5. **BuffSystem** — 依赖 DamageSystem
 6. **ProjectileSystem** — 依赖 Object Pooling, SpatialGrid, DamageSystem
@@ -198,11 +227,11 @@ MVP 只验证三件事：①移动躲避+自动御剑+功法进化的爽快度�
 
 ### Presentation Layer（依赖 Feature/Core）
 
-1. **BattleUI** — 依赖 PlayerController, SkillDraftSystem, RiskChoiceSystem, GameRoot
+1. **BattleUI** — 依赖 PlayerController, SkillDraftSystem, RiskChoiceSystem, GameRoot；作者GDD已完成，正式producer views、touch manifest/drain、project asset、移动无障碍与运行证据仍BLOCKED
 2. **SettlementSystem** — 依赖 DamageSystem, EnemySystem, Leveling, SaveSystem
 3. **Home UI** — 依赖 Progression Tree, Zhangtian Bottle, GameRoot
 4. **Prep UI** — 依赖 Zhangtian Bottle, GameRoot
-5. **Audio Feedback** — 依赖 DamageSystem, WeaponSystem, GameRoot
+5. **Audio Feedback** — 依赖Damage、Weapon、GameRoot，并消费Player、Projectile、Enemy、Drop/Leveling、SkillDraft、RiskChoice、Boss/Elite与BattleUI/VFX P0 readiness；作者GDD完成，event ABI/assets/runtime仍BLOCKED
 6. **VFX System** — 依赖 WeaponSystem, DamageSystem, Object Pooling
 
 ### Polish Layer（依赖一切）
@@ -286,18 +315,23 @@ MVP 只验证三件事：①移动躲避+自动御剑+功法进化的爽快度�
 | Metric | Count |
 |--------|-------|
 | Total systems identified | 32 |
-| Design docs started | 8 |
-| Design docs reviewed | 8 |
-| Design docs approved | 3（修正历史计数漂移后，InputSystem/Object Pooling/Stage 因第三轮传播修订转回 In Review） |
-| MVP systems designed | 8/27 |
+| Design docs started | 26 |
+| Design docs reviewed | 9 |
+| Design docs approved | 0（多轮公共契约传播后的受影响设计均保持In Review/Re-review Pending；须各自clean-context复审后重新计数） |
+| MVP systems designed | 28/28（27个独立author GDD状态 + 1个Merged） |
 | Vertical Slice systems designed | 0/3 |
 
 ---
 
 ## Next Steps
 
-- [ ] 审阅并批准本系统枚举（已完成枚举/依赖/优先级三轮评审）
-- [ ] 先设计 MVP-tier 系统，用 `/design-system [system-name]`（按 Recommended Design Order）
+- [x] 审阅并冻结本系统枚举（已完成枚举/依赖/优先级三轮评审）
+- [x] 完成全部MVP-tier作者设计覆盖
 - [ ] 每完成一个 GDD 后跑 `/design-review design/gdd/[system].md`（建议在新会话）
+- [ ] 在clean context分别对Stage V2、SpatialGrid V2、PlayerController与SpawnDirector运行full review；不得把本次跨文档作者整改当作独立批准
+- [ ] GameRoot另有待办：clean context运行下一轮`/design-review design/gdd/game-root-scene-flow.md`
+- [x] 全部28个MVP系统已获作者设计覆盖（27个独立GDD状态 + Buff并入Damage的1个Merged）；本批四份为Designed / Full Review Pending
+- [ ] 对Zhangtian及全部受影响GDD在clean context执行full re-review；不得以本次整改或静态检查代替独立verdict
+- [ ] 将GameRoot已枚举的28-row load/54-row guard/70-row action作者表导出为canonical artifact，并生成Hash256 golden、ReservationMax/SlotMax及persistent-domain codec manifests，随后再进入实现
 - [ ] MVP 系统 GDD 全部完成后跑 `/gate-check pre-production`
 - [ ] 用 `/vertical-slice` 在承诺 Production 前验证最高风险系统（SpatialGrid / Object Pooling / EnemySystem 架构）

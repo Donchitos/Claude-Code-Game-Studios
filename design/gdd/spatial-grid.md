@@ -1,14 +1,14 @@
 # SpatialGrid（空间网格）
 
-> **Status**: Approved — 2026-08-19 第四轮 full review 通过（8 项 BLOCKING 全部闭环 + 4 项措辞/追溯小改完成）；non-core downstream/performance gates (J0/J1/J2/J4 真机证据) remain open，下游 GDD 可基于当前冻结契约并行启动
+> **Status**: Re-review Pending — core API维持冻结；2026-09-02传播“感知无限、技术有限”的稀疏有限域契约，须独立复审
 > **Author**: 用户 + Claude Code agents
-> **Last Updated**: 2026-08-19
+> **Last Updated**: 2026-09-03
 > **Implements Pillar**: 间接支撑"爽快割草"核心爽点（300 实体不卡顿的前提）
 > **Review Mode**: full（game-designer / systems-designer / qa-lead / performance-analyst / godot-specialist + creative-director）
 
 ## Overview
 
-SpatialGrid 是战斗场景的均匀空间索引，把需要被附近查询命中的敌人与掉落物按位置归入固定大小的格子；投射物默认作为查询调用方而非被索引目标。它将半径查询从 O(N) 全场遍历缩小为相交格与候选扫描，是 DamageSystem、PlayerController、EnemySystem、ProjectileSystem、DropSystem 的共享宽相基础设施。其性能收益必须由目标 Android release 真机验证，不能由“9 格”单独推导（设计方案 15.4 节要求范围攻击不得遍历全场）。
+SpatialGrid 是战斗场景的稀疏均匀空间索引，把需要被附近查询命中的敌人与掉落物按位置归入固定大小的世界格；投射物默认作为查询调用方而非被索引目标。它覆盖Stage给出的巨大但有限坐标域，却只为固定上限的活动条目与占用格预留内存，不能按虚拟世界面积创建dense bucket。它将常见半径查询从 O(N) 全场遍历缩小为局部相交格与候选扫描；当查询覆盖空格数超过固定枚举上限时，合法降级为扫描至多1000个active entries并做同一精确距离过滤，语义不变。
 
 - **一句话**：按位置把实体分桶的均匀网格，让半径查询只扫描相交格及其候选；期望复杂度 O(相交格数 + 候选数)，最坏仍可能 O(N)。
 - **玩家如何交互**：被动/自动——玩家从不直接接触它，只感受它启用的流畅度。
@@ -26,12 +26,13 @@ SpatialGrid 是战斗场景的均匀空间索引，把需要被附近查询命�
 
 ### Core Rules
 
-**R1 — 网格类型：均匀空间哈希网格（uniform hash grid）**
-- 战斗场景被划分为固定边长 `CELL_SIZE` 的正方形格子，覆盖整个可活动区域。
-- 规范格坐标以竞技场最小边界为原点：`cell_x = floor((x - arena_min_x) / CELL_SIZE)`、`cell_y = floor((y - arena_min_y) / CELL_SIZE)`，再 clamp 到有效行列；完整公式见 F1。
-- 规范格坐标是行为契约；底层使用 `Dictionary[Vector2i, Bucket]` 还是 dense bucket array 由数据布局 ADR + 真机 spike 决定，GDD 不锁死容器。
-- 选择 uniform 而非四叉树：割草类实体分布相对均匀（怪潮聚集但无超大稀疏区），uniform 查询复杂度稳定为 O(1) 定位中心格 + 邻格扫描，实现简单且缓存友好；四叉树在密集怪潮区反而退化。
-- **可表示域是行为契约**：`config-data-system.md` schema v1权威提供非零`config_snapshot_id`、`abs(world_coordinate) ≤ MAX_ABS_WORLD_COORD = 1_000_000`、`arena_w/arena_h ≥ MIN_CELL_SIZE = 0.01`、`MIN_CELL_SIZE ≤ CELL_SIZE ≤ max(arena_w,arena_h)`、`cols/rows ≤ MAX_GRID_AXIS = 4096`、`cols×rows ≤ MAX_GRID_CELLS = 262_144`、`N_indexed ≤ MAX_INDEXED_ENTRIES = 1000`。Grid `init(config_snapshot,stage_spatial_config)`必须逐字段复核并复制snapshot ID与flattened limits，整个Active/Paused生命周期只读保存，禁止保留可变Resource引用或用本地默认覆盖。只读`get_config_snapshot_id()`不消费lease、不创建对象、不改变状态，供GameRoot在开放consumer及resume前做一致性预检。大于竞技场最大维度的 `CELL_SIZE` 不是合法的“更大 1×1 格”，init 必须拒绝。`index_margin` 还必须满足 checked `arena AABB.grow(index_margin)` 的四条边仍落在 `[-MAX_ABS_WORLD_COORD,+MAX_ABS_WORLD_COORD]`。insert/stage/query center 均先验证此世界坐标域，再做 grow/距离/归格。以上是 MVP 安全上限，不是玩法调谐值；初始化必须先用 checked arithmetic 验证，超域则失败、保存的snapshot ID复位为0且保持 Inactive。若后续关卡确需突破上限，必须以 benchmark + memory-budget ADR 修订Config与本契约，不能在实现中静默扩大。
+**R1 — 稀疏均匀空间哈希网格（sparse uniform hash grid）**
+- 有限世界域被概念性划分为固定边长`CELL_SIZE`的正方形格；规范signed格坐标为`cell_x=floor(world_x/CELL_SIZE)`、`cell_y=floor(world_y/CELL_SIZE)`，不以相机、玩家或spawn ring为原点，不随玩家移动重编号。
+- 世界域大小不得决定运行时bucket数量。Grid只按`MAX_INDEXED_ENTRIES=1000`预分配entry与最多1000个occupied-cell slot；未占用的虚拟格没有Bucket对象或数组。
+- 私有实现可选择预分配open-address hash table、sorted cell table或等价零分配结构，但禁止dense `world_width/CELL_SIZE × world_height/CELL_SIZE`数组、运行时Dictionary增长和首次遇到新cell才分配。
+- **可表示域是行为契约**：Config V2提供非零snapshot ID、`world_safe_half_extent=16384`、绝对硬上限`MAX_ABS_WORLD_COORD=1_000_000`、`MIN_CELL_SIZE=0.01`、`MAX_INDEXED_ENTRIES=1000`与`MAX_QUERY_CELLS_ENUMERATED=262_144`。`CELL_SIZE`须finite且`≥MIN_CELL_SIZE`；不再以arena维度作为上限。
+- Grid init复制`StageSpatialConfigV2`与flattened limits，checked派生world-domain cell坐标上界并验证可装入signed int64。整个Active/Paused生命周期只读保存，禁止保留可变Resource或本地默认。
+- insert/stage/query center先验证完整坐标finite且位于`world_safe_aabb`；越域是契约故障，不clamp、不wrap、不suspend到旧位置。以上上限是技术安全域，不是玩家可见地图边界。
 
 **R2 — 统一查询命名空间 + 类型标记**
 - 所有空间查询共用同一坐标划分和公开接口。每个已注册条目带类型标记（`ENEMY` / `PROJECTILE` / `DROP`）。格内采用混合列表、按类型子桶或独立类型 bucket 属数据布局 ADR，必须通过 spike 选择。
@@ -58,13 +59,13 @@ SpatialGrid 是战斗场景的均匀空间索引，把需要被附近查询命�
 - 查询覆盖的格范围由 `radius` 与 `CELL_SIZE` 决定（见 Formulas F1）。
 - 查询复杂度：期望 O(覆盖格数 + 候选数)，最坏情况下一个格聚集全部条目时仍为 O(N)；"≤9 格"从来不是帧预算证明。
 - debug/test instrumentation 为 SpatialGrid 实例级只读诊断：`last_query_cells_visited`、`last_query_candidates_examined`、`last_query_results_count`。release 不承诺编译删除成员；默认关闭逐查询写入，仅保留限频聚合计数。
-- 查询中心必须位于 `arena AABB.grow(index_margin)` 内；半径必须 finite 且非负。合法半径可以大于 `CELL_SIZE`，release 不得 clamp 或缩小。若半径已覆盖查询中心到 arena 四角的最大距离，则走 F2 的全场饱和分支，直接扫描全部有效格，禁止先构造可能溢出的巨大 `k`。`max_query_radius` 仅用于配置审计、CELL_SIZE 候选生成与 benchmark，不是正确性上限。
+- 查询中心必须位于 `world_safe_aabb` 内；半径必须 finite且非负。合法半径可以大于`CELL_SIZE`，release不得clamp或缩小。F2先checked计算相交虚拟格span；若span乘积超过`MAX_QUERY_CELLS_ENUMERATED`或转换可能溢出，改扫描全部active entries（至多1000）并用同一canonical距离过滤，禁止遍历巨大空域。`max_query_radius`仅用于配置审计、CELL_SIZE候选与benchmark，不是正确性上限。
 - `query_circle_into` 写入顺序不构成契约；调用方和测试按 stable handle ID 集合消费。需要碰撞形状相交时，调用方用 `gameplay_radius + max_enemy_bound_radius` 做宽相扩张，再以真实 shape/swept test 窄相裁决。
 - SpatialGrid 只以条目的 `committed_gameplay_center` 做点查询。Enemy/Drop 等类型的 `conservative_bound_radius` 由其 Config/注册契约提供；消费者必须先扩张宽相，再执行真实 shape/swept 窄相。候选集合不得直接等同最终命中集合。
 
 **R5 — 最近敌人查询**
 - 辅助接口：`query_nearest_into(center: Vector2, max_radius: float, type_filter: int, out_result: SpatialNearestBuffer, phase_lease_id: int) -> int`；返回 primitive `SpatialStatus`。调用方在 Active 前预分配并复用 `SpatialNearestBuffer`，其标量字段为 `has_handle` 与 `handle_id`；仅 status=`OK` 时字段权威，`has_handle=false` 才表示半径内确实无匹配条目。
-- 用于自动索敌（飞剑锁定最近敌人）。MVP 实现必须扫描 F2 覆盖的**全部相交格及其中全部候选**，以 F2 的规范距离值取全局最小；禁止基于普通 cell AABB 提前终止，因为 `index_margin` 条目的真实 center 可位于其 clamp bucket AABB 外。若未来要采用 expanded-bound best-first early exit，必须先修订 GDD/AC 并证明未扫描格下界包含边界格的合法 margin 区域。**禁止**"螺旋遇到首个实体即返回"。
+- 用于自动索敌（飞剑锁定最近敌人）。MVP 实现必须扫描 F2 选定路径的**全部相交occupied cells候选**，或在enumeration ceiling触发时扫描全部active entries，以 F2 的规范距离值取全局最小。禁止“螺旋遇到首个实体即返回”；任何未来early-exit都必须先证明未扫描格的距离下界并修订GDD/AC。
 - 本接口的距离语义固定为 **committed gameplay center 到查询 center 的中心距离**，不是 shape distance。需要 shape-nearest 或候选窄相回退的消费者必须先调用 circle_into，再自行过滤/排序；不得把本接口结果解释成最近形状。
 - 等距时返回 `registration_sequence` 更小的有效 handle；该稳定键不受 bucket 容器、clear-rebuild 顺序或对象池复用影响。若半径内无匹配实体，返回 `status=OK,has_handle=false`。
 
@@ -73,30 +74,31 @@ SpatialGrid 是战斗场景的均匀空间索引，把需要被附近查询命�
 - handle allocator、grid epoch、slot generation 均使用 checked increment，永不回绕。slot generation 即将耗尽时该 slot 在本 epoch 永久退休；handle ID 或 grid epoch 耗尽时返回 `ID_EXHAUSTED`，拒绝 insert/re-init 并进入 controlled fault，不复用旧值。teardown 先使当前 epoch 与全部 lookup 失效，再释放条目，从行为上排除 ABA 复活。
 - `insert_into(object, type_mask, position, out_handle: SpatialHandleBuffer, phase_lease_id: int) -> int` 创建 pending handle；调用方预分配 `SpatialHandleBuffer`。仅 status=`OK/OK_NOOP/OK_REPLACED` 时 `out_handle.handle_id` 权威。fresh object 插入失败时从未建立 Grid ownership/registration，caller 保持对象所有权并可安全返池。完全相同的重复 insert 返回 `OK_NOOP` 与原 handle。**replace 只允许旧 entry 仍为 pending**：不同位置/type 的新记录完整验证成功后，旧 pending handle 立即 stale、创建新 pending handle并返回 `OK_REPLACED`；验证失败则旧 pending 保持不变。旧 entry 为 active/suspended 时，不同位置/type 的重复 insert 固定返回 `INVALID_ARGUMENT`，旧 handle、committed snapshot 与 staged workspace 不变：位置变化必须 `stage_position`，type 变化必须在 owner 接受查询空窗后显式 `remove(old) → insert(new)`。因此 `SYNC_FAILED` 永远可以保留旧 committed snapshot，不会出现“snapshot 仍含已被 replace 失效的 handle”的矛盾。
 - `remove(handle)` 使用 entry 记录的旧 cell/slot **立即**失效并从查询结果消失，不按对象当前坐标反推 bucket；clear-rebuild 实现也必须用 tombstone 或即时表移除满足该行为。
-- 对象池顺序固定为：`remove(handle)=OK → Object Pool unbind(handle) → pool release/queue_free`；重新借出后创建新 borrow generation/handle，再 insert。**remove-before-free 是 lifecycle owner 的 BLOCKING 义务**：任何 active/pending/suspended registrant 都不得先 `queue_free`、返池或重新借出；fresh insert failure可release，remove failure不得unbind/release，pending `OK_REPLACED`原子替换Pool binding；完整矩阵以`object-pooling.md` R5为准。若 owner 违约，entry 的直接 identity 必须令 resolve 返回 `OBJECT_INVALID` 并触发整 phase rollback/`ControlledGameplayFault`，不得用可能已回收的 instance ID 解析另一个 Node。失效 generation、已回收或 queued-for-deletion 对象不得出现在结果中。
+- 对象池顺序固定为：同一intent的`LifecycleCommitJournal` row按`RESERVED→GRID_REMOVED→POOL_UNBOUND→POOL_RELEASED|POOL_RETIRED`单调推进；实际调用顺序为`remove(handle)=OK→row=GRID_REMOVED→Object Pool unbind(handle)→row=POOL_UNBOUND→pool release/reset or retire→row=POOL_RELEASED|POOL_RETIRED`。重新借出后创建新borrow generation/handle，再insert。**remove-before-free 是 lifecycle owner 的 BLOCKING 义务**：任何active/pending/suspended registrant都不得先`queue_free`、返池或重新借出；fresh insert failure可release，remove failure不得unbind/release，pending`OK_REPLACED`原子替换Pool binding；完整矩阵以`object-pooling.md` R5为准。`remove=OK`是不可回滚事实：若随后unbind/release/reset失败，旧handle仍stale；GameRoot在首个side effect前arm Phase6AuthorityBatchPlan，visible committed row=0时0 publish、>0时matching end或fault convergence恰一次batch publish，绝不能逐step发布或把旧注册“复活”。若owner违约，entry直接identity必须令resolve返回`OBJECT_INVALID`并触发phase failure/`ControlledGameplayFault`，不得伪称整phase回滚，也不得用可能已回收的instance ID解析另一个Node。失效generation、已回收或queued-for-deletion对象不得出现在结果中。
 - SpatialGrid 从不拥有 gameplay 对象的延迟回收。GameRoot/生命周期 owner 负责 pending intent 与 pool release；SpatialGrid 只提交或失效索引。
 - handle 校验拆成两层：`lookup_mutable_slot(handle_id, allowed_states)` 校验 epoch/handle/slot/generation，供 Grid 内部 mutation 使用并可按 API 允许 pending/active/suspended；`resolve_active_into(handle_id,out_ref,phase_lease_id)` 仅允许 active，另验证 entry 的直接 Node identity、queued-for-deletion 与诊断 instance ID 一致性，供查询消费者实际使用。stage 允许 pending/active/suspended；remove 允许 pending/active/suspended；query/consumer resolve 只允许 active；removed/旧 epoch 一律 `STALE_HANDLE`。查询返回 handle 后，下游在实际使用对象前必须 resolve，避免查询结束后的同帧 deferred removal 产生 stale use。
 - 若走增量更新，O(1) 删除需要 `entry → (cell, slot)` + swap-remove 并修正被交换条目的 slot，或等价 O(1) 容器；仅有 `entity → cell` 反向索引不够。
 
-**R7 — 边界处理**
-- MVP 正式采用**固定竞技场**，网格覆盖整个竞技场 AABB；循环拼接/世界回绕不进入 MVP。
-- 查询半径跨越边界时，仅访问边界内格子，不回绕、不镜像。
-- `index_margin` 是 Stage 契约拥有的独立非负值（遵 stage-map R3：spawn 在 AABB 内侧不产生越界，故 `index_margin` 不覆盖 spawn overshoot，只覆盖 movement/knockback overshoot 与 conservative bound），当前 isolated spike 锚点为 2.0；不得由 `CELL_SIZE` 派生。init 要求 finite 且 `0≤index_margin≤min(MAX_ABS_WORLD_COORD-max_abs_arena_x, MAX_ABS_WORLD_COORD-max_abs_arena_y)`（init 校验**域下界 0**），并以 checked grow 验证扩张后 AABB。**Stage-owned 语义下界 `index_margin_min`**（stage-map F5 派生，当前 `0.075`）由 Config build_snapshot 校验（遵 stage-map R5/AC-D3：`index_margin < index_margin_min → LIMIT_EXCEEDED`），SpatialGrid init 不重复复制此检查但依赖 Config 已执行——即 Config 保证到达 init 的 `index_margin ≥ index_margin_min`，init 只再校验域合法性与 grow 不越世界域。点到 arena AABB 的**欧氏最短距离** ≤ `index_margin` 时，用 clamp 后位置归桶、用真实 committed center 精确过滤；超过时 pending insert 失败。pending/active/suspended 条目的非法 staged position统一返回 `STAGED_FOR_SUSPENSION`：pending 在下一次成功 sync 后首次发布为 suspended，active/suspended 在该 sync 后进入/保持 suspended；三者均不进入新查询快照，后续合法 stage 使用同一 handle 激活/恢复，禁止旧位置 ghost entry。
+**R7 — 有限世界域边界处理**
+- MVP正式采用Stage V2的大型有限`world_safe_aabb`；它不作为可见arena，不做循环拼接、镜像、位置wrap或runtime origin rebasing。
+- 查询圆越过world safe边界时，只考虑域内已注册entry；候选距离仍以真实center计算，不从对侧返回实体。
+- `index_margin`与arena suspension语义从V2删除。insert位置必须完整位于world safe domain；active/pending/suspended条目的staged位置越域返回`POSITION_OUT_OF_RANGE`并保持旧snapshot，随后GameRoot进入ControlledGameplayFault。不得把非法位置clamp进边界格、悄悄suspend或继续发布旧位置当作成功。
+- Config的Stage reachability proof保证正常局不会到达该边界；因此越域不是普通可恢复玩法分支。Paused quarantine只处理生命周期暂停，不用于吸收世界越域。
 
 **R8 — 约束：高频附近查询不得遍历全场**
-- 任何依赖系统（DamageSystem/PlayerController/EnemySystem/ProjectileSystem/DropSystem）执行每帧或高频"附近实体"查询时，必须通过 SpatialGrid，**禁止**遍历全场活动列表（设计方案 15.4 硬性要求）。
+- 任何实际查询consumer（DamageSystem/EnemySystem/ProjectileSystem/DropSystem/Weapon/TargetingSystem）执行每帧或高频"附近实体"查询时，必须通过 SpatialGrid，**禁止**遍历全场活动列表（设计方案 15.4 硬性要求）。PlayerController的复活评分例外读取Enemy/Hazard owner发布的定容全量snapshot，不是Grid query，也不授权普通稳态全场遍历。
 - 低频、事件触发且语义本来就是全局的效果（如"引灵符吸取当前场上全部灵气"）由拥有权系统遍历其权威 active collection；不得伪装成超大半径热路径查询，也不得促使 SpatialGrid 暴露通用 `get_all_entities()`。
 - 此约束是 SpatialGrid 作为独立 Foundation 系统存在的核心理由。
 
 **R9 — Public status、carrier 与 release 消费策略**
-- **基类冻结（godot-specialist R3 闭环）**：`SpatialGrid` 与所有公开 carrier（`SpatialQueryBuffer`/`SpatialNearestBuffer`/`SpatialHandleBuffer`/`SpatialResolveBuffer`/`SpatialLeaseBuffer`/`SpatialRemapBuffer`/`AuthoritativeRegistrationBuffer`）均冻结为 **`RefCounted`（非 `Node`）**——不进 SceneTree、不挂父子节点、无 `_ready`/`_physics_process`/`_process` 回调、不被 `SceneTree` 暂停传播命中。Grid 自身不驱动任何帧；全部 phase 推进（`begin_phase`/`end_phase`/`sync`/query/insert/remove/resume 三阶段事务）严格由 `GameRoot`（`Node`，pausable `_physics_process`）在主线程显式调用驱动。选 `RefCounted` 而非 `Node`/`Resource` 的理由：① carrier 是定容 SoA 数据载体而非场景实体，`Node` 的 transform/signal/processing 开销纯负担；② `RefCounted` 支持 `@tool`/运行时构造且无 SceneTree 耦合，符合"Grid 不创建 carrier、owner 在 Active 前创建并跨帧复用"的 ownership 契约；③ 避免 `Resource` 的 `.tres` 序列化语义干扰（carrier 是运行时对象，非持久化资产）。registrant 仍是 `Node`-derived pooled gameplay object（R2），与 carrier 基类无关。具体 `class_name` 与私有容器布局由 ADR 落地，但基类约束在此冻结，ADR 不得改回 `Node`。
-- `SpatialStatus` 固定为 primitive int enum：`OK`、`OK_NOOP`、`OK_REPLACED`、`STAGED_FOR_SUSPENSION`、`INVALID_ARGUMENT`、`INVALID_BENCHMARK_INPUT`、`INIT_LIMIT_EXCEEDED`、`CAPACITY_EXCEEDED`、`BUFFER_TOO_SMALL`、`PENDING_WORK`、`WRONG_STATE`、`PAUSED`、`PHASE_ERROR`、`STALE_HANDLE`、`OBJECT_INVALID`、`SYNC_FAILED`、`REBUILD_FAILED`、`ID_EXHAUSTED`。前四项为 success class，其余为 failure class；调用方按 enum 判定，不按字符串日志判定。
+- **基类冻结（godot-specialist R3 闭环）**：`SpatialGrid` 与所有公开 carrier（`SpatialQueryBuffer`/`SpatialNearestBuffer`/`SpatialHandleBuffer`/`SpatialResolveBuffer`/`SpatialLeaseBuffer`/`SpatialRemapBuffer`/`AuthoritativeRegistrationBuffer`）均冻结为 **`RefCounted`（非 `Node`）**——不进 SceneTree、不挂父子节点、无 `_ready`/`_physics_process`/`_process` 回调、不被 `SceneTree` 暂停传播命中。Grid 自身不驱动任何帧；全部 phase 推进（`begin_phase`/`end_phase`/`sync`/query/insert/remove/resume 三阶段事务）严格由 `GameRoot`（`Node`，`PROCESS_MODE_ALWAYS`，并以 top state + `SceneTree.paused` + explicit gate 决定是否调用）在主线程显式驱动。GameRoot 只在 `BATTLE_ACTIVE` 传 `gameplay_dt=1/60`；`PAUSE_PENDING` 仅允许一个 `gameplay_dt=0` 的技术 drain tick，其他状态不得推进 Grid gameplay phase。选 `RefCounted` 而非 `Node`/`Resource` 的理由：① carrier 是定容 SoA 数据载体而非场景实体，`Node` 的 transform/signal/processing 开销纯负担；② `RefCounted` 支持 `@tool`/运行时构造且无 SceneTree 耦合，符合"Grid 不创建 carrier、owner 在 Active 前创建并跨帧复用"的 ownership 契约；③ 避免 `Resource` 的 `.tres` 序列化语义干扰（carrier 是运行时对象，非持久化资产）。registrant 仍是 `Node`-derived pooled gameplay object（R2），与 carrier 基类无关。具体 `class_name` 与私有容器布局由 ADR 落地，但基类约束在此冻结，ADR 不得改回 `Node`。
+- `SpatialStatus` 固定为 primitive int enum：`OK`、`OK_NOOP`、`OK_REPLACED`、`INVALID_ARGUMENT`、`INVALID_BENCHMARK_INPUT`、`INIT_LIMIT_EXCEEDED`、`POSITION_OUT_OF_RANGE`、`CAPACITY_EXCEEDED`、`BUFFER_TOO_SMALL`、`PENDING_WORK`、`WRONG_STATE`、`PAUSED`、`PHASE_ERROR`、`STALE_HANDLE`、`OBJECT_INVALID`、`SYNC_FAILED`、`REBUILD_FAILED`、`ID_EXHAUSTED`。前三项为 success class，其余为 failure class；V1的`STAGED_FOR_SUSPENSION`不再用于世界越域。调用方按 enum 判定，不按字符串日志判定。
 - 所有 out carrier（Query/Nearest/Handle/Resolve/Lease/Remap）均由 owner 在 Active 前创建、定容并复用；Grid 不创建 carrier、不替换其内部数组。carrier 后置条件严格服从 R9 precedence：① main-thread/state/substate/lease 的 early failure **不得读取或写入 carrier**，其物理内容保持原样但全部不权威；②进入 carrier 层后才验证 class、PackedArray 元素类型、parallel-array size 与声明 capacity，malformed carrier 返回 `INVALID_ARGUMENT`、保持原样且不消耗 ID；③ carrier 验证成功后才将适用标量复位为 `count=0/required_capacity=0/has_handle=false/handle_id=0/lease_id=0/transaction_id=0/object=null`，随后再验证 gameplay arguments/entry，因此这些后续 failure 保持已复位零值且不权威。唯一 failure-output 例外是 `BUFFER_TOO_SMALL`：此时 `count=0`、旧数组槽位不权威，但 `required_capacity` 是权威诊断值。测试必须断言 carrier 与内部数组 identity/capacity 不变，并以污染标量覆盖三层 failure。
 - Grid 私有的 slot/entry/staging、bucket 与 Paused candidate build workspace 必须在进入 Active 前按批准上限预分配；GameRoot 拥有并预分配 authoritative input、out carrier 与 owner remap staging。Active query、insert/stage/remove/sync 以及 Paused resume prepare/publish 均不得因容器增长分配。ADR 可以选择私有容器，但不能把首次遇到新 cell 的 allocation 延后到 gameplay tick。
 - 任一 query failure、`resolve_active_into` failure，或 consumer GDD 明确声明的 fatal narrowphase/domain failure，都必须中止**整个本 tick query/collision phase**，而不只是当前 consumer。所有 consumer 只写本 phase 私有 resolution staging；全部 query、resolve 与窄相成功后，GameRoot 才一次发布 damage/pickup/targeting 结果。普通窄相“不相交/未命中”是合法结果而非 failure。任一较晚 fatal failure 必须丢弃包括先前成功 consumer 在内的全部 staging、关闭 open lease，再进入 `ControlledGameplayFault`；不得映射为空集合、部分集合或缩小半径。MVP 当前没有批准 fallback。该协议已由 `game-root-scene-flow.md` R5/AC-B3承接；实现与集成证据仍是 BLOCKING gate。
-- `CAPACITY_EXCEEDED` 只允许作为 fresh insert 的**发布前内容抑制结果**：SpawnDirector 在 borrow/可见化前先以 Config snapshot 的 ENEMY cap=303 做 admission check，并永久为 2 Elite + 1 Boss 保留 3 个槽，普通怪 active+pending 达 300 后不再借出/发布新普通怪。若 admission 与 insert 间仍因同 phase 排序得到 `CAPACITY_EXCEEDED`，caller 必须取消该 spawn intent、保持对象不进 active collection/SceneTree 可见分支并安全返池；现有战斗继续，telemetry 记录 suppressed spawn。阶段必需的 Elite/Boss 命中该 status，或任何 caller 已发布对象后才处理该 status，均是 contract violation：先撤销未发布 candidate并进入 `ControlledGameplayFault`。DROP 等其他类型由各 owner 用同一“先准入、后发布”协议处理。任何情况下都不得留下可见但不可索引实体。
-- 生命周期后置条件按操作区分：fresh、从未注册成功的 insert failure 由 caller 继续拥有，可返池；pending replace failure 保留旧注册且不得释放；remove failure 不得释放目标；remove success 后 owner 才可 release/queue_free；`SYNC_FAILED` 保持上一个 committed snapshot，pending/staged workspace 不清空且对象不得按未发布状态推进生命周期，并进入 ControlledGameplayFault。Paused mutation 返回 `PAUSED` 时 frozen registrant 必须 quarantine 到 resume publish 或 teardown，禁止 release/reborrow。warning rate-limit key 固定为 `(status,api,grid_epoch)`，每 epoch 最多一次；R2 未知 mask warning 的例外 key 为 `(unknown_mask_value,api,grid_epoch)`。
-- `ControlledGameplayFault` 的玩家可见与持久化行为是本系统硬依赖：进入后立即冻结 input/AI/spawn/timer/damage 与 fault tick 新 reward publication；本局标记 `TECHNICAL_ABORT`，不得写胜负、死亡、纪录或教程完成度。GameRoot 可按 fault 前已提交事实经 Save reservation/commit 尝试部分奖励与灵药补偿；Grid 既不计算也不禁止该补偿。权威细节由 `game-root-scene-flow.md` R9/AC-E3～E4维护。
+- `CAPACITY_EXCEEDED` 只允许作为 fresh insert 的**发布前内容抑制结果**：SpawnDirector 在 borrow/可见化前先以 Config snapshot 的 ENEMY cap=303 做 admission check，并永久为 4 Elite + 1 Boss 保留 5 个槽，普通怪 active+pending 达 298 后不再借出/发布新普通怪。若 admission 与 insert 间仍因同 phase 排序得到 `CAPACITY_EXCEEDED`，caller 必须取消该 spawn intent、保持对象不进 active collection/SceneTree 可见分支并安全返池；现有战斗继续，telemetry 记录 suppressed spawn。阶段必需的 Elite/Boss 命中该 status，或任何 caller 已发布对象后才处理该 status，均是 contract violation：先撤销未发布 candidate并进入 `ControlledGameplayFault`。DROP 等其他类型由各 owner 用同一“先准入、后发布”协议处理。任何情况下都不得留下可见但不可索引实体。
+- 生命周期后置条件按操作区分：fresh、从未注册成功的insert failure由caller继续拥有，可返池；pending replace failure保留旧注册且不得释放；remove failure不得释放目标；remove success后owner才可release/queue_free，并推进同一exact-once journal row；`SYNC_FAILED`保持上一个committed snapshot，pending/staged workspace不清空且对象不得按未发布状态推进生命周期，并进入ControlledGameplayFault。Phase 6不是全阶段原子回滚：失败前已推进的rows继续有效，尚未开始的条目不执行；GameRoot用这些rows更新inactive bank，visible committed row=0时不publish、>0时matching end或fault convergence恰一次publish后fault。Paused mutation返回`PAUSED`时frozen registrant必须quarantine到resume publish或teardown，禁止release/reborrow。warning rate-limit key固定为`(status,api,grid_epoch)`，每epoch最多一次；R2未知mask warning例外key为`(unknown_mask_value,api,grid_epoch)`。
+- `ControlledGameplayFault` 的玩家可见与持久化行为是本系统硬依赖：进入后立即冻结input/AI/spawn/timer/damage与fault tick新reward publication。若此前尚未seal正常终局，本局Outcome为`TECHNICAL_ABORT`；若`VICTORY/DEFEAT/ABANDONED`已seal，后续Grid/cleanup fault只写独立`RunCompletionStatusV1.completion_fault_code`，Save fault只写attempt状态，不得改写`outcome_kind`。GameRoot按fault前`CommittedGameplayFactLedger`已提交事实构建Outcome，并按Save attempt/reconcile/tombstone策略处理；Grid既不计算也不改写结果。权威细节由`game-root-scene-flow.md` R8-R9维护。
 
 公开 API 的状态与后置条件固定如下；表外组合一律 failure 且内部状态不变：
 
@@ -106,7 +108,7 @@ SpatialGrid 是战斗场景的均匀空间索引，把需要被附近查询命�
 | `get_config_snapshot_id()` | Inactive/Active/Paused/TornDown / main thread | n/a | 返回只读scalar；成功init后至teardown前为非零，其他状态为0 | 非主线程=`PHASE_ERROR`；不改变状态 |
 | `begin_phase(phase,tick_revision,out_lease)` / `end_phase(lease_id)` | Active 或合法 Paused substate / main thread | n/a | begin 登记唯一 open lease；end 精确关闭 | begin 重入/非法 phase/revision、end 错 ID均 `PHASE_ERROR`；begin allocator exhaustion=`ID_EXHAUSTED`且不打开 lease；matching end 推进所需 revision exhaustion=`ID_EXHAUSTED`、关闭 lease、保持原 expected pair并进入 ControlledGameplayFault；错误 ID end 不关闭当前 lease；Prepared/Armed 下 matching end 先 auto-abort candidate 再关闭 |
 | `insert_into(...)` | Active / spawn-intent | 无注册；相同注册；或 pending replace | `OK/OK_NOOP/OK_REPLACED`；写 out handle | fresh 达 per-type/total cap=`CAPACITY_EXCEEDED`，保持未注册且仅允许 caller 按发布前抑制协议处理；active/suspended 的变化式重复 insert=`INVALID_ARGUMENT`；其他验证 failure 保持旧注册，out 权威标量清零 |
-| `stage_position(...)` | Active / movement-commit | pending/active/suspended | `OK` 或 `STAGED_FOR_SUSPENSION`；只写 private staged workspace | `STALE_HANDLE/PHASE_ERROR`；不改变 staged/committed 数据 |
+| `stage_position(...)` | Active / movement-commit | pending/active/suspended | `OK`；只写 private staged workspace | `POSITION_OUT_OF_RANGE/STALE_HANDLE/PHASE_ERROR`；不改变 staged/committed 数据，phase进入fault convergence |
 | `remove(...)` | Active / spawn-intent 或 deferred-removal | pending/active/suspended | `OK`；handle 立即失效 | `STALE_HANDLE/OBJECT_INVALID/PHASE_ERROR`；no-op，owner 不得 release 目标 |
 | `sync(...)` | Active / grid-sync | 全部 pending/staged | `OK`；以 checked increment 原子发布下一 snapshot | `SYNC_FAILED/PHASE_ERROR`；旧 snapshot 权威，workspace 保留。snapshot revision 耗尽=`ID_EXHAUSTED`，同样不发布 candidate，matching end cleanup 后进入 ControlledGameplayFault |
 | `query_circle_into/query_nearest_into` | Active / query；PausedFrozen / pause-read | 仅扫描 active frozen entries | `OK`；out carrier 权威 | state/lease early failure保持 carrier 原样；carrier/gameplay `INVALID_ARGUMENT` 分别保持原样/复位后零值；`BUFFER_TOO_SMALL` 仅 `required_capacity` 权威；全部 failure 回滚整个 query/collision phase |
@@ -155,12 +157,12 @@ SpatialGrid 本身无业务状态机，但其生命周期跟随战斗场景。�
 | ProjectileSystem | 查询调用方 | 上一/当前 committed position 形成 swept segment；目标按 tick-end committed snapshot 固定，默认不注册投射物 | `query_circle_into(swept_center, 0.5×segment_length+midpoint_cast_error+projectile_bound+max_enemy_bound+0.0, ENEMY, buffer, lease_id)` + tick-end discrete swept narrowphase |
 | DropSystem | 上游→SpatialGrid | 掉落物位置/生成/吸取 | `insert_into(drop, DROP, pos, handle_out, lease_id)` / `stage_position(handle_id, pos, lease_id)` / `remove(handle_id, lease_id)` |
 | DamageSystem | SpatialGrid→下游 | 范围伤害宽相候选 | `query_circle_into(center, radius+max_bound, ENEMY, buffer, lease_id)` + shape narrowphase |
-| PlayerController | SpatialGrid→下游 | 中心点拾取/中心距离自动索敌 | `query_circle_into(player_pos, pickup_radius, DROP, buffer, lease_id)` / `query_nearest_into(player_pos, target_range, ENEMY, nearest_out, lease_id)` |
+| Weapon/TargetingSystem | SpatialGrid→下游 | 读取Player已提交位置后执行中心距离自动索敌 | `query_nearest_into(player_pos, target_range, ENEMY, nearest_out, lease_id)` |
 | EnemySystem（查询侧） | SpatialGrid→下游 | 敌人间分离/碰撞避免 | `query_circle_into(enemy_pos, sep_radius+max_separation_radius, ENEMY, buffer, lease_id)`（R4 根因3:原 `sep_radius+enemy_bound` 误用 shape bound,改 §4.2 权威形式） |
 | ProjectileSystem（查询侧） | SpatialGrid→下游 | 返回覆盖整段运动的宽相敌人候选；下游执行 swept shape 窄相 | `query_circle_into(swept_center, swept_query_radius, ENEMY, buffer, lease_id)` |
 | GameRoot & Scene Flow | 控制 | 场景状态驱动网格 Inactive/Active/Paused/TornDown | 状态转换调用 |
 
-**接口归属**：SpatialGrid 拥有注册、位置 staging、同步、索引失效、查询行为与 lease ID 发放/校验；GameRoot/生命周期 owner 拥有 active collection、`begin_phase/end_phase` 调度权、暂停 intent 与对象回收。Enemy/Drop 注册为被查询目标；Projectile 默认只调用覆盖 swept segment 的 ENEMY 宽相查询。Damage/PlayerController 等调用 query_*。SpatialGrid 不判定伤害、碰撞形状或全局掉落效果。
+**接口归属**：SpatialGrid 拥有注册、位置 staging、同步、索引失效、查询行为与 lease ID 发放/校验；GameRoot/生命周期 owner 拥有 active collection、`begin_phase/end_phase` 调度权、暂停 intent 与对象回收。Enemy/Drop 注册为被查询目标；Projectile 默认只调用覆盖 swept segment 的 ENEMY 宽相查询。Damage、Drop、Weapon/Targeting与Enemy查询侧调用 query_*；PlayerController调用数固定为0。SpatialGrid 不判定伤害、碰撞形状或全局掉落效果。
 
 ### Paused Resume Transaction
 
@@ -172,86 +174,70 @@ Grid 在 init 时预分配容量 `MAX_INDEXED_ENTRIES` 的 private candidate bui
 2. **Arm + owner swap**：`arm_resume_commit(tx,lease)` 核对 candidate、frozen revision、lease、capacity，并 checked 计算待发布 `next_snapshot_revision`。任何可失败 Grid 校验都在此结束；failure 保持 Prepared且不改旧快照，GameRoot随后可 abort。matching arm=`OK` 后进入 PausedArmed。所有 consumer phase 关闭时，GameRoot 保存旧 authoritative collection/target-cache 引用，并把完整 staging 引用交换为当前 owner 引用；若 owner swap 自身失败，先恢复旧引用，再 `abort_resume`。
 3. **Publish/abort**：owner swap 成功后调用 `publish_resume(tx,lease)`；matching Armed publish 只执行预分配 Grid candidate/revision 的引用交换，契约上**不可失败且必返回 `OK`**，随后进入 Active。owner 新引用此时成为可消费权威状态，但必须等 resume lease `end_phase` 关闭后才允许下一 Active begin。wrong transaction/lease 在交换前返回 `PHASE_ERROR`、保持 Armed；GameRoot恢复旧 owner引用后以正确 tx/lease abort。`abort_resume` 在 Prepared/Armed 均丢弃 candidate回 Frozen。若 GameRoot 在 Prepared/Armed 直接 end，Grid 先 auto-abort；Armed cleanup 路径必须先由 GameRoot恢复 owner引用。成功 publish 后重复 publish按 state-first返回 `WRONG_STATE`。
 
+GameRoot是resume attempt schema唯一owner；Grid只提供`source_grid_snapshot_revision=g`与arm预检的`next_grid_snapshot_revision=g_next`。expected tuple在Grid publish前为`{g,p,a}`、matching Grid publish后为`{g_next,p,a}`；随后Pool publish不改变该Grid轴，authority publish才从`a→a_next`。Grid不得另建第二套authority revision字段或把合法`g→g_next`误判为漂移；Config/Input/background/geometry/pool/topology/Engine等其余轴由GameRoot在每个checkpoint核对。
+
 这里的“原子发布”是**对 gameplay consumer 的逻辑原子性**，不是跨两个 GDScript Object 的硬件事务：唯一依据是 resume-exclusive lease 期间 consumer phase 全关闭、所有 owner 变更均为 O(1) 可回滚引用交换、失败时在开放任何 consumer 前恢复旧引用。`game-root-scene-flow.md` R7已冻结该编排；仍须由其AC-D2/D3/D4集成测试证明，SpatialGrid 单体测试不能代替。
 
 `resume_from` 进入 carrier 层后的 duplicate、非法对象/位置、容量/ID 耗尽或内部构建失败均返回精确 failure status：Grid 回到/保持 PausedFrozen，旧 frozen snapshot、旧 epoch、旧公开 handles 与 authoritative collection revision 均不变；carrier 已验证时 `out_remap.count=0` 且不权威，state/lease 或 malformed-carrier early failure则按 R9 保持 carrier 原样。唯一允许变化是已保留的新 ID 被 burn。`arm_resume_commit` failure 保持 Prepared，wrong publish 保持 Armed，两者不得被本段误读为回 Frozen；其精确后置条件以 API 表与三阶段事务为准。暂停期间不存在 pending/staged 条目；恢复输入是唯一权威来源。Frozen registrant 在成功 publish 或 teardown 前必须 quarantine。PausedFrozen + open resume-exclusive 时 query/resolve=`PHASE_ERROR`；Prepared/Armed 时按 state-first query/resolve=`WRONG_STATE`。teardown 若仍有 open lease 先返回 `PHASE_ERROR`；GameRoot 必须 `end_phase`（必要时 auto-abort）后再 teardown。
 
 ## Formulas
 
-本节定义 5 个核心公式，围绕 `CELL_SIZE`、arena dimensions 与查询半径/实体分布展开；`max_query_radius` 是跨系统 derived 审计值，不是 tuning knob 或合法性上限。
+本节定义5个核心公式，围绕`CELL_SIZE`、有限world domain、稀疏occupied cells与查询半径展开；`max_query_radius`是跨系统derived审计值，不是tuning knob或合法性上限。
 
-### F1 — 格子归属公式（Cell Assignment）
+### F1 — Signed World Cell Assignment
 
-竞技场仍采用原点居中世界坐标，但**格索引以 `arena_min` 对齐**。这避免旧公式 `floor(x/CS)+floor(arena_w/2/CS)` 在竞技场尺寸不能整除 `CELL_SIZE` 时产生畸形/空桶。
+The cell assignment formula is:
 
-The cell_assignment formula is defined as:
+- `cell_x=floor(world_x/CELL_SIZE)`
+- `cell_y=floor(world_y/CELL_SIZE)`
+- `max_abs_cell_coord=ceil(world_safe_half_extent/CELL_SIZE)`
 
-- `arena_min_x = −arena_w / 2`；`arena_min_y = −arena_h / 2`
-- `cols = max(1, ceil(arena_w / CELL_SIZE))`；`rows = max(1, ceil(arena_h / CELL_SIZE))`
-- `cell_x = clamp(floor((index_x − arena_min_x) / CELL_SIZE), 0, cols − 1)`
-- `cell_y = clamp(floor((index_y − arena_min_y) / CELL_SIZE), 0, rows − 1)`
+初始化先校验world extent与CELL_SIZE finite/positive，再以checked float64除法和checked int64 conversion派生cell坐标包络；任何溢出返回`INIT_LIMIT_EXCEEDED`并保持Inactive。不会为`[-max_abs_cell_coord,+max_abs_cell_coord]²`创建dense数组，该值只用于输入验证。
 
-初始化必须按以下顺序执行 checked validation：先校验 `arena_w/arena_h`、arena min/max 均在 `MAX_ABS_WORLD_COORD` 内且 `MIN_CELL_SIZE≤CELL_SIZE≤max(arena_w,arena_h)`；再计算 `ceil(arena_dimension/CELL_SIZE)`，并在创建容器前验证 `cols/rows ≤ MAX_GRID_AXIS`、`cols×rows ≤ MAX_GRID_CELLS`。任何一步失败都返回 `INIT_LIMIT_EXCEEDED` 并保持 Inactive。
+| Variable | Type | Range | Description |
+|---|---|---|---|
+| `world_x/world_y` | real_t32→float64 | `[-H,+H]` | 真实committed center，不clamp |
+| `CELL_SIZE` | float64 | `[0.01,+∞)` finite | 正方形世界格边长 |
+| `cell_x/cell_y` | int64 | checked | signed稀疏cell key |
+| occupied cells | int32 | `[0,MAX_INDEXED_ENTRIES]` | 只为至少一个active entry的格占slot |
 
-`index_position` 对边界内实体等于真实位置；轻微越界实体按 R7 clamp 到竞技场 AABB 后参与归格。精确距离过滤始终使用真实位置。
+GDScript必须使用显式floor语义；不得以向零截断代替。示例`CELL_SIZE=2`时，x=`-2.1/-2.0/-0.1/0/1.9/2.0`依次映射`-2/-1/-1/0/0/1`。
 
-**变量：**
+### F2 — Query Coverage and Sparse Fallback
 
-| Variable | Symbol | Type | Range | Description |
-|----------|--------|------|-------|-------------|
-| 归格坐标 | `index_x/index_y` | float | 竞技场边界内 | 真实坐标或 R7 clamp 后坐标 |
-| 竞技场尺寸 | `arena_w/arena_h` | float | finite、≥0.01，且所有边界绝对值≤1,000,000 | 固定竞技场宽高 |
-| 格子边长 | `CELL_SIZE` | float | [0.01, `max(arena_w,arena_h)`] — tuning knob | 正方形格子的边长（世界单位）；详见 F3 |
-| 行列数 | `cols/rows` | int | [1,4096]，且乘积≤262,144 | 分别为 `ceil(arena_dimension/CELL_SIZE)` |
-| 格子列索引 | `cell_x` | int | [0, cols−1]（经 clamp） | 最终 0 基格索引，用作网格容器 key |
-| 格子行索引 | `cell_y` | int | [0, rows−1]（经 clamp） | 同上 |
+查询先按F1得到中心格和`k=ceil(radius/CELL_SIZE)`，所有转换均checked。概念相交范围为`[cx-k,cx+k]×[cy-k,cy+k]`并裁到world safe domain的cell包络。
 
-**输出范围：** `(cell_x, cell_y) ∈ [0, cols−1] × [0, rows−1]`。最后一行/列可以只与竞技场部分相交，但其世界格边长仍为 `CELL_SIZE`；不存在把两个世界格 clamp 合并成一个畸形桶的旧问题。GDScript 使用 `floori()`/`ceili()` 或等价显式 floor；不得用 `Vector2i(Vector2)` 的向零截断替代 floor。
+- `enumerated_cell_count=checked_mul(width_cells,height_cells)`。
+- 若checked转换/乘法失败，或`enumerated_cell_count>MAX_QUERY_CELLS_ENUMERATED`，设置`scan_mode=ACTIVE_ENTRY_SCAN`并扫描至多`MAX_INDEXED_ENTRIES`个active entries。
+- 否则`scan_mode=SPARSE_CELL_ENUMERATION`，枚举概念cell key但只读取occupied-cell table中的命中bucket；空格不创建对象。
+- 两条路径都使用同一canonical距离过滤、type mask与handle结果语义，结果集合必须完全相同。fallback是复杂度保护，不是半径clamp。
 
-**示例：** `arena_w=6`、`arena_min_x=−3`、`CELL_SIZE=2` → `cols=3`。`x=−2.9/−1.0/2.9` 分别映射 `cell_x=0/1/2`；旧公式会让 `[-3,0)` 错误合并到 cell 0，本公式不会。
+`theoretical_cells_saturated=min(enumerated_cell_count,MAX_QUERY_CELLS_ENUMERATED+1)`只作诊断；`actual_cells_visited`在local路径表示查找的概念cell数，在fallback路径固定为0并另记`active_entries_examined`。几何输入按标准real_t32 Vector2位值存储，radius与规范距离用GDScript float64。
 
-### F2 — 查询覆盖格数公式（Query Cell Coverage）
+唯一规范标量距离原语为 `spatial_distance_components(ax64,ay64,bx64,by64)`，四个输入已是 finite float64。操作顺序固定为：`dx=ax64-bx64`、`dy=ay64-by64`、`adx=abs(dx)`、`ady=abs(dy)`、`m=max(adx,ady)`、`n=min(adx,ady)`；若 `m==0` 返回 `0.0`，否则 `q=n/m`、返回 `m*sqrt(1.0+q*q)`。Vector2 wrapper `spatial_distance_value(a,b)` 只执行 `spatial_distance_components(float(a.x),float(a.y),float(b.x),float(b.y))`。`spatial_distance_le(a,b,r)` 在 `r==0` 时仅以两个 float64 分量差均等于 0 命中，否则以 `spatial_distance_value(a,b)<=r` 判定。circle精确过滤、nearest排序、R10 segment/cast error全部必须调用该原语或wrapper；不得混入`distance_to`、`length_squared`或real_t中间距离。nearest仅在规范`d`数值相等时进入handle tie-break。local enumeration与active-entry fallback必须逐entry调用相同过滤，禁止fallback直接接受全部active entries。
 
-查询 `query_circle_into(center, radius, ...)` 时需扫描的格子范围。公式先判定是否覆盖全场，再计算有界 `k`，不得先把任意大 float 转成 int。
+| Variable | Type | Range | Description |
+|---|---|---|---|
+| `radius` | float64 | `[0,+∞)` finite | 合法查询半径 |
+| `CELL_SIZE` | float64 | `[0.01,+∞)` finite | 同F1 |
+| `MAX_QUERY_CELLS_ENUMERATED` | int32 | 262144 | local空格枚举硬上限 |
+| `active_entries_examined` | int32 | `[0,1000]` | fallback实际扫描条目数 |
 
-The query_cell_coverage formula is defined as:
-
-- `center_index = clamp(center, arena AABB)`；`center_cell` 按 F1 对 center_index 归格，精确距离仍使用真实 center
-- `far_corner_distance = max(spatial_distance_value(center, arena_corner_i))`，四角均在 R1 可表示域内；禁止用 `Vector2.distance_to` 或其它 real_t 中间结果决定饱和分支
-- 若 `radius >= far_corner_distance`：`scan_all = true`，`min/max cell = full grid bounds`，`actual_cells_visited = cols×rows`；不计算 `radius/CELL_SIZE`、`k` 或 `radius²`
-- 否则：`k_raw = ceil(radius / CELL_SIZE)`，再以 checked/saturating conversion 得 `k = min(k_raw, max(cols−1, rows−1))`
-- `theoretical_span = min(2k + 1, max(cols, rows)×2−1)`；诊断用 `theoretical_cells_saturated = min(theoretical_span², MAX_GRID_CELLS)`
-- `min_cell_x = max(center_cell_x − min(k, cols−1), 0)`；`max_cell_x = min(center_cell_x + min(k, cols−1), cols−1)`；y 同理
-- `actual_cells_visited = (max_cell_x−min_cell_x+1) × (max_cell_y−min_cell_y+1)`
-
-`theoretical_cells_saturated` 只用于安全诊断，不承诺保存无限平面的无界数学值；`actual_cells_visited` 是真实访问数，满足 `1 ≤ actual ≤ cols×rows ≤ MAX_GRID_CELLS`。几何输入先按目标 export template 落入实际存储类型：MVP production export 固定使用标准 32-bit `real_t` 的 Vector2 位值，API `radius` 与全部规范距离运算使用 GDScript 64-bit float；若未来改为 double-precision Godot build，必须重跑本节数值 golden tests 与 registry audit。
-
-唯一规范标量距离原语为 `spatial_distance_components(ax64,ay64,bx64,by64)`，四个输入已是 finite float64。操作顺序固定为：`dx=ax64-bx64`、`dy=ay64-by64`、`adx=abs(dx)`、`ady=abs(dy)`、`m=max(adx,ady)`、`n=min(adx,ady)`；若 `m==0` 返回 `0.0`，否则 `q=n/m`、返回 `m*sqrt(1.0+q*q)`。Vector2 wrapper `spatial_distance_value(a,b)` 只执行 `spatial_distance_components(float(a.x),float(a.y),float(b.x),float(b.y))`。`spatial_distance_le(a,b,r)` 在 `r==0` 时仅以两个 float64 分量差均等于 0 命中，否则以 `spatial_distance_value(a,b)<=r` 判定。F2 饱和阈值、circle 精确过滤、nearest 排序、R10 segment/cast error 全部必须调用该原语或 wrapper；不得混入 `distance_to`、`length_squared` 或 real_t 中间距离。nearest 仅在规范 `d` 数值相等时进入 handle tie-break。**该固定输入位值与 float64 操作顺序就是公开数值语义和测试 oracle**，不再声称等同任意精度实数圆。全场分支只有在 `radius>=far_corner_distance` 时才可直接接受 arena 内 committed center；`index_margin` 内越界条目仍调用同一函数精确过滤。
-
-**变量：**
-
-| Variable | Symbol | Type | Range | Description |
-|----------|--------|------|-------|-------------|
-| 查询半径 | `radius` | float | [0,+∞)，finite | 查询圆半径；大值走全场饱和分支，不缩小语义 |
-| 格子边长 | `CELL_SIZE` | float | [0.01,max arena dimension] — tuning knob | 同 F1 |
-| 安全理论覆盖诊断 | `theoretical_cells_saturated` | int | [1,MAX_GRID_CELLS] | 有界诊断值；不是无限平面精确计数 |
-| 实际访问格数 | `actual_cells_visited` | int | [1, cols×rows] | 真正访问的格数 |
-
-**输出范围：** `radius=0` 时 1 格；未饱和、rows/cols 足够且 `0<radius≤CELL_SIZE` 时诊断值 9；随后为 25/49/...，但永不超过 `MAX_GRID_CELLS`。窄网格/1×1 grid 的饱和诊断及竞技场边缘实际访问数可以更少；覆盖全场时恰访问 `cols×rows`。
+`radius=0`访问1个概念格；内部center且`0<radius≤CELL_SIZE`通常为9，随后25/49。靠近world safe边界时裁剪后可更少；极大finite radius稳定进入active-entry fallback。
 
 **悬崖效应（性能信号，不是错误）：** `radius=2.0` 理论 9 格，`radius=2.01` 理论 25 格。系统必须保持结果正确，再由配置审计/benchmark 提醒跨档成本。
 
-**示例：** 灵气吸取查询，`radius = 1.8`（已知 pickup_radius），`CELL_SIZE = 2.0`：
+**示例：** 灵气吸取查询，`radius=1.8`、`CELL_SIZE=2.0`：
 - `ceil(1.8 / 2.0) = ceil(0.9) = 1`
-- `theoretical_cells_saturated = (2 × 1 + 1)² = 9`（内部查询时实际也为 9；边界可能更少）
+- `theoretical_cells_saturated=9`（正常远离技术域边界时actual也为9）
 
 对比（假设性，技能半径未设计）：若某技能 `radius = 6.0`，`CELL_SIZE = 2.0` → `ceil(3.0) = 3` → `(7)² = 49` 格；若 `CELL_SIZE = 6.0` → 9 格。
 
 ### F3 — CELL_SIZE 初始候选与选型（Cell Size Candidate Selection）
 
-令 `effective_hot_query_radii = {r | r 是生产调用真正传给 Grid 的半径，finite 且 r>0}`。它聚合中心拾取 `pickup_radius`、中心索敌 `target_range`、checked `skill_effect_radius+max_enemy_bound`、checked `separation_radius+max_separation_radius`（R4 根因3 修正原 `separation_radius+max_enemy_bound`——shape bound 与 sep_radius 独立；`separation_radius`==`max_separation_radius` registry 别名,故 = 2×max_sep = 分离查询半径全局上界,与 G3/enemy §4.2 一致）、checked `0.5×max_segment_length+max_midpoint_cast_error+projectile_bound+max_enemy_bound+max_target_motion_bound` 等 **有效宽相半径**，不得只记录玩法原始半径。每个源值及每一步加乘都先验证 finite/非负/不溢出；任一非法项使配置审计返回 `INVALID_BENCHMARK_INPUT`，不得跳过该 consumer 或让 `max()` 吞掉 NaN。若集合非空，`CELL_SIZE_candidate = max(effective_hot_query_radii)`；若集合为空则使用 `CELL_SIZE_SPIKE_ANCHOR = 2.0`，绝不生成 0 大小格。
+令 `effective_hot_query_radii = {r | r 是生产调用真正传给 Grid 的半径，finite 且 r>0}`。它聚合中心拾取 `pickup_radius`、中心索敌 `target_range`、checked `skill_effect_radius+max_enemy_bound`、Weapon密集落点的checked `target_range+skill_effect_radius+max_enemy_bound`、checked `separation_radius+max_separation_radius`（R4 根因3 修正原 `separation_radius+max_enemy_bound`——shape bound 与 sep_radius 独立；`separation_radius`==`max_separation_radius` registry 别名,故 = 2×max_sep = 分离查询半径全局上界,与 G3/enemy §4.2 一致）、checked `0.5×max_segment_length+max_midpoint_cast_error+projectile_bound+max_enemy_bound+max_target_motion_bound` 等 **有效宽相半径**，不得只记录玩法原始半径。每个源值及每一步加乘都先验证 finite/非负/不溢出；任一非法项使配置审计返回 `INVALID_BENCHMARK_INPUT`，不得跳过该 consumer 或让 `max()` 吞掉 NaN。若集合非空，`CELL_SIZE_candidate = max(effective_hot_query_radii)`；若集合为空则使用 `CELL_SIZE_SPIKE_ANCHOR = 2.0`，绝不生成 0 大小格。
 
-benchmark sweep 以 checked multiply 生成 `{0.5×candidate, candidate, 1.25×candidate, CELL_SIZE_SPIKE_ANCHOR}`；某个乘积非 finite/超域时只淘汰该候选并记录 config diagnostic，不能把 Infinity 送入排序。再追加 `max(arena_w,arena_h)` 这一恒合法的 1×1-grid fallback，逐项执行完整 F1 checked validation、过滤并去重。只要 arena 本身合法，最终候选数必须 `≥1`；若 fallback 也失败则是初始化域错误，不能继续 readiness。每个候选用相同 fixed-seed、相同消费者 query mix 逐 physics tick 记录：
+benchmark sweep以checked multiply生成`{0.5×candidate,candidate,1.25×candidate,CELL_SIZE_SPIKE_ANCHOR}`并逐项执行F1 validation、过滤、去重。某个乘积非finite/超域时只淘汰该候选并记录diagnostic；集合最终至少保留合法spike anchor，否则是初始化域错误。每个候选用相同fixed-seed、相同消费者query mix逐tick记录：
 
 `combined_grid_phase_time = grid_sync_self_time + Σ(all_grid_query_self_time_in_tick)`
 
@@ -259,13 +245,13 @@ benchmark sweep 以 checked multiply 生成 `{0.5×candidate, candidate, 1.25×c
 
 其中 `max_query_radius` 是所有依赖系统查询半径的全集上界：
 
-`max_query_radius = checked_max(pickup_radius_max, target_range_max, checked_add(max_skill_effect_radius,max_enemy_bound), checked_add(separation_radius,max_separation_radius), checked_sum(checked_mul(0.5,max_projectile_segment_length),max_midpoint_cast_error,max_projectile_bound,max_enemy_bound,max_target_motion_bound), ...)`
+`max_query_radius = checked_max(pickup_radius_max, target_range_max, checked_add(max_skill_effect_radius,max_enemy_bound), checked_sum(target_range_max,max_skill_effect_radius,max_enemy_bound), checked_add(separation_radius,max_separation_radius), checked_sum(checked_mul(0.5,max_projectile_segment_length),max_midpoint_cast_error,max_projectile_bound,max_enemy_bound,max_target_motion_bound), ...)`
 
 **变量：**
 
 | Variable | Symbol | Type | Range | Description |
 |----------|--------|------|-------|-------------|
-| 格子边长 | `CELL_SIZE` | float | [0.01,max arena dimension] 且满足网格上限 — **主 tuning knob** | 由真机 benchmark + ADR 选定 |
+| 格子边长 | `CELL_SIZE` | float | `[0.01,+∞)` finite且int64 cell包络可表示 — **主 tuning knob** | 由真机 benchmark + ADR 选定 |
 | 最大查询半径 | `max_query_radius` | float | [0,+∞) — derived | 所有生产调用有效宽相半径的全集上界；配置审计与 benchmark 输入，不限制合法查询 |
 | 灵气吸取半径上限 | `pickup_radius_max` | float | 1.98（1.8×(1+5×2%)） | 当前 MVP 大衍诀五级的已知上限；Progression GDD 须复核叠加语义 |
 | 最大索敌范围 | `target_range_max` | float | 未定义 | 包含大衍神念成长后的硬上限 |
@@ -279,47 +265,24 @@ benchmark sweep 以 checked multiply 生成 `{0.5×candidate, candidate, 1.25×c
 - `CELL_SIZE` 过大（远大于典型查询半径）：常见查询通常只访问 9 个理论格，但每格候选显著增加；总成本仍可能上升。
 - `CELL_SIZE` 过小：大半径查询访问更多格，但候选桶更稀疏；这是允许且必须实测的权衡。
 
-**输出范围 / tuning 范围：** `[MIN_CELL_SIZE, max(arena_w, arena_h)]`，并必须满足 F1 行列/总格数上限。实际 sweep 范围由下游半径分布与 arena 尺寸生成，不把未经设计的 6.0 当硬上限。
+**输出范围 / tuning 范围：** `[MIN_CELL_SIZE,+∞)`中的checked合法值；实际sweep由下游半径分布生成，不以world-domain宽度作为候选，也不把未经设计的6.0当硬上限。
 - **临时 spike 锚点：`CELL_SIZE = 2.0`**，与当前已知 `pickup_radius_max=1.98` 接近；不是生产承诺。
-- **最终值待定：** 下游半径、arena、数据布局和 min-spec 真机锁定后由 ADR 记录。
+- **最终值待定：** 下游半径、稀疏数据布局和 min-spec 真机锁定后由 ADR 记录。
 
 **示例：**
 - 当前已知 query=1.8 时，以 2.0 为 sweep 锚点。
 - 若后续 `max_skill_effect_radius+max_enemy_bound=5.0`，加入 2.5/5.0/6.25 等候选实测；不得未经测试直接把 CELL_SIZE 上调到 5.0。
 
-### F4 — 每格实体数估算（Per-Cell Entity Count Estimate）
+### F4 — Occupied-Cell Density
 
-全部逻辑网格格子的精确平均条目数为：
+大世界不存在有玩法意义的“全域平均格密度”；用世界面积作分母会把密度稀释成误导值。运行时只报告：
 
-`average_entries_per_grid_cell = N_indexed / C`
+- `occupied_cell_count=count(bucket entry_count>0)`，范围`[0,N_indexed]`；
+- `average_entries_per_occupied_cell = N_indexed/occupied_cell_count`（N=0时定义为0）；
+- `max_bucket_occupancy=max(bucket entry_count)`（N=0时为0）；
+- query级`cells_looked_up/candidates_examined/results_written/active_entries_examined`。
 
-其中 `C = ceil(arena_w/CELL_SIZE) × ceil(arena_h/CELL_SIZE)`。若 benchmark 需要估算某一具体格在均匀密度假设下的期望条目数，则使用：
-
-`expected_entries_in_cell_i = N_indexed × intersection_area(cell_i, walkable_region) / arena_walkable_area`
-
-其中 `arena_walkable_area = area(walkable_region)` 必须 finite 且满足 `0 < arena_walkable_area ≤ arena_w×arena_h`。非法或零面积输入令 F4 estimator/readiness 返回 `INVALID_BENCHMARK_INPUT`，不得除零或生成 NaN；它不影响已初始化 Grid 的查询正确性。最后一行/列的部分格必须使用实际相交面积，不能用完整 `CELL_SIZE²` 冒充。
-
-**变量：**
-
-| Variable | Symbol | Type | Range | Description |
-|----------|--------|------|-------|-------------|
-| 已索引活动条目总数 | `N_indexed` | int | [0,1000] | 所有实际进入索引的类型合计；布局 ADR 后记录 per-type 子计数 |
-| 格子边长 | `CELL_SIZE` | float | [0.01,max arena dimension] — tuning knob | 同 F1 |
-| 格子面积 | `cell_area` | float | `CELL_SIZE²` | 单格覆盖的世界面积 |
-| 可行走区域面积 | `arena_walkable_area` | float | finite，`(0,arena_w×arena_h]` — 外部 tuning input | `walkable_region` 的正面积（世界单位²） |
-| 全格平均条目数 | `average_entries_per_grid_cell` | float | [0,N_indexed] | 精确为 `N_indexed/C`；不是 sparse 实现已分配 bucket 的平均 |
-| 单格均匀期望 | `expected_entries_in_cell_i` | float | [0,N_indexed] | 按该格与可活动区域的实际相交面积估算 |
-
-**输出范围：** 两个量均为 `[0,N_indexed]`。它们不预测怪潮峰值，也不证明查询耗时；worst-case 使用固定 synthetic occupancy 32/64/128/300 和后续 EnemySystem 实测分布（AC-J4）。
-
-**已冻结输入标注：** `arena_walkable_area=880.0`（stage-map F2，MVP 全矩形 arena 22×40，`referenced_by: stage-map.md`）。非"未定义"；仅生产 `cell_size` 待 F3 ADR + J0 真机锁定（见 OQ2）。
-
-**示例：** 若按 303 ENEMY + 300 DROP 索引（PROJECTILE 不入格，registry 冻结 per-type cap），arena 22×40（竖屏，stage-map 已冻结）：
-- `CELL_SIZE=2`：`C=ceil(22/2)×ceil(40/2)=11×20=220`，全格平均 `603/220≈2.74`；内部 9 个完整格约 `9×2.74≈24.7` 个均匀候选。
-- `CELL_SIZE=6`：`C=ceil(22/6)×ceil(40/6)=4×7=28`，全格平均约 `603/28≈21.54`；边缘部分格按实际相交面积估算，不能直接用 9×平均代表任意查询。
-- 两者都必须再以 synthetic 聚集 fixture 实测，不能从均值外推峰值。
-
-**聚集工况标注（2026-08-19 full review 归因修正）：** 上述"均匀密度"假设**不适用于割草核心工况**——300 妖兽涌向玩家时，玩家中心格 + 8 邻格（覆盖 `pickup_radius_max=1.98`/`CELL_SIZE=2.0`）会聚集几乎全部 ENEMY，中心格约 33 候选、9 格合计可接近 300。**聚集于玩家是预期分布（expected distribution），非 adversarial 边角**；F4 的"均匀平均"在此工况下严重低估候选密度。公平基线必须只遍历同一 303 ENEMY 权威集合，不能把 300 DROP 与 400 个查询调用方混进暴力基线；因此该峰值下 Grid 与 ENEMY-only scan 的候选收窄约为 1.0×，本文不再声称“3.3×”。SpatialGrid 的价值假设改为：type-specific index 在查询入口排除非目标类型，且同一权威快照上的多技能、多投射物、多敌人分离查询复用格局部性；在非完全聚集、边界、混合半径与多查询扇出 workload 中减少聚合候选读取。该价值目前仅为 **EVIDENCE ONLY**，必须由 AC-J4 同时报告 Grid、ENEMY-only authoritative scan 与 no-index all-object scan 三组结果，Foundation 是否达到目标 Android 子预算以 J0/J2/J4 真机证据为准。
+这些量不预测怪潮峰值，也不证明查询耗时。300敌人围绕玩家聚集是expected workload；AC-J4继续使用occupancy 32/64/128/300、玩家相对spawn trace，以及Grid/ENEMY-only/all-object三组公平基线。世界坐标跨度变化不得改变bucket slot容量。
 
 ### F5 — 每帧更新成本（Per-Frame Update Cost）
 
@@ -342,8 +305,8 @@ The update_cost_clear_rebuild formula is defined as:
 | Variable | Symbol | Type | Range | Description |
 |----------|--------|------|-------|-------------|
 | tick 起点有效注册数 | `N_start` | int | [0,1000] | `SPAWN_INTENT begin` 时 pending+active+suspended 的唯一有效 handle 数；即使本 tick 无 intent，该 phase 仍建立窗口起点 |
-| 网格总格数 | `C` | int | `ceil(w/CS)×ceil(h/CS)` | arena 相交格子数 |
-| 成功 stage 调用数 | `A_stage_success` | int | [0,+∞) | tick 内返回 `OK/STAGED_FOR_SUSPENSION` 的 stage 调用总数；同 handle重复调用逐次计数 |
+| tick起点occupied cell数 | `C` | int | `[0,N_start]` | 仅实际非空稀疏bucket数，不是world虚拟格总数 |
+| 成功 stage 调用数 | `A_stage_success` | int | [0,+∞) | tick 内返回 `OK` 的 stage 调用总数；同 handle重复调用逐次计数 |
 | dirty 条目数 | `D` | int | [0,N_start+I] | 窗口内至少一次成功 `stage_position` 的唯一 handle 数；重复 stage 不重复计数 |
 | 跨格条目数 | `M` | int | [0,D] | F1 最终 cell 发生变化的条目数 |
 | insert 数 | `I` | int | [0,1000] | 窗口内成功创建的新 pending handle 数；pending replace 的旧 handle另计 R |
@@ -361,7 +324,7 @@ The update_cost_clear_rebuild formula is defined as:
 - **唯一整 tick 观测窗口**固定为 `SPAWN_INTENT begin → DEFERRED_REMOVAL end → authoritative collection commit`；它覆盖 pre-sync remove、每次 stage workspace overwrite、sync 结构更新及 damage-driven deferred remove。若本 tick 没有任何 intent/movement/remove，显式空 phase 仍给出 `N_start` 与零事件计数。每次 insert 按当时 live registrations 检查容量，任意事件前缀均满足 live≤MAX；窗口最终 `0≤N_start+I−R≤MAX_INDEXED_ENTRIES`。
 - 若 sync/query/resolve/narrowphase 在正常终点前 fatal failure，窗口在 matching phase end 完成清理并进入 ControlledGameplayFault 时提前终止；所有已发生/尝试的 Grid 操作仍计数，未开启的后续 phase计 0，不能因事务回滚而倒扣 counter；`N_sync_active/N_end_active` 均读取当时仍权威 snapshot，不能留空或读取未发布 candidate。
 - 每次成功 stage 必有且仅有一次 `staging_write`，因此 `staging_writes=A_stage_success`；sync 只对 D 个唯一最终值提交，last-write-wins 不得把先前调用成本藏入 D。
-- 模式 A：dense 清空为 `O(N_start+A_stage_success+I+R+C)`；若只清 occupied bucket，则以实际操作计数报告，不预先宣称 C 项。
+- 模式 A：只允许清理`C≤N_start`个occupied buckets后重建；dense清空整个world虚拟格域不合法。
 - 模式 B1：即使 M=0 仍须 `O(N_start)` 检查；same-cell write、suspend/resume 不能藏在 M 中。
 - 模式 B2：静止且无事件时可接近 O(0)，但依赖可靠 dirty 通知；重复 stage 成本按 A 线性，全部 dirty 时 sync 部分退化到 O(N_start+I)。
 
@@ -389,15 +352,15 @@ The update_cost_clear_rebuild formula is defined as:
 | 量 | 分类 | 所属 / 来源 | 说明 |
 |----|------|------------|------|
 | `CELL_SIZE` | **TUNING KNOB**（主） | SpatialGrid | F3 benchmark + ADR 的输出 |
-| `arena_walkable_area` | **TUNING KNOB**（外部） | Stage（stage-map.md，已冻结 880.0） | finite 且大于 0；F4 的输入，SpatialGrid 不拥有；arena 22×40 全矩形 |
+| `world_safe_half_extent` / `MAX_QUERY_CELLS_ENUMERATED` | **TECHNICAL LIMITS**（外部） | Stage/Config V2 | 16384 / 262144；不按world面积分配bucket |
 | `max_query_radius` | **DERIVED**（跨系统聚合） | 由 F3 定义，输入来自多 GDD | 配置审计/benchmark 输入，不限制查询正确性 |
 | `max_midpoint_cast_error=sqrt(2)/32` | **DERIVED CAP** | R1 domain + MVP real_t32 export | projectile midpoint Vector2 cast 的配置上界；runtime 使用实际 error |
 | `max_target_motion_bound=0` | **MVP CONTRACT** | R10 tick-end discrete sampling | 不提供 continuous relative-sweep 保证；升级需联动公式与窄相测试 |
-| `pickup_radius_base=1.8` / `pickup_radius_max=1.98` | **TUNING KNOB / DERIVED**（外部） | PlayerController / Progression | 当前 MVP 基值与五级大衍诀上限；SpatialGrid 引用 |
+| `pickup_radius_base=1.8` / `pickup_radius_max=1.98` | **TUNING KNOB / DERIVED**（外部） | PlayerStats / Progression / Config | 当前 MVP 基值与五级大衍诀上限；DropSystem实际消费，SpatialGrid仅引用 |
 | `max_skill_effect_radius+max_enemy_bound` | **未设计** | SkillConfig + EnemyConfig | F3 的关键缺失有效宽相输入 |
 | `cell_x`, `cell_y` | DERIVED | F1 | 运行时逐实体计算 |
 | `theoretical_cells_saturated/actual_cells_visited` | DERIVED | F2 | 查询覆盖诊断 |
-| `average_entries_per_grid_cell` / `expected_entries_in_cell_i` | DERIVED（精确平均 / 估算） | F4 | 离线性能规划用 |
+| `occupied_cell_count` / `average_entries_per_occupied_cell` / `max_bucket_occupancy` | DERIVED | F4 | 稀疏密度与性能证据 |
 | `N_start`, `C`, `A_stage_success`, `D`, `M`, `I`, `R_pre_sync`, `R_deferred`, `R_bucket`, `T_suspend`, `T_resume`, `W_same`, `N_sync_active`, `N_end_active` | DERIVED（运行时状态） | F5 | 更新成本核算与 instrumentation |
 
 ## Edge Cases
@@ -408,19 +371,19 @@ The update_cost_clear_rebuild formula is defined as:
 
 1. **If** `radius = 0`：**Then** 只访问中心格并走专用分支，以 `entry.center.x == center.x && entry.center.y == center.y` 的分量精确相等判定；不得计算平方距离。任一分量存在最小可表示正偏移都不得返回。浮点边界容差属于上游玩法 shape/narrowphase，不在点查询中暗加 epsilon。
 2. **If** `radius < 0`：**Then** dev assert；release 返回 `INVALID_ARGUMENT`、保持输出 buffer 内容不具权威性并限频上报，绝不 clamp 成另一个合法查询。
-3. **If** `CELL_SIZE`、arena 参数违反 F1 finite/范围/行列/总格数上限：**Then** dev assert；release init 返回 `INIT_LIMIT_EXCEEDED`、保持 Inactive，绝不带回退魔法值进入 Active。
-4. **If** insert position 或 query center/radius 含 NaN/Infinity、绝对值超出世界坐标域，或 query center 超出 checked `arena.grow(index_margin)`：**Then** dev assert；release 返回 `INVALID_ARGUMENT`。已有 active/suspended 条目的非法 staged position返回 `STAGED_FOR_SUSPENSION`，下一次成功 sync 进入/保持 suspended 并从快照排除；后续合法 stage 可用同一 handle 恢复，禁止继续留在旧 bucket。
+3. **If** `CELL_SIZE`或world-domain参数违反F1 finite/范围/int64 cell包络：**Then** dev assert；release init返回`INIT_LIMIT_EXCEEDED`、保持Inactive，不分配部分sparse table。
+4. **If** insert/stage position或query center/radius含NaN/Infinity，或center越过world safe domain：**Then** dev assert；release返回`INVALID_ARGUMENT/POSITION_OUT_OF_RANGE`并保持旧snapshot；GameRoot进入fault convergence，不clamp、不suspend、不wrap。
 
 ### B. 归格边界
 
-5. **If** 实体恰在格边界：**Then** 归入右/下侧的较高索引格；最大竞技场边界经 clamp 留在最后一格，无双归。
-6. **If** 实现用向零截断替代 floor：**Then** arena-min 外的轻微负值会归错格；规范实现使用 `floori()`/等价 floor，AC-A2 覆盖边界内、边界上和轻微越界。
+5. **If** 实体恰在世界格边界：**Then** 归入右/下侧的较高signed格；无双归。
+6. **If** 实现用向零截断替代floor：**Then** 负坐标会归错格；规范实现使用`floori()`/等价floor，AC-A2覆盖正负边界。
 
-### C. 竞技场边界
+### C. 有限世界域边界
 
-7. **If** 点到 arena AABB 的欧氏最短距离 ≤ `index_margin`：**Then** 用 clamp 后位置归入最近边界格、真实 committed center 做精确距离过滤；若距离更大，pending insert 失败，active 条目在 sync 后 suspended 并从查询快照排除。四个角按同一欧氏距离公式判定。
-8. **If** 查询半径跨越竞技场边界：**Then** `query_circle_into` 的 bounding box clamp 到网格范围，仅返回边界内格子的实体，不回绕、不镜像（与 R7 一致）。
-9. **If** `radius ≥ far_corner_distance`：**Then** 走 F2 全场饱和分支，扫描所有有效格，不计算无界 `k`/平方且不缩小语义。全场业务效果仍优先走拥有权系统的权威集合（R8）。
+7. **If** center/完整bound仍在world safe domain：**Then** 使用真实位置归入signed cell；不因接近技术边界改变集合。
+8. **If** 查询圆跨越world safe边界：**Then** 只返回域内已注册entry，不回绕、不镜像；中心本身越域则失败。
+9. **If** radius极大或概念cell数超过枚举上限：**Then** 走F2 active-entry fallback，扫描≤1000条并保持同一精确集合，不计算/枚举巨大空域。
 
 ### D. 实体生命周期
 
@@ -446,23 +409,23 @@ The update_cost_clear_rebuild formula is defined as:
 ### G. 容量分布
 
 22. **If** 怪潮聚集致 bucket occupancy 达 32/64/128/300：**Then** 查询保持正确，instrumentation 记录候选量与 p99；不得用“平均×5–10”替代 synthetic/实测 fixture。
-23. **If** arena 参数非法或 checked grid limits 超界：**Then** 按 case 3 阻止 Active；若竞技场非矩形，F4 单格期望使用与实际 walkable area 的相交面积，F1 仍以外接 AABB 归格并由玩法边界负责可达性。
+23. **If** world-domain参数非法、dense bucket容量与world面积相关或occupied-cell slots超过1000：**Then** 阻止Active；不得以减少world extent掩盖内存设计错误。
 
 ### H. 依赖未完成
 
 24. **If** SkillConfig 尚未定义 AoE/索敌/成长后半径：**Then** CELL_SIZE=2.0 只作为 spike 锚点；所有合法半径查询仍保持正确。下游配置完成后更新 max_query_radius 并重跑 sweep，而非直接同步放大 CELL_SIZE。
 
-25. **If** F3 原始候选经合法域过滤后为空：**Then** 必须追加并验证 `max(arena_w,arena_h)` fallback；合法 arena 的 sweep 候选数始终 ≥1，fallback 也失败则 readiness 以初始化域错误终止。
-26. **If** F4 输入 `arena_walkable_area≤0`、非 finite 或大于 arena AABB 面积：**Then** estimator 返回 `INVALID_BENCHMARK_INPUT`，不执行除法、不输出 NaN/Infinity。
+25. **If** F3原始候选经合法域过滤后为空：**Then** 使用并验证`CELL_SIZE_SPIKE_ANCHOR=2.0`；若仍失败则readiness以初始化域错误终止。
+26. **If** `N_indexed=0`：**Then** F4 occupied count、平均与max occupancy均为0，不除零；非零N时occupied count必须位于`[1,N]`。
 27. **If** 高速投射物只在运动段中部与目标的 tick-end committed shape 相交且目标位于 endpoint circle 外：**Then** R10 swept broadphase 仍必须把目标纳入候选，并由 tick-end discrete swept narrowphase 判定最终命中；不得据此声称会命中只与目标历史运动段相交的 relative-sweep case。
 28. **If** 任意生产 query/resolve 返回 failure，或 consumer 报告 fatal narrowphase/domain failure：**Then** 本 tick 尚未提交的 damage/pickup/targeting 均不生效，GameRoot 进入 ControlledGameplayFault；禁止把 carrier 零值或旧槽位当作空结果继续游戏。普通 no-hit 仍为合法结果并继续 phase。
-29. **If** 普通怪 active+pending 达容量（ENEMY cap=303，普通怪 effective 300），或阶段必需 Elite/Boss 命中 reserved 槽不可用：**Then** 普通怪 spawn intent 被 SpawnDirector 在 borrow/可见化前 admission 抑制、对象不进可见 SceneTree 分支/active collection、无 handle 且安全返池，现有战斗继续并记 suppressed-spawn telemetry；Boss 无预留可用则撤销未发布 candidate 后进入 `ControlledGameplayFault`。任何情况下不得留下可见但不可索引的“幽灵敌人”（R9/AC-E11）。
+29. **If** 普通怪 active+pending 达容量（ENEMY cap=303，普通怪 effective 298），或阶段必需 Elite/Boss 命中 reserved 槽不可用：**Then** 普通怪 spawn intent 被 SpawnDirector 在 borrow/可见化前 admission 抑制、对象不进可见 SceneTree 分支/active collection、无 handle 且安全返池，现有战斗继续并记 suppressed-spawn telemetry；Elite/Boss 无预留可用则撤销未发布 candidate 后进入 `ControlledGameplayFault`。任何情况下不得留下可见但不可索引的“幽灵敌人”（R9/AC-E11）。
 
 ## Dependencies
 
 ### 上游依赖
 
-**无已实现的代码硬依赖**，但存在四个必须注入的集成契约：固定竞技场AABB + `index_margin`、GameRoot physics phase/暂停调度/**ControlledGameplayFault 玩家与持久化路径**、生命周期owner的active collection/对象池回收、Config snapshot提供的数值域/per-type数量/conservative bound上限。GameRoot、Object Pooling与Config/Data最小GDD已创建但尚无实现；Config已冻结基础limits，Stage arena与下游shape/query envelope仍未设计，因此当前只允许foundation isolated spike，不允许声明battle/integration story ready。Paused binding/quarantine与teardown顺序分别以`object-pooling.md` R6–R8和`game-root-scene-flow.md` R7–R9为集成权威；缺少后者 R9 的 fault UI、`TECHNICAL_ABORT` 与 Save commit 状态机时，SpatialGrid battle integration 为 BLOCKED。
+**无已实现的代码硬依赖**，但存在四个必须注入的集成契约：Stage V2有限world-domain与sparse enumeration ceiling、GameRoot phase/暂停调度/**ControlledGameplayFault 玩家与持久化路径**、生命周期owner的active collection/对象池回收、Config snapshot提供的数值域/per-type数量/conservative bound上限。当前只允许foundation isolated spike，不允许声明battle/integration story ready。Paused binding/quarantine与teardown顺序分别以`object-pooling.md` R6–R8和`game-root-scene-flow.md` R7–R9为集成权威。
 
 ### 下游依赖（架构硬依赖 — 缺则无法工作）
 
@@ -470,25 +433,27 @@ The update_cost_clear_rebuild formula is defined as:
 
 | 系统 | 层级 | 用途 | 调用接口 | GDD 状态 |
 |------|------|------|----------|----------|
-| PlayerController | Core | 中心点拾取 / 中心距离自动索敌 | `query_circle_into(pos, pickup_radius, DROP, buffer, lease_id)` / `query_nearest_into(pos, range, ENEMY, nearest_out, lease_id)` | 未设计 |
-| EnemySystem | Core | 敌人位置入格 / 排除 self 的分离查询 | `insert_into/stage_position/remove(handle_id)` / `query_circle_into(pos, sep_radius+max_separation_radius, ENEMY, buffer, lease_id)`（R4 根因3:原 `sep_radius+max_enemy_bound` 误用 shape bound,改 §4.2 权威形式） | 未设计 |
-| SpawnDirector | Core | per-type admission、普通怪抑制、Elite/Boss 预留，保证已发布 ENEMY active+pending≤303 | Config cap precheck → Enemy owner borrow/insert → 仅 insert 返回 OK 且后续 sync 成功发布后，owner 才把对象接入可见 SceneTree 分支与 active collection（实际 publish 在 DEFERRED_REMOVAL authority bundle commit，非 insert 后立即）；`CAPACITY_EXCEEDED` 按 R9/AC-E11处理 | 未设计 |
+| EnemySystem | Core | 敌人位置入格 / 排除 self 的分离查询 | `insert_into/stage_position/remove(handle_id)` / `query_circle_into(pos, sep_radius+max_separation_radius, ENEMY, buffer, lease_id)`（R4 根因3:原 `sep_radius+max_enemy_bound` 误用 shape bound,改 §4.2 权威形式） | In Review |
+| SpawnDirector | Core | per-type admission、普通怪抑制、Elite/Boss 预留，保证已发布 ENEMY active+pending≤303 | Config cap precheck → Enemy owner borrow/insert → 仅 insert 返回 OK 且后续 sync 成功发布后，owner 才把对象接入可见 SceneTree分支与active collection；`CAPACITY_EXCEEDED`按R9/AC-E11处理 | Designed / Full Review Pending |
 | DamageSystem | Core | 范围伤害宽相候选 | `query_circle_into(center, effect_radius+max_bound, ENEMY, buffer, lease_id)` + shape narrowphase | 未设计 |
-| ProjectileSystem | Core | 以整段 swept motion 发起敌人宽相；默认不注册投射物 | `query_circle_into(swept_center, swept_query_radius, ENEMY, buffer, lease_id)` + swept narrowphase | 未设计 |
+| ProjectileSystem | Core | 以整段 swept motion 发起敌人宽相；默认不注册投射物 | `query_circle_into(swept_center, swept_query_radius, ENEMY, buffer, lease_id)` + swept narrowphase | Designed / Full Review Pending |
+| Weapon/TargetingSystem | Core | 读取Player motion view后按攻击节奏索敌 | nearest 用 `query_nearest_into`；密集落点用 `query_circle_into(target_range+effect_radius+max_enemy_bound,ENEMY,...)` 后完整窄相评分 | Designed / Full Review Pending；半径数值待 SkillConfig |
 
 ### 运行时输入与控制契约
 
 | 系统 | 用途 | 调用接口 | 契约状态 |
 |------|------|----------|----------------|
-| DropSystem | 掉落物注册 / 中心点本地灵气吸取；引灵符全场效果走 DropSystem active collection | `insert_into/stage_position/remove(handle_id)` / `query_circle_into(pos, pickup_radius, DROP, buffer, lease_id)` | 本地吸取硬依赖 SpatialGrid；systems-index 已同步 |
-| GameRoot & Scene Flow | phase coordination、snapshot revision、Paused transaction 与 ControlledGameplayFault 玩家/持久化路径 | 独占 `begin_phase/end_phase` 调度权；在 consumer-closed window 内执行 owner 引用交换与 Grid publish；R9 标记 TECHNICAL_ABORT、禁止 fault tick 新 reward，并可按此前 committed 事实尝试部分奖励 | `design/gdd/game-root-scene-flow.md` R5/R9 契约第三轮已修订；实现/集成证据未完成 |
-| Config/Data | 数值域、type caps、carrier/workspace上限与snapshot ID | schema v1固定1000000/0.01/4096/262144/1000及303/0/300；Grid init逐项复核 | `design/gdd/config-data-system.md` Draft |
+| DropSystem | 掉落物注册 / 读取Player motion view执行中心点本地灵气吸取；引灵符全场效果走Drop active collection | `insert_into/stage_position/remove(handle_id)` / `query_circle_into(pos,pickup_radius,DROP,buffer,lease_id)` | 本地吸取硬依赖SpatialGrid；pickup数值来自PlayerStats/Progression/Config |
+| PlayerController | 只发布motion/HUD/event view，不注册、不查询、不remove | 无；Grid API调用计数必须为0 | Player首轮full review整改完成，Re-review Pending |
+| GameRoot & Scene Flow | phase coordination、snapshot revision、phase-6 lifecycle journal+fact ledger、Paused transaction 与 ControlledGameplayFault 玩家/持久化路径 | 独占`begin_phase/end_phase`调度权；phase 6 visible committed row=0则0 publish、>0则matching end/fault convergence恰一次batch authority publish；resume在consumer-closed window执行Grid→Pool→authority三次发布 | `design/gdd/game-root-scene-flow.md` seventh remediation，Re-review Pending；实现/集成证据未完成 |
+| Config/Data | 数值域、type caps、carrier/workspace上限、snapshot ID 与 orchestration limits | Stage schema v2固定world half 16384、abs hard cap 1000000、min cell 0.01、query-enumeration ceiling 262144、entry 1000及303/0/300；Grid init逐项复核 | `design/gdd/config-data-system.md` Re-review Pending |
 
 **一致性核对结论**：DropSystem 的本地吸取不可降级为高频全场遍历，因此是 SpatialGrid 硬依赖；`systems-index.md` 已同步该边。引灵符全场效果仍走 DropSystem 权威 active collection。
 
 ### 待设计的下游 GDD
 
-所有下游依赖系统均未设计（PlayerController/EnemySystem/SpawnDirector/DamageSystem/ProjectileSystem/DropSystem）。这意味着：
+PlayerController已完成首轮full review整改，EnemySystem处于In Review。
+SpawnDirector、DamageSystem、ProjectileSystem 与 Weapon/TargetingSystem 已有作者设计但均待独立复审；DropSystem仍未设计。这意味着：
 - 当前 `max_query_radius` 下界由已知 `pickup_radius_max = 1.98` 支撑（F3）
 - `max_enemy_bound`、`separation_radius`、projectile segment/bound、成长后 target range、技能 AoE 半径均未定义
 - ProjectileSystem 的 MVP moving-target 语义已在 R10 冻结为 tick-end discrete snapshot，`max_target_motion_bound=0`；其 GDD 仍须提供最大单 tick segment 与 projectile/target bound，并原样采用 scalar midpoint/cast-error 契约。GameRoot phase-wide resolution rollback、Paused owner-reference swap 与故障路径已在其最小GDD冻结，但实现/集成测试仍是 BLOCKING gate
@@ -507,41 +472,32 @@ The update_cost_clear_rebuild formula is defined as:
 
 **G1 — `CELL_SIZE`（格子边长）** — **主旋钮**
 - **类型**：float，世界单位
-- **合法范围**：`[0.01, max(arena_w,arena_h)]`，且满足 `MAX_GRID_AXIS/MAX_GRID_CELLS`；生产 sweep 范围待 arena 与下游半径冻结
+- **合法范围**：`[0.01,+∞)`中的finite值，且world-domain cell key可安全转换为int64；生产sweep范围待下游半径冻结
 - **临时 spike 锚点**：2.0（与当前 pickup_radius_max=1.98 接近，仅供对照）
-- **影响维度**：性能（非玩法）。决定 F2 格访问与 F4 候选密度的权衡；越界合法性由独立 `index_margin` 决定，因此 CELL_SIZE 不改变结果集合。
+- **影响维度**：性能（非玩法）。决定F2局部枚举与bucket候选密度；world-domain合法性独立，因此CELL_SIZE不改变结果集合。
 - **调谐依据**：F3 多候选 benchmark；以聚合查询/update p99、候选数和 allocation 为准，不再直接等于 max_query_radius。
 - **调谐时机**：仅 `Inactive → Active` 转换时可配置；运行时不可热更（见 Edge Case 21）
 
-**G2 — `arena_walkable_area`（可行走区域面积）** — 外部旋钮（Stage 关卡设计拥有）
-- **类型**：float，世界单位²
-- **安全范围**：finite 且 `0 < arena_walkable_area ≤ arena_w×arena_h`
-- **已冻结值**：`880.0`（stage-map F2，MVP 全矩形 arena 22×40，`referenced_by: stage-map.md`）；非"待定义"
-- **影响维度**：只影响 F4 密度估算与 J0 benchmark fixture；F1 行列数和 F5 的 C 由 arena AABB 宽高决定，不由 walkable area 决定。
-- **调谐归属**：Stage GDD（stage-map.md）拥有，SpatialGrid 引用。本 GDD 不设值。
-
-**G2b — `index_margin`（索引边界容忍带）** — 外部旋钮（Stage 拥有）
-- **类型**：float，世界单位；finite 且 `index_margin_min ≤ index_margin ≤ min(MAX_ABS_WORLD_COORD-max_abs_arena_x, MAX_ABS_WORLD_COORD-max_abs_arena_y)`，其中 `index_margin_min` 由 stage-map F5 派生（当前 `0.075`，仅含已冻结 `player_overshoot=4.5/60`；gated 项 `enemy_overshoot_max`/`elite_charge_overshoot`/`knockback_max`/`max_enemy_bound` 回填后增长(普通敌与精英冲刺越界取大者,第三轮复审 B-1 传播)）。**注**：spatial-grid init 校验下界为 `0`（域合法性），`index_margin_min` 是 Stage-owned 更强语义约束，由 Config build_snapshot 执行（遵 stage-map R5/AC-D3）；SpatialGrid init 不重复复制此检查，但依赖 Config 已校验。
-- **当前 isolated spike 锚点**：2.0（≥0.075 合法），非生产承诺
-- **影响维度**：决定 arena 外活动实体可继续被索引的欧氏距离；与 CELL_SIZE 完全解耦
-- **调谐归属**：Stage GDD（stage-map.md）；应覆盖最大合法 **movement/knockback overshoot 与 conservative bound**——**不含 spawn overshoot**（遵 stage-map R3：spawn 始终落在 AABB 内侧 `spawn_pos ∈ spawn_region ⊆ arena AABB`，不产生越界，故 `index_margin` 下界不含 spawn 项；stage-map F5 的 `checked_add(player_overshoot, max(enemy_overshoot_max, elite_charge_overshoot), knockback_max, max_enemy_bound)` 已据此排除 spawn(第三轮复审 B-1 传播:max 形式)）
+**G2 — `world_safe_half_extent` / `MAX_QUERY_CELLS_ENUMERATED`** — 外部技术上限（Stage/Config拥有）
+- 默认分别为16384与262144。前者限制合法中心域，后者只决定何时从local cell enumeration切到active-entry scan。
+- 二者都不是玩法边界；改变它们不得改变任一合法query结果集合。
 
 ### 外部引用旋钮（其他系统拥有，本系统读取）
 
 **G3 — `max_query_radius`（最大查询半径）** — derived（跨系统聚合）
 - **类型**：float，世界单位
-- **定义**：`checked_max(pickup_radius_max, target_range_max, checked_add(max_skill_effect_radius,max_enemy_bound), checked_add(separation_radius,max_separation_radius), checked_sum(checked_mul(0.5,max_projectile_segment_length),max_midpoint_cast_error,max_projectile_bound,max_enemy_bound,max_target_motion_bound), ...)`
+- **定义**：`checked_max(pickup_radius_max, target_range_max, checked_add(max_skill_effect_radius,max_enemy_bound), checked_sum(target_range_max,max_skill_effect_radius,max_enemy_bound), checked_add(separation_radius,max_separation_radius), checked_sum(checked_mul(0.5,max_projectile_segment_length),max_midpoint_cast_error,max_projectile_bound,max_enemy_bound,max_target_motion_bound), ...)`
 - **separation 项澄清（2026-08-28 传播修订）**：公式显式使用 `checked_add(separation_radius,max_separation_radius)`，与调用侧 `sep_radius+max_separation_radius` 同形。registry 旧名 `separation_radius` 当前冻结为 EnemySystem §4.6 的同一全局上界，故预算值仍等于`2×max_separation_radius`；显式双变量避免未来 per-caller 值与全局上界分离时发生契约漂移。
 - **MVP projectile 固定项**：production export 为 real_t32，故 `max_midpoint_cast_error=sqrt(2)/32=0.04419417382415922`；target sampling 为 tick-end discrete，故 `max_target_motion_bound=0.0`。这两项必须出现在 registry expression 中，即使后一项数值为零也不得省略语义字段。
 - **当前下界**：1.98（仅 pickup_radius_max 支撑，其他输入未设计）
 - **影响维度**：生成 CELL_SIZE sweep 候选、发现异常配置与规划 workload；不限制合法查询。
 - **调谐归属**：非单一系统拥有——其值为多个 GDD 的查询半径聚合；规范 expression 与已冻结 projectile 常量登记在 `design/registry/entities.yaml`。
 
-**G4 — `pickup_radius_base=1.8 / pickup_radius_max=1.98`（灵气吸取半径）** — 外部值（PlayerController / Progression 拥有）
+**G4 — `pickup_radius_base=1.8 / pickup_radius_max=1.98`（灵气吸取半径）** — 外部值（PlayerStats / Progression / Config 拥有）
 - **类型**：float，世界单位
 - **当前值**：基值 1.8；按大衍诀五级、每级基于基础值 +2% 的 MVP 口径，已知上限 `1.8×1.10=1.98`
 - **影响维度**：作为 `max_query_radius` 的下界输入（F3）与灵气吸取查询半径（Section C）。
-- **调谐归属**：PlayerController / Progression GDD 拥有，SpatialGrid 引用。注册表候选。
+- **调谐归属**：PlayerStats / Progression / Config拥有，DropSystem消费，SpatialGrid仅引用。注册表候选。
 
 ### 非旋钮的 derived 量（仅列出，不调谐）
 
@@ -570,48 +526,48 @@ Given-When-Then 格式。Logic 行为用 GDUnit4 debug unit/integration；真实
 - Then: 归格稳定、每个世界点唯一归属、相邻格边界间距为 CELL_SIZE；底层容器由 ADR 决定
 - 验证: unit test（公开 world_to_cell 行为）+ ADR review | Gate: BLOCKING
 
-**AC-A2 arena-min 对齐且支持非整除尺寸**
-- Given: arena x=[−3,3]、CELL_SIZE=2（cols=3）
-- When: world_to_cell 计算 x=−2.9、−1.0、2.9 及四条边界外 epsilon
-- Then: 分别落入 0、1、2；轻微越界按 R7 clamp，不能把 [−3,0) 合并到同一格
-- 验证: unit test（表驱动最终 cell，无需暴露私有 raw 值）| Gate: BLOCKING
+**AC-A2 signed floor归格**
+- Given: `CELL_SIZE=2`，x=`-2.1/-2.0/-0.1/0/1.9/2.0`
+- When: world_to_cell
+- Then: 依次为`-2/-1/-1/0/0/1`；向零截断实现失败
+- 验证: table-driven unit | Gate: BLOCKING
 
-**AC-A3 CELL_SIZE 合法性断言（fail-fast，dev/release 分流）**
-- Given: 构造 SpatialGrid，并分别传入合法非零与零config snapshot ID
-- When: snapshot ID为0，或CELL_SIZE/arena 任一为 0、负数、NaN、Infinity、超 `MAX_ABS_WORLD_COORD`，`CELL_SIZE>max(arena_w,arena_h)`（例 arena=10×10/CELL_SIZE=100），或 checked 计算得到 rows/cols/cells 超 R1 上限
-- Then: 合法输入成功后getter精确返回输入ID；非法输入debug assert，release init 返回 `INVALID_ARGUMENT/INIT_LIMIT_EXCEEDED`、getter=0且保持 Inactive，不分配部分网格、不使用魔法默认值
-- 验证: debug GDUnit4 assert test + release export smoke（两套 artifact 分开）| Gate: BLOCKING
+**AC-A3 finite domain与稀疏初始化**
+- Given: 合法/零snapshot ID、world half、CELL_SIZE及int64 cell包络边界
+- When: init
+- Then: 合法输入只预分配entry/occupied-cell固定容量；非法/overflow返回`INVALID_ARGUMENT/INIT_LIMIT_EXCEEDED`、getter=0且保持Inactive；bucket容量不随world面积变化
+- 验证: debug + release smoke + allocation counters | Gate: BLOCKING
 
-**AC-A4 CELL_SIZE 选型证据**
-- Given: arena、下游半径分布、数据布局与 min-spec 真机已锁定
-- When: 运行 F3 sweep
-- Then: ADR 记录每个候选逐 tick 的 `sync + aggregate queries` p99、peak memory、候选量与 allocation；先淘汰正确性/零分配/容量失败项，再按 F3 目标与 tie-break 唯一选定
-- 验证: release benchmark report + ADR | Gate: BLOCKING before production implementation；不阻塞孤立 spike
+**AC-A4 CELL_SIZE选型证据**
+- Given: 下游半径分布、稀疏数据布局与min-spec真机已锁定
+- When: 运行F3 sweep
+- Then: ADR记录每候选`sync+aggregate queries` p99、peak memory、候选量、fallback率与allocation，并按F3唯一选定
+- 验证: release benchmark + ADR | Gate: BLOCKING before production implementation
 
-**AC-A5 空/零半径集合不生成非法 CELL_SIZE**
-- Given: `effective_hot_query_radii` 为空，或所有已知生产半径均为 0；另分别使用 arena=0.01×0.01 与 arena=2000×2000/hot radius=1
-- When: 生成 F3 sweep 候选
-- Then: 使用 2.0 spike anchor 并追加 max-arena-dimension fallback；过滤去重后候选数≥1，所有候选均通过完整 F1 校验且不含 0/NaN/Infinity
-- 验证: unit test | Gate: BLOCKING
+**AC-A5 空半径集合fallback**
+- Given: effective radii为空或全0
+- When: 生成F3候选
+- Then: 至少保留合法2.0 spike anchor，不追加world-width/dense 1×1候选，不含0/NaN/Infinity
+- 验证: unit | Gate: BLOCKING
 
-**AC-A6 F4 平均与部分格公式（含反向断言防 false-positive，qa-lead BL-1 闭环）**
-- Given: `walkable_region=arena AABB`、`N=100`，分别使用 arena 6×6/CELL_SIZE=4（C=4，存在部分格）、arena 1×1/CELL_SIZE=1（C=1）和 N=0
-- When: 计算 `average_entries_per_grid_cell` 与每个 `expected_entries_in_cell_i`
-- Then: 全格平均分别为 25、100、0；每个单格期望都在 `[0,N]`，所有格期望之和等于 N（浮点容差内）；**且部分格 fixture 必须含至少一个部分格并断言其 `expected_entries_in_cell_i` 严格不等于 `N×CELL_SIZE²/arena_walkable_area`**（arena 6×6/CS=4 的部分格 cell(1,1) 相交面积=2×2=4，期望≈`100×4/36≈11.11`，**必须 ≠ `100×16/36≈44.4`**——正确实现用实际相交面积、错误实现用 `CELL_SIZE²` 冒充，两者之和虽都=N 但部分格单值不同，此反向断言捕获 EC26 核心禁令"部分格必须使用实际相交面积，不能用完整 CELL_SIZE² 冒充"的违规实现）
-- 验证: formula unit test（含正向"和=N"+反向"部分格≠CELL_SIZE² 期望"双断言）| Gate: BLOCKING
+**AC-A6 F4 occupied密度**
+- Given: N=0、100条分布于1/4/100个occupied cells及跨度10/30000单位fixture
+- When: 计算F4
+- Then: N=0输出全0；其余平均分别100/25/1，max occupancy与fixture一致；坐标跨度不改变预分配容量
+- 验证: formula + integration | Gate: BLOCKING
 
-**AC-A7 F3/F4 输入域与有效宽相聚合**
-- Given: 同时存在 pickup=1.98、skill=4+enemy_bound=1、separation=0.5+bound=1、projectile segment=8/midpoint_cast_error=0/projectile_bound=0.2/enemy_bound=1/target_motion_bound=0；registry 另固定 real_t32/R1 domain 下 `max_midpoint_cast_error=sqrt(2)/32` 与 tick-end discrete `max_target_motion_bound=0`；再逐项注入 NaN/Infinity/checked sum overflow；walkable area 分别为 0、NaN、arena area+epsilon 与合法正面积
-- When: 聚合 max_query_radius 并运行 F4 estimator
-- Then: 本次实际 cast-error=0 的合法调用半径为 `5.2`（`0.5×8+0+0.2+1+0`）；配置全集上界使用 registry cast cap，按冻结 float64 操作得到 projectile 项与 `max_query_radius=5.24419417382416`，不是原始 segment、skill 值或漏 cast cap 的 5.2。任一非法/溢出聚合或前三种 area 均返回 `INVALID_BENCHMARK_INPUT` 且不产生 NaN/Infinity，合法面积按 F4 计算
-- 验证: formula unit test | Gate: BLOCKING
+**AC-A7 有效宽相聚合**
+- Given: pickup=1.98、skill=4+enemy_bound=1、separation=0.5+bound=1、projectile segment=8/cast-error cap/projectile bound=0.2/enemy bound=1/target motion=0及非法值
+- When: 聚合max_query_radius
+- Then: 合法上界为`5.24419417382416`；非法/overflow返回`INVALID_BENCHMARK_INPUT`，不影响F4的occupied统计
+- 验证: formula unit | Gate: BLOCKING
 
 ### B. query_circle_into 查询正确性（R4, F2）
 
 **AC-B0 空网格合法查询返回空结果（EC13/EC17 覆盖，qa-lead BL-2 闭环）**
 - Given: SpatialGrid 已 init 为 Active 但网格中**无任何已 sync 的活动实体**（两种 fixture：①init 后从未 insert；②曾 insert+sync 后全部 remove+sync 清空）
 - When: 分别调用 `query_circle_into(center, radius≥0, type_filter∈{ENEMY,ALL}, buffer, lease_id)` 与 `query_nearest_into(center, max_radius≥0, type_filter, nearest_out, lease_id)`
-- Then: circle 返回 `status=OK,out.count=0,out.required_capacity=Σmax_registered[type]`（buffer identity/capacity 不变）；nearest 返回 `status=OK,out.has_handle=false,out.handle_id=0`。**不得**返回 `WRONG_STATE`（网格是合法 Active 非空并非非法状态）、**不得**返回非零 count、**不得** crash。覆盖格诊断仍按 F2 记录（`actual_cells_visited≥1`）。
+- Then: circle返回`OK,count=0`；nearest返回`OK,has_handle=false`。local路径记录`actual_cells_visited≥1`，巨大半径fallback记录`actual_cells_visited=0,active_entries_examined=0`；不得crash或创建空bucket。
 - 验证: unit test（两种空网格 fixture × circle/nearest × 多 radius/filter）| Gate: BLOCKING
 
 **AC-B1 半径查询返回半径内实体**
@@ -629,7 +585,7 @@ Given-When-Then 格式。Logic 行为用 GDUnit4 debug unit/integration；真实
 **AC-B3 radius 跨 CELL_SIZE 后仍正确**
 - Given: CELL_SIZE = 2.0
 - When: query_circle_into with radius = 2.0（= CELL_SIZE）
-- Then: `theoretical_cells_saturated=9`；内部 center 且 arena 足够大时 `actual_cells_visited=9`
+- Then: `theoretical_cells_saturated=9`；远离技术域边界时`actual_cells_visited=9`
 - When: query_circle_into radius=2.01，且在距离 2.005 放置目标 E
 - Then: `theoretical_cells_saturated=25`，E 必须返回；debug/release 的结果 ID 集合一致，绝不 clamp
 - 验证: unit test 读取实例诊断 + release export smoke 对比 golden result set | Gate: BLOCKING
@@ -668,9 +624,8 @@ Given-When-Then 格式。Logic 行为用 GDUnit4 debug unit/integration；真实
 
 **AC-C1 全局最近实体返回**
 - Given: 先扫描格中实体距 center=1.4，后扫描相邻格实体距 center=0.1，另有 2.5
-- Given: 另有 query center 与 target 都位于同侧合法 `index_margin`，target 被 clamp 进非中心边界格且其真实 center 比先扫描 target 更近
 - When: query_nearest_into(center, max_radius=3.0, type_filter=ALL, out_result, lease_id)
-- Then: 两组均扫描全部相交候选并返回规范距离最小者；不能因先遇到 1.4、普通 cell AABB 下界或 target 的 clamp bucket 提前返回
+- Then: local与强制active-entry fallback两条路径均返回0.1者；不能因先遇到1.4或bucket顺序提前返回
 - 验证: unit test | Gate: BLOCKING
 
 **AC-C2 无匹配返回 has_handle=false**
@@ -698,9 +653,9 @@ Given-When-Then 格式。Logic 行为用 GDUnit4 debug unit/integration；真实
 - 验证: 参数化 unit test（连续帧 + 顺序扰动）| Gate: BLOCKING
 
 **AC-C6 nearest 参数错误与极大半径**
-- Given: max_radius 分别为负数、NaN、Infinity 与大于 far_corner_distance 的 finite 值
+- Given: max_radius分别为负数、NaN、Infinity、刚好触发enumeration ceiling与`1e100`
 - When: query_nearest_into
-- Then: 负数/NaN/Infinity 返回 `INVALID_ARGUMENT` 且 out 不权威；合法极大 finite 值走安全全场分支并返回全局最近，status 与 `has_handle=false` 语义不混淆
+- Then: 负数/NaN/Infinity返回`INVALID_ARGUMENT`；合法大finite值走active-entry fallback并返回全局最近，不发生int转换溢出或语义缩小
 - 验证: debug assert + release unit/black-box | Gate: BLOCKING
 
 **AC-C7 center-nearest 与 shape-nearest 不混用**
@@ -743,6 +698,12 @@ Given-When-Then 格式。Logic 行为用 GDUnit4 debug unit/integration；真实
 - Then: query_circle_into 返回结果不含 E，resolve(handle_E) 为 invalid
 - 验证: unit test | Gate: BLOCKING
 
+**AC-E2b phase 6 第 N 条失败保持 exact-once committed facts**
+- Given: 预分配journal可容纳本tick全部lifecycle intents且每intent恰一row，依次处理多个active/pending/suspended handle，并在第N条的Grid remove、Pool unbind、release/reset前后分别注入failure
+- When: GameRoot 执行 DEFERRED_REMOVAL
+- Then: 每个intent仍只有一row且state按`RESERVED→GRID_REMOVED→POOL_UNBOUND→POOL_RELEASED|POOL_RETIRED`单调推进；旧handle永久stale，失败点后未开始条目不执行。Pool私有release FSM证明reset/free-stack各至多一次；GameRoot在side effect前arm plan，visible committed row=0时0 publish、>0时matching end或fault convergence恰一次publish，cleanup不重复remove/release也不复活旧snapshot
+- 验证: N-position fault injection + journal/authority golden trace | Gate: BLOCKING
+
 **AC-E3 重复 insert 幂等**
 - Given: 实体 E 分别处于 pending、active、suspended
 - When: 再次 insert E（同位置/type），以及以新位置/type提交变化
@@ -774,11 +735,11 @@ Given-When-Then 格式。Logic 行为用 GDUnit4 debug unit/integration；真实
 - Then: 正常路径 H1 始终 stale，不能解析或移除 E2，H2 在当前 epoch 有效；违约路径因 entry 保存的直接 Node identity 已 invalid 而返回 `OBJECT_INVALID`、回滚整 phase并进入 `ControlledGameplayFault`，绝不能 resolve 为复用同一 instance ID 的 E3；旧 epoch 的所有 handle 在 re-init 后仍 stale
 - 验证: unit test（slot reuse + same object reuse + epoch change）+ forced instance-ID reuse/object lifetime negative fixture | Gate: BLOCKING
 
-**AC-E8 非法 staged position 不产生 ghost entry**
-- Given: 分别有 pending E0、active E1 位于合法格 A、suspended E2
-- When: 三者 stage NaN/Infinity 或距 arena 超过 index_margin 的位置并 sync，随后再 stage 合法格 B 并 sync
-- Then: 第一次 stage 均返回 `STAGED_FOR_SUSPENSION`；sync 后 E0 首次发布为 suspended，E1/E2 进入/保持 suspended，A/B 查询均不含三者；第二次 stage 使用各自同一 handle 返回 OK，sync 后三者在 B 激活/恢复，旧 A 不含；active-only resolve 在 suspended 时失败、mutation lookup 仍成功
-- 验证: unit test | Gate: BLOCKING
+**AC-E8 非法 staged position 不产生ghost或可恢复降级**
+- Given: pending E0、active E1位于合法格A，输入NaN/Infinity或world-domain外位置
+- When: stage
+- Then: 返回`INVALID_ARGUMENT/POSITION_OUT_OF_RANGE`，staged workspace与旧snapshot不变，sync不会发布非法位置；GameRoot关闭phase并fault，禁止suspend后继续游戏
+- 验证: unit + fault integration | Gate: BLOCKING
 
 **AC-E9 primitive handle、弱对象引用与计数器耗尽**
 - Given: Node-derived pooled E 被注册/移除/同实例复用；另以测试钩子把 slot generation、handle allocator、grid epoch 分别置于最大值前一位
@@ -793,36 +754,36 @@ Given-When-Then 格式。Logic 行为用 GDUnit4 debug unit/integration；真实
 - 验证: table-driven unit test | Gate: BLOCKING
 
 **AC-E11 CAPACITY_EXCEEDED 不产生幽灵实体**
-- Given: ENEMY cap=303，SpawnDirector 为 2 Elite + 1 Boss 预留 3 槽；普通怪 active+pending 已为 300。另设 admission check 后同 phase 其他 participant 抢占容量、以及阶段必需 Boss 无预留可用的故障注入
+- Given: ENEMY cap=303，SpawnDirector 为 4 Elite + 1 Boss 预留 5 槽；普通怪 active+pending 已为 298。另设 admission check 后同 phase 其他 participant 抢占容量、以及阶段必需 Elite/Boss 无预留可用的故障注入
 - When: 尝试生成普通怪与 Boss，并让 `insert_into` 返回 `CAPACITY_EXCEEDED`
 - Then: 普通怪 intent 被抑制，对象不进入可见 SceneTree 分支、不进入 owner active collection、无 handle且安全返池，现有战斗继续并记录 suppressed-spawn telemetry；Boss case 不发布 Boss，回收未发布 candidate 后进入 `ControlledGameplayFault`。任一 fixture 中 SpatialGrid query set、owner active set与可见可交互实体集合一致，不存在可见但不可索引对象
 - 验证: SpawnDirector+Enemy owner+Pool+SpatialGrid deterministic integration | Gate: BLOCKING on SpawnDirector integration
 
 ### F. 边界处理（R7）
 
-**AC-F1 越界容忍带**
-- Given: 竞技场原点居中，边界 [−arena_w/2, arena_w/2] × [−arena_h/2, arena_h/2]
-- When: 四边及四角分别放置 point-to-AABB 欧氏距离为 0.9×index_margin、1.0×index_margin、1.1×index_margin 的条目，并在多个 CELL_SIZE 下重放
-- Then: 前两者可注册并以真实 center 过滤，后者拒绝/suspend；改变 CELL_SIZE 不改变接受集合
-- 验证: unit test（四边+四角×阈值内/等于/外×多个 CELL_SIZE）| Gate: BLOCKING
+**AC-F1 world-domain含边界**
+- Given: center分别位于world safe四边/四角canonical边界、内侧next-representable与外侧next-representable
+- When: insert/stage/query
+- Then: 边界及内侧合法且原值归格；外侧返回`POSITION_OUT_OF_RANGE`并触发fault，不clamp、不suspend
+- 验证: bit-golden unit + integration | Gate: BLOCKING
 
-**AC-F1b index_margin 不突破世界数值域**
-- Given: arena 边界接近 ±MAX_ABS_WORLD_COORD，index_margin 分别为可表示最大值、最大值+epsilon、最大 finite float
-- When: init 并对 grow 后四边、insert/stage/query center 运行 checked validation
-- Then: 等于上限时初始化成功且所有边有限；后两者返回 `INIT_LIMIT_EXCEEDED/INVALID_ARGUMENT` 并保持 Inactive或旧 snapshot，不生成 Infinity、不进入 F2 距离计算
+**AC-F1b world/domain cell包络不溢出**
+- Given: world half、CELL_SIZE与绝对硬上限的边界/overflow组合
+- When: init派生max_abs_cell_coord
+- Then: 合法值装入int64且只分配固定sparse容量；非法返回`INIT_LIMIT_EXCEEDED`，不生成Infinity或dense allocation
 - 验证: unit + release black-box | Gate: BLOCKING
 
-**AC-F2 查询跨边界不回绕**
-- Given: 查询中心靠近竞技场边界
-- When: query_circle_into 覆盖范围超出边界
-- Then: 仅返回边界内格子中的实体；不得从对侧边界回绕返回
-- 验证: unit test | Gate: BLOCKING
+**AC-F2 查询跨技术域不回绕**
+- Given: 查询中心靠近world safe边界，圆覆盖边界外；对侧有实体
+- When: query_circle_into
+- Then: 只返回同侧域内命中，不从对侧回绕/镜像；中心越域则失败
+- 验证: unit | Gate: BLOCKING
 
-**AC-F3 MVP 地图拓扑固定且 CELL_SIZE 不改变玩法集合**
-- Given: 同一固定竞技场 world snapshot 与两个合法 CELL_SIZE，实体分布包含四边/四角 index_margin 内外
-- When: 分别构建 Grid 并执行相同查询
-- Then: 两次按 canonical object fixture ID 比较的结果集合完全相同；同一 Grid 内 handle ID 稳定，但不同 Grid 不要求 handle 数值相同；对侧边界实体不因循环/镜像被返回
-- 验证: parameterized golden-set unit test | Gate: BLOCKING
+**AC-F3 坐标跨度与CELL_SIZE不改变玩法集合**
+- Given: 同一相对实体布局分别平移到原点、(10000,10000)，并用两个合法CELL_SIZE/local与fallback路径
+- When: 执行相同相对查询
+- Then: canonical object结果集合和nearest winner一致；预分配容量不随跨度变化
+- 验证: parameterized golden-set + allocation counters | Gate: BLOCKING
 
 ### G. 行为契约与帧时序（R3）
 
@@ -883,8 +844,8 @@ Given-When-Then 格式。Logic 行为用 GDUnit4 debug unit/integration；真实
 
 **AC-H5 Paused 态查询返回冻结快照（Edge Case 19）**
 - Given: 同 tick 发生灵气拾取触发升级、敌人死亡与 deferred remove，E survivor、F pause 期间 spawn、G pause 期间 remove
-- When: GameRoot 完成该 tick 后进入 PausedFrozen，mutation 返回 PAUSED；随后 prepare→arm，在 consumer-closed window 交换可回滚 owner staging 引用，再 publish→end_phase
-- Then: Frozen pause-read 返回旧 snapshot；Frozen+resume-exclusive open 的 query/resolve=`PHASE_ERROR`，Prepared/Armed=`WRONG_STATE`，均不触碰 carrier；PAUSED remove 不允许 release/reborrow。E 保留 sequence，F 获新 handle，G 旧 handle stale；matching publish必为OK，lease关闭后下一 Active begin使用 barrier保存的 next tick/SPAWN pair，期间无重复XP、ghost或目标跳变
+- When: GameRoot 完成该 tick 后进入 PausedFrozen，mutation 返回 PAUSED；随后 capture→prepare→arm，在 consumer-closed window 按 `Grid publish→Pool publish→authority publish` 提交并 end_phase
+- Then: Frozen pause-read 返回旧 snapshot；Frozen+resume-exclusive open 的 query/resolve=`PHASE_ERROR`，Prepared/Armed=`WRONG_STATE`，均不触碰 carrier；PAUSED remove 不允许 release/reborrow。arm 与三次 publish 前均验证 frozen config/identity；E 保留 sequence，F 获新 handle，G 旧 handle stale；matching Grid publish 必为 OK，只有 authority publish 完成且 lease 关闭后才开放下一 Active begin，期间无重复XP、ghost或目标跳变
 - 验证: unit + deterministic GameRoot integration | Gate: BLOCKING
 
 **AC-H6 Active 期间禁止热改 CELL_SIZE**
@@ -895,16 +856,16 @@ Given-When-Then 格式。Logic 行为用 GDUnit4 debug unit/integration；真实
 
 **AC-H7 resume_from validate-then-publish 失败原子性**
 - Given: Paused frozen snapshot，分别构造 duplicate object/handle、非法位置、invalid Node、容量超限、ID耗尽与内部 rebuild failure 输入
-- When: prepare 后分别执行显式/auto abort、错误 tx/lease arm/publish、arm snapshot-revision耗尽、owner swap failure、matching publish及成功后重复 publish
-- Then: prepare failure保持Frozen且out_remap.count=0；arm耗尽=`ID_EXHAUSTED`并保持Prepared，仅允许 matching abort/end auto-abort，清理后进入 ControlledGameplayFault且不得重试 resume；wrong tx/lease=`PHASE_ERROR`且不交换；owner swap失败先恢复旧引用再abort；matching Armed publish无可注入内部failure、必为`OK`并发布预检revision；成功后重复publish=`WRONG_STATE`。abort后remap旧值不权威，已保留handle/transaction ID永久burn
+- When: prepare 后分别执行显式/auto abort、错误 tx/lease arm/publish、arm snapshot-revision耗尽、owner swap failure、matching Grid publish，并由 GameRoot 在 Pool/authority publish checkpoint 注入 config/identity mismatch
+- Then: Grid prepare/arm 前失败保持旧 Frozen；arm 耗尽=`ID_EXHAUSTED`并保持Prepared，仅允许 matching abort/end auto-abort，清理后进入 ControlledGameplayFault且不得重试 resume；wrong tx/lease=`PHASE_ERROR`且不交换。matching Armed Grid publish 无可注入内部 failure、必为`OK`并发布预检 revision；其后 Pool/authority failure 不“回滚”已发布 Grid，而由 GameRoot 的 AuthorityResumeCommitPlan 完成 fail-closed 收敛且 consumer 始终关闭。三次发布完成后重复 Grid publish=`WRONG_STATE`。abort后 remap 旧值不权威，已保留 handle/transaction ID 永久 burn
 - 验证: table-driven unit + integration | Gate: BLOCKING
 
 ### I. 查询覆盖与正确性验证（F2 / F3）
 
 **AC-I1 安全覆盖诊断与实际访问一致**
-- Given: 多个 arena/CELL_SIZE/center（内部、边、角）和 radius={0,0.5CS,CS,1.01CS,3CS,arena_extent}
+- Given: 多个world-domain/CELL_SIZE/center（原点、负格、技术域边/角）和radius={0,0.5CS,CS,1.01CS,3CS,ceiling前后}
 - When: circle/nearest 查询
-- Then: `actual_cells_visited ≤ cols×rows ≤ MAX_GRID_CELLS`；未饱和内部 center 的诊断 9/25/49 与 F2 一致，边界可更少；golden result set 无漏/重
+- Then: local路径`actual_cells_visited≤MAX_QUERY_CELLS_ENUMERATED`且诊断1/9/25/49正确；fallback路径`actual_cells_visited=0,active_entries_examined≤1000`；两者golden set无漏/重
 - 验证: 参数化 unit test，读取实例级诊断 | Gate: BLOCKING
 
 **AC-I2 radius > CELL_SIZE 的 debug/release 结果相同**
@@ -913,10 +874,10 @@ Given-When-Then 格式。Logic 行为用 GDUnit4 debug unit/integration；真实
 - Then: 两者都返回 1/2.5/4.9，排除 5.1；不得 assert、clamp 或缩小玩法语义
 - 验证: debug unit golden set + release export black-box golden set | Gate: BLOCKING
 
-**AC-I3 canonical 饱和阈值与极大 finite 半径**
-- Given: 合法 arena/CELL_SIZE/center；除 radius=`far_corner_distance`、`1e100`、最大 finite float 外，增加 arena=[−1,1]²、center=(0,0)、corner target=(1,1)、radius=1.41421355 fixture（标准 float32 `Vector2.distance_to` 可向下舍入为≤radius，而 F2 canonical float64 d>radius）
+**AC-I3 canonical fallback阈值与极大finite半径**
+- Given: 合法domain/CELL_SIZE/center；radius取enumerated count等于/大于262144、`1e100`、最大finite，并含target=(1,1)、radius=1.41421355舍入分歧fixture
 - When: debug/release 调用 circle/nearest
-- Then: 前三种覆盖阈值/极大半径不发生 int/平方溢出、不计算无界 k，且 `actual_cells_visited=cols×rows`；舍入分歧 fixture 不得用普通 distance 提前 scan-all，corner target 不命中。全部结果与同一 `spatial_distance_value` 暴力 oracle 一致
+- Then: 等于ceiling可local枚举，大于ceiling与极大值走active-entry fallback；不发生int/平方溢出。舍入分歧target不命中，全部结果与同一`spatial_distance_value`暴力oracle一致
 - 验证: unit + release black-box golden set | Gate: BLOCKING
 
 ### J. 性能标准（硬约束）
@@ -930,11 +891,11 @@ Given-When-Then 格式。Logic 行为用 GDUnit4 debug unit/integration；真实
 **AC-J0 benchmark readiness gate**
 - Given: 准备宣称任何真机性能 AC 通过
 - When: 检查 benchmark manifest
-- Then: 必须填写精确 Android SKU/SoC/RAM/OS、Godot/export preset、`physics_ticks_per_second`、分辨率/画质、VSync/帧率上限、系统 power mode、arena、seed/布局、query mix、F5 的 `N_start/C/A_stage_success/D/M/I/R_pre_sync/R_deferred/R_bucket/T_suspend/T_resume/W_same/N_sync_active/N_end_active`、warmup、采样时长、重复次数、设备起始/结束温度与 artifact hash。正式比较固定 60 physics ticks/s、相同 VSync/帧率上限与 power mode；任一轮出现 OS thermal throttling、温度超设备批准上限或时钟持续下降则该轮作废，冷却后重跑。当前用户暂无 min-spec 真机，故 Android performance gate **OPEN**；仅允许桌面/任意设备做相对 spike。iOS 至少必须有同 commit 的 release export + correctness smoke；若暂不设 iOS 性能阈值，manifest 必须明确标记 deferred，不能用 Android 结果代替。
+- Then: 必须填写精确 Android SKU/SoC/RAM/OS、Godot/export preset、`physics_ticks_per_second`、分辨率/画质、VSync/帧率上限、系统 power mode、world-domain与坐标跨度、seed/布局、query mix、local/fallback比例、F5计数、warmup、采样时长、重复次数、设备温度与artifact hash。当前用户暂无min-spec真机，故Android performance gate **OPEN**；桌面只能作相对spike。
 - 验证: manifest review | Gate: BLOCKING before production performance sign-off；不阻塞设计修订和孤立 spike
 
 **AC-J1 满载实体规模（1003 活动对象）— 集成 release gate**
-- Given: 场上 300 普通敌人 + 2 精英 + 1 Boss（303 ENEMY 索引目标）+ 400 投射物调用方 + 300 DROP 索引目标 = 1003 活动对象；manifest 分别记录 per-type 上限与实际索引数
+- Given: 场上298普通敌人+4 Elite+1 Boss（303 ENEMY索引目标）+400投射物调用方+300 DROP索引目标=1003活动对象；manifest分别记录per-type上限与实际索引数
 - When: 持续运行于 min-spec 基准设备
 - Then: mean≤20ms、p95≤20ms、p99≤33.3ms、>50ms 帧占比≤0.1%，不得出现连续 2 帧 >50ms；目标 mean≤16.6ms
 - 验证: J0 锁定的 release artifact，warmup 后每组≥60s、至少3轮 | Gate: BLOCKING（集成 release gate；J0 OPEN 时不可判定）
@@ -1000,13 +961,13 @@ Given-When-Then 格式。Logic 行为用 GDUnit4 debug unit/integration；真实
 
 **AC-K4 pickup 与 nearest 几何语义**
 - Given: Drop shape 边缘进入但 center 仍在 pickup_radius 外，以及 AC-C7 的两名敌人
-- When: PlayerController 执行 pickup 与自动索敌
+- When: DropSystem读取Player motion view执行pickup，Weapon/TargetingSystem读取同一view执行自动索敌
 - Then: MVP pickup 只在 Drop center≤pickup_radius 时发生，不使用 drop bound；nearest_into 返回 center-nearest。若需求改为 shape 语义，未同步 broadphase+narrowphase+AC 的实现不得通过
-- 验证: PlayerController/Drop integration golden scene | Gate: BLOCKING on downstream integration
+- 验证: Player/Drop/Weapon integration golden scene | Gate: BLOCKING on downstream integration
 
 **AC-K5 query/resolve/fatal narrowphase failure 的 release 消费策略**
 - Given: 分别对每个 query failure status、`resolve_handle` 的 `STALE_HANDLE/OBJECT_INVALID` 和 fatal narrowphase failure 注入一次，并让同 phase 较早 consumer 已写 staging、out carrier 保留故意污染的旧槽位；另设合法 no-hit 的 `OK,count=0/has_handle=false` 控制组
-- When: Damage/Projectile/Player/Enemy consumer 在 release artifact 执行
+- When: Damage/Projectile/Drop/Weapon/Enemy consumer 在 release artifact 执行
 - Then: 任一注入 failure 都使所有调用方中止整个 query/collision phase且不读取旧槽位，较早与当前 consumer 的 staging 全部回滚，lease 关闭，不提交部分效果；GameRoot 进入 ControlledGameplayFault；没有任何 failure status 被映射为空集合。合法 no-hit 控制组保持 `OK`、提交该 phase 的其他合法 staging且不触发 ControlledGameplayFault
 - 验证: release integration strategy test | Gate: BLOCKING
 
@@ -1020,23 +981,23 @@ Given-When-Then 格式。Logic 行为用 GDUnit4 debug unit/integration；真实
 | R4 query_circle_into（缓冲区、实例诊断、合法半径） | AC-B0, AC-B1~B7, AC-B4b, AC-I2~I3 |
 | R5 query_nearest_into | AC-C1~C7 |
 | R6 insert/remove/handle epoch | AC-E1~E11 |
-| R7 固定竞技场 / index_margin / 不回绕 | AC-F1~F3 |
+| R7 有限world-domain / 不回绕 / 不clamp | AC-F1~F3 |
 | R8 禁止遍历全场 | AC-K1~K2 |
 | R9 status/carrier/release policy | AC-B6~B7, AC-E10, AC-G3~G4, AC-K5 |
 | R10 consumer geometry | AC-C7, AC-K3~K4 |
-| F1 arena-min 对齐归格 / checked limits | AC-A2, AC-A3 |
+| F1 signed world归格 / checked limits | AC-A2, AC-A3 |
 | F2 理论/实际覆盖格 | AC-B3, AC-I1 |
 | F3 CELL_SIZE benchmark 选型 | AC-A4, AC-A5, AC-A7, AC-J2~J5 |
-| F4 平均/单格密度与峰值 | AC-A6~A7, AC-J4 |
+| F4 occupied-cell密度与峰值 | AC-A6~A7, AC-J4 |
 | F5 复杂度对比 | AC-J5, AC-E5 |
 | 状态机 | AC-H1~H7 |
 | Edge Case 4（NaN/Infinity / 超域） | AC-A3, AC-E6, AC-E8 |
-| Edge Case 7（越界 clamp） | AC-F1 |
-| Edge Case 9（radius ≥ far_corner_distance） | AC-I3 |
+| Edge Case 7（world-domain边界） | AC-F1 |
+| Edge Case 9（enumeration ceiling fallback） | AC-I3 |
 | Edge Case 12（查询穿插增量更新） | AC-G2(b) |
 | Edge Case 19（Paused 快照/恢复事务） | AC-H5, AC-H7 |
 | Edge Case 21（CELL_SIZE 运行时不可热更） | AC-H6 |
-| Edge Case 23（arena 非法 / 非矩形） | AC-A3, AC-J0 |
+| Edge Case 23（world-domain或sparse容量非法） | AC-A3, AC-J0 |
 | radius = 0 / < 0 | AC-B4, AC-B5 |
 | CELL_SIZE ≤ 0 | AC-A3 |
 | 幂等（重复 insert / remove 不存在） | AC-E3, AC-E4 |
@@ -1052,13 +1013,13 @@ Given-When-Then 格式。Logic 行为用 GDUnit4 debug unit/integration；真实
 |-----|---------------|---------|
 | 1 | radius=0 只返回中心点、分量精确相等 | AC-B4, AC-B4b |
 | 2 | radius<0 dev assert / release INVALID_ARGUMENT | AC-B5 |
-| 3 | CELL_SIZE/arena 违反 F1 finite/范围/行列/总格数 → INIT_LIMIT_EXCEEDED | AC-A3, AC-F1b, AC-J0 |
-| 4 | NaN/Infinity/超世界域/超 arena.grow(index_margin) | AC-A3, AC-E6, AC-E8 |
+| 3 | CELL_SIZE/world-domain违反finite/int64包络 → INIT_LIMIT_EXCEEDED | AC-A3, AC-F1b, AC-J0 |
+| 4 | NaN/Infinity/超world safe domain | AC-A3, AC-E6, AC-E8 |
 | 5 | 实体恰在格边界归右/下侧高索引格 | AC-A2 |
 | 6 | 向零截断 vs floori() 归格 | AC-A2 |
-| 7 | 点到 AABB 欧氏距离 ≤ index_margin clamp 入最近边界格 | AC-F1 |
-| 8 | 查询半径跨边界 clamp 不回绕/不镜像 | AC-F2, AC-B3 |
-| 9 | radius ≥ far_corner_distance 走 F2 全场饱和分支 | AC-I3 |
+| 7 | center位于world-domain边界/内外next-representable | AC-F1 |
+| 8 | 查询圆跨技术域不回绕/不镜像 | AC-F2, AC-B3 |
+| 9 | 概念cell数超过ceiling走active-entry fallback | AC-I3 |
 | 10 | 同对象重复 insert（同值 OK_NOOP / 异值 OK_REPLACED 或 INVALID_ARGUMENT） | AC-E3, AC-E4 |
 | 11 | remove 无效/旧 epoch/已移除 handle → STALE_HANDLE no-op | AC-E2, AC-E4, AC-E7 |
 | 12 | sync 中途查询 / phase failure 回滚整 phase | AC-G2, AC-G3 |
@@ -1072,10 +1033,10 @@ Given-When-Then 格式。Logic 行为用 GDUnit4 debug unit/integration；真实
 | 20 | Inactive/TornDown 调 API → WRONG_STATE（非合法空结果） | AC-H3, AC-B6 |
 | 21 | CELL_SIZE 运行时不可热更，须 teardown→reset→init 重建 | AC-H6 |
 | 22 | 怪潮聚集 bucket occupancy 32/64/128/300 保持正确 | AC-J4, AC-J6 |
-| 23 | arena 非法/非矩形 → 阻止 Active；F4 用相交面积 | AC-A3, AC-J0 |
+| 23 | world-domain非法或bucket容量随world面积增长 → 阻止Active | AC-A3, AC-J0 |
 | 24 | SkillConfig 未定义时 CELL_SIZE=2.0 仅 spike 锚点 | AC-A4, AC-A7 |
-| 25 | F3 候选经合法域过滤后为空 → 追加 max(arena_w,arena_h) fallback | AC-A5, AC-F3 |
-| 26 | F4 输入 arena_walkable_area≤0/非 finite/超 AABB 面积 → INVALID_BENCHMARK_INPUT | AC-A6, AC-A7 |
+| 25 | F3候选为空 → 保留合法2.0 spike anchor | AC-A5, AC-F3 |
+| 26 | F4 N=0不除零；occupied count合法 | AC-A6, AC-A7 |
 | 27 | 投射物段中相交/endpoint 外目标 → swept broadphase 仍纳入候选 | AC-K3, AC-C7 |
 | 28 | query/resolve/fatal narrowphase failure → rollback 整 phase并进入 ControlledGameplayFault，不降级为空集合 | AC-G4, AC-K5 |
 | 29 | 容量满普通怪 spawn 抑制 / Boss 预留不可用 → 不产生可见不可索引幽灵实体 | AC-E11 |
@@ -1091,11 +1052,9 @@ Given-When-Then 格式。Logic 行为用 GDUnit4 debug unit/integration；真实
 - 触发：SkillConfig GDD 完成。
 - 缓解：CELL_SIZE=2.0 仅作 spike 锚点，合法大半径仍按 F2 正确扫描。
 
-**OQ2 — arena AABB / walkable region 世界单位尺寸**（**arena 尺寸已冻结，仅生产 cell_size 待 ADR**）
-- 影响：F1 行列数与 J0 workload 的 arena 维度、F4 正面积。
-- **已冻结（stage-map.md 已 Approved）**：`arena_size=(22.0, 40.0)` 竖屏、`arena_walkable_area=880.0`（MVP 全矩形，`walkable_region_polygon` 为 arena AABB 四角 4 顶点 CCW）。stage-map 即关卡 GDD，OQ2 原触发条件"关卡 GDD 完成"已满足。
-- **仍 OPEN**：仅生产 `cell_size`（遵 F3 ADR + J0 真机 benchmark）；`walkable_region_polygon` 的非矩形升级路径（stage-map R2 schema breaking change）不进 MVP。
-- 缓解：F4 示例已用 22×40 重算（C=220、平均 ~2.74）；cell_size=2.0 仍为 spike 锚点。
+**OQ2 — 稀疏bucket私有布局与production CELL_SIZE**
+- 已冻结：Stage V2 world half=16384、entry cap=1000、query enumeration ceiling=262144；world面积不得决定bucket容量。
+- 仍OPEN：open-address table / sorted table /等价结构、load factor、tombstone与production cell size，须ADR+真机benchmark。
 
 ### F3 输入缺失（中优先级）
 
@@ -1107,13 +1066,13 @@ Given-When-Then 格式。Logic 行为用 GDUnit4 debug unit/integration；真实
 ### → 架构决策（ADR 触发点，非 GDD 决策）
 
 **OQ4 — 数据布局 + F5 更新策略选型**【→ ADR】
-- 问题：私有 bucket 采用 mixed/per-type/只索引目标类型；更新采用 clear-rebuild / polling incremental / dirty-notification incremental；Grid private entry/candidate workspace 的具体布局？public Query/Remap/Authoritative carriers 已冻结为定容 PackedArray/SoA，不属于 ADR。
+- 问题：私有稀疏bucket采用预分配open-address/sorted table、mixed/per-type；更新采用occupied-clear-rebuild / polling incremental / dirty-notification incremental。public carriers已冻结，dense world array被本修订禁止。
 - 归属：架构决策，归 `/architecture-decision`。GDD 已冻结零分配、public carrier 表示、调用方 ownership、容量校验与溢出行为；ADR 只选择满足这些行为的私有容器/算法。
 - 影响 AC-J5：选定策略后据此细化判据。
 - 触发：进入 SpatialGrid 实现阶段，由 technical-director 主导 ADR。
 
 **OQ5 — query_nearest_into 正确实现模式**【→ ADR】
-- 当前决策：MVP 固定扫描全部相交格/候选；普通 cell AABB early exit 因 index_margin 不安全，不进入本轮 ADR。
+- 当前决策：MVP固定扫描全部相交occupied cells/candidates；超过enumeration ceiling时扫描全部active entries。普通first-hit/未证明early exit不进入本轮ADR。
 - 未来触发：只有 profiling 证明 nearest 为瓶颈，且新 GDD/AC 冻结 expanded boundary-cell 下界并通过 margin golden fixture 后，才可另开 best-first ADR。全局最近与等距 stable registration_sequence 不变。
 
 ### GDScript 可行性验证（高优先级 — ADR 前置）

@@ -1,9 +1,9 @@
 # Enemy System GDD
 
-> Status: APPROVED — design-review (full, 2026-08-25 第四轮复审 R4 闭环 + 用户验收通过)。R4 5 项 BLOCKING 根因 + G 全部本轮闭环写入、无回归:根因1 静态守卫 AC 方法论不可测(gdlint-AST 虚构+正则缺口→改 tools/ci/static_guard_check.py AST 脚本用 gdtoolkit.parser)/根因2 pair-once 伪代码不可实现(b 是 int 句柄非 carrier→handle→carrier 解析+ACCUMULATE/COMMIT 两子步)/根因3 跨文档 query_radius 形式不一致(spatial-grid L133/159/252/273/474 同步 max_separation_radius,G3/registry 经核实正确不改)/根因4 mini-FSM 载体 timer/counter 悬空+狼 FSM charge_count 残留→补齐/根因5 血傀儡跨阶段触发机制+双 latch(mini_fsm_event_flag+1-tick 跨相延迟+§3.12 权威 latch)+ G §4.1 "下帧"→"本帧"。写入:enemy-system.md(AC-E4-code/E19/E37/E13/E4/E8 + §4.2 伪代码 + §3.4 载体 4 字段 + §3.6/§3.12/§7.4/§4.1 + AC-E30e)+ 跨文档(technical-preferences.md L59 + spatial-grid.md L133/159/252/273/474/G3 注)。R3 的 9 阻塞项+IC-1+AI-3/4/5/6 经 R4 核实无回归。拆分冻结:行为契约冻结 / 性能 AC(AC-E1/E2b)spike-gated 未冻结
+> Status: Re-review Pending — 已同步“感知无限、技术有限”Stage V2、SpawnDirector相对生成/退役与world-domain guard；须独立full复审
 > Owner: systems-designer + ai-programmer
-> Depends on: SpatialGrid (Approved), Object Pooling (Approved), Config/Data (Draft, foundation frozen)
-> Depended on by: SpawnDirector, DropSystem, RiskChoiceSystem, BossStateMachine, Elite Enemies (all Not Started)
+> Depends on: SpatialGrid / Object Pooling / Config/Data（均处于 GameRoot Round 8 propagation Re-review Pending；foundation contracts 已冻结，runtime evidence OPEN）
+> Depended on by: SpawnDirector (Full Review Pending), DropSystem, RiskChoiceSystem, BossStateMachine, Elite Enemies
 > Engine: Godot 4.7.1 | Language: GDScript
 > Pillar alignment: 300-entity onscreen smoothness + swarm-slaughter satisfaction (infrastructure)
 > High-Risk: node architecture (lightweight Node2D + manual update vs CharacterBody2D + physics-driven) — deferred to /architecture-decision ADR
@@ -15,25 +15,24 @@
 EnemySystem 是掌天试炼战场中所有敌人的行为与生命周期基础设施。它负责 6
 种普通敌人(噬灵虫/铁背妖狼/腐毒妖藤/甲壳妖虫/魔道符修/血傀儡,共享
 `EnemyNormalPoolable/v1` 契约,以 config behavior ID 区分)、2 种精英
-(巨甲蜈蚣/鬼雾修士,`EnemyElitePoolable/v1` 契约,有限状态机归本 GDD)
-与 Boss 载体(碧鳞蟒,`EnemyBossPoolable/v1` 契约;阶段切换 FSM 归
-BossStateMachine #18,本 GDD 只定义其生命/池化/基础追踪/受击/死亡)的
+(巨甲蜈蚣/鬼雾修士,`EnemyElitePoolable/v1` 契约；FSM driver/载体归本 GDD，
+behavior 6/7 的状态图、参数、攻击与表现内容唯一归 `elite-enemies.md`)
+与 Boss 载体(碧鳞蟒,`EnemyBossPoolable/v1` 契约；driver/载体归本 GDD，
+behavior 8 的两阶段FSM、攻击、毒域、召唤与终局输入唯一归 `boss-state-machine.md`)的
 生命周期、移动、分离与 GameRoot phase 参与。它向 SpawnDirector 提供借出/
 回收接口与 spawn_context schema(何时何地刷何种敌人由 SpawnDirector 决定),
 向 DropSystem 发布死亡事件,向 SpatialGrid 以 ENEMY 类型注册并按固定 phase
 (insert@SPAWN_INTENT / stage@MOVEMENT_COMMIT / remove@DEFERRED_REMOVAL)
-同步位置。在 300 普通敌人同屏(303 cap 含 2 精英 + 1 Boss 预留)硬约束下,
+同步位置。在298普通敌人同屏（303 cap另含4 Elite+1 Boss预留）硬约束下,
 EnemySystem 冻结行为契约——直线追踪(不完整寻路)、轻量分离(SpatialGrid
 query,非刚体碰撞)、对象池零分配 reset;节点架构与碰撞实现方式(Node2D
 手动更新 vs CharacterBody2D 物理驱动)作为 High-Risk 决策 defer
 `/architecture-decision` ADR,本 GDD 只描述与实现无关的行为契约。
 
-> **LOD removed (design-review 2026-08-25)**:stage-map R1 冻结"相机固定一屏
-> 全显 arena 22×40"(竖屏可见宽 22.5≥22,arena 几乎全屏),reduced-LOD 路径
-> 在正常游戏中几乎不触发(仅 index_margin=2.0 边缘带外)——是死代码。已移除
-> 原 §3.9 两级 LOD 与 §4.4 降频公式及 AC-E15/16/17。Boss 与所有敌人统一
-> full LOD 每 tick 更新;性能压力由分离 query k 上界 + pair-once 去重 +
-> 零分配 reset 承担(见 §4.2)。
+> **Simulation policy**：Stage V2允许敌人位于屏外，但MVP仍不引入按可见性的
+> simulation LOD；Boss与所有active敌人每tick更新。Camera/draw-cull只影响表现，
+> SpawnDirector负责远离玩家的普通敌无奖励退役，性能压力由active cap、分离query
+> 上界、pair-once去重与零分配reset承担。
 
 ## 2. Player Fantasy
 
@@ -66,11 +65,11 @@ EnemySystem 支撑的核心幻想是**被怪潮包围但仍能掌控战局**的�
 
 | 类别 | pool_key | capacity | factory_contract | 同屏上界 | FSM 归属 |
 |---|---|---|---|---|---|
-| 普通敌人(6 种) | enemy_normal=1 | 320 | EnemyNormalPoolable/v1 | 300 | 无(直线追踪,数据驱动) |
-| 精英(2 种) | enemy_elite=2 | 6 | EnemyElitePoolable/v1 | 2 | 本 GDD |
-| Boss 载体 | enemy_boss=3 | 1 | EnemyBossPoolable/v1 | 1 | 阶段切换 defer #18 |
+| 普通敌人(6 种) | enemy_normal=1 | 320 | EnemyNormalPoolable/v1 | 298 | 无(直线追踪,数据驱动) |
+| 精英(2 种) | enemy_elite=2 | 6 | EnemyElitePoolable/v1 | 4 | driver/载体归本GDD；内容表归Elite Enemies |
+| Boss 载体 | enemy_boss=3 | 1 | EnemyBossPoolable/v1 | 1 | driver/载体归Enemy；behavior8内容归BossStateMachine |
 
-303 cap = 300 普通 + 2 精英 + 1 Boss 预留(SpatialGrid R9 / Config R6)。
+303 cap = 298普通 + 4 Elite + 1 Boss预留（RiskChoice R7 / SpatialGrid R9 / Config R15）。
 
 ### 3.2 Behavior ID 数据驱动
 
@@ -104,7 +103,7 @@ EnemySystem 支撑的核心幻想是**被怪潮包围但仍能掌控战局**的�
 | 5 | 血傀儡 | normal | 接近自爆/死亡预警 |
 | 6 | 巨甲蜈蚣 | elite | 连续冲刺3次→WEAKENED 虚弱窗口（玩家输出机会）（高生命/高击退抗性为 Config 属性,非剪影,见 §3.2 decision 注） |
 | 7 | 鬼雾修士 | elite | 周期瞬移/扇形魂针/召唤血傀儡 |
-| 8 | 碧鳞蟒(载体) | boss | 基础追踪/受击/死亡;阶段 defer #18 |
+| 8 | 碧鳞蟒(载体) | boss | 基础追踪/受击/死亡；内容由BossStateMachine capability驱动 |
 
 `behavior_id` 是 spawn_context 首字段,索引 Config behavior 表(属性/动画/
 攻击定义)。Config 维护 ID→资源映射;EnemySystem 只消费 `behavior_id`,
@@ -112,29 +111,33 @@ EnemySystem 支撑的核心幻想是**被怪潮包围但仍能掌控战局**的�
 
 ### 3.3 spawn_context schema
 
-EnemySystem 冻结 enemy spawn_context(5 primitive 字段,BATTLE_LOADING
-预分配、caller-owned carrier,runtime 只覆写):
+EnemySystem 冻结 `SpawnContextCarrierV2`（10 primitive 字段，BATTLE_LOADING
+预分配、caller-owned carrier，runtime只覆写；V2由RiskChoice集成扩展V1）:
 
 ```
 spawn_context = {
     behavior_id: int,              # 0-8
-    spawn_position: Vector2,      # Stage spawn ring 内侧环带点
+    spawn_position: Vector2,      # SpawnDirector玩家相对offscreen ring候选点
     spawn_facing: Vector2,         # 初始朝向(通常朝玩家)
     spawn_time_seconds: float,    # 生成时刻(存活/阶段倍率查询)
-    spawn_seed: int               # SpawnDirector 从 run_seed 派生
+    spawn_seed: int,              # SpawnDirector 从 run_seed 派生
+    spawn_provenance: int,        # WAVE/RISK_CHOICE/SUMMON等封闭enum
+    source_choice_id: int,        # 非Risk为0
+    stage_snapshot_id: int,       # matching stage/config identity
+    max_hp_multiplier: float,     # 普通为1.0，Risk为1.30
+    base_damage_multiplier: float # 普通为1.0，Risk为1.30
 }
 ```
 
-阶段倍率/属性/动画由 `behavior_id` 查 Config,**不**入 spawn_context。
-按 pool_key 版本化:三个 Poolable/v1 各自解析这 5 字段(语义同,解析路径
-按 contract 版本)。spawn_seed 由 SpawnDirector 从全局 run_seed(RNG
+基础阶段倍率/属性/动画仍由 `behavior_id+stage_snapshot_id` 查 Config；两个显式倍率只在基础stage值解析后、runtime modifier前各乘一次。非Risk必须使用1.0/1.0且choice ID=0；Risk必须provenance=RISK_CHOICE、choice ID非零、两倍率均1.30。按 pool_key 版本化:三个 Poolable/v1 各自解析这10字段(语义同,解析路径
+按 carrier v2 contract)。spawn_seed 由 SpawnDirector 从全局 run_seed(RNG
 GATE-G2)派生;EnemySystem 不直接依赖 RNG。
 
 ### 3.4 Poolable contract 实现
 
 每个 pooled 敌人 Node 实现 Object Pooling R3:
 
-- `reset_for_borrow(borrow_id, spawn_context)`:读 spawn_context 5 字段 →
+- `reset_for_borrow(borrow_id, spawn_context)`:读 spawn_context 10 字段 →
   查 Config behavior 表设属性/动画/初始状态。**不在此 insert SpatialGrid**
   (insert 在 SPAWN_INTENT phase 由 EnemySystem 统一执行,保证 phase 一致性)。
 - `reset_for_pool()`:unbind `remove(handle, lease)`(BLOCKING)→ 清 AC-B2
@@ -194,15 +197,15 @@ carrier(R2):`pool_epoch`/`borrow_id`/`object_instance_id`/`pool_key`/
 `slot_id`/`generation` + `node_ref`(弱引用)+ `spatial_handle_id`(bind
 时填)+ `quarantine_revision` + `mini_fsm_state`(int 枚举,第三轮复审 B-4:normal 桶 mini-FSM 状态存储;per behavior_id 的 mini-FSM 状态,见 §3.6 normal 桶 driver 注)。
 **R4 载体字段补齐(根因2/4/5,同类 B-4 typed 预分配字段,reset_for_borrow 归零/初始化)**:
-- `separation_correction: Vector2`(分离修正累加器,根因2:§4.2 ACCUMULATE 子步写双方累加、
-  COMMIT 子步 clamp-in-place、§4.1 MOVEMENT_COMMIT 读叠加进 committed_pos;下帧 ACCUMULATE 前归零)。
-- `mini_fsm_phase_timer: float`(FSM 当前状态计时器,根因4:reset_for_borrow 初始化 =
-  `base_timer + fsm_phase_offset`(同精英确定性约定,§3.6 L222);每 tick run_phase 递减/递增;谓词阈值判定用此字段)。
-- `mini_fsm_counter: int`(FSM 计数器,根因4:如巨甲蜈蚣 `charge_count`(§3.6.1 L249,跨 3 次冲锋持久)、
-  cycle count;reset_for_borrow 归零)。
+- `next_separation_correction: Vector2`(跨tick分离修正槽,根因2:tick T §4.2 QUERY_CONSUME的ACCUMULATE/COMMIT子步写双方并clamp；tick T+1 §4.1 MOVEMENT_COMMIT读取一次后立即归零。禁止把phase 5结果倒灌到同tick已结束的phase 2)。
+- `mini_fsm_phase_timer: float`(normal mini-FSM当前状态计时器,reset_for_borrow初始化为
+  `base_timer + fsm_phase_offset`;每tick递减/递增，谓词阈值判定用此字段)。
+- `mini_fsm_counter: int`(normal mini-FSM跨周期计数器；reset_for_borrow归零)。
 - `mini_fsm_event_flag: bool`(FSM 跨阶段事件标志,根因5:如血傀儡自爆阈值跨越——`take_damage`
   (DEFERRED_REMOVAL)检测 health 跨 30% 时设 true,FSM 下帧 MOVEMENT_COMMIT 轮询消费触发状态迁移;
   1-tick 跨相延迟类击退,§3.12 L426)。
+- Elite载体另绑定一行`EliteRuntimeStateV1`，逐字段等于Elite GDD §3.1的
+  `{fsm_state,state_ticks,active_age_ticks,action_generation,charge_axis,charge_segment_index,charge_progress,charge_hit_mask,blink_cycle_index,blink_landing_position,needle_axis,summon_generation}`；随borrow reset/quarantine/resume，禁止塞入上述normal mini-FSM通用字段或Dictionary造成别名/容量悬空。
 
 ### 3.5 移动行为:直线追踪(普通敌人)
 
@@ -217,10 +220,12 @@ displacement = direction × move_speed × delta_time × stage_move_multiplier
 计算,调 `stage_position(handle, committed_pos, lease)`(grid 在 GRID_SYNC
 统一 commit)。分离修正(3.8)叠加到 committed_pos。
 
-### 3.6 精英 FSM
+### 3.6 精英 FSM driver 与内容所有权
 
-精英用有限状态机(source §15.5)。本节冻结状态机表(状态/触发谓词/action/
-下一状态)+ spike 锚点数值(标待 Config 调参),使 FSM 可编码、可单元测试。
+精英用有限状态机(source §15.5)。本 GDD只冻结共享driver、typed runtime state、
+phase/Pool/Grid/Damage handoff；`design/gdd/elite-enemies.md` 是behavior 6/7状态表、
+计时、攻击、召唤与表现的唯一内容owner。下列两小节为同步echo，若与Elite GDD或其
+content hash不同，Config必须在Node创建前失败，不允许选择任一版本继续运行。
 
 **通用约定**:
 - FSM 由 EnemyElitePoolable 在 `run_phase` 内驱动(归 MOVEMENT_COMMIT 阶段
@@ -230,22 +235,21 @@ displacement = direction × move_speed × delta_time × stage_move_multiplier
   的状态存储于 carrier `mini_fsm_state` 字段(int 枚举,per behavior_id),由 EnemyNormalPoolable
   在 `run_phase`(MOVEMENT_COMMIT)内驱动——仿 EnemyElitePoolable 模式但更简单:normal 桶 mini-FSM
   无技能 intent latch(无技能释放),仅移动/攻击状态切换(2-3 状态),计时器 = `base_timer + fsm_phase_offset`
-  (同精英确定性约定,spawn_seed 派生),**存于 carrier `mini_fsm_phase_timer` 字段**(reset_for_borrow 初始化,
-  每 tick run_phase 递减/递增,谓词阈值判定用此字段);跨冲锋/周期的计数器存 `mini_fsm_counter`(如
-  巨甲蜈蚣 `charge_count`)。**R4 根因4 闭合 B-4 timer/counter 存储悬空**(B-4 仅加 `mini_fsm_state`,
+  (normal behavior的确定性约定,spawn_seed 派生),**存于 carrier `mini_fsm_phase_timer` 字段**(reset_for_borrow 初始化,
+  每 tick run_phase 递减/递增,谓词阈值判定用此字段);normal跨周期计数器存 `mini_fsm_counter`。
+  **R4 根因4 闭合 B-4 timer/counter 存储悬空**(B-4 仅加 `mini_fsm_state`,
   未声明 timer/counter 存何处)。甲壳妖虫(behavior_id=3,B3 fix)同此 driver。状态表/参数见
   §7.4,AC 见 §8.11 AC-E30e/f/g/h。原 B3 fix 只补甲壳妖虫 1/5,未覆盖 1/2/4/5 + 未定义状态存储/驱动
   归属(§3.6 仅声明精英 driver),本轮系统性补齐。
-- 状态切换由计时器/距离/事件触发,**无随机**(状态选择不调用 RNG)。抖动由
-  `spawn_seed` 在 `reset_for_borrow` 时**一次性**派生出静态
-  `fsm_phase_offset`(int,tick 单位),整个 borrow 生命周期不变;FSM 计时器
-  = `base_timer + fsm_phase_offset`(确定性,可复现)。
+- 状态切换由计时器/距离/事件触发,**无runtime RNG**。normal mini-FSM可使用borrow期
+  静态`fsm_phase_offset`；Elite严格按Elite GDD：arrival/cooldown无offset，blink angle/radius
+  只由`{spawn_seed,blink_cycle_index,salt}`纯hash派生，状态本身不随机。
 - `frame_count` 源固定为 GameRoot `tick_revision`(非 `Engine.get_physics_frames`,
   以便注入测试;暂停期间不推进遵 §5.5)。
-- 精英技能伤害/范围/投射物归 Combat/ProjectileSystem;EnemySystem 只定义状态
-  流转与技能**释放意图**。意图**不走 `signal.emit`**(违零分配,见 §3.4),
-  而是 latch 成 intent 写入 GameRoot 预分配 staging slot,Combat 在其 own
-  run_phase(QUERY_CONSUME)pull 消费。
+- 精英技能伤害/范围/投射物归 Damage/ProjectileSystem；Elite Enemies定义状态
+  流转与技能**释放意图**内容，EnemySystem driver只执行已冻结表。意图**不走 `signal.emit`**(违零分配,见 §3.4),
+  而是latch成typed plan写入预分配staging；魂针与召唤都固定由对应owner在
+  下一Active tick `SPAWN_INTENT`消费，蜈蚣charge direct hit才在matching QUERY_CONSUME交Damage。
 - 召唤血傀儡(behavior_id=5)经 SpawnDirector borrow(保持 admission check
   一致性,精英不直接借 pool);召唤同样走 intent latch,下一 tick SPAWN_INTENT
   phase 由 SpawnDirector 执行 borrow(遵 Object Pooling R4 borrow 限
@@ -253,23 +257,23 @@ displacement = direction × move_speed × delta_time × stage_move_multiplier
 
 #### 3.6.1 巨甲蜈蚣(behavior_id=6)FSM
 
-`TRACK → TELEGRAPH_CHARGE → CHARGE(×3) → WEAKENED → TRACK` 循环。
+`ARRIVAL_LOCK → TRACK → TELEGRAPH_CHARGE → CHARGE_1 → LINK_1 → CHARGE_2 → LINK_2 → CHARGE_3 → WEAKENED → TRACK` 循环；权威表见Elite GDD §3.4。
 
 | 当前状态 | 触发谓词 | action | 下一状态 |
 |---|---|---|---|
-| TRACK | `distance(self,player) ≤ charge_trigger_range` 且 charge_cooldown 计满 | 进 TELEGRAPH_CHARGE;锁定冲刺方向 = `Normalize(player_pos - self_pos)`(telegraph 时锁定,CHARGE 中不重瞄准) | TELEGRAPH_CHARGE |
-| TELEGRAPH_CHARGE | telegraph 计时 ≥ `telegraph_charge_duration` | 释放冲刺意图 latch 给 Combat;开始 CHARGE | CHARGE |
-| CHARGE | 单次冲刺位移完成(行进 ≥ `charge_distance` 或撞墙 clamp) | charge_count++;若 charge_count < 3 保持 CHARGE(同方向不重瞄准);若 ==3 进 WEAKENED | CHARGE / WEAKENED |
-| WEAKENED | weakened 计时 ≥ `weakened_duration`;期间受击有特殊反馈(伤害放大,玩家输出窗口) | 重置 charge_count=0;charge_cooldown 复位 | TRACK |
+| ARRIVAL_LOCK | `active_age_ticks >= 60` | 启用进攻；冷却从0开始 | TRACK |
+| TRACK | `distance(self,player) ≤ charge_trigger_range` 且 `charge_cooldown_ticks>=300` | 进 TELEGRAPH_CHARGE；锁定唯一冲刺方向 | TELEGRAPH_CHARGE |
+| TELEGRAPH_CHARGE | `state_ticks>=24` | latch第1段冲刺；清零segment progress | CHARGE_1 |
+| CHARGE_i | authored投影进度达到6.0 | 关闭本段hit window；若i<3发布段界并进LINK，否则立即进入WEAKENED | LINK_i / WEAKENED |
+| LINK_i | `state_ticks>=6` | 沿同一锁定方向启动下一段，不重瞄准 | CHARGE_(i+1) |
+| WEAKENED | `state_ticks>=150` | 移除破绽modifier；清零chain/cooldown | TRACK |
 
-Spike 锚点(待 Config 调参):**权威源为 §7.3**(charge_distance/charge_speed/
-charge_telegraph_seconds/charge_cooldown_seconds/weakened_seconds 见 §7.3);
-§3.6.1 仅列 §7.3 未含项:
-- `charge_trigger_range` ≈ 6.0 [spike](进 TELEGRAPH_CHARGE 的距离阈值,§7.3 未单列)
-- 冲刺方向 telegraph 时锁定;`charge_count` 上限 3 防无限循环。
-- **CHARGE 行进度量 = 沿锁定冲刺方向投影长度**(非欧氏距离,避免垂直分离
+唯一参数源为Elite GDD §7，本节只echo：trigger/distance/speed=`6/6/18`、
+telegraph/link/cooldown/weakened=`24/6/300/150 ticks`、segment count=3。
+- 冲刺方向 telegraph 时锁定；segment index上限3防无限循环。
+- **CHARGE 行进度量 = authored沿锁定方向投影长度**(不含knockback与垂直分离，避免侧移
   修正膨胀欧氏行进导致提前完成 charge,见 §4.2 时序)。**B1 fix(第二轮复审,敌群中分离反推死锁)**:
-  R5 fix 只覆盖 arena 边缘死锁,未覆盖敌群中分离反推致投影不增——CHARGE 中分离修正若含沿
+  旧R5只覆盖边缘死锁,未覆盖敌群中分离反推致投影不增——CHARGE 中分离修正若含沿
   锁定轴反向分量(密集敌群在冲刺轴前方反推精英),每 tick charge 位移 0.3 可能被反推抵消,
   投影不增 → CHARGE 永不达 charge_distance=6.0 → WEAKENED 永不进入。**裁定**:CHARGE 期间
   分离修正**仅作用于垂直于锁定轴的分量**(沿锁定轴分量不施加分离,精英冲刺不被敌群反推卡死)。
@@ -278,58 +282,56 @@ charge_telegraph_seconds/charge_cooldown_seconds/weakened_seconds 见 §7.3);
   非等价,ai-programmer/systems-designer/qa-lead 三方核实;原"或等价地"措辞误导)。具体实现 defer
   节点架构 ADR,但行为契约可测(见 AC-E30b 敌群分离反推场景,已并入 CHARGE→WEAKENED
   循环死锁防护)。
-- **撞墙 clamp 触发条件(decision 2026-08-25,R5 fix)**:敌人非物理无墙
-  (§3.12),CHARGE 出口"撞墙 clamp"等价于 `arena_boundary_clamp`——若本 tick
-  位移被 §5.8 arena AABB clamp 截断(行进方向投影被边界截断),视为撞墙,
-  `charge_count++` 进 WEAKENED/续 CHARGE(防 arena 边缘冲刺行进 < charge_distance
-  且无墙可撞致 CHARGE 死锁、WEAKENED 永不进入)。
+- Stage V2没有可见墙或arena clamp。CHARGE只以投影距离完成；Loading期
+  world-reachability proof保证正常局不会触达技术域。任何完整足迹越
+  `world_safe_aabb`均为`POSITION_OUT_OF_RANGE`并进入ControlledGameplayFault，
+  不得伪装成“撞墙完成”。
 
 #### 3.6.2 鬼雾修士(behavior_id=7)FSM
 
-`TRACK → TELEGRAPH_BLINK → BLINK → FAN_NEEDLE → SUMMON_BLOOD_PUPPET → TRACK` 循环。
+`ARRIVAL_LOCK → TRACK → TELEGRAPH_BLINK → BLINK → TELEGRAPH_NEEDLE → RELEASE_NEEDLE → RECOVER → SUMMON → TRACK` 循环；权威表见Elite GDD §3.5。
 
 | 当前状态 | 触发谓词 | action | 下一状态 |
 |---|---|---|---|
-| TRACK | blink 周期计时 ≥ `blink_period_seconds`(§7.3) | 进 TELEGRAPH_BLINK;计算 BLINK 落点(见下) | TELEGRAPH_BLINK |
-| TELEGRAPH_BLINK | telegraph 计时 ≥ `telegraph_blink_seconds`(§7.3,玩家可见预警) | 执行 BLINK:position = blink_landing_pos | BLINK |
-| BLINK | 落地完成(同 tick) | 释放 FAN_NEEDLE 意图 latch 给 Combat;启动 `fan_needle_duration` 计时(§7.3) | FAN_NEEDLE |
-| FAN_NEEDLE | `fan_needle_duration` 计时计满(R6 fix:可判计时阈值,非"释放完成"散文;替代方案 Combat staging ack 未采) | 进 SUMMON_BLOOD_PUPPET;发召唤 intent 给 SpawnDirector(经 GameRoot latch,下一 tick SPAWN_INTENT borrow) | SUMMON_BLOOD_PUPPET |
-| SUMMON_BLOOD_PUPPET | 召唤 intent 已 latch(无论 SpawnDirector 是否实际 borrow 成功) | 重置 blink 周期计时;**0 tick 瞬时**(latch 即进 TRACK,不跨帧等 borrow,RECOMMENDED AI-3 显式确认,见 §10 OQ10) | TRACK |
+| ARRIVAL_LOCK | `active_age_ticks>=60` | 启用进攻并从0累计blink period | TRACK |
+| TRACK | `blink_period_ticks>=360` | 按spawn seed+cycle纯hash冻结落点并发布预警 | TELEGRAPH_BLINK |
+| TELEGRAPH_BLINK | `state_ticks>=18` | 原子提交landing position | BLINK |
+| BLINK | 同tickposition publish成功 | 锁定needle axis并发布60°/5.0扇面 | TELEGRAPH_NEEDLE |
+| TELEGRAPH_NEEDLE | `state_ticks>=30` | latch三枚魂针Projectile plan | RELEASE_NEEDLE |
+| RELEASE_NEEDLE | 三行完整plan已latch | 关闭危险填充 | RECOVER |
+| RECOVER | `state_ticks>=24` | latch三子项召唤cluster | SUMMON |
+| SUMMON | cluster已latch | cycle递增、重置period；0 tick提交边 | TRACK |
 
 **BLINK 落点规则(decision 2026-08-25)**:
 ```
 blink_landing_pos = player_position + UnitVector(spawn_seed_derived_angle) × blink_offset_radius
-# spawn_seed 在 reset_for_borrow 派生固定 angle ∈ [0, 2π),整个 borrow 不变
-# blink_offset_radius ∈ [blink_offset_min, blink_offset_max](Config,spike ≈ [1.5, 2.5]);radius 是否 seed 派生固定值待定(RECOMMENDED AI-4,见 §10 OQ11;角度已 seed 派生)
-# clamp 进 arena AABB(遵 Stage R1,不出界)
+# angle/radius均由{spawn_seed,blink_cycle_index,不同salt}纯hash派生，不消费runtime RNG cursor
+# blink_offset_radius ∈ [blink_offset_min, blink_offset_max](Config,spike = [1.5, 2.5])
+# 对落点做real_t32 readback与完整足迹world-domain guard；不clamp
 # 落点不校验敌人重叠——靠分离(§3.8)消化
 ```
 - 落点在玩家附近偏一个身位(非落玩家点),玩家可读 telegraph 后闪避,**不即死**。
-- BLINK 不出 arena AABB;若 clamp 后与原位置重合(边界情况),视为原地瞬移。
-  **B2 fix(第二轮复审,angle 自相矛盾)**:原"下一周期换 angle"与代码注释"angle 整个
-  borrow 不变"(line 267)自相矛盾。裁定——angle 固定整个 borrow 不变,**clamp-collision
-  重合时仍用同 angle 下一周期重试**(不换 angle;若玩家相对静止可能反复原地瞬移,属边界
-  情况且玩家移动即解,可接受降级,不阻塞行为契约)。
+- angle/radius在每个blink cycle入口冻结，cycle内不变。落点不得因技术域改写；若完整足迹越domain则该
+  motion batch在发布前失败并进入ControlledGameplayFault。Loading期证明应使此路径
+  在合法1800秒战斗中不可达。
 
 **召唤 cap-full 行为(decision 2026-08-25)**:
-- 若普通怪 active+pending 已达 300 cap,SpawnDirector admission 抑制本次 borrow。
+- 若普通怪 active+pending 已达 298 cap,SpawnDirector admission 抑制本次 borrow。
 - FSM 行为:SUMMON_BLOOD_PUPPET 仍视为完成进 TRACK(不重试本周期),发"灵力
   逸散 VFX"意图(独立 VFX 池,见 §3.11)让玩家看到召唤失败反馈(非静默);
 - 不计入"已召唤次数"——下一 blink 周期可再次尝试。
 
-Spike 锚点(待 Config 调参):**权威源为 §7.3**(blink_period_seconds/
-blink_offset_min/max/summon_count/soul_needle_*/knockback_resistance/telegraph_blink_seconds/
-fan_needle_duration 见 §7.3)。§3.6.2 不另赋 spike 值(消除原 §3.6.2 vs §7.3
-双真相,R2 fix)。`summon_period_seconds`(原 §7.3 死参数,无 FSM 引用)已删;
-召唤频率 = blink 频率(每 blink 周期发一次召唤 intent)。
+Spike锚点与唯一字段名见Elite GDD §7；本节不再拥有第二套数值。魂针预警30 tick
+发生在任何Projectile plan之前，旧`fan_needle_duration`统一解释为`recover_ticks=24`。
+召唤频率仍等于blink频率，每周期只latch一次cluster。
 
 ### 3.7 Boss 载体行为
 
-碧鳞蟒(8)本 GDD 只定义载体:生命/池化/基础追踪/受击/死亡(与普通敌人
-同契:直线追踪 + 位置修正分离)。阶段切换 FSM(Phase 1 100%-50% / Phase 2
-50%-0%:扑咬/扇形毒液/环形毒弹/后摇/毒雾压缩/召唤噬灵虫)defer
-BossStateMachine #18。Boss carrier 暴露 `on_phase_transition(phase)` 钩子
-供 #18 调用。
+碧鳞蟒(8)本 GDD 只定义载体：生命/池化/基础追踪/受击/死亡、Enemy phase内的
+typed capability调用与位置/分离提交。`boss-state-machine.md`是behavior 8内容唯一owner，
+冻结12:00入场、P1三招、50%切换、P2毒域/双扑咬/召虫与致死预测输入。
+Boss capability不是新participant；Enemy在自身合法phase同步调用，Boss攻击plan T latch、
+Projectile/Spawn在T+1消费。carrier暴露typed `on_phase_transition(PHASE_2)`，不接受动画callback或任意字符串状态。
 
 ### 3.8 轻量分离(位置修正)
 
@@ -348,15 +350,12 @@ BossStateMachine #18。Boss carrier 暴露 `on_phase_transition(phase)` 钩子
    上界 = `303×302/2 = 45,753`(非 per-enemy 各处理一次的 91,606)。
    **修正累加 clamp**:单帧每敌总修正向量长度 ≤ `separation_radius`,防密集簇
    overshoot/振荡。
-3. 修正叠加到**本帧** MOVEMENT_COMMIT 的 committed_pos(见时序裁定块 L329;第三轮复审 B-9:原"下帧"为 stale 措辞,已修正)。
+3. tick T算出的修正写入`next_separation_correction`，只由**tick T+1**的MOVEMENT_COMMIT消费一次；不得回写tick T已经结束的MOVEMENT_COMMIT。
 
-**分离回写时序裁定(decision 2026-08-25,解 OQ4)**:
-- QUERY 读**上帧** committed 位置快照,QUERY_CONSUME 算出 separation_correction,
-  叠加到**本帧** MOVEMENT_COMMIT 位移。grid staged 位置始终*含分离*(只滞后
-  1 帧 16ms),无需新 phase、无需同 phase 二次 stage。
-- 因此 AoE/拾取/投射物(读 grid staged committed 位置)与玩家肉眼所见敌人
-  位置一致(都含分离),消除"分离不回写致系统性错位"。
-- 1 帧滞后可接受:分离是慢动力学,16ms 不影响可读性或契约。
+**分离回写时序裁定（2026-08-28第六轮纠错，替代2026-08-25同tick措辞）**:
+- tick T的QUERY读取tick T phase 3刚发布的committed位置；tick T的QUERY_CONSUME计算并冻结`next_separation_correction[T]`。tick T+1 MOVEMENT_COMMIT读取、clamp守卫后叠加该值并立即清零，再由GRID_SYNC发布包含该修正的新位置。
+- 这是完整一个physics tick的有界延迟；无需新增phase或同phase二次stage。tick T内AoE/投射物与视觉都使用同一已发布位置，tick T+1发布后两者共同看到含分离的新位置，禁止视觉Node提前应用尚未进Grid的修正。
+- pause/fault发生在T phase 5之后时，冻结的next correction随authoritative carrier保留；合法resume后的首个MOVEMENT_COMMIT恰消费一次。battle ending/teardown则丢弃，不跨battle复用。
 
 分离用 SpatialGrid query,**禁止遍历全场 active**(R8)。**k 上界声明**:全聚集
 玩家点时单次 query 最坏 `neighbors_per_query ≤ 303`(场上 ENEMY 总数上界 303,
@@ -386,8 +385,8 @@ EnemySystem 注册 `participant_id="enemy_system"`,allowed phases:
 | MOVEMENT_COMMIT | 逐 handle 算追踪位移 + 分离修正 → `stage_position` |
 | GRID_SYNC | (被动) |
 | QUERY | 写分离 query buffer(`query_circle_into`) |
-| QUERY_CONSUME | 读 query 结果,算位置修正(correction),由**本帧** MOVEMENT_COMMIT 叠加进 committed_pos(§3.8 时序裁定块 L329:QUERY 读上帧快照→correction 本帧 MOVEMENT_COMMIT 叠加,grid staged 位置始终含分离,滞后 1 帧;第三轮复审 B-9:原"下帧"为 stale,已修正) |
-| DEFERRED_REMOVAL | 死亡/回收:`remove` → release → `reset_for_pool` |
+| QUERY_CONSUME | tick T读query结果并写`next_separation_correction[T]`；只由tick T+1 MOVEMENT_COMMIT消费，禁止同tick逆序回写 |
+| DEFERRED_REMOVAL | 死亡gameplay fact写`CommittedGameplayFactLedger`；回收使同一lifecycle row按`GRID_REMOVED→POOL_UNBOUND→POOL_RELEASED|POOL_RETIRED`推进；visible committed row=0则0 publish、>0则matching end/fault convergence恰一次batch authority publish |
 | POST_DEFERRED_BARRIER | (被动) |
 
 `run_phase(phase, context, lease) -> int` 零分配。敌人 `_physics_process`
@@ -399,12 +398,14 @@ SpawnDirector GDD 协调(Not Started)。
 
 死亡触发:受击后 health ≤ 0(Combat 调用 `take_damage`,见 §3.12)。流程
 (DEFERRED_REMOVAL):
-1. **死亡事件写入 GameRoot 预分配 SoA staging bank**(不走 `signal.emit`,遵 §3.4
+1. **死亡事件先写入 GameRoot 预分配 SoA staging bank，并以稳定fact ID提交到`CommittedGameplayFactLedger`的`DEATH`行**(不走 `signal.emit`,遵 §3.4
    零分配;R14 fix:Vector2 无法直接入 PackedInt64Array,采 SoA 并行 PackedArray
-   布局):payload = `{borrow_id, behavior_id, death_position(Vector2), spawn_seed}`
-   拆入 4 条 BATTLE_LOADING 预分配定容(303)并行数组——
+   布局):payload固定为`{death_fact_sequence,enemy_id,borrow_id,behavior_id,death_position(Vector2),spawn_seed,spawn_provenance,source_choice_id}`；其中fact sequence与已预留/提交DEATH行逐字段相同，enemy/borrow组成完整当前lifecycle identity，provenance为SpawnDirector冻结的int32 enum；`source_choice_id`逐字段复制当前SpawnContext，非Risk为0、Risk为对应非零choice ID。
+   拆入8条BATTLE_LOADING预分配定容(303)并行数组——
+   `PackedInt64Array death_fact_sequences` + `PackedInt64Array death_enemy_ids` +
    `PackedInt64Array death_borrow_ids` + `PackedInt32Array death_behavior_ids` +
-   `PackedVector2Array death_positions` + `PackedInt64Array death_spawn_seeds`。
+   `PackedVector2Array death_positions` + `PackedInt64Array death_spawn_seeds` +
+   `PackedInt32Array death_spawn_provenances` + `PackedInt64Array death_source_choice_ids`。
    写入用 write-index 计数器直接索引写(`arr[idx] = value`,PackedArray 索引写
    零分配),**禁 `append()`**(可能 realloc)。消费方(DropSystem/#18)按 write-index
    边界读。**F-11 fix(reset 语义 + 消费者每帧读契约)**:`write_index` 在每帧
@@ -420,9 +421,9 @@ SpawnDirector GDD 协调(Not Started)。
    `reset_for_pool`——VFX 独立存在,不截断、不错位(避免"回池后再播死亡特效"
    锚到新 borrow 位置)。
 3. DropSystem 从 staging bank 读死亡事件消费(掉落判定)。
-4. `remove`(BLOCKING)→ release → `reset_for_pool`。
+4. 以稳定death/lifecycle intent ID执行`remove`(BLOCKING)，并使**同一条**lifecycle row按`RESERVED→GRID_REMOVED→POOL_UNBOUND→POOL_RELEASED|POOL_RETIRED`单调推进。`remove=OK`后旧handle不可回滚；后续失败由GameRoot依据已提交fact与row在visible committed row>0时于fault convergence恰一次batch authority publish后进入fault，EnemySystem不得重放已完成步骤。lifecycle journal不承载DEATH/drop/reward等gameplay fact。
 
-死亡事件 payload(`behavior_id`+`death_position`+`spawn_seed`)供掉落表查询。
+死亡事件8字段payload供Drop/RiskChoice按`death_fact_sequence ASC`与matching committed DEATH逐字段join；缺字段、stale borrow、duplicate conflict或Risk choice不匹配均不得猜测关联。
 Boss 死亡额外触发 #18 阶段结束(经 staging latch,#18 在其 own phase 消费)。
 
 ### 3.12 受击与伤害边界
@@ -430,8 +431,8 @@ Boss 死亡额外触发 #18 阶段结束(经 staging latch,#18 在其 own phase 
 EnemySystem 不计算伤害(归 Combat/DamageSystem)。敌人暴露
 `take_damage(amount, source)` 供 Combat **直接方法调用**(非 `signal.emit`,
 遵 §3.4 零分配;`take_damage` 内部须不 emit 带参信号),内部扣血 + 受击反馈;
-击退 vector 由 Combat 传,EnemySystem 在 MOVEMENT_COMMIT 叠加,并保证越界不超
-`index_margin`(Stage F5)。`knockback_max` 归属 Combat/DamageSystem
+击退vector由Combat传，EnemySystem在MOVEMENT_COMMIT叠加，并在发布前执行
+完整足迹world-domain guard；不得clamp或wrap。`knockback_max`归属Combat/DamageSystem
 owner(Open Question #2 确认)。**玩家-敌人接触检测**:因敌人非物理(§3.8
 不使用 CollisionShape2D/碰撞层),player-enemy 接触检测由 Combat/DamageSystem
 侧用 SpatialGrid `query_circle_into`——以 `player_position` 为查询中心、
@@ -465,13 +466,28 @@ behavior 的 damage hook 统一入口。**自爆伤害归属裁定(第三轮复�
   自爆伤害归 **Combat/DamageSystem**(与 §3.12"EnemySystem 不计算伤害"原则一致)——
   EnemySystem 在 SELF_DESTRUCT 状态只 **latch self-destruct intent**(写 GameRoot 预分配 staging
   slot,payload = `{borrow_id, behavior_id=5, self_destruct_position, self_destruct_radius, spawn_seed}`,
-  零分配,§3.4/§3.11 同死亡/技能路径),Combat 在其 own run_phase pull 后对 `query_circle_into(
-  self_destruct_position, self_destruct_radius, ENEMY|PLAYER)` 内目标施加 AoE 伤害。
+  零分配,§3.4/§3.11 同死亡/技能路径),Combat 在其 own run_phase pull 后用
+  `query_circle_into(self_destruct_position,self_destruct_radius,ENEMY,enemy_buf,lease)` 查询敌人；玩家受击不查询不存在的PLAYER Grid type，而是读取matching `PlayerMotionCommitCarrierV1`并对玩家圆形足迹做一次直接窄相。
   §7.4 血傀儡参数补"自爆伤害值 defer Combat behavior 表"(EnemySystem 不回填伤害数值)。
   §8.11 AC-E30h 守卫"EnemySystem 只 latch intent 不直接施加伤害"(归 AC-E25 damage 边界)。
   **死亡-during-预警 edge**:预警期间(TELEGRAPH_SELF_DESTRUCT)health 被打到 ≤0 时,仍触发
   自爆 intent latch(预警 latch 优先于死亡流程,自爆 VFX 与死亡 VFX 可同帧叠加,§3.11 B4 fix);
   自爆伤害是否仍施加由 Combat 决定(EnemySystem 已 latch intent,Combat pull 即施加)。
+
+### 3.13 Player revive threat snapshot 与 clear lifecycle boundary
+
+EnemySystem在Loading期建立两个独占backing的`EnemyThreatSnapshotV1` bank与单一selector，schema固定为：
+
+`{schema_version=1,battle_instance_id:int64,config_snapshot_id:int64,bank_id:int32,publish_revision:int64,tick_revision:int64,authority_revision:int64,count:int32,capacity:int32,enemy_ids:PackedInt64Array,object_instance_ids:PackedInt64Array,spatial_handle_ids:PackedInt64Array,borrow_ids:PackedInt64Array,centers:PackedVector2Array,class_codes:PackedInt32Array,shape_codes:PackedInt32Array,bound_radii:PackedFloat64Array,next_tick_swept_bound_radii:PackedFloat64Array}`。
+
+- `capacity=303`且九个parallel array长度精确303；`[0,count)`包含所有本tick可威胁玩家的active NORMAL/ELITE/BOSS，不得只写Grid命中子集。物理顺序任意，不是玩法ABI。
+- 每行完整lifecycle identity非零且tuple唯一，center为published real_t32位置，`bound_radii`为对应behavior实际玩法形状的finite保守外接圆；class冻结为`NORMAL/ELITE/BOSS`。
+- MVP所有NORMAL的`shape_code`必须为`CIRCLE`，且`bound_radii`就是实际玩法碰撞圆半径；非圆NORMAL配置使battle load失败，不能用保守外接圆多清。`next_tick_swept_bound_radii`以当前center为圆心，固定至少为`bound_radii + max_legal_center_displacement_next_tick`，覆盖该behavior下一tick追踪、分离修正、冲刺/静止分支的所有合法center；任何row小于current bound或缺behavior上界都使battle load失败。ELITE/BOSS不进入clear，但current+swept bound都参与安全评分。
+- Enemy只写inactive bank，完整校验后切selector；Player只能消费matching battle/config/tick/authority/publish revision的只读view。Active禁止resize/append/duplicate/backing替换。
+
+Player复活只写容量300的私有`ReviveClearIntentBankV1`，每行携带完整`{enemy_id,object_instance_id,spatial_handle_id,borrow_id,reason=REVIVE_CLEAR}`并已按`{enemy_id,object_instance_id,spatial_handle_id,borrow_id}`升序总序canonical sort；不要求enemy_id单字段唯一。Player随后调用注入的`ReviveClearLifecycleResolverCapabilityV1`，由Enemy/GameRoot resolver在PONR前为全部row预留journal row/checked sequence并逐字段核对当前lifecycle identity，才允许DAMAGE fact commit；PONR后仍由同一resolver只推进已预留row，不得新建row。所有`REVIVE_CLEAR` journal row固定`participant_id=ENEMY`，计入ENEMY `LIFECYCLE_INTENT=303`上界；Player contribution保持0，且Player不持有journal backing、不执行Grid/Pool副作用。`REVIVE_CLEAR`只允许Player用`distance≤player_radius+enemy_shape_bound`选择真实重叠/相切NORMAL，不能清ELITE/BOSS或正净空NORMAL；它不产生DEATH、kill、XP、drop、reward或record。300只是workspace/intent容量压力上界，不是production清场目标。
+
+复活事务在phase5后先消费matching terminal precollection；若winner为FATAL/VICTORY则不得建立clear计划。否则先完整reserve所有clear journal rows、sequence与commit capability，再由Player提交非零DAMAGE fact，该commit是唯一PONR；Enemy clear rows只能随后推进。Enemy不得用首条Grid remove重新定义PONR，也不得在DAMAGE fact尚未COMMITTED时执行clear side effect。
 
 ## 4. Formulas
 
@@ -487,21 +503,19 @@ if direction == Vector2.ZERO:
 else:
     last_known_direction = direction                        # 非零帧更新,供后续零向量帧 fallback(F-5 fix:原未声明更新时机,致 fallback 永用 spawn_facing)
 displacement = direction × move_speed × delta_time × stage_move_multiplier
-committed_pos = current_pos + displacement + separation_correction + knockback_vector
+separation_to_apply = next_separation_correction   # tick T-1 phase 5 产出；本次读取后立即归零
+next_separation_correction = Vector2.ZERO
+committed_pos = current_pos + displacement + separation_to_apply + knockback_vector
 # last_known_direction 初始化:borrow 时 reset_for_borrow 设为 spawn_facing(Config behavior 表,与 spawn_facing 同源);每非零 direction 帧更新;zero 帧不更新(保留上值)
 ```
 
-**时序语义(decision 2026-08-25,解 §3.8/OQ4)**:`separation_correction`
-由 QUERY_CONSUME(读上帧 committed 快照)算出,在本帧 MOVEMENT_COMMIT 叠加;
-`displacement`/`knockback_vector` 是本帧值。grid staged 的 committed_pos
-始终含分离(滞后 1 帧),AoE/拾取读 grid 与视觉一致。knockback 与 separation
-可能部分对消(物理合理),不影响正确性。
+**时序语义（2026-08-28第六轮纠错）**：本次MOVEMENT_COMMIT只消费上一tick QUERY_CONSUME冻结的`next_separation_correction`，读取后立即归零；本tick QUERY_CONSUME再为下一tick写入。`displacement`/`knockback_vector`是本tick值。Grid与视觉只能在本次GRID_SYNC后共同观察含已消费修正的位置；禁止视觉提前应用next槽。knockback与separation可能部分对消（物理合理），不影响正确性。
 
 变量:
 - `move_speed`:per-enemy base speed(Config behavior 表,units/sec)
 - `delta_time`:固定 1/60(GameRoot 固定步长)
 - `stage_move_multiplier`:见 4.3
-- `separation_correction`:见 4.2(本帧 MOVEMENT_COMMIT 生效语义;时序裁定块见 §4.1;R4 G 修正原 stale"下帧"残留——B-9 已修 §3.8/§3.10,OQ4 已 RESOLVED,本行变量列表注同期修正)
+- `next_separation_correction`:见4.2（tick T QUERY_CONSUME产出，tick T+1 MOVEMENT_COMMIT恰消费一次；完整一physics tick延迟）
 - `knockback_vector`:Combat 传入(4.5),1-tick 延迟
 
 ### 4.2 位置修正分离
@@ -512,7 +526,7 @@ committed_pos = current_pos + displacement + separation_correction + knockback_v
 # handle→carrier 解析 + 拆 ACCUMULATE/COMMIT 两子步消除 per-enemy 循环内 clamp 竞态。
 # BATTLE_LOADING 预分配(spatial-grid R6 `resolve_active_into(handle_id, out_ref, lease)`
 # 一次解析一个句柄→carrier slot,零分配 lease out_ref):
-#   - 每 carrier `separation_correction: Vector2` 累加器(§3.4 载体字段,ACCUMULATE 起点 == ZERO)
+#   - 每carrier `next_separation_correction: Vector2` 跨tick槽(§3.4；tick T QUERY_CONSUME起点必须为ZERO)
 query_radius = self.separation_radius + max_separation_radius   # 语义统一:用 sep_radius 上界,非 shape_bound
 neighbors = query_circle_into(prev_committed_pos, query_radius, ENEMY, buf, lease)  # 读上帧快照,排除 self handle;返回 PackedInt64Array handle_ids + scalar count(spatial-grid R4)
 # ── ACCUMULATE 子步(配对写双方累加器,不 clamp;消除循环内 clamp 竞态)──
@@ -526,12 +540,12 @@ for b_id in neighbors:                        # b_id 是 int 句柄,非 carrier 
         else:
             correction_dir = Normalize(self.pos - b_ref.pos)   # 用 Godot Vector2.normalized()
         push = correction_dir × (overlap / 2)    # 等质量各推一半;质量比见下
-        self.separation_correction += push       # 写双方累加器(Option B),累加不 clamp
-        b_ref.separation_correction -= push
-# ── COMMIT 子步(全累加后统一 clamp + apply;per-enemy clamp 在 ACCUMULATE 完成后,无顺序竞态)──
-#   对每个 active carrier c(逐 handle,GRID_SYNC 前 MOVEMENT_COMMIT):
-#     c.separation_correction = clamp_magnitude(c.separation_correction, c.separation_radius)  # B3 fix:单帧每敌总修正 ≤ separation_radius
-#     §4.1 读此 clamped separation_correction 叠加进 committed_pos;c 下帧 ACCUMULATE 前归零
+        self.next_separation_correction += push       # 写双方next槽(Option B),累加不clamp
+        b_ref.next_separation_correction -= push
+# ── COMMIT 子步（tick T phase 5全累加后统一clamp并冻结，禁止apply位置）──
+#   对每个active carrier c：
+#     c.next_separation_correction = clamp_magnitude(c.next_separation_correction, c.separation_radius)
+#     tick T+1 §4.1 MOVEMENT_COMMIT读取该值一次、立即清零并叠加进committed_pos
 ```
 
 **`deterministic_axis(h_a, h_b)` 固定公式(R-AI N5 fix,可测;F-2 fix 参数序+括号)**:
@@ -597,9 +611,9 @@ stage_move_multiplier = Min(1.35, 1 + stage × 0.03)
 
 ### 4.4 ~~屏幕外 LOD 降频(两级)~~ — REMOVED
 
-> 本节移除(decision 2026-08-25):stage-map R1 冻结相机固定一屏全显 arena,
-> reduced-LOD 路径是死代码(见 §1 注)。所有敌人统一 full LOD 每 tick 更新。
-> 原 AC-E15/16/17 同步移除(见 §8)。
+> 本节继续移除。Stage V2虽有屏外敌人，但MVP正式策略仍是所有active敌统一
+> full simulation；可见性不是authority分支。普通敌远距退役由SpawnDirector
+> 依据玩家相对矩形阈值执行，不能复用旧LOD计时或隔tick状态。
 
 ### 4.5 击退叠加
 
@@ -619,54 +633,39 @@ max_query_radius 输入):
 | 值 | 定义 | 归属 | 数值 |
 |---|---|---|---|
 | `max_enemy_bound` | 所有敌人 behavior_id 的 shape_bound 半径**上界** | EnemySystem | `max(per-type shape_bound)`;per-type 在 Config;数值待调参,上界约束见 4.7 |
-| `enemy_overshoot_max` | 普通敌人单 tick 最大越界位移 | EnemySystem | `max(per-type base move_speed)`(不含 runtime buff)× (1/60) × 1.35;数值待 Config move_speed 调参。**runtime speed buff 须 cap 使 `actual_move_speed×(1/60)×1.35 ≤ enemy_overshoot_max`**(R4 fix);精英/Boss 冲刺(charge_speed,spike 18.0→单 tick 0.405)产生的越界**不 inflate 普通敌预算**(R16 fix:精英并发 ≤3、bursty,由低并发 + 大质量吸收;但须在 §4.7 index_margin 约束中单独核查 `elite_charge_overshoot = max(per-type charge_speed) × (1/60) × 1.35 ≤ 剩余 margin`,Config charge_speed 调参后验证) |
+| `enemy_step_bound` | 任一敌人单tick移动/冲刺/击退的完整位移上界 | EnemySystem + Combat | `max(actual_move_speed,charge_speed)×(1/60)×1.35 + knockback_max`；用于domain reachability与swept threat，不是边界容忍带 |
 | `max_separation_radius` | 所有敌人 separation_radius **上界**(query_radius 用,见 §4.2) | EnemySystem | `max(per-type separation_radius)`;per-type 在 Config |
 | `separation_radius` | (同 max_separation_radius,registry 旧名)max_query_radius 全局预算用 | EnemySystem | = `max_separation_radius`;见上 |
 | `knockback_max` | 击退最大越界 | **Combat/DamageSystem** | 归属声明:Combat/Damage owner(Open Question #2 确认);EnemySystem 只消费 |
 
-> **registry entry 补充(advisory,回填时执行)**:上述 3 个 gated 值
-> (`max_enemy_bound`/`enemy_overshoot_max`/`max_separation_radius`)当前仅
-> 作为 `max_query_radius`/`index_margin_lower_bound` 公式*内变量*出现,无独立
+> **registry entry 补充(advisory,回填时执行)**:上述 gated 值
+> (`max_enemy_bound`/`enemy_step_bound`/`max_separation_radius`)当前仅
+> 作为 `max_query_radius`/`world_reachability_budget` 公式输入出现,无独立
 > source-owned registry entry。Config 调参后回填时须补独立 entry(source:
 > enemy-system.md)。`deterministic_axis(handle_a, handle_b)` 零向量退化轴
 > 非跨边界事实(仅本 GDD 内),不入 registry。
 
-### 4.7 index_margin 下界约束(Stage F5)
+### 4.7 World-domain 与远距退役边界
 
-```
-index_margin_min = player_overshoot + max(enemy_overshoot_max, elite_charge_overshoot) + knockback_max + max_enemy_bound
-```
-
-- `player_overshoot` = 4.5/60 = 0.075(Stage 已冻结)
-- `max(enemy_overshoot_max, elite_charge_overshoot)`:普通敌越界与精英冲刺越界
-  **取大者**进入 margin 下界(非相加——并发时刻不同,精英 charge 单 tick 0.405 >
-  普通敌单 tick,但两者不同帧叠加;F-1 fix:原公式仅含 enemy_overshoot_max,
-  elite_charge_overshoot 仅 R6 文字提及未入公式,口径不一致)。
-- 当前 `index_margin` = 2.0(spike),下界 0.075 + 上述三项。
-- **约束**:`max(enemy_overshoot_max, elite_charge_overshoot) + knockback_max + max_enemy_bound ≤ 1.925`
-  (保证 2.0 充足)。
-- 本 GDD 冻结行为契约;Config 调参后须验证此不等式成立。若 move_speed/
-  shape_bound/knockback 超预期导致违反,须重跑 SpatialGrid F3 sweep 并
-  上调 `index_margin`(联动 Stage GDD)。
-- **R6 fix(Config readiness gate,第三轮复审 B-2 虚引修正)**:`index_margin ≥ index_margin_min`
-  为 Config build_snapshot 的实引校验项(stage-map R5 L71 已声明 Config 校验此条,与 AC-D3 一致)。
-  原"elite_charge_overshoot ≤ 剩余 margin 为 Config build_snapshot blocking 校验项"为**虚引**——
-  config-data-system.md build_snapshot(L24)未定义 elite_charge_overshoot 此条校验(grep 确认无命中),
-  enemy-system 作为 consumer 不得单方面声称 owner Config 已有此 gate。**修正**:`elite_charge_overshoot
-  ≤ 剩余 margin` 降为 **advisory Config 调参后验证项**(非既有 blocking gate);Config GDD 若须将其
-  升为实引校验,须由 config owner 修订 config-data-system.md build_snapshot 校验项清单(跨文档
-  传播项,见 review-log B-2)。当前 3/4 项未定值,约束待 Config 调参后可验证。
+- EnemySystem每次movement/blink写inactive motion bank前，验证完整足迹位于
+  `world_safe_aabb=[-16384,16384]²`；不做clamp、wrap、suspend或origin rebasing。
+- Config以1800秒技术时限和`world_reachability_budget`证明合法速度、复活、
+  spawn outer extent、despawn margin与最大actor bound不会触达技术域。违反即
+  Loading失败；运行时仍越域则`POSITION_OUT_OF_RANGE`→ControlledGameplayFault。
+- 普通敌是否因远离玩家而退役不由EnemySystem自行判断。SpawnDirector在
+  DEFERRED_REMOVAL生成无奖励retire intent；EnemySystem只按同一lifecycle journal
+  执行Grid remove→Pool release。elite/Boss不走此距离退役路径。
 
 ## 5. Edge Cases
 
 ### 5.1 池耗尽(POOL_EXHAUSTED)
 
 - enemy_normal pool(320)耗尽:borrow 返回 POOL_EXHAUSTED → GameRoot 进
-  ControlledGameplayFault(TECHNICAL_ABORT,不写奖励/纪录)。
-- 预防:SpawnDirector admission check 先于 borrow(ENEMY cap=303,普通 300
-  上限),理论上 borrow 不应耗尽(320 pool > 300 active)。若耗尽说明状态
+  ControlledGameplayFault。EnemySystem 不再产出本 fault tick 的死亡/掉落 staging；是否结算 fault 前已提交事实与技术补偿只由 GameRoot `RunOutcomeEnvelopeV1`/Save 状态机决定。
+- 预防:SpawnDirector admission check 先于 borrow(ENEMY cap=303,普通 298
+  上限),理论上 borrow 不应耗尽(320 pool > 298 active)。若耗尽说明状态
   泄漏(slot 未归还),FAULT 是正确响应。
-- enemy_elite pool(6)耗尽:精英并发上界 2,6 > 2,理论不耗尽;若耗尽同上。
+- enemy_elite pool(6)耗尽:精英active并发上界4，另有spawn-before-release 1与spare 1；若耗尽同上。
 - enemy_boss pool(1):Boss 唯一,borrow 失败说明 Boss 已存在,SpawnDirector
   须先查 active。
 
@@ -674,28 +673,21 @@ index_margin_min = player_overshoot + max(enemy_overshoot_max, elite_charge_over
 
 - SpawnDirector admission check:ENEMY 注册数 ≥ 303 时普通怪 borrow 抑制
   (发布前抑制,fresh insert only)。
-- 精英/Boss 预留 3 槽(2 elite + 1 boss):普通怪上界 300,即使精英/Boss
+- 精英/Boss 预留 5 槽(4 elite + 1 boss):普通怪上界 298,即使精英/Boss
   未激活也不挤占预留。
 - CAPACITY_EXCEEDED 不产生幽灵实体(AC-E11):被抑制的 spawn 请求不创建
   Node、不借 pool、不 insert grid。
 
 ### 5.3 精英并发(夺宝持久化)
 
-- 精英 `max_concurrent = 2`(设计冻结):夺宝机缘可持久化 2 精英同时在场。
-- 2 精英占 303 cap 中的 2 槽,与 safety_spare(300 普通 + 2 精英 + 1 Boss)
-  对齐。
-- **勿改 max_concurrent=2 → 4**(会破坏 303 对齐;若需更多精英,须先扩
-  `pool_capacity_enemy_elite` 与 cap,再修订本 GDD + Config R4 + Object
-  Pooling R1)。
+- 精英 `max_concurrent = 4`(RiskChoice设计冻结):两只夺宝机缘精英与6:00/10:00两只fixed Elite均未死亡时可同时在场。
+- 4 精英占 303 cap 中的 4 槽，normal hard cap=298并另保留1 Boss槽；Pool 6按4 active+1 spawn-before-release+1 spare精确定容。
+- 本裁决替代旧的“2 Elite + safety spare”解释；后续若要第5只active Elite，必须同步修订RiskChoice、Config、Spawn、Grid、Pool与本GDD，不能继续借spare。
 
 ### 5.4 Grid 失效 / teardown
 
-- Object Pooling R8:teardown 须 SpatialGrid invalidated 后才调
-  release/reset_for_pool。
-- 顺序:GameRoot 停 phase → SpatialGrid invalidate → EnemySystem
-  DEFERRED_REMOVAL remove(已 invalidated,remove 为 no-op 或安全)→
-  release pool。
-- 若 Grid 未失效即 release,remove 会操作已释放 grid → FAULT。
+- 正常phase 6必须在Grid有效时让同一intent row随`remove→unbind→release/reset`单调推进。Fault teardown先停止consumer/phase；GameRoot从journal与fact ledger完成owner logical detach，并按visible committed row=0/＞0执行0/恰1次batch authority publish，再使Grid全局invalid，最后调用Pool teardown best-effort reset/queue_free。Grid已invalidated后禁止伪造一次`remove=OK`；teardown的全局invalidation本身就是旧handle全部stale的已提交事实。
+- EnemySystem 不直接拥有 Grid/Pool teardown 顺序，也不在 Grid invalid 后逐 enemy 调 operational remove。任何 release-before-remove（正常 phase）或 invalidation 后继续 operational mutation 都是 fault。
 
 ### 5.5 Paused quarantine(resume binding)
 
@@ -707,14 +699,9 @@ index_margin_min = player_overshoot + max(enemy_overshoot_max, elite_charge_over
 
 ### 5.6 Boss 阶段切换
 
-- Boss carrier 暴露 `on_phase_transition(phase)` 钩子;BossStateMachine #18
-  在 health 跨越 50% 时调用。**钩子契约(decision,解 OQ6 部分)**:`#18`
-  在 GameRoot **DEFERRED_REMOVAL** phase(Combat 应用 damage 后)调用钩子;
-  钩子**同步、不中断载体追踪**(载体基础追踪/分离继续);#18 的 FSM 状态集
-  切换由 #18 自行排队(若 Boss 正在载体动作中,#18 状态切换等当前动作节拍点
-  生效,钩子本身不重入)。"节拍点"语义(FSM 边界/动画帧/时间窗)与阶段切换属性
-  生效帧时机(当帧 vs 下一 MOVEMENT_COMMIT)defer #18/RECOMMENDED AI-6(见 §10 OQ13)。
-  #18 GDD 最终定调用 phase 与重入语义。
+- Boss capability由Enemy在phase6实际应用matching damage resolution并取得receipt后判定50% crossing、exact-once排队；phase5 lethal projection保持只读无状态写。Enemy在下一Active `MOVEMENT_COMMIT`同步调用`on_phase_transition(PHASE_2)`。release PONR前telegraph取消，
+  BITE只收敛当前18-tick segment，已release projectile由其owner继续，recovery取消；随后进入90-tick
+  PHASE_SHIFT。不存在动画帧节拍或当帧偷偷换参数。
 - 阶段切换不销毁/重 borrow Boss(pool_key=3 唯一);只切 FSM 状态集。
 - 切换时若 Boss 在分离修正中,修正继续(载体行为不因阶段切换中断)。
 
@@ -724,23 +711,19 @@ index_margin_min = player_overshoot + max(enemy_overshoot_max, elite_charge_over
 > 每 tick full 更新,无屏幕外失步。死亡事件每 tick 在 DEFERRED_REMOVAL 检
 > health(不受 LOD 影响,此条保留)。
 
-### 5.8 敌人越界 arena
+### 5.8 远离玩家与技术域越界
 
-- 敌人追踪可能被分离修正/击退推出 arena AABB。
-- `index_margin`(2.0)即为此预留:越界 ≤ index_margin 不算泄漏(grid 仍
-  注册)。
-- 超出 index_margin:clamp 回 arena 边界 + margin(实现 defer ADR;行为
-  契约:敌人不永久脱离战场)。**边界堆积防护(ai R7)**:多个同时越界敌人
-  clamp 时沿击退/位移方向投影到边界线(保留沿边分量),非钳到单一边界点
-  (避免下一帧 overlap 爆炸性推开);或限制单帧 clamp 数量并接受残留由分离消化。
-- 腐毒妖藤(固定原地)不移动,无越界风险;甲壳妖虫(behavior 3)接近玩家
-  停下释放 aura,移动距离有限,越界风险低。
+- 普通敌中心越过玩家相对`spawn_outer_half+despawn_margin`时，由SpawnDirector
+  生成无奖励退役intent；这不是死亡，不产出DEATH fact、掉落或击杀统计。
+- elite/Boss不按距离自动退役，继续full simulation与draw-cull。
+- 任意敌完整足迹越`world_safe_aabb`不是正常退役条件，而是配置/状态破坏：
+  motion snapshot不发布，进入ControlledGameplayFault；禁止clamp回玩家附近。
 
 ### 5.9 ControlledGameplayFault
 
 - GameRoot R5/R9:POOL_EXHAUSTED/OBJECT_INVALID/phase failure →
   ControlledGameplayFault。
-- 玩家见"战局状态异常"UI;TECHNICAL_ABORT,不写胜负/死亡/奖励/纪录/教程。
+- EnemySystem不写胜负/死亡纪录/教程，也不自行计算奖励或补偿。正常Outcome尚未seal时，GameRoot以`TECHNICAL_ABORT`展示“战局状态异常”并只消费fault前已提交facts；若正常Outcome已经seal，后续Enemy cleanup fault不得改写`outcome_kind`，只记录独立`RunCompletionStatusV1.completion_fault_code`。任何路径都严禁把fault tick未COMMITTED staging当成奖励来源。
 - 敌人状态:phase 停,所有 enemy frozen;池不归还(局结束统一 teardown)。
 
 ### 5.10 零距离重合退化(新增)
@@ -752,10 +735,10 @@ index_margin_min = player_overshoot + max(enemy_overshoot_max, elite_charge_over
 
 ### 5.11 spawn_context 版本不匹配
 
-- spawn_context schema 按 pool_key 版本化(Poolable/v1)。
-- 若未来 schema 变(加字段),contract version 升级 v2;旧 spawn_context
+- spawn_context schema 按 carrier version 与 pool_key contract版本化。
+- RiskChoice集成已把carrier升级为v2；旧v1 spawn_context
   与新 contract 不兼容 → borrow 前 version check,不匹配 FAULT。
-- 当前 v1:5 字段(behavior_id/pos/facing/time/seed)。
+- 当前v2为10字段：V1五字段加provenance、choice ID、stage snapshot ID与两个属性倍率。
 
 ### 5.12 Perf-pressure 优雅降级(decision 2026-08-25,R-PA C1/C2 闭合;第二轮复审诚实化)
 
@@ -763,7 +746,7 @@ index_margin_min = player_overshoot + max(enemy_overshoot_max, elite_charge_over
   "ControlledGameplayFault(abort 整局)"两档(R-PA 指出此风险)。
 - **裁定(诚实化,第二轮复审修订)**:原"不恢复旧 LOD"为绝对话,与档1语义矛盾。
   旧 sim-LOD(隔 tick 更新全 sim)与 §4.2 单调收敛契约(假设每 tick 更新)直接冲突,
-  stage-map R1 固定相机全显 arena 下 reduced-sim-LOD 确为死代码——此点成立。
+  旧固定arena下reduced-sim-LOD曾是死代码；Stage V2后仍因authority一致性而不恢复。
   但**分离域 distance-LOD ≠ 已移除的 sim-LOD**(作用域是分离 query 而非全 sim,
   keying 是"距玩家"而非"屏内外")。escape valve 降级**分离质量**而非 sim 帧率,阶梯:
   1. **分离域 distance-LOD**(诚实命名,是新 LOD 非旧 sim-LOD):远离玩家的敌人
@@ -790,27 +773,43 @@ index_margin_min = player_overshoot + max(enemy_overshoot_max, elite_charge_over
 
 | 系统 | 状态 | 依赖契约 |
 |---|---|---|
-| SpatialGrid | Approved | ENEMY type_mask=1 注册;phase insert/stage/remove;`query_circle_into`(sep_radius+max_separation_radius,语义统一见 §4.2);R8 禁遍历全场;R9 CAPACITY_EXCEEDED 303;R10 排除 self handle;AC-E11 无幽灵(spatial-grid AC-E11,编号避让见 §8) |
-| Object Pooling | Approved | 三 pool_key(1/2/3,capacity 320/6/1);Poolable contract(reset_for_borrow/reset_for_pool 零分配);carrier 字段;R5 binding matrix;R6/R7 paused quarantine;R8 teardown 顺序;R9 POOL_EXHAUSTED→Fault |
+| SpatialGrid | Re-review Pending | ENEMY type_mask=1 注册;phase insert/stage/remove;`query_circle_into`(sep_radius+max_separation_radius,语义统一见 §4.2);phase-6 remove journal；R9 CAPACITY_EXCEEDED 303;R10 排除 self handle |
+| Object Pooling | Re-review Pending | 三 pool_key(1/2/3,capacity 320/6/1);Poolable contract(reset_for_borrow/reset_for_pool 零分配);phase-6 release/retire journal；paused quarantine与三次resume publish |
 | Config/Data | Draft(foundation 冻结) | EnemyNormalPoolable/v1/Elite/v1/Boss/v1 factory contract;6 普通共享 normal contract(behavior ID 区分);behavior 表(属性/动画/攻击);criticality=GAMEPLAY |
 | GameRoot | Draft | phase participant(`participant_id`/`run_phase`/allowed phases);7 phase 顺序;`_physics_process` 默认关闭;R5 status+rollback;R9 ControlledGameplayFault |
-| Stage | Approved | arena 22×40;spawn ring depth=4.0;inner_rect;boss_region;`index_margin`=2.0;F5 `index_margin_min` 公式 |
-| RNG | Approved(间接) | 不直接依赖;`spawn_seed` 由 SpawnDirector 从 `run_seed`(GATE-G2)派生传入 spawn_context |
+| Stage | In Review / Re-review Pending | Camera2D锁玩家；22.5×40可见域；玩家相对offscreen ring；`world_safe_half_extent=16384`；无玩法边界clamp |
+| RNG | Re-review Pending(间接) | 不直接依赖;`spawn_seed` 由 SpawnDirector 从 `run_seed`(GATE-G2)派生传入 spawn_context；diagnostic sidecar待集成 |
 
 ### 6.2 下游消费者(本 GDD 提供契约)
 
 | 系统 | 状态 | 本 GDD 提供的接口 |
 |---|---|---|
-| SpawnDirector | Not Started | borrow 触发时机;spawn_context schema(5 字段);admission check(303 cap,2 elite+1 boss 预留);**精英召唤/借 pool 经 GameRoot intent latch 下一 tick SPAWN_INTENT 执行**(禁止跨 phase 同步 borrow);borrow→insert 时序协调(待 SpawnDirector GDD) |
-| DropSystem | Not Started | 死亡事件(经 GameRoot staging bank,payload `{borrow_id,behavior_id,death_position,spawn_seed}`,不走 emit);掉落表查询接口;DEFERRED_REMOVAL 死亡→remove→release 顺序 |
-| Combat/DamageSystem | Not Started | `take_damage(amount, source)` 直接方法调用接口(非 emit);`knockback_vector` 传入(1-tick 延迟);`knockback_max` 归属声明(Combat owner);health ≤ 0 死亡(经 staging bank);**player-enemy 接触检测由 Combat 侧 SpatialGrid query(PLAYER vs ENEMY)**,因敌人非物理;精英技能意图经 staging latch 由 Combat 在 QUERY_CONSUME pull |
-| BossStateMachine #18 | Not Started | Boss carrier `on_phase_transition(phase)` 钩子(#18 在 DEFERRED_REMOVAL 调用,见 §5.6);Boss 基础追踪/受击/死亡;pool_key=3 载体契约 |
-| RiskChoiceSystem | Not Started | 暂停时 enemy quarantine(经 GameRoot phase 停);无直接接口(经 GameRoot) |
-| Elite Enemies | Not Started | 精英 FSM 契约(本 GDD 已定义,见 3.6);behavior_id=6/7 |
+| SpawnDirector | Full Review Pending | 玩家相对四strip或summoner-local ring；固定8 attempts/24 RNG words；23-row intake；normal距离退役；SpawnContextCarrierV2十字段；下一tickSPAWN_INTENT借池/insert时序 |
+| DropSystem | Designed / Full Review Pending | 死亡事件经GameRoot 303-row staging bank，payload固定8字段`{death_fact_sequence,enemy_id,borrow_id,behavior_id,death_position,spawn_seed,spawn_provenance,source_choice_id}`且不走emit；Drop逐字段join committed DEATH并负责掉落；DEFERRED_REMOVAL死亡→remove→release顺序 |
+| Combat/DamageSystem | Not Started | `take_damage(amount, source)`直接调用；`knockback_vector/max`边界；health≤0死亡staging；敌人AoE只查`ENEMY`，玩家受击读取`PlayerMotionCommitCarrierV1`后直接窄相，禁止`PLAYER` Grid type；精英技能intent由Combat在QUERY_CONSUME pull |
+| PlayerController | Re-review Pending | 已静态接纳A/B `EnemyThreatSnapshotV1` current+swept schema；提交足迹相交NORMAL的完整tuple总序`ReviveClearIntentBankV1`，Enemy/GameRoot按terminal precollection、full-reserve、fact-first PONR与journal收敛；runtime integration待证 |
+| BossStateMachine #18 | Designed / Full Review Pending | behavior8内容唯一owner；Enemy内typed capability、下一MOVEMENT_COMMIT阶段切换、Boss基础追踪/受击/死亡与pool_key=3载体契约 |
+| RiskChoiceSystem | Designed / Full Review Pending | `SpawnContextCarrierV2` provenance/choice/stage/1.30倍率；4 active Elite、45秒后不退场、death join只读 |
+| Elite Enemies | Designed / Full Review Pending | behavior 6/7内容唯一owner：FSM/攻击/首伤门/召唤/表现；本GDD仅提供driver与载体 |
+
+### 6.2a GameRoot owner capacity contribution（第九轮传播）
+
+以下actual rows只把既有`max active ENEMY=303`与`behavior_id=0..8`映射到中央容量，不新增或抬高玩法数值：
+
+| required_role_id | capacity_kind | outcome_field_id_or_none | required_max | owner_contract_id | source_gdd_path | role_stable_order | kind_stable_order | field_stable_order |
+|---|---|---|---:|---|---|---:|---:|---:|
+| `ENEMY` | `LIFECYCLE_INTENT` | `NONE` | 303 | `EnemySystem/v1` | `design/gdd/enemy-system.md` | 4 | 1 | 0 |
+| `ENEMY` | `FACT_COMMIT` | `NONE` | 303 | `EnemySystem/v1` | `design/gdd/enemy-system.md` | 4 | 2 | 0 |
+| `ENEMY` | `PAUSE_CLOSURE` | `NONE` | 303 | `EnemySystem/v1` | `design/gdd/enemy-system.md` | 4 | 3 | 0 |
+| `ENEMY` | `BLOCKING_CHOICE` | `NONE` | 0 | `EnemySystem/v1` | `design/gdd/enemy-system.md` | 4 | 4 | 0 |
+| `ENEMY` | `OUTCOME_FIELD` | `committed_kill_type_ids` | 9 | `EnemySystem/v1` | `design/gdd/enemy-system.md` | 4 | 5 | 22 |
+| `ENEMY` | `OUTCOME_FIELD` | `committed_kill_counts` | 9 | `EnemySystem/v1` | `design/gdd/enemy-system.md` | 4 | 5 | 23 |
+
+前三条303分别来自active cap下每个完整lifecycle identity在同tick最多一条最终remove/retire intent、death fact与未完成lifecycle closure的保守既有上界；同一identity的正常死亡与`REVIVE_CLEAR`先去重且正常死亡语义优先，二者共享而不叠加突破303。所有revive clear journal row也固定计入ENEMY，不转嫁给PLAYER。PAUSE_CLOSURE的一行对应一个journal intent的`FINALIZE_POOL_RELEASE`，内部unbind+release不拆成606条。0表示Enemy不拥有阻塞选择；9来自behavior 0..8。Config按全局tuple排序并校验组合唯一，禁止把owner-local行号或303/9解释成新spawn目标。
 
 ### 6.3 跨系统边界声明
 
-- **spawn_context ownership**:EnemySystem 冻结 schema(5 字段);SpawnDirector
+- **spawn_context ownership**:EnemySystem 冻结 `SpawnContextCarrierV2` 10字段；SpawnDirector
   构造并传入;ObjectPool 按版本化 contract 解析。
 - **behavior_id ownership**:Config 维护 ID→资源映射;EnemySystem/SpawnDirector
   只消费 int。
@@ -830,7 +829,7 @@ index_margin_min = player_overshoot + max(enemy_overshoot_max, elite_charge_over
 
 | 参数 | 说明 | 约束/来源 |
 |---|---|---|
-| `move_speed` | 基础移速(units/sec) | per-type;max 影响 `enemy_overshoot_max`(4.6) |
+| `move_speed` | 基础移速(units/sec) | per-type；max影响`enemy_step_bound`与world reachability(4.6/4.7) |
 | `base_health` | 基础生命 | per-type;×`stage_health_multiplier`(4.3) |
 | `base_damage` | 基础伤害 | per-type;×`stage_damage_multiplier`;Combat 消费 |
 | `separation_radius` | 期望分离距离 | per-type;max 影响 registry `separation_radius`(4.6) |
@@ -850,37 +849,40 @@ index_margin_min = player_overshoot + max(enemy_overshoot_max, elite_charge_over
 
 > cap 触发后该倍率不再随阶段增长(仅未达 cap 的维度继续涨),保证后期敌人"更密更快"非"更肉更痛"。
 
-### 7.3 精英 FSM 参数(per elite behavior_id)
+### 7.3 精英 FSM 参数 echo（非权威）
 
-数值为 spike 锚点(标 `[spike]`,待 Config 调参 + balance pass);状态机边
-定义见 §3.6。
+唯一内容源为`design/gdd/elite-enemies.md` §7；本表只供Enemy driver接线核对，
+Config hash不一致必须fail closed，禁止从本表恢复旧值。
 
 **巨甲蜈蚣(behavior_id=6)** — CHARGE 三连击 → WEAKENED 循环:
 
 | 参数 | spike 值 | 说明 |
 |---|---|---|
-| `charge_count` | 3 | 一次 CHARGE 连击次数 |
+| `charge_segment_count` | 3 | 一次chain的冲刺段数 |
 | `charge_trigger_range` | 6.0 | 进 TELEGRAPH_CHARGE 的距离阈值(units,§3.6.1 唯一独有,R2 fix 补入 §7.3) |
 | `charge_distance` | 6.0 | 单次冲刺位移(units;CHARGE 行进度量沿锁定轴投影,见 §3.6.1) |
 | `charge_speed` | 18.0 | 冲刺速度(units/sec,~3× 基础移速;越界核查见 §4.6 elite_charge_overshoot) |
-| `charge_telegraph_seconds` | 0.4 | 冲刺前 telegraph(玩家闪避窗口) |
-| `charge_cooldown_seconds` | 5.0 | CHARGE 间冷却 |
-| `weakened_seconds` | 2.5 | WEAKENED 窗口(玩家输出机会,不反击) |
+| `charge_telegraph_ticks` | 24 | 冲刺前telegraph(玩家闪避窗口) |
+| `charge_link_ticks` | 6 | 每段之间可观察断点；保持原锁定方向 |
+| `charge_cooldown_ticks` | 300 | 三段chain完成后的循环冷却 |
+| `weakened_ticks` | 150 | WEAKENED窗口(玩家输出机会,不反击) |
+| `weakened_damage_taken_multiplier` | 1.25 | PROVISIONAL-BALANCE；Damage owner应用 |
 | `knockback_resistance` | 0.85 | 击退抗性(0-1,1=免疫) |
 
 **鬼雾修士(behavior_id=7)** — BLINK + 召唤 + 魂针:
 
 | 参数 | spike 值 | 说明 |
 |---|---|---|
-| `blink_period_seconds` | 6.0 | BLINK 触发周期(召唤频率 = blink 频率,无独立 summon_period) |
-| `telegraph_blink_seconds` | 0.3 | BLINK 落地前 telegraph(R7 fix:§3.6.2 引用但原 §7.3 缺失,补入) |
+| `blink_period_ticks` | 360 | BLINK触发周期(召唤频率=blink频率) |
+| `telegraph_blink_ticks` | 18 | BLINK落地前telegraph |
 | `blink_offset_min` | 1.5 | 落点偏移半径下界(§3.6.2,玩家点+seed 偏移) |
 | `blink_offset_max` | 2.5 | 落点偏移半径上界 |
 | `summon_count` | 3 | 单次召唤数量(受 pool cap-full 约束,见 §3.6.2 cap-full 行为 + §5.7) |
-| `fan_needle_duration` | 0.4 | FAN_NEEDLE 状态持续时长(R6 fix:FSM 退出谓词计时阈值,计满进 SUMMON;原"扇形释放完成"不可判) |
+| `recover_ticks` | 24 | 魂针完整plan latch后的后摇；旧fan_needle_duration别名废弃 |
+| `soul_needle_count` | 3 | 三枚原子Projectile batch |
 | `soul_needle_range` | 5.0 | 魂针扇形半径(units;§3.6.2 统一用此名,原 `fan_needle_range` 命名分裂已并) |
 | `soul_needle_angle_deg` | 60 | 魂针扇形角度 |
-| `soul_needle_telegraph_seconds` | 0.5 | 魂针预警时长 |
+| `soul_needle_telegraph_ticks` | 30 | 魂针plan前预警时长 |
 | `knockback_resistance` | 0.5 | 击退抗性 |
 
 ### 7.4 普通敌人行为参数(per normal behavior_id)
@@ -936,8 +938,7 @@ index_margin_min = player_overshoot + max(enemy_overshoot_max, elite_charge_over
 
 ### 7.5 spawn_context 字段(已冻结,3.3)
 
-5 字段 frozen v1:`behavior_id`/`spawn_position`/`spawn_facing`/
-`spawn_time_seconds`/`spawn_seed`。schema 变更须升级 contract version(5.10)。
+10字段 frozen v2：`behavior_id/spawn_position/spawn_facing/spawn_time_seconds/spawn_seed/spawn_provenance/source_choice_id/stage_snapshot_id/max_hp_multiplier/base_damage_multiplier`。schema 变更须升级carrier contract version(5.11)。
 
 ### 7.6 pool 参数(上游冻结,Object Pooling)
 
@@ -971,7 +972,7 @@ index_margin_min = player_overshoot + max(enemy_overshoot_max, elite_charge_over
 
 ### 8.1 性能(source §15.4 + technical-preferences)
 
-- **AC-E1**`[C,ADVISORY→release-gate,SPIKE-GATED 未冻结]`:303 实体同屏(300 普通+2 精英+1 Boss)
+- **AC-E1**`[C,ADVISORY→release-gate,SPIKE-GATED 未冻结]`:303实体同屏（298普通+4 Elite+1 Boss）
   目标 50 FPS+(帧预算 16.6ms)。无 min-spec Android 真机前为 ADVISORY(deferred);
   真机就绪后以 `benchmark_ready` manifest 采样(中端设备 5 分钟战斗 session +
   **stress-window 采样**:含 12:00 Boss 出场 + 满屏怪潮 + 多技能同放的最坏 1 分钟;
@@ -987,7 +988,7 @@ index_margin_min = player_overshoot + max(enemy_overshoot_max, elite_charge_over
   - **AC-E2a**`[L]`(第二轮复审重写,去时序回归+拆 avg/max):原"复杂度不退化为 O(N²)"+"
     耗时回归拟合近 O(N)"与 §4.2 pair-ops 上界 N(N-1)/2=O(N²) 直接矛盾(全聚集=割草稳态非
     edge case),且"耗时"违 coding-standards"no time-dependent assertions"。改为**确定性
-    操作计数断言**(非耗时):**(a) avg-散布**:均匀铺开 arena 下 pair-ops ~O(N×avg_neighbors),
+    操作计数断言**(非耗时):**(a) avg-散布**:均匀铺开测试区域下 pair-ops ~O(N×avg_neighbors),
     N=10/100/30 三档 pair_ops 比率近 O(N)(容差 ±5%);**(b) max-全聚集**:全聚玩家点下
     pair_ops ≤ N(N-1)/2(N=303 时 ≤45,753,pair-once 去重后,见 §4.2),**不退化为 per-enemy
     各处理一次的 91,606**(Option B 去重上界)。AC-E2a 用"均匀散布"配置测复杂度趋势;AC-E10a
@@ -1004,9 +1005,8 @@ index_margin_min = player_overshoot + max(enemy_overshoot_max, elite_charge_over
     QUERY_CONSUME ≤ 子预算前不冻结、不给 BLOCKING 数字**(spike-gated,拆分冻结)。MOVEMENT_COMMIT/
     GRID_SYNC/QUERY/QUERY_CONSUME/DEFERRED_REMOVAL 子预算占比声明,最终值归 J2 owner。**真机
     P95 超预算时触发 §5.12 perf-pressure 降级 escape valve**(best-effort 非保证兜底,可能最终 FAULT)。
-- **AC-E3**`[REMOVED]`:LOD reduced 移除(BL9,见 §4.4 / §1 LOD removed 注;
-  F3 fix:原引"§3.9"不存在,节跳 3.8→3.10)。性能改由 AC-E1 统一 303 实体预算约束,
-  无屏幕内外区分(stage-map R1 相机固定全显 arena)。
+- **AC-E3**`[REMOVED]`:sim LOD仍移除；Stage V2的屏内/屏外只影响表现与
+  SpawnDirector生成/退役判定，所有active敌统一按AC-E1预算参与模拟。
 
 ### 8.2 池化与零分配(Object Pooling)
 
@@ -1071,14 +1071,12 @@ index_margin_min = player_overshoot + max(enemy_overshoot_max, elite_charge_over
   不要求严格收敛。
   测试:**k∈{2, 303}** 两档(k=2 初始 distance=0→overlap=2×sep_radius 完全重合;k=303
   全聚一点;R-QA 修正初始 overlap 描述:完全重合 overlap=2×sep_radius 非 sep_radius),
-  sep_radius 用 fixture 常量覆盖,逐帧断言 (a)(b)(c) + 帧数 ≤ 上界。
+  sep_radius 用 fixture 常量覆盖；所有overlap变化oracle按“tick T phase 5冻结next槽，tick T+1 phase 2消费并在phase 3发布后再测量”取样，禁止在T phase 5后假定位置已变化。逐帧断言(a)(b)(c)+帧数≤上界。
 - **AC-E10b**`[L]`(第二轮复审拆断言时序+参数序):零距离重合退化(distance=0)用确定性
   单位向量(§4.2 B1 fix + deterministic_axis 公式)分离,不产生 NaN/永久重合。
-  **断言拆分(R-QA/SD)**:帧 1(distance=0)断言 `correction_dir == deterministic_axis(h_a, h_b)`
-  (参数序约定 `h_a < h_b`,函数内规范化,见 §4.2 F-2 fix);帧 3 断言 `distance > 0`(此时
+  **断言拆分(R-QA/SD)**:tick T phase 5(distance=0)断言`correction_dir==deterministic_axis(h_a,h_b)`且位置未变、next槽非零；tick T+1 MOVEMENT_COMMIT消费后、GRID_SYNC发布时断言distance>0且next槽已先清零（随后T+1 phase 5可写下一值）；第3个发布位置快照再断言持续分离。参数序约定`h_a<h_b`，见§4.2 F-2 fix。此后
   correction_dir 已切换为 `Normalize(self.pos - b.pos)`,**不再等于** deterministic_axis——
-  原 AC 第 3 帧断言两者相等会失败)。测试:两敌人 `spawn_position` 完全相同,固定 handle 对,
-  断言帧 1 方向契约 + 帧 3 分离。
+  原AC第3帧断言两者相等会失败。测试：两敌人`spawn_position`完全相同、固定handle对，断言T计算/T+1消费边界与第3个发布快照分离。
 - **AC-E11a**`[L]`:等质量对(两普通 / 两精英同级)修正对称(各推 overlap/2)。
 - **AC-E11b**`[L]`:异质量对(精英 vs 普通 / Boss vs 普通)按质量比分配(重者
   位移少)。质量比具体数值 defer ADR;AC 用"重者位移 ≤ 轻者位移"行为断言
@@ -1088,7 +1086,7 @@ index_margin_min = player_overshoot + max(enemy_overshoot_max, elite_charge_over
 - **AC-E11c**`[L]`(F-9 fix:pair-once 去重守卫):QUERY_CONSUME 每无序对 (a,b)
   全局**仅处理一次**(仅 `neighbor.handle > self.handle` 分支,§3.8/§4.2),
   双方各写一侧修正。测试:构造 N=10 敌人全互相 overlap → 计入 `pair_ops` 计数器,
-  断言 == `N(N-1)/2 = 45`(非 `N(N-1)=90`);并断言每对 (a,b) 恰有一方 `correction`
+  断言 == `N(N-1)/2 = 45`(非 `N(N-1)=90`);并断言每对 (a,b) 恰有一方 `next_separation_correction`
   含该对 push(无重复累加)。代码审计:`rg --glob '*.gd' 'handle\s*[<>]=?\s*\w+\.handle' src/enemy/`
   命中去重守卫须存在(非每邻居无条件处理)。
 
@@ -1112,6 +1110,7 @@ index_margin_min = player_overshoot + max(enemy_overshoot_max, elite_charge_over
 - **AC-E14b**`[I]`:OBJECT_INVALID → ControlledGameplayFault,不 crash。
 - **AC-E14c**`[I]`:phase failure → ControlledGameplayFault;玩家见安全停止
   UI(GameRoot 域)。
+- **AC-E14d**`[I]`:Config逐行读回本节6条贡献；303/303/303/0与9/9任一缺失、重复、负数或改变即`battle_ready=false`。phase6 ordinary arm在visible rows=0/1/303各执行全量authority copy恰1，publish分别为0/1/1；不得用整run`<=1`替代逐arm oracle。
 
 ### 8.6 LOD 行为
 
@@ -1128,7 +1127,7 @@ index_margin_min = player_overshoot + max(enemy_overshoot_max, elite_charge_over
   文件级断言 `ls src/enemy/enemy_*.gd` 命中数 ≤ 3(允许 poolable 基类族
   `EnemyPoolable`/`EnemyNormalPoolable`/`EnemyElitePoolable`,禁止 6 行为各自独立
   脚本;R-QA:原 ≤1 过严,基类族必然 >1)。
-- **AC-E19**`[L]`:spawn_context 5 字段全 primitive,无 Dictionary/Array 运行时
+- **AC-E19**`[L]`:`SpawnContextCarrierV2` 10字段全 primitive,无 Dictionary/Array 运行时
   构造(零分配验证 + 代码审计)。**第三轮复审 B-8 守卫方式修订**:原裸 rg regex
   `\{[^}]*behavior_id` 误中 `#` 注释行(schema 记号)与 AC-E30a FSM 数据表
   `{trigger, action, next}` 字面量,需人工核放行——非确定性 CI gate(coding-standards
@@ -1136,7 +1135,7 @@ index_margin_min = player_overshoot + max(enemy_overshoot_max, elite_charge_over
   静态断言 + `tools/ci/static_guard_check.py` AST 守卫**(R4 根因1:原"gdlint AST 规则"虚构——gdlint
   无自定义规则/插件 API,改由 gdtoolkit.parser AST 脚本守卫):spawn_context 载体声明为 BATTLE_LOADING 预分配 typed carrier
   (`class_name SpawnContextCarrier`,per-field typed accessor 非 Dictionary),AC 断言:
-  (1) 载体类型为 `SpawnContextCarrier`(非 Dictionary);(2) 5 字段为 typed primitive
+  (1) 载体类型为 `SpawnContextCarrierV2`(非 Dictionary);(2) 10字段为typed primitive
   (int/Vector2/float,非 Variant);(3) `tools/ci/static_guard_check.py` AST 守卫(与 AC-E37/E4-code
   同脚本;R4 根因1:用 gdtoolkit.parser 库,非 gdlint 插件 API——后者经 qa-lead 实测确认不存在)
   守卫 src/enemy/ 无 `Dictionary(` 运行时构造 + 无 `{[^}]*behavior_id` 字面量赋值(AST
@@ -1151,23 +1150,19 @@ index_margin_min = player_overshoot + max(enemy_overshoot_max, elite_charge_over
 
 ### 8.8 死亡与回收
 
-- **AC-E21**`[L]`:health ≤ 0 → DEFERRED_REMOVAL `remove`(BLOCKING)→ release →
-  `reset_for_pool` 顺序执行;remove-before-release(无 release 前未 remove)。
-- **AC-E22a**`[L]`:死亡事件 payload 含 `borrow_id`+`behavior_id`+
-  `death_position`+`spawn_seed`(4 字段,经 GameRoot SoA staging bank,§3.11 R14 fix:
-  4 条并行 PackedArray,Vector2 入 `PackedVector2Array death_positions`,write-index
-  索引写非 `append()`)。断言存储布局 + 零分配写入路径(非仅"含 4 字段")。
-- **AC-E22b**`[I]`:DropSystem 消费 staging bank payload 完成掉落判定
-  (集成测试:构造死亡事件 → DropSystem 读到完整 4 字段)。
+- **AC-E21**`[L]`:health ≤ 0 → DEFERRED_REMOVAL 严格执行
+  先提交一条`DEATH` gameplay fact，再使同一lifecycle row按`RESERVED→GRID_REMOVED→POOL_UNBOUND→POOL_RELEASED|POOL_RETIRED`推进；remove-before-release，Pool私有release FSM保证reset/free-stack exact-once，journal不得按side effect新增多row。
+- **AC-E21b**`[I]`:构造同tick多敌死亡，在第N个intent的fact commit/remove/unbind/reset后分别注入failure；断言已COMMITTED的DEATH fact恰一次、每intent journal始终一row且state不回退、旧handle/borrow永久stale、之后intent未执行，cleanup重放不重复死亡payload、drop staging、reset或free-stack push。独立运行四类传播fixture：仅COMMITTED fact、仅进入`GRID_REMOVED/POOL_UNBOUND/POOL_RELEASED/POOL_RETIRED`的lifecycle row、两者同时存在、两者均不存在；再分别覆盖visible row总数1/N/capacity与matching success/fault convergence。GameRoot每tickphase-begin full authority copy恰1次；`committed_authority_visible_rows==0`时batch publish=0且revision delta=0，`>0`时matching end或fault convergence batch publish恰1且revision delta=1，next authority逐字段精确反映全部committed facts/rows，随后按seal边界进入ControlledGameplayFault或保留normal outcome。不得以整run copy/publish `<=1` 作为PASS。
+- **AC-E22a**`[L]`:死亡事件payload逐字段等于`{death_fact_sequence,enemy_id,borrow_id,behavior_id,death_position,spawn_seed,spawn_provenance,source_choice_id}`（8字段，经GameRoot SoA staging bank，8条并行PackedArray，Vector2入`PackedVector2Array death_positions`，write-index索引写非`append()`）。断言303 required−1/required/+1、存储布局、DEATH fact sequence与Risk choice identity一致及零分配写入路径，非仅“含8字段”。
+- **AC-E22b**`[I]`:DropSystem在同帧消费staging完成掉落判定；完整matching行恰消费一次，duplicate matching为OK_NOOP，逐字段缺失/stale borrow/duplicate conflict在额外DROP RNG或plan mutation前fault。
 
 ### 8.9 registry 回填
 
-- **AC-E23a**`[C]`:回填 `max_enemy_bound`/`enemy_overshoot_max`/
-  `separation_radius` 到 registry(referenced_by `max_query_radius`+
-  `index_margin_lower_bound`)。
-- **AC-E23b**`[C]`:回填后重跑 SpatialGrid F3 sweep,验证
-  `index_margin_min ≤ index_margin`(2.0);违反须上调 index_margin(联动
-  Stage)。
+- **AC-E23a**`[C]`:回填`max_enemy_bound`/`enemy_step_bound`/
+  `separation_radius`到registry，分别供`max_query_radius`与
+  `world_reachability_budget`消费。
+- **AC-E23b**`[C]`:以最大速度/冲刺/击退/shape bound重跑Stage V2
+  1800秒reachability proof和SpatialGrid F3 sweep；不得创建旧margin或clamp参数。
 - **AC-E23c**`[C]`:`knockback_max` 归属声明 Combat/DamageSystem(OQ2);
   本 GDD 不回填,待 DamageSystem GDD 确认 owner。
 
@@ -1183,8 +1178,7 @@ index_margin_min = player_overshoot + max(enemy_overshoot_max, elite_charge_over
   SpawnDirector 接口);负向命中须 == 0
   `rg --glob '*.gd' 'if\s+.*should_spawn|is_spawn_time' src/enemy/`(R-QA:原"无
   spawn 时机判断"散文不可 grep,改为正向接口 + 负向时机判断 regex)。
-- **AC-E27**`[L]`:Boss 阶段切换 FSM 不在本 GDD 实现(`on_phase_transition`
-  钩子供 #18;#18 Not Started 时 Boss 只跑载体行为)。
+- **AC-E27**`[L]`:Boss阶段FSM内容不在本GDD重复实现；Enemy只调用BossStateMachine typed capability并拥有载体/HP/lifecycle。没有Boss content row或capability时battle load失败，不以“只跑基础追踪”进入production。
 
 ### 8.11 新增 AC(BL4 补齐)
 
@@ -1192,25 +1186,25 @@ index_margin_min = player_overshoot + max(enemy_overshoot_max, elite_charge_over
   FIFO mutation queue,经 GameRoot phase 停;resume 不丢 enemy 位置/血量 +
   **FSM 计时器快照**,R-AI N4 补)。测试:pause 中产生 N 个 spawn 请求 →
   resume → 请求按 FIFO 执行 M=N(量化"无丢失",R-QA 补)。
-- **AC-E29**`[I]`:精英召唤遇 pool cap-full 时不重试本周期 + 逸散 VFX
+- **AC-E29**`[I]`:精英召唤cluster遇Normal class不足3槽时不重试本周期 + 逸散 VFX
   (F3 fix:行为定义在 **§3.6.2 cap-full 行为 + §3.11 逸散 VFX intent**,非原
   误引"§5.7"——§5.7 是已移除的 LOD 节);不阻塞 GameRoot。测试:构造
-  **active+pending 达 303 cap**(非"耗尽 normal pool 320"——pool 未必耗尽,
-  admission 抑制;R-QA 措辞修正)→ 鬼雾修士召唤 → 断言无 spawn 产生 +
-  VFX 触发 + 下一周期才重试。
-- **AC-E30a**`[L]`:精英 FSM 状态机表每条边含 `{trigger, action, next}`,
-  **trigger 须可判**(计时阈值/距离/事件,非"释放完成"散文;R6 fix:鬼雾修士
-  FAN_NEEDLE 用 `fan_needle_duration` 计时阈值)。代码审计(F2):负向命中须 == 0
+  **Normal active+pending 为295/296/297/298**(非"耗尽 normal pool 320"——pool 未必耗尽,
+  admission 抑制)→ 鬼雾修士3-child cluster → 断言结果只能3/0/0/0 +
+  失败时聚合VFX恰一次 + 下一周期才重试；每child仍消费24 words。
+- **AC-E30a**`[L]`:Elite GDD权威FSM表每条边含 `{trigger, action, next}`,
+  **trigger 须可判**(整数tick/距离/已latch token,非"动画/释放完成"散文；鬼雾修士
+  必须先满足30t TELEGRAPH_NEEDLE再latch三针)。代码审计(F2):负向命中须 == 0
   `rg --glob '*.gd' 'if\s+state\s*==|match\s+state\b' src/enemy/`(FSM 数据表化)。
-- **AC-E30b**`[L]`:巨甲蜈蚣 CHARGE→WEAKENED→CHARGE 循环可驱动(单元测试:
-  注入触发条件 → 断言状态迁移符合表;**含 arena 边界场景**:CHARGE 朝边冲刺
-  被 clamp → 视为撞墙 → charge_count++ → 能达 WEAKENED,R5 fix;**含敌群分离
+- **AC-E30b**`[L]`:巨甲蜈蚣三段CHARGE+LINK→WEAKENED→TRACK循环可驱动(单元测试:
+  注入触发条件 → 断言状态迁移符合表；无墙/边界分支，仅投影达到
+  每段authored progress达到`charge_distance`时segment index递增，段间6t且不重瞄；**含敌群分离
   反推场景 B1 fix**:CHARGE 中在冲刺轴前方注入密集敌群分离反推 → 断言
   charge_progress(沿锁定轴投影)单调不减 + 仍能达 charge_distance=6.0 进
   WEAKENED,验证分离修正仅作用垂直分量未致投影不增死锁)。
-- **AC-E30c**`[L]`:鬼雾修士 BLINK 落点 = `player_position + UnitVector(seed
-  angle) × offset_radius`,clamp 进 arena AABB(§3.6.2)。测试:固定 seed →
-  断言落点确定性;落点超出 arena → 断言被 clamp 到边界内。
+- **AC-E30c**`[L]`:鬼雾修士BLINK落点=`player_position + UnitVector(hash(seed,cycle))
+  × lerp(1.5,2.5,hash(seed,cycle))`并做real_t32 readback。固定seed/cycle断言落点确定；合法值
+  原样发布，越world domain则不发布并fault，断言不存在clamp/wrap。
 - **AC-E30d**`[L]`(B3 fix):甲壳妖虫(behavior_id=3,normal 桶)数据驱动
   mini-FSM CHASING/ATTACKING 可判。测试:玩家接近至 `distance ≤ stop_distance`
   → 断言进入 ATTACKING(停身,move 位移为 0);玩家退至 `distance >
@@ -1237,6 +1231,7 @@ index_margin_min = player_overshoot + max(enemy_overshoot_max, elite_charge_over
   (写 GameRoot staging slot),不直接施加伤害——伤害由 Combat pull 后施加(验证 carrier 无 damage
   formula 调用,归 AC-E25);**死亡-during-预警 edge**:预警期间 health 被打到 ≤0 → 断言仍触发
   自爆 intent latch(预警 latch 优先于死亡流程,§3.12 B4 fix)。
+- **AC-E30i**`[U][I]`(Player复活边界):以303行snapshot、duplicate enemy_id/different完整tuple及多种物理排列验证A/B header、九parallel arrays、current/swept bounds与完整identity；Player选中clear行仅含圆形玩法足迹真实重叠/相切NORMAL且按四字段tuple总序，非圆NORMAL、swept<current或behavior swept上界缺失均在load失败。分别注入terminal preview=VICTORY、stale handle/borrow、正净空NORMAL、ELITE/BOSS、全量journal reserve第N行失败、DAMAGE fact commit前失败及commit后第N条lifecycle失败：preview胜利/点前Enemy side effect=0；点后只推进已预留row并exact-once收敛，无DEATH/kill/XP/drop/reward/record。自爆fixture另断言Grid query mask仅为`ENEMY`，玩家窄相只读matching motion carrier，仓库中无`PLAYER` Grid type或组合mask。
 - **AC-E31**`[L]`(第二轮复审改 BLINK 帧语义):BLINK 落点不校验敌人重叠(靠分离 §3.8
   消化);落点处即使有重叠,**满足 AC-E10a(c) BLINK 帧分段契约**——允许 BLINK 帧瞬时
   overlap 增加,后续 ≤ frames_to_epsilon 帧内收敛至 ε(原"满足 AC-E10a 单调递减"对 BLINK
@@ -1252,8 +1247,9 @@ index_margin_min = player_overshoot + max(enemy_overshoot_max, elite_charge_over
   恰封顶(`1+0.18×12=3.16→cap`,§7.2)而 `damage_multiplier == 1+0.12×12=2.44 < 2.5`
   未封顶(`stage=13` 才 `2.56→cap 2.5`)→ stage 12→13 增长**只**涨 damage 不动 health
   (验证 cap 独立、各自阶段生效)。
-- **AC-E34**`[L]`:enemy 移动后位置 clamp 进 arena AABB(遵 Stage R1,不出界)。
-  测试:构造靠边敌人 + 朝外位移 → 断言 committed_pos 在 arena AABB 内。
+- **AC-E34**`[L]`:enemy移动后完整足迹须位于`world_safe_aabb`。合法位置逐bit
+  不改写；越域返回`POSITION_OUT_OF_RANGE`、旧snapshot保持且进入fault，
+  断言无clamp/wrap/suspend。
 - **AC-E35**`[I,ADVISORY]`:腐毒妖藤(behavior_id=2)静态不移动(OQ7
   待 performance 核验;若改为缓慢漂移则本 AC 作废,改测漂移速度)。F0 fix:
   原"conditional"非标准 gate,改 ADVISORY;OQ7 解后转 BLOCKING 或作废(非
@@ -1284,8 +1280,8 @@ EnemySystem 视觉/音频契约(节点细节 defer 节点架构 ADR):
 - 动画资源由 Config behavior 表索引(`behavior_id` → AnimationLibrary)。
 - 动画状态机由 FSM 驱动(普通敌人简单 idle/move/hit/death;精英 FSM
   状态对应动画)。
-- 动画统一 60fps(LOD reduced 移除,见 §4.4 / §1 注;F3 fix:原引"§3.9"
-  不存在;stage-map R1 相机固定全显 arena,无屏幕内外帧率区分)。
+- 动画统一60fps simulation cadence；视口外可停止提交draw，但不得改变
+  gameplay FSM、碰撞、threat或lifecycle cadence。
 - 动画切换零分配(`StringName` warmup 缓存 `&"..."`,§3.4;R-GS:play() 内部
   emit `animation_started/finished` warmup 不消除,载体 AnimationPlayer 内置
   信号 warmup 期断开,gameplay 动画事件改由 FSM 计时器轮询驱动,非 play() emit)。
@@ -1293,7 +1289,7 @@ EnemySystem 视觉/音频契约(节点细节 defer 节点架构 ADR):
 ### 9.2 受击反馈
 
 - 受击视觉:闪白(材质 shader param)/击退位移(Combat 传 vector)。
-- 受击音效:由 Combat/DamageSystem 或 AudioSystem 触发(EnemySystem **写
+- 受击音效：由Damage committed receipt提供唯一命中语义，Audio Feedback调度播放（EnemySystem **写
   staging latch**(零分配,§3.4;禁 `emit_signal` 带参,违 AC-E4),不直接播音频)。
 - 死亡视觉:death 动画 + 粒子由**独立 VFX 池节点**播放(非 enemy 载体);
   health ≤ 0 触发 DEFERRED_REMOVAL,enemy 载体立即回池(§3.11,F3 fix:原引
@@ -1306,15 +1302,15 @@ EnemySystem 视觉/音频契约(节点细节 defer 节点架构 ADR):
 - **无 sim-LOD**:LOD reduced 移除(BL9,见 §4.4 / §1 注;F3 fix:原"§3.9
   删除"不存在),所有敌人(屏内/屏外)统一参与模拟(分离/受击/死亡),无隔 tick
   降级。**perf-pressure 降级见 §5.12**(非恢复 sim-LOD,而是分离质量降级)。
-- **draw-cull**:Godot 内置视口 cull 自动处理可见性剔除(渲染层,不影响
-  模拟)。stage-map R1 相机固定一屏全显 arena 22×40,arena 内敌人基本全可见,
-  draw-cull 触发极少;是否手动 cull defer 节点架构 ADR(OQ1)。
+- **draw-cull**:Godot内置视口cull处理镜头外敌人（渲染层，不影响模拟）。
+  是否增加手动presentation cull defer节点架构ADR；任何cull不得成为spawn、
+  damage、threat或distance-retire的authority来源。
 
 ### 9.4 音频
 
-- 敌人音频(攻击/死亡/精英技能)由 AudioSystem 触发(EnemySystem **写 staging
+- 敌人音频中，攻击/精英技能由matching action generation、死亡由committed DEATH提供语义，再由Audio Feedback调度（EnemySystem **写 staging
   latch**(零分配,§3.4;禁 `emit_signal` 带参,违 AC-E4))。
-- 300 实体音频上限/合并策略归 AudioSystem/VFX GDD;本 GDD 不限。
+- 303实体压力下的event rows/maxima由Enemy与各content owner签发，voice/合并策略归Audio Feedback；当前H_enemy仍BLOCKED，不能用303直接当voice数。
 
 ## 10. Open Questions
 
@@ -1333,34 +1329,26 @@ EnemySystem 视觉/音频契约(节点细节 defer 节点架构 ADR):
 2. **knockback_max 归属**:本 GDD 声明归 Combat/DamageSystem owner
    (4.5/4.6);待 DamageSystem GDD 确认。若 DamageSystem 声明归
    EnemySystem,本 GDD 须加 knockback 公式。
-3. **max_enemy_bound per-type vs 上界**:本 GDD 选上界(4.6);待 Config
-   调参 + F3 sweep 验证上界满足 `index_margin` 约束(4.7)。若超须上调
-   `index_margin`。
-4. **分离修正时序** ✅ RESOLVED(2026-08-25 用户裁定;第三轮复审 B-9 传播修正):分离修正
-   **本帧 MOVEMENT_COMMIT 生效**(QUERY 读上帧 committed 快照→QUERY_CONSUME 算
-   separation_correction→本帧 MOVEMENT_COMMIT 叠加进 committed_pos;grid staged
-   位置始终含分离,仅 QUERY 读快照滞后 1 帧 16ms)。AC-E10a/b 已据此定稿。
-   详见 §3.8 裁定块/§4.1/§4.2。**注**:原 OQ4 措辞"下帧 committed_pos"及
-   "bounded 收敛 ≤3 帧"为 stale(§4.2 已降级为收敛帧数非定值 3),已修正。
+3. **max_enemy_bound per-type vs 上界**:本GDD选上界(4.6)；待Config调参、
+   Stage V2 reachability proof与F3 sweep验证。任何失败须调整技术域/时限/速度
+   或对象bound并提升revision，不得恢复clamp。
+4. **分离修正时序** ✅ RESOLVED（2026-08-28第六轮纠错，替代2026-08-25同tick裁定）：tick T QUERY_CONSUME计算并冻结`next_separation_correction`，tick T+1 MOVEMENT_COMMIT恰消费一次、清零并由GRID_SYNC发布；延迟完整一个physics tick。AC-E10a/b按发布后位置取样。详见§3.8/§4.1/§4.2。原“本帧MOVEMENT_COMMIT生效”在七phase顺序下不可实现，已废弃；“bounded收敛≤3帧”亦保持废弃。
 5. **borrow→insert 时序**(部分解):方向已定——**禁止跨 phase 同步 borrow**;
    若 borrow 请求到达时不在 SPAWN_INTENT phase,经 GameRoot **intent latch**
    缓存,下一 tick SPAWN_INTENT 执行(§6.2)。仍未决:同 SPAWN_INTENT phase
    内的 borrow→insert 具体子顺序(reset_for_borrow→bind→grid insert 的原子性),
    随 SpawnDirector GDD(Not Started)协调。
-6. **Boss carrier 与 #18 run_phase 边界**(部分解):方向已定——Boss
-   作为 EnemySystem participant(共享 pool_key=3 载体),`on_phase_transition`
-   钩子由 #18 在 DEFERRED_REMOVAL phase 调用(§5.6)。仍未决:#18 是否需独立
-   run_phase participant,还是纯经 EnemySystem 暴露钩子。待 #18 BossStateMachine
-   GDD 定。
+6. **Boss carrier 与 #18 run_phase 边界** ✅ RESOLVED（2026-09-03）：BossStateMachine
+   是Enemy `stable_order=4`内部typed capability，不新增participant；Enemy继续拥有pool_key3
+   载体/HP/position/death/lifecycle，并在合法phase同步调用。BATTLE_RULES仍是独立未完成owner。
 7. **腐毒妖藤静态处理**(待定):固定原地不移动,是否仍进 SpatialGrid 分离
    查询(ENEMY 类型一致)还是静态标记?本 GDD 当前假定进 grid 一致性(被查
    不查;静态敌人可作"只被查"优化)。performance-analyst 建议静态优化提升为
    MVP 必做(避免 300 实体全查分离的浪费),**待定**——需先有真机 separation
    phase 基准数据(AC-E2 子预算)才能裁定优化收益。AC-E35 标 conditional。
-8. **精英 FSM 状态集充分性**(进展):§3.6 已补可编码状态机表(每条边
-   `{trigger, action, next}`)+ spike 锚点数值(§7.3)+ AC-E30a/b/c/d(BL7
-   闭合)。仍需 playtest + design-review 验证状态集是否足够(可能需扩展:
-   瞬移次数上限/虚弱时长调参);数值待 Config 调参 + balance pass。
+8. **精英 FSM 内容所有权** ✅ RESOLVED（2026-09-03）：behavior 6/7状态图、
+   tick参数、攻击/召唤/表现唯一归`elite-enemies.md`；本GDD只拥有共享driver与载体。
+   仍需clean-context review与playtest，不以authoring同步视为批准。
 9. **GDScript 可行性 spike(性能 AC 前置门,第二轮复审新增)**:GDScript 纯解释
    执行 300 实体全 sim 在全聚集割草稳态下的可行性未经验证(AC-E2b 量级估算
    100-1000× 超预算)。须 spike 实测:全聚集 303 实体 QUERY_CONSUME 在中端
@@ -1370,25 +1358,16 @@ EnemySystem 视觉/音频契约(节点细节 defer 节点架构 ADR):
    (拆分冻结:行为契约已冻结)。此 OQ 与 OQ1 节点架构 ADR 强耦合,建议同期推进。
    (注:原 AC-E2b/§5.12 误将性能 spike 称"OQ7",OQ7 实为腐毒妖藤静态处理,已修正为 OQ9。)
 
-10. **SUMMON_BLOOD_PUPPET 瞬时语义(第三轮复审 RECOMMENDED AI-3)**:鬼雾修士
-   SUMMON_BLOOD_PUPPET 状态耗 0 tick——intent latch 当帧完成即进 TRACK,不跨帧
-   等待 SpawnDirector 实际 borrow(§3.6.2 L284 已隐含"已 latch→TRACK",此为
-   显式确认)。待 SpawnDirector GDD 定 borrow 失败的可见反馈(EnemySystem 当前
-   不感知 borrow 成败,只 latch intent)。
-11. **blink_offset_radius seed 派生(第三轮复审 RECOMMENDED AI-4)**:§3.6.2
-   blink 落点 `blink_offset_radius` 当前仅声明 ∈ [blink_offset_min, blink_offset_max]
-   (§7.3 Config),未明确是否由 spawn_seed 派生固定值(角度已 seed 派生 L289)。
-   建议补 seed 派生 radius(如 `lerp(min, max, hash16(spawn_seed, "blink_r"))`)
-   保证同一 spawn_seed 落点可复现(支持回放/调试)。派生公式待 Config/balance 定。
-12. **精英技能 intent latch 与 Combat pull 同 phase 顺序(第三轮复审 RECOMMENDED AI-5)**:
-   精英技能 intent latch(血傀儡 self-destruct §3.12、鬼雾修士 fan_needle/summon
-   §3.6.2)与 Combat pull 在 QUERY_CONSUME 同 phase 内的执行顺序未显式裁定。
-   当前隐含 EnemySystem latch(QUERY_CONSUME 前段)→ Combat pull(后段)消费。建议
-   显式声明同 phase 内 latch-before-pull 顺序,避免 Combat pull 漏读本帧 latch。
-   待 GameRoot phase 契约 ADR 或 Combat GDD 确认。
-13. **Boss 阶段切换帧时机与节拍点语义(第三轮复审 RECOMMENDED AI-6)**:§5.6
-   "等当前动作节拍点"的"节拍点"语义未定义(动画帧/FSM 边界/固定时间窗?)。
-   阶段切换时属性变化(阶段倍率 §4.3、move_speed、技能集)的生效帧时机(切换
-   当帧 vs 下一 MOVEMENT_COMMIT)未显式裁定。defer BossStateMachine #18 GDD 定
-   节拍点定义与属性生效时机;本 GDD §5.6 仅声明"不销毁/重 borrow Boss、分离
-   修正继续"契约边界。
+10. **SUMMON 瞬时语义** ✅ RESOLVED（2026-09-03）：cluster latch当tick最多一条
+   0-tick提交边，实际3-child borrow固定在下一Active tick SPAWN_INTENT；0或3原子结果、
+   一次逸散与不重试本周期见Elite GDD §3.7。
+11. **blink seed派生** ✅ RESOLVED（2026-09-03）：angle/radius按
+   `{spawn_seed,blink_cycle_index,distinct salt}`纯hash派生，cycle入口冻结且不消费runtime RNG；
+   公式与real_t32 guard见Elite GDD F3。
+12. **精英技能跨phase顺序** ✅ RESOLVED（2026-09-03）：Enemy tick T只latch魂针/
+   summon plan；Projectile/SpawnDirector均在T+1 SPAWN_INTENT消费，禁止同tick borrow。
+   Damage只消费Projectile后续matching hit；具体global producer sum仍BLOCKED。
+13. **Boss 阶段切换帧时机与节拍点语义** ✅ RESOLVED（2026-09-03）：matching
+   phase5 resolution只排队；下一Active MOVEMENT_COMMIT切换。telegraph未release则取消，
+   BITE只收敛当前18-tick segment，已release projectile继续而recovery取消；90-tick
+   PHASE_SHIFT后P2/fog同revision生效，不重borrow、不瞬移，分离修正继续。
