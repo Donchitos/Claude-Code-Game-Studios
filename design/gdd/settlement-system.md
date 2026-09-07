@@ -2,7 +2,7 @@
 
 > **Status**: In Review / Re-review Pending
 > **Author**: 用户 + Codex（lean authoring；consulted systems-designer / economy-designer / qa-lead / UX reviewer）
-> **Created / Last Updated**: 2026-09-03
+> **Created / Last Updated**: 2026-09-07 — 第四次独立full review授权整改传播
 > **Implements Pillar**: 诚实复盘、失败有积累、成功可理解；所有收益以durable事实为准
 > **Scope**: MVP终局规则投影、奖励/纪录候选、sealed Outcome到多domain after-image、保存/放弃/对账呈现、伤害与承伤复盘；不含排行榜、云端、赛季、装备掉落、复杂历史或社交分享
 
@@ -16,7 +16,7 @@ Settlement构造一次完整 `PersistentProfileEnvelopeV1` after-image，把灵�
 
 每局结束都给玩家一个可信、克制而有用的复盘：我活了多久、击杀了什么、哪套功法真正造成伤害、我为何倒下、两次机缘带来了什么，以及哪些收益已经安全带回洞府。失败不是十分钟努力清零，但主动放弃也不会被包装成奖励路径。
 
-玩家应能从伤害排行和承伤来源理解下一局怎么调整，而不是只看一个夸张总分。成功落印只发生一次；保存异常使用中性、可恢复的语言，不用失败重音施压。再次挑战必回Prep重新做准备，不自动沿用或消耗上一局丹药。
+玩家应能从伤害排行和承伤来源理解下一局怎么调整，而不是只看一个夸张总分。成功落印只发生一次；保存异常使用中性、可恢复的语言，不用失败重音施压。再次挑战重新评估当前可用种子：有库存才进入Prep，无库存则同一按键明确NONE并直接开局；两路都不自动沿用或消耗上一局丹药。
 
 ## 3. Detailed Design
 
@@ -38,20 +38,20 @@ BATTLE_RULES只从matching published authority与COMMITTED fact/receipt读取：
 |---:|---|---|---|
 | 1 | `SPIRIT_STONES` | BATTLE_RULES聚合actual | Settlement domain |
 | 2 | `CULTIVATION_PAGES` | 0..8 raw；Settlement再按remaining room cap | Progression domain |
-| 3 | `SEED_QI` | Victory candidate×2或Boss线Defeat×1，另可含starter×1 | Zhangtian NINGQI |
-| 4 | `SEED_IRON` | Victory candidate×2或Boss线Defeat×1，另可含starter×1 | Zhangtian TIELING |
-| 5 | `SEED_THUNDER` | Victory candidate×2或Boss线Defeat×1，另可含starter×1 | Zhangtian LEIYUAN |
+| 3 | `SEED_QI` | 只冻结random gross requested：candidate命中时Victory=3、eligible Defeat=1，否则0 | Zhangtian NINGQI |
+| 4 | `SEED_IRON` | 只冻结random gross requested：candidate命中时Victory=3、eligible Defeat=1，否则0 | Zhangtian TIELING |
+| 5 | `SEED_THUNDER` | 只冻结random gross requested：candidate命中时Victory=3、eligible Defeat=1，否则0 | Zhangtian LEIYUAN |
 | 6 | `CORE_HERB` | VICTORY恰1，否则0 | Settlement trophy |
 
-Outcome只encode amount>0的row，按ID升序，count 0..6；`reward_fact_id`在V1即上述stable reward ID，底层fact sequence/provenance由同row的sealed evidence hash绑定，不把运行时sequence冒充reward kind。缺/重/unknown/乱序、negative amount或kind/outcome不合法时不得seal/commit。
+Outcome只encode amount>0的row，按ID升序，count 0..6；seed row只承载本局冻结的random gross requested及candidate provenance，明确不含starter、cap disposition或最终applied amount。`reward_fact_id`在V1即上述stable reward ID，底层fact sequence/provenance由同row的sealed evidence hash绑定，不把运行时sequence冒充reward kind。starter只由matching durable Zhangtian flag在mutation阶段请求一次；缺/重/unknown/乱序、negative amount或kind/outcome不合法时不得seal/commit。
 
-`SettlementRecordManifestV1`恰3行：`BEST_SURVIVAL_TICKS=1,BEST_KILLS=2,BEST_LEVEL=3`。仅Victory/Defeat携带三项candidate；Technical/Abandoned count0。candidate必须finite、非负、为精确整数且分别不超过43200、已签发kill cap、40。
+`SettlementRecordManifestV1`恰3行：`BEST_SURVIVAL_TICKS=1,BEST_KILLS=2,BEST_LEVEL=3`。仅Victory/Defeat携带三项candidate；Technical/Abandoned count0。candidate必须finite、非负、为精确整数且分别不超过108000、已签发kill cap、40。108000来自Stage `max_battle_duration_seconds=1800 × 60Hz`，不以Boss入场tick充当整局上限。
 
 ### 3.3 Outcome rules
 
 | Outcome | Rewards | Profile counters/records | Reservation |
 |---|---|---|---|
-| `VICTORY` | stones、raw pages、random candidate×2、CORE_HERB1、可能starter seed gift | eligible/victory、kills、3 records | consume |
+| `VICTORY` | Outcome含stones、raw pages、random candidate×3、CORE_HERB1；mutation可按flag另请求starter | eligible/victory、kills、3 records | consume |
 | `DEFEAT` | stones、raw pages；`survival_ticks>=43,200`才有random seed | eligible/defeat、kills、3 records | consume |
 | `ABANDONED` | 全0 | 全0；不更新教程/纪录 | consume已选丹药，不补偿 |
 | `TECHNICAL_ABORT` | fault前committed stones/pages；seed/core/record为0 | 不计eligible run/胜负/纪录；可累计已确认stones/pages | 只按sealed technical compensation |
@@ -96,7 +96,17 @@ SettlementMutationBundleV1={
   new_record_bits:i32,mutation_bundle_hash:Hash256,
   next_profile:PersistentProfileEnvelopeV1
 }
+
+AppliedRewardRowV1={
+  reward_id:i32,outcome_requested:i64,starter_requested:i64,
+  applied_amount:i64,cap_disposition:i32,
+  provenance_hash:Hash256
+}
 ```
+
+`AppliedRewardRowV1` canonical little-endian/no-padding固定64 bytes，按reward ID升序放入固定capacity6的tail，未用row全零。`outcome_requested`逐位等于Outcome对应row（无row则0），对seed即random gross requested；seed starter只允许正常VICTORY/DEFEAT且confirmed Zhangtian flag为`unlocked/claimed=0/0`时各类1，其他情况0；`applied_amount`是consume-before-grant后同时受held room与lifetime room约束的唯一到账真相。`cap_disposition={FULL=1,PARTIAL_HELD=2,PARTIAL_LIFETIME=3,NO_ROOM=4,NOT_APPLICABLE=5}`，不得由UI从requested反推。seed row的`provenance_hash`绑定Outcome candidate row与starter flag before-image；其他reward绑定其sealed fact。
+
+Zhangtian解锁/赠礼flag合法矩阵只有`0/0`与`1/1`：空档locked时三类available/reserved/consumed/earned必须全0；首次正常VICTORY/DEFEAT transaction在同一next profile中写三类starter requested并原子迁移到`1/1`。`0/1`、`1/0`或locked非零ledger整包fail closed，不修补、不猜测。
 
 Input的Outcome/Completion/Save必须同nonzero commit ID且已seal/expose；profile/config/manifest/revisions/hash必须matching。Settlement按stable domain ID顺序验证所有规则、构造三个完整next domain及完整next profile，最后一次发布immutable bundle；任何一步失败为0 partial mutation。bundle随Save `PendingOutcomeRecoveryV1` durable stage，重试/reconcile始终复用同bytes/hash，不重新抽种、不重算奖励、不重新比较纪录。
 
@@ -104,7 +114,7 @@ ABANDONED不构造奖励、纪录或教程mutation，但必须构造matching Zha
 
 ### 3.6 Settlement presentation and Save states
 
-页面只消费一个sealed `SettlementPresentationBundleV1={outcome hash,completion hash,mutation hash,save presentation,profile revisions,view generation}`。任一source stale/不完整时保留上一完整帧或显示noninteractive unavailable，禁止新战果+旧奖励公式拼帧。
+页面只消费一个sealed `SettlementPresentationBundleV1={outcome_hash,completion_hash,mutation_hash,save_presentation,profile_revision,zhangtian_domain_revision,config_content_revision,config_content_hash,save_state_revision,available_seed_total,view_generation,direct_none_start_slice:DirectNoneStartSliceV2,bundle_hash}`。奖励文案/数量只读matching `AppliedRewardRowV1.applied_amount+cap_disposition`，绝不展示Outcome random requested或自行叠加starter。`DirectNoneStartSliceV2`沿Prep签发的128-byte exact schema；再次挑战available=0时，`SETTLEMENT_DIRECT_NONE` command的source generation、profile/domain/config/save revisions、两flag与hash必须逐位来自同一bundle内该slice，不得临时跨owner拼接。任一source stale/不完整时保留上一完整帧或显示noninteractive unavailable，禁止新战果+旧奖励公式拼帧。
 
 | State | Player meaning | Primary action |
 |---|---|---|
@@ -117,7 +127,7 @@ ABANDONED不构造奖励、纪录或教程mutation，但必须构造matching Zha
 | `DISCARD_PENDING` | 正在确认放弃 | 继续放弃或核对；不得离开 |
 | `DISCARDED` | 本局进度未保存 | 返回洞府；可再挑战 |
 
-放弃必须二次确认并明确：灵石、残页、种子、纪录、教程不会到账，已获得的丹药成本仍会消费且不返还。commit/tombstone竞态完全投影Save durable precedence；DISCARDED只有在matching reservation也已CONSUMED后才可离开。只有SUCCEEDED/DISCARDED且archive/retire完成后才能离开；“再次挑战”固定进入Prep且初始NONE。
+放弃必须二次确认并明确：灵石、残页、种子、纪录、教程不会到账，已获得的丹药成本仍会消费且不返还。commit/tombstone竞态完全投影Save durable precedence；DISCARDED只有在matching reservation也已CONSUMED后才可离开。只有SUCCEEDED/DISCARDED且archive/retire完成后才能离开。“再次挑战”先读取同一confirmed profile的available seed total：大于0时进入fresh Prep且初始NONE；等于0时由同一press发`SETTLEMENT_DIRECT_NONE`，经noninteractive PREP创建0页面并共享reservation路径直接开局。后一路视觉CTA与screen-reader accessible name都必须明确为“**不服丹，再次挑战**”，不能只写“再次挑战”让NONE语义隐身。
 
 ### 3.7 Statistics projection
 
@@ -145,12 +155,12 @@ SAVE_SUCCEEDED | DISCARDED → ARCHIVE_PENDING → DONE
 |---|---|---|
 | GameRoot | terminal precollection、sealed Outcome/Completion、archive handoff | BATTLE_RULES phase row/reward+record fields；GameRoot仍seal kind |
 | Damage/Enemy/Leveling/Risk | committed totals/counts/level/results | 只copy到Outcome，不重算事实 |
-| Zhangtian | Loading seed candidate、reservation、domain rule | Victory×2/Boss线Defeat×1/starter/consume or compensation after-image |
+| Zhangtian | Loading seed candidate、reservation、domain rule | Victory×3/Boss线Defeat×1/starter/consume or compensation after-image |
 | Progression | raw page row/current room | capped grant after-image |
 | SaveSystem | attempt/result/presentation/durable stage | immutable bundle+full next profile；durability归Save |
 | Config/Data | reward/record/stone manifests与actual capacities | validation/hash；不使用schema hard max1536 |
 | BattleUI | staged terminal handoff | BattleUI不渲染完整结算；旧input先撤销 |
-| Home/Prep UI | navigation target | resolved后才激活，again→Prep |
+| Home/Prep UI | navigation target | resolved后才激活；again按available分流Prep/direct NONE |
 | Audio Feedback | terminal/save/unlock semantics | terminal不重播；durable success合并一次提示 |
 
 ## 4. Formulas
@@ -201,7 +211,7 @@ The `settlement_cultivation_pages` formula is defined as:
 
 | Variable | Symbol | Type | Range | Description |
 |---|---|---|---|---|
-| Survival ticks | `T` | int64 | 0–43200 current | committed Active ticks |
+| Survival ticks | `T` | int64 | 0–108000 | committed Active ticks；Stage 30分钟技术域 |
 | Remaining cost | `C` | int64 | 0–180 current | unbought node checked sum |
 | Unspent pages | `U` | int64 | 0–INT64_MAX | confirmed Progression balance |
 
@@ -213,23 +223,29 @@ The `settlement_cultivation_pages` formula is defined as:
 
 The `settlement_item_rewards` formula is defined as:
 
-`random_quantity = outcome==VICTORY ? 2 : (outcome==DEFEAT AND survival_ticks>=43,200 ? 1 : 0)`
+`random_quantity = outcome==VICTORY ? 3 : (outcome==DEFEAT AND survival_ticks>=43,200 ? 1 : 0)`
 
 `starter_i = I(outcome in {VICTORY,DEFEAT} AND starter_seed_grant_claimed==0)`
 
-`requested_seed_i = random_quantity × I(candidate=i) + starter_i; applied_seed_i=min(requested_seed_i,999-(available_i+reserved_i)); core_herb = I(outcome==VICTORY)`
+`consume_i = I(reservation_disposition==CONSUME AND selected_seed_id==i)`
+
+`available_i^c=available_i; reserved_i^c=reserved_i-consume_i; consumed_i^c=consumed_i+consume_i`
+
+`requested_seed_i = random_quantity × I(candidate=i) + starter_i`
+
+`applied_seed_i=min(requested_seed_i,999-(available_i^c+reserved_i^c),INT64_MAX-earned_i); core_herb = I(outcome==VICTORY)`
 
 **Variables:**
 
 | Variable | Symbol | Type | Range | Description |
 |---|---|---|---|---|
-| Random quantity | `Q` | int32 | 0..2 | Victory=2；Defeat按43,200 tick门槛为1；其他0 |
+| Random quantity | `Q` | int32 | 0..3 | Victory=3；Defeat按43,200 tick门槛为1；其他0 |
 | Candidate | `S` | enum | three seed IDs | Loading frozen result |
 | Starter | `F_i` | int32 | 0 or1 | 首次正常Victory/Defeat且claim=0，各类均1 |
 
-**Output Range:** requested seed row each0..3、requested total0..5；逐类实际applied受`available+reserved<=999`饱和；core herb0/1。
+**Output Range:** normal Settlement transaction先consume matching reservation，再以post-consume held room与lifetime room发放；requested seed row each0..4、requested total0..6，逐类实际applied显式返回held/lifetime partial/no-grant disposition；core herb0/1。Victory只接受ticks43200..108000，其他outcome接受0..108000；一次性starter不进入Victory/Defeat随机seed-per-minute比较。
 
-**Example:** 首次正常Victory且candidate=SEED_IRON：requested seed amounts `[1,3,1]`，core herb1；若铁灵花held=998则实际为`[1,1,1]`并返回partial-cap disposition。
+**Example:** 首次正常Victory且candidate=SEED_IRON：requested seed amounts `[1,4,1]`，core herb1；若铁灵花held=998则实际为`[1,1,1]`并返回partial-cap disposition。
 
 ### F5 — Persistent record update
 
@@ -301,10 +317,10 @@ The `settlement_damage_share` formula is defined as:
 - **If raw totals并列**：stable ID ASC；本地化名字不改变排序。
 - **If纪录tie**：不显示新纪录；只有strict greater更新。
 - **If pages余额已覆盖剩余树**：applied0并说明“现有残页已足够”，不显示虚假+0卡。
-- **If首次Victory随机种与赠礼同类**：该类amount2，其余1，属于同一bundle。
+- **If首次Victory随机种与赠礼同类**：该类amount4，其余1，属于同一bundle。
 - **If CORE_HERB row出现在非Victory**：bundle invalid，不降为普通种子。
 - **If页面重建/reconcile found**：不重播terminal/save/unlock声音。
-- **If再次挑战**：archive/retire完成后进入fresh Prep/selected NONE，不直达Loading。
+- **If再次挑战**：archive/retire完成后重新读取available；大于0进入fresh Prep/selected NONE，等于0走同press `SETTLEMENT_DIRECT_NONE`并创建Prep页面0，不出现空Prep二次确认，也不伪造HOME generation。
 
 ## 6. Dependencies
 
@@ -316,7 +332,7 @@ The `settlement_damage_share` formula is defined as:
 | Progression | F3 cap与domain after-image | Designed；actual Settlement join待证 |
 | Zhangtian | F4、reservation resolution、132-byte domain | In Review / Re-review Pending；runtime待证 |
 | Config/Data | 6 reward/3 record/stone/participant manifests | 静态传播待完成 |
-| BattleUI/Home/Prep | terminal handoff与resolved navigation | 本批次设计；UX/runtime待证 |
+| BattleUI/Home/Prep | terminal handoff与resolved navigation；again按available分流Prep/direct NONE | 本批次设计；UX/runtime待证 |
 | Audio Feedback | terminal/save/unlock one-shot | Designed；正式rows/assets待接 |
 
 ## 7. Tuning Knobs
@@ -328,7 +344,7 @@ The `settlement_damage_share` formula is defined as:
 | spirit stone divisor | 4 XP per stone, ceil | PROVISIONAL-ECONOMY-V1 | 无sink前只作积累分数 |
 | Victory stone bonus | 100 | PROVISIONAL-ECONOMY-V1 | 与敌人价值/首次通关联调 |
 | page milestone/cap | 5400 ticks / 8 | follows Progression | 不复制第二旋钮 |
-| seed weights/quantity/starter | 1/1/1；Victory×2、Boss线Defeat×1；首次正常结算each1 | follows Zhangtian `PROVISIONAL-ECONOMY-V3` | 不在Settlement另配 |
+| seed weights/quantity/starter | 1/1/1；Victory×3、Boss线Defeat×1；首次正常结算each1 | follows Zhangtian `PROVISIONAL-ECONOMY-V5` | Victory域43200..108000，其余0..108000；starter不计随机速率cohort |
 | share precision | 0.1% / sum100.0% | UX LOCKED | 改动需排序/舍入golden |
 | visible summary skills | top3 + all detail | UX PROVISIONAL | 不得丢其余非零项 |
 | Settlement domain max | 136 bytes | FIXED V1 | 改动需migration/capacity重算 |
@@ -337,7 +353,7 @@ The `settlement_damage_share` formula is defined as:
 
 页面优先级为：结果标题→Save状态与唯一主CTA→奖励→核心数据→伤害/承伤/Risk详情→resolved导航。奖励在成功前统一加“待保存”，DISCARDED后移除加号和庆祝态。Victory/Defeat/Technical使用完整/断裂/修复中印章加文字，不能只靠颜色；Abandoned明确“主动离开”。
 
-Save状态卡与底部CTA固定，长统计区域可滚动。基准720×1280、`canvas_items/expand`；支持四档portrait/cutout、100/115/130%字体、英文+30%、灰阶/色弱、reduce motion和静音。touch≥56 logical px；reading order先结果与保存，再奖励/统计/CTA。Android TalkBack/iOS VoiceOver bridge或缩减支持范围ADR未签发前保持`BLOCKED-MOBILE-A11Y-ARCHITECTURE`；dual focus与safe-area仍需真机证据。
+Save状态卡与底部CTA固定，长统计区域可滚动。基准720×1280、`canvas_items/expand`；支持四档portrait/cutout、100/115/130%字体、英文+30%、灰阶/色弱、reduce motion和静音。touch≥56 logical px；reading order先结果与保存，再奖励/统计/CTA。SETTLEMENT是ADR-0001 action-bearing TopState：每个confirmed bundle/layout generation发布完整`AccessibleScreenSnapshotV2`，248-byte rows携带logical bounds、visible/clipped及奖励/Save状态typed localization args；reflow后旧layout callback命令0。架构路径已冻结，Android TalkBack/iOS VoiceOver插件、能力握手、dual focus、safe-area与真机trace仍为`BLOCKED-MOBILE-A11Y-RUNTIME`。
 
 终局音只由GameRoot/Audio唯一winner播放，Settlement入页不补播。Save durable success将所有奖励合并为一次低强度落印声；pending无循环，uncertain/failed无惩罚重音，reconcile/rebuild不重播。
 
@@ -349,11 +365,11 @@ Save状态卡与底部CTA固定，长统计区域可滚动。基准720×1280、`
 
 - **AC-ST01 `[L/I][BLOCKING]` — GIVEN**BATTLE_RULES manifest/phase/contribution required−1/exact/+1，**WHEN**Config加载，**THEN**只接受stable11、phase6/7、fact cap6与8个Outcome fields完整行。
 - **AC-ST02 `[I][BLOCKING]` — GIVEN**四Outcome及producer completeness组合，**WHEN**seal/expose，**THEN**只按§3.3生成允许reward/record/reservation，缺bit时0 page activation。
-- **AC-ST03 `[L/I][BLOCKING]` — GIVEN**6 reward与3 record合法/缺/重/乱序/unknown rows，**WHEN**validate，**THEN**只接受stable IDs、actual caps6/3与matching target domain。
+- **AC-ST03 `[L/I][BLOCKING]` — GIVEN**6 reward、6个64-byte applied rows与3 record合法/缺/重/乱序/unknown rows，**WHEN**validate，**THEN**只接受stable IDs、actual caps6/6/3与matching target domain；Outcome seed只含random gross，starter/cap/applied只在mutation row且presentation只读applied。
 - **AC-ST04 `[L/I][BLOCKING]` — GIVEN**eligible XP0/1/2/4/6/160/240/300及ineligible summon，**WHEN**F1，**THEN**输出0/1/1/1/2/40/60/75及0。
 - **AC-ST05 `[L/I][BLOCKING]` — GIVEN**Victory/Defeat/Abandoned/Technical与mixed committed/staging deaths，**WHEN**F2，**THEN**Victory加100、Abandoned0、Technical仅committed且全checked。
-- **AC-ST06 `[L/I][BLOCKING]` — GIVEN**ticks0/5399/5400/43200与余额room，**WHEN**F3，**THEN**raw0/0/1/8且applied按room cap，Abandoned0。
-- **AC-ST07 `[L/I][BLOCKING]` — GIVEN**四Outcome、Defeat ticks43199/43200/43201、seed candidate、starter claim及held room0/1/2/999，**WHEN**F4，**THEN**Victory candidate×2、Boss线Defeat×1、早败/Technical/Abandoned随机seed0，首次正常结算三类starter各1，core与Zhangtian saturation/守恒逐值匹配。
+- **AC-ST06 `[L/I][BLOCKING]` — GIVEN**ticks0/5399/5400/43200/108000/108001与余额room，**WHEN**validate→F3，**THEN**合法raw0/0/1/8/8且applied按room cap，108001拒绝，Abandoned0。
+- **AC-ST07 `[L/I][BLOCKING]` — GIVEN**四Outcome、ticks0/43199/43200/43201/108000/108001、seed candidate、unlock/claim的`0/0,1/1,0/1,1/0`及locked非零ledger、matching seed reservation、held room0/1/2/999与earned邻近INT64_MAX，**WHEN**validate→F4，**THEN**Victory在43200前拒绝且合法时Outcome random candidate×3，Boss线Defeat×1、早败/Technical/Abandoned random0；mandatory consume先于grant room计算，只有合法0/0的首次正常结算在mutation三类starter各1并原子变1/1，非法flag/ledger与108001整包拒绝，held/lifetime saturation与守恒逐值匹配；starter不计入随机速率cohort。
 - **AC-ST08 `[L/I][BLOCKING]` — GIVEN**old/candidate低/等/高与eligible，**WHEN**F5，**THEN**strict greater才更新/new bit，Technical/Abandoned保持old。
 - **AC-ST09 `[L/I][BLOCKING]` — GIVEN**kill rows0/actual/+1与overflow，**WHEN**F6，**THEN**actual checked sum，+1 upstream拒绝，overflow 0 bundle。
 - **AC-ST10 `[L][BLOCKING]` — GIVEN**damage0、[1,1,1]、ties/NaN/Inf/negative，**WHEN**F7，**THEN**0或总计100.0%、tie stable，非法整组拒绝。
@@ -366,7 +382,7 @@ Save状态卡与底部CTA固定，长统计区域可滚动。基准720×1280、`
 - **AC-ST17 `[I][BLOCKING]` — GIVEN**all Save states，**WHEN**CTA点击/双击，**THEN**逐态唯一主行为、physical writer≤1、pending不能重复submit。
 - **AC-ST18 `[I][BLOCKING]` — GIVEN**SUCCEEDED/DISCARDED archive retire任意bit后crash，**WHEN**restart，**THEN**从首个未完成bit继续且resolved前新局0。
 - **AC-ST19 `[I][BLOCKING]` — GIVEN**sealed stats与已销毁battle tree，**WHEN**Settlement展示，**THEN**Node读取0、排序/amount/death cause逐值等于Outcome。
-- **AC-ST20 `[I][BLOCKING]` — GIVEN**再次挑战/返回/前往研习或掌天瓶，**WHEN**resolved导航，**THEN**archive完成后目标唯一；again进入Prep且selected NONE。
+- **AC-ST20 `[I][A][BLOCKING]` — GIVEN**再次挑战/返回/前往研习或掌天瓶、available=0/>0、两flag合法/非法组合及`DirectNoneStartSliceV2`任一字段/hash单轴stale，**WHEN**resolved导航，**THEN**archive完成后目标唯一；again在>0时进入Prep且selected NONE，在0时仅从同一confirmed Settlement bundle内128-byte slice发一次`SETTLEMENT_DIRECT_NONE`并创建Prep页面0，视觉/读屏名同为“不服丹，再次挑战”；伪HOME source、非法flag、跨owner拼接或旧Settlement generation为0 command。
 - **AC-ST21 `[UX/A][OPEN-EVIDENCE]` — GIVEN**四Outcome×七Save态、四档portrait/cutout、130%字体/长locale/色弱/静音，**WHEN**render，**THEN**P0状态/CTA不裁切、非颜色可辨、touch≥56px。
 - **AC-ST22 `[R/M/E][BLOCKING]` — GIVEN**codec golden、1000经济runs、crash/race、device与allocator harness，**WHEN**签收，**THEN**STATIC/RUNTIME/DEVICE/ECONOMY证据分别通过；单次页面/Save success不得代替。
 
@@ -379,11 +395,11 @@ Save状态卡与底部CTA固定，长统计区域可滚动。基准720×1280、`
 | OQ-ST03 | 6 reward/3 record manifest及codec golden？ | Config/Save | BLOCKED |
 | OQ-ST04 | 三domain bundle、136-byte domain与slot max？ | Save | BLOCKED runtime/capacity |
 | OQ-ST05 | damage/source actual presenter caps与0-allocation排序？ | Owners/Performance | BLOCKED |
-| OQ-ST06 | 正式Settlement UX、TalkBack/VoiceOver bridge、assets/audio？ | UX/Engine/Art/Audio | BLOCKED |
+| OQ-ST06 | 正式Settlement UX、TalkBack/VoiceOver bridge、assets/audio？ | UX/Engine/Art/Audio | ADR-0001路径已冻结；UX/assets/runtime/device BLOCKED |
 | OQ-ST07 | clean-context full review？ | Review team | OPEN |
 
 ## 11. Handoff
 
-本文把缺失的BATTLE_RULES role并入Settlement，冻结terminal reward/record owners、6-row reward、3-row record、136-byte持久domain、完整多domain bundle、Save状态投影与复盘公式。所有灵石数值仍`PROVISIONAL-ECONOMY-V1`；GameRoot/Config/Save反向传播、Godot runtime/crash/device与正式UX均未验证。
+本文把缺失的BATTLE_RULES role并入Settlement，冻结terminal reward/record owners、Outcome random gross与64-byte applied row的单一真相、6-row reward、3-row record、Victory 43200..108000与其他outcome 0..108000输入域、consume-before-grant/lifetime饱和、Victory随机种×3、136-byte持久domain、完整multi-domain bundle、Save状态投影与带128-byte direct-NONE slice的再次挑战。所有灵石数值仍`PROVISIONAL-ECONOMY-V1`；GameRoot/Config/Save反向传播、Godot runtime/crash/device与正式UX均未验证。
 
 状态保持`In Review / Re-review Pending`；应在fresh context运行`/design-review design/gdd/settlement-system.md --depth full`，不能在本作者会话称Approved、implementation-ready或battle_ready。

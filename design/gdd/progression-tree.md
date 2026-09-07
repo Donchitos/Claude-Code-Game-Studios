@@ -2,7 +2,7 @@
 
 > **Status**: In Review / Re-review Pending
 > **Author**: 用户 + Codex（lean authoring；consulted systems-designer / economy-designer / qa-lead / UX reviewer）
-> **Created / Last Updated**: 2026-09-03
+> **Created / Last Updated**: 2026-09-07 — Save generic mutation V2 ABI传播
 > **Implements Pillar**: 少量、明确、不过度替代走位与构筑的永久成长
 > **Scope**: MVP三分支五级功法树、功法残页消费、永久档案、下一局战斗投影与满级perk；不含局内技能升级、装备、境界、洗点或商业化
 
@@ -98,15 +98,16 @@ ProgressionPurchaseCommandV1={
 合法购买先构造完整Progression next-domain：扣残页、加level、spent/sequence/next ID/domain revision checked推进并写receipt，全部成功后才交给Save：
 
 ```text
-ProfileDomainMutationRequestV1={
-  schema_version:i32=1,operation_id:i64,domain_id:i32,
+ProfileDomainMutationRequestV2={
+  schema_version:i32=2,operation_id:i64,attempt_generation:i64,
+  request_id:i64,domain_id:i32,
   expected_profile_revision:i64,expected_domain_revision:i64,
-  mutation_kind:i32,purchase_id:i64,request_hash:Hash256,
+  mutation_kind:i32,business_operation_id:i64,request_hash:Hash256,
   next_domain_record:DomainRecordV1
 }
 ```
 
-Save结构性替换唯一domain并推进profile revision，不解释payload。`ProfileDomainMutationResultV1`封闭code为`SUCCEEDED=1,FAILED=2,UNCERTAIN=3,RECONCILE_FOUND=4,RECONCILE_NOT_FOUND=5,STALE_REVISION=6,CONFLICT=7`，带matching operation/purchase/profile/domain revision与receipt hash；不得伪造`outcome_commit_id`复用终局九code reducer。
+`business_operation_id`逐位等于`purchase_id`；每个fresh attempt必须使用checked非零`attempt_generation`与Save持久allocator签发的非零`request_id`。Save结构性替换唯一domain并推进profile revision，不解释payload。`ProfileDomainMutationResultV2`封闭code为`SUCCEEDED=1,FAILED=2,UNCERTAIN=3,RECONCILE_FOUND=4,RECONCILE_NOT_FOUND=5,STALE_REVISION=6,CONFLICT=7`，带matching operation/attempt/request/purchase/profile/domain revision与非零receipt ID/hash；不得伪造`outcome_commit_id`复用终局九code reducer。
 
 Save必须把请求、旧/新revision、next record与operation identity写入`DurableProfileMutationRecoveryV1`，遵守同一temp+双槽协议。UNCERTAIN时冻结全部新购买，只允许同operation reconcile；FOUND采用durable next profile，NOT_FOUND仍UNCERTAIN。FAILED可回READY但必须保持已确认旧profile；不同fresh command同base revision只有第一个CAS成功，失败者不得自动改绑新revision。
 

@@ -2,7 +2,7 @@
 
 > **Status**: In Review / Re-review Pending
 > **Author**: 用户 + Codex（lean authoring；consulted systems-designer / qa-lead / UX reviewer）
-> **Created / Last Updated**: 2026-09-03
+> **Created / Last Updated**: 2026-09-07 — Zhangtian第四次独立full review授权整改传播；runtime evidence仍OPEN
 > **Implements Pillar**: 诚实、可恢复、exact-once 的“战斗—结算—成长—再开局”连续性
 > **Scope**: MVP 本地存档、终局 commit/discard、开局 reservation、崩溃恢复、schema/损坏处理与 resolved-run 归档；不含云同步、账号、跨设备、反作弊或战斗中途续局
 
@@ -58,15 +58,35 @@ SaveStorePayloadV1={
   terminal_identity_reservation:TerminalIdentityReservationV1?,
   pending_outcome:PendingOutcomeRecoveryV1?,
   pending_profile_mutation:DurableProfileMutationRecoveryV1?,
-  latest_resolution:DurableRunResolutionV1?,
+  latest_resolution:DurableRunResolutionV2?,
   pending_reservation:DurableReservationV1?,
-  prep_commit_journal:PrepCommitJournalV1?,
   active_entry_fact:ActiveEntryFactV1?,
   resolved_archive:ResolvedArchiveStoreV1,
   archive_retire_journal:ArchiveRetireJournalV1?,
   diagnostics:SaveRecoveryDiagnosticV1?
 }
+
+DurableRunResolutionV2={
+  schema_version:i32=2,resolution_kind:i32,
+  reservation_id:i64,battle_instance_id:i64,preparation_id:i64,
+  operation_id:i64,request_id:i64,attempt_generation:i64,
+  resolved_profile_revision:i64,resolved_domain_revision:i64,
+  checkpoint_id:i32,active_entry_present_before:i32,
+  outcome_present:i32,terminal_state:i32,
+  base_reservation_hash:Hash256,final_reservation_hash:Hash256,
+  next_domain_hash:Hash256,durable_receipt_id:i64,receipt_hash:Hash256,
+  archive_entry_id:i64,resolution_hash:Hash256
+}
+
+SaveRecoveryDiagnosticRowV1={diagnostic_id:i64,source_id:i32,
+  result_code:i32,operation_id:i64,request_id:i64,reservation_id:i64,
+  store_generation:i64,arg0:i64,arg1:i64}
+
+SaveRecoveryDiagnosticV1={schema_version:i32=1,row_count:i32,
+  rows:SaveRecoveryDiagnosticRowV1[31],diagnostic_hash:Hash256}
 ```
+
+`DurableRunResolutionV2`固定264 bytes，是reservation终态的有界durable tombstone；`durable_receipt_id`必须是同一terminal transaction由Save持久allocator分配的非零ID，和`receipt_hash`共同构成duplicate/restart可恢复的receipt identity。V1 resolution不得按V2读取，只有显式V1→V2 migration及逐byte golden存在时才可升级；当前作者基线无已发布V1产品存档。`SaveRecoveryDiagnosticRowV1`固定64 bytes，diagnostic store最多31行、固定最大2024 bytes，按diagnostic_id升序保留最近行。unknown/duplicate/out-of-order或hash不等均拒绝，不以诊断恢复业务事实。
 
 跨进程 recovery carrier 固定为：
 
@@ -91,7 +111,36 @@ Save 在终局先 durable reserve `outcome_commit_id`，GameRoot 才能按同一
 
 整数使用 canonical little-endian；字符串为 UTF-8 length-prefix；浮点若由 domain codec 允许，必须 finite、`-0.0` 归一为 `+0.0`、NaN/Infinity 拒绝。数组按 schema 顺序编码，禁止 `Dictionary` 遍历顺序或 `store_var()` 成为 wire ABI。所有 length/count 在分配前做非负、上限与 checked arithmetic 校验。
 
-`Hash256` algorithm ID固定为`SHA256_V1`；Godot 4.7.1实现路径与cross-platform golden仍归 Save codec ADR。所有包含自身hash字段的preimage采用domain-separated zero-field规则：`SHA256(tag || canonical bytes with that hash field=ZERO)`；`slot_hash`覆盖header+payload+footer但将footer.slot_hash置零，`header_hash/profile_content_hash/archive_entry_hash/archive_prefix_hash`各用不同固定ASCII tag。64-bit字段取Hash256低64位时按little-endian无符号解释并逐位装入int64。禁止把 Godot `hash()`、资源路径 hash 或未定义自引用 hash 当作槽损坏校验；generated tag manifest/golden未签发前仍`BLOCKED-HASH-CODEC`。
+`Hash256` algorithm ID固定为`SHA256_V1`；Godot 4.7.1实现路径与cross-platform golden仍归 Save codec ADR。包含自身hash字段的对象使用`SELF_ZERO_FIELD`：`SHA256(tag || canonical bytes with that hash field=ZERO)`；外部payload使用`EXTERNAL_PAYLOAD`：`SHA256(tag || payload_bytes)`且zero range为空。64-bit字段取Hash256低64位时按little-endian无符号解释并逐位装入int64。禁止把 Godot `hash()`、资源路径 hash 或未定义自引用 hash 当作槽损坏校验。
+
+`HashPreimageManifestV1={row_id,stable_order,schema_id,tag_ascii_with_nul,hash_mode,exact_length_or_formula,zero_offset,zero_length,nested_rule,owner}`的Zhangtian/Prep/Save actual rows固定如下；offset从canonical object byte 0起算，`NONE`表示没有zero range：
+
+| row | schema / tag | mode | length | zero offset/len | nested rule |
+|---|---|---|---:|---|---|
+| `HPM01` | `HerbConfigV1\0` | SELF | 232 | 200/32 | recipe rows inline |
+| `HPM02` | `ZhangtianProjectionRulesV1\0` | SELF | 72 | 40/32 | none |
+| `HPM03` | `ZhangtianPreparationSliceV1\0` | SELF | 244 | 212/32 | three recipe views inline |
+| `HPM04` | `PrepPresentationBundleV1\0` | SELF | 520 | 488/32 | attempt/geometry inline |
+| `HPM05` | `PrepareRunRequestV1\0` | SELF | 180 | 148/32 | config/bundle hashes foreign repeated |
+| `HPM06` | `RunStartRecoveryV1\0` | SELF | 360 | 328/32 | semantic offer/loadout hashes foreign repeated |
+| `HPM07` | `PrepCommitJournalV1\0` | SELF | 60 | 28/32 | none |
+| `HPM08` | `DurableReservationV1\0` | SELF | 1088 | 1056/32 | payload/domain/journal inline |
+| `HPM09` | `ZhangtianBattleProjectionV1\0` | SELF | 112 | 80/32 | none |
+| `HPM10` | `ZhangtianSeedCandidateV1\0` | SELF | 132 | 100/32 | none |
+| `HPM11` | `ActiveEntryFactV1\0` | SELF | 92 | 60/32 | none |
+| `HPM12` | `ZhangtianProfileDomainV1\0` | EXTERNAL | 132 | NONE/0 | payload bytes only, no DomainRecord wrapper |
+| `HPM13` | `PreActiveOfferSemanticV1\0` | SELF | 252 | 220/32 | three fixed candidate semantic rows inline |
+| `HPM14` | `PreActiveLoadoutSemanticV1\0` | SELF | 296 | 264/32 | four active plus four aux rows inline, zero tail canonical |
+| `HPM15` | `ReservationUpdateRequestV2\0` | SELF | `164+P` | `132+P`/32 | payload `P` inline; payload_hash foreign repeated |
+| `HPM16` | `AdvanceHandoffPayloadV1\0` | EXTERNAL | 1096 | NONE/0 | payload bytes only |
+| `HPM17` | `UpdateRecoveryPayloadV1\0` | EXTERNAL | 1096 | NONE/0 | payload bytes only |
+| `HPM18` | `MarkActivePayloadV1\0` | EXTERNAL | 1188 | NONE/0 | payload bytes only |
+| `HPM19` | `ResolveReservationPayloadV2\0` | EXTERNAL | 1052 | NONE/0 | payload bytes only |
+| `HPM20` | `RetireReservationPayloadV1\0` | EXTERNAL | 44 | NONE/0 | payload bytes only |
+| `HPM21` | `DurableRunResolutionV2\0` | SELF | 264 | 232/32 | hashes foreign repeated |
+| `HPM22` | `SaveDurableStampFactV1\0` | SELF | 124 | 92/32 | receipt hash foreign repeated |
+
+`SELF`是表格短写，导出值必须是`SELF_ZERO_FIELD`。`P`只允许1096/1096/1188/1052/44并由`ReservationUpdatePayloadManifestV1`按update kind唯一决定。任何tag缺末尾NUL、长度/offset不等、row缺失/重复、nested策略不等或给EXTERNAL行提供zero range都在首字节写入前`INVALID_MANIFEST`。`slot_hash/header_hash/profile_content_hash/archive_entry_hash/archive_prefix_hash`属于Save全局codec manifest的既有独立行，不复用本表tag。actual rows已经是设计输入；生成artifact与cross-platform golden尚未执行，继续标`BLOCKED-HASH-CODEC-EVIDENCE`。
 
 ### 3.3 Domain envelope 与永久档案
 
@@ -153,6 +202,8 @@ V = { s | classify(s) = VALID }
 current = argmax_s∈V (store_generation(s), slot_id_preference(s))
 slot_id_preference(A)=1, slot_id_preference(B)=0
 ```
+
+`LatestResolutionMax=264`必须由上述`DurableRunResolutionV2`逐字段exact重算；`DiagnosticsMax=2024`必须由`8+31*64+32`重算。`ProfileMutationMax=392`由增加`attempt_generation/request_id`后的324-byte最大request、两枚Hash256与state i32逐项重算；因此`SlotPayloadMax=42180`、`SlotEncodedMax=42392`。generator必须逐项校验，不得依赖65,536-byte总slot余量掩盖单项漂移。
 
 | Variable | Type | Range / rule |
 |---|---|---|
@@ -222,31 +273,56 @@ rows按`archive_sequence ASC`占用`[0,count)`。淘汰最旧row前执行`archiv
 
 ```text
 OutcomeBytes = 156 + 16*(K+S+D+W+C) + 12*R
-PendingOutcomeMax = Wrapper + OutcomeBytes + 20 + 64
-                  + NextProfileMax + MutationEvidenceMax
-ProfileMutationMax = ProfileMutationWrapperMax + NextDomainRecordMax
-                   + ProfileMutationEvidenceMax
+PendingOutcomeDerived = 945 + OutcomeBytes
+ProfileMutationDerived = 392
 KnownDomainRecordsMax = (56+176) + (56+132) + (56+136) + (56+60) = 728
 ArchiveRowsBytes = 64 * 72 = 4608
-SlotPayloadMax = CurrentProfileMax + PendingOutcomeMax + ProfileMutationMax
+SaveStorePayloadFixed = 4
+OptionalPresenceBytes = 8
+SlotPayloadMax = SaveStorePayloadFixed + OptionalPresenceBytes
+               + CurrentProfileMax
+               + TerminalIdentityReservationMax
+               + PendingOutcomeMax
+               + ProfileMutationMax
+               + LatestResolutionMax
                + ReservationMax
-               + 4608 + ArchiveMetadataMax + 48 + DiagnosticsMax
+               + ActiveEntryFactMax
+               + ResolvedArchiveStoreMax
+               + ArchiveRetireJournalMax
+               + DiagnosticsMax
+SlotEncodedMax = SlotHeaderMax + SlotPayloadMax + SlotFooterMax
 DiskPeakMin = 3 * SlotMax + FileSystemSafetyMargin
 
-ReservationMax = 1004
+SlotHeaderMax = 120
+SlotFooterMax = 92
+CurrentProfileMax = NextProfileMax = 776
+TerminalIdentityReservationMax = 32
+PendingOutcomeMax = 32768
+ProfileMutationMax = 392
+LatestResolutionMax = 264
+ReservationMax = 1088
+ActiveEntryFactMax = 92
+ResolvedArchiveStoreMax = 4684
+ArchiveRetireJournalMax = 48
+DiagnosticsMax = 2024
+SlotPayloadMax = 42180
+SlotEncodedMax = 42392
 SlotMax = 65536
 FileSystemSafetyMargin = 65536
 DiskPeakMin = 262144
 ```
 
+`SaveCapacityManifestV1`必须恰含上式每个named maximum一行，schema=`{field_id,stable_order,max_bytes,derivation_id,source_schema_id}`；generator逐项重算`PendingOutcomeDerived<=32768`、`ProfileMutationDerived=392`及所有fixed schema bytes，再重算`SlotPayloadMax=42180`与`SlotEncodedMax=42392<=65536`。945由`PendingOutcomeRecoveryV1`除Outcome bytes外的全部字段（含20-byte Completion、64-byte SaveAttempt、present tag+776-byte next profile）逐项相加；392由324-byte最大mutation request+两枚Hash256+state i32得出。缺行、重复、实际encoder长度超过field cap、derived不等、top-level字段未映射或仅依赖总slot余量均为`INVALID_MANIFEST/CAPACITY_EXCEEDED`。
+
 | Variable | Type | Range / rule |
 |---|---|---|
 | `K/S/D/W/C/R` | int32 | Config actual Outcome row capacities；checked，不能统一代1536 |
 | `20/64/72/48` | bytes | Completion/SaveAttempt/ResolvedArchive row/RetireJournal canonical no-padding bytes |
+| top-level maxima | int64 | 上式逐项覆盖`SaveStorePayloadV1`全部字段；8个optional各占1-byte presence tag，required resolved archive单列，不得遗漏后再靠slot余量兜底 |
 | `ProfileMutationMax` | int64 | 同时最多1条pending通用domain mutation；以registered最大domain record与evidence checked sum |
 | `KnownDomainRecordsMax` | int64 | 四个已设计domain的canonical `DomainRecordV1`上界之和728；56为wrapper固定字段，仍不含profile envelope、pending与诊断 |
 | owner maxima | int64 | 各domain manifest签发后checked sum |
-| `ReservationMax` | int64 | 1004 bytes；V1 exact canonical wrapper，不是估算 |
+| `ReservationMax` | int64 | 1088 bytes；V1 exact canonical wrapper，不是估算 |
 | `SlotMax` | int64 | 65,536 bytes；完整header+payload+footer的V1产品硬上限 |
 | `FileSystemSafetyMargin` | int64 | 65,536 bytes；低空间预检保留，不替代真实写入检查 |
 
@@ -254,7 +330,7 @@ DiskPeakMin = 262144
 
 ### 3.6 Commit、discard 与 reconcile
 
-SaveSystem 必须原样遵循 GameRoot `SaveOperationResultV1` 九个 durable result code：
+SaveSystem 必须原样遵循 GameRoot `SaveOperationResultV2` 九个 durable result code；每个fresh-live result还必须逐位返回`profile_revision/domain_revision/zhangtian_unlock_transition/durable_receipt_id/durable_receipt_hash`，不能只给控制头：
 
 - `COMMIT`：先查同 commit durable resolution。已 COMMITTED 返回同一 receipt；已 DISCARDED 返回 stale/invalid no-op；NONE 才校验 base revision、Outcome/Completion hash、mutation bundle 与 next profile，并写 `COMMITTED` after-image。
 - `DISCARD`：先查 resolution。已 COMMITTED 返回 `DISCARD_COMMIT_ALREADY_DURABLE` 与同一 receipt，写 tombstone 数0；已 DISCARDED 返回同一 tombstone；NONE时，若存在matching unresolved reservation，request必须同时携带owner签发的mandatory consume after-image并在同一槽transaction写`DISCARDED+CONSUMED`，否则拒绝。这里“discard不保存奖励/纪录”不等于“撤销已获得的丹药成本”；无reservation的discard才保持profile业务数据逐位不变。
@@ -266,34 +342,43 @@ SaveSystem 必须原样遵循 GameRoot `SaveOperationResultV1` 九个 durable re
 
 writer 在任何写入前必须持有进程级唯一 `SaveWriterLease`；同一进程由 singleton executor 保证，两个实例/进程竞争时只有取得平台排他锁者可写，另一方进入只读 `WRITER_BUSY`。固定`physical_write_in_flight=1`、`queued_operation_capacity=1`；逻辑timeout不取消仍在执行的物理写，后续reconcile/discard只能排队，并在真正写前重扫最高generation与同commit resolution。Godot 4.7.1 的可靠锁实现尚需 ADR/平台 spike，未闭合前 `BLOCKED-PLATFORM-DURABILITY`。
 
-`SaveExecutorThreadingV1`固定线程拓扑：GameRoot主线程只做schema/identity/revision验证并把不可变canonical byte buffer移交给唯一worker；worker独占`FileAccess`、平台barrier/replace adapter与`HashingContext`，不得访问SceneTree、Node、Resource、Signal、共享可变`PackedByteArray`或业务owner。结果只写入预分配容量2的SPSC mailbox `{process_epoch,executor_generation,request_id,result_code,receipt_hash}`；GameRoot control pump每帧至多排空一次，并由唯一reducer验证epoch/generation/request后发布typed callback。worker不得直接emit signal或回调UI。进程退出先关闭接纳、等待当前物理步骤到可恢复边界、持久状态仍以槽scan为准；平台线程/锁/barrier证据未闭合前保持`BLOCKED-PLATFORM-DURABILITY`。
+`SaveExecutorThreadingV1`固定线程拓扑：GameRoot主线程只做schema/identity/revision验证并把不可变canonical byte buffer移交给唯一worker；worker独占`FileAccess`、平台barrier/replace adapter与`HashingContext`，不得访问SceneTree、Node、Resource、Signal、共享可变`PackedByteArray`或业务owner。结果只写入预分配容量2的SPSC mailbox `{process_epoch,executor_generation,operation_kind,operation_id,attempt_generation,request_id,result_code,profile_revision,domain_revision,zhangtian_unlock_transition,receipt_id,receipt_hash}`；GameRoot的`app_service_result_pump`在每个render frame、所有TopState中恰排空至多一次，并由唯一reducer验证epoch/generation/operation/request后发布typed callback。PREP/HOME/SETTLEMENT不得因没有gameplay/control pump而停止Save结果推进。worker不得直接emit signal或回调UI。进程退出先关闭接纳、等待当前物理步骤到可恢复边界、持久状态仍以槽scan为准；平台线程/锁/barrier证据未闭合前保持`BLOCKED-PLATFORM-DURABILITY`。
 
 ### 3.6A 通用Profile domain mutation
 
 Home中的Progression购买与未来Zhangtian操作不得伪造`outcome_commit_id`复用终局reducer。Save提供独立ABI：
 
 ```text
-ProfileDomainMutationRequestV1={
-  schema_version:i32=1,operation_id:i64,domain_id:i32,
+ProfileDomainMutationRequestV2={
+  schema_version:i32=2,operation_id:i64,attempt_generation:i64,
+  request_id:i64,domain_id:i32,
   expected_profile_revision:i64,expected_domain_revision:i64,
   mutation_kind:i32,business_operation_id:i64,request_hash:Hash256,
   next_domain_record:DomainRecordV1
 }
 
-ProfileDomainMutationResultV1={
-  schema_version:i32=1,operation_id:i64,domain_id:i32,
-  business_operation_id:i64,result_code:i32,
-  profile_revision:i64,domain_revision:i64,receipt_hash:Hash256
+ProfileDomainMutationResultV2={
+  schema_version:i32=2,operation_id:i64,attempt_generation:i64,
+  request_id:i64,domain_id:i32,business_operation_id:i64,result_code:i32,
+  profile_revision:i64,domain_revision:i64,zhangtian_unlock_transition:i32,
+  receipt_id:i64,receipt_hash:Hash256
+}
+
+SaveDurableStampFactV1={
+  schema_version:i32=1,operation_kind:i32,operation_id:i64,
+  attempt_generation:i64,request_id:i64,profile_revision:i64,
+  zhangtian_domain_revision:i64,zhangtian_unlock_transition:i32,
+  durable_receipt_id:i64,durable_receipt_hash:Hash256,fact_hash:Hash256
 }
 ```
 
-`result_code={SUCCEEDED=1,FAILED=2,UNCERTAIN=3,RECONCILE_FOUND=4,RECONCILE_NOT_FOUND=5,STALE_REVISION=6,CONFLICT=7}`。Save只验证registered codec/canonical bytes与revision CAS，结构性替换唯一domain并推进profile revision；不解释购买/配方语义。
+`result_code={SUCCEEDED=1,FAILED=2,UNCERTAIN=3,RECONCILE_FOUND=4,RECONCILE_NOT_FOUND=5,STALE_REVISION=6,CONFLICT=7}`。每个fresh attempt使用checked非零`attempt_generation`与Save持久allocator分配的非零`request_id`；retry/reconcile保留operation并推进attempt/request，duplicate逐位返回原result。`zhangtian_unlock_transition`只允许0/1：非Zhangtian mutation恒0，Zhangtian mutation逐位来自同transaction合法before/after。Save只验证registered codec/canonical bytes与revision CAS，结构性替换唯一domain并推进profile revision；不解释购买/配方语义。`SaveDurableStampFactV1`固定124 bytes，仅在fresh-live完整profile commit双镜像readback成功后，由Save reducer从同一`ProfileDomainMutationResultV2`或版本化的`SaveOperationResultV2`逐字段构造；`operation_kind={OUTCOME_COMMIT=1,PROFILE_MUTATION=2}`，transition只允许0/1并来自同transaction的Zhangtian before/after，`fact_hash`使用SELF_ZERO_FIELD。reconcile、boot scan与duplicate只返回既有receipt，不新建stamp；Audio不得从UI edge、domain revision或裸success bool猜stamp。
 
 每个请求先以同一slot transaction保存`DurableProfileMutationRecoveryV1={request,base_domain_hash,next_domain_hash,state}`，再走temp+双镜像协议。PONR前可证明未写入才FAILED；PONR后/镜像失败为UNCERTAIN。应用级同时最多1个pending profile mutation；它与Outcome/Reservation共用single writer与queue。UNCERTAIN只允许同operation reconcile，FOUND返回原receipt，NOT_FOUND保持UNCERTAIN；不同请求同base revision只有第一个CAS成功，后者不得自动rebase。
 
 ### 3.7 开局 reservation
 
-`DurableReservationV1` 保存 `reservation_id=battle_instance_id`、operation kind/state/generation/request/recovery identity、完整业务 domain after-image、Zhangtian payload、run-start recovery与journal。任意时刻最多1条 unresolved reservation。V1 canonical wrapper固定1004 bytes：
+`DurableReservationV1` 保存 `reservation_id=battle_instance_id`、operation kind/state/generation/request/recovery identity、完整业务 domain after-image、Zhangtian payload、run-start recovery与journal。任意时刻最多1条 unresolved reservation。V1 canonical wrapper固定1088 bytes：
 
 ```text
 DurableReservationV1={
@@ -302,7 +387,7 @@ DurableReservationV1={
   attempt_generation:i64,request_id:i64,recovery_operation_id:i64,
   base_profile_revision:i64,reserved_profile_revision:i64,
   base_domain_hash:Hash256,reserved_domain_hash:Hash256,
-  zhangtian_payload_length:i64=576,zhangtian_payload:u8[576],
+  zhangtian_payload_length:i64=660,zhangtian_payload:u8[660],
   next_domain_record:DomainRecordV1,
   prep_commit_journal:PrepCommitJournalV1,
   reservation_hash:Hash256
@@ -317,13 +402,54 @@ ActiveEntryFactV1={
   schema_version:i32=1,reservation_id:i64,battle_instance_id:i64,
   run_start_hash:Hash256,active_entry_generation:i64,fact_hash:Hash256
 }
+
+ReservationUpdateRequestV2={
+  schema_version:i32=2,update_kind:i32,reservation_id:i64,
+  expected_attempt_generation:i64,attempt_generation:i64,request_id:i64,
+  recovery_operation_id:i64,expected_checkpoint_id:i32,next_checkpoint_id:i32,
+  expected_reservation_hash:Hash256,payload_schema_id:i32,
+  payload_length:i64,payload_hash:Hash256,payload_bytes:u8[],
+  request_hash:Hash256
+}
+
+ReservationUpdateResultV2={schema_version:i32=2,update_kind:i32,
+  reservation_id:i64,attempt_generation:i64,request_id:i64,
+  result_code:i32,checkpoint_id:i32,reservation_hash:Hash256,
+  profile_revision:i64,domain_revision:i64,unlock_transition:i32,
+  durable_receipt_id:i64,receipt_hash:Hash256}
+
+AdvanceHandoffPayloadV1={next_reservation_length:i64=1088,
+  next_reservation_bytes:u8[1088]}
+UpdateRecoveryPayloadV1={next_reservation_length:i64=1088,
+  next_reservation_bytes:u8[1088]}
+MarkActivePayloadV1={next_reservation_length:i64=1088,
+  next_reservation_bytes:u8[1088],active_entry_fact:ActiveEntryFactV1}
+ResolveReservationPayloadV2={next_profile_length:i64=776,
+  next_profile_bytes:u8[776],resolution:DurableRunResolutionV2,
+  clear_mask:i32}
+RetireReservationPayloadV1={resolution_hash:Hash256,
+  archive_entry_id:i64,clear_mask:i32}
 ```
 
-`ZhangtianReservationPayloadV1`固定576 bytes，内含112-byte battle projection与276-byte `RunStartRecoveryV1`；wrapper不再重复保存recovery。`PrepCommitJournalV1`固定60 bytes，`ActiveEntryFactV1`固定92 bytes。wrapper的`next_domain_record`必须为Zhangtian的188-byte record；任一length或内外重复identity/hash不等均在写前`CONFLICT`。
+`ZhangtianReservationPayloadV1`固定660 bytes，内含112-byte battle projection与360-byte `RunStartRecoveryV1`；wrapper不再重复保存recovery。`PrepCommitJournalV1`固定60 bytes，`ActiveEntryFactV1`固定92 bytes。wrapper的`next_domain_record`必须为Zhangtian的188-byte record；任一length或内外重复identity/hash不等均在写前`CONFLICT`。`DurableReservationV1.prep_commit_journal`是唯一持久Prep journal；`SaveStorePayloadV1`不存在顶层副本，decode若发现旧/额外同名field必须按schema拒绝，不能比较后择一。
 
-`RunStartRecoveryV1`固定276 bytes、little-endian、no-padding：`{schema_version:i32,reservation_id:i64,battle_instance_id:i64,run_seed:i64,preparation_id:i64,selected_seed_id:i32,selected_pill_id:i32,source_profile_revision:i64,source_domain_revision:i64,config_content_revision:i64,zhangtian_content_revision:i64,projection_hash:Hash256,prep_commit_operation_id:i64,handoff_checkpoint:i32,candidate_present:i32,candidate_seed_id:i32,rng_call_begin:i64,rng_call_end:i64,pre_active_choice_state:i32,pre_active_choice_request_id:i64,pre_active_offer_hash:Hash256,pre_active_choice_command_id:i64,pre_active_loadout_hash:Hash256,pre_active_skill_draft_rng_cursor:i64,next_level_request_sequence:i64,recovery_hash:Hash256}`。
+`RunStartRecoveryV1`固定360 bytes、little-endian、no-padding：`{schema_version:i32,reservation_id:i64,battle_instance_id:i64,run_seed:i64,preparation_id:i64,selected_seed_id:i32,selected_pill_id:i32,source_profile_revision:i64,source_domain_revision:i64,config_content_revision:i64,config_content_hash:Hash256,zhangtian_content_revision:i64,projection_hash:Hash256,prep_commit_operation_id:i64,handoff_checkpoint:i32,candidate_present:i32,candidate_seed_id:i32,rng_call_begin:i64,rng_call_end:i64,pre_active_choice_state:i32,pre_active_choice_request_id:i64,pre_active_offer_hash:Hash256,pre_active_choice_command_id:i64,pre_active_loadout_hash:Hash256,pre_active_skill_draft_rng_cursor:i64,next_level_request_sequence:i64,pre_active_offer_revision:i64,pre_active_refreshes_used:i32,pre_active_free_refreshes_remaining:i32,pre_active_selected_candidate_id:i64,pre_active_session_generation:i64,pre_active_draft_ordinal:i32,pre_active_required_rule_bits:i32,pre_active_reinforcement_miss_streak:i32,pre_active_committed_loadout_revision:i64,recovery_hash:Hash256}`。`PreActiveChoiceStateV1={NOT_STARTED=0,OFFER_DURABLE=1,CHOICE_DURABLE=2,SKIPPED=3}`；`prep_commit_operation_id`逐位等于wrapper `recovery_operation_id`。Save保证canonical携带与逐位readback；offer/candidate/loadout确定性重建与hash验证由SkillDraft/Zhangtian执行，禁止把hash当可逆数据。
 
-`PrepCommitJournalV1.checkpoint_id`唯一枚举固定`IDENTITIES_RESERVED=1,RESERVATION_DURABLE=2,RUN_START_FROZEN=3,PREP_TOUCH_RETIRED=4,LOADING_COMMITTED=5,SEED_CANDIDATE_DURABLE=6,PRE_ACTIVE_CHOICE_DURABLE_OR_SKIPPED=7,ACTIVE_ENTRY_DURABLE=8`，只能单调前进。checkpoint1只存在于尚未写入的内存candidate；首次reservation transaction原子提交domain after-image、battle/preparation allocator、base recovery与checkpoint2。之后callback丢失或重启继续同一journal，不重新分配。
+`PrepCommitJournalV1.checkpoint_id`唯一枚举固定`RESERVATION_DURABLE=1,RUN_START_FROZEN=2,PREP_TOUCH_RETIRED=3,LOADING_COMMITTED=4,SEED_CANDIDATE_DURABLE=5,PRE_ACTIVE_CHOICE_DURABLE_OR_SKIPPED=6,ACTIVE_ENTRY_DURABLE=7`，只能单调前进。不存在memory-only checkpoint；首次reservation transaction原子提交domain after-image、battle/preparation allocator、base recovery与checkpoint1。之后callback丢失或重启继续同一nested journal，不重新分配。
+
+`ReservationUpdateKindV1={ADVANCE_HANDOFF=1,UPDATE_RECOVERY=2,MARK_ACTIVE=3,RESOLVE=4,RETIRE=5}`。`ReservationUpdatePayloadManifestV1={row_id,stable_order,update_kind,payload_schema_id,exact_length,required_fields,forbidden_fields,clear_mask_rule}`的actual presence rows固定为：
+
+| row | order / kind | schema / bytes | required canonical content | forbidden / clear rule |
+|---|---|---|---|---|
+| `RUP01` | `1 / ADVANCE_HANDOFF` | `AdvanceHandoffPayloadV1 / 1096` | next reservation length+bytes | active/profile/resolution/retire fields；clear NONE |
+| `RUP02` | `2 / UPDATE_RECOVERY` | `UpdateRecoveryPayloadV1 / 1096` | next reservation length+bytes | active/profile/resolution/retire fields；clear NONE |
+| `RUP03` | `3 / MARK_ACTIVE` | `MarkActivePayloadV1 / 1188` | next reservation + 92-byte active fact | profile/resolution/retire fields；clear NONE |
+| `RUP04` | `4 / RESOLVE` | `ResolveReservationPayloadV2 / 1052` | 776-byte next profile + 264-byte resolution | next-reservation/retire fields；clear exactly PENDING_RESERVATION|ACTIVE_ENTRY |
+| `RUP05` | `5 / RETIRE` | `RetireReservationPayloadV1 / 44` | resolution hash + already-durable archive entry ID | next-reservation/active/profile/new-resolution fields；clear exactly LATEST_RESOLUTION |
+
+其他schema/length、缺payload、跨kind字段、错误clear mask或out-of-band mutable bytes均为`INVALID_ARGUMENT`。`ReservationUpdateRequestV2`的fixed prefix为132 bytes，随后inline payload，再以末尾32-byte `request_hash`结束，故总长为`164+payload_length`且上限1352 bytes；`payload_hash=SHA256(payload tag||payload_bytes)`，request self-hash覆盖prefix+payload并将末尾hash置零。
+
+每次合法修改同一reservation都必须用新`attempt_generation=checked_add(old,1)`和新持久`request_id`，CAS同时匹配old generation、checkpoint与reservation hash；Save只写payload携带的canonical bytes，不向业务owner回读或重算after-image。ADVANCE/UPDATE的next reservation必须逐字段验证旧identity、合法单调journal/recovery和payload hash；MARK_ACTIVE额外要求92-byte marker matching；RESOLVE要求完整776-byte next profile、264-byte resolution、`clear_mask=PENDING_RESERVATION|ACTIVE_ENTRY`并在同一transaction写终态/应用after-image/清live carrier；RETIRE只在matching resolution已经被同hash的durable archive entry吸收后接受，`clear_mask=LATEST_RESOLUTION`且不改profile/archive bytes。相同`{reservation_id,attempt_generation,request_id}`同payload返回同一非零`durable_receipt_id+receipt_hash`；同update identity异payload为`CONFLICT`。checkpoint不得倒退或跳过；同checkpoint只允许`UPDATE_RECOVERY`推进其内部offer revision且必须匹配old recovery hash。
 
 - PREP reserve 将开局资源扣除/锁定 after-image 与 `RESERVED` 事实放在同一槽 transaction；未 durable 不得进入 Loading。
 - Zhangtian从持久`next_preparation_id`分配preparation identity并在同一after-image checked+1；NONE只保持count不变，仍推进domain/profile revision和allocator。
@@ -333,9 +459,26 @@ ActiveEntryFactV1={
 - `UNCERTAIN` 仅靠 durable scan/reconcile 恢复；未 resolved 时关闭新局入口。
 - 主动 `ABANDONED` 不补偿：零奖励tombstone与mandatory consume after-image同槽提交；用户discard普通结果也不得撤销matching reservation成本。`TECHNICAL_ABORT` 仅接受 sealed disposition 与 fault-before-fact owner bundle。
 
-`ReservationReconcileDispositionManifestV1`是total table：`RESERVED→继续同一handoff,write=0,new_run=0`；`RELEASED→fresh PREP,write=0,new_run=0`；`CONSUMED→HOME/SETTLEMENT resolved,write=0,new_run=0`；`NOT_FOUND→UNCERTAIN冻结,write=0,new_run=0`；`CONFLICT→STORE_CONFLICT,write=0,new_run=0`；`FUTURE→UPDATE_REQUIRED,write=0,new_run=0`；`CORRUPT→CORRUPT_BLOCKED,write=0,new_run=0`。只有另一个已签发的recovery transition可以在`RESERVED`后推进相同identity的journal或release；不得用“继续或release”作为同一输入的二义结果。
+`ReservationReconcileDispositionManifestV2`按stable order执行首个matching row，schema=`{row_id,stable_order,scan_status,marker_present,outcome_class,checkpoint_range,config_content_status,target,write_kind,new_run_count}`，actual rows固定为：
 
-掌天瓶132-byte domain、持久battle/preparation allocator、Prep exact-one/NONE reserve after-image、276-byte run-start recovery、1004-byte reservation wrapper、八checkpoint journal、Active marker与`RunStartRequestV2`已完成静态合同整改；generated codec、reservation专属crash matrix与runtime readback仍保持 `BLOCKED-RESERVATION-INTEGRATION`。本节继续唯一拥有介质与exact-once边界。
+| row | scan | marker | outcome | checkpoint/config | target / write |
+|---|---|---:|---|---|---|
+| RRD01 | CONFLICT | * | * | * | STORE_CONFLICT / NONE |
+| RRD02 | FUTURE | * | * | * | UPDATE_REQUIRED / NONE |
+| RRD03 | CORRUPT | * | * | * | CORRUPT_BLOCKED / NONE |
+| RRD04 | NOT_FOUND | * | * | * | UNCERTAIN / NONE |
+| RRD05 | RELEASED | 0 | NONE | * | FRESH_PREP / NONE |
+| RRD06 | CONSUMED | 0 | ANY_OR_NONE | * | RESOLVED_DESTINATION / NONE |
+| RRD07 | RESERVED | * | NORMAL_OR_ABANDONED | 1..7/* | CONSUMED / RESOLVE_CONSUME |
+| RRD08 | RESERVED | * | TECHNICAL_COMPENSATION | 1..7/* | RELEASED / RESOLVE_RELEASE |
+| RRD09 | RESERVED | 1 | NONE | 7/* | CONSUMED / ORPHAN_CONSUME |
+| RRD10 | RESERVED | 0 | NONE | 7/* | CORRUPT_BLOCKED / NONE |
+| RRD11 | RESERVED | 0 | NONE | 1..6/EXACT_AVAILABLE | CONTINUE_SAME_HANDOFF / NONE |
+| RRD12 | RESERVED | 0 | NONE | 1..6/UNAVAILABLE_OR_MISMATCH | UPDATE_REQUIRED / NONE |
+
+`*`是该row显式不参与判定的字段，不是缺省分支；未匹配、marker与terminal state矛盾、checkpoint越界或release后仍有marker均为CORRUPT。所有row `new_run_count=0`；只有RRD05完成后用户的新press才可创建新局。RESOLVE/ORPHAN事务必须通过`ResolveReservationPayloadV2`原子写`latest_resolution=DurableRunResolutionV2`、应用owner after-image、清除`pending_reservation`与`active_entry_fact`；archive只保留resolution/archive row，不保留live marker。duplicate从latest resolution返回逐位相同的`durable_receipt_id+receipt_hash`，terminal reservation不得复活。
+
+掌天瓶132-byte domain、持久battle/preparation allocator、Prep exact-one/NONE reserve after-image、360-byte run-start recovery、1088-byte reservation wrapper、七checkpoint单一nested journal、Active marker与`RunStartRequestV2`已完成静态合同整改；generated codec、reservation专属crash matrix与runtime readback仍保持 `BLOCKED-RESERVATION-INTEGRATION`。本节继续唯一拥有介质与exact-once边界。
 
 ### 3.8 Resolved archive 与 carrier retire
 
@@ -437,7 +580,7 @@ SaveSystem 只发布 typed `SavePresentationViewV1={state,reason_code,recoverabl
 | pending outcome commits | 1 | HARD LIMIT | 与GameRoot固定一致 |
 | unresolved reservations | 1 | HARD LIMIT | 新局gate前必须resolved |
 | resolved archive rows | 64 | PROVISIONAL-PRODUCT | 产品/支持策略裁决后锁定；变更需migration + rolling-prefix oracle复测 |
-| max slot bytes | 65,536 | FIXED V1 | ReservationMax=1004、margin=65,536、DiskPeakMin=262,144；generated checked-sum仍须验证每个owner max未超限 |
+| max slot bytes | 65,536 | FIXED V1 | ReservationMax=1088、LatestResolutionMax=264、SlotPayloadMax=42180、margin=65,536、DiskPeakMin=262,144；generated checked-sum须逐项覆盖全部top-level payload field |
 | save latency p95/p99 | OPEN | EVIDENCE GATE | min-spec Android cold/warm/storage-pressure实测 |
 | retry timeout | OPEN | UX/runtime gate | 不用timeout判定durable失败，只触发UNCERTAIN/reconcile |
 
@@ -457,7 +600,7 @@ SaveSystem 只发布 typed `SavePresentationViewV1={state,reason_code,recoverabl
 - **AC-SV12 — Given** duplicate operation/request；**When** bytes相同或不同；**Then** 相同返回原receipt/tombstone且不追加，不同报REQUEST_ID_CONFLICT且0写入。验证：idempotency corpus。Gate: BLOCKING。
 - **AC-SV13 — Given** 陈旧expected_profile_revision或after-image revision不等于base+1；**When** commit；**Then** COMMIT_FAILED且不merge、不重算奖励。验证：revision race fixture。Gate: BLOCKING。
 - **AC-SV14 — Given** ABANDONED、DEFEAT、VICTORY、TECHNICAL_ABORT各sealed envelope及用户discard；**When** Settlement bundle/tombstone提交；**Then** Save只接受owner validator签发的完整after-image；ABANDONED/普通discard奖励变化为0但matching reservation mandatory consume，technical未提交staging拒绝。验证：outcome/bundle/discard fixtures。Gate: BLOCKED on Settlement runtime。
-- **AC-SV15 — Given** seed/NONE reservation各state、PrepCommitJournal八checkpoint、candidate/pre-active/Active marker前后kill与callback丢失；**When** reserve/consume/release/compensate/reconcile；**Then**扣除或返还与fact同槽原子、同identity exact-once，276-byte recovery恢复同一candidate/choice/RNG cursor，marker orphan consume，manifest逐输入给出唯一结果，unresolved时新局WRONG_STATE。验证：reservation state/crash matrix。Gate: BLOCKED on Zhangtian/Prep runtime。
+- **AC-SV15 — Given** seed/NONE reservation各state、唯一nested PrepCommitJournal七checkpoint、candidate/pre-active/Active marker前后kill与callback丢失；**When** reserve/update/consume/release/compensate/reconcile/retire；**Then**扣除或返还与fact同槽原子、每次合法更新以generation/checkpoint/hash CAS exact-once，只接受5-row payload manifest携带的真实mutation bytes，360-byte recovery按durable config content identity与252/296-byte semantic hash恢复同一132-byte candidate/offer/selected choice/loadout/RNG cursor，marker orphan consume，12-row reconcile manifest逐输入给出唯一结果，terminal transaction写含nonzero receipt ID的264-byte resolution并清live reservation/marker，duplicate返回同receipt，unresolved时新局WRONG_STATE。验证：reservation state/crash matrix。Gate: BLOCKED on Zhangtian/Prep runtime。
 - **AC-SV16 — Given** 一槽INVALID、另一槽VALID；**When** 启动；**Then** RECOVERY_REQUIRED、VALID仅作只读候选，坏槽保留且新局/写入关闭；显式恢复写入安全目标并readback后才READY。验证：corruption corpus。Gate: BLOCKING。
 - **AC-SV17 — Given** 两槽INVALID、未来schema或冲突resolution；**When** 启动；**Then** 分别CORRUPT_BLOCKED/UPDATE_REQUIRED/STORE_CONFLICT，不创建空档、不覆盖、新局关闭。验证：startup total table。Gate: BLOCKING。
 - **AC-SV18 — Given** 每条连续migration step；**When** 在每个write/readback checkpoint kill；**Then** 原版始终可恢复，目标仅在完整验证后生效，migration不改变奖励/reservation/identity语义。验证：version matrix。Gate: BLOCKED on migration manifest。

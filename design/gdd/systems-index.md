@@ -2,9 +2,13 @@
 
 > **Status**: Draft
 > **Created**: 2026-08-14
-> **Last Updated**: 2026-09-03
+> **Last Updated**: 2026-09-07
 
-> 2026-09-03: Zhangtian full review的9组blocker按用户裁决A完成跨文档静态整改：`PrepConfirmCommandV1`封闭PREP/HOME_DIRECT_NONE来源、Save持久battle allocator+Zhangtian preparation allocator、276-byte recovery/1004-byte reservation/八checkpoint、可恢复candidate与pre-active choice、ABANDONED强制消费；经济改为VICTORY candidate×2、Boss线DEFEAT×1、首次正常结算三类starter各1，held cap仅约束available+reserved≤999，版本`PROVISIONAL-ECONOMY-V3`；另补Damage typed consumer、app-service/Save worker拓扑、V2 app音频semantic key/coalesce与移动读屏architecture blocker。`SlotMax=65536`等作者常量已签；generated Hash256/codec/migration/checked-sum、runtime/crash/device/经济试玩与clean-context full re-review仍BLOCKED/OPEN，全部受影响GDD保持In Review / Re-review Pending，`battle_ready=false`。
+> 2026-09-07: Zhangtian第四次clean-context full review仍为MAJOR REVISION NEEDED（XL）；上一轮6组闭合1、其余5组PARTIAL，本轮6组根blocker经用户“授权”完成第四轮作者静态整改。新增252/296-byte pre-active durable semantic carriers并排除process-local identity；GameRoot补`PRE_ACTIVE_CANCEL_REQUESTED`、strict PONR guard、56-row guard与72-row action；Save update V2内联5类canonical payload、V2 result返回revision/unlock/receipt、terminal resolution升级264 bytes，实际22-row hash preimage manifest闭合tag/length/offset/nested规则；Settlement将Outcome random gross与64-byte applied truth分层，flag只允许0/0或1/1，direct-NONE升级128-byte V2且无丹重开视觉/读屏明确；ADR/registry升级248-byte accessibility row与六个action-bearing TopState、all-state drain、5-row render workload。静态YAML/diff/count/byte算术通过；generated codec/hash/capacity artifacts、Godot/crash/perf/device/audio/经济试玩与第五次clean-context re-review仍BLOCKED/OPEN，状态保持In Review / Re-review Pending，`battle_ready=false`。
+
+> 2026-09-04: Zhangtian第三次clean-context full review仍为MAJOR REVISION NEEDED（XL），6组根blocker经用户“授权”完成第三轮作者静态整改：Victory输入域收紧为43200..108000且经济oracle用交叉乘法，normal Settlement固定consume-before-grant与lifetime int64 room；首个聚气offer durable/visible后不可release重抽；跨进程改用durable config content revision+hash，candidate/recovery/payload/reservation升级为132/360/660/1088 bytes；Save补reservation update/reconcile/retire、256-byte终态与12-row V2处置；hash mode区分SELF_ZERO_FIELD/EXTERNAL_PAYLOAD；Home/Settlement补124-byte direct-NONE slice；Save签发124-byte durable audio stamp；无障碍bridge单列app-adapter topology、capacity32 native SPSC与三组render workload。SkillDraft session RNG registry修正为1..20。generated codec/hash/capacity artifacts、Godot/crash/perf/device/audio/经济试玩与下一次clean-context re-review仍BLOCKED/OPEN，状态保持In Review / Re-review Pending，`battle_ready=false`。
+
+> 2026-09-03: Zhangtian clean-context full re-review verdict为MAJOR REVISION NEEDED（XL），11组blocker经用户方案A授权完成第二轮作者静态整改：经济域覆盖0..108000 ticks并改为VICTORY candidate×3/Boss线DEFEAT×1（starter另cohort，`PROVISIONAL-ECONOMY-V4`）；336-byte recovery按offer/refresh/selected candidate/loadout确定性重放，636-byte payload/1064-byte reservation，七checkpoint且journal只在DurableReservation nested一份；补100-byte candidate、正确hash field/tag、完整top-level capacity枚举与candidate durable LFD29/30；HOME/Settlement无库存均direct NONE；所有TopState运行app-service result pump；五行service topology含AUDIO_APP唯一app-node例外；音频以`SAVE_DURABLE_STAMP`内嵌unlock bit消除异步join；ADR-0001冻结Android/iOS原生读屏桥路径；补BossStateMachine/Progression Tree依赖及starter残文。generated codec/hash/capacity、Godot/crash/perf/device/audio/经济试玩与下一次clean-context full re-review仍BLOCKED/OPEN，状态保持In Review / Re-review Pending，`battle_ready=false`。
 
 > 2026-09-03: 剩余四个MVP系统的初始作者基线（经济与恢复口径已由上方方案A记录取代）完成，均为Designed / Full Review Pending：Zhangtian Bottle、Settlement、Home、Prep已有独立GDD。MVP 28/28已具作者设计覆盖（27个独立author GDD状态+1个Merged），但Config generated tables、codec/runtime/crash/device/accessibility/balance和clean-context full review仍BLOCKED/OPEN，`battle_ready=false`。
 
@@ -143,13 +147,13 @@ MVP 只验证三件事：①移动躲避+自动御剑+功法进化的爽快度�
 | 19 | Elite Enemies | Gameplay | MVP | Designed | design/gdd/elite-enemies.md | EnemySystem载体/生命周期、Spawn V2 23-row、Projectile三魂针、Damage、Drop、RiskChoice与Config；Full Review Pending。 |
 | 20 | Leveling/XP (inferred) | Progression | MVP | In Review | design/gdd/drop-leveling-system.md | 逐fact XP、`8+5L+ceil(3L²/5)`、level cap40、39 debt/10 visible queue；聚气起始credit已同步，Re-review Pending。 |
 | 21 | Progression Tree (功法树) | Progression | MVP | In Review | design/gdd/progression-tree.md | SaveSystem, Config；3×5/domain/projection与稳定loadout资源边界已冻结，runtime/UX/balance re-review仍BLOCKED。 |
-| 22 | Zhangtian Bottle (掌天瓶) | Progression | MVP | In Review | design/gdd/zhangtian-bottle.md | 方案A静态整改：V3经济、276-byte recovery、八checkpoint；待clean-context full re-review。 |
-| 23 | SaveSystem | Persistence | MVP | In Review | design/gdd/save-system.md | 双槽/跨进程恢复、1004-byte reservation、65,536-byte slot、worker拓扑已同步；codec/runtime Re-review Pending。 |
+| 22 | Zhangtian Bottle (掌天瓶) | Progression | MVP | In Review | design/gdd/zhangtian-bottle.md | 第三轮授权静态整改：V5经济、360-byte content-key replay recovery、首版可见后不可重抽、七checkpoint单一journal；待clean-context full re-review。 |
+| 23 | SaveSystem | Persistence | MVP | In Review | design/gdd/save-system.md | 双槽/跨进程恢复、1088-byte reservation、256-byte resolution、V2对账与65,536-byte slot已同步；codec/runtime Re-review Pending。 |
 | 24 | BattleUI | UI | MVP | Designed | design/gdd/battle-ui.md | 只读presentation consumer+typed command adapter；atomic revision-vector bundle、fresh-touch drain、HUD/choice/terminal语义已冻结。Full Review Pending；producer views/input/assets/runtime证据BLOCKED。 |
-| 25 | SettlementSystem | UI | MVP | In Review | design/gdd/settlement-system.md | 含BATTLE_RULES；Victory×2/Boss线Defeat×1/starter、held-cap饱和与ABANDONED consume已同步；Re-review Pending。 |
+| 25 | SettlementSystem | UI | MVP | In Review | design/gdd/settlement-system.md | 含BATTLE_RULES；Victory×3/Boss线Defeat×1/starter、held-cap饱和与ABANDONED consume已同步；Re-review Pending。 |
 | 26 | Home UI (洞府首页) | UI | MVP | In Review | design/gdd/home-ui.md | 有库存进Prep、无库存direct NONE、恢复focus与60-byte Settings domain已冻结；Re-review Pending。 |
-| 27 | Prep UI (掌天瓶准备页) | UI | MVP | In Review | design/gdd/prep-ui.md | typed confirm/actions、八checkpoint durable handoff与page-owned touch retirement已冻结；Re-review Pending。 |
-| 28 | Audio Feedback | Audio | MVP | In Review | design/gdd/audio-feedback.md | 掌天app-scope V2 semantic key、唯一producer/coalesce与live-edge at-most-once已冻结；assets/mix/runtime Re-review Pending。 |
+| 27 | Prep UI (掌天瓶准备页) | UI | MVP | In Review | design/gdd/prep-ui.md | typed confirm/actions、七checkpoint单一journal handoff与page-owned touch retirement已冻结；Re-review Pending。 |
+| 28 | Audio Feedback | Audio | MVP | In Review | design/gdd/audio-feedback.md | app-scope V2只消费Save签发的124-byte `SAVE_DURABLE_STAMP`与真实receipt identity，unlock为modifier且无异步join；assets/mix/runtime Re-review Pending。 |
 | 29 | VFX System (inferred) | UI | Vertical Slice | Not Started | — | WeaponSystem, DamageSystem, Object Pooling |
 | 30 | Tutorial | Meta | Vertical Slice | Not Started | — | BattleUI, SkillDraftSystem, RiskChoiceSystem, GameRoot |
 | 31 | Perf & LOD (inferred) | Meta | Vertical Slice | Not Started | — | EnemySystem, SpawnDirector, VFX |
@@ -332,6 +336,6 @@ MVP 只验证三件事：①移动躲避+自动御剑+功法进化的爽快度�
 - [ ] GameRoot另有待办：clean context运行下一轮`/design-review design/gdd/game-root-scene-flow.md`
 - [x] 全部28个MVP系统已获作者设计覆盖（27个独立GDD状态 + Buff并入Damage的1个Merged）；本批四份为Designed / Full Review Pending
 - [ ] 对Zhangtian及全部受影响GDD在clean context执行full re-review；不得以本次整改或静态检查代替独立verdict
-- [ ] 将GameRoot已枚举的28-row load/54-row guard/70-row action作者表导出为canonical artifact，并生成Hash256 golden、ReservationMax/SlotMax及persistent-domain codec manifests，随后再进入实现
+- [ ] 将GameRoot已枚举的30-row load/56-row guard/72-row action/5-row app-render作者表与Save 22-row hash/5-row reservation-payload表导出为canonical artifact，并生成Hash256 golden、ReservationMax/SlotMax及persistent-domain codec manifests，随后再进入实现
 - [ ] MVP 系统 GDD 全部完成后跑 `/gate-check pre-production`
 - [ ] 用 `/vertical-slice` 在承诺 Production 前验证最高风险系统（SpatialGrid / Object Pooling / EnemySystem 架构）

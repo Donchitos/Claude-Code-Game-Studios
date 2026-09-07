@@ -3,7 +3,7 @@
 > **Status**: Re-review Pending — RNG core与第五轮diagnostic sidecar契约维持冻结；第六轮无新增RNG blocker，随中央契约待第七轮复审
 > **Author**: 用户 + Codex
 > **Created**: 2026-08-24
-> **Last Updated**: 2026-09-03（RiskChoice consumer call table传播；runtime evidence仍OPEN）
+> **Last Updated**: 2026-09-04（Zhangtian durable config identity传播；runtime evidence仍OPEN）
 > **Implements Pillar**: 稳定性硬约束（确定性/可复现是其根基）+ 肉鸽选择（随机性是重玩价值来源，但必须可控可复现）
 > **Scope**: MVP — 单线程主 physics tick 内的确定性随机；不含赌场式反作弊、网络同步随机或跨线程并发
 > **Review Mode**: full（首轮 design-review 6 specialist 对抗评审 + creative-director 终审，修订闭合 10 项 A 级 blocker；复审同 6 specialist + creative-director 终审，修订闭合 4 项新 BLOCKING；三审同 6 specialist + creative-director 终审，修订闭合 4 项新 BLOCKING；四审同 6 specialist + creative-director 终审，修订闭合 6 项新 BLOCKING + 3 项 RECOMMENDED；五审同 6 specialist + creative-director 终审，修订闭合 5 项新 BLOCKING（BL-1..BL-5）+ 22 项 RECOMMENDED；六审同 6 specialist + creative-director 终审，修订闭合 5 项新 BLOCKING（BL-6 减法溢出 / BL-7 COW-on-write / BL-8 AC-E1c 矛盾 / BL-9 set_state re-seed / BL-10 R8→R9）+ 若干同区域 RECOMMENDED；七审（re-review 6）同 6 specialist + creative-director 终审，发现 1 项 BLOCKING（BL-七-1 fault_reason testability 悬空）+ 16 项 RECOMMENDED（P0-P6），修订闭环转 Approved）
@@ -211,7 +211,7 @@ RNG System 是单场战斗中唯一的权威随机源。它从 Config 战斗快�
 |---|---|---|
 | SpawnDirector(#10) | SPAWN 流：怪潮数量/波次/精英生成时机 roll | 未设计 |
 | SkillDraftSystem(#15) | SKILL_DRAFT 流：每页3次无放回权重抽取+2次display permutation=5 calls；免费刷新共享同流；Dayan L5令单session最多4页/20 calls，否则3页/15；候选scratch上界12 | Designed / Full Review Pending；Progression传播待复审 |
-| Zhangtian Bottle(#22) | ZHANGTIAN_HERB 流：BATTLE_LOADING preflight后以预分配`PackedInt32Array([1,1,1])`调用`roll_weighted_pick`，max len=3，先查fault再读index，成功call delta恰1；canonical index `0/1/2→NINGQI_GRASS/TIELING_FLOWER/LEIYUAN_FRUIT`，候选写入276-byte `RunStartRecoveryV1`并durable后才继续；VICTORY expose数量2，DEFEAT仅`survival_ticks>=43,200`时expose数量1 | Zhangtian In Review / Re-review Pending；runtime replay OPEN |
+| Zhangtian Bottle(#22) | ZHANGTIAN_HERB 流：BATTLE_LOADING preflight后以预分配`PackedInt32Array([1,1,1])`调用`roll_weighted_pick`，max len=3，先查fault再读index，成功call delta恰1；canonical index `0/1/2→NINGQI_GRASS/TIELING_FLOWER/LEIYUAN_FRUIT`，132-byte候选（含durable config content revision+hash）写入360-byte `RunStartRecoveryV1`并经独立durable injection point后才继续；跨进程只在content key相等时rebind；VICTORY仅合法ticks43200..108000 expose数量3，DEFEAT仅`survival_ticks>=43,200`时expose数量1 | Zhangtian In Review / Re-review Pending；runtime replay OPEN |
 | DamageSystem(#11，隐式) | CRIT 流：暴击判定 roll（5%，见 MVP 136） | 未设计 |
 | DropSystem(#16，隐式) | DROP 流：掉落权重 roll（DropConfig，定点 int 权重） | 未设计 |
 | 雷爆符(隐式) | LEI_TARGET 流：周期打击随机敌人 | 未设计 |

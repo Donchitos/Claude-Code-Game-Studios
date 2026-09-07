@@ -30,7 +30,7 @@
 #   Superseded entries:     Grep pattern="status: superseded"
 
 version: 1
-last_updated: ""
+last_updated: "2026-09-07"
 
 # ─── STATE OWNERSHIP ─────────────────────────────────────────────────────────
 # Who is the authoritative owner of each piece of shared game state.
@@ -71,7 +71,28 @@ state_ownership: []
 #
 # pattern options: signal | direct_call | event_bus | shared_resource | rpc | none
 
-interfaces: []
+interfaces:
+  - contract: mobile_accessibility_semantic_bridge
+    status: active
+    pattern: event_bus
+    producer: action-bearing-ui-presenters
+    consumers:
+      - mobile-accessibility-bridge
+      - android-accessibility-adapter
+      - ios-accessibility-adapter
+    adr: docs/architecture/adr-0001-mobile-accessibility-bridge.md
+    interface: "Main-thread immutable AccessibleScreenSnapshotV2 out with 248-byte rows, layout generation, logical bounds and typed localization args; native callbacks enter capacity32 SPSC mailbox; GameRoot all-TopState render-frame pump returns AccessibilityActionCommandV2 only for HOME/PREP/PRE_ACTIVE_CHOICE/BATTLE_PAUSED/SETTLEMENT/CONTROLLED_FAULT after process/adapter/screen/layout generations and hashes validate"
+    referenced_by:
+      - docs/architecture/adr-0001-mobile-accessibility-bridge.md
+      - design/gdd/home-ui.md
+      - design/gdd/prep-ui.md
+      - design/gdd/skill-draft-system.md
+      - design/gdd/battle-ui.md
+      - design/gdd/settlement-system.md
+      - design/gdd/game-root-scene-flow.md
+      - design/gdd/zhangtian-bottle.md
+    added: 2026-09-03
+    revised: 2026-09-07
 
 # Example:
 #
@@ -157,7 +178,13 @@ api_decisions: []
 # Register a pattern when an ADR explicitly bans it AND other ADRs might
 # unknowingly use it (i.e., it's a tempting but wrong approach for this project).
 
-forbidden_patterns: []
+forbidden_patterns:
+  - pattern: native_accessibility_direct_business_write
+    status: active
+    description: "Android/iOS accessibility callbacks must return AccessibilityActionCommandV2 to the active presenter after screen/layout/hash validation; they may not call Save, inventory, TopState, or gameplay writers directly."
+    why: "Generation-bound typed commands prevent stale native callbacks from mutating a rebuilt screen or bypassing presenter ownership."
+    adr: docs/architecture/adr-0001-mobile-accessibility-bridge.md
+    added: 2026-09-03
 
 # Example:
 #

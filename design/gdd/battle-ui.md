@@ -2,7 +2,7 @@
 
 > **Status**: Designed / Full Review Pending
 > **Author**: 用户 + Codex（lean authoring；consulted systems-designer / qa-lead / ux-designer / art-director）
-> **Created / Last Updated**: 2026-09-03
+> **Created / Last Updated**: 2026-09-07 — mobile accessibility V2传播
 > **Implements Pillar**: 竖屏单手低打扰战斗；让生存、构筑、风险与终局信息一眼可读
 > **Scope**: MVP battle HUD、暂停/选择交互、关键提示与 terminal handoff；不含 Settlement/Home/Prep 完整页面或最终资产
 
@@ -269,8 +269,8 @@ The `battle_ui_capacity` formula is defined as:
 ## 9. UI Requirements
 
 - 触屏、键盘、控制器焦点独立；复杂页面显式focus neighbor，不依赖自动猜测。
-- accessible name/state/value与reading order完整；live region只播choice打开/commit、低血首次、revive、Boss phase、terminal，禁止逐damage/cooldown播报。
-- Godot 4.7.1 Control transform、RichTextLabel、AccessibilityLiveMode等路径须目标build spike；官方移动端screen-reader覆盖未确认，保持`BLOCKED-ACCESSIBILITY-MOBILE`。
+- accessible name/state/value与reading order完整；live region只播choice打开/commit、低血首次、revive、Boss phase、terminal，禁止逐damage/cooldown播报。`BATTLE_PAUSED`是ADR-0001的action-bearing TopState，必须发布`AccessibleScreenSnapshotV2`；Active HUD不发布交互tree但GameRoot仍每render frame drain adapter mailbox。
+- 248-byte row必须携带当前layout generation、safe-area logical bounds、visible/clipped及typed localization args；reflow后旧layout native action为0 command。Godot 4.7.1 Control transform、RichTextLabel、AccessibilityLiveMode等路径须目标build spike；TalkBack/VoiceOver未验证前保持`BLOCKED-ACCESSIBILITY-MOBILE-RUNTIME`。
 - 100/115/130%字体、简中、英文扩展30%、伪本地化；关键代价不可截断，不能靠缩字体过线。
 - resize/rotation期间通过GEOMETRY pause原子切layout；Active中不临时setter修补hit target。
 - Loading预实例化固定Control/card/marker/64 active label与96 pool backing；steady state不instantiate/free/add_child/resize容器/新Tween/Dictionary/closure。文本缓存或glyph atlas策略须Config冻结，未验证前不宣称零分配。
@@ -296,7 +296,7 @@ The `battle_ui_capacity` formula is defined as:
 - **AC-BUI15 `[R]` event uniqueness**：目标build记录Control tree/effective filter/accept trace，每个touch terminal唯一owner；z-index截图不能作为通过证据。
 - **AC-BUI16 `[R][UX]` safe/readability**：720×1280、360×640、390×844、430×932+cutout/gesture；HUD不侵入lower45%。5人×设备×手×核心控件20次，命中≥19/20、误选0。
 - **AC-BUI17 `[UX][A]` glance/non-color**：HP/符/ward/UNSAFE/Boss phase/choice代价每人20次正确≥19、中位≤1s；灰阶/三类色觉/静音分别过线，缺raw记录为INCONCLUSIVE。
-- **AC-BUI18 `[A][R]` focus/a11y**：触屏/键盘/控制器完整旅程，name/state/value/flow准确；damage number不形成live洪水；移动screen-reader未验证不得PASS。
+- **AC-BUI18 `[A][R]` focus/a11y**：触屏/键盘/控制器完整旅程，name/state/value/flow准确；BATTLE_PAUSED V2 rows的bounds/layout generation/typed args逐值matching，reflow后stale callback命令0；BATTLE_ACTIVE无interactive snapshot但adapter drain恰1；damage number不形成live洪水；移动screen-reader未验证不得PASS。
 - **AC-BUI19 `[P]` semantic cues**：revive/unsafe/level/Boss/choice/terminal cue只在matching committed edge一次；VICTORY+lethal death cue=0；P0耗尽测试丢失/遮挡/输入变化=0。
 - **AC-BUI20 `[M]` allocation/performance**：full-load Active与Paused choice各10000 iteration×3，预热后动态Node/Tween/容器增长=0并有positive control；报告CPU/GPU p50/p95/p99/max、draw/overdraw/RSS。min-spec与阈值未冻结前保持OPEN。
 - **AC-BUI21 `[I]` evidence truth**：每项记录fixture、build SHA、config hash、device与raw artifact；静态grep、headless smoke、单张截图不得替代runtime/UX/a11y/perf。
@@ -311,7 +311,7 @@ The `battle_ui_capacity` formula is defined as:
 | OQ-BUI04 | BLOCKED-PRESENTATION | Damage bank、64可见/96 pool、merge/drop/ACK和producer worst-case。 |
 | OQ-BUI05 | BLOCKED-CHOICE | choice kind priority actual table/hash、Treasure exhaustion result。 |
 | OQ-BUI06 | BLOCKED-ASSET | project.godot、BattleUI scene、Art/VFX/Audio/P0 fallback、字体与copy table。 |
-| OQ-BUI07 | BLOCKED-ACCESSIBILITY-MOBILE | TalkBack/VoiceOver能力或原生桥尚未验证。 |
+| OQ-BUI07 | BLOCKED-ACCESSIBILITY-MOBILE-RUNTIME | ADR-0001已冻结semantic bridge路径；TalkBack/VoiceOver插件能力、战斗overlay映射与真机尚未验证。 |
 | OQ-BUI08 | BLOCKED-TERMINAL-INTEGRATION | Save与Settlement/BATTLE_RULES已冻结typed handoff；actual capture/copy/runtime仍BLOCKED。 |
 | OQ-BUI09 | BLOCKED-PERF/EVIDENCE | min-spec预算、真机、动态字体、色弱/静音/遮挡与raw profiling。 |
 | OQ-BUI10 | FULL-REVIEW-PENDING | clean-context独立full review未执行；作者咨询不等于批准。 |

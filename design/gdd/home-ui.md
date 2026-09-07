@@ -2,7 +2,7 @@
 
 > **Status**: In Review / Re-review Pending
 > **Author**: 用户 + Codex（lean authoring；consulted UX reviewer / qa-lead）
-> **Created / Last Updated**: 2026-09-03
+> **Created / Last Updated**: 2026-09-07 — Zhangtian第四次独立full review授权整改传播
 > **Implements Pillar**: 低打扰、目标清晰、谨慎准备；让玩家三秒内找到下一局
 > **Scope**: MVP洞府首页、功法/掌天瓶/设置导航、资源摘要、存档恢复阻断与最小Settings domain；不含洞府建设、境界成长、装备、商店、任务、社交或活动入口
 
@@ -40,7 +40,7 @@ HomePresentationBundleV1={
   progression_nodes_bought:i32,available_seed_total:i64,
   zhangtian_unlocked:i32,settings_summary:SettingsViewV1,
   config_content_revision:i64,direct_none_allowed:i32,
-  direct_none_prep_bundle_hash:Hash256,
+  direct_none_start_slice:DirectNoneStartSliceV2,
   save_presentation:SavePresentationViewV1,
   unresolved_carrier_bits:i32,archive_ready:i32,bundle_hash:Hash256
 }
@@ -69,13 +69,13 @@ HomeNavigationCommandV1={
 }
 ```
 
-合法导航要求TopState HOME、root input gate已释放给Home、Save READY、无pending outcome/reservation/archive/profile mutation，且destination当前可达。available>0的主CTA只创建PREP destination，不分配battle ID、不抽seed、不扣种子。未解锁或available=0时，Home adapter以`expected_page_generation=view_generation`、matching profile/domain/config/save revisions和`direct_none_prep_bundle_hash`排队唯一`PrepConfirmCommandV1{source_surface_id=HOME_DIRECT_NONE,selected_seed_id=NONE,expected_pill_id=NONE}`；GameRoot由同一press先进入noninteractive PREP/STAGED、创建Prep页面Node=0，再消费该command并与Prep来源共享同一Save/Zhangtian reservation路径。same press/payload coalesce一次，旧generation、滑出release、cancel或第二touch为0 command。
+合法导航要求TopState HOME、root input gate已释放给Home、Save READY、无pending outcome/reservation/archive/profile mutation，且destination当前可达。available>0的主CTA只创建PREP destination，不分配battle ID、不抽seed、不扣种子。未解锁或available=0时，Home adapter只从同一confirmed bundle内128-byte `DirectNoneStartSliceV2`逐字段构造唯一`PrepConfirmCommandV1{source_surface_id=HOME_DIRECT_NONE,selected_seed_id=NONE,expected_pill_id=NONE}`；slice只接受`zhangtian_unlocked/starter_seed_grant_claimed=0/0或1/1`，locked时available必须0。source generation、profile/domain/config content revision+hash、save revision、available/两flag与slice hash任一不匹配均为0 command，禁止临时跨owner拼字段。GameRoot由同一press先进入noninteractive PREP/STAGED、创建Prep页面Node=0，再消费该command并与Prep来源共享同一Save/Zhangtian reservation路径。same press/payload coalesce一次，旧generation、滑出release、cancel或第二touch为0 command。
 
 ### 3.5 Save and recovery states
 
 | State | Home message | Allowed actions |
 |---|---|---|
-| `READY` | 正常首页 | Prep/功法/设置 |
+| `READY` | 正常首页 | available>0→Prep；available=0→HOME_DIRECT_NONE；功法/设置 |
 | `HEAL_REQUIRED` | 正在检查本地存档 | noninteractive；自动heal/readback |
 | `SAVE_PENDING` | 上一局正在保存 | 等待；设置可session-preview |
 | `SAVE_UNCERTAIN` | 上一局保存结果待确认 | 主CTA核对；低强调重试/放弃按Save规则 |
@@ -104,7 +104,7 @@ SettingsProfileDomainV1={
 
 顺序固定Master/Music/SFX/UI，volume 0..100；font scale ID固定100/115/130三档；四个bool字段只允许0/1，locale来自Config stable enum。canonical payload固定60 bytes。首次空档默认100/80/80/80、font100、bool0、locale=system-supported mapping；默认值必须来自Config/schema，不读设备音量回写profile。
 
-设置提交走Save generic `ProfileDomainMutationRequestV1`，同样遵守revision CAS/PONR/UNCERTAIN。slider drag只作local audio preview；release/Apply形成一个command。durable success后才更新confirmed settings；取消恢复confirmed值。screen reader是否可用是runtime capability，不因profile bool而声称已接入。
+设置提交走Save generic `ProfileDomainMutationRequestV2`，每个fresh attempt携带nonzero `attempt_generation/request_id`并按同一identity接收`ProfileDomainMutationResultV2`，同样遵守revision CAS/PONR/UNCERTAIN。slider drag只作local audio preview；release/Apply形成一个command。durable success后才更新confirmed settings；取消恢复confirmed值。screen reader是否可用是runtime capability，不因profile bool而声称已接入。
 
 ### 3.7 Lifecycle and input states
 
@@ -116,7 +116,7 @@ ANY → BLOCKED
 BLOCKED → STAGED_NONINTERACTIVE → READY（依赖真实恢复后）
 ```
 
-从Battle/Settlement/Fault切回时，Home先STAGED；旧battle Node物理失效、required carrier exposure/archive/retire完成、root Window gate与activation journal齐全后才READY。旧Home/layout generation callback为NOOP。mouse/touch与keyboard/gamepad focus分别验证；不能只设置一种focus。Android TalkBack/iOS VoiceOver bridge或明确缩减支持范围的ADR未签发前，screen-reader hints只算文案元数据，保持`BLOCKED-MOBILE-A11Y-ARCHITECTURE`。
+从Battle/Settlement/Fault切回时，Home先STAGED；旧battle Node物理失效、required carrier exposure/archive/retire完成、root Window gate与activation journal齐全后才READY。HOME是ADR-0001 action-bearing TopState：每个confirmed bundle/layout generation发布完整`AccessibleScreenSnapshotV2`，248-byte rows必须携带safe-area logical bounds、visible/clipped与余额/状态typed localization args。旧Home/layout generation callback为NOOP。mouse/touch与keyboard/gamepad focus分别验证；不能只设置一种focus。架构路径已冻结，Android TalkBack/iOS VoiceOver插件实现、能力握手、tree与真机trace保持`BLOCKED-MOBILE-A11Y-RUNTIME`。
 
 ### 3.8 Interactions with other systems
 
@@ -199,7 +199,7 @@ The `settings_volume_db` formula is defined as:
 
 ## 5. Edge Cases
 
-- **If 首次安装A/B均不存在**：Save双镜像EMPTY_INIT成功后显示0资源并可进入简化Prep；temp残片不算旧档。
+- **If 首次安装A/B均不存在**：Save双镜像EMPTY_INIT成功后显示0资源；主CTA同press走`HOME_DIRECT_NONE`，创建Prep页面0并直接进入共享reservation链；temp残片不算旧档。
 - **If store scan/heal/reconcile未完成**：Home只能STAGED/BLOCKED，新局/购买/消费为0。
 - **If 一槽坏一槽有效**：不自动覆盖坏槽；RECOVERY_REQUIRED完成前只读。
 - **If 两槽坏、未来schema或冲突**：保留bytes并显示对应阻断，绝不静默清档。
@@ -207,8 +207,8 @@ The `settings_volume_db` formula is defined as:
 - **If数值为合法INT64_MAX**：完整无损可读/读屏；compact格式不得成为唯一值。
 - **If数值negative/overflow**：domain invalid，不clamp成0。
 - **If主CTA双击、键盘+触屏同帧**：同press identity至多一个PREP command。
-- **If START_RUN成功**：只进入Prep，battle identity/RNG/seed mutation均0。
-- **If掌天瓶未解锁**：主CTA仍进入Prep并说明不服丹；掌天瓶卡不伪装库存入口。
+- **If START_RUN成功且available>0**：只进入Prep，battle identity/RNG/seed mutation均0；实际确认仍由Prep发出。
+- **If掌天瓶未解锁或available=0**：主CTA同press走`HOME_DIRECT_NONE`且Prep页面创建0；掌天瓶卡只作说明入口，不伪装库存入口或增加二次确认。
 - **If Progression/Zhangtian mutation PONR前失败**：旧bundle不变，可fresh retry。
 - **If mutation PONR后不确定**：冻结业务CTA，只同operation核对，不乐观更新。
 - **If durable success晚到/重建**：新bundle显示一次，成功/解锁音不重播。
@@ -261,7 +261,7 @@ Home常态不播放入页声；普通navigation仅轻UI click。Settings preview
 - **AC-HM04 `[L/I][BLOCKING]` — GIVEN**branch levels0..5，**WHEN**F2，**THEN**summary0..15；invalid/overflow拒绝整包。
 - **AC-HM05 `[L/I][BLOCKING]` — GIVEN**seed counts0/1/MAX，**WHEN**F3，**THEN**checked exact sum且不含reserved；overflow bundle invalid。
 - **AC-HM06 `[L][BLOCKING]` — GIVEN**volume0/1/50/100及非法，**WHEN**F4，**THEN**mute/−40/约−6.02/0dB；非法不应用。
-- **AC-HM07 `[I][BLOCKING]` — GIVEN**HOME READY fresh press且available分别为0或>0，**WHEN**点主CTA，**THEN**0库存只发一次`HOME_DIRECT_NONE`并创建Prep页面0；>0库存只创建PREP navigation一次且battle ID/RNG/库存写为0。
+- **AC-HM07 `[I][BLOCKING]` — GIVEN**HOME READY fresh press、available分别为0或>0、两flag合法/非法组合及128-byte `DirectNoneStartSliceV2`任一字段/hash单轴stale，**WHEN**点主CTA，**THEN**0库存只从同一confirmed Home bundle内合法slice发一次`HOME_DIRECT_NONE`并创建Prep页面0；stale、非法flag、locked非零库存或跨owner拼接发0 command；>0库存只创建PREP navigation一次且battle ID/RNG/库存写为0。
 - **AC-HM08 `[I][BLOCKING]` — GIVEN**double/multitouch/slide-out/cancel/stale generation，**WHEN**terminal input，**THEN**同press最多1 command，其余0。
 - **AC-HM09 `[I][BLOCKING]` — GIVEN**Save/Reservation/Mutation/Archive全部阻断态，**WHEN**展示/CTA，**THEN**逐态文案与唯一service action匹配，UI disabled不可绕过guard。
 - **AC-HM10 `[I][BLOCKING]` — GIVEN**Progression/Zhangtian concurrent commands同profile revision，**WHEN**Save CAS，**THEN**仅一个成功，Home刷新整包且不自动重发另一条。
@@ -282,7 +282,7 @@ Home常态不播放入页声；普通navigation仅轻UI click。Settings preview
 | OQ-HM02 | UPDATE_REQUIRED是否有真实平台更新CTA？ | Release/Product | OPEN；无入口则只导出诊断 |
 | OQ-HM03 | 角标read-state是否需要持久化？ | UX/Save | 默认session-local；OPEN |
 | OQ-HM04 | Settings codec/migration/slot capacity？ | Save/Config | BLOCKED |
-| OQ-HM05 | Godot 4.7.1 safe-area/dual-focus与TalkBack/VoiceOver bridge？ | Engine/QA | BLOCKED architecture ADR + device spike |
+| OQ-HM05 | Godot 4.7.1 safe-area/dual-focus与TalkBack/VoiceOver bridge？ | Engine/QA | ADR-0001路径已冻结；runtime/device BLOCKED |
 | OQ-HM06 | 正式UX/Art/Sound与用户测试？ | UX/Art/Audio | BLOCKED |
 | OQ-HM07 | clean-context full review？ | Review team | OPEN |
 

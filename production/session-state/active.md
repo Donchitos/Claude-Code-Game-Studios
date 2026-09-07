@@ -5,29 +5,51 @@
 <!-- STATUS -->
 Epic: 引擎与系统分解
 Feature: 正式战斗切片核心系统设计
-Task: Zhangtian full review 方案A跨文档整改与静态校验；下一步clean-context full re-review
-Current section: Zhangtian remediation static verification complete / Re-review Pending
-File: design/gdd/zhangtian-bottle.md + Prep/Save/GameRoot/Settlement/Config/RNG/SkillDraft/Damage/Home/Audio/technical preferences/registry/index/review log
-Review mode: full remediation author context（非独立re-review）
-Status: MAJOR REVISION的9组blocker已按用户“A,授权”完成作者级静态整改并通过本轮diff/YAML/重复编号/旧口径/byte-size静态检查；相关GDD均保持In Review / Re-review Pending。恢复ABI/容量作者常量已冻结；generated artifact、Hash256/codec/migration golden与checked-sum、runtime/crash/device/accessibility/balance及clean-context verdict仍BLOCKED/OPEN，battle_ready=false。
+Task: Zhangtian第四次clean-context full review的6组blocker已获授权并完成跨文档静态整改；下一步第五次fresh-context full re-review
+Current section: fourth remediation static verification complete / Re-review Pending
+File: design/gdd/zhangtian-bottle.md + Prep/Save/GameRoot/Settlement/Config/SkillDraft/Progression/Home/Audio/BattleUI/technical preferences/registry/index/review log + ADR-0001
+Review mode: full remediation author context（基于已完成的独立clean-context verdict；本整改上下文不自批）
+Status: 第四次clean-context verdict为MAJOR REVISION NEEDED / XL（前轮6组闭合1、其余5组PARTIAL），本轮6组根blocker已按用户“授权”完成第四轮作者级静态整改；diff whitespace、YAML parse、旧口径、byte-size与关键manifest计数已静态核验。相关GDD保持In Review / Re-review Pending。generated artifact、Hash256/codec/migration golden与runtime checked-sum、runtime/crash/device/accessibility/balance及第五次独立verdict仍BLOCKED/OPEN，battle_ready=false。
 Constraints: 仅增量修订设计文档、registry与追踪状态；不覆盖已有dirty worktree，不改生产实现代码。本轮整改上下文不得批准自身；未执行Godot/GDUnit4/真机/性能/UX/audio验证，battle_ready=false。
 <!-- /STATUS -->
 
+## Zhangtian第四轮full review授权整改（2026-09-07）
+
+**Verdict与范围**：第四次clean-context full review由game/economy、systems/persistence/Godot/performance、UX/UI/QA/audio/accessibility specialists及fresh creative-director综合，结论仍为`MAJOR REVISION NEEDED`、scope XL。第三轮6组blocker仅第1组CLOSED，其余PARTIAL；用户回复“授权”，批准对本轮6组根blocker做完整跨文档作者整改。本会话不能批准自身。
+
+**持久语义与生命周期**：SkillDraft新增252-byte `PreActiveOfferSemanticV1`与296-byte `PreActiveLoadoutSemanticV1`，durable hash排除snapshot/bank/generation等process-local identity并在新进程按config content key rebind。GameRoot新增`PRE_ACTIVE_CANCEL_REQUESTED`、`PRE_ACTIVE_CANCEL_ALLOWED`及transition，首个offer durable/visible前才可release；guard/action作者表为56/72 rows。
+
+**Save/Hash/Audio ABI**：`ReservationUpdateRequestV2`只接受5-row manifest定义的inline canonical payload；V2 result返回profile/domain revision、unlock transition与durable receipt ID/hash。terminal transaction写264-byte `DurableRunResolutionV2`并清live reservation/marker；Save签发22-row actual `HashPreimageManifestV1`。容量复算为`SlotPayloadMax=42180,SlotEncodedMax=42392`。Audio只能从matching V2 result/124-byte stamp取得receipt identity，不能由UI或裸success推断。
+
+**经济、direct-NONE与无障碍**：Outcome seed仅封存random gross；Settlement的64-byte `AppliedRewardRowV1`是starter、cap disposition与applied amount唯一真相，unlock/claim只接受0/0或1/1。Home/Settlement direct NONE升级128-byte `DirectNoneStartSliceV2`，无种子重开视觉与读屏均明确“不服丹，再次挑战”。ADR/registry升级`AccessibleScreenSnapshotV2`：248-byte rows含layout generation、logical bounds、visible/clipped与8 typed args；HOME/PREP/PRE_ACTIVE_CHOICE/BATTLE_PAUSED/SETTLEMENT/CONTROLLED_FAULT为六个action-bearing states，其余state仍drain；app render workload为5 rows。
+
+**静态验证与下一步**：`git diff --check`、两份YAML parse与229个entity name唯一性通过；56 guard、72 action、5 app-render、22 hash-preimage、5 reservation-payload、12 reconcile rows匹配；264/64/248/76/2468/42180/42392-byte算术复算一致。generated canonical artifact、Hash256/codec/migration golden、Godot/GDUnit4、进程强杀、Android/iOS无障碍、性能、音频与经济/体验证据仍未执行。状态保持`In Review / Re-review Pending`、`battle_ready=false`；下一步在fresh context执行第五次`/design-review design/gdd/zhangtian-bottle.md --depth full`。
+
+## Zhangtian第三轮full review授权整改（2026-09-04）
+
+**Verdict与范围**：第三次clean-context full review由game/economy、systems/persistence、QA/UX/engine specialists及creative-director综合，结论仍为`MAJOR REVISION NEEDED`、scope XL。用户回复“授权”，批准对6组根blocker做完整跨文档作者整改；本会话不能批准自身。
+
+**冻结修订**：Victory合法tick域为43200..108000，其余outcome为0..108000；胜败随机速率用`3*T_defeat>T_victory`交叉乘法，normal Settlement先consume reservation再以post-consume held room与lifetime room发奖。首个聚气offer durable/visible后，Back/关闭/重启只能恢复同一offer，不能release后fresh重抽。跨进程持久身份改为`config_content_revision+config_content_hash`，process-local snapshot ID不落盘；candidate/recovery/payload/reservation为132/360/660/1088 bytes。
+
+**ABI与表现闭合**：Save新增generation/checkpoint/hash CAS的reservation update、12-row reconcile V2、256-byte terminal resolution和terminal transaction清live reservation/marker；hash manifest区分SELF_ZERO_FIELD与EXTERNAL_PAYLOAD。Home/Settlement direct NONE各嵌入124-byte `DirectNoneStartSliceV1`。Save fresh-live成功签发124-byte `SaveDurableStampFactV1`，Audio只消费真实operation/attempt/request/receipt identity。无障碍bridge单列`AppAdapterTopologyManifestV1`，native callback只进capacity32 SPSC，并由所有meta TopState render-frame pump处理；SkillDraft session RNG registry修正为1..20。
+
+**证据边界与下一步**：本轮只有文档、YAML与算术/旧口径静态检查；generated codec/hash/capacity artifact、Godot/GDUnit4、进程强杀、Android/iOS无障碍、性能、音频资产和经济/体验测试仍未执行。状态保持`In Review / Re-review Pending`、`battle_ready=false`。下一步必须在fresh context再次执行`/design-review design/gdd/zhangtian-bottle.md --depth full`。
+
 ## Zhangtian full review 方案A整改（2026-09-03）
 
-**已完成的静态裁决传播**：UI唯一业务命令类型为`PrepConfirmCommandV1`且不携带preparation ID，来源封闭为PREP/HOME_DIRECT_NONE；有可用种子才进Prep，无可用种子从Home同press经noninteractive PREP直接NONE。Save/Zhangtian在durable reservation事务内分别分配/推进持久battle/preparation allocator，NONE也推进identity/domain revision。固定276-byte `RunStartRecoveryV1`、1004-byte reservation、八checkpoint、candidate/pre-active/ActiveEntry均可逐步恢复；callback丢失/重启继续同一handoff，Active后无Outcome强杀按消费收敛，只有sealed技术补偿可release。ABANDONED为零奖励tombstone+同事务mandatory consume，discard不能撤销丹药成本。
+**第二轮静态裁决传播**：UI唯一业务命令仍为`PrepConfirmCommandV1`，Home与Settlement再次挑战均按available分流：有库存进Prep、无库存同press经noninteractive PREP直接NONE。Save/Zhangtian在durable reservation事务内分配持久identity；固定336-byte `RunStartRecoveryV1`、636-byte Zhangtian payload、1064-byte reservation、100-byte candidate与七checkpoint，journal只存在于DurableReservation nested一份。pre-active choice按offer revision/refresh/selected candidate/session/config/loadout字段确定性重放；callback丢失/重启继续同一handoff，Active后无Outcome强杀按消费收敛。
 
-**玩法/经济裁决**：聚气丹使用`starting_level_curve_credit=14`，在首个Active tick前进入持久可恢复`PRE_ACTIVE_CHOICE`完成普通level-up ordinal1；base页不耗刷新、玩家刷新才耗，L40 remaining XP=16538。`ZHANGTIAN_HERB`用预分配`PackedInt32Array([1,1,1])`，max len3、fault-before-use、成功logical delta1、canonical index map。VICTORY发candidate×2；DEFEAT仅`survival_ticks>=43,200`发×1；首次正常结算三类starter各1，版本`PROVISIONAL-ECONOMY-V3`。held cap只约束每类available+reserved≤999，lifetime earned/consumed受int64与守恒约束；触顶显式`AT_CAP_PARTIAL/AT_CAP_NO_GRANT`。
+**玩法/经济裁决**：聚气丹仍为credit14/普通ordinal1预开局选择。合法结算域固定0..108,000 Active ticks；VICTORY发candidate×3，DEFEAT仅`survival_ticks>=43,200`发×1，首次正常结算三类starter各1且单独计cohort，版本`PROVISIONAL-ECONOMY-V4`。因此最慢合法Victory随机速率3/30=0.10，高于最快eligible Defeat的1/12。held cap只约束每类available+reserved≤999，lifetime earned/consumed受int64与守恒约束。
 
-**接口/表现裁决**：静态`HerbConfigV1/ZhangtianProjectionRulesV1`与run-specific projection分离；Hash256统一为`SHA256_V1`、互异domain tag与zero-field preimage。GameRoot新增五行app-service topology；Save固定worker/mailbox线程边界与`SlotMax=65536`。Prep采用page-owned touch retirement与typed actions；Damage新增`DamagePreparationInputV1`；掌天app-scope音频升级V2 semantic key、唯一producer及unlock+Save stamp coalesce。移动端读屏在TalkBack/VoiceOver bridge ADR签发前保持architecture blocker。
+**接口/表现裁决**：修正`DomainRecordV1.payload_hash`并补journal hash、candidate/slice exact schema与top-level capacity枚举；GameRoot五行app-service topology现有actual rows，所有TopState每render frame调用一次app-service result pump。`AUDIO_APP`是唯一可持有预建app-scope AudioStreamPlayer的服务；`SAVE_DURABLE_STAMP`把unlock transition作为payload bit，无异步join/timeout。ADR-0001冻结immutable semantic tree→Android/iOS native adapter→typed action架构；runtime/device仍BLOCKED。
 
-**验证边界与下一步**：完成文档/YAML/编号/diff静态检查后，仍需生成canonical artifact、Hash256/codec/migration golden与容量checked-sum，并提交Godot 4.7.1 crash/device/accessibility/performance与经济试玩证据。下一动作是在clean context执行`/design-review design/gdd/zhangtian-bottle.md --depth full`；本轮不得称Approved、implementation-ready、runtime verified或battle_ready。
+**验证边界与下一步**：文档/YAML/编号/diff静态检查已完成：336/100/52/244/636/1064-byte结构和42156/42368/262144容量算术复算一致，30-row load、54-row guard、5-row app-service topology连续完整；另外将Settlement零库存来源独立为`SETTLEMENT_DIRECT_NONE`，避免伪用HOME generation。仍需生成canonical artifact、Hash256/codec/migration golden与运行时容量checked-sum，并提交Godot 4.7.1 crash/device/accessibility/performance与经济试玩证据。下一动作是在新的clean context再次执行`/design-review design/gdd/zhangtian-bottle.md --depth full`；本轮不得称Approved、implementation-ready、runtime verified或battle_ready。
 
 ## 剩余四系统批量作者设计（2026-09-03）
 
 **结果（作者基线，已被上方full-review整改段更新）**：新增`zhangtian-bottle.md`、`settlement-system.md`、`home-ui.md`与`prep-ui.md`；当前均为`In Review / Re-review Pending`。MVP枚举现28/28获得作者设计覆盖；Buff仍按既有决策并入Damage，不另造GDD。
 
-**关键冻结（已被方案A更新）**：掌天瓶采用三seed/三pill、每丹cost1、held cap999、132-byte domain；Loading preflight后恰1次logical均匀candidate并持久化，VICTORY发×2、Boss线DEFEAT发×1、首次正常结算另给三类各1。聚气丹起始curve credit14/LV2/XP0并在Active前完成可恢复普通ordinal1选择，锻体+15% maxHP，明心+8个百分点crit。Settlement拥有BATTLE_RULES stable11/phase6+7、`0/6/0/0` contribution、6-row reward、3-row record和136-byte domain。Home提供恢复阻断、direct NONE和60-byte Settings domain；RunStartRequest不可回写，candidate/pre-active写同一durable recovery。
+**关键冻结（以本节上方第二轮裁决为准）**：掌天瓶采用三seed/三pill、每丹cost1、held cap999、132-byte domain；Loading preflight后恰1次logical均匀candidate并持久化，VICTORY发×3、Boss线DEFEAT发×1、首次正常结算另给三类各1。聚气丹起始curve credit14/LV2/XP0并在Active前完成可恢复普通ordinal1选择，锻体+15% maxHP，明心+8个百分点crit。Settlement拥有BATTLE_RULES stable11/phase6+7、`0/6/0/0` contribution、6-row reward、3-row record和136-byte domain。Home提供恢复阻断、direct NONE和60-byte Settings domain；RunStartRequest不可回写，candidate/pre-active写同一durable recovery。
 
 **传播与证据边界**：已同步主概念、RNG、GameRoot、Save、Config、Damage、SkillDraft、Settlement、Home、Prep、Audio、technical preferences、registry与systems-index。静态作者合同不等于独立评审或实现验收；canonical导出artifact、owner/workload/capacity checked-sum、四domain codec/migration、Godot/GDUnit4、crash/device/performance、移动端读屏bridge与玩家测试尚未闭合，`battle_ready=false`。
 

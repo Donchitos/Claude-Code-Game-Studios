@@ -2,7 +2,7 @@
 
 > **Status**: In Review / Re-review Pending
 > **Author**: 用户 + Codex（lean authoring；consulted systems-designer / qa-lead / audio-director / sound-designer）
-> **Created / Last Updated**: 2026-09-03
+> **Created / Last Updated**: 2026-09-07 — Zhangtian第四次full review durable receipt ABI传播
 > **Implements Pillar**: 低打扰、可读、克制的仙侠战斗反馈；关键生存与危险事件始终优先
 > **Scope**: MVP战斗SFX、UI反馈、优先级/并发/聚合/duck/降级与语义handoff；不含最终音乐创作、配音或资产生产
 
@@ -24,7 +24,7 @@ Audio Feedback 是战斗表现层唯一的音频调度 owner。它把 matching c
 
 - AudioFeedback不是GameRoot七phase participant，四类gameplay contribution均为0；不定义gameplay `_process/_physics_process`。
 - Active sealed publish后，GameRoot显式调用`present_audio_tick(1/60,bundle)`；Paused/Resume/critical由唯一ALWAYS control pump调用typed presentation advance。音频时钟不得推进玩法tick。
-- 唯一引擎写入是预建AudioStreamPlayer状态、bus gain、固定queue/voice/duck状态、reader cursor/ACK与diagnostic。禁止写HP/XP/cooldown/FSM/pause/terminal/fact/Pool/Grid/Outcome。
+- 唯一引擎写入是预建AudioStreamPlayer状态、bus gain、固定queue/voice/duck状态、reader cursor/ACK与diagnostic。`AUDIO_APP`依`AppServiceTopologyManifestV1`可持有persistent app root预建的app-scope `AudioStreamPlayer`，但不得持有battle Node/RID/Callable或可变battle bank引用；其余app service仍禁止持有Node/RID/Callable。禁止写HP/XP/cooldown/FSM/pause/terminal/fact/Pool/Grid/Outcome。
 - 不读Node/FSM、raw intent、query hit、理论target或未publish bank；`play()`被调用不等于语义已合法。
 - MOVE start/loop只从连续matching Player frame的`did_translate`边沿派生，不进入gameplay event ledger；stop/turn/edge-blocked默认静默。
 
@@ -52,9 +52,11 @@ source_authority_revision,commit_tick,event_code,has_position,world_position,
 magnitude,variant_code,presentation_winner}
 ```
 
-app-scope语义另走`AppAudioSemanticEventV2={schema_version:i32=2,event_kind:i32,authority_owner_id:i32,producer_id:i32,operation_id:i64,profile_revision:i64,domain_revision:i64,edge_sequence:i64,stale_presentation_generation:i64,identity_payload_length:i32,identity_payload_hash:Hash256,semantic_key_hash:Hash256,coalesce_key_hash:Hash256,valid:i32}`，不伪造battle identity。`stale_presentation_generation`只用于拒绝旧reader，禁止进入dedupe key。MVP identity union固定：selection=`{page_generation,draft_revision,selected_seed_id}`；reservation/release=`{reservation_id,preparation_id,durable_receipt_hash,state}`；unlock=`{profile_commit_operation_id,profile_revision,zhangtian_domain_revision}`。`semantic_key_hash=SHA256_V1(event_kind||authority_owner_id||canonical identity payload)`，同key重复只处置一次、同key异payload先fault；`coalesce_key_hash`只用于下述已签发组合，不得按时间窗口猜测。
+app-scope语义另走`AppAudioSemanticEventV2={schema_version:i32=2,event_kind:i32,authority_owner_id:i32,producer_id:i32,operation_id:i64,profile_revision:i64,domain_revision:i64,edge_sequence:i64,stale_presentation_generation:i64,identity_payload_length:i32,identity_payload_hash:Hash256,semantic_key_hash:Hash256,coalesce_key_hash:Hash256,valid:i32}`，不伪造battle identity。`event_kind={PILL_SELECTION_CHANGED=1,PREP_RESERVATION_DURABLE=2,PREP_RESERVATION_RELEASED=3,SAVE_DURABLE_STAMP=4}`；不存在独立`ZHANGTIAN_UNLOCKED` event。`stale_presentation_generation`只用于拒绝旧reader，禁止进入dedupe key。MVP identity union固定：selection=`{page_generation,draft_revision,selected_seed_id}`；reservation/release=`{reservation_id,preparation_id,profile_revision,zhangtian_domain_revision,durable_receipt_id,durable_receipt_hash,state}`，其中reservation/preparation/state来自sealed `PrepareRunAttemptViewV1`，revision与receipt逐位来自同request的matching `ReservationUpdateResultV2`；view只能复制result，不能合成receipt或跨request拼接。Save stamp逐字段复制matching `SaveOperationResultV2`或`ProfileDomainMutationResultV2`后由Save签发的124-byte `SaveDurableStampFactV1={operation_kind,operation_id,attempt_generation,request_id,profile_revision,zhangtian_domain_revision,zhangtian_unlock_transition,durable_receipt_id,durable_receipt_hash,fact_hash}`，其中transition只能0/1。`semantic_key_hash=SHA256_V1(event_kind||authority_owner_id||canonical identity payload)`，同key重复只处置一次、同key异payload先fault。
 
-四类producer唯一：`PILL_SELECTION_CHANGED→PrepDraftAudioAdapter`，`PREP_RESERVATION_DURABLE/RELEASED→SaveReservationAudioAdapter`，`ZHANGTIAN_UNLOCKED→SaveResolutionAudioAdapter`。unlock不产生第二个独立voice，而以相同`profile_commit_operation_id`的coalesce key修饰本次Save durable stamp；缺matching stamp为invalid event，不由Home/Prep补播。每类在同一live app process内以完整identity at-most-once处置；进程在声前/声后被kill时允许0或1次，不能承诺跨崩溃exactly-once。UI rebuild、reconcile结果重投影、取消静音或重新进入页面只更新reader cursor，不重播历史edge。
+producer唯一：`PILL_SELECTION_CHANGED→PrepDraftAudioAdapter`，`PREP_RESERVATION_DURABLE/RELEASED→SaveReservationAudioAdapter`，`SAVE_DURABLE_STAMP→SaveResolutionAudioAdapter`。SaveReservation只消费fresh-live `ReservationUpdateResultV2{reservation_id,attempt_generation,request_id,result_code,checkpoint_id,reservation_hash,profile_revision,domain_revision,unlock_transition,durable_receipt_id,receipt_hash}`；SaveResolution只消费fresh-live `SaveDurableStampFactV1`，且stamp逐字段来自matching V2 result。locked→unlocked作为stamp payload内的modifier bit选择“落印+解锁”单voice，不再异步join第二事件。`coalesce_key_hash=SHA256_V1("SaveDurableStampCoalesceV2\0"||operation_kind_le32||operation_id_le64||attempt_generation_le64||request_id_le64||durable_receipt_id_le64||durable_receipt_hash)`，其他event该字段为ZERO32。boot scan、reconcile FOUND与duplicate callback没有fresh-live fact，event count=0。
+
+总处置固定：普通stamp(bit0)播放一次generic落印；首次解锁stamp(bit1)播放一次解锁变体；同key同payloadduplicate为OK_NOOP；同key异payload为CONFLICT；只有unlock投影而无matching durable stamp时event count=0并记diagnostic；不存在stamp-first/unlock-first等待、wallclock timeout或跨帧join状态。UI rebuild、reconcile结果重投影、取消静音、重新进入页面与boot历史scan均只更新reader cursor，重播0；进程在首次live enqueue/voice前后被kill仍只承诺0..1次，不承诺跨崩溃exactly-once。
 
 - Producer只发布事实语义，不指定stream、bus、priority或duck；这些由`AudioCueProfileV1`映射。
 - canonical row order=`commit_tick ASC → source_owner_stable_order ASC → event_sequence ASC`。
@@ -87,7 +89,7 @@ Audio consumer固定为`PLAYER_AUDIO,stable_order=3,ack_bit=0b100`，直接消�
 | Terminal | GameRoot sealed `terminal_commit_id` | Boss HP、UI文案、death fact |
 | Pill selection changed | `PrepDraftAudioAdapter`发布matching draft revision edge | 卡片pressed/focus/重复tap、Home |
 | Prep reservation durable/released | `SaveReservationAudioAdapter`发布首次matching durable receipt edge | Zhangtian、pending、callback次数、reconcile重投影 |
-| Zhangtian first unlock | `SaveResolutionAudioAdapter`将confirmed `locked→unlocked`作为同commit Save stamp modifier | Home/Prep页面出现、Settlement第二voice、unmute、rebuild |
+| Save durable stamp / Zhangtian first unlock | `SaveResolutionAudioAdapter`唯一发布`SAVE_DURABLE_STAMP`；confirmed `locked→unlocked`只作同payload modifier bit | 独立unlock event、Home/Prep页面出现、Settlement第二voice、unmute、rebuild |
 
 Weapon-vs-Projectile cast、Damage-vs-Enemy death、Leveling-vs-SkillDraft突破的actual唯一owner row尚需双方签发；签发前不能实现对应成功音。
 
@@ -397,7 +399,7 @@ The `audio_variant_index` formula is defined as:
 - **AC-AF16 `[A][E][R]` mono/output**：mono、手机扬声器、耳机分别跑关键cue单独与最坏碰撞；无相消，pan仅辅助。LUFS/peak/SNR/识别阈值未冻结前OPEN。
 - **AC-AF17 `[U][I]` determinism**：同committed stream但producer排列、frame rate与free-list变化，event key/group/asset variant/start-stop-steal-ACK trace逐字段相同；PCM无需跨设备bit-identical。
 - **AC-AF18 `[M][R]` full-load**：Active/Paused各预热后10000 iteration×3，project-side动态Node/player/Tween/container/Callable=0；报告main/audio CPU p50/p95/p99/max、underrun、voices、merge/drop/steal、RSS与audio memory，并有positive controls。
-- **AC-AF19 `[I][R]` app-scope掌天音频**：GIVEN选择重复tap、reservation durable/release callback重复与乱序、首次解锁、Save stamp、UI rebuild、reconcile、mute→unmute及声前/声后kill，WHEN恢复并重投影，THEN V2 semantic key不含presentation generation，完整identity最多1次，unlock与同operation Save stamp合为1 voice，kill窗口总次数为0..1，rebuild/reconcile/unmute补播为0，pending/失败不得冒充成功音。
+- **AC-AF19 `[I][R]` app-scope掌天音频**：GIVEN选择重复tap、`ReservationUpdateResultV2`/`SaveOperationResultV2`/`ProfileDomainMutationResultV2`带真实revision+receipt id/hash的fresh-live callback重复与乱序、124-byte `SaveDurableStampFactV1` bit0/1、伪独立unlock、同key异payload、UI rebuild、reconcile、mute→unmute及声前/声后kill，WHEN恢复并重投影，THEN identity逐位源于matching V2 result且V2 semantic key不含presentation generation，V2 coalesce preimage逐byte包含operation kind/id、attempt、request与receipt id/hash，bit0/1各只产生1个generic/解锁变体voice，伪独立unlock为0 event，duplicate OK_NOOP、conflict fault，kill窗口总次数0..1，rebuild/reconcile/unmute/boot补播0，pending/失败不得冒充成功音。
 - **AC-AF20 `[I][R]` teardown/device**：Active/Paused/critical/terminal/fault、旧finished与device switch/background；旧局0 play/ACK/duck，新局不受污染，app music无旧battle引用。
 - **AC-AF21 `[I]` evidence truth**：报告含build/config/priority/capacity/asset/bus hash、Godot import、device/OS/output/volume、raw event+voice trace与thermal；play调用数/无报错/桌面平均CPU/单次耳机试听不能PASS。
 

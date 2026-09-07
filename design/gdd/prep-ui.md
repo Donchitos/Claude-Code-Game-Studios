@@ -2,13 +2,13 @@
 
 > **Status**: In Review / Re-review Pending
 > **Author**: 用户 + Codex（lean authoring；consulted UX reviewer / qa-lead）
-> **Created / Last Updated**: 2026-09-03
+> **Created / Last Updated**: 2026-09-07 — Zhangtian第四次独立full review授权整改传播
 > **Implements Pillar**: 一次只做一个清晰准备决定；可控、不强迫、不自动消费
 > **Scope**: MVP Home到Battle之间的掌天瓶选择、NONE路径、effect preview、durable reservation进度、Loading handoff与返回；不含多丹、推荐方案、自动沿用、炼丹小游戏或真实时间等待
 
 ## 1. Overview
 
-Prep UI 是有至少一枚可用种子时 `HOME→BATTLE_LOADING` 之间唯一可交互准备页，也是掌天瓶的完整玩家界面。它展示三种种子库存与下一局丹药效果，允许选择恰一种或明确“不服丹”，并把fresh typed command交给GameRoot/Zhangtian/Save；UI只维护草稿、焦点和press identity，不拥有库存、配方、reservation、battle identity或TopState。未解锁或三类available全0时，Home主CTA直接以同一`PrepConfirmCommandV1`的`HOME_DIRECT_NONE`来源提交NONE，不创建一个只供再次确认的Prep页面。
+Prep UI 是有至少一枚可用种子时 `HOME→BATTLE_LOADING` 之间唯一可交互准备页，也是掌天瓶的完整玩家界面。它展示三种种子库存与下一局丹药效果，允许选择恰一种或明确“不服丹”，并把fresh typed command交给GameRoot/Zhangtian/Save；UI只维护草稿、焦点和press identity，不拥有库存、配方、reservation、battle identity或TopState。未解锁或三类available全0时，Home主CTA以同一`PrepConfirmCommandV1`的`HOME_DIRECT_NONE`来源提交NONE；resolved Settlement再次挑战则使用`SETTLEMENT_DIRECT_NONE`，两者都不创建一个只供再次确认的Prep页面。
 
 确认丹药后必须等待matching reservation durable success，才能进入Loading；结果不确定时页面冻结并只允许核对。选择NONE仍走同一run-start检查和0-cost reservation identity，但不改变库存。再次挑战与Home主CTA仅在存在可选种子时进入fresh Prep；无可选种子时走direct NONE。无论入口，永不自动沿用上一局选择。
 
@@ -30,21 +30,51 @@ Prep UI 是有至少一枚可用种子时 `HOME→BATTLE_LOADING` 之间唯一�
 ### 3.2 Atomic preparation bundle
 
 ```text
+HerbRecipeViewV1={stable_order:i32,seed_id:i32,pill_id:i32,
+  available_count:i64,seed_cost:i32,effect_kind:i32,
+  effect_i64:i64,effect_f64:f64,display_unit_id:i32,
+  localization_key_id:i32}
+
+ZhangtianPreparationSliceV1={schema_version:i32=1,
+  profile_revision:i64,domain_revision:i64,content_revision:i64,
+  unlocked:i32,available_counts:i64[3],
+  recipe_rows:HerbRecipeViewV1[3],slice_hash:Hash256}
+
 PrepPresentationBundleV1={
   schema_version:i32=1,top_state:i32,page_generation:i64,
   profile_revision:i64,zhangtian_domain_revision:i64,
   zhangtian_content_revision:i64,config_content_revision:i64,
+  config_content_hash:Hash256,
   save_state_revision:i64,available_seed_counts:i64[3],
   unlocked:i32,recipe_rows:HerbRecipeViewV1[3],
   reservation_attempt:PrepareRunAttemptViewV1,
   geometry:UiGeometrySnapshotV1,
   primary_action_id:i32,block_reason_id:i32,bundle_hash:Hash256
 }
+
+PrepareRunAttemptViewV1={schema_version:i32=1,command_id:i64,
+  preparation_id:i64,reservation_id:i64,operation_id:i64,
+  attempt_generation:i64,request_id:i64,result_code:i32,
+  receipt_id:i64,receipt_hash:Hash256,state:i32,view_hash:Hash256}
+
+UiGeometrySnapshotV1={schema_version:i32=1,layout_generation:i64,
+  viewport_width:i32,viewport_height:i32,safe_left:i32,safe_top:i32,
+  safe_right:i32,safe_bottom:i32,ui_scale_mode:i32,
+  font_scale_percent:i32,geometry_hash:Hash256}
+
+DirectNoneStartSliceV2={schema_version:i32=2,source_surface_id:i32,
+  source_generation:i64,profile_revision:i64,domain_revision:i64,
+  config_content_revision:i64,config_content_hash:Hash256,
+  save_state_revision:i64,available_total:i64,unlocked:i32,
+  starter_seed_grant_claimed:i32,
+  slice_hash:Hash256}
 ```
+
+`HerbRecipeViewV1`固定52 bytes，`ZhangtianPreparationSliceV1`固定244 bytes，`PrepareRunAttemptViewV1`固定132 bytes，`UiGeometrySnapshotV1`固定76 bytes，`DirectNoneStartSliceV2`固定128 bytes，均little-endian/no-padding；direct-NONE只接受flags `0/0`或`1/1`，locked时available必须0。Bundle中的Zhangtian字段必须逐位等于同capture的slice，禁止另外拼出第二份库存/recipe真相。reservation/release成功音只可使用attempt view中matching durable `receipt_id+receipt_hash`，不得由UI合成。
 
 三recipe row按凝气草/铁灵花/雷元果stable顺序，包含owner已解析的pill stable ID、数值、单位与localization key；本地化字符串不进入bundle hash。所有业务字段来自同一profile/config/Save capture，geometry另以revision/hash关联page generation；任一revision/hash/stable row stale或unknown时，整包不可确认并请求fresh capture，不能保留新库存+旧药效。
 
-`PrepLocalDraftV1={page_generation,selected_seed_id,selected_pill_id,draft_revision}`只属于当前页面，不进入owner bundle/hash。`PrepareRunAttemptViewV1`固定携带`command_id,preparation_id,reservation_id,operation_id,attempt_generation,request_id,result_code,receipt_id,state,view_hash`；UNKNOWN字段/枚举令整包BLOCKED。UI只用这些typed结果匹配late callback、重建和一次性反馈，不从裸state edge猜测成功。
+`PrepLocalDraftV1={page_generation,selected_seed_id,selected_pill_id,draft_revision}`只属于当前页面，不进入owner bundle/hash。Home/Settlement direct NONE必须各自在同一confirmed capture中嵌入完整`DirectNoneStartSliceV2`，command的generation/revisions/config hash/save revision、available、两flag与bundle hash逐位取该slice；adapter不得临时跨owner拼字段。UNKNOWN字段/枚举令整包BLOCKED。UI只用typed结果匹配late callback、重建和一次性反馈，不从裸state edge猜测成功。
 
 ### 3.3 Page layout and selection
 
@@ -66,15 +96,16 @@ PrepConfirmCommandV1={
   schema_version:i32=1,command_id:i64,press_id:i64,
   source_surface_id:i32,
   expected_page_generation:i64,expected_profile_revision:i64,
-  expected_domain_revision:i64,expected_config_revision:i64,
+  expected_domain_revision:i64,expected_config_content_revision:i64,
+  expected_config_content_hash:Hash256,
   selected_seed_id:i32,expected_pill_id:i32,
   expected_save_state_revision:i64,bundle_hash:Hash256
 }
 ```
 
-`source_surface_id={HOME_DIRECT_NONE=1,PREP=2}`。PREP来源只在PREP/DRAFT且selection为NONE或库存>0时可发；HOME来源由同一press先把GameRoot置于noninteractive PREP/STAGED（页面Node创建0），再消费已排队的command，且要求origin为fresh HOME generation、`unlocked=0 OR sum(available)=0`、`selected_seed_id=expected_pill_id=NONE`。二者共同要求Save READY、无unresolved outcome/archive/mutation/reservation、matching bundle与fresh single press。effect/pill由owner从Config重算，不信任UI文字/数值。双击、多触点、键盘+触屏同帧按press identity合并；滑出、cancel、旧generation均0 command。
+`source_surface_id={HOME_DIRECT_NONE=1,PREP=2,SETTLEMENT_DIRECT_NONE=3}`。PREP来源只在PREP/DRAFT且selection为NONE或库存>0时可发；两个direct来源都由同一press先把GameRoot置于noninteractive PREP/STAGED（页面Node创建0），再消费已排队的command，且分别要求origin为fresh HOME generation或fresh resolved SETTLEMENT generation、`unlocked=0 OR sum(available)=0`、`selected_seed_id=expected_pill_id=NONE`。三者共同要求Save READY、无unresolved outcome/archive/mutation/reservation、matching bundle与fresh single press；Settlement来源还要求本局carrier已archive/retire且`CARRIERS_RETIRED=true`。effect/pill由owner从Config重算，不信任UI文字/数值。双击、多触点、键盘+触屏同帧按press identity合并；滑出、cancel、旧generation均0 command。
 
-非开局主动作使用独立封闭命令：`PrepActionCommandV1={schema_version:i32,action_id:i32,command_id:i64,press_id:i64,expected_page_generation:i64,expected_attempt_generation:i64,expected_request_id:i64,bundle_hash:Hash256}`，其中`action_id={CANCEL=1,RECONCILE=2,EXPORT_DIAGNOSTIC=3,PRE_ACTIVE_CANCEL_AND_RELEASE=4}`。每个可见CTA/focus action恰映射一行；UI不得以字符串、按钮名或generic retry猜service操作。
+非开局主动作使用独立封闭命令：`PrepActionCommandV1={schema_version:i32,action_id:i32,command_id:i64,press_id:i64,expected_page_generation:i64,expected_attempt_generation:i64,expected_request_id:i64,bundle_hash:Hash256}`，其中`action_id={CANCEL=1,RECONCILE=2,EXPORT_DIAGNOSTIC=3,PRE_ACTIVE_CANCEL_AND_RELEASE=4}`。action4只能由active pre-choice semantic snapshot产生，并唯一映射GameRoot `PRE_ACTIVE_CANCEL_REQUESTED`；GameRoot以`PRE_ACTIVE_CANCEL_ALLOWED`判定，成功后必须通过`ReservationUpdateRequestV2`的typed RESOLVE/RELEASE payload持久readback才发布fresh Prep，失败/未知保持原页或UNCERTAIN。每个可见CTA/focus action恰映射一行；UI不得以字符串、按钮名或generic retry猜service操作。
 
 ### 3.5 GameRoot reservation transaction
 
@@ -83,11 +114,11 @@ PrepConfirmCommandV1={
 1. 全量验证Prep/Zhangtian/Save/Config、预分配candidate与root input gate。
 2. GameRoot取得release路径唯一OS entropy run-seed candidate；Save从持久`next_identity`、Zhangtian从持久`next_preparation_id`分别分配nonzero battle/reservation与preparation identity，并把两个checked+1 allocator写入同一after-image；任一步失败全部回滚。
 3. Zhangtian构造seed reserve/NONE count after-image和run-specific projection candidate。
-4. Save将1004-byte `DurableReservationV1`（内含276-byte `RunStartRecoveryV1`）、after-image与`PrepCommitJournalV1` checkpoint2写入双槽并readback；未durable不得提交run start。
-5. success后从durable recovery逐位冻结`RunStartRequestV2={battle_instance_id,run_seed,reservation_id,preparation_id,selected_pill_id,zhangtian_projection_hash,profile/config revisions}`并推进checkpoint3。
-6. source surface拥有的gesture rows先retire全部held touch并撤销input target，推进checkpoint4；严禁调用非BOOT的全局`Input.flush_buffered_events()`。checkpoint5 readback后GameRoot才提交BATTLE_LOADING。
+4. Save将1088-byte `DurableReservationV1`（内含360-byte `RunStartRecoveryV1`）、after-image与唯一nested `PrepCommitJournalV1` checkpoint1写入双槽并readback；未durable不得提交run start，顶层journal字段非法。
+5. success后从durable recovery逐位冻结`RunStartRequestV2={battle_instance_id,run_seed,reservation_id,preparation_id,selected_pill_id,zhangtian_projection_hash,profile/config revisions}`并推进checkpoint2。
+6. source surface拥有的gesture rows先retire全部held touch并撤销input target，推进checkpoint3；严禁调用非BOOT的全局`Input.flush_buffered_events()`。checkpoint4 readback后GameRoot才提交BATTLE_LOADING。
 
-`RunStartRequestV2`冻结后不可回写。Loading全部Config/RNG preflight成功后，Zhangtian把一次logical抽取的candidate/call range写入同一276-byte recovery并推进checkpoint6；若该roll失败，Loading abort并先release reservation。candidate不是UI字段，也不属于Prep提交bundle；进程重启只按durable run seed重建同一logical ordinal，不产生第二候选。
+`RunStartRequestV2`冻结后不可回写。Loading全部Config/RNG preflight成功后，Zhangtian把一次logical抽取的132-byte candidate/call range写入同一360-byte recovery并推进checkpoint5；candidate encode/write/readback使用独立LoadInjectionPoint。若该roll或持久化失败，按PONR判定release或UNCERTAIN。candidate不是UI字段，也不属于Prep提交bundle；进程重启以durable run seed与`config_content_revision+config_content_hash`重建同一logical ordinal，不产生第二候选，也不要求process-local snapshot ID跨进程相等。
 
 PONR前明确失败回DRAFT且confirmed库存不变；首份可能durable后进入RESERVATION_UNCERTAIN，禁止返回/换药/新confirm，只能同operation reconcile。FOUND恢复完整run-start并沿`PrepCommitJournalV1`继续同一Loading一次，NOT_FOUND保持uncertain；若scan得到RELEASED/CONSUMED/CONFLICT/FUTURE/CORRUPT则分别进入对应typed恢复终态，不得一律当FOUND。
 
@@ -95,8 +126,9 @@ PONR前明确失败回DRAFT且confirmed库存不变；首份可能durable后进�
 
 - DRAFT返回Home只发送`CANCEL_PREP`，丢弃local selection，0 reservation/battle identity/profile write。
 - RESERVING/UNCERTAIN禁止普通返回；系统back手势只朗读“正在核对本次备战”，不创建第二操作。
-- RESERVED后若Loading发生LFD01..12、LFD25或LFD27 clear retryable failure，先进入RELEASING并等待durable RELEASE；完成后回fresh Prep/NONE。release未完成时卡片不可消费。
-- LFD13..24、LFD26/LFD28或永久写可能成立时进入Fault/reconcile；Prep不得以旧库存重新出现。`ActiveEntryFactV1`已durable不属于LFD27，必须按active orphan consume。
+- 聚气路径仅在首个pre-active offer尚未durable且从未对玩家可见时允许`PRE_ACTIVE_CANCEL_AND_RELEASE→PRE_ACTIVE_CANCEL_REQUESTED`；release write/readback任何失败都保留原reservation并进入UNCERTAIN，不得提前回Prep。首个offer一旦durable/visible，Back、关闭应用与重启都只能恢复同一offer，动作返回`WRONG_STATE`且write0，禁止释放后用fresh seed生成新页。
+- RESERVED后若Loading发生LFD01..12、LFD25、LFD27或LFD29 clear retryable failure，先进入RELEASING并等待durable RELEASE；完成后回fresh Prep/NONE。release未完成时卡片不可消费。
+- LFD13..24、LFD26/LFD28/LFD30或永久写可能成立时进入Fault/reconcile；Prep不得以旧库存重新出现。`ActiveEntryFactV1`已durable不属于LFD27，必须按active orphan consume。
 - 首次Active开放前必须durable写matching `ActiveEntryFactV1`。Active后的Victory/Defeat/Abandoned均consume；ABANDONED以零奖励tombstone+mandatory consume持久化，主动退出不返丹。Active marker后无sealed Outcome的跨进程强杀也consume；明确Technical只按sealed compensation。
 
 异常态玩家模型固定为：`RESERVING`标题“正在封签”、无操作且pending音0；`UNCERTAIN/RECONCILING`标题“正在核对本次备战”，主CTA“再次核对”，保留matching identity并允许关闭应用后从Home恢复，普通Back不离页；连续自动核对最多3次、间隔250/500/1000ms，之后停止自动重试但主CTA与“导出诊断”保持可用；`RELEASING`标题“正在返还种子”、无新确认；`BLOCKED`按Save原因提供恢复/更新/导出诊断。每次状态进入只播报一次localization key，rebuild不重复；focus优先落标题/状态摘要，其次唯一可用CTA。
@@ -247,6 +279,8 @@ The `prep_bottom_cta_offset` formula is defined as:
 
 三种种子/丹药必须有不同剪影、材质与文字，不只换颜色。选中=勾+实体边框+“已选择”；缺货=空篓/锁轮廓+“暂无”；uncertain=双环待核对。底部CTA固定safe-area内，长内容只滚动中段。
 
+PREP是ADR-0001 action-bearing TopState：每个confirmed bundle/layout generation发布完整`AccessibleScreenSnapshotV2`；四个radio rows与CTA必须携带248-byte V2 row要求的logical bounds、visible/clipped、position及typed localization args，库存/效果/“仅下局”不得依赖预格式化视觉String。reflow或bundle更新后旧layout/snapshot callback为0 command。
+
 选卡为短纸/玉轻触，表达“选中”而非“已消耗”；按钮press无业务成功重音。fresh-live durable reservation edge的封签声为at-most-once，crash窗口0..1；pending/uncertain/failed默认音频静默，reconcile/rebuild/unmute不补播。reduce sensory关闭瓶液循环/墨迹扫屏/数值滚动，音画不门控Loading。
 
 📌 **UX Flag**：无种子、单/多种、NONE、pending、uncertain、release、长locale/cutout需`/ux-design`。
@@ -256,22 +290,22 @@ The `prep_bottom_cta_offset` formula is defined as:
 ## 9. Acceptance Criteria
 
 - **AC-PR01 `[L/I][BLOCKING]` — GIVEN**任意Prep interaction，**WHEN**选/确认/取消，**THEN**UI业务/TopState/RNG writer调用0，只发typed command。
-- **AC-PR02 `[I][BLOCKING]` — GIVEN**HOME READY且库存分别为0或>0，**WHEN**按主CTA，**THEN**0库存只发一次`HOME_DIRECT_NONE`且Prep页面创建0；>0库存先STAGED后进入唯一interactive Prep，selection NONE且0 battle carrier/扣种。
+- **AC-PR02 `[I][BLOCKING]` — GIVEN**HOME READY或resolved SETTLEMENT、库存分别为0或>0、两flag合法/非法组合及128-byte `DirectNoneStartSliceV2`字段/hash单轴stale，**WHEN**按主CTA/再次挑战，**THEN**0库存只从同一origin confirmed bundle的合法slice发一次匹配的`HOME_DIRECT_NONE|SETTLEMENT_DIRECT_NONE`且Prep页面创建0；>0库存先STAGED后进入唯一interactive Prep，selection NONE且0 battle carrier/扣种；非法flag、交叉复用generation或拼接跨owner字段为0 command。
 - **AC-PR03 `[L/I][BLOCKING]` — GIVEN**合法/缺/重/unknown recipe rows，**WHEN**capture，**THEN**恰三行stable mapping，invalid整包不可确认。
 - **AC-PR04 `[I][BLOCKING]` — GIVEN**三卡/库存/NONE，**WHEN**选择切换，**THEN**F1只0/1、再次tap保持同radio、显式NONE才清除、确认前0 durable side effect。
 - **AC-PR05 `[L][BLOCKING]` — GIVEN**库存0/1/MAX及selection，**WHEN**F2，**THEN**0卡不可confirm，合法preview精确且不写profile。
 - **AC-PR06 `[L][BLOCKING]` — GIVEN**四档safe dimensions/cutout，**WHEN**F3/F4，**THEN**content≤600、CTA不被gesture遮挡，非法尺寸不激活。
 - **AC-PR07 `[I][BLOCKING]` — GIVEN**fresh/stale bundle与fresh/cancelled press，**WHEN**confirm，**THEN**只有全matching fresh release发送一次command，owner重算pill/effect。
 - **AC-PR08 `[I][BLOCKING]` — GIVEN**double/multitouch/keyboard+touch/slide-out，**WHEN**input terminal，**THEN**同press最多1 command，其余0。
-- **AC-PR09 `[I][BLOCKING]` — GIVEN**PrepCommitJournal八checkpoint、candidate与pre-active子步骤逐点故障，**WHEN**执行§3.5，**THEN**PONR前全部回滚；durable后按total disposition恢复同一identity或先release，第二identity/candidate/Loading=0。
+- **AC-PR09 `[I][BLOCKING]` — GIVEN**唯一nested PrepCommitJournal七checkpoint、132-byte candidate的encode/write/readback injection subphase与pre-active子步骤逐点故障，**WHEN**执行§3.5，**THEN**PONR前journal不存在且全部回滚；durable后通过generation/checkpoint/hash CAS更新360-byte recovery，并按total disposition恢复同一identity或先release，第二identity/candidate/Loading=0。
 - **AC-PR10 `[C/I][BLOCKING]` — GIVEN**Save完整reservation fault matrix、callback loss与全部scan结果，**WHEN**reserve/reconcile，**THEN**RESERVED恢复同一run一次，NOT_FOUND保持冻结，RELEASED/CONSUMED/CONFLICT/FUTURE/CORRUPT进入唯一typed状态。
 - **AC-PR11 `[I][BLOCKING]` — GIVEN**NONE confirm，**WHEN**run transaction，**THEN**0 inventory delta、explicit no-pill projection、唯一run identity且不绕Save gate。
-- **AC-PR12 `[I][BLOCKING]` — GIVEN**LFD01..12，**WHEN**load abort，**THEN**release exact-once后fresh Prep；durable前可消费页面次数0。
+- **AC-PR12 `[I][BLOCKING]` — GIVEN**LFD01..12、LFD25、LFD27、LFD29与其余uncertain rows，**WHEN**load abort，**THEN**仅canonical clear rows在release exact-once后回fresh Prep，permanent-write可能或faulted cleanup保持UNCERTAIN/FAULT；durable前可消费页面次数0。
 - **AC-PR13 `[I][BLOCKING]` — GIVEN**normal outcomes/Abandoned/Technical/Active强杀，**WHEN**reservation resolve，**THEN**V/D/A与Active marker orphan consume，Technical只按sealed compensation；奖励discard不撤销成本。
 - **AC-PR14 `[I][BLOCKING]` — GIVEN**三丹/NONE matching snapshot，**WHEN**Loading，**THEN**level/HP/crit逐值按Zhangtian公式且Active不热改。
-- **AC-PR15 `[I][BLOCKING]` — GIVEN**聚气丹，**WHEN**入局，**THEN**LV2/xp0/curve-credit14+ordinal1普通choice在PRE_ACTIVE_CHOICE完成后才LOAD_READY，movement/survival此前为0，失败不发布半状态。
+- **AC-PR15 `[I][BLOCKING]` — GIVEN**聚气丹、首个offer durable前/后Back与进程重启，**WHEN**入局，**THEN**LV2/xp0/curve-credit14+ordinal1普通choice在PRE_ACTIVE_CHOICE完成后才LOAD_READY；首版durable/visible后取消为WRONG_STATE并恢复同一offer/refresh余额，fresh RNG页为0；movement/survival此前为0，失败不发布半状态。
 - **AC-PR16 `[I][BLOCKING]` — GIVEN**旧page callback/多触点/cancel/held touch，**WHEN**detach→Battle，**THEN**page-owned rows全部retire、全局flush0、旧command/movement0且需fresh touch。
-- **AC-PR17 `[UX/A][OPEN-EVIDENCE]` — GIVEN**portrait/cutout、130%字体、英文+30%、灰阶/色弱/静音及签发后的Android/iOS读屏bridge，**WHEN**各状态，**THEN**库存/效果/仅下局/代价/CTA不裁切且touch≥56px、reading/focus/live announcement稳定；bridge ADR未签发时本项保持BLOCKED而非以Control属性PASS。
+- **AC-PR17 `[UX/A][OPEN-EVIDENCE]` — GIVEN**portrait/cutout、130%字体、英文+30%、灰阶/色弱/静音、ADR-0001 V2 semantic tree与Android/iOS bridge，**WHEN**各状态/reflow/old layout callback，**THEN**库存/效果/仅下局/代价/CTA不裁切且touch≥56px，248-byte row的bounds/visible/clipped/typed args、reading/focus/live announcement逐值matching，stale layout命令0；bridge实现、能力握手或真机trace缺失时不得以Control属性PASS。
 - **AC-PR18 `[R/M/E][BLOCKING]` — GIVEN**1000次reserve/release fault/race与target devices，**WHEN**签收，**THEN**codec/crash/device/performance证据分层；动画一次或截图不得PASS。
 
 ## 10. Open Questions / Evidence Gates
@@ -280,12 +314,12 @@ The `prep_bottom_cta_offset` formula is defined as:
 |---|---|---|---|
 | OQ-PR01 | 聚气丹prebattle choice的首次操作体验？ | UX/Balance | PROVISIONAL，目标玩家测试 |
 | OQ-PR02 | RunStartRequestV2、Loading seed pre-draw与reservation recovery？ | GameRoot/RNG/Save | BLOCKED runtime |
-| OQ-PR03 | safe-area/dual-focus与TalkBack/VoiceOver bridge/back手势顺序？ | Engine/Input | BLOCKED architecture ADR + device spike |
+| OQ-PR03 | safe-area/dual-focus与TalkBack/VoiceOver bridge/back手势顺序？ | Engine/Input | ADR-0001路径已冻结；runtime/device BLOCKED |
 | OQ-PR04 | 三卡正式UX/asset/audio？ | UX/Art/Audio | BLOCKED |
 | OQ-PR05 | clean-context full review？ | Review team | OPEN |
 
 ## 11. Handoff
 
-本文冻结“有可选种子才进入Prep、无可选种子Home direct NONE”的单一路由、NONE默认、三卡选择、typed actions、两步选丹确认、durable reservation gate、Loading failure release与fresh-touch handoff。它没有证明Godot UI、移动端读屏bridge、Save crash、聚气丹首局体验或资产完成。
+本文冻结“有可选种子才进入Prep、无可选种子由Home/Settlement各自direct NONE来源进入共享事务”的单一路由、NONE默认、三卡选择、typed actions、两步选丹确认、durable reservation gate、Loading failure release与fresh-touch handoff。它没有证明Godot UI、移动端读屏bridge、Save crash、聚气丹首局体验或资产完成。
 
 状态保持`In Review / Re-review Pending`；应在fresh context运行`/design-review design/gdd/prep-ui.md --depth full`。

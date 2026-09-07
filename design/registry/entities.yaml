@@ -37,7 +37,7 @@
 #   Each entry: name, status, source, referenced_by[], attributes{}, added, revised
 
 version: 1
-last_updated: "2026-09-03"
+last_updated: "2026-09-07"
 
 # ─── ENTITIES ────────────────────────────────────────────────────────────────
 # Named game-world objects: enemies, NPCs, characters, factions, bosses.
@@ -800,11 +800,11 @@ formulas:
       - design/gdd/rng-system.md
       - design/gdd/config-data-system.md
     variables: [page_offer_sizes]
-    output_range: [1, 15]
+    output_range: [1, 20]
     expression: "checked_sum(checked_add(n, n - 1) for n in page_offer_sizes)"
-    notes: "每页n域1..3，页数为初始页加refreshes_used 0..2；reopen/selection不消费SKILL_DRAFT RNG。"
+    notes: "每页n域1..3，页数为初始页加refreshes_used 0..3；单页1/3/5 calls，最大4页×5=20；reopen/selection不消费SKILL_DRAFT RNG。"
     added: 2026-09-03
-    revised: ""
+    revised: 2026-09-04
 
   - name: skill_pending_choice_capacity
     status: active
@@ -2848,8 +2848,8 @@ constants:
     value: [1, 1, 1]
     unit: integer_weights
     added: 2026-09-03
-    revised: ""
-    notes: "ZHANGTIAN_HERB以预分配PackedInt32Array([1,1,1])调用roll_weighted_pick；canonical index 0/1/2按NINGQI_GRASS/TIELING_FLOWER/LEIYUAN_FRUIT，成功logical call delta恰1；均匀无pity为PROVISIONAL-ECONOMY-V3。"
+    revised: 2026-09-04
+    notes: "ZHANGTIAN_HERB以预分配PackedInt32Array([1,1,1])调用roll_weighted_pick；canonical index 0/1/2按NINGQI_GRASS/TIELING_FLOWER/LEIYUAN_FRUIT，成功logical call delta恰1；均匀无pity为PROVISIONAL-ECONOMY-V5。"
 
   - name: zhangtian_seed_held_cap
     status: active
@@ -2858,8 +2858,8 @@ constants:
     value: 999
     unit: available_plus_reserved_seeds_per_kind
     added: 2026-09-03
-    revised: ""
-    notes: "V1只约束available+reserved；lifetime earned/consumed不受999限制但须为non-negative int64并满足守恒。合法grant触顶采用AT_CAP_PARTIAL或AT_CAP_NO_GRANT。"
+    revised: 2026-09-04
+    notes: "V1只约束available+reserved；normal settlement先consume reservation再算held room，lifetime earned/consumed须为non-negative int64并满足守恒。held/lifetime触顶均采用显式PARTIAL或NO_GRANT disposition。"
 
   - name: zhangtian_defeat_seed_eligible_ticks
     status: provisional
@@ -2868,14 +2868,34 @@ constants:
     value: 43200
     unit: active_ticks
     added: 2026-09-03
+    revised: 2026-09-04
+    notes: "60Hz下12分钟/Boss入场线；DEFEAT仅survival_ticks>=43200发冻结candidate一枚，VICTORY只在43200..108000合法并发三枚。starter不计入随机seed/min比较。PROVISIONAL-ECONOMY-V5。"
+
+  - name: zhangtian_victory_min_ticks
+    status: provisional
+    source: design/gdd/zhangtian-bottle.md
+    referenced_by: [design/gdd/zhangtian-bottle.md, design/gdd/settlement-system.md, design/gdd/game-root-scene-flow.md, design/gdd/config-data-system.md]
+    value: 43200
+    unit: active_ticks
+    added: 2026-09-04
     revised: ""
-    notes: "60Hz下12分钟/Boss入场线；DEFEAT仅survival_ticks>=43200发冻结candidate一枚，VICTORY发两枚。PROVISIONAL-ECONOMY-V3。"
+    notes: "VICTORY survival_ticks下界；与Boss mandatory arrival一致。43199及以下Victory整包拒绝，不以零奖励降级。"
+
+  - name: zhangtian_economy_max_active_ticks
+    status: active
+    source: design/gdd/zhangtian-bottle.md
+    referenced_by: [design/gdd/zhangtian-bottle.md, design/gdd/settlement-system.md, design/gdd/stage-map.md, design/gdd/config-data-system.md]
+    value: 108000
+    unit: active_ticks
+    added: 2026-09-03
+    revised: 2026-09-04
+    notes: "1800秒×60Hz的合法结算与经济比较上限；不得用43200 Boss入场tick截断normal record/input。"
 
   - name: zhangtian_victory_seed_quantity
     status: provisional
     source: design/gdd/zhangtian-bottle.md
     referenced_by: [design/gdd/zhangtian-bottle.md, design/gdd/settlement-system.md, design/gdd/config-data-system.md]
-    value: 2
+    value: 3
     unit: candidate_seeds
     added: 2026-09-03
     revised: 2026-09-03
@@ -2894,19 +2914,37 @@ constants:
     status: active
     source: design/gdd/zhangtian-bottle.md
     referenced_by: [design/gdd/zhangtian-bottle.md, design/gdd/save-system.md, design/gdd/game-root-scene-flow.md, design/gdd/prep-ui.md]
-    value: 276
+    value: 360
     unit: canonical_bytes
     added: 2026-09-03
-    revised: 2026-09-03
+    revised: 2026-09-04
+
+  - name: zhangtian_seed_candidate_bytes
+    status: active
+    source: design/gdd/zhangtian-bottle.md
+    referenced_by: [design/gdd/zhangtian-bottle.md, design/gdd/save-system.md, design/gdd/game-root-scene-flow.md, design/gdd/config-data-system.md]
+    value: 132
+    unit: canonical_bytes
+    added: 2026-09-03
+    revised: 2026-09-04
+
+  - name: zhangtian_reservation_payload_bytes
+    status: active
+    source: design/gdd/zhangtian-bottle.md
+    referenced_by: [design/gdd/zhangtian-bottle.md, design/gdd/save-system.md, design/gdd/config-data-system.md]
+    value: 660
+    unit: canonical_bytes
+    added: 2026-09-03
+    revised: 2026-09-04
 
   - name: save_reservation_max_bytes
     status: active
     source: design/gdd/save-system.md
     referenced_by: [design/gdd/save-system.md, design/gdd/config-data-system.md]
-    value: 1004
+    value: 1088
     unit: canonical_bytes
     added: 2026-09-03
-    revised: 2026-09-03
+    revised: 2026-09-04
 
   - name: save_slot_max_bytes
     status: active
@@ -2916,6 +2954,66 @@ constants:
     unit: canonical_bytes
     added: 2026-09-03
     revised: 2026-09-03
+
+  - name: save_slot_payload_max_bytes
+    status: active
+    source: design/gdd/save-system.md
+    referenced_by: [design/gdd/save-system.md, design/gdd/config-data-system.md]
+    value: 42180
+    unit: canonical_bytes
+    added: 2026-09-03
+    revised: 2026-09-07
+    notes: "SaveStorePayloadV1全部top-level字段与8个optional presence tag逐项和；加120-byte header与92-byte footer得42392。"
+
+  - name: save_slot_encoded_max_bytes
+    status: active
+    source: design/gdd/save-system.md
+    referenced_by: [design/gdd/save-system.md, design/gdd/config-data-system.md]
+    value: 42392
+    unit: canonical_bytes
+    added: 2026-09-07
+    revised: ""
+    notes: "42180-byte payload + 120-byte header + 92-byte footer；低于65536-byte slot硬上限。"
+
+  - name: save_latest_resolution_max_bytes
+    status: active
+    source: design/gdd/save-system.md
+    referenced_by: [design/gdd/save-system.md, design/gdd/config-data-system.md, design/gdd/zhangtian-bottle.md]
+    value: 264
+    unit: canonical_bytes
+    added: 2026-09-07
+    revised: ""
+    notes: "DurableRunResolutionV2含nonzero durable_receipt_id与receipt_hash。"
+
+  - name: direct_none_start_slice_bytes
+    status: active
+    source: design/gdd/prep-ui.md
+    referenced_by: [design/gdd/prep-ui.md, design/gdd/home-ui.md, design/gdd/settlement-system.md, design/gdd/game-root-scene-flow.md]
+    value: 128
+    unit: canonical_bytes
+    added: 2026-09-07
+    revised: ""
+    notes: "DirectNoneStartSliceV2同时携带zhangtian_unlocked与starter_seed_grant_claimed；只接受0/0或1/1。"
+
+  - name: pre_active_offer_semantic_bytes
+    status: active
+    source: design/gdd/skill-draft-system.md
+    referenced_by: [design/gdd/skill-draft-system.md, design/gdd/zhangtian-bottle.md, design/gdd/save-system.md]
+    value: 252
+    unit: canonical_bytes
+    added: 2026-09-07
+    revised: ""
+    notes: "跨进程durable semantic carrier；排除snapshot/bank/generation/presentation等process-local identity。"
+
+  - name: pre_active_loadout_semantic_bytes
+    status: active
+    source: design/gdd/skill-draft-system.md
+    referenced_by: [design/gdd/skill-draft-system.md, design/gdd/zhangtian-bottle.md, design/gdd/save-system.md]
+    value: 296
+    unit: canonical_bytes
+    added: 2026-09-07
+    revised: ""
+    notes: "跨进程durable semantic carrier；当前进程从durable config content key重新绑定runtime carrier。"
 
   - name: zhangtian_domain_payload_max_bytes
     status: active

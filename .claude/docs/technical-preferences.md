@@ -21,8 +21,8 @@
 - **Gamepad Support**: None
 - **Touch Support**: Full
 - **Platform Notes**: 竖屏单手操作；所有交互必须单手可达；移动端无 hover，不得设计悬停态交互；升级 / 机缘选择时暂停战斗。
-- **Meta UI Baseline**: Home/Prep/Settlement采用safe-area响应式纵向布局，内容区最大宽600 logical px、交互目标最小56×56 logical px，并验证100%/115%/130%字体；touch与keyboard/screen-reader focus是两条独立路径。Android TalkBack/iOS VoiceOver需要单独bridge ADR、accessible tree与真机trace；签发前统一标`BLOCKED-MOBILE-A11Y-ARCHITECTURE`，静态Control属性或桌面读屏不得替代。
-- **Prep Safety**: 有可用种子才进入Prep且每次默认NONE；未解锁/available全0时Home主CTA用同一`PrepConfirmCommandV1`的`HOME_DIRECT_NONE`直接开局，不制造空Prep二次确认。不自动沿用、选择或消费丹药；只有Save durable reservation readback成功才进入Loading。`RunStartRequestV2`冻结后不可回写，Loading seed candidate与pre-active choice逐步写入固定276-byte recovery。
+- **Meta UI Baseline**: Home/Prep/Settlement采用safe-area响应式纵向布局，内容区最大宽600 logical px、交互目标最小56×56 logical px，并验证100%/115%/130%字体；touch与keyboard/screen-reader focus是两条独立路径。移动端采用`docs/architecture/adr-0001-mobile-accessibility-bridge.md`的`AccessibleScreenSnapshotV2` + Android/iOS原生adapter + typed action回传；248-byte row包含layout generation、logical bounds、visible/clipped与8 typed localization args。action-bearing states固定HOME/PREP/PRE_ACTIVE_CHOICE/BATTLE_PAUSED/SETTLEMENT/CONTROLLED_FAULT；架构路径已冻结，插件实现、能力握手、accessible tree与真机trace仍`BLOCKED-MOBILE-A11Y-RUNTIME`，静态Control属性或桌面读屏不得替代。
+- **Prep Safety**: 有可用种子才进入Prep且每次默认NONE；未解锁/available全0时Home与resolved Settlement分别从同一confirmed bundle内128-byte `DirectNoneStartSliceV2`构造`HOME_DIRECT_NONE`/`SETTLEMENT_DIRECT_NONE`，且只接受unlock/claim flag为`0/0或1/1`，不制造空Prep二次确认，也不交叉复用页面generation。不自动沿用、选择或消费丹药；只有Save durable reservation readback成功才进入Loading。`RunStartRequestV2`冻结后不可回写，132-byte seed candidate与pre-active choice逐步写入固定360-byte recovery，以durable config content revision+hash确定性重放；首个聚气offer durable/visible后不得release重抽。
 - **Settlement Truth**: 奖励只来自sealed Outcome和matching immutable mutation bundle；durable success前统一显示待保存，UNCERTAIN只允许核对，不以超时或动画完成宣称到账。
 
 ## Naming Conventions
@@ -57,10 +57,10 @@
   AC-E4-code 静态守卫)
 - gameplay phase participant 禁定义 `func _physics_process` / `func _process`（集中
   `run_phase` 驱动；AC-E13）。唯一例外为从BOOT到应用退出保持同一live identity的
-  persistent GameRoot：它精确使用 `PROCESS_MODE_ALWAYS`，仅在
+  persistent GameRoot：它精确使用 `PROCESS_MODE_ALWAYS`；每个render frame先在所有TopState恰调用一次无gameplay effect的`app_service_result_pump`，再按state选择至多一个互斥pump。仅在
   `SceneTree.paused==false && state in {BATTLE_ACTIVE,PAUSE_PENDING}` 的 `_physics_process(delta: float) -> void`
   驱动普通七phase或恰一次`gameplay_dt=0` allowlist drain，仅在
-  `SceneTree.paused==true && state in {BATTLE_PAUSED,RESUME_PREPARING}` 的
+  `SceneTree.paused==true && state in {PRE_ACTIVE_CHOICE,BATTLE_PAUSED,RESUME_PREPARING}` 的
   `_process(delta: float) -> void` 驱动control pump，并在`BATTLE_LOADING/BATTLE_ENDING/CONTROLLED_FAULT`
   驱动无gameplay effect的lifecycle pump、cleanup checkpoint与frame barrier。GameRoot是`SceneTree.paused`与persistent
   root Window gate、Engine runtime tick-rate/time-scale启动配置的唯一项目writer；pause/unpause必须经私有helper调用并readback。
@@ -106,8 +106,9 @@
   callback reducer必须覆盖`source_state×operation_kind×durable_result_code`；DISCARD若发现commit已durable必须转SAVE_SUCCEEDED，`RECONCILE_NOT_FOUND`在SAVE路径回UNCERTAIN，在DISCARD路径保持DISCARD_PENDING。
   所有ID先checked reserve并一次提交；失败不得部分覆盖旧carrier。`ResolvedRunArchiveV1`须有实际schema/hash/readback；`ArchiveRetireJournalV1`以expected mask与retired bitset支持partial retry，archive-entry guard与carriers-retired guard必须分离。PreOutcome reservation使用独立state/recovery carrier与CTA，不借用Outcome disposition。
 - Save durable介质固定为单writer+两个完整自校验槽，不使用独立current-pointer；槽含generation、canonical payload、Hash256与重复footer，只有flush/close后reopen逐位readback通过才可返回durable success。sealed Outcome/Completion、attempt、proposed profile必须作为`PendingOutcomeRecoveryV1`先落盘，重启只靠slot scan恢复。任一损坏槽存在时另一VALID槽只作只读恢复候选，显式恢复完成前禁止覆盖和新局；双坏、未来schema、同generation异payload或commit/tombstone冲突均fail closed。平台排他writer lock、durable barrier与kill-process证据未闭合前保持BLOCKED，不得以FileAccess返回OK代替durability。
-- Save线程拓扑固定：主线程只验证并移交不可变canonical bytes；唯一worker独占FileAccess、barrier/replace adapter与HashingContext，禁止访问Node/SceneTree/Resource/Signal或共享可变PackedArray；结果只进预分配SPSC mailbox，由GameRoot control pump按process epoch/executor generation/request ID唯一reducer排空，worker不得直调UI。V1固定`ReservationMax=1004,SlotMax=65536,FileSystemSafetyMargin=65536,DiskPeakMin=262144`，超限写前失败，不动态扩容。
-- app-scope服务固定`SAVE/PROGRESSION/ZHANGTIAN/SETTLEMENT_PROFILE/AUDIO_APP`五行，由persistent app root一次构造、逆序关闭，不加入七phase participant，不随battle销毁且不得持有battle Node/RID/Callable/可变bank引用；只有SAVE拥有worker。
+- Save线程拓扑固定：主线程只验证并移交不可变canonical bytes；唯一worker独占FileAccess、barrier/replace adapter与HashingContext，禁止访问Node/SceneTree/Resource/Signal或共享可变PackedArray；结果只进预分配SPSC mailbox，由GameRoot `app_service_result_pump`在所有TopState每render frame恰排空至多一次，并按process epoch/executor generation/operation/attempt/request唯一reduce，worker不得直调UI。当前固定`ReservationMax=1088,LatestResolutionMax=264,DiagnosticsMax=2024,SlotPayloadMax=42180,SlotEncodedMax=42392,SlotMax=65536,FileSystemSafetyMargin=65536,DiskPeakMin=262144`，超限写前失败，不动态扩容；reservation update只接受5-row payload manifest，hash只接受22-row preimage manifest。
+- app-scope服务固定`SAVE/PROGRESSION/ZHANGTIAN/SETTLEMENT_PROFILE/AUDIO_APP`五个actual canonical row，由persistent app root按stable order一次构造、shutdown order关闭，不加入七phase participant。全部禁止battle Node/RID/Callable/可变bank引用；仅AUDIO_APP可持有预建app-scope AudioStreamPlayer，仅SAVE拥有worker，其余服务不得持有Node/RID/Callable。
+- app-scope平台adapter与业务service分表：`AppAdapterTopologyManifestV2`当前唯一actual row为`MOBILE_ACCESSIBILITY`，生命周期为persistent root create后构造、所有TopState render-frame pump、presenter detach前停止接纳并drain、root free前shutdown。`AccessibleNodeRowV2`固定248 bytes并携带layout generation、logical bounds与8个typed localization args；action-bearing states固定HOME/PREP/PRE_ACTIVE_CHOICE/BATTLE_PAUSED/SETTLEMENT/CONTROLLED_FAULT。native callback只写capacity32预分配SPSC mailbox；第33条未读callback、stale layout、epoch/generation/thread违规均fail closed，不覆盖、不动态扩容。路径与证据门见`docs/architecture/adr-0001-mobile-accessibility-bridge.md`。
 - Progression Tree使用唯一`ProgressionProfileDomainV1`保存统一功法残页与QINGYUAN/LONGCHUN/DAYAN 0..5等级；购买走独立generic ProfileDomainMutation ABI，不伪造outcome ID。battle projection只在Loading从同一durable profile revision构建：青元attack写Damage Attack输入一次、长春maxHP沿用加法比例且L5低血恢复由Damage→Player phase6原子消费、Dayan暴击为百分点加法/拾取半径1.8..1.98/L5初始refresh3。Active不得热改。青元pierce workload、长春receipt、SkillDraft 20-call上限、残页reward owner与balance/device证据未闭合前保持BLOCKED/OPEN。
 - Godot 4.7.1 VirtualJoystick callback ABI 固定为引擎signal `pressed()`与
   `released(input_vector: Vector2)`；项目adapter用direct `Callable.bind(epoch)`形成
