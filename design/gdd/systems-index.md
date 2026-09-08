@@ -2,7 +2,11 @@
 
 > **Status**: Draft
 > **Created**: 2026-08-14
-> **Last Updated**: 2026-09-07
+> **Last Updated**: 2026-09-08
+
+> 2026-09-08: Zhangtian第七次fresh-context full re-review仍为MAJOR REVISION NEEDED（XL），前轮7组闭合0、全部PARTIAL；用户“继续”后完成第七轮作者静态整改。Create升级204-byte V3并回显source correlation与operation identity，typed Save mailbox为484 bytes；durable receipt code与public reconcile code分层，update reconcile按selected OLD/NEW hash唯一裁决FOUND_OLD/FOUND。Crash真值拆为7-row operation×12-row cut并唯一生成84 rows；ADR冻结64-byte header+64×96-byte row的6208-byte MPSC64 ABI、94条逐node合同和34条逐state variant，Input区分本地focus导航与owner业务命令，Settlement冻结typed detail分页。两份YAML、246个entity name唯一、manifest/a11y计数、关键byte算术、stale扫描与`git diff --check`已通过。当前仍仅为作者合同传播，generated artifact、codec/hash/migration golden、Godot/GDUnit4、process-kill、真机accessibility/gamepad、性能、音频、经济/试玩与第八次fresh-context re-review仍BLOCKED/OPEN；状态保持In Review / Re-review Pending，`battle_ready=false`。
+
+> 2026-09-07: Zhangtian第五次fresh-context full re-review仍为MAJOR REVISION NEEDED（XL）；第四轮6组闭合0、全部PARTIAL，本轮7组根blocker经用户“授权”完成第五轮作者静态整改。玩家pre-durable cancel被删除，LFD25/26按NOT_STARTED_CLEAR与write-possible/durable/visible严格分界；durable semantic generation固定1，candidate ID由offer revision+slot确定。Save统一V2 result，新增120-byte receipt与initial create result，receipt ID=request ID，reconcile扩为13行并仅凭严格PROVEN_ABSENT清volatile correlation；HPM扩24行，ADR另签发6-row accessibility hash。Config current author counts统一54 guard/72 action/5 app-render；cap disposition新增PARTIAL_BOTH。六屏capacity固定16/16/12/24/24/12，mailbox改2476-byte i64 sequence与单serial producer，mapped gamepad正式支持。静态YAML/diff/count/byte算术通过；generated codec/hash/capacity artifacts、Godot/crash/perf/device/gamepad/audio/经济试玩与第六次fresh-context re-review仍BLOCKED/OPEN，状态保持In Review / Re-review Pending，`battle_ready=false`。
 
 > 2026-09-07: Zhangtian第四次clean-context full review仍为MAJOR REVISION NEEDED（XL）；上一轮6组闭合1、其余5组PARTIAL，本轮6组根blocker经用户“授权”完成第四轮作者静态整改。新增252/296-byte pre-active durable semantic carriers并排除process-local identity；GameRoot补`PRE_ACTIVE_CANCEL_REQUESTED`、strict PONR guard、56-row guard与72-row action；Save update V2内联5类canonical payload、V2 result返回revision/unlock/receipt、terminal resolution升级264 bytes，实际22-row hash preimage manifest闭合tag/length/offset/nested规则；Settlement将Outcome random gross与64-byte applied truth分层，flag只允许0/0或1/1，direct-NONE升级128-byte V2且无丹重开视觉/读屏明确；ADR/registry升级248-byte accessibility row与六个action-bearing TopState、all-state drain、5-row render workload。静态YAML/diff/count/byte算术通过；generated codec/hash/capacity artifacts、Godot/crash/perf/device/audio/经济试玩与第五次clean-context re-review仍BLOCKED/OPEN，状态保持In Review / Re-review Pending，`battle_ready=false`。
 
@@ -132,7 +136,7 @@ MVP 只验证三件事：①移动躲避+自动御剑+功法进化的爽快度�
 | 4 | Object Pooling (inferred) | Core | MVP | In Review | design/gdd/object-pooling.md | 一intent一mutable lifecycle row、Pool私有release FSM与visible-row exact publish已传播。 |
 | 5 | Config/Data System | Core | MVP | In Review | design/gdd/config-data-system.md | 第九轮传播实际guard/load/priority/workload rows、四类owner贡献与hash；当前缺owner rows使battle_ready=false。 |
 | 6 | Stage & Map | Core | MVP | In Review | design/gdd/stage-map.md | “感知无限、技术有限”V2：Camera锁玩家、地表视觉延展、有限安全域与玩家相对生成/退役几何。Re-review Pending。 |
-| 7 | RNG System | Core | MVP | In Review | design/gdd/rng-system.md | Core RNG不变；versioned diagnostic sidecar及teardown前exact-once capture边界待复审。 |
+| 7 | RNG System | Core | MVP | In Review | design/gdd/rng-system.md | Core RNG不变；已同步pre-active唯一scratch window与durable后commit/FAILED discard/UNCERTAIN reconcile，随中央合同待复审。 |
 | 8 | PlayerController | Gameplay | MVP | In Review | design/gdd/player-controller.md | 已改为world-domain fail-fast、无玩法边界clamp；17个复活候选不clamp且全量域校验。Full Re-review Pending；Damage/Recovery/Hazard/BattleUI/runtime证据仍BLOCKED。 |
 | 9 | EnemySystem | Gameplay | MVP | In Review | design/gdd/enemy-system.md | T→T+1分离不变；303 owner贡献使用全局tuple排序且每intent单finalizer closure，待第十一轮复审。 |
 | 10 | SpawnDirector | Gameplay | MVP | Designed | design/gdd/spawn-director.md | 依赖Stage V2、Player published motion、Enemy、Config、RNG、Pool与Sparse Grid；固定8 attempts/24 RNG words、cap admission与normal远距无奖励退役。Full Review Pending。 |
@@ -147,8 +151,8 @@ MVP 只验证三件事：①移动躲避+自动御剑+功法进化的爽快度�
 | 19 | Elite Enemies | Gameplay | MVP | Designed | design/gdd/elite-enemies.md | EnemySystem载体/生命周期、Spawn V2 23-row、Projectile三魂针、Damage、Drop、RiskChoice与Config；Full Review Pending。 |
 | 20 | Leveling/XP (inferred) | Progression | MVP | In Review | design/gdd/drop-leveling-system.md | 逐fact XP、`8+5L+ceil(3L²/5)`、level cap40、39 debt/10 visible queue；聚气起始credit已同步，Re-review Pending。 |
 | 21 | Progression Tree (功法树) | Progression | MVP | In Review | design/gdd/progression-tree.md | SaveSystem, Config；3×5/domain/projection与稳定loadout资源边界已冻结，runtime/UX/balance re-review仍BLOCKED。 |
-| 22 | Zhangtian Bottle (掌天瓶) | Progression | MVP | In Review | design/gdd/zhangtian-bottle.md | 第三轮授权静态整改：V5经济、360-byte content-key replay recovery、首版可见后不可重抽、七checkpoint单一journal；待clean-context full re-review。 |
-| 23 | SaveSystem | Persistence | MVP | In Review | design/gdd/save-system.md | 双槽/跨进程恢复、1088-byte reservation、256-byte resolution、V2对账与65,536-byte slot已同步；codec/runtime Re-review Pending。 |
+| 22 | Zhangtian Bottle (掌天瓶) | Progression | MVP | In Review | design/gdd/zhangtian-bottle.md | 第八轮fresh-context verdict为MAJOR REVISION NEEDED/XL；用户已授权完成8组跨文档整改（hash/identity、reservation ABI、crash oracle、a11y/Input/MPSC、Boss tick）；待第九次fresh-context full re-review。 |
+| 23 | SaveSystem | Persistence | MVP | In Review | design/gdd/save-system.md | 双槽/跨进程恢复、1152-byte reservation、264-byte resolution、176-byte create request、204-byte create V3 result、1112-byte terminal payload、160-byte terminal result、484-byte typed mailbox与65,536-byte slot已同步；codec/runtime Re-review Pending。 |
 | 24 | BattleUI | UI | MVP | Designed | design/gdd/battle-ui.md | 只读presentation consumer+typed command adapter；atomic revision-vector bundle、fresh-touch drain、HUD/choice/terminal语义已冻结。Full Review Pending；producer views/input/assets/runtime证据BLOCKED。 |
 | 25 | SettlementSystem | UI | MVP | In Review | design/gdd/settlement-system.md | 含BATTLE_RULES；Victory×3/Boss线Defeat×1/starter、held-cap饱和与ABANDONED consume已同步；Re-review Pending。 |
 | 26 | Home UI (洞府首页) | UI | MVP | In Review | design/gdd/home-ui.md | 有库存进Prep、无库存direct NONE、恢复focus与60-byte Settings domain已冻结；Re-review Pending。 |
@@ -336,6 +340,6 @@ MVP 只验证三件事：①移动躲避+自动御剑+功法进化的爽快度�
 - [ ] GameRoot另有待办：clean context运行下一轮`/design-review design/gdd/game-root-scene-flow.md`
 - [x] 全部28个MVP系统已获作者设计覆盖（27个独立GDD状态 + Buff并入Damage的1个Merged）；本批四份为Designed / Full Review Pending
 - [ ] 对Zhangtian及全部受影响GDD在clean context执行full re-review；不得以本次整改或静态检查代替独立verdict
-- [ ] 将GameRoot已枚举的30-row load/56-row guard/72-row action/5-row app-render作者表与Save 22-row hash/5-row reservation-payload表导出为canonical artifact，并生成Hash256 golden、ReservationMax/SlotMax及persistent-domain codec manifests，随后再进入实现
+- [ ] 将GameRoot已枚举的30-row load/54-row guard/72-row action/5-row app-render作者表、Save 25-row hash/5-row reservation-payload/13-row reconcile/11×12=132-row crash-cut表与ADR 6-row accessibility hash、7-profile node、8-row Meta UI Input表导出为canonical artifact，并生成Hash256 golden、ReservationMax/SlotMax及persistent-domain codec manifests，随后再进入实现（旧84-row/6-row仅为历史记录）
 - [ ] MVP 系统 GDD 全部完成后跑 `/gate-check pre-production`
 - [ ] 用 `/vertical-slice` 在承诺 Production 前验证最高风险系统（SpatialGrid / Object Pooling / EnemySystem 架构）

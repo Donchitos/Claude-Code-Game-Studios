@@ -2,7 +2,7 @@
 
 > **Status**: In Review / Re-review Pending
 > **Author**: 用户 + Codex（lean authoring；consulted UX reviewer / qa-lead）
-> **Created / Last Updated**: 2026-09-07 — Zhangtian第四次独立full review授权整改传播
+> **Created / Last Updated**: 2026-09-07 — Zhangtian第六次独立full review后作者整改传播
 > **Implements Pillar**: 低打扰、目标清晰、谨慎准备；让玩家三秒内找到下一局
 > **Scope**: MVP洞府首页、功法/掌天瓶/设置导航、资源摘要、存档恢复阻断与最小Settings domain；不含洞府建设、境界成长、装备、商店、任务、社交或活动入口
 
@@ -104,7 +104,7 @@ SettingsProfileDomainV1={
 
 顺序固定Master/Music/SFX/UI，volume 0..100；font scale ID固定100/115/130三档；四个bool字段只允许0/1，locale来自Config stable enum。canonical payload固定60 bytes。首次空档默认100/80/80/80、font100、bool0、locale=system-supported mapping；默认值必须来自Config/schema，不读设备音量回写profile。
 
-设置提交走Save generic `ProfileDomainMutationRequestV2`，每个fresh attempt携带nonzero `attempt_generation/request_id`并按同一identity接收`ProfileDomainMutationResultV2`，同样遵守revision CAS/PONR/UNCERTAIN。slider drag只作local audio preview；release/Apply形成一个command。durable success后才更新confirmed settings；取消恢复confirmed值。screen reader是否可用是runtime capability，不因profile bool而声称已接入。
+设置提交走Save generic `ProfileDomainMutationRequestV2`，每个fresh attempt携带nonzero `attempt_generation/request_id`并按同一identity接收`ProfileDomainMutationResultV2`，同样遵守revision CAS/PONR/UNCERTAIN。slider drag只作local audio preview；release/Apply形成一个command。四个volume row必须使用ADR `ADJUSTABLE` role并提供current/min/max/step，四个bool使用`SWITCH`，font scale/locale使用`COMBOBOX`；不得降级成普通button文字。durable success后才更新confirmed settings；取消恢复confirmed值。screen reader是否可用是runtime capability，不因profile bool而声称已接入。
 
 ### 3.7 Lifecycle and input states
 
@@ -116,7 +116,7 @@ ANY → BLOCKED
 BLOCKED → STAGED_NONINTERACTIVE → READY（依赖真实恢复后）
 ```
 
-从Battle/Settlement/Fault切回时，Home先STAGED；旧battle Node物理失效、required carrier exposure/archive/retire完成、root Window gate与activation journal齐全后才READY。HOME是ADR-0001 action-bearing TopState：每个confirmed bundle/layout generation发布完整`AccessibleScreenSnapshotV2`，248-byte rows必须携带safe-area logical bounds、visible/clipped与余额/状态typed localization args。旧Home/layout generation callback为NOOP。mouse/touch与keyboard/gamepad focus分别验证；不能只设置一种focus。架构路径已冻结，Android TalkBack/iOS VoiceOver插件实现、能力握手、tree与真机trace保持`BLOCKED-MOBILE-A11Y-RUNTIME`。
+从Battle/Settlement/Fault切回时，Home先STAGED；旧battle Node物理失效、required carrier exposure/archive/retire完成、root Window gate与activation journal齐全后才READY。HOME是ADR-0001 action-bearing TopState：每个confirmed bundle/layout generation发布完整`AccessibleScreenSnapshotV2`，固定capacity16、exact bytes4076。ASN01 READY/RECOVERY最大10行；ASN02 SETTINGS最大14行，其中volume4、font/locale2、bool4各用封闭role profile，apply/back各1。248-byte rows必须携带safe-area logical bounds、visible/clipped与余额/状态typed localization args，unused tail全零。旧Home/layout generation callback为NOOP。mouse/touch与八行Meta UI keyboard/mapped-gamepad focus分别验证；不能只设置一种focus。架构路径已冻结，Android TalkBack/iOS VoiceOver插件实现、能力握手、tree与真机trace保持`BLOCKED-MOBILE-A11Y-RUNTIME`。
 
 ### 3.8 Interactions with other systems
 

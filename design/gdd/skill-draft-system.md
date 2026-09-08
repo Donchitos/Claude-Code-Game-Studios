@@ -2,7 +2,7 @@
 
 > **Status**: In Review / Re-review Pending
 > **Author**: User + Codex
-> **Last Updated**: 2026-09-07 — Zhangtian第四次独立full review授权整改传播
+> **Last Updated**: 2026-09-08 — Zhangtian第七次独立full review后OLD/NEW scratch reconcile整改传播
 > **Implements Pillar**: 功法构筑与进化；谨慎取舍、留有后手
 > **Review Mode**: lean
 
@@ -35,7 +35,7 @@ owner contribution 为 `LIFECYCLE_INTENT=0,FACT_COMMIT=0,PAUSE_CLOSURE=0,BLOCKIN
 
 - 主动槽 4、辅助槽 4；catalog 为 6 主动 + 6 辅助；每项 level 1..5；同 family 只能占一个槽。
 - 新局初始 `QINGYUAN_SWORD_QI` level 1 占 active slot 0，其余为空；matching Progression projection令refresh charges=`2+extra_free_refreshes`，范围2..3，两个 guarantee counters=0。若matching聚气丹projection，GameRoot在`PRE_ACTIVE_CHOICE`、Active/movement/survival前创建恰1个普通`LEVEL_UP` choice request，`source_fact_kind=PREPARATION_CURVE_CREDIT`、`draft_ordinal=1`；其候选、early guarantee、strengthening streak与普通首个升级完全相同。base offer页不扣refresh，玩家主动刷新才按R6扣1；提交后Leveling为`level=2,xp=0,starting_level_curve_credit=14,total_applied_xp=14`，再进入Loading的ActiveEntry checkpoint。该请求不与Leveling/Risk treasure并发，不改变14-row active queue上界。
-- 聚气路径的base offer、每次refresh与choice commit不是仅内存状态：每次成功publish前，GameRoot把完整replay字段写入同一360-byte `RunStartRecoveryV1`并durable readback，包括choice/request、offer revision/hash、refresh used/remaining、selected candidate、session/draft/rule/streak、durable config content identity、command、loadout revision/hash、SkillDraft RNG cursor与next sequence。base offer记录`request_sequence=1`；commit后固定`next_level_request_sequence=2`并推进Prep checkpoint6。callback loss/restart按R7协议重建同一offer rows或已提交loadout，不再抽取；任一重复字段或replay不等为CONFLICT。取消PONR在首个offer durable/visible之前；此后Back/关闭/重启只恢复同一offer，`PRE_ACTIVE_CANCEL_AND_RELEASE`为`WRONG_STATE`，不得释放后生成fresh随机页。
+- 聚气路径的base offer、每次refresh与choice commit不是仅内存状态：每次成功publish前，GameRoot把完整replay字段写入同一360-byte `RunStartRecoveryV1`并durable readback，包括choice/request、offer revision/hash、refresh used/remaining、selected candidate、durable semantic generation/draft/rule/streak、config content identity、command、loadout revision/hash、SkillDraft RNG cursor与next sequence。base offer记录`request_sequence=1`；commit后固定`next_level_request_sequence=2`并推进Prep checkpoint6。callback loss/restart按R7协议重建同一offer rows或已提交loadout，不再抽取；任一重复字段或replay不等为CONFLICT。玩家不拥有pre-durable cancel公共动作；base offer前deterministic build失败只能按GameRoot LFD25系统级durable RELEASE，首个offer一旦durable，Back/关闭/重启只恢复同一offer，不得release后生成fresh随机页。
 - 普通升级候选类型仅 `NEW_ACTIVE/UPGRADE_ACTIVE/NEW_PASSIVE/UPGRADE_PASSIVE`；普通升级不直接进化。
 - 满槽时过滤对应 `NEW_*`；level 5 项过滤 `UPGRADE_*`；已进化主动不再出现基础技能升级。
 
@@ -58,13 +58,13 @@ owner contribution 为 `LIFECYCLE_INTENT=0,FACT_COMMIT=0,PAUSE_CLOSURE=0,BLOCKIN
 
 - 每份 offer 令 `n=min(3,legal_candidate_count)`，精确执行 `n` 个无放回 weighted selections，再执行 `n-1` 次固定 Fisher-Yates display permutation；合计精确消费 `2n-1` 次 `SKILL_DRAFT` roll，即n=1/2/3分别为1/3/5次。保证 selection slot 从对应强制子池抽取，其余 slot 从剩余总池抽取；两种保底同时适用时它们来自互斥candidate kind，故合法池至少2且分别占一个selection slot。
 - 选中一张后把该 candidate 从本次 workspace 移除；禁止 rejection loop、native shuffle或可变次数重抽。
-- 任一步 RNG fault、总权重非法、`legal_candidate_count=0`却存在request或 bank overflow 都使整份 offer 不发布且不消耗 refresh/counters；RNG 已消费状态由 RNG fault协议处理，不得 retry/reseed。
-- offer row identity 为 `(draft_request_id,offer_revision,slot_index,candidate_id)`；n张按 slot `0..n-1` 发布。
+- 任一步 RNG fault、总权重非法、`legal_candidate_count=0`却存在request或 bank overflow 都使整份 offer 不发布且不消耗 refresh/counters。普通Active draft仍按RNG fault协议终止且不得retry/reseed；pre-active必须使用下述`PreActiveRngWindowLeaseV1`，失败时只丢弃scratch，权威cursor从未推进，不存在“RNG已消费但offer未记录”的状态。
+- offer row identity 为 `(draft_request_id,offer_revision,slot_index,candidate_id)`；n张按 slot `0..n-1` 发布。pre-active的`offer_revision`从1开始，`slot_index=stable_order=0..2`，其持久`candidate_id=checked_add(checked_mul(offer_revision-1,4),slot_index+1)`；因此同seed/content/history跨进程生成相同ID，且不复用上一offer的1..3号。非pre-active运行时choice仍用本局bank identity，不写入durable semantic carrier。任一checked arithmetic失败在publish前fail closed。
 
 #### R6 — 刷新
 
 - 每局基础2次免费刷新；仅matching大衍诀L5 projection增加1次，初始范围2..3。只有处于已发布、未选择的普通 offer 才可刷新。
-- 合法刷新先预留新 offer，按当时 `n` 固定再消费 `2n-1` 次 `SKILL_DRAFT` roll；成功 publish 新 revision 后 charges 才减 1。失败不扣次数，且旧 offer继续有效或由 fault关闭，不能出现空 UI。
+- 合法刷新先取得`PreActiveRngWindowLeaseV1={reservation_id,old_cursor,next_offer_revision,roll_count,scratch_state,next_cursor,offer_semantic_hash}`：从old cursor复制到预分配scratch，按当时`n`精确试算`2n-1`次`SKILL_DRAFT` roll，不写权威stream。包含next cursor、next revision、remaining charge与完整semantic offer的`UPDATE_RECOVERY`双镜像readback成功后，才在一个主线程无callback commit内发布权威cursor+offer并减1 charge。PONR前FAILED丢弃scratch，旧cursor/offer/charge/revision逐位不变且允许重新尝试；UNCERTAIN关闭refresh并只reconcile。Save必须返回selected formal reservation hash：`RECONCILE_FOUND+next hash`采用durable next并commit scratch，`RECONCILE_FOUND_OLD+old hash`discard scratch并保持old cursor/offer/charge/revision，`RECONCILE_NOT_FOUND_UNPROVEN`继续冻结；任一code/hash错配fault。全reservation `PROVEN_ABSENT`不得替代既有reservation update的OLD证明。普通Active refresh不走durable lease，任何draw fault直接关闭该request且不得沿旧offer再次refresh。
 - 新 offer 内仍为n张互异合法卡，但允许与上一版部分或全部相同；不为“看起来不同”增加 rejection RNG。
 - treasure-box choice 不消耗普通刷新次数。
 
@@ -98,9 +98,9 @@ PreActiveLoadoutSemanticV1={schema_version:i32=1,reservation_id:i64,
   aux_rows:AuxLoadoutSemanticRowV1[4],semantic_hash:Hash256}
 ```
 
-  `PreActiveCandidateSemanticRowV1`固定32 bytes；`ActiveLoadoutSemanticRowV1={slot_id,family_id,skill_id,level,form_id,config_row_id}`固定24 bytes，`AuxLoadoutSemanticRowV1={slot_id,family_id,skill_id,level,config_row_id}`固定20 bytes。offer/loadout semantic分别固定252/296 bytes，未使用fixed-capacity tail逐byte为0并参与hash。semantic carrier明确排除`config_snapshot_id/source_authority_revision/effective_gameplay_tick_revision/blocking_choice_id/generation_index/offer_bank_id/session_generation/bank_id/generation/valid`等process-local、bank或presentation字段；这些字段只在exact content key验证后由GameRoot为新进程重新绑定，绝不与durable semantic hash比较。
-- 聚气预开局选择使用Zhangtian/Save的360-byte `RunStartRecoveryV1`，不得只存offer/loadout hash。每版可见offer前先durable写入`pre_active_offer_revision,pre_active_refreshes_used,pre_active_free_refreshes_remaining,pre_active_session_generation,pre_active_draft_ordinal,pre_active_required_rule_bits,pre_active_reinforcement_miss_streak,config_content_revision,config_content_hash,pre_active_skill_draft_rng_cursor,pre_active_offer_hash`；choice durable时再写`pre_active_selected_candidate_id,pre_active_choice_command_id,pre_active_committed_loadout_revision,pre_active_loadout_hash,next_level_request_sequence=2`。
-- 跨进程恢复固定使用deterministic replay：该预开局页是本局`SKILL_DRAFT` stream首个consumer；以durable run seed、逐位相等的`config_content_revision+config_content_hash`、青元L1/其余空的canonical initial loadout及记录的draft history重放base页和`pre_active_refreshes_used`次refresh。`pre_active_offer_hash/pre_active_loadout_hash`分别且只等于上述252/296-byte semantic carrier的self-hash；新进程先验证semantic bytes/hash，再把当前process-local snapshot/bank/generation写入新的runtime carrier，不要求也不得伪造旧local ID相等。每版cursor/semantic hash/offer revision/rule bits/streak/remaining必须相等；若choice已durable，selected candidate必须存在于重建semantic offer，并以原command ID应用到initial semantic loadout后得到相同semantic loadout revision/hash。任一不等即fault并保持Active关闭；禁止从hash反推card、默认第一张、重新让玩家选择已durable结果或产生第二次logical offer。
+  `PreActiveCandidateSemanticRowV1`固定32 bytes；`ActiveLoadoutSemanticRowV1={slot_id,family_id,skill_id,level,form_id,config_row_id}`固定24 bytes，`AuxLoadoutSemanticRowV1={slot_id,family_id,skill_id,level,config_row_id}`固定20 bytes。offer/loadout semantic分别固定252/296 bytes，未使用fixed-capacity tail逐byte为0并参与hash。semantic carrier明确排除`config_snapshot_id/source_authority_revision/effective_gameplay_tick_revision/blocking_choice_id/generation_index/offer_bank_id/session_generation/bank_id/generation/valid`等process-local、bank或presentation字段；这些字段只在exact content key验证后由GameRoot为新进程重新绑定，绝不与durable semantic hash比较。`PreActiveRngWindowLeaseV1`仅是同线程临时scratch，不持久化、不跨帧公开；可恢复真相只存在于old recovery或已双镜像readback的新recovery。
+- 聚气预开局选择使用Zhangtian/Save的360-byte `RunStartRecoveryV1`，不得只存offer/loadout hash。每版可见offer前先durable写入`pre_active_offer_revision,pre_active_refreshes_used,pre_active_free_refreshes_remaining,pre_active_semantic_generation,pre_active_draft_ordinal,pre_active_required_rule_bits,pre_active_reinforcement_miss_streak,config_content_revision,config_content_hash,pre_active_skill_draft_rng_cursor,pre_active_offer_hash`；choice durable时再写`pre_active_selected_candidate_id,pre_active_choice_command_id,pre_active_committed_loadout_revision,pre_active_loadout_hash,next_level_request_sequence=2`。`pre_active_semantic_generation`purely durable：每局该唯一pre-active session固定为1，不得从runtime `session_generation`、bank或presentation generation复制；对应runtime token在每个新进程重新分配且不参与durable比较。
+- 跨进程恢复固定使用deterministic replay：该预开局页是本局`SKILL_DRAFT` stream首个consumer；以durable run seed、逐位相等的`config_content_revision+config_content_hash`、青元L1/其余空的canonical initial loadout及记录的draft history重放base页和`pre_active_refreshes_used`次**已durable** refresh。scratch draw从不计入history；只有同reservation update durable后，其next cursor与revision才成为下一次replay输入。`pre_active_offer_hash/pre_active_loadout_hash`分别且只等于上述252/296-byte semantic carrier的self-hash；新进程先验证semantic bytes/hash，再把当前process-local snapshot/bank/generation写入新的runtime carrier，不要求也不得伪造旧local ID相等。每版cursor/semantic hash/offer revision/rule bits/streak/remaining必须相等；若choice已durable，selected candidate必须存在于重建semantic offer，并以原command ID应用到initial semantic loadout后得到相同semantic loadout revision/hash。任一不等即fault并保持Active关闭；禁止从hash反推card、默认第一张、重新让玩家选择已durable结果或产生第二次logical offer。
 
 #### R8 — 精英宝匣与进化
 
@@ -314,8 +314,8 @@ The `skill_draft_pending_capacity` formula is defined as:
 - 第一次获得匹配辅助时标记“可进化条件已满足/仍需主动五层”；不得把“具备条件”显示成“已进化”。
 - 宝匣有多项进化时展示全部1..4项并要求选1；无进化的随机+1 fallback显示结果确认，不伪装成三选一。
 - 页面打开后只读取immutable offer；按钮command携带token/revision，提交中禁重复输入，失败保持明确安全态。
-- `PRE_ACTIVE_CHOICE`是ADR-0001明确的action-bearing TopState：presenter必须从immutable offer发布`AccessibleScreenSnapshotV2`，卡片name/value/state用typed localization args表达当前→目标等级、槽位与剩余刷新，248-byte row携带当前`layout_generation`、logical bounds、visible/clipped与radio position。视觉reflow后旧layout callback为0 command。
-- 聚气预开局页的返回/关闭只在GameRoot `PRE_ACTIVE_CANCEL_ALLOWED=true`（首个offer尚未durable/visible）时暴露enabled cancel，并唯一发`PRE_ACTIVE_CANCEL_REQUESTED`；offer durable后返回节点仍可读但disabled，播报“选择已保存，请完成本次选择”，不得关闭、自动选择或release重抽。普通局内blocking choice继续按既有pause策略，不能借用该pre-active cancel。
+- `PRE_ACTIVE_CHOICE`是ADR-0001明确的action-bearing TopState：presenter必须从immutable offer按ASN04发布固定capacity12、exact bytes3084、最多9行的`AccessibleScreenSnapshotV2`，卡片name/value/state用typed localization args表达当前→目标等级、槽位与剩余刷新，248-byte row携带当前`layout_generation`、logical bounds、visible/clipped与radio position，unused tail全零。视觉reflow后旧layout callback为0 command。
+- 聚气预开局页不暴露玩家cancel。base offer durable readback前页面不可交互；可见后返回节点可读但disabled，播报“选择已保存，请完成本次选择”。不得关闭、自动选择或release重抽；只有base offer任何durable/visible事实之前的系统级clear failure可走LFD25 release。普通局内blocking choice继续按既有pause策略。
 
 ## Acceptance Criteria
 
@@ -332,7 +332,7 @@ The `skill_draft_pending_capacity` formula is defined as:
 - **AC-SD11 `[U][I][BLOCKING]` pity**：**GIVEN**连续两次最终offer无REINFORCEMENT及一次含强化对照，**WHEN**生成下一session，**THEN**前者适用时至少1张强化、后者不触发；refresh旧页、宝匣、未提交页不推进streak。
 - **AC-SD12 `[U][BLOCKING]` both guarantees**：**GIVEN**F3两bit同时true且pool>=2，**WHEN**生成任一页，**THEN**offer至少含1 NEW_ACTIVE、1 REINFORCEMENT且全部不同，display permutation不破坏成员约束。
 - **AC-SD13 `[U][I][BLOCKING]` RNG call table**：**GIVEN**n=1/2/3的普通/任一保底/refresh页及初始refresh2/3，**WHEN**成功生成，**THEN**每页恰有n weighted+n−1 display=1/3/5 SKILL_DRAFT calls；单session最大分别15/20，枚举/选择/reopen为0 calls，无shuffle/rejection。
-- **AC-SD14 `[U][I][BLOCKING]` RNG fault atomicity**：**GIVEN**n=1/2/3及第1..`2n-1`次call fault，**WHEN**初始或refresh生成，**THEN**offer selector不切、loadout不变、refresh不扣且不重摇，fault由GameRoot捕获。
+- **AC-SD14 `[U][I][BLOCKING]` RNG与durability原子性**：**GIVEN**n=1/2/3及第1..`2n-1`次call fault，或pre-active scratch已完成而Save返回FAILED/UNCERTAIN/`RECONCILE_FOUND+next hash`/`RECONCILE_FOUND_OLD+old hash`/`RECONCILE_NOT_FOUND_UNPROVEN`及code/hash错配，**WHEN**初始或refresh生成，**THEN**roll fault不发布offer/selector/loadout且由GameRoot捕获；FAILED逐位保持旧权威cursor/offer/revision/refresh charge并discard scratch，UNCERTAIN与UNPROVEN禁止新roll且保持window冻结，FOUND_NEXT只commit durable next state一次，FOUND_OLD只discard scratch并保持old state；错配fail closed。全reservation PROVEN_ABSENT调用数0。普通Active fault不重摇；任一路径都不存在durable history与权威cursor分叉。
 - **AC-SD15 `[U][I][BLOCKING]` refresh budget**：**GIVEN**Dayan level4/5 fresh run，**WHEN**跨session提交刷新，**THEN**分别按2→1→0与3→2→1→0 exact-once消费，下一次0 RNG/0 mutation并返回NO_REFRESH_REMAINING；同command replay OK_NOOP。
 - **AC-SD16 `[U][I][BLOCKING]` refresh replacement**：**GIVEN**旧offer、matching/stale/conflict token，**WHEN**refresh，**THEN**完整新页后才原子替换且旧页不可选；新旧完全相同允许，禁止额外roll。
 - **AC-SD17 `[U][I][BLOCKING]` choice exact-once**：**GIVEN**matching choice及100次duplicate、stale offer、非页内candidate、跨局/conflict，**WHEN**confirm，**THEN**matching只提交一次，duplicate OK_NOOP，其余在selector/counter/ACK前拒绝。
@@ -348,7 +348,7 @@ The `skill_draft_pending_capacity` formula is defined as:
 - **AC-SD27 `[U][I][BLOCKING]` deterministic replay/teardown**：**GIVEN**同seed/content key/canonical initial loadout/history但不同process-local `config_snapshot_id/bank/generation`、不同物理顺序与其他RNG流调用，以及相同revision但content hash单轴不同的负例，**WHEN**生成/刷新/选择并teardown，**THEN**252-byte offer与296-byte loadout semantic bytes/hash在前组逐位相同、runtime carrier完成当前local rebind且流隔离；content hash不同组在publish前fail closed；旧request/session/offer/command不污染新局，runtime snapshot hash不得与durable semantic hash混用。
 - **AC-SD28 `[P][I][E][OPEN-EVIDENCE]` zero-allocation/experience**：**GIVEN**Godot4.7.1目标Android、最大banks/scratch/queue及fixed-seed corpus，**WHEN**10000次offer/refresh/commit soak与预登记试玩，**THEN**allocator/growth/COW/unexpected-native-call=0、无重复/非法卡/卡死/双commit，并报告选择率、refresh/pity/进化率；首次升级≤30秒与首进化6–8分钟缺Leveling/Drop/完整build证据前保持OPEN。
 - **AC-SD29 `[U][I][BLOCKING]` 聚气预开局普通首选**：**GIVEN**聚气/无聚气、candidate count1..12、refresh 2/3、base/每次refresh/commit前后kill、callback loss与进程恢复，**WHEN**进入首个Active前选择，**THEN**仅聚气路径出现一次`PRE_ACTIVE_CHOICE`，request为普通LEVEL_UP ordinal1并应用同一early guarantee/streak；每版offer与全部replay字段先写360-byte recovery，base页refresh不变、玩家每次refresh exact-once扣1；首版durable后取消返回WRONG_STATE并恢复同一页；提交后selected candidate、command、loadout revision/hash、credit14、remaining XP16538、next sequence2、checkpoint6逐值成立，跨进程以durable config content identity重建同一offer rows/identity/loadout且第二offer/choice=0，未提交时Active/movement/survival tick均为0。
-- **AC-SD30 `[I][A][BLOCKING]` pre-active accessibility/cancel**：**GIVEN**`PRE_ACTIVE_CHOICE`在offer durable前/后、1/2/3 cards、refresh0..3、100/115/130%字体、长locale、cutout/reflow及old/new layout callbacks，**WHEN**发布ADR-0001 V2 tree并以TalkBack/VoiceOver action oracle遍历，**THEN**card radio/name/value/state/bounds/typed args逐行matching；pre-durable cancel只发一次`PRE_ACTIVE_CANCEL_REQUESTED`，post-durable cancel disabled且播报必须完成，stale layout/disabled/card外action为0 typed command。runtime/device trace未附前保持OPEN-EVIDENCE。
+- **AC-SD30 `[I][A][BLOCKING]` pre-active accessibility**：**GIVEN**`PRE_ACTIVE_CHOICE`在base offer durable readback前/后、1/2/3 cards、refresh0..3、100/115/130%字体、长locale、cutout/reflow及old/new layout callbacks，**WHEN**发布ADR-0001 V2 tree并以TalkBack/VoiceOver action oracle遍历，**THEN**readback前interactive snapshot/action count=0；可见后card radio/name/value/state/bounds/typed args逐行matching，Back节点可读但disabled并播报必须完成，stale layout/disabled/card外action为0 typed command。runtime/device trace未附前保持OPEN-EVIDENCE。
 
 ## Open Questions
 

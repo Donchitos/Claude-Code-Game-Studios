@@ -37,7 +37,7 @@
 #   Each entry: name, status, source, referenced_by[], attributes{}, added, revised
 
 version: 1
-last_updated: "2026-09-07"
+last_updated: "2026-09-08"
 
 # ─── ENTITIES ────────────────────────────────────────────────────────────────
 # Named game-world objects: enemies, NPCs, characters, factions, bosses.
@@ -2849,7 +2849,7 @@ constants:
     unit: integer_weights
     added: 2026-09-03
     revised: 2026-09-04
-    notes: "ZHANGTIAN_HERB以预分配PackedInt32Array([1,1,1])调用roll_weighted_pick；canonical index 0/1/2按NINGQI_GRASS/TIELING_FLOWER/LEIYUAN_FRUIT，成功logical call delta恰1；均匀无pity为PROVISIONAL-ECONOMY-V5。"
+    notes: "ZHANGTIAN_HERB以预分配PackedInt32Array([1,1,1])调用roll_weighted_pick；canonical index 0/1/2按NINGQI_GRASS/TIELING_FLOWER/LEIYUAN_FRUIT，成功logical call delta恰1；均匀无pity为PROVISIONAL-ECONOMY-V6，只承诺gross grant-rate。"
 
   - name: zhangtian_seed_held_cap
     status: active
@@ -2859,7 +2859,7 @@ constants:
     unit: available_plus_reserved_seeds_per_kind
     added: 2026-09-03
     revised: 2026-09-04
-    notes: "V1只约束available+reserved；normal settlement先consume reservation再算held room，lifetime earned/consumed须为non-negative int64并满足守恒。held/lifetime触顶均采用显式PARTIAL或NO_GRANT disposition。"
+    notes: "V1只约束available+reserved；normal settlement先consume reservation再算held room，lifetime earned/consumed须为non-negative int64并满足守恒。held/lifetime触顶采用封闭FULL/PARTIAL_HELD/PARTIAL_LIFETIME/PARTIAL_BOTH/NO_ROOM/NOT_APPLICABLE disposition。"
 
   - name: zhangtian_defeat_seed_eligible_ticks
     status: provisional
@@ -2869,7 +2869,7 @@ constants:
     unit: active_ticks
     added: 2026-09-03
     revised: 2026-09-04
-    notes: "60Hz下12分钟/Boss入场线；DEFEAT仅survival_ticks>=43200发冻结candidate一枚，VICTORY只在43200..108000合法并发三枚。starter不计入随机seed/min比较。PROVISIONAL-ECONOMY-V5。"
+    notes: "60Hz下12分钟/Boss入场线；DEFEAT仅survival_ticks>=43200发冻结candidate一枚，VICTORY只在43200..108000合法并发三枚。starter不计入random gross seed/min比较；net flow另覆盖服丹/NONE、胜率、局长与饱和。PROVISIONAL-ECONOMY-V6。"
 
   - name: zhangtian_victory_min_ticks
     status: provisional
@@ -2932,7 +2932,7 @@ constants:
     status: active
     source: design/gdd/zhangtian-bottle.md
     referenced_by: [design/gdd/zhangtian-bottle.md, design/gdd/save-system.md, design/gdd/config-data-system.md]
-    value: 660
+    value: 724
     unit: canonical_bytes
     added: 2026-09-03
     revised: 2026-09-04
@@ -2941,7 +2941,7 @@ constants:
     status: active
     source: design/gdd/save-system.md
     referenced_by: [design/gdd/save-system.md, design/gdd/config-data-system.md]
-    value: 1088
+    value: 1152
     unit: canonical_bytes
     added: 2026-09-03
     revised: 2026-09-04
@@ -2959,21 +2959,21 @@ constants:
     status: active
     source: design/gdd/save-system.md
     referenced_by: [design/gdd/save-system.md, design/gdd/config-data-system.md]
-    value: 42180
+    value: 42244
     unit: canonical_bytes
     added: 2026-09-03
     revised: 2026-09-07
-    notes: "SaveStorePayloadV1全部top-level字段与8个optional presence tag逐项和；加120-byte header与92-byte footer得42392。"
+    notes: "SaveStorePayloadV1全部top-level字段与8个optional presence tag逐项和；加120-byte header与92-byte footer得42456。"
 
   - name: save_slot_encoded_max_bytes
     status: active
     source: design/gdd/save-system.md
     referenced_by: [design/gdd/save-system.md, design/gdd/config-data-system.md]
-    value: 42392
+    value: 42456
     unit: canonical_bytes
     added: 2026-09-07
     revised: ""
-    notes: "42180-byte payload + 120-byte header + 92-byte footer；低于65536-byte slot硬上限。"
+    notes: "42244-byte payload + 120-byte header + 92-byte footer；低于65536-byte slot硬上限。"
 
   - name: save_latest_resolution_max_bytes
     status: active
@@ -2995,6 +2995,80 @@ constants:
     revised: ""
     notes: "DirectNoneStartSliceV2同时携带zhangtian_unlocked与starter_seed_grant_claimed；只接受0/0或1/1。"
 
+  - name: reservation_receipt_bytes
+    status: active
+    source: design/gdd/save-system.md
+    referenced_by: [design/gdd/save-system.md, design/gdd/audio-feedback.md, design/gdd/zhangtian-bottle.md, design/gdd/game-root-scene-flow.md]
+    value: 120
+    unit: canonical_bytes
+    added: 2026-09-07
+    revised: 2026-09-08
+    notes: "ReservationReceiptV1 self-hash offset88；durable_receipt_id逐位等于matching request_id；result_code固定为durable SUCCEEDED，不复制public delivery/reconcile code。"
+
+  - name: accessibility_adapter_mailbox_bytes
+    status: active
+    source: docs/architecture/adr-0001-mobile-accessibility-bridge.md
+    referenced_by: [docs/architecture/adr-0001-mobile-accessibility-bridge.md, design/gdd/game-root-scene-flow.md, design/gdd/config-data-system.md]
+    value: 2476
+    unit: canonical_bytes
+    added: 2026-09-07
+    revised: ""
+    notes: "capacity32，76-byte rows，i64 read/write sequence；单一PLATFORM_SERIAL_INGRESS producer与主线程sole consumer。"
+
+  - name: accessible_screen_row_capacity_home
+    status: active
+    source: docs/architecture/adr-0001-mobile-accessibility-bridge.md
+    referenced_by: [docs/architecture/adr-0001-mobile-accessibility-bridge.md, design/gdd/home-ui.md, design/gdd/config-data-system.md]
+    value: 16
+    unit: accessible_rows
+    added: 2026-09-07
+    revised: ""
+
+  - name: accessible_screen_row_capacity_prep
+    status: active
+    source: docs/architecture/adr-0001-mobile-accessibility-bridge.md
+    referenced_by: [docs/architecture/adr-0001-mobile-accessibility-bridge.md, design/gdd/prep-ui.md, design/gdd/config-data-system.md]
+    value: 16
+    unit: accessible_rows
+    added: 2026-09-07
+    revised: ""
+
+  - name: accessible_screen_row_capacity_pre_active_choice
+    status: active
+    source: docs/architecture/adr-0001-mobile-accessibility-bridge.md
+    referenced_by: [docs/architecture/adr-0001-mobile-accessibility-bridge.md, design/gdd/skill-draft-system.md, design/gdd/config-data-system.md]
+    value: 12
+    unit: accessible_rows
+    added: 2026-09-07
+    revised: ""
+
+  - name: accessible_screen_row_capacity_battle_paused
+    status: active
+    source: docs/architecture/adr-0001-mobile-accessibility-bridge.md
+    referenced_by: [docs/architecture/adr-0001-mobile-accessibility-bridge.md, design/gdd/battle-ui.md, design/gdd/config-data-system.md]
+    value: 24
+    unit: accessible_rows
+    added: 2026-09-07
+    revised: ""
+
+  - name: accessible_screen_row_capacity_settlement
+    status: active
+    source: docs/architecture/adr-0001-mobile-accessibility-bridge.md
+    referenced_by: [docs/architecture/adr-0001-mobile-accessibility-bridge.md, design/gdd/settlement-system.md, design/gdd/config-data-system.md]
+    value: 24
+    unit: accessible_rows
+    added: 2026-09-07
+    revised: ""
+
+  - name: accessible_screen_row_capacity_controlled_fault
+    status: active
+    source: docs/architecture/adr-0001-mobile-accessibility-bridge.md
+    referenced_by: [docs/architecture/adr-0001-mobile-accessibility-bridge.md, design/gdd/battle-ui.md, design/gdd/game-root-scene-flow.md, design/gdd/config-data-system.md]
+    value: 12
+    unit: accessible_rows
+    added: 2026-09-07
+    revised: ""
+
   - name: pre_active_offer_semantic_bytes
     status: active
     source: design/gdd/skill-draft-system.md
@@ -3003,7 +3077,7 @@ constants:
     unit: canonical_bytes
     added: 2026-09-07
     revised: ""
-    notes: "跨进程durable semantic carrier；排除snapshot/bank/generation/presentation等process-local identity。"
+    notes: "跨进程durable semantic carrier；pre_active_semantic_generation固定1，candidate_id由offer_revision和slot确定，排除snapshot/bank/generation/presentation等process-local identity。"
 
   - name: pre_active_loadout_semantic_bytes
     status: active
@@ -3113,6 +3187,111 @@ constants:
     value: 600
     unit: logical_px
     added: 2026-09-03
+    revised: ""
+
+  - name: save_executor_result_mailbox_bytes
+    status: active
+    source: design/gdd/save-system.md
+    referenced_by: [design/gdd/save-system.md, design/gdd/game-root-scene-flow.md, .claude/docs/technical-preferences.md]
+    value: 484
+    unit: canonical_bytes
+    added: 2026-09-07
+    revised: 2026-09-08
+    notes: "SaveExecutorResultMailboxV3 header44 + capacity2×220-byte rows；每行内联最多204-byte canonical typed result。pre-V3 row layout已弃用。"
+
+  - name: reservation_create_result_bytes
+    status: active
+    source: design/gdd/save-system.md
+    referenced_by: [design/gdd/game-root-scene-flow.md, design/gdd/prep-ui.md, design/gdd/audio-feedback.md, design/gdd/zhangtian-bottle.md]
+    value: 204
+    unit: canonical_bytes
+    added: 2026-09-08
+    revised: ""
+    notes: "ReservationCreateResultV3；回显source correlation、operation/recovery identity与全部allocated identity。"
+
+  - name: save_executor_result_row_bytes
+    status: active
+    source: design/gdd/save-system.md
+    referenced_by: [design/gdd/game-root-scene-flow.md, .claude/docs/technical-preferences.md]
+    value: 220
+    unit: canonical_bytes
+    added: 2026-09-08
+    revised: ""
+    notes: "SaveExecutorResultRowV3固定16-byte control + 204-byte payload。"
+
+  - name: save_terminal_run_result_bytes
+    status: active
+    source: design/gdd/save-system.md
+    referenced_by: [design/gdd/save-system.md, design/gdd/game-root-scene-flow.md, design/gdd/audio-feedback.md]
+    value: 160
+    unit: canonical_bytes
+    added: 2026-09-07
+    revised: ""
+
+  - name: accessibility_native_ingress_capacity
+    status: active
+    source: docs/architecture/adr-0001-mobile-accessibility-bridge.md
+    referenced_by: [design/gdd/game-root-scene-flow.md, .claude/docs/technical-preferences.md]
+    value: 64
+    unit: native_callbacks
+    added: 2026-09-07
+    revised: ""
+
+  - name: accessibility_native_mpsc_ingress_bytes
+    status: active
+    source: docs/architecture/adr-0001-mobile-accessibility-bridge.md
+    referenced_by: [design/gdd/game-root-scene-flow.md, design/gdd/config-data-system.md, .claude/docs/technical-preferences.md, docs/registry/architecture.yaml]
+    value: 6208
+    unit: canonical_bytes
+    added: 2026-09-08
+    revised: ""
+    notes: "AccessibilityNativeMpscIngressV1固定64-byte header + 64×96-byte per-slot-sequence rows。"
+
+  - name: accessibility_native_action_payload_bytes
+    status: active
+    source: docs/architecture/adr-0001-mobile-accessibility-bridge.md
+    referenced_by: [docs/architecture/adr-0001-mobile-accessibility-bridge.md, design/gdd/game-root-scene-flow.md]
+    value: 68
+    unit: canonical_bytes
+    added: 2026-09-08
+    revised: ""
+    notes: "Native MPSC row payload excludes serially allocated native_event_sequence；serial ingress reconstructs 76-byte AccessibilityActionCommandV2."
+
+  - name: accessibility_node_contract_rows
+    status: active
+    source: docs/architecture/adr-0001-mobile-accessibility-bridge.md
+    referenced_by: [docs/architecture/adr-0001-mobile-accessibility-bridge.md, docs/registry/architecture.yaml]
+    value: 101
+    unit: manifest_rows
+    added: 2026-09-08
+    revised: ""
+    notes: "Includes mutually exclusive BATTLE_PAUSED choice rows; runtime simultaneous row count remains <=24."
+
+  - name: settlement_accessible_detail_window_rows
+    status: active
+    source: design/gdd/settlement-system.md
+    referenced_by: [docs/architecture/adr-0001-mobile-accessibility-bridge.md, design/gdd/config-data-system.md]
+    value: 6
+    unit: semantic_rows_per_page
+    added: 2026-09-07
+    revised: ""
+
+  - name: config_retained_artifact_max_count
+    status: active
+    source: design/gdd/config-data-system.md
+    referenced_by: [design/gdd/zhangtian-bottle.md, design/gdd/skill-draft-system.md]
+    value: 32
+    unit: artifacts_per_save_schema_lifetime
+    added: 2026-09-07
+    revised: ""
+
+  - name: config_retained_artifact_max_bytes
+    status: active
+    source: design/gdd/config-data-system.md
+    referenced_by: [design/gdd/zhangtian-bottle.md, design/gdd/skill-draft-system.md]
+    value: 16777216
+    unit: bytes
+    added: 2026-09-07
     revised: ""
 
 # Example:

@@ -2,7 +2,7 @@
 
 > **Status**: In Review / Re-review Pending
 > **Author**: 用户 + Codex（lean authoring；consulted systems-designer / economy-designer / qa-lead / UX reviewer）
-> **Created / Last Updated**: 2026-09-07 — 第四次独立full review授权整改传播
+> **Created / Last Updated**: 2026-09-08 — Zhangtian第七次独立full review后typed detail pagination整改传播
 > **Implements Pillar**: 诚实复盘、失败有积累、成功可理解；所有收益以durable事实为准
 > **Scope**: MVP终局规则投影、奖励/纪录候选、sealed Outcome到多domain after-image、保存/放弃/对账呈现、伤害与承伤复盘；不含排行榜、云端、赛季、装备掉落、复杂历史或社交分享
 
@@ -10,7 +10,7 @@
 
 SettlementSystem 是终局结果到局外永久档案的唯一业务映射者，也是结算页面的只读 presenter。为闭合 systems index 中未单列但 GameRoot 已要求的 `BATTLE_RULES` role，本文将其定义为 Settlement 的battle-ending子域：它在战斗中只积累生存/最终等级并在终局安全阶段生成typed reward/record projection；页面层只消费 exposed sealed Outcome、Completion、Save与冻结的mutation bundle，绝不回读已销毁battle Node或猜测胜负。
 
-Settlement构造一次完整 `PersistentProfileEnvelopeV1` after-image，把灵石、残页、种子、核心灵药、纪录、掌天瓶reservation resolution及解锁标记放入同一Save commit。durable success前只显示“待保存”，PONR后结果不明只允许核对；不能因UI动画、callback超时或页面重建提前宣布到账。
+Settlement构造一次完整 `PersistentProfileEnvelopeV1` after-image，把灵石、残页、种子、核心灵药、纪录、掌天瓶reservation resolution及解锁标记放入唯一`ReservationUpdateRequestV2(RESOLVE)+ResolveReservationPayloadV3`。Save在同一slot transaction提交reward或tombstone、next profile、reservation终态、marker清除与receipt；MVP不得另发`SaveCommitRequestV1`形成第二次写。durable success前只显示“待保存”，PONR后结果不明只允许核对；不能因UI动画、callback超时或页面重建提前宣布到账。
 
 ## 2. Player Fantasy
 
@@ -30,7 +30,7 @@ Settlement构造一次完整 `PersistentProfileEnvelopeV1` after-image，把灵�
 
 ### 3.2 Terminal accumulation 与 reward manifest
 
-BATTLE_RULES只从matching published authority与COMMITTED fact/receipt读取：每个完整Active tick在phase7 checked推进`survival_ticks`；最终level从Leveling matching snapshot copy；灵石从reward-eligible committed DEATH provenance聚合；核心灵药沿既有Boss precollection→phase6 REWARD fact；种子候选来自Loading已冻结的Zhangtian seed candidate；残页raw amount来自survival ticks。
+BATTLE_RULES只从matching published authority与COMMITTED fact/receipt读取：每个完整Active tick在phase7 checked推进`survival_ticks`；最终level从Leveling matching snapshot copy；灵石从reward-eligible committed DEATH provenance聚合；核心灵药沿既有Boss precollection→phase6 REWARD fact；种子候选来自Loading已冻结的Zhangtian seed candidate；残页raw amount来自survival ticks。tick边界固定为`completed_before_tick`、`executing_tick_ordinal=completed_before_tick+1`、`completed_after_tick`：第43200个执行tick先让Boss due predicate可见，phase7再将survival_ticks从43199推进到43200，因此同tick Victory合法且不得因顺序误判为43199。
 
 `SettlementRewardManifestV1`恰6行，stable IDs/顺序固定：
 
@@ -104,13 +104,13 @@ AppliedRewardRowV1={
 }
 ```
 
-`AppliedRewardRowV1` canonical little-endian/no-padding固定64 bytes，按reward ID升序放入固定capacity6的tail，未用row全零。`outcome_requested`逐位等于Outcome对应row（无row则0），对seed即random gross requested；seed starter只允许正常VICTORY/DEFEAT且confirmed Zhangtian flag为`unlocked/claimed=0/0`时各类1，其他情况0；`applied_amount`是consume-before-grant后同时受held room与lifetime room约束的唯一到账真相。`cap_disposition={FULL=1,PARTIAL_HELD=2,PARTIAL_LIFETIME=3,NO_ROOM=4,NOT_APPLICABLE=5}`，不得由UI从requested反推。seed row的`provenance_hash`绑定Outcome candidate row与starter flag before-image；其他reward绑定其sealed fact。
+`AppliedRewardRowV1` canonical little-endian/no-padding固定64 bytes，按reward ID升序放入固定capacity6的tail，未用row全零。`outcome_requested`逐位等于Outcome对应row（无row则0），对seed即random gross requested；seed starter只允许正常VICTORY/DEFEAT且confirmed Zhangtian flag为`unlocked/claimed=0/0`时各类1，其他情况0；`applied_amount`是consume-before-grant后同时受held room与lifetime room约束的唯一到账真相。`cap_disposition={FULL=1,PARTIAL_HELD=2,PARTIAL_LIFETIME=3,NO_ROOM=4,NOT_APPLICABLE=5,PARTIAL_BOTH=6}`，按封闭优先级计算：requested=0→NOT_APPLICABLE；applied=requested>0→FULL；applied=0<requested→NO_ROOM；0<applied<requested且`held_room<lifetime_room`→PARTIAL_HELD；`lifetime_room<held_room`→PARTIAL_LIFETIME；两者相等→PARTIAL_BOTH。不得由UI从requested反推，也不得把相等tie任意归给某一cap。seed row的`provenance_hash`绑定Outcome candidate row与starter flag before-image；其他reward绑定其sealed fact。
 
 Zhangtian解锁/赠礼flag合法矩阵只有`0/0`与`1/1`：空档locked时三类available/reserved/consumed/earned必须全0；首次正常VICTORY/DEFEAT transaction在同一next profile中写三类starter requested并原子迁移到`1/1`。`0/1`、`1/0`或locked非零ledger整包fail closed，不修补、不猜测。
 
-Input的Outcome/Completion/Save必须同nonzero commit ID且已seal/expose；profile/config/manifest/revisions/hash必须matching。Settlement按stable domain ID顺序验证所有规则、构造三个完整next domain及完整next profile，最后一次发布immutable bundle；任何一步失败为0 partial mutation。bundle随Save `PendingOutcomeRecoveryV1` durable stage，重试/reconcile始终复用同bytes/hash，不重新抽种、不重算奖励、不重新比较纪录。
+Input的Outcome/Completion/Save必须同nonzero commit ID且已seal/expose；profile/config/manifest/revisions/hash必须matching。Settlement按stable domain ID顺序验证所有规则、构造三个完整next domain及完整next profile，最后一次发布immutable bundle；任何一步失败为0 partial mutation。bundle与包含其hash、Outcome/Completion hash、264-byte resolution及完整next profile的`ResolveReservationPayloadV3`随Save `PendingOutcomeRecoveryV1` durable stage，重试/reconcile始终复用同一terminal request bytes/hash，不重新抽种、不重算奖励、不重新比较纪录。
 
-ABANDONED不构造奖励、纪录或教程mutation，但必须构造matching Zhangtian mandatory consume after-image；Save以同一槽transaction提交“零奖励discard/tombstone + reservation CONSUMED”。其他三类走commit。用户放弃任一普通结果时也只丢弃未保存奖励，不能撤销已获得的丹药成本；Save必须在同一discard transaction解析matching consume after-image。same commit同bundle幂等；same ID different bytes/hash为CONFLICT。
+ABANDONED不构造奖励、纪录或教程mutation，但必须构造matching Zhangtian mandatory consume after-image；唯一terminal request的`terminal_operation_kind=OUTCOME_DISCARD,terminal_disposition=CONSUMED`，Save以同一槽transaction提交“零奖励discard/tombstone + reservation CONSUMED”。其他正常结果用`OUTCOME_COMMIT/CONSUMED`；技术补偿才可`TECHNICAL_COMPENSATION/RELEASED`。用户放弃任一普通结果时也只丢弃未保存奖励，不能撤销已获得的丹药成本。same commit同bundle幂等；same ID different bytes/hash为CONFLICT。
 
 ### 3.6 Settlement presentation and Save states
 
@@ -134,6 +134,14 @@ ABANDONED不构造奖励、纪录或教程mutation，但必须构造matching Zha
 首屏显示结果、Save状态、奖励、存活时间/击杀/最终等级；其后显示全部非零技能伤害排行、受到伤害来源、0..2次Risk结果和新纪录。前三项可摘要，但“查看全部”必须能看到所有Outcome actual rows；不持久化每局完整伤害表。
 
 damage/source totals只接受sealed finite nonnegative float64；`-0`归+0。排序为raw total DESC→stable ID ASC，不按本地化名或rounded percent。DEFEAT death cause来自Damage stable ID；Victory/Abandoned/Technical不显示死亡原因。UI RNG、battle Node query与权威写入均为0。
+
+#### 3.7a Typed detail pagination
+
+`SettlementDetailKindV1={SKILL_DAMAGE=1,DAMAGE_TAKEN=2,RISK_RESULT=3,RECORD=4}`是唯一stable kind order；每kind内部继续按`raw_total DESC→stable_id ASC`，RECORD无raw total时使用canonical 0并按stable ID。`SettlementDetailSourceV1={schema_version:i32=1,outcome_commit_id:i64,source_hash:Hash256,row_count:i32,rows:{detail_kind:i32,stable_id:i64,raw_total:f64,localization_key_id:i32,args_hash:Hash256}[]}`在sealed bundle发布时一次冻结。canonical little-endian/no-padding长度为`48+56*row_count`，`source_hash=SHA256("SettlementDetailSourceV1\0" || canonical source with bytes12..43=ZERO)`；row_count与乘加checked，stable ID/locale key必须正，NaN/Inf/negative raw total、重复kind+stable ID或非canonical order整组拒绝。
+
+`SettlementDetailPageViewV1={schema_version:i32=1,screen_generation:i64,layout_generation:i64,page_generation:i64,source_hash:Hash256,page_index:i32,page_count:i32,first_source_index:i32,visible_count:i32=0..6}`固定76 bytes；`page_count=max(1,ceil(row_count/6))`，`first_source_index=page_index*6`，每个source row只映射到唯一`floor(index/6)`。`SettlementPageCommandV1={schema_version:i32=1,screen_generation:i64,layout_generation:i64,page_generation:i64,source_hash:Hash256,direction:i32(PREVIOUS=1,NEXT=2),command_id:i64}`固定72 bytes。所有identity/hash逐位matching且目标页合法时，presenter checked推进page/layout generation并原子发布新snapshot；边界command、stale/duplicate或source hash不等为0 mutation/0 business command。
+
+翻页后initial focus固定落在page status node5013；随后reading order进入本页首个存在的detail slot，再到prev/next。若新页visible_count=0则从status直接到可用navigation。page status使用POLITE live announcement且每个新page generation最多一次；reflow不改变page index，source更新必须创建新screen generation并回page0。prev/next由Input的ACTIVATE_FOCUSED或native accessibility ACTIVATE产生同一`SettlementPageCommandV1`，四个focus方向只移动presenter focus，不伪造page command。
 
 ### 3.8 States and transitions
 
@@ -243,7 +251,7 @@ The `settlement_item_rewards` formula is defined as:
 | Candidate | `S` | enum | three seed IDs | Loading frozen result |
 | Starter | `F_i` | int32 | 0 or1 | 首次正常Victory/Defeat且claim=0，各类均1 |
 
-**Output Range:** normal Settlement transaction先consume matching reservation，再以post-consume held room与lifetime room发放；requested seed row each0..4、requested total0..6，逐类实际applied显式返回held/lifetime partial/no-grant disposition；core herb0/1。Victory只接受ticks43200..108000，其他outcome接受0..108000；一次性starter不进入Victory/Defeat随机seed-per-minute比较。
+**Output Range:** normal Settlement transaction先consume matching reservation，再以post-consume held room与lifetime room发放；requested seed row each0..4、requested total0..6，逐类实际applied显式返回`FULL/PARTIAL_HELD/PARTIAL_LIFETIME/PARTIAL_BOTH/NO_ROOM/NOT_APPLICABLE`之一；core herb0/1。Victory只接受ticks43200..108000，其他outcome接受0..108000；一次性starter不进入Victory/Defeat随机gross seed-per-minute比较。
 
 **Example:** 首次正常Victory且candidate=SEED_IRON：requested seed amounts `[1,4,1]`，core herb1；若铁灵花held=998则实际为`[1,1,1]`并返回partial-cap disposition。
 
@@ -344,7 +352,7 @@ The `settlement_damage_share` formula is defined as:
 | spirit stone divisor | 4 XP per stone, ceil | PROVISIONAL-ECONOMY-V1 | 无sink前只作积累分数 |
 | Victory stone bonus | 100 | PROVISIONAL-ECONOMY-V1 | 与敌人价值/首次通关联调 |
 | page milestone/cap | 5400 ticks / 8 | follows Progression | 不复制第二旋钮 |
-| seed weights/quantity/starter | 1/1/1；Victory×3、Boss线Defeat×1；首次正常结算each1 | follows Zhangtian `PROVISIONAL-ECONOMY-V5` | Victory域43200..108000，其余0..108000；starter不计随机速率cohort |
+| seed weights/quantity/starter | 1/1/1；Victory×3、Boss线Defeat×1；首次正常结算each1 | follows Zhangtian `PROVISIONAL-ECONOMY-V6` | 仅gross grant-rate由交叉乘法保证；net flow覆盖服丹/NONE、胜率、局长与饱和 |
 | share precision | 0.1% / sum100.0% | UX LOCKED | 改动需排序/舍入golden |
 | visible summary skills | top3 + all detail | UX PROVISIONAL | 不得丢其余非零项 |
 | Settlement domain max | 136 bytes | FIXED V1 | 改动需migration/capacity重算 |
@@ -353,7 +361,7 @@ The `settlement_damage_share` formula is defined as:
 
 页面优先级为：结果标题→Save状态与唯一主CTA→奖励→核心数据→伤害/承伤/Risk详情→resolved导航。奖励在成功前统一加“待保存”，DISCARDED后移除加号和庆祝态。Victory/Defeat/Technical使用完整/断裂/修复中印章加文字，不能只靠颜色；Abandoned明确“主动离开”。
 
-Save状态卡与底部CTA固定，长统计区域可滚动。基准720×1280、`canvas_items/expand`；支持四档portrait/cutout、100/115/130%字体、英文+30%、灰阶/色弱、reduce motion和静音。touch≥56 logical px；reading order先结果与保存，再奖励/统计/CTA。SETTLEMENT是ADR-0001 action-bearing TopState：每个confirmed bundle/layout generation发布完整`AccessibleScreenSnapshotV2`，248-byte rows携带logical bounds、visible/clipped及奖励/Save状态typed localization args；reflow后旧layout callback命令0。架构路径已冻结，Android TalkBack/iOS VoiceOver插件、能力握手、dual focus、safe-area与真机trace仍为`BLOCKED-MOBILE-A11Y-RUNTIME`。
+Save状态卡与底部CTA固定，长统计区域可滚动。全部非零技能伤害、承伤来源、0..2 Risk结果与3条纪录先按`detail_kind stable order→raw total DESC→stable ID ASC`形成有界只读source，再按固定window6分页；每row跨全部pages恰出现一次，边界页prev/next可读但disabled，禁止截断或top3冒充全部。基准720×1280、`canvas_items/expand`；支持四档portrait/cutout、100/115/130%字体、英文+30%、灰阶/色弱、reduce motion和静音。touch≥56 logical px；reading order先结果与保存，再奖励/统计/CTA。SETTLEMENT是ADR-0001 action-bearing TopState：每个confirmed bundle/layout generation发布固定capacity24、exact bytes6060的完整`AccessibleScreenSnapshotV2`，按ASN06最多23行（含detail page status、6-row window与prev/next），248-byte rows携带logical bounds、visible/clipped及奖励/Save状态typed localization args，unused tail全零；翻页/reflow推进presentation/layout generation，旧callback命令0。架构路径已冻结，Android TalkBack/iOS VoiceOver插件、能力握手、dual focus、safe-area与真机trace仍为`BLOCKED-MOBILE-A11Y-RUNTIME`。
 
 终局音只由GameRoot/Audio唯一winner播放，Settlement入页不补播。Save durable success将所有奖励合并为一次低强度落印声；pending无循环，uncertain/failed无惩罚重音，reconcile/rebuild不重播。
 
@@ -385,6 +393,7 @@ Save状态卡与底部CTA固定，长统计区域可滚动。基准720×1280、`
 - **AC-ST20 `[I][A][BLOCKING]` — GIVEN**再次挑战/返回/前往研习或掌天瓶、available=0/>0、两flag合法/非法组合及`DirectNoneStartSliceV2`任一字段/hash单轴stale，**WHEN**resolved导航，**THEN**archive完成后目标唯一；again在>0时进入Prep且selected NONE，在0时仅从同一confirmed Settlement bundle内128-byte slice发一次`SETTLEMENT_DIRECT_NONE`并创建Prep页面0，视觉/读屏名同为“不服丹，再次挑战”；伪HOME source、非法flag、跨owner拼接或旧Settlement generation为0 command。
 - **AC-ST21 `[UX/A][OPEN-EVIDENCE]` — GIVEN**四Outcome×七Save态、四档portrait/cutout、130%字体/长locale/色弱/静音，**WHEN**render，**THEN**P0状态/CTA不裁切、非颜色可辨、touch≥56px。
 - **AC-ST22 `[R/M/E][BLOCKING]` — GIVEN**codec golden、1000经济runs、crash/race、device与allocator harness，**WHEN**签收，**THEN**STATIC/RUNTIME/DEVICE/ECONOMY证据分别通过；单次页面/Save success不得代替。
+- **AC-ST23 `[I/A][BLOCKING]` — GIVEN**`SettlementDetailSourceV1`含0/1/6/7/12/13条跨四kind的稳定rows、34-row accessibility state manifest、page command的matching/stale/duplicate/hash mismatch与PREVIOUS/NEXT边界组合，**WHEN**生成并翻阅detail pages，**THEN**page_count分别为1/1/1/2/2/3且每个source row按kind→raw total DESC→stable ID恰出现一次；每次合法翻页只递增page/layout generation、focus落5013并最多一次POLITE announcement，边界/stale/duplicate/hash mismatch为0 mutation。Input ACTIVATE与native ACTIVATE产生同一typed page command，四个focus方向只移动focus；source更新新建screen generation并回page0，任何截断/top-N/重复/漏row或运行时扩容均失败。
 
 ## 10. Open Questions / Evidence Gates
 

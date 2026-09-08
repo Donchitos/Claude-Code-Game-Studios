@@ -2,6 +2,149 @@
 
 > 本文件记录 `design/gdd/zhangtian-bottle.md` 的独立 full review 与作者整改，不把静态修订记作复审通过。
 
+## 第八轮作者整改（用户授权，2026-09-08）
+
+本轮针对第八次 clean-context full re-review 的 8 组合同 blocker 完成跨文档传播：
+
+1. 将 `PlayerStaticConfigV1` 与 `PlayerRunProjectionV1` 分离，projection 使用独立 hash，不再污染静态 config hash。
+2. 持久化 64-byte `ReservationCreateCorrelationV1`（含 source kind/command/press/attempt/hash），`DurableReservationV2=1152`、`ZhangtianReservationPayloadV2=724`，CreateResultV3 回显五项 correlation；新增 `ReservationUpdateIdentityLeaseV1` 解决 request-id 自引用。
+3. RCO 升级 V2 十一个 operation，RCC×RCO 固定 132 行；RRD marker/checkpoint 前置 validator、RESOLVE `FOUND_OLD` 与旧 reservation 保留语义闭合。
+4. Save 新增六行 `SaveGlobalCodecHashManifestV1`，SlotPayload/Encoded 上限统一为 42244/42456。
+5. ADR 补齐 BATTLE_PAUSED 动态 choice 节点、Settings 四持久布尔字段与 base-focus graph 过滤规则；Input Meta UI 扩为 8 行含 INCREMENT/DECREMENT。
+6. native MPSC row 采用 68-byte payload/96-byte row，serial ingress 补齐 76-byte command；shutdown 以有界批次交替 drain，覆盖 33..64 backlog。
+7. Boss/Settlement/GameRoot 统一 completed-before/executing/completed-after tick 语义，43200 执行 tick 可生成 Boss 且 survival=43200 合法。
+8. 更新 registry、technical preferences、systems-index、session state，并保留所有 runtime/device/generated evidence gate。
+
+当前状态：`In Review / Re-review Pending`。本节是作者整改记录，不构成第九次独立 verdict；generated codec/hash/crash/accessibility artifacts、Godot/GDUnit4、process-kill、Android/iOS、性能、音频、经济与玩家证据仍 OPEN，`battle_ready=false`。
+
+---
+
+## Re-review — 2026-09-08 — 第八次 clean-context full re-review
+
+Verdict：`MAJOR REVISION NEEDED`；Scope signal：XL。由 persistence/engine/QA、UX/accessibility/audio specialists 与 fresh creative-director 独立综合。识别 8 组根 blocker：
+
+1. 静态 Config hash 与 per-run projection 未分层；
+2. create restart correlation 与 update identity lease 不完整；
+3. crash/reconcile truth 未形成可枚举的 132-row oracle；
+4. Save hash manifest 与 1152/42244/42456 容量口径未闭合；
+5. accessibility node/choice、Settings、Input 与 MPSC ABI 仍有跨文档漂移；
+6. pause 动态 choice 与焦点/并发容量的互斥规则缺失；
+7. Boss 43200 tick 的 completed-before/executing/completed-after 语义不一致；
+8. registry、session state 与历史旧 ABI 未完成统一传播。
+
+本 verdict 仅记录独立审计结果；随后用户授权完成本文件上方“第八轮作者整改”中的跨文档传播。runtime/device/generated artifact 仍未验证，状态保持 `In Review / Re-review Pending`、`battle_ready=false`。
+
+---
+
+## Re-review — 第七次历史记录（2026-09-08）— Verdict: MAJOR REVISION NEEDED
+
+Scope signal: XL
+Depth: seventh fresh-context full re-review
+Specialists: persistence/engine/QA、UX/accessibility/audio + fresh independent creative-director synthesis
+Prior sixth-round blocker closure: 0 CLOSED / 7 PARTIAL
+Creative Director verdict: **MAJOR REVISION NEEDED**
+Root blocking groups: 7
+
+### 第七轮7组根 blocker
+
+1. 204-byte create result尚未形成完整合同：缺pre-durable source correlation、durable operation/recovery identity与allocator耗尽结果，callback loss后caller无法安全区分同一次create。
+2. durable receipt内的事实码与public delivery/reconcile码混用；GameRoot DISCARDED presence/reducer存在冲突、重复row与历史code残留。
+3. pre-active scratch RNG在UNCERTAIN后只写“reconcile”，未按selected formal OLD/NEW事实规定discard或commit scratch。
+4. AC-ZB04把0奖励的早败Defeat也纳入Victory/Defeat正随机收益率量词，导致分母/比较域不成立。
+5. 12条crash cut只冻结介质阶段，84条跨7种operation的profile/reservation/marker/resolution/receipt/tombstone expected truth不能唯一推导。
+6. 七个accessibility profile仍只是group maxima，不是逐node/逐state ABI；Settlement“全部明细”的分页source/command/focus边界不完整。
+7. MPSC64只写拓扑名，没有header/slot sequence/CAS publish/full/no-hole/shutdown producer retirement的可实现并发ABI。
+
+### 第七轮作者整改（用户于2026-09-08回复“继续”）
+
+| Blocker | 作者级修订 | 当前边界 |
+|---|---|---|
+| 1 | `ReservationCreateResultV3`固定204 bytes，完整回显source kind/command/press/request hash，返回durable operation/reservation/battle/preparation/request identity并封闭`ID_EXHAUSTED`；Save row/mailbox升级220/484 bytes | codec、allocator exhaustion与callback-loss runtime待证 |
+| 2 | `ReservationReceiptV1.result_code`固定durable `SUCCEEDED`；public result独立允许`SUCCEEDED/RECONCILE_FOUND`。GameRoot total reducer统一DISCARDED为matching非零receipt+tombstone并清除重复/历史code | generated reducer matrix与restart trace待证 |
+| 3 | 新增`ReservationUpdateReconcileProofV1`：selected next hash只返回FOUND并commit scratch，selected old hash且attempt absence proof完整只返回FOUND_OLD并discard scratch，UNPROVEN继续冻结 | 双槽/temp/writer与RNG runtime fault injection待证 |
+| 4 | AC-ZB04只对43200..108000 ticks的有随机奖励Victory/Defeat比较rate；早败Defeat仅验证quantity=0并明确排除rate cohort | 经济模拟与玩家样本待执行 |
+| 5 | 新增7-row `ReservationCrashOperationManifestV1`与12-row `ReservationCrashCutManifestV2`，以笛卡尔积唯一生成84条operation×cut expected truth | 84-row generated fixture、平台barrier与process-kill待执行 |
+| 6 | ADR区分7-row profile预算、94-row逐node合同与34-row逐state variant；Settings role/action、Input本地focus边界与Settlement typed 6-row detail pagination均有actual schema/AC | native adapter、TalkBack/VoiceOver、gamepad与UI automation待证 |
+| 7 | 冻结64-byte MPSC header、64×96-byte rows、6208-byte总长，单atomic producer gate及slot sequence/CAS/full不推进/no-hole/shutdown retirement协议 | 原子内存序、burst/overflow与detach真机trace待证 |
+
+### 当前状态
+
+**In Review / Re-review Pending**。本轮仅是第七次独立verdict后的作者静态整改，不构成第八次独立通过。作者合同已跨Save、GameRoot、RNG、SkillDraft、Zhangtian、Settlement、Input、Audio、Prep、Config、ADR、registry、technical preferences与systems index传播。静态复核通过：两份YAML parse、246个entity name唯一、`git diff --check`、25 HPM/5 RUP/13 RRD/7 RCO/12 RCC、7 profile/94 node/34 state rows及stable ID/order；byte arithmetic为204-byte create、220-byte mailbox row、484-byte mailbox、64-byte MPSC header、96-byte MPSC row、6208-byte MPSC total、76-byte page view与72-byte page command，current-contract stale ABI扫描为0。generated manifests、Hash256/codec/migration golden、Godot/GDUnit4、真实process-kill、Android/iOS accessibility/gamepad、性能、音频与经济/玩家证据均未执行；`battle_ready=false`。下一步必须在fresh context执行第八次full re-review。
+
+---
+
+## Re-review — 2026-09-07 — Verdict: MAJOR REVISION NEEDED
+
+Scope signal: XL
+Depth: sixth fresh-context full re-review
+Specialists: game/economy/systems、persistence/engine/QA、UX/accessibility/audio + fresh independent creative-director synthesis
+Prior fifth-round blocker closure: 3 CLOSED (static only) / 4 PARTIAL
+Creative Director verdict: **MAJOR REVISION NEEDED**
+Root blocking groups: 7
+
+### 第六轮7组根 blocker
+
+1. terminal reward/profile commit与reservation RESOLVE仍是两个Save事实；worker mailbox没有完整typed terminal payload，create前identity与result enum也未封闭，reducer/audio无法可靠区分CONSUMED与RELEASED。
+2. pre-active refresh先推进权威RNG而durable history只记成功；失败重试会分叉，且升级后恢复没有旧config artifact的保留上界与发布约束。
+3. Player Fantasy宣称Victory净库存优势，但现有证明只覆盖random gross grant rate，未计服丹成本、NONE、胜率、局长与999上限饱和。
+4. 六个action-bearing screen只有snapshot capacity，没有逐状态semantic node composition；Settings角色不够，CONTROLLED_FAULT presenter owner悬空。
+5. arbitrary native thread直接汇入SPSC与single producer矛盾；上游容量/arrival order/sequence owner未定义，mapped gamepad支持又与Input“raw gamepad无movement”措辞冲突。
+6. process-kill AC只引用抽象写入阶段，没有可枚举的实际cut-point manifest与逐operation expected old/new/uncertain/heal oracle。
+7. Save/Config/technical preferences/ADR/registry/systems-index残留V1/V2、HPM22/24、旧SPSC、resolution256、cancel与`NO_GRANT`等当前合同漂移。
+
+### 第六轮作者整改（用户于2026-09-07回复“继续”）
+
+| Blocker | 作者级修订 | 当前边界 |
+|---|---|---|
+| 1 | MVP terminal冻结为唯一`ReservationUpdateRequestV2(RESOLVE)+1112-byte ResolveReservationPayloadV3`同槽transaction；新增160-byte `TerminalRunResultV2`、完整typed mailbox、176-byte create correlation/result封闭枚举与terminal invariant validator | codec、writer、kill/reconcile runtime待证 |
+| 2 | RNG/SkillDraft冻结唯一`PreActiveRngWindowLeaseV1` scratch window：durable readback后才commit权威cursor，FAILED discard，UNCERTAIN reconcile；Config新增append-only旧artifact retention，32 artifacts/16 MiB上限，突破须migration | replay/hash/migration golden待生成 |
+| 3 | 产品承诺收窄为Victory random gross grant-rate优势；net flow独立覆盖服丹/NONE、胜率、局长与饱和，不再把gross证明写成净库存保证 | balance simulation与玩家验证待执行 |
+| 4 | ADR新增ASN01..07逐状态node profile与ADJUSTABLE/SWITCH/COMBOBOX角色；Settlement detail固定6-row分页，CONTROLLED_FAULT由persistent GameRoot presenter拥有 | native plugin、TalkBack/VoiceOver与真机trace待证 |
+| 5 | native入口冻结为MPSC64 arrival ticket→唯一serial sequence allocator→SPSC32；六行Meta UI keyboard/mapped-gamepad只产typed UI command，raw axis与movement carrier写入为0 | platform concurrency/gamepad exported-build证据待证 |
+| 6 | 新增12-stage×7-operation=`84`行`ReservationCrashCutManifestV1`，覆盖old/new/uncertain/heal，process-kill AC只接受实际展开fixture | crash harness与平台barrier证据待执行 |
+| 7 | 当前合同统一到V3 terminal、264-byte resolution、25-row HPM、396-byte typed Save mailbox、七node profile、六行Meta UI Input、封闭terminal/result enum；清除current `NO_GRANT`与cancel漂移 | generated canonical artifacts仍OPEN |
+
+### 当前状态
+
+**In Review / Re-review Pending**。本轮仅是第六次独立verdict后的作者静态整改，不构成第七次独立通过。静态复核通过：两份YAML parse、243个entity name唯一、`git diff --check`、25-row hash preimage、5-row reservation payload、13-row reconcile、12-row crash stage与7个node profile；byte arithmetic复算为176-byte create request、144-byte create result、136-byte update result、160-byte terminal result、1112-byte RESOLVE payload、176-byte mailbox row与396-byte mailbox。generated manifests、Hash256/codec/migration golden、Godot/GDUnit4、真实process-kill、Android/iOS accessibility/gamepad、性能、音频与经济/玩家证据均未执行；`battle_ready=false`。下一步必须在fresh context执行第七次full re-review。
+
+---
+
+## Re-review — 2026-09-07 — Verdict: MAJOR REVISION NEEDED
+
+Scope signal: XL
+Depth: fifth fresh-context full re-review
+Specialists: systems/persistence、UX/UI/QA/accessibility + fresh independent creative-director synthesis
+Prior fourth-round blocker closure: 0 CLOSED / 6 PARTIAL
+Creative Director verdict: **MAJOR REVISION NEEDED**
+Root blocking groups: 7
+
+### 第五轮7组根 blocker
+
+1. pre-active cancel/offer PONR仍非total：guard enum缺值，玩家cancel在首份snapshot前不可达，LFD25却可能在offer已经可见后release。
+2. 跨进程replay仍混入process-local generation，且`candidate_id`没有确定性生成规则。
+3. Save result V1/V2口径冲突；initial reservation没有receipt result，terminal resolution要求Save写入时另分配receipt而形成循环，reservation NOT_FOUND会永久锁死。
+4. hash manifest未覆盖128-byte direct-NONE、120-byte receipt与无障碍snapshot前像。
+5. Config同时宣称56/72/5与54/70/3，canonical count不唯一。
+6. held room与lifetime room相等时`cap_disposition`没有total结果。
+7. 六个无障碍screen没有固定row capacity；NATIVE_ANY多producer与SPSC冲突，i32 index会wrap，gamepad支持声明互相矛盾。
+
+### 第五轮作者整改（用户于2026-09-07回复“授权”）
+
+| Blocker | 作者级修订 | 当前边界 |
+|---|---|---|
+| 1 | 删除玩家pre-durable cancel event/guard/action；readback前interactive snapshot/action=0；LFD25只接受明确`NOT_STARTED_CLEAR`，write possible/durable/visible统一LFD26 | kill/fault runtime matrix待证 |
+| 2 | `pre_active_semantic_generation=1`与runtime generation分离；candidate ID固定由offer revision与slot checked计算 | deterministic replay golden待生成 |
+| 3 | 统一V2 result；新增120-byte `ReservationReceiptV1`与`ReservationCreateResultV2`，receipt ID=request ID；13-row reconcile新增严格`PROVEN_ABSENT`安全清理 | 双槽/temp/平台writer crash harness待证 |
+| 4 | Save HPM扩为24行，补direct-NONE与receipt；ADR新增独立6-row `AccessibilityHashPreimageManifestV1` | cross-platform Hash256 golden待生成 |
+| 5 | canonical current counts统一为54 guard / 72 action / 5 app-render | generated Config artifact待生成 |
+| 6 | 新增`PARTIAL_BOTH=6`并冻结total precedence | economy boundary simulation待证 |
+| 7 | 六屏capacity固定16/16/12/24/24/12；mailbox改2476-byte i64 sequence与单一serial producer；mapped gamepad focus/activation正式支持 | Android/iOS、gamepad与真机trace待证 |
+
+### 当前状态
+
+**In Review / Re-review Pending**。本轮是第五次独立verdict后的作者整改，不构成第六次独立通过。静态检查通过：两份YAML parse、237个entity name唯一、`git diff --check`、54-row guard、72-row action、5-row app render、24-row hash preimage、5-row reservation payload、13-row reconcile；算术复算为120-byte receipt、248-byte accessibility row、76-byte action、2476-byte mailbox，以及六屏snapshot 4076/4076/3084/6060/6060/3084 bytes与对应hash offset。generated artifacts、Hash256/codec/migration golden、Godot/GDUnit4、kill/crash、真机无障碍、gamepad、性能、音频和经济/体验测试仍未执行。`battle_ready=false`；下一步必须在fresh context执行第六次full re-review。
+
 ---
 
 ## Re-review — 2026-09-07 — Verdict: MAJOR REVISION NEEDED

@@ -1,9 +1,9 @@
 # RNG System（随机种子与序列）
 
-> **Status**: Re-review Pending — RNG core与第五轮diagnostic sidecar契约维持冻结；第六轮无新增RNG blocker，随中央契约待第七轮复审
+> **Status**: Re-review Pending — RNG core维持冻结；已同步第七轮OLD/NEW scratch reconcile，随中央契约待第八轮复审
 > **Author**: 用户 + Codex
 > **Created**: 2026-08-24
-> **Last Updated**: 2026-09-04（Zhangtian durable config identity传播；runtime evidence仍OPEN）
+> **Last Updated**: 2026-09-08（Zhangtian pre-active scratch OLD/NEW reconcile传播；runtime evidence仍OPEN）
 > **Implements Pillar**: 稳定性硬约束（确定性/可复现是其根基）+ 肉鸽选择（随机性是重玩价值来源，但必须可控可复现）
 > **Scope**: MVP — 单线程主 physics tick 内的确定性随机；不含赌场式反作弊、网络同步随机或跨线程并发
 > **Review Mode**: full（首轮 design-review 6 specialist 对抗评审 + creative-director 终审，修订闭合 10 项 A 级 blocker；复审同 6 specialist + creative-director 终审，修订闭合 4 项新 BLOCKING；三审同 6 specialist + creative-director 终审，修订闭合 4 项新 BLOCKING；四审同 6 specialist + creative-director 终审，修订闭合 6 项新 BLOCKING + 3 项 RECOMMENDED；五审同 6 specialist + creative-director 终审，修订闭合 5 项新 BLOCKING（BL-1..BL-5）+ 22 项 RECOMMENDED；六审同 6 specialist + creative-director 终审，修订闭合 5 项新 BLOCKING（BL-6 减法溢出 / BL-7 COW-on-write / BL-8 AC-E1c 矛盾 / BL-9 set_state re-seed / BL-10 R8→R9）+ 若干同区域 RECOMMENDED；七审（re-review 6）同 6 specialist + creative-director 终审，发现 1 项 BLOCKING（BL-七-1 fault_reason testability 悬空）+ 16 项 RECOMMENDED（P0-P6），修订闭环转 Approved）
@@ -60,7 +60,7 @@ RNG System 是单场战斗中唯一的权威随机源。它从 Config 战斗快�
 
 ### R4 — 零分配
 
-- 所有生成器在 BATTLE_LOADING 预实例化（每流一个 `RandomNumberGenerator`），复用到 BATTLE_ENDING；physics tick 内禁止 `RandomNumberGenerator.new()`。
+- 所有权威生成器在 BATTLE_LOADING 预实例化（每流一个 `RandomNumberGenerator`），另为`SKILL_DRAFT`预实例化唯一scratch generator供pre-active window使用，复用到 BATTLE_ENDING；physics tick与window begin/roll/commit/discard内禁止 `RandomNumberGenerator.new()`。
 - roll 方法返回 primitive（int）；`roll_weighted_pick` 返回 index（消费方拥有 weights 数组，RNG 不分配新数组）；累积写入 RNG 持有的该流预分配 PackedInt64Array scratch buffer（F4，BL-I）。禁止 boxing、Dictionary、运行时 StringName、`Array` 与 `Packed*Array`（含 `range()` 返回的 PackedInt32Array、F4 scratch 的 `PackedInt64Array`）构造出现在 roll 路径——消费方与 RNG 内部累积循环均须用 `var i:=0; while i<count` 原位迭代（对齐 spatial-grid AC-J3）；PackedInt64Array scratch 的 element-write 须直接通过 `self.scratch_buffer[i]`，禁局部别名（含函数参数传递路径，如 `helper(self.scratch_buffer)` 内部写入——参数绑定亦使 refcount→2 触发 COW 堆分配，违 R4，见 F4——COW-on-write 触发为 Godot 4.7.1 行为断言待核验 defer rng-math.md/OQ3/GATE-G4，BL-7/GS-4）。**零分配覆盖边界（BL-1，待核验 defer OQ3/rng-math.md）**：上述禁列与 AC-B1 positive control 仅覆盖 **GDScript 侧**构造（boxing/Array/Packed*/Dictionary/StringName）；`gen.randi_range()`/`randf()`/`randi()` 等 Godot **native method 内部**是否分配未经源码核验（positive control 只证能抓 GDScript 侧分配，**不证能抓 C++ 侧 native-method 内部分配**）——若 native method 内部分配，R4 零分配静默崩塌且无 AC 报警（违 fail-fast pillar）。零分配源码核验进 OQ3/rng-math.md scope。另禁原生 String 构造（`str()`/`%`/`+`/`String.num_*` 等 native method 返回 String 的路径）出现在 roll 路径。
 - 流句柄 `stream_id` 是 primitive enum，非引用对象——消费方不持生成器实例引用，避免 RefCounted 泄漏。对齐 object-pooling R3（分配源清单）+ game-root AC-F2 零增长。
 
@@ -74,6 +74,7 @@ RNG System 是单场战斗中唯一的权威随机源。它从 Config 战斗快�
 - `get_stream_state(stream_id) -> int`：取流内部 state（PCG 原始 uint64，R7；往返性见 AC-H1，跨实例可移植性见 AC-H1b）。
 - `set_stream_state(stream_id, state)`：存流内部 state（R7；仅 READY 态可调，FAULTED 下→R8 fault，R7 前置）。
 - `get_fault_reason(stream_id) -> FaultReason`：返回该流 first-failure 的 fault 类型（BL-七-1，闭合 R6"fault_reason 不变"声明 testability——AC-E1c 通过此 API 观测 fault_reason 不被后续 fault 覆盖；服务承诺②"故障诚实暴露"+ game-root R9 差异化 messaging）。`FaultReason` 为 enum，值集对应 R8 fault 触发条件分类（具体命名归实现，契约：不同触发条件→不同值，first-failure-wins 不可变见 R6/AC-E1c）；流未 FAULTED 时返回 `NONE`。
+- pre-active专用window API固定为`begin_pre_active_window(stream_id=SKILL_DRAFT,expected_state,window_id)->int`、既有`roll_*`在window open期间只路由到预分配scratch、`get_pre_active_window_state(window_id)->int`、`commit_pre_active_window(window_id,expected_next_state)->int`与`discard_pre_active_window(window_id)->int`。同一时刻最多1个window；begin先逐位复制权威state到scratch且不改权威cursor，只有matching recovery已由Save双镜像readback后才允许commit一次将scratch state发布为权威。FAILED必须discard后返回且旧state逐位不变；UNCERTAIN保持window冻结并禁止新roll，直到Save的typed update reconcile把selected formal reservation hash与expected old/requested next逐位比较：`RECONCILE_FOUND`且hash=next才commit，`RECONCILE_FOUND_OLD`且hash=old才discard并继续同一reservation，`RECONCILE_NOT_FOUND_UNPROVEN`继续冻结。全reservation `PROVEN_ABSENT`不用于既有reservation上的UPDATE_RECOVERY。wrong stream/ID/state、并发window、重复或顺序错误均R8 fault；normal Active不得调用该API。
 - 不提供 `roll_gaussian` 与 `roll_shuffle_in_place`（MVP 无消费方；前者无高斯消费方，后者因 Godot 4 `Array`/`Packed*` 的 COW 语义使 Fisher-Yates 原地写触发 `_copy_on_write()` 堆分配、无法满足 R4 零分配——待下游消费方出现时由 ADR 定义零分配洗牌方案，如 RNG 持预分配 index buffer 返回 index 序列或 PackedArray `ptr()` 写路径）。新增任一 API 须经 AC 批准。
 - 不暴露原始 `RandomNumberGenerator` 实例；消费方只通过上述 API + `stream_id` 消费。
 
@@ -210,7 +211,7 @@ RNG System 是单场战斗中唯一的权威随机源。它从 Config 战斗快�
 | Dependent | 使用的 RNG 服务 | 当前状态 |
 |---|---|---|
 | SpawnDirector(#10) | SPAWN 流：怪潮数量/波次/精英生成时机 roll | 未设计 |
-| SkillDraftSystem(#15) | SKILL_DRAFT 流：每页3次无放回权重抽取+2次display permutation=5 calls；免费刷新共享同流；Dayan L5令单session最多4页/20 calls，否则3页/15；候选scratch上界12 | Designed / Full Review Pending；Progression传播待复审 |
+| SkillDraftSystem(#15) | SKILL_DRAFT 流：每页3次无放回权重抽取+2次display permutation=5 calls；免费刷新共享同流；Dayan L5令单session最多4页/20 calls，否则3页/15；候选scratch上界12。pre-active base/refresh必须通过R5唯一scratch window，durable recovery双镜像成功后commit，FAILED discard，UNCERTAIN reconcile；普通Active沿用权威流且fault不重摇 | In Review / Re-review Pending；window runtime/golden待证 |
 | Zhangtian Bottle(#22) | ZHANGTIAN_HERB 流：BATTLE_LOADING preflight后以预分配`PackedInt32Array([1,1,1])`调用`roll_weighted_pick`，max len=3，先查fault再读index，成功call delta恰1；canonical index `0/1/2→NINGQI_GRASS/TIELING_FLOWER/LEIYUAN_FRUIT`，132-byte候选（含durable config content revision+hash）写入360-byte `RunStartRecoveryV1`并经独立durable injection point后才继续；跨进程只在content key相等时rebind；VICTORY仅合法ticks43200..108000 expose数量3，DEFEAT仅`survival_ticks>=43,200`时expose数量1 | Zhangtian In Review / Re-review Pending；runtime replay OPEN |
 | DamageSystem(#11，隐式) | CRIT 流：暴击判定 roll（5%，见 MVP 136） | 未设计 |
 | DropSystem(#16，隐式) | DROP 流：掉落权重 roll（DropConfig，定点 int 权重） | 未设计 |

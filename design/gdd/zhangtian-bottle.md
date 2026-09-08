@@ -2,7 +2,7 @@
 
 > **Status**: In Review / Re-review Pending
 > **Author**: 用户 + Codex（lean authoring；consulted systems-designer / economy-designer / qa-lead / UX reviewer）
-> **Created / Last Updated**: 2026-09-07 — 第四次独立full review 6组blocker授权整改
+> **Created / Last Updated**: 2026-09-08 — 第七次fresh-context full review仍为MAJOR REVISION NEEDED；用户“继续”后完成第七轮作者静态整改，待第八次独立复审
 > **Implements Pillar**: 根据已有储备做一次明确的战前取舍；局外选择影响下一局但不替代构筑与走位
 > **Scope**: MVP三种灵药种子、即时催熟、每局至多一种丹药、开局reservation、下一局只读投影与结算种子入账；不含真实时间等待、种植田、炼丹配方、品质、失败率或商业化
 
@@ -14,7 +14,7 @@ Zhangtian Bottle 是灵药种子库存、催熟选择、丹药效果语义与开
 
 ## 2. Player Fantasy
 
-玩家在出发前像韩立一样审视已经拥有的储备，为这一局做一次明确取舍：想更快成型就服聚气丹，担心容错就选锻体丹，追求爆发则选明心丹。种子的取得顺序可以随机，但是否消耗、消耗哪一种始终由玩家决定；选择明确、立刻生效、不强迫等待，也允许“这局先不用”。MVP把它定位为胜利偏置、可积累的随机储备：首次正常结算提供三类starter reserve，后续胜利是主要净增来源；Victory合法Active tick域为43,200..108,000，其余outcome为0..108,000，排除一次性starter后，任何有随机奖励的Defeat路线都不能形成高于Victory的seed/Active-minute路线。
+玩家在出发前像韩立一样审视已经拥有的储备，为这一局做一次明确取舍：想更快成型就服聚气丹，担心容错就选锻体丹，追求爆发则选明心丹。种子的取得顺序可以随机，但是否消耗、消耗哪一种始终由玩家决定；选择明确、立刻生效、不强迫等待，也允许“这局先不用”。MVP把它定位为胜利偏置、可积累的随机储备：首次正常结算提供三类starter reserve；排除一次性starter后，Victory的**随机gross grant/Active-minute**严格高于任一有随机奖励的Defeat路线。该承诺不等同于逐局净库存优势：是否服丹、胜率与局长会改变net flow，净库存斜率仅由预注册经济模拟与玩家试玩判定，不再宣称“任意Victory路线净增必高于Defeat”。
 
 催熟不是冗长制作小游戏。选卡只改变预览，确认后一次短促封签反馈表示资源已安全记录；未确认、失败或结果不明时绝不假装种子已消耗。首次正常结算获得三类种子各一枚，使新手即使首局失败也能体验三种准备方向；赠礼不会自动替玩家选择或连续服用。
 
@@ -98,7 +98,7 @@ canonical little-endian/no-padding固定132 bytes；`rng_call_end=rng_call_begin
 
 候选不得回写已冻结的`RunStartRequestV2`。同一live-process handoff retry额外public call=0；若进程在candidate durable前终止，重启只能从durable run seed与matching config content key初始化独占流、在其他流消费前执行一次deterministic reconstruction并立即持久化candidate checkpoint，逻辑call ordinal仍为0。`VICTORY`只接受`survival_ticks in [VICTORY_MIN_TICKS=43,200,MAX_ACTIVE_TICKS=108,000]`并按candidate发3枚；`DEFEAT`接受`0..108,000`，仅在`survival_ticks>=DEFEAT_SEED_ELIGIBLE_TICKS=43,200`时发1枚；`ABANDONED/TECHNICAL_ABORT`接受`0..108,000`且随机grant=0。域外Outcome整包拒绝，不以奖励0掩盖非法输入。
 
-该规则为`PROVISIONAL-ECONOMY-V5`。速率验收只比较可重复gross随机奖励cohort，明确排除首次starter与本局是否服丹；不用除法作为判定oracle，而对任意合法`T_v,T_d`验证`3*T_d > 1*T_v`。最坏边界为`3*43,200=129,600 > 108,000=1*108,000`，等价于最慢Victory 0.10 seed/Active-minute严格高于最快eligible Defeat 1/12。净库存流量、服丹率与胜率另由经济试玩判定。Settlement/UI重建、Save重试或重启只读durable candidate与sealed资格。
+该规则为`PROVISIONAL-ECONOMY-V6`。速率验收只比较可重复gross随机奖励cohort，明确排除首次starter与本局是否服丹；不用除法作为判定oracle，而对任意合法`T_v,T_d`验证`3*T_d > 1*T_v`。最坏边界为`3*43,200=129,600 > 108,000=1*108,000`，等价于最慢Victory 0.10 gross seed/Active-minute严格高于最快eligible Defeat 1/12。net flow另按`gross grant - matching consumed seed`逐局计算，并必须覆盖Victory/Defeat×服丹/NONE×局长×胜率×held saturation；未冻结目标阈值前只报告分布与10/20局库存斜率，不得把gross证明改称净库存优势。Settlement/UI重建、Save重试或重启只读durable candidate与sealed资格。
 
 首次正常 `VICTORY|DEFEAT` 且starter claim=0时，同一Settlement mutation向三种种子各加1并把claim置1；首次Victory因此通常请求6枚，首次Boss线Defeat请求4枚，较早Defeat请求3枚，均按held room逐类saturation。CORE_HERB是Boss胜利证明/独立reward item，不自动转换成三种种子，也不进入可服丹库存。
 
@@ -124,7 +124,7 @@ ZhangtianPreparationSliceV1={schema_version:i32=1,
 
 选卡/切换/返回只改UI draft，产生0 profile write、0 reservation、0成功音。库存0的卡仍显示效果但不可选；“不服丹”始终可选。
 
-唯一开局业务命令类型是Prep GDD的`PrepConfirmCommandV1`，不携带`preparation_id`；来源封闭为`PREP`与仅在未解锁/available全0合法的`HOME_DIRECT_NONE|SETTLEMENT_DIRECT_NONE`，两个direct来源必须分别匹配fresh HOME或resolved SETTLEMENT generation。GameRoot验证fresh surface/press/bundle后取得run-seed candidate；Save在reservation transaction分配battle/reservation identity，并调用Zhangtian持久allocator构造唯一内部请求：
+唯一开局业务命令类型是Prep GDD的`PrepConfirmCommandV1`，不携带`preparation_id`；来源封闭为`PREP`与仅在未解锁/available全0合法的`HOME_DIRECT_NONE|SETTLEMENT_DIRECT_NONE`，两个direct来源必须分别匹配fresh HOME或resolved SETTLEMENT generation。GameRoot验证fresh surface/press/bundle后取得run-seed candidate并构造Save签发的固定176-byte `ReservationCreateRequestV2`；它只携带source correlation、attempt=1、run seed、expected revisions/content key、selection与bundle hash，不携带尚未分配的operation/request/battle/preparation identity。Save用`{source_kind,source_command_id,source_press_id,request_hash}`做pre-durable duplicate/reconcile key，在同一reservation transaction分配operation/request/battle/reservation identity，再调用Zhangtian持久allocator构造唯一内部请求：
 
 ```text
 PrepareRunRequestV1={
@@ -138,16 +138,18 @@ PrepareRunRequestV1={
 }
 ```
 
+`PrepareRunRequestV1`只允许由Save transaction内部在全部identity分配成功后构造；它不是外部create ABI。callback丢失时caller只能重发逐位相同的`ReservationCreateRequestV2`，不得猜测request ID或重建第二个`PrepareRunRequestV1`。
+
 correlation固定为`page_generation→press_id→command_id→preparation_id→battle_instance_id=reservation_id`。UI提供的pill/effect仅用于correlation，Zhangtian从matching Config重算映射。确认前必须满足GameRoot在PREP、Save READY、无unresolved outcome/archive/profile mutation/reservation、writer可接纳、revision/hash matching；任何guard失败为0 preparation/battle identity reserve、0 write。
 
 ### 3.5 Durable reservation
 
 每次确认都由Save持久`next_identity`在同一reservation transaction内分配非零`battle_instance_id`，并令`reservation_id=battle_instance_id`；run seed只允许PREP release路径的OS entropy producer生成，dev build可用显式forced seed，玩家seed/每日seed不属于MVP。Zhangtian同时分配`preparation_id`。选择种子时构造`available−1,reserved+1` after-image；NONE count逐位不变，但domain/profile revision、两个allocator与typed `NO_PILL` reservation仍推进。任一validate/checked-add失败时所有allocator、seed与domain bytes保持原值；一旦首份可能durable，只能以同identity reconcile。
 
-Save将`DurableReservationV1`、preparation identity、base/next domain hash和after-image放入同一双槽transaction。只有matching `RESERVED` durable success/readback后，GameRoot才冻结`RunStartRequestV2`并进入Loading；PONR前可证明未写入才FAILED，PONR后未知只能UNCERTAIN。
+Save将`DurableReservationV2`、64-byte create correlation、preparation identity、base/next domain hash和after-image放入同一双槽transaction。只有matching `RESERVED` durable success/readback后，GameRoot才冻结`RunStartRequestV2`并进入Loading；PONR前可证明未写入才FAILED，PONR后未知只能UNCERTAIN。
 
 ```text
-ZhangtianReservationPayloadV1={
+ZhangtianReservationPayloadV2={
   schema_version:i32=1,reservation_id:i64,preparation_id:i64,
   battle_instance_id:i64,run_seed:i64,
   expected_profile_revision:i64,reserved_profile_revision:i64,
@@ -156,21 +158,25 @@ ZhangtianReservationPayloadV1={
   base_domain_revision:i64,reserved_domain_revision:i64,
   base_domain_hash:Hash256,reserved_domain_hash:Hash256,
   run_start_recovery:RunStartRecoveryV1,
-  battle_projection:ZhangtianBattleProjectionV1,request_hash:Hash256
+  battle_projection:ZhangtianBattleProjectionV1,
+  create_correlation:ReservationCreateCorrelationV1,
+  prepare_request_hash:Hash256
 }
 ```
 
-`ZhangtianReservationPayloadV1` canonical little-endian/no-padding固定660 bytes：156-byte fixed fields before recovery + 360-byte recovery + 112-byte projection + 32-byte repeated request hash。该`request_hash`必须逐位等于matching `PrepareRunRequestV1.request_hash`，它是foreign repeated hash而非payload self-hash。
+`ZhangtianReservationPayloadV2` canonical little-endian/no-padding固定724 bytes：156-byte fixed fields before recovery + 360-byte recovery + 112-byte projection + 64-byte create correlation + 32-byte internal prepare request hash。create correlation逐位绑定外部`ReservationCreateRequestV2`；internal hash必须逐位等于matching `PrepareRunRequestV1.request_hash`，二者均为foreign repeated hash而非payload self-hash。
 
-canonical `RunStartRecoveryV1`固定360 bytes、little-endian、no-padding：`{schema_version:i32,reservation_id:i64,battle_instance_id:i64,run_seed:i64,preparation_id:i64,selected_seed_id:i32,selected_pill_id:i32,source_profile_revision:i64,source_domain_revision:i64,config_content_revision:i64,config_content_hash:Hash256,zhangtian_content_revision:i64,projection_hash:Hash256,prep_commit_operation_id:i64,handoff_checkpoint:i32,candidate_present:i32,candidate_seed_id:i32,rng_call_begin:i64,rng_call_end:i64,pre_active_choice_state:i32,pre_active_choice_request_id:i64,pre_active_offer_hash:Hash256,pre_active_choice_command_id:i64,pre_active_loadout_hash:Hash256,pre_active_skill_draft_rng_cursor:i64,next_level_request_sequence:i64,pre_active_offer_revision:i64,pre_active_refreshes_used:i32,pre_active_free_refreshes_remaining:i32,pre_active_selected_candidate_id:i64,pre_active_session_generation:i64,pre_active_draft_ordinal:i32,pre_active_required_rule_bits:i32,pre_active_reinforcement_miss_streak:i32,pre_active_committed_loadout_revision:i64,recovery_hash:Hash256}`。`PreActiveChoiceStateV1={NOT_STARTED=0,OFFER_DURABLE=1,CHOICE_DURABLE=2,SKIPPED=3}`；`prep_commit_operation_id`必须逐位等于wrapper `recovery_operation_id`，其余wrapper重复字段也必须相等，否则首字节写入前`CONFLICT`。
+canonical `RunStartRecoveryV1`固定360 bytes、little-endian、no-padding：`{schema_version:i32,reservation_id:i64,battle_instance_id:i64,run_seed:i64,preparation_id:i64,selected_seed_id:i32,selected_pill_id:i32,source_profile_revision:i64,source_domain_revision:i64,config_content_revision:i64,config_content_hash:Hash256,zhangtian_content_revision:i64,projection_hash:Hash256,prep_commit_operation_id:i64,handoff_checkpoint:i32,candidate_present:i32,candidate_seed_id:i32,rng_call_begin:i64,rng_call_end:i64,pre_active_choice_state:i32,pre_active_choice_request_id:i64,pre_active_offer_hash:Hash256,pre_active_choice_command_id:i64,pre_active_loadout_hash:Hash256,pre_active_skill_draft_rng_cursor:i64,next_level_request_sequence:i64,pre_active_offer_revision:i64,pre_active_refreshes_used:i32,pre_active_free_refreshes_remaining:i32,pre_active_selected_candidate_id:i64,pre_active_semantic_generation:i64,pre_active_draft_ordinal:i32,pre_active_required_rule_bits:i32,pre_active_reinforcement_miss_streak:i32,pre_active_committed_loadout_revision:i64,recovery_hash:Hash256}`。`pre_active_semantic_generation=1`是本局唯一pre-active持久语义代次，与runtime session/bank/generation无关。`PreActiveChoiceStateV1={NOT_STARTED=0,OFFER_DURABLE=1,CHOICE_DURABLE=2,SKIPPED=3}`；`prep_commit_operation_id`必须逐位等于wrapper `recovery_operation_id`，其余wrapper重复字段也必须相等，否则首字节写入前`CONFLICT`。
 
-该carrier不依赖hash反推出选择，恢复协议固定为：`PRE_ACTIVE_CHOICE`是本局`SKILL_DRAFT`流的首个consumer；从durable run seed、matching `{config_content_revision,config_content_hash}`和canonical initial loadout（青元L1，其余空）初始化流。`pre_active_offer_hash`只能是SkillDraft签发的252-byte `PreActiveOfferSemanticV1.semantic_hash`，`pre_active_loadout_hash`只能是296-byte `PreActiveLoadoutSemanticV1.semantic_hash`；两者明确排除process-local snapshot/bank/generation/presentation identity。新进程先逐位验证semantic bytes/hash，再把当前process-local identity绑定到新的runtime carrier，旧local ID不进入持久比较。按`pre_active_offer_revision`与`pre_active_refreshes_used`重放base页及已durable refresh，验证每版最终cursor、semantic offer hash、remaining refresh、guarantee bits、draft ordinal与streak。`OFFER_DURABLE`恢复同一candidate semantic rows；`CHOICE_DURABLE`必须在重建offer中找到`pre_active_selected_candidate_id`，以原`pre_active_choice_command_id`应用一次并逐位验证committed semantic loadout revision/hash；`SKIPPED`只允许非聚气。任一输入、replay结果或hash不等均fail closed，不重抽、不默认首卡、不发布Active；exact config artifact不可得或hash不等时保持同reservation为`UPDATE_REQUIRED`且新局关闭，待原artifact恢复后继续，不通过release制造fresh seed。Active marker后的无Outcome强杀仍按orphan CONSUME。
+该carrier不依赖hash反推出选择，恢复协议固定为：`PRE_ACTIVE_CHOICE`是本局`SKILL_DRAFT`流的首个consumer；从durable run seed、matching `{config_content_revision,config_content_hash}`和canonical initial loadout（青元L1，其余空）初始化流。`pre_active_offer_hash`只能是SkillDraft签发的252-byte `PreActiveOfferSemanticV1.semantic_hash`，`pre_active_loadout_hash`只能是296-byte `PreActiveLoadoutSemanticV1.semantic_hash`；两者明确排除process-local snapshot/bank/generation/presentation identity。新进程先逐位验证semantic bytes/hash，再把当前process-local identity绑定到新的runtime carrier，旧local ID不进入持久比较。按`pre_active_offer_revision`与`pre_active_refreshes_used`重放base页及已durable refresh，验证每版最终cursor、semantic offer hash、remaining refresh、guarantee bits、draft ordinal与streak。每次base/refresh draw都使用SkillDraft的`PreActiveRngWindowLeaseV1`：从当前durable cursor复制到预分配scratch，精确试算`2n-1` rolls；只有包含next cursor与semantic offer的同reservation update双镜像readback成功后，才一次发布runtime cursor/offer/revision并扣refresh。FAILED时scratch丢弃且权威cursor/charge/revision逐位不变；UNCERTAIN冻结输入并用Save typed update proof核对selected formal reservation hash：`RECONCILE_FOUND+next hash`才采用durable next cursor，`RECONCILE_FOUND_OLD+old hash`丢弃scratch并保持old cursor，UNPROVEN继续冻结。既有reservation update不得用全reservation PROVEN_ABSENT猜OLD。不存在“RNG已消费但refresh未记录”的可重试状态。`OFFER_DURABLE`恢复同一candidate semantic rows；`CHOICE_DURABLE`必须在重建offer中找到`pre_active_selected_candidate_id`，以原`pre_active_choice_command_id`应用一次并逐位验证committed semantic loadout revision/hash；`SKIPPED`只允许非聚气。任一输入、replay结果或hash不等均fail closed，不重抽、不默认首卡、不发布Active。exact config artifact由Config的append-only `ConfigArtifactRetentionManifestV1`保证；缺失/hash不等仍保持同reservation为`UPDATE_REQUIRED`且新局关闭，不通过release制造fresh seed，并阻止该release build签发。Active marker后的无Outcome强杀仍按orphan CONSUME。
 
-`PrepCommitCheckpointV1`唯一枚举为`RESERVATION_DURABLE=1,RUN_START_FROZEN=2,PREP_TOUCH_RETIRED=3,LOADING_COMMITTED=4,SEED_CANDIDATE_DURABLE=5,PRE_ACTIVE_CHOICE_DURABLE_OR_SKIPPED=6,ACTIVE_ENTRY_DURABLE=7`。不存在memory-only checkpoint或第二份journal真相；首次reservation transaction原子写入domain after-image、完整base recovery与`DurableReservationV1.prep_commit_journal` checkpoint1并readback。`SaveStorePayloadV1`不再另存顶层journal；所有后续journal/recovery更新都是同一reservation的单调slot transaction。durable后任一失败优先继续同一handoff；只有canonical failure disposition允许先durable RELEASE再返回fresh Prep。
+`PrepCommitCheckpointV1`唯一枚举为`RESERVATION_DURABLE=1,RUN_START_FROZEN=2,PREP_TOUCH_RETIRED=3,LOADING_COMMITTED=4,SEED_CANDIDATE_DURABLE=5,PRE_ACTIVE_CHOICE_DURABLE_OR_SKIPPED=6,ACTIVE_ENTRY_DURABLE=7`。不存在memory-only checkpoint或第二份journal真相；首次reservation transaction原子写入domain after-image、完整base recovery与`DurableReservationV2.prep_commit_journal` checkpoint1并readback。`SaveStorePayloadV1`不再另存顶层journal；所有后续journal/recovery更新都是同一reservation的单调slot transaction。durable后任一失败优先继续同一handoff；只有canonical failure disposition允许先durable RELEASE再返回fresh Prep。
 
-首次合法Active开放前，Save必须durable写入matching `ActiveEntryFactV1`；该事实存在而无sealed Outcome的跨进程恢复按CONSUME，防止强杀返丹。正常`VICTORY/DEFEAT/ABANDONED`均处理matching reservation为CONSUME：若有种子则`reserved−1,consumed+1`，NONE则count不变；奖励commit或discard不能撤销该成本。ABANDONED采用同一transaction中的“零奖励tombstone + mandatory consume after-image”，不是“profile逐位不变”。retryable load abort在Active前RELEASE；明确sealed `TECHNICAL_COMPENSATION`执行RELEASE。duplicate为OK_NOOP，同ID异payload为CONFLICT；UNCERTAIN冻结换药、返回、购买和新局，只允许同operation reconcile。
+首次合法Active开放前，Save必须durable写入matching `ActiveEntryFactV1`；该事实存在而无sealed Outcome的跨进程恢复按CONSUME，防止强杀返丹。正常`VICTORY/DEFEAT/ABANDONED`均通过唯一`ReservationUpdateRequestV2(RESOLVE)+ResolveReservationPayloadV3`处理matching reservation为CONSUME：若有种子则`reserved−1,consumed+1`，NONE则count不变；同一slot transaction同时写奖励或tombstone、完整next profile、264-byte resolution、清live marker并返回160-byte `TerminalRunResultV2`，不得另发Save commit。ABANDONED采用同一transaction中的“零奖励tombstone + mandatory consume after-image”，不是“profile逐位不变”。retryable load abort在Active前RELEASE；明确sealed `TECHNICAL_COMPENSATION`执行RELEASE。result的terminal disposition必须逐位区分CONSUMED/RELEASED；duplicate为OK_NOOP，同ID异payload为CONFLICT；UNCERTAIN冻结换药、返回、购买和新局，只允许同operation reconcile。
 
 ### 3.6 Battle projection 与生效
+
+第八轮 hash/ABI 优先级覆盖：本节及其相邻历史段中的 `ZhangtianReservationPayloadV1`、六行 Meta UI 与旧 84-row fixture 均为迁移审计；当前实现输入必须使用 `ZhangtianReservationPayloadV2`、八行 Meta UI 与 132-row（11×12）crash fixture。
 
 ```text
 ZhangtianBattleProjectionV1={
@@ -185,11 +191,13 @@ ZhangtianBattleProjectionV1={
 
 合法取值只有NONE=`0/0/0/0`、聚气丹=`14/1/0/0`、锻体丹=`0/0/0.15/0`、明心丹=`0/0/0/0.08`。Zhangtian在reserve时按matching静态`HerbConfigV1`构建run-specific projection并随reservation durable。Config的静态content hash只覆盖`HerbConfigV1`和projection schema/rules，不包含每玩家/每局动态值；Loading显式接收durable projection与receipt，逐字段验证identity/revisions/hash后复制进battle snapshot。Player、Damage、Leveling、SkillDraft只读matching projection。
 
-所有Hash256沿Save codec ADR的`SHA256_V1`与canonical little-endian codec；禁止Godot `hash()`。实际权威是Save GDD签发的22-row `HashPreimageManifestV1`：逐行冻结精确NUL结尾tag、SELF/EXTERNAL mode、exact length或`164+P`公式、zero offset/length、nested策略与owner，且已包含252-byte `PreActiveOfferSemanticV1`、296-byte `PreActiveLoadoutSemanticV1`、`ReservationUpdateRequestV2`五种payload、264-byte `DurableRunResolutionV2`和124-byte stamp。`DomainRecordV1.payload_hash(ZHANGTIAN_DOMAIN)`使用EXTERNAL模式：preimage是`ZhangtianProfileDomainV1\0`加132-byte canonical payload，不含188-byte wrapper且zero range为空。`ZhangtianReservationPayloadV1.request_hash`是matching request hash的foreign repeated field，必须相等但不得另列self-hash tag；没有self-hash的`PrepConfirmCommandV1`也不得单列tag。actual rows缺失/漂移是设计错误；generated artifact/golden尚未执行仍保持`BLOCKED-HASH-CODEC-EVIDENCE`。
+所有Hash256沿Save codec ADR的`SHA256_V1`与canonical little-endian codec；禁止Godot `hash()`。实际权威是Save GDD签发的25-row `HashPreimageManifestV1`：逐行冻结精确NUL结尾tag、SELF/EXTERNAL mode、exact length或`164+P`公式、zero offset/length、nested策略与owner，且已包含176-byte `ReservationCreateRequestV2`、252-byte `PreActiveOfferSemanticV1`、296-byte `PreActiveLoadoutSemanticV1`、`ReservationUpdateRequestV2`五种payload、264-byte `DurableRunResolutionV2`、124-byte stamp、128-byte `DirectNoneStartSliceV2`与120-byte `ReservationReceiptV1`。`DomainRecordV1.payload_hash(ZHANGTIAN_DOMAIN)`使用EXTERNAL模式：preimage是`ZhangtianProfileDomainV1\0`加132-byte canonical payload，不含188-byte wrapper且zero range为空。`ZhangtianReservationPayloadV2.request_hash`是matching request hash的foreign repeated field，必须相等但不得另列self-hash tag；没有self-hash的`PrepConfirmCommandV1`也不得单列tag。无障碍snapshot另归ADR-0001的6-row `AccessibilityHashPreimageManifestV1`，不得混入本表。actual rows缺失/漂移是设计错误；generated artifact/golden尚未执行仍保持`BLOCKED-HASH-CODEC-EVIDENCE`。
 
-聚气丹令Leveling初始snapshot为level2、xp0、`starting_level_curve_credit=14`，到L40的remaining accepted-XP budget为16538。它预置普通`LEVEL_UP` ordinal1；GameRoot在Loading内进入`PRE_ACTIVE_CHOICE`，root/input/gameplay gate保持关闭。基础offer、每次主动refresh与最终commit都先更新同一360-byte recovery并durable readback，记录§3.5列出的全部replay字段而非只存hash。commit后`next_level_request_sequence=2`，callback loss或进程重启按确定性协议重建同一页面/已提交loadout，不重抽或复用sequence；结果不明时冻结并reconcile。取消PONR固定为首个`OFFER_DURABLE`之前：此前取消可durable RELEASE；首个offer一旦durable并对玩家可见，Back/关闭应用/重启都只能恢复同一reservation、run seed、offer revision与剩余refresh，`PRE_ACTIVE_CANCEL_AND_RELEASE`返回`WRONG_STATE`且不得生成fresh随机页。该前置选择不推进survival tick、不伪造XP fact；从Prep CTA release到offer interactive、choice commit与首次移动分别计时，继续标`PROVISIONAL-PREP-LEVEL-V2`。
+聚气丹令Leveling初始snapshot为level2、xp0、`starting_level_curve_credit=14`，到L40的remaining accepted-XP budget为16538。它预置普通`LEVEL_UP` ordinal1；GameRoot在Loading内进入`PRE_ACTIVE_CHOICE`，root/input/gameplay gate保持关闭。基础offer、每次主动refresh与最终commit都先更新同一360-byte recovery并durable readback，记录§3.5列出的全部replay字段而非只存hash。commit后`next_level_request_sequence=2`，callback loss或进程重启按确定性协议重建同一页面/已提交loadout，不重抽或复用sequence；结果不明时冻结并reconcile。玩家没有pre-durable cancel公共动作；仅在任何offer durable/visible事实之前，base offer clear failure可由LFD25执行durable RELEASE。首个offer一旦durable并对玩家可见，Back/关闭应用/重启都只能恢复同一reservation、run seed、offer revision与剩余refresh，不得生成fresh随机页。该前置选择不推进survival tick、不伪造XP fact；从Prep CTA release到offer interactive、choice commit与首次移动分别计时，继续标`PROVISIONAL-PREP-LEVEL-V2`。
 
 ### 3.7 States and transitions
+
+第八轮合同优先级覆盖：本节历史段中的 `ZhangtianReservationPayloadV1`、六行 Meta UI 与 84-row crash fixture 均不得作为当前实现输入；当前分别以 `ZhangtianReservationPayloadV2`、八行 `MetaUiInputActionManifestV1` 及 132-row（RCO V2 11行 × RCC V2 12行）fixture 为准。
 
 | State | Meaning | Allowed next |
 |---|---|---|
@@ -201,7 +209,7 @@ ZhangtianBattleProjectionV1={
 | `RESERVED` | durable reservation成立 | HANDOFF_PENDING, RELEASE_PENDING, CONSUME_PENDING |
 | `HANDOFF_PENDING` | 同一PrepCommitJournal收敛至Loading | RESERVED, CANDIDATE_PENDING, RELEASE_PENDING, UNCERTAIN |
 | `CANDIDATE_PENDING` | draw/reconstruct并持久candidate | PRE_ACTIVE_CHOICE_PENDING, ACTIVE_MARK_PENDING, RELEASE_PENDING, UNCERTAIN |
-| `PRE_ACTIVE_CHOICE_PENDING` | 聚气offer/refresh/commit持久恢复链 | ACTIVE_MARK_PENDING；仅`offer_state< OFFER_DURABLE`且GameRoot `PRE_ACTIVE_CANCEL_ALLOWED=true`时可RELEASE_PENDING；否则UNCERTAIN |
+| `PRE_ACTIVE_CHOICE_PENDING` | 聚气offer/refresh/commit持久恢复链 | ACTIVE_MARK_PENDING；仅在任何offer durable/visible前的系统级LFD25 clear failure可RELEASE_PENDING；否则恢复同offer或UNCERTAIN |
 | `ACTIVE_MARK_PENDING` | Active gate前写durable entry fact | ACTIVE_RESERVED, RELEASE_PENDING, UNCERTAIN |
 | `ACTIVE_RESERVED` | Active已开放、等待终局resolution | CONSUME_PENDING, RELEASE_PENDING |
 | `CONSUME_PENDING` | mandatory consume进行中 | CONSUMED, UNCERTAIN |
@@ -223,6 +231,8 @@ ZhangtianBattleProjectionV1={
 | Leveling/SkillDraft | 聚气丹initial level/choice | 首个gameplay tick前完成1个普通choice |
 | Prep/Home/Settlement UI | typed view/同一PrepConfirm command | 有库存进Prep；无库存使用origin-specific direct NONE；UI无库存/Save writer |
 | Audio Feedback | selected/reserved/released semantic edge | preview轻触与durable封签；无循环pending音 |
+
+第八轮 hash 覆盖：`ZhangtianReservationPayloadV2` 的 64-byte create correlation 与 32-byte internal prepare hash 均作为 foreign repeated fields 校验；旧 `ZhangtianReservationPayloadV1.request_hash` 只保留历史迁移说明。
 
 ## 4. Formulas
 
@@ -263,6 +273,8 @@ The `zhangtian_seed_grant` formula is defined as:
 
 `applied_i = min(requested_i, held_room_i, lifetime_room_i)`
 
+`cap_disposition_i`是total function：`requested_i=0→NOT_APPLICABLE`；`applied_i=requested_i>0→FULL`；`applied_i=0<requested_i→NO_ROOM`；其余partial按room较小者分别为`PARTIAL_HELD/PARTIAL_LIFETIME`，`held_room_i=lifetime_room_i`则为`PARTIAL_BOTH`。相等tie不得依赖if分支顺序。
+
 `available_i' = available_i^c + applied_i; reserved_i'=reserved_i^c; consumed_i'=consumed_i^c; earned_i'=earned_i+applied_i`
 
 **Variables:**
@@ -276,7 +288,7 @@ The `zhangtian_seed_grant` formula is defined as:
 | Lifetime room | `L_i` | int64 | 0–INT64_MAX | `INT64_MAX-earned_i` |
 | Applied grant | `G_i` | int64 | 0–4 | 显式saturation后的实际入账；首次Victory的candidate类可请求4 |
 
-**Output Range:** 同一Settlement transaction严格先按F4 consume matching reservation，再用post-consume held room应用Victory/Defeat/starter grant；未触顶时Victory随机新增3、Boss线Defeat新增1、首次正常结算另新增三类各1。held触顶发布`AT_CAP_PARTIAL/AT_CAP_NO_GRANT`；lifetime room不足发布`AT_LIFETIME_CAP_PARTIAL/AT_LIFETIME_CAP_NO_GRANT`，不得溢出或卡死正常结算。starter claim仍同transaction置1且重试不补发。
+**Output Range:** 同一Settlement transaction严格先按F4 consume matching reservation，再用post-consume held room应用Victory/Defeat/starter grant；未触顶时Victory随机新增3、Boss线Defeat新增1、首次正常结算另新增三类各1。`cap_disposition`使用Settlement封闭值`FULL/PARTIAL_HELD/PARTIAL_LIFETIME/PARTIAL_BOTH/NO_ROOM/NOT_APPLICABLE`；不得再发布未定义的`AT_CAP_*`别名。不得溢出或卡死正常结算；starter claim仍同transaction置1且重试不补发。
 
 **Example:** 首次Victory随机到雷元果、原库存[0,0,0]，输出available=[1,1,4]并starter claim=1。
 
@@ -417,8 +429,8 @@ The `zhangtian_starting_level` formula is defined as:
 |---|---:|---|---|
 | seed/pill types | 3/3 | FIXED MVP | 改动需schema+UX+balance revision |
 | normal seed weight | 1/1/1、MVP无pity | PROVISIONAL-BALANCE | RNG分布与玩家缺货/选择率分开验证 |
-| Victory random seed | candidate type ×3 | PROVISIONAL-ECONOMY-V5 | 以`3*T_defeat > T_victory`交叉乘法验证全域严格优势，不做整数除法 |
-| Defeat seed eligibility | 43,200 Active ticks | PROVISIONAL-ECONOMY-V5 | −1/= /+1与seed/min试玩；合法survival上限108,000 |
+| Victory random seed | candidate type ×3 | PROVISIONAL-ECONOMY-V6 | 只承诺gross grant-rate；以`3*T_defeat > T_victory`交叉乘法验证，不做整数除法 |
+| Defeat seed eligibility | 43,200 Active ticks | PROVISIONAL-ECONOMY-V6 | net flow另覆盖服丹/NONE、胜率、局长与饱和；合法survival上限108,000 |
 | per-seed held cap | available+reserved≤999 | FIXED V1 | lifetime earned/consumed仅受int64约束 |
 | first normal settlement starter | each type +1 | CONCEPT LOCKED | Victory/Defeat最先durable者exact-once |
 | pills per run | 0 or1 | FIXED MVP | 不支持叠加 |
@@ -432,11 +444,13 @@ The `zhangtian_starting_level` formula is defined as:
 
 Prep顶部显示当前选择摘要，中部三张灵药卡与明确的“不服丹”第四选项，底部固定唯一主CTA。默认NONE只是本地草稿；玩家按下CTA才构成明确“不服丹”确认。每卡同时显示种子名、库存、丹药名与完整下一局效果；库存0不隐藏。玩家文案固定为聚气“下局以2级开始；行动前先选1项功法”、锻体“下局最大生命X→Y”、明心“下局暴击率X%→Y%”、NONE“本局不服丹；不消耗种子，也没有丹药加成”；credit/hash/revision只进实现合同。选中态用勾、实体边框和“已选择”，不可只靠颜色；触控热区≥56 logical px（目标≥48dp）。
 
-选卡可处置一次轻触但不表达已消费；按钮press无成功重音。matching fresh-live reservation durable edge只允许短封签`at-most-once`，crash窗口可为0..1次，rebuild/reconcile/unmute不补播；pending/uncertain/failure默认音频静默，以中性文字、图形和读屏状态表达。reduce sensory load关闭瓶液循环、墨迹扫屏和数值滚动；静音不损失语义，音画完成不成为Loading gate。
+选卡可处置一次轻触但不表达已消费；按钮press无成功重音。资源存在、未静音且无kill/callback-loss的matching fresh-live reservation durable或RELEASED edge必须各播放恰1次短封签；只有enqueue/voice边界的process-kill窗口允许总次数0..1。rebuild/reconcile/unmute不补播；CONSUMED terminal、pending/uncertain/failure均为0返还音并以中性文字、图形和读屏状态表达。reduce sensory load关闭瓶液循环、墨迹扫屏和数值滚动；静音不损失语义，音画完成不成为Loading gate。
 
-基准720×1280、`canvas_items/expand`，正文列居中且不因宽屏横向拉长；safe-area、360×640、390×844、430×932、100/115/130%字体与长本地化必须成立。可访问顺序固定返回→标题→摘要→四选一radio group→代价说明→主CTA；卡片暴露name、库存、selected/unavailable与position，缺货卡可读但不可激活。移动端架构固定采用`docs/architecture/adr-0001-mobile-accessibility-bridge.md`的`MobileAccessibilityBridgeV1`与`AccessibleScreenSnapshotV2`：248-byte row携带layout generation、logical bounds、visible/clipped与typed localization args，Android/iOS原生adapter映射TalkBack/VoiceOver并把动作转回`AccessibilityActionCommandV2`。PREP/PRE_ACTIVE_CHOICE/BATTLE_PAUSED及其他三种action-bearing TopState都有明确snapshot owner；其余state仍drain stale callback。架构路径已签发；插件实现、导出包能力握手、accessibility tree与真机trace仍为`BLOCKED-MOBILE-A11Y-RUNTIME`。Control属性或桌面读屏不得替代这些证据。
+基准720×1280、`canvas_items/expand`，正文列居中且不因宽屏横向拉长；safe-area、360×640、390×844、430×932、100/115/130%字体与长本地化必须成立。可访问顺序固定返回→标题→摘要→四选一radio group→代价说明→主CTA；卡片暴露name、库存、selected/unavailable与position，缺货卡可读但不可激活。移动端架构固定采用`docs/architecture/adr-0001-mobile-accessibility-bridge.md`的`MobileAccessibilityBridgeV1`与`AccessibleScreenSnapshotV2`，并逐行匹配ASN03/ASN04 node profile；248-byte row携带layout generation、logical bounds、visible/clipped与typed localization args。Android/iOS原生adapter映射TalkBack/VoiceOver并把动作转回`AccessibilityActionCommandV2`；keyboard/mapped-gamepad只经八行Meta UI InputMap生成同一typed command，raw axis为0。PREP/PRE_ACTIVE_CHOICE/BATTLE_PAUSED/SETTLEMENT的owner明确，HOME由Home presenter，CONTROLLED_FAULT只由persistent GameRoot fault presenter；其余state仍drain stale callback。架构路径已签发；插件实现、导出包能力握手、accessibility tree与真机trace仍为`BLOCKED-MOBILE-A11Y-RUNTIME`。Control属性或桌面读屏不得替代这些证据。
 
 📌 **UX Flag**：Prep/掌天瓶需在Pre-Production运行`/ux-design`；本文不是完成UX原型。
+
+第八轮无障碍覆盖：上述移动端与首页旧口径中的“六行 Meta UI”均由当前 `MetaUiInputActionManifestV1` 八行（含 INCREMENT/DECREMENT）替代；BATTLE_PAUSED 的动态 choice 节点遵循 ADR 互斥容量规则。
 
 📌 **Asset Spec**：需为掌天瓶、三种种子/丹药及封签反馈制作不同剪影/材质资产，不得只换色。
 
@@ -445,30 +459,30 @@ Prep顶部显示当前选择摘要，中部三张灵药卡与明确的“不服�
 - **AC-ZB01 `[L/I][BLOCKING]` — GIVEN**132-byte golden、131/133 bytes、schema0/2、逐字段截断、negative、available+reserved>999、合法earned/consumed>999、守恒破坏、reserved sum2、flag2、`unlocked/claim={0/1,1/0}`、locked但任一ledger非零与next ID0，**WHEN**decode→validate→canonical re-encode，**THEN**只接受满足held cap/守恒且flags为`0/0`或`1/1`、locked ledger全0的canonical bytes，lifetime>999本身不拒绝；future为UPDATE_REQUIRED，其余CORRUPT_BLOCKED，source bytes保留且write/default0。
 - **AC-ZB02 `[L/I][BLOCKING]` — GIVEN**durable RESERVED、全部draw前checkpoint OK、call_begin=N及owner-private weights，**WHEN**调用F1，**THEN**成功仅一次public call、call_end=N+1、index按0/1/2映射stable ID；任一fault时candidate publish0并进入release，同run handoff重试额外call0。
 - **AC-ZB03 `[L/I][BLOCKING]` — GIVEN**独立seed/call-index→seed-ID golden、8流pre-state，以及流注册/容器顺序扰动和其他流0/100次调用，**WHEN**F1，**THEN**结果等于golden、ZHANGTIAN计数+1、其他7流state/count逐byte不变。
-- **AC-ZB04 `[L/I][BLOCKING]` — GIVEN**Victory/Defeat在ticks0/43199/43200/43201/108000/108001及Abandoned/Technical，**WHEN**验证input并生成seed reward，**THEN**Victory仅43200/43201/108000合法且quantity3，Defeat为0/0/1/1/1并拒绝108001，其余合法域内quantity0；对所有合法`T_v,T_d`以checked `3*T_d > T_v`成立证明Victory随机seed/Active-minute严格更高，除法与零分母路径调用0。
-- **AC-ZB05 `[L/I][BLOCKING]` — GIVEN**由合法ledger fixture generator枚举`selected=i`时`reserved_i=1`、非selected时`reserved_i=0`，post-consume held为0/1/998/999、random requested0/1/3、starter requested0/1、earned为`INT64_MAX-{0,1,3,4}`与合法flag组合，**WHEN**同一transaction按F4→F2，**THEN**matching reservation先consume再计算held/lifetime room，输出逐seed `{random_requested,starter_requested,applied,cap_disposition}`，applied为0..4、held≤999、守恒成立且claim exact-once；任一checked arithmetic失败或非法旧档0 mutation。
+- **AC-ZB04 `[L/I][BLOCKING]` — GIVEN**Victory/Defeat在ticks0/43199/43200/43201/108000/108001及Abandoned/Technical，**WHEN**验证input并生成seed reward，**THEN**Victory仅43200/43201/108000合法且quantity3，Defeat为0/0/1/1/1并拒绝108001，其余合法域内quantity0；速率比较只量化有随机奖励的eligible cohort，即对所有`T_v,T_d∈[43200,108000]`以checked `3*T_d > T_v`成立证明Victory随机seed/Active-minute严格更高。Defeat的0..43199合法零奖励输入只验证quantity=0，不进入速率不等式；除法与零分母路径调用0。
+- **AC-ZB05 `[L/I][BLOCKING]` — GIVEN**由合法ledger fixture generator枚举`selected=i`时`reserved_i=1`、非selected时`reserved_i=0`，post-consume held为0/1/998/999、random requested0/1/3、starter requested0/1、earned为`INT64_MAX-{0,1,3,4}`、`held_room<=>lifetime_room`三类及合法flag组合，**WHEN**同一transaction按F4→F2，**THEN**matching reservation先consume再计算held/lifetime room，输出逐seed `{random_requested,starter_requested,applied,cap_disposition}`，tie精确为PARTIAL_BOTH，applied为0..4、held≤999、守恒成立且claim exact-once；任一checked arithmetic失败或非法旧档0 mutation。
 - **AC-ZB06 `[I][BLOCKING]` — GIVEN**NONE及三种选择切换100次，**WHEN**未确认，**THEN**profile/reservation/RNG写入全0，仅local draft revision按序变化。
 - **AC-ZB07 `[I][BLOCKING]` — GIVEN**canonical Prep command的page/press/profile/domain/config/save/content/hash逐字段单轴破坏，**WHEN**validate，**THEN**仅全matching且库存>0或NONE接受；page/press/source stale返回`WRONG_STATE`，profile/domain/save stale返回`STALE_REVISION`，config revision/hash不等返回`INVALID_CONFIG`，payload/hash不等返回`CONFLICT`，且全部在identity/reservation/write/RNG前失败。
 - **AC-ZB08 `[I][BLOCKING]` — GIVEN**seed/NONE、next preparation ID1/MAX与两个同base命令正反到达，**WHEN**reserve，**THEN**唯一胜者分配old next ID并令domain/profile revision各+1；NONE count不变，MAX为ID_EXHAUSTED且旧bytes不变，败者不rebase。
-- **AC-ZB09 `[C/I][BLOCKING]` — GIVEN**同`ReservationUpdateRequestV2`/callback/restart各100次、五种payload presence矩阵及同identity异hash，**WHEN**reserve/update/reconcile，**THEN**durable RESERVED/count与非零`durable_receipt_id+receipt_hash`最多一次，duplicate从264-byte resolution返回原receipt identity、conflict/错kind payload零写；fresh-live audio start0..1且boot/reconcile不补播。
-- **AC-ZB10 `[C/I][BLOCKING]` — GIVEN**reserve的temp逐byte、file barrier、replace、directory barrier、两槽write/readback、callback loss、short write/ENOSPC与process kill row manifest，**WHEN**restart，**THEN**只选择完整old或new fact；可证明无durable才FAILED，其余UNCERTAIN，第二identity与Loading均0。
-- **AC-ZB11 `[I][BLOCKING]` — GIVEN**UNCERTAIN与matching RESERVED/RELEASED/CONSUMED/NOT_FOUND/conflict/future/corrupt scan，**WHEN**同operation reconcile，**THEN**逐态进入FSM唯一目标；只有RESERVED继续同一handoff，NOT_FOUND保留IDs冻结，其他状态不创建新局。
-- **AC-ZB12 `[I][BLOCKING]` — GIVEN**`DurableReservationV1.prep_commit_journal`七个canonical checkpoint、顶层journal缺失约束及每点fail/restart，**WHEN**收敛，**THEN**checkpoint1与reservation/domain/allocator同槽原子，后续按唯一reconcile disposition继续同一run-start或先durable release；不存在memory-only checkpoint或第二truth source，第二run/seed/preparation ID、旧page command与战斗movement均0。
+- **AC-ZB09 `[C/I][BLOCKING]` — GIVEN**同176-byte create request、204-byte create V3 result、`ReservationUpdateRequestV2`/callback/restart各100次、五种payload presence矩阵、五类typed mailbox result及同identity异hash，**WHEN**reserve/update/reconcile，**THEN**所有create result回显matching source kind/command/press/request hash；pre-durable correlation重复只分配一组identity，durable RESERVED/count、operation identity与CREATE的非零120-byte receipt最多一次，FAILED/UNCERTAIN/ID_EXHAUSTED时allocated字段全0但source correlation保留；ADVANCE/UPDATE/MARK/RETIRE receipt固定0/ZERO32，唯一`ResolveReservationPayloadV3`返回160-byte terminal result且receipt ID=request ID，CONSUMED/RELEASED逐位可分，duplicate返回原typed result、conflict/错kind payload零写；无kill且未静音的fresh-live create/release恰1声，kill窗口0..1，CONSUMED/boot/reconcile补播0。
+- **AC-ZB10 `[C/I][BLOCKING]` — GIVEN**7-row `ReservationCrashOperationManifestV1`×12-row `ReservationCrashCutManifestV2`唯一展开的84-row artifact、reserve的temp逐byte、file barrier、replace、directory barrier、两槽write/readback、callback loss、short write/ENOSPC，**WHEN**逐行kill并restart，**THEN**result schema与profile/reservation/marker/resolution/receipt/tombstone presence只由operation row决定，selected OLD/NEW与public/reconcile code只由stage row决定；首个formal VALID前可证明无durable才FAILED，RCC07/08按selected fact分别FOUND_OLD/FOUND，首个VALID后选择NEW并heal，RCC11 callback loss只返回FOUND，RCC12已发布success的duplicate返回同typed result，第二identity与Loading均0；任一range、自填expected或manifest/golden未生成不得PASS。
+- **AC-ZB11 `[I][BLOCKING]` — GIVEN**UNCERTAIN与matching RESERVED/RELEASED/CONSUMED/NOT_FOUND_UNPROVEN/PROVEN_ABSENT/conflict/future/corrupt scan，**WHEN**同operation reconcile，**THEN**逐态进入FSM唯一目标；RESERVED继续同一handoff，NOT_FOUND_UNPROVEN保留IDs冻结，PROVEN_ABSENT只清matching volatile correlation并回fresh Prep，其他状态不创建新局。
+- **AC-ZB12 `[I][BLOCKING]` — GIVEN**`DurableReservationV2.prep_commit_journal`七个canonical checkpoint、顶层journal缺失约束及每点fail/restart，**WHEN**收敛，**THEN**checkpoint1与reservation/domain/allocator同槽原子，后续按唯一reconcile disposition继续同一run-start或先durable release；不存在memory-only checkpoint或第二truth source，第二run/seed/preparation ID、旧page command与战斗movement均0。
 - **AC-ZB13 `[I][BLOCKING]` — GIVEN**seed/NONE×Victory/Defeat/Abandoned/Technical×reservation state，**WHEN**resolve，**THEN**V/D/A mandatory consume，Abandoned为零奖励tombstone+consume同事实；Technical仅按sealed compensation release；duplicate exact-noop、UI guess写入0。
-- **AC-ZB14 `[C/I][BLOCKING]` — GIVEN**reserve后、Loading中、Active marker前后与sealed outcome前后的process kill，**WHEN**boot recover，**THEN**marker前checkpoint1..6+exact config按RRD11继续同一handoff、config不可得按RRD12停在UPDATE_REQUIRED、durable RELEASE按RRD05回fresh Prep；marker后无Outcome按RRD09 consume，sealed disposition按RRD07/08优先；永不使用“继续或release”二义oracle、强杀返丹或永久reserved。
+- **AC-ZB14 `[C/I][BLOCKING]` — GIVEN**reserve后、Loading中、Active marker前后与sealed outcome前后的process kill，**WHEN**boot recover，**THEN**marker前checkpoint1..6+exact config按RRD11继续同一handoff、config不可得按RRD12停在UPDATE_REQUIRED、durable RELEASE按RRD05回fresh Prep；只有完整absence proof按RRD13清volatile correlation，unproved absence按RRD04保持UNCERTAIN；marker后无Outcome按RRD09 consume，sealed disposition按RRD07/08优先；永不使用“继续或release”二义oracle、强杀返丹或永久reserved。
 - **AC-ZB15 `[L/I][BLOCKING]` — GIVEN**H0=100、长春0..5、B∈{0,0.15}及非法组合，**WHEN**F5，**THEN**无丹为100/103/106/109/112/115、有丹为115/118/121/124/127/130；非法在Active前fail且不热改。
 - **AC-ZB16 `[L/I][BLOCKING]` — GIVEN**C0=.05、大衍0..5、B∈{0,.08}与u在C相邻/相等值，**WHEN**F6，**THEN**无丹为.05..10、有丹为.13..18且只有u<C暴击；非法在Active前fail且不热改。
-- **AC-ZB17 `[L/I][BLOCKING]` — GIVEN**NONE/聚气丹与matching/mismatched `LEVEL_UP+PREPARATION_CURVE_CREDIT` request、offer durable前Back、offer build/durable fault、duplicate commit，**WHEN**Loading，**THEN**NONE为LV1/xp0/curve-credit0；聚气为LV2/xp0/credit14/remaining16538并在root gate held下完成ordinal1普通规则choice；pre-PONR Back只经`PRE_ACTIVE_CANCEL_REQUESTED` durable RELEASE后回fresh Prep，PONR后返回WRONG_STATE，build fault按LFD25 clear/uncertain唯一row收敛；完成前movement/survival0、失败不发布Active。
+- **AC-ZB17 `[L/I][BLOCKING]` — GIVEN**NONE/聚气丹与matching/mismatched `LEVEL_UP+PREPARATION_CURVE_CREDIT` request、base offer readback前Back、offer build/durable fault、duplicate commit，**WHEN**Loading，**THEN**NONE为LV1/xp0/curve-credit0；聚气为LV2/xp0/credit14/remaining16538并在root gate held下完成ordinal1普通规则choice；readback前interactive snapshot/action均0且不存在玩家cancel event，clear build failure只经系统LFD25 durable RELEASE后回fresh Prep，任一write possible/readback unknown或durable/visible事实走LFD26并保持同reservation；完成前movement/survival0、失败不发布Active。
 - **AC-ZB18 `[I][BLOCKING]` — GIVEN**完整projection golden及identity/revision/hash单轴stale、profile/config热改，**WHEN**bind→Active→Pause→Resume，**THEN**仅全matching projection被消费且当前bank/hash逐byte不变；Zhangtian phase callback与四类contribution均0。
 - **AC-ZB19 `[I][BLOCKING]` — GIVEN**CORE_HERB、三seed、cap saturation及row排列/duplicate/unknown，**WHEN**Settlement应用，**THEN**CORE只改Settlement domain，seed只改Zhangtian，合法同类gift+candidate按F2，非法整bundle拒绝。
 - **AC-ZB20 `[I][BLOCKING]` — GIVEN**migration_count=0、future schema2与corrupt V1，**WHEN**load，**THEN**migration调用0，分别UPDATE_REQUIRED/CORRUPT_BLOCKED并保留bytes；未来新增V0时必须先提供逐byteV0→V1 golden与kill matrix，空集不得PASS。
-- **AC-ZB21 `[UX/A][OPEN-EVIDENCE]` — GIVEN**四个明确safe rect/cutout、字体100/115/130%、中英长文案、DRAFT/selected/empty/reserving/uncertain/releasing/blocked/PRE_ACTIVE_CHOICE/BATTLE_PAUSED及touch/keyboard/screen-reader（gamepad为unsupported零命令负例），**WHEN**按ADR逐状态semantic oracle render/navigation，**THEN**P0节点不裁切重叠、touch≥56 logical且目标机≥48dp、screen bounds/动态库存与X→Y文本参数/focus/reading/live announcement逐行匹配；保存截图、accessibility tree与input trace。
-- **AC-ZB22 `[I][BLOCKING]` — GIVEN**selection/reserve/release、`SAVE_DURABLE_STAMP` unlock bit0/1、伪独立unlock、mute/unmute、detach、rebuild、reconcile与missing asset，**WHEN**app audio disposition，**THEN**每个semantic identity只有一个owner；pending/uncertain静默，fresh-live reserve start0..1，unlock只作stamp modifier且恰一voice，伪独立unlock为0 event，Loading不等待音画。
+- **AC-ZB21 `[UX/A][OPEN-EVIDENCE]` — GIVEN**四个明确safe rect/cutout、字体100/115/130%、中英长文案、DRAFT/selected/empty/reserving/uncertain/releasing/blocked/PRE_ACTIVE_CHOICE/BATTLE_PAUSED及touch/keyboard/gamepad/screen-reader，另含未经Input mapping的native raw gamepad axis负例，**WHEN**按ADR逐状态semantic oracle render/navigation，**THEN**P0节点不裁切重叠、touch≥56 logical且目标机≥48dp、screen bounds/动态库存与X→Y文本参数/focus/reading/live announcement逐行匹配；keyboard/gamepad focus与activation生成同一typed command，raw unmapped axis生成0业务命令；保存截图、accessibility tree与input trace。
+- **AC-ZB22 `[I][BLOCKING]` — GIVEN**selection/reserve/CONSUMED/RELEASED、`SAVE_DURABLE_STAMP` unlock bit0/1、伪独立unlock、mute/unmute、detach、rebuild、reconcile、missing asset及声前/声后kill，**WHEN**app audio disposition，**THEN**每个semantic identity只有一个owner；pending/uncertain与CONSUMED返还声为0，未静音且无kill的fresh-live reserve/release恰1 voice，只有kill窗口0..1；unlock只作stamp modifier且恰一voice，伪独立unlock为0 event，Loading不等待音画。
 - **AC-ZB23 `[R/M][OPEN-EVIDENCE]` — GIVEN**签发build/config/workload/device/thermal/storage manifest，**WHEN**执行codec、Loading、reservation crash与100次page rebuild，**THEN**分别报告byte golden、allocation/growth/COW、p50/p95/p99/max、RSS、writer与live page/signal counters；阈值未冻结只判MEASURED/INCONCLUSIVE。
 - **AC-ZB24 `[E][OPEN-EVIDENCE]` — GIVEN**预注册目标玩家样本，**WHEN**比较无丹/三丹及重复Prep，**THEN**分别报告first-visible/interactive、choice时长/退出率、全库存条件选择率、缺货P95、10/20局库存斜率与seed/Active-minute；RNG≥1000候选频数单独报告，不代替经济健康。
 - **AC-ZB25 `[L/I][BLOCKING]` — GIVEN**合法ledger含`{A=998,R=0,C=1,E=999}`、`{0,0,999,999}`、held999、Victory quantity3、Boss线Defeat quantity1与starter claim0/1，**WHEN**resolve→F2，**THEN**`A'+R'≤999`、`A'+R'+C'=E'`，E/C可超过999但不得int64溢出；历史累计永不使正常结算失活。
-- **AC-ZB26 `[C/I][BLOCKING]` — GIVEN**七个Prep checkpoint、candidate draw前/后、每次pre-active offer/refresh/commit及ActiveEntry前后kill/callback loss、同内容不同process-local snapshot/bank/generation与内容hash不等，**WHEN**restart，**THEN**只从360-byte recovery恢复同一identity/candidate/RNG，并重建逐位相同的252-byte offer与296-byte loadout semantic carriers；仅durable content revision+hash相等可把新local identity rebind，semantic preimage排除local字段，hash不可逆推，重复字段或replay不等为CONFLICT，第二logical candidate/choice/run均0。
-- **AC-ZB27 `[I][BLOCKING]` — GIVEN**`ReservationReconcileDispositionManifestV2`12行、`ReservationUpdatePayloadManifestV1`五行、matching/stale generation/checkpoint/hash、五种payload缺/重/错schema、marker/outcome/config-content组合，**WHEN**update/reconcile/retire，**THEN**每行只有一个target/write/new-run/UI state；RESOLVE原子写264-byte resolution、776-byte next profile并清pending reservation/active marker，result与restart逐位返回同一receipt ID/hash；不得使用out-of-band bytes或“继续或release”二义expected。
+- **AC-ZB26 `[C/I][BLOCKING]` — GIVEN**七个Prep checkpoint、candidate draw前/后、每次pre-active base/refresh scratch lease的draw前、draw后、durable write前后、publish前后及ActiveEntry前后kill/callback loss、同内容不同process-local snapshot/bank/generation与内容hash不等，**WHEN**restart，**THEN**FAILED scratch不改变old cursor/charge/revision，UNCERTAIN只reconcile；selected formal hash=next时只允许`RECONCILE_FOUND`并采用durable next cursor，selected formal hash=old且双槽/temp/writer证明attempt未durable时只允许`RECONCILE_FOUND_OLD`并discard scratch，UNPROVEN继续冻结，code/hash错配fail closed。只从360-byte recovery恢复同一identity/candidate/RNG并重建逐位相同的252-byte offer与296-byte loadout semantic carriers。仅retention manifest内durable content revision+hash相等可rebind新local identity，第二logical candidate/choice/run均0。
+- **AC-ZB27 `[I][BLOCKING]` — GIVEN**`ReservationReconcileDispositionManifestV2`13行、其前置marker/checkpoint/terminal invariant validator、`ReservationUpdatePayloadManifestV1`五行、matching/stale generation/checkpoint/hash、五种payload缺/重/错schema、marker/outcome/config-content与proved/unproved absence组合，**WHEN**update/reconcile/retire，**THEN**矛盾先判CORRUPT且不得被RRD07/08吞掉，其余每行只有一个target/write/new-run/UI state；只有完整RRD13 proof可清volatile correlation。唯一1112-byte `ResolveReservationPayloadV3`原子写reward/tombstone、264-byte resolution、776-byte next profile并清live carriers，160-byte result与restart逐位返回同一120-byte receipt且明确CONSUMED/RELEASED；第二Save commit、out-of-band bytes或二义expected均为0。
 - **AC-ZB28 `[I][BLOCKING]` — GIVEN**`HashPreimageManifestV1`全部hash rows及任一单字段/重复字段翻转，**WHEN**canonical encode/hash，**THEN**SELF_ZERO_FIELD行恰一对象tag/zero range/exact length，EXTERNAL_PAYLOAD行只hash独立payload bytes且zero range为空；错误模式、对象tag、missing row、alias backing与外内carrier不等均在write前拒绝。
 - **AC-ZB29 `[R/M][OPEN-EVIDENCE]` — GIVEN**签发的exact workload rows、parent hash、markers、warmup、3次独立run、raw sample hash、observer版本与positive control，**WHEN**执行codec-max、reservation/reconcile、NONE/三pill Loading及100-cycle page rebuild，**THEN**结构计数逐行PASS；parent stale或正控无效为INCONCLUSIVE，latency/RSS未冻结只可MEASURED。
 - **AC-ZB30 `[E][OPEN-EVIDENCE]` — GIVEN**预注册样本量、置信规则及三丹/NONE/经济阈值，**WHEN**按永久成长层级和全库存条件比较，**THEN**判定CTA→offer/choice/movement时延、退出率、DPS/容错/成型收益、缺货P95、库存斜率与Victory/Defeat seed per Active-minute；只报告或RNG频数不得PASS。
@@ -483,10 +497,14 @@ Prep顶部显示当前选择摘要，中部三张灵药卡与明确的“不服�
 | OQ-ZB04 | ZHANGTIAN_HERB Loading调用与BATTLE_ENDING Outcome join？ | Settlement/RNG/GameRoot | DESIGN CONTRACT REVISED；manifest regen待完成 |
 | OQ-ZB05 | Godot 4.7.1 kill/barrier/dual-focus与TalkBack/VoiceOver bridge证据？ | Engine/QA | ADR-0001路径已冻结；runtime/device BLOCKED |
 | OQ-ZB06 | 正式Prep UX、Art/Sound assets与真机？ | UX/Art/Audio | BLOCKED |
-| OQ-ZB07 | clean-context full review？ | Review team | OPEN |
+| OQ-ZB07 | clean-context full review？ | Review team | 第七次MAJOR REVISION NEEDED已整改；第八次OPEN |
 
 ## 11. Handoff
 
-本文经第三次full review授权整改后冻结MVP三种种子/丹药、Victory候选×3、Boss线Defeat候选×1、首次正常结算三类starter、outcome-specific 108,000-tick技术域、held cap999与lifetime饱和、132-byte持久domain、持久battle/preparation allocator、360-byte recovery、七checkpoint单一journal真相、Active marker、Abandoned mandatory consume、以durable config content identity确定重放且首版可见后不可释放重抽的pre-active普通SkillDraft、consume-before-grant/release/technical compensation与下一局投影。移动端读屏路径已由ADR-0001固定，但本文仍没有证明Save平台durability、聚气丹体验、RNG/经济健康、移动端读屏实现/真机、正式UX/资产或运行时接线。
+### 第八轮跨文档合同整改（2026-09-08）
 
-状态保持`In Review / Re-review Pending`；跨文档传播与静态检查完成后仍应在fresh context运行`/design-review design/gdd/zhangtian-bottle.md --depth full`，不得在本整改会话宣称Approved、implementation-ready或battle_ready。
+本轮将当前契约统一为：`DurableReservationV2`/`ZhangtianReservationPayloadV2`分别为1152/724 bytes，持久化64-byte `ReservationCreateCorrelationV1`并与32-byte internal prepare hash分离；`ReservationCreateResultV3`回显五项source correlation（含attempt generation）。`ReservationUpdateIdentityLeaseV1`在Save事务外只读签发candidate request/tombstone identity，实际分配与消费仍在同一update transaction。RCO升级为V2十一个operation，RCC×RCO唯一展开132行；RRD marker/checkpoint前置规则、RESOLVE `FOUND_OLD`返回与旧reservation保留已闭合。ADR新增BATTLE_PAUSED动态choice节点与Settings四持久布尔字段，Input Meta UI扩为8行并加入INCREMENT/DECREMENT；native MPSC row改为68-byte payload、96-byte row，serial ingress补齐76-byte command。Boss tick边界明确为completed-before/executing-ordinal/completed-after，43200执行tick可产生Boss且phase7 survival=43200合法。旧V1/660/1088/84口径仅为历史审计记录，不得作为实现schema。
+
+本文经第七次full review后的作者整改进一步冻结：204-byte create V3 result完整回显source correlation与operation identity、484-byte typed mailbox、durable receipt code与public reconcile code分层、update FOUND_OLD/FIND_NEW hash裁决；唯一`ResolveReservationPayloadV3`终局写与160-byte typed terminal result继续成立。Crash由7-row operation truth×12-row cut truth唯一展开84行；移动端入口补6208-byte MPSC64并发ABI；ADR签发逐node/variant合同，Input区分presenter-local focus与native action，Settlement补typed detail分页。pre-active scratch lease、append-only config retention、random gross而非net库存优势、120-byte receipt、13-row reservation disposition、total cap disposition、七checkpoint和无玩家cancel继续成立。本文仍没有生成codec/hash/crash/config/a11y artifacts，也没有证明Save平台durability、聚气丹体验、RNG/经济健康、Godot/GDUnit4、移动端读屏/gamepad真机、正式UX/资产或运行时接线。
+
+状态保持`In Review / Re-review Pending`；跨文档传播与静态检查已完成，仍应在fresh context运行第八次`/design-review design/gdd/zhangtian-bottle.md --depth full`，不得在本整改会话宣称Approved、implementation-ready、runtime verified或battle_ready。

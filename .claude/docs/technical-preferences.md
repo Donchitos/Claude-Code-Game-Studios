@@ -1,5 +1,11 @@
 # Technical Preferences
 
+## 第八轮当前合同覆盖（2026-09-08）
+
+ADR 当前逐node contract 为 101 行（其中 BATTLE_PAUSED choice 组与 reason 组互斥，不可同时计入24-row capacity）。
+
+当前实现前口径以本节为准：`DurableReservationV2=1152`、`ZhangtianReservationPayloadV2=724`、`SlotPayloadMax=42244`、`SlotEncodedMax=42456`；RCO V2 11行×RCC 12行=132 fixture；SaveGlobalCodecHashManifestV1为6行。ADR native MPSC row使用68-byte payload（96-byte row，总6208），serial ingress补齐76-byte command；Meta UI Input manifest为8行（含INCREMENT/DECREMENT），Settings持久布尔字段为reduce_motion/reduce_sensory_load/high_contrast/screen_reader_hints。旧1088/42180/42392、84-row、六行Meta UI仅保留在历史记录，不得作为当前实现输入。
+
 <!-- Populated by /setup-engine. Updated as the user makes decisions throughout development. -->
 <!-- All agents reference this file for project-specific standards and conventions. -->
 
@@ -18,7 +24,7 @@
 - **Target Platforms**: Mobile (Android, iOS) — 优先竖屏
 - **Input Methods**: Touch
 - **Primary Input**: Touch (虚拟摇杆移动，攻击自动释放)
-- **Gamepad Support**: None
+- **Gamepad Support**: Meta UI only — mapped D-pad/digital focus、South activate、East back、肩键增减按8-row `MetaUiInputActionManifestV1`进入typed presenter command；战斗移动仍仅Touch VirtualJoystick，unmapped raw axis为0业务命令
 - **Touch Support**: Full
 - **Platform Notes**: 竖屏单手操作；所有交互必须单手可达；移动端无 hover，不得设计悬停态交互；升级 / 机缘选择时暂停战斗。
 - **Meta UI Baseline**: Home/Prep/Settlement采用safe-area响应式纵向布局，内容区最大宽600 logical px、交互目标最小56×56 logical px，并验证100%/115%/130%字体；touch与keyboard/screen-reader focus是两条独立路径。移动端采用`docs/architecture/adr-0001-mobile-accessibility-bridge.md`的`AccessibleScreenSnapshotV2` + Android/iOS原生adapter + typed action回传；248-byte row包含layout generation、logical bounds、visible/clipped与8 typed localization args。action-bearing states固定HOME/PREP/PRE_ACTIVE_CHOICE/BATTLE_PAUSED/SETTLEMENT/CONTROLLED_FAULT；架构路径已冻结，插件实现、能力握手、accessible tree与真机trace仍`BLOCKED-MOBILE-A11Y-RUNTIME`，静态Control属性或桌面读屏不得替代。
@@ -101,14 +107,16 @@
   `SaveCommitAttemptV1`存在性矩阵固定：NOT_STARTED的attempt/generation/request均0且in_flight=0；SAVE_PENDING的
   attempt/generation/request均非零且in_flight=1；SAVE_UNCERTAIN/SAVE_FAILED/SAVE_SUCCEEDED保留这些ID且
   in_flight=0，其中仅SAVE_SUCCEEDED要求非零receipt；DISCARD_PENDING保留非零tombstone且in_flight可0/1，
-  DISCARDED保留非零tombstone且in_flight=0。`SaveOperationResultV1`仅作为matching callback carrier处理，不并入
+  DISCARDED保留非零tombstone且in_flight=0。MVP run terminal唯一callback carrier为160-byte `TerminalRunResultV2`；旧`SaveOperationResultV1`禁止读取，`SaveOperationResultV2`只保留非reservation迁移路径且MVP调用数0，不并入
   immutable outcome或伪装成Save attempt常驻字段。
-  callback reducer必须覆盖`source_state×operation_kind×durable_result_code`；DISCARD若发现commit已durable必须转SAVE_SUCCEEDED，`RECONCILE_NOT_FOUND`在SAVE路径回UNCERTAIN，在DISCARD路径保持DISCARD_PENDING。
+  callback reducer必须覆盖`source_state×operation_kind×public_result_code`；durable receipt code固定SUCCEEDED且reconcile不改其bytes。DISCARD若发现commit已durable必须以`OUTCOME_COMMIT+RECONCILE_FOUND`转SAVE_SUCCEEDED，`RECONCILE_NOT_FOUND_UNPROVEN`在SAVE路径回UNCERTAIN，在DISCARD路径保持DISCARD_PENDING。
   所有ID先checked reserve并一次提交；失败不得部分覆盖旧carrier。`ResolvedRunArchiveV1`须有实际schema/hash/readback；`ArchiveRetireJournalV1`以expected mask与retired bitset支持partial retry，archive-entry guard与carriers-retired guard必须分离。PreOutcome reservation使用独立state/recovery carrier与CTA，不借用Outcome disposition。
 - Save durable介质固定为单writer+两个完整自校验槽，不使用独立current-pointer；槽含generation、canonical payload、Hash256与重复footer，只有flush/close后reopen逐位readback通过才可返回durable success。sealed Outcome/Completion、attempt、proposed profile必须作为`PendingOutcomeRecoveryV1`先落盘，重启只靠slot scan恢复。任一损坏槽存在时另一VALID槽只作只读恢复候选，显式恢复完成前禁止覆盖和新局；双坏、未来schema、同generation异payload或commit/tombstone冲突均fail closed。平台排他writer lock、durable barrier与kill-process证据未闭合前保持BLOCKED，不得以FileAccess返回OK代替durability。
-- Save线程拓扑固定：主线程只验证并移交不可变canonical bytes；唯一worker独占FileAccess、barrier/replace adapter与HashingContext，禁止访问Node/SceneTree/Resource/Signal或共享可变PackedArray；结果只进预分配SPSC mailbox，由GameRoot `app_service_result_pump`在所有TopState每render frame恰排空至多一次，并按process epoch/executor generation/operation/attempt/request唯一reduce，worker不得直调UI。当前固定`ReservationMax=1088,LatestResolutionMax=264,DiagnosticsMax=2024,SlotPayloadMax=42180,SlotEncodedMax=42392,SlotMax=65536,FileSystemSafetyMargin=65536,DiskPeakMin=262144`，超限写前失败，不动态扩容；reservation update只接受5-row payload manifest，hash只接受22-row preimage manifest。
+- 第八轮覆盖上述历史 Save 线程段：当前终局使用 `DurableReservationV2=1152`、`ReservationUpdateRequestV2(RESOLVE)+ResolveReservationPayloadV3`，MPSC native payload 为 68 bytes；容量为 `SlotPayloadMax=42244`、`SlotEncodedMax=42456`，crash fixture 为 RCO V2 11行 × RCC V2 12行 = 132 行，Meta UI 为八行。旧 1088/42180/42392/84-row/六行仅保留审计，不得生成实现输入。
+- 下方原 Save 线程长段为第七轮历史快照，仅供审计追溯；其“当前固定”数值已被本条第八轮覆盖，不得作为实现输入。
+- Save线程拓扑固定：主线程只验证并移交不可变canonical bytes；唯一worker独占FileAccess、barrier/replace adapter与HashingContext，禁止访问Node/SceneTree/Resource/Signal或共享可变PackedArray；结果只进484-byte、capacity2的typed SPSC mailbox，每个220-byte row含204-byte完整canonical result payload，由GameRoot `app_service_result_pump`在所有TopState每render frame恰排空至多一次。create V3 result必须回显source kind/command/press/request hash及operation identity；其余按epoch/generation/result kind/operation/attempt/request唯一reduce，worker不得直调UI。MVP终局只允许`ReservationUpdateRequestV2(RESOLVE)+1112-byte ResolveReservationPayloadV3`一次同槽写，不得另发SaveCommit。历史快照值`ReservationMax=1088,LatestResolutionMax=264,DiagnosticsMax=2024,SlotPayloadMax=42180,SlotEncodedMax=42392,SlotMax=65536,FileSystemSafetyMargin=65536,DiskPeakMin=262144`，超限写前失败，不动态扩容；reservation update只接受5-row payload manifest，hash只接受25-row preimage manifest（含176-byte create request），crash fixture由7-row operation truth×12-row cut truth唯一展开84行。
 - app-scope服务固定`SAVE/PROGRESSION/ZHANGTIAN/SETTLEMENT_PROFILE/AUDIO_APP`五个actual canonical row，由persistent app root按stable order一次构造、shutdown order关闭，不加入七phase participant。全部禁止battle Node/RID/Callable/可变bank引用；仅AUDIO_APP可持有预建app-scope AudioStreamPlayer，仅SAVE拥有worker，其余服务不得持有Node/RID/Callable。
-- app-scope平台adapter与业务service分表：`AppAdapterTopologyManifestV2`当前唯一actual row为`MOBILE_ACCESSIBILITY`，生命周期为persistent root create后构造、所有TopState render-frame pump、presenter detach前停止接纳并drain、root free前shutdown。`AccessibleNodeRowV2`固定248 bytes并携带layout generation、logical bounds与8个typed localization args；action-bearing states固定HOME/PREP/PRE_ACTIVE_CHOICE/BATTLE_PAUSED/SETTLEMENT/CONTROLLED_FAULT。native callback只写capacity32预分配SPSC mailbox；第33条未读callback、stale layout、epoch/generation/thread违规均fail closed，不覆盖、不动态扩容。路径与证据门见`docs/architecture/adr-0001-mobile-accessibility-bridge.md`。
+- app-scope平台adapter与业务service分表：`AppAdapterTopologyManifestV2`当前唯一actual row为`MOBILE_ACCESSIBILITY`，生命周期为persistent root create后构造、所有TopState render-frame pump、presenter detach前停止接纳并drain、root free前shutdown。`AccessibleNodeRowV2`固定248 bytes并携带layout generation、logical bounds与8个typed localization args；action-bearing states固定HOME/PREP/PRE_ACTIVE_CHOICE/BATTLE_PAUSED/SETTLEMENT/CONTROLLED_FAULT，必须匹配7 profile、94 node与34 state-variant actual rows。任意native线程只写6208-byte预分配MPSC64 ingress；producer先在单atomic i64 gate上以CAS同时验证ACCEPTING并增加IN_FLIGHT，再按per-slot sequence/CAS取得无hole ticket并release publish，完成后归还gate reference；shutdown原子清ACCEPTING并等待同一gate归零后drain，禁止分离check/increment竞态。唯一PLATFORM_SERIAL_INGRESS acquire按ticket排序、分配checked i64 native event sequence，再写capacity32、2476-byte SPSC。任一上/下游overflow、stale layout、epoch/generation/thread违规均fail closed，不覆盖、不动态扩容。四个Meta focus action只改presenter focus，activate/back才汇入owner business command；CONTROLLED_FAULT由persistent GameRoot fault presenter拥有。路径与证据门见`docs/architecture/adr-0001-mobile-accessibility-bridge.md`。
 - Progression Tree使用唯一`ProgressionProfileDomainV1`保存统一功法残页与QINGYUAN/LONGCHUN/DAYAN 0..5等级；购买走独立generic ProfileDomainMutation ABI，不伪造outcome ID。battle projection只在Loading从同一durable profile revision构建：青元attack写Damage Attack输入一次、长春maxHP沿用加法比例且L5低血恢复由Damage→Player phase6原子消费、Dayan暴击为百分点加法/拾取半径1.8..1.98/L5初始refresh3。Active不得热改。青元pierce workload、长春receipt、SkillDraft 20-call上限、残页reward owner与balance/device证据未闭合前保持BLOCKED/OPEN。
 - Godot 4.7.1 VirtualJoystick callback ABI 固定为引擎signal `pressed()`与
   `released(input_vector: Vector2)`；项目adapter用direct `Callable.bind(epoch)`形成

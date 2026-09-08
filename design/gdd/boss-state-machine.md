@@ -40,7 +40,7 @@ EnemySystem 继续拥有 `EnemyBossPoolable/v1` 载体、HP、位置、受击、
 
 ### 3.2 12:00 mandatory 入场
 
-- `BOSS_FINAL={due_tick=43200,behavior_id=8,class=BOSS,count=1}`。due tick 指 completed Active gameplay ticks；Paused 不推进，skip-over 仍只生成一次，terminal 已锁定则不生成。
+- `BOSS_FINAL={due_tick=43200,behavior_id=8,class=BOSS,count=1}`。每个Active tick以`completed_before_tick`进入phase，当前执行序号`executing_tick_ordinal=completed_before_tick+1`，phase7完成后写`completed_after_tick`；因此due tick指`executing_tick_ordinal==43200`，Paused不推进，skip-over仍只生成一次，terminal已锁定则不生成。
 - SpawnDirector 用 phase 开始时 matching Player committed position及四-strip规则在视野外生成。Boss intent priority 高于 Elite、Summon、Normal；无合法位置、Boss reserved slot不可用、Pool borrow失败或Grid publish失败均进入 `ControlledGameplayFault`，不得屏内降级或静默缺 Boss。
 - Boss 首次 authority publish tick 为 `S`；同 tick发布 `BossArrivalCueV1`，包含完整 Boss identity、来向、名称、HP bar identity与 50% 阶段刻度。预加载 fallback不可用时 Boss保持不能伤害玩家并走安全故障。
 - `ARRIVAL_LOCK=120 Active ticks`。期间 Boss可沿通用 tracking移动、被攻击、击退或击杀，但 damage/projectile/fog/summon contribution均为0；首个攻击还必须满足自身预警，入场门不能替代招式预警。

@@ -2,7 +2,7 @@
 
 > **Status**: Designed / Full Review Pending
 > **Author**: 用户 + Codex（lean authoring；consulted systems-designer / qa-lead / ux-designer / art-director）
-> **Created / Last Updated**: 2026-09-07 — mobile accessibility V2传播
+> **Created / Last Updated**: 2026-09-07 — Zhangtian第六次独立full review后mobile accessibility整改传播
 > **Implements Pillar**: 竖屏单手低打扰战斗；让生存、构筑、风险与终局信息一眼可读
 > **Scope**: MVP battle HUD、暂停/选择交互、关键提示与 terminal handoff；不含 Settlement/Home/Prep 完整页面或最终资产
 
@@ -122,7 +122,7 @@ Interaction：`DISABLED → BLOCKED → READY → PRESSED → SUBMITTING → TOU
 - 暂停按钮只请求MANUAL。标题精确为：MANUAL“试炼暂停”；LEVEL_UP“境界提升：选择一项”；TREASURE“法宝机缘：选择一项”；RISK“机缘抉择：选择一项”；APP_BACKGROUND“已安全暂停，准备好后继续”；GEOMETRY“界面已调整”。
 - MANUAL页显示只读技能/属性/进化关系；“结束试炼”先二次确认。确认请求ABANDONED，取消仍Paused。警示文案：“本局奖励、纪录与教程进度均不结算，已消耗的开局准备资源不补偿。”
 - MANUAL/APP_BACKGROUND要求fresh“继续”；纯geometry可自动；choice-only队列清空可请求resume，但其他reason仍保留时不得显示已恢复。
-- Ending仅显示noninteractive staged surface，sealed outcome后交给Settlement。`CONTROLLED_FAULT`关闭choice/pause，显示安全故障页，不伪造战果。
+- Ending仅显示noninteractive staged surface，sealed outcome后交给Settlement。进入`CONTROLLED_FAULT`时BattleUI只关闭choice/pause并detach自身交互；安全故障页由persistent GameRoot的`FaultPresentationBundleV1`与root fault presenter显示，BattleUI不生产fault snapshot、不伪造战果。
 - 缺非关键资产按`final → approved placeholder → text/shape P0 fallback`降级；缺authority source、touch terminal或topology matching不能视觉降级，必须关闭交互并fault。
 
 ## 4. Formulas
@@ -269,7 +269,7 @@ The `battle_ui_capacity` formula is defined as:
 ## 9. UI Requirements
 
 - 触屏、键盘、控制器焦点独立；复杂页面显式focus neighbor，不依赖自动猜测。
-- accessible name/state/value与reading order完整；live region只播choice打开/commit、低血首次、revive、Boss phase、terminal，禁止逐damage/cooldown播报。`BATTLE_PAUSED`是ADR-0001的action-bearing TopState，必须发布`AccessibleScreenSnapshotV2`；Active HUD不发布交互tree但GameRoot仍每render frame drain adapter mailbox。
+- accessible name/state/value与reading order完整；live region只播choice打开/commit、低血首次、revive、Boss phase、terminal，禁止逐damage/cooldown播报。`BATTLE_PAUSED`是ADR-0001的action-bearing TopState，必须按ASN05发布固定capacity24、exact bytes6060、最多21行的`AccessibleScreenSnapshotV2`，unused tail全零。`CONTROLLED_FAULT`固定capacity12 snapshot由persistent GameRoot root fault presenter按ASN07发布，BattleUI生产数0。Active HUD不发布交互tree但GameRoot仍每render frame drain adapter mailbox。
 - 248-byte row必须携带当前layout generation、safe-area logical bounds、visible/clipped及typed localization args；reflow后旧layout native action为0 command。Godot 4.7.1 Control transform、RichTextLabel、AccessibilityLiveMode等路径须目标build spike；TalkBack/VoiceOver未验证前保持`BLOCKED-ACCESSIBILITY-MOBILE-RUNTIME`。
 - 100/115/130%字体、简中、英文扩展30%、伪本地化；关键代价不可截断，不能靠缩字体过线。
 - resize/rotation期间通过GEOMETRY pause原子切layout；Active中不临时setter修补hit target。

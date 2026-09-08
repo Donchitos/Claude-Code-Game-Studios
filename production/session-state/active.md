@@ -5,13 +5,51 @@
 <!-- STATUS -->
 Epic: 引擎与系统分解
 Feature: 正式战斗切片核心系统设计
-Task: Zhangtian第四次clean-context full review的6组blocker已获授权并完成跨文档静态整改；下一步第五次fresh-context full re-review
-Current section: fourth remediation static verification complete / Re-review Pending
-File: design/gdd/zhangtian-bottle.md + Prep/Save/GameRoot/Settlement/Config/SkillDraft/Progression/Home/Audio/BattleUI/technical preferences/registry/index/review log + ADR-0001
-Review mode: full remediation author context（基于已完成的独立clean-context verdict；本整改上下文不自批）
-Status: 第四次clean-context verdict为MAJOR REVISION NEEDED / XL（前轮6组闭合1、其余5组PARTIAL），本轮6组根blocker已按用户“授权”完成第四轮作者级静态整改；diff whitespace、YAML parse、旧口径、byte-size与关键manifest计数已静态核验。相关GDD保持In Review / Re-review Pending。generated artifact、Hash256/codec/migration golden与runtime checked-sum、runtime/crash/device/accessibility/balance及第五次独立verdict仍BLOCKED/OPEN，battle_ready=false。
+Task: Zhangtian第八次fresh-context full re-review为MAJOR REVISION NEEDED / XL；用户已授权完成第八轮8组跨文档合同整改，下一步第九次fresh-context full re-review
+Current section: eighth remediation complete / Re-review Pending
+File: design/gdd/zhangtian-bottle.md + Prep/Save/GameRoot/Settlement/Config/SkillDraft/RNG/Input/Home/Audio/BattleUI/technical preferences/registry/index/review log + ADR-0001
+Review mode: full remediation author context（基于已完成的第八次独立fresh-context verdict；本整改上下文不自批）
+Status: 第七次fresh-context verdict为MAJOR REVISION NEEDED / XL；第六轮7组历史blocker裁决为0 CLOSED/7 PARTIAL，并发现7组实现前根blocker。用户回复“继续”后的作者整改已冻结204-byte create V3/484-byte mailbox、durable receipt与public result code分层、OLD/NEW scratch reconcile、7×12 crash oracle、94 node/34 state accessibility合同、typed Settlement分页及6208-byte MPSC64并发ABI并跨文档传播。静态复核通过：两份YAML parse、246个entity name唯一、HPM/RUP/RRD/RCO/RCC=25/5/13/7/12、a11y profile/node/state=7/94/34、关键ABI byte arithmetic、current-contract stale扫描与`git diff --check`。相关GDD保持In Review / Re-review Pending。generated artifact、Hash256/codec/migration golden、Godot/GDUnit4、process kill、device accessibility/gamepad、performance/audio/economy/player evidence及第八次独立verdict仍BLOCKED/OPEN，battle_ready=false。
 Constraints: 仅增量修订设计文档、registry与追踪状态；不覆盖已有dirty worktree，不改生产实现代码。本轮整改上下文不得批准自身；未执行Godot/GDUnit4/真机/性能/UX/audio验证，battle_ready=false。
 <!-- /STATUS -->
+
+<!-- EIGHTH_REMEDIATION_CURRENT -->
+第八次独立 verdict 为 `MAJOR REVISION NEEDED / XL`；本轮已完成用户授权的8组跨文档合同整改：hash 分层、create correlation/identity lease、1152/724-byte reservation、11×12=132 crash oracle、Save 六行 SGH、ADR 101-row（互斥choice）动态 choice/Settings/Input/MPSC ABI 与 43200 tick 边界。状态继续 `In Review / Re-review Pending`，`battle_ready=false`；generated/runtime/device/性能/经济证据及第九次独立复审仍 OPEN。
+<!-- /EIGHTH_REMEDIATION_CURRENT -->
+
+## Zhangtian第七轮full review后作者整改（2026-09-08）
+
+**Verdict与授权**：第七次fresh-context full re-review由persistence/engine/QA、UX/accessibility/audio specialists与全新creative-director独立综合，结论为`MAJOR REVISION NEEDED / XL`。第六轮7组闭合矩阵为0项CLOSED、7项PARTIAL；用户回复“继续”，授权按报告的完整跨文档范围推进。本作者上下文不能批准自身。
+
+**Save、恢复与crash oracle**：`ReservationCreateResultV3`固定204 bytes并回显pre-durable source correlation、durable operation/recovery identity及全部allocated identity；result enum封闭到12 codes并含`ID_EXHAUSTED`。120-byte receipt只保存durable SUCCEEDED，public delivery code独立表达SUCCEEDED/RECONCILE_FOUND。update UNCERTAIN按selected formal next/old hash唯一返回FOUND/FOUND_OLD并commit/discard scratch；7-row operation truth×12-row cut truth唯一生成84-row crash fixture。worker row/mailbox为220/484 bytes。
+
+**可访问语义、输入与并发**：ADR将group预算更名为7-row `AccessibleScreenProfileManifestV1`，另冻结94-row `AccessibleNodeContractV1`与34-row `AccessibleScreenStateVariantManifestV1`。Settings控件role/action逐类固定；Settlement新增typed detail source/page/command与AC，window capacity6。Input四个focus动作只生成presenter-local command，ACTIVATE/BACK验证node后才进入owner command gate。native入口冻结64-byte header、64×96-byte row的6208-byte MPSC，明确CAS ticket、release/acquire publication、full不推进、producer-in-flight与shutdown drain顺序。
+
+**经济量词、静态证据与边界**：AC-ZB04只在43200..108000 ticks的有随机奖励Victory/Defeat cohort比较gross rate；早败quantity0不进入rate分母。两份YAML parse、246个entity name唯一、HPM/RUP/RRD/RCO/RCC=25/5/13/7/12、a11y profile/node/state=7/94/34、204/220/484-byte Save与64/96/6208-byte MPSC算术、stale扫描和`git diff --check`均通过。当前仍只是作者静态合同传播；generated Config/hash/codec/crash/a11y/InputMap artifact、cross-platform golden、Godot/GDUnit4、平台barrier/process-kill、Android/iOS TalkBack/VoiceOver、gamepad、性能、正式音频、经济模拟与目标玩家试玩均未执行。状态保持`In Review / Re-review Pending`、`battle_ready=false`；下一步必须在fresh context执行第八次full re-review。
+
+## Zhangtian第六轮full review后作者整改（2026-09-07）
+
+**Verdict与授权**：第六次fresh-context full re-review由game/economy/systems、persistence/engine/QA、UX/accessibility/audio specialists与全新creative-director独立综合，结论为`MAJOR REVISION NEEDED / XL`。第五轮7组闭合矩阵为3项仅静态CLOSED、4项PARTIAL；用户回复“继续”，授权按报告的完整跨文档范围推进。本作者上下文不能批准自身。
+
+**Save与恢复**：MVP每局含NONE都使用176-byte `ReservationCreateRequestV2`，pre-durable duplicate/reconcile按source correlation，不要求caller猜未返回request ID。终局只允许`ReservationUpdateRequestV2(RESOLVE)+1112-byte ResolveReservationPayloadV3`一次同槽写reward/tombstone、next profile、264-byte resolution与live-carrier clear，返回160-byte `TerminalRunResultV2`；worker→main改为396-byte typed mailbox。reservation result code/disposition/presence、RRD前置invariant与12-stage×7-operation=84-row crash-cut作者manifest已冻结。
+
+**RNG、配置与经济**：pre-active base/refresh使用scratch `PreActiveRngWindowLeaseV1`，只有recovery双镜像durable后才发布cursor/offer/revision；FAILED不消费权威RNG，UNCERTAIN只reconcile。`ConfigArtifactRetentionManifestV1`在同Save schema lifetime append-only，最多32个artifact/16 MiB，突破前必须先有migration。产品承诺收窄为Victory random gross grant-rate优势；net flow另覆盖服丹/NONE、胜率、局长和饱和，不再宣称任意Victory净库存必优于Defeat。
+
+**无障碍、输入与音频**：ADR新增七个screen-state node profile；Settlement detail固定6-row分页，Settings以ADJUSTABLE/SWITCH/COMBOBOX表达。CONTROLLED_FAULT改由persistent GameRoot fault presenter拥有并支持no-profile sentinel。native入口固定MPSC64→serial ticket order/sequence allocator→capacity32 SPSC；Input冻结六行Meta UI keyboard/mapped-gamepad action，战斗移动仍仅Touch。Audio只在typed terminal disposition=RELEASED时播放返还声；正常fresh-live未静音路径exactly1，只有kill窗口0..1。
+
+**静态验证、证据边界与下一步**：两份YAML已用plain `YAML.load_file`解析；registry共243个entity name且唯一；HPM/RUP/RRD/crash-stage/node-profile作者行数为25/5/13/12/7；create request/result、update result、terminal result、RESOLVE payload、Save row/mailbox byte arithmetic分别为176/144/136/160/1112/176/396；`git diff --check`通过。当前仍仅为作者静态合同传播；generated Config/hash/codec/crash/a11y/InputMap artifact、cross-platform golden、Godot/GDUnit4、平台barrier/process-kill、Android/iOS TalkBack/VoiceOver、gamepad、性能、正式音频、经济模拟与目标玩家试玩均未执行。状态保持`In Review / Re-review Pending`、`battle_ready=false`；下一步必须在fresh context执行第七次full re-review。
+
+## Zhangtian第五轮full review授权整改（2026-09-07）
+
+**Verdict与范围**：第五次fresh-context full re-review经systems/persistence、UX/UI/QA/accessibility specialists与fresh creative-director独立综合，结论仍为`MAJOR REVISION NEEDED`、scope XL。第四轮6组blocker为0 CLOSED / 6 PARTIAL；用户回复“授权”，批准对本轮7组根blocker做完整跨文档作者整改。本会话不能批准自身。
+
+**状态机与持久语义**：删除玩家pre-durable cancel公开event/guard/action；base offer readback前interactive snapshot/action为0，LFD25只处理明确NOT_STARTED_CLEAR，任一write possible/readback unknown/durable/visible事实归LFD26。`pre_active_semantic_generation=1`不再混用runtime generation；candidate ID按`(offer_revision-1)*4+slot+1` checked生成。
+
+**Save/Hash/经济**：Save统一版本化result，新增120-byte `ReservationReceiptV1`与`ReservationCreateResultV2`，receipt ID固定等于request ID，终态不再循环分配；reconcile从12扩13行，只有双正式槽、temp、writer quiescent完整proof可清volatile correlation。Save HPM从22扩24行并覆盖direct-NONE/receipt；无障碍hash由独立6-row manifest承载。`cap_disposition`新增PARTIAL_BOTH并固定total precedence。
+
+**Config与无障碍**：author current counts统一为54 guard/72 action/5 app-render。六屏row capacity固定HOME16/PREP16/PRE_ACTIVE12/BATTLE_PAUSED24/SETTLEMENT24/CONTROLLED_FAULT12，snapshot exact bytes为4076/4076/3084/6060/6060/3084；mailbox改2476 bytes、i64 read/write sequence、NATIVE_ANY先marshal到唯一PLATFORM_SERIAL_INGRESS producer，主线程sole consumer。mapped gamepad focus/activation正式支持，raw unmapped axis为0 business command。
+
+**静态验证与下一步**：`git diff --check`、两份YAML parse与237个entity name唯一性通过；54 guard、72 action、5 app-render、24 hash-preimage、5 reservation-payload、13 reconcile rows匹配。generated canonical artifact、Hash256/codec/migration golden、Godot/GDUnit4、进程强杀、Android/iOS无障碍、gamepad、性能、音频与经济/体验证据仍未执行。状态保持`In Review / Re-review Pending`、`battle_ready=false`；下一步在fresh context执行第六次`/design-review design/gdd/zhangtian-bottle.md --depth full`。
 
 ## Zhangtian第四轮full review授权整改（2026-09-07）
 
