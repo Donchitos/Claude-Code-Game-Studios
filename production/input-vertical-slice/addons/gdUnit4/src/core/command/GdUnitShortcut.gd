@@ -1,0 +1,73 @@
+class_name GdUnitShortcut
+extends RefCounted
+
+
+enum ShortCut {
+	NONE,
+	RUN_TESTS_OVERALL,
+	RUN_TESTCASE,
+	RUN_TESTCASE_DEBUG,
+	RUN_TESTSUITE,
+	RUN_TESTSUITE_DEBUG,
+	RERUN_TESTS,
+	RERUN_TESTS_DEBUG,
+	RERUN_TESTS_UNTIL_FAILURE,
+	STOP_TEST_RUN,
+	CREATE_TEST,
+}
+
+const DEFAULTS_MACOS := {
+	ShortCut.NONE : [],
+	ShortCut.RUN_TESTCASE : [Key.KEY_META, Key.KEY_ALT, Key.KEY_F5],
+	ShortCut.RUN_TESTCASE_DEBUG : [Key.KEY_META, Key.KEY_ALT, Key.KEY_F6],
+	ShortCut.RUN_TESTSUITE : [Key.KEY_ALT, Key.KEY_META, Key.KEY_F5],
+	ShortCut.RUN_TESTSUITE_DEBUG : [Key.KEY_ALT, Key.KEY_META, Key.KEY_F6],
+	ShortCut.RUN_TESTS_OVERALL : [Key.KEY_ALT, Key.KEY_F7],
+	ShortCut.STOP_TEST_RUN : [Key.KEY_ALT, Key.KEY_F8],
+	ShortCut.RERUN_TESTS : [Key.KEY_ALT, Key.KEY_F5],
+	ShortCut.RERUN_TESTS_DEBUG : [Key.KEY_ALT, Key.KEY_F6],
+	ShortCut.RERUN_TESTS_UNTIL_FAILURE : [Key.KEY_ALT, Key.KEY_META, Key.KEY_F5],
+	ShortCut.CREATE_TEST : [Key.KEY_META, Key.KEY_ALT, Key.KEY_F10],
+}
+
+const DEFAULTS_WINDOWS := {
+	ShortCut.NONE : [],
+	ShortCut.RUN_TESTCASE : [Key.KEY_CTRL, Key.KEY_ALT, Key.KEY_F5],
+	ShortCut.RUN_TESTCASE_DEBUG : [Key.KEY_CTRL, Key.KEY_ALT, Key.KEY_F6],
+	ShortCut.RUN_TESTSUITE : [Key.KEY_ALT, Key.KEY_SHIFT, Key.KEY_F5],
+	ShortCut.RUN_TESTSUITE_DEBUG : [Key.KEY_ALT, Key.KEY_SHIFT, Key.KEY_F6],
+	ShortCut.RUN_TESTS_OVERALL : [Key.KEY_ALT, Key.KEY_F7],
+	ShortCut.STOP_TEST_RUN : [Key.KEY_ALT, Key.KEY_F8],
+	ShortCut.RERUN_TESTS : [Key.KEY_ALT, Key.KEY_F5],
+	ShortCut.RERUN_TESTS_DEBUG : [Key.KEY_ALT, Key.KEY_F6],
+	ShortCut.RERUN_TESTS_UNTIL_FAILURE : [Key.KEY_CTRL, Key.KEY_ALT, Key.KEY_F5],
+	ShortCut.CREATE_TEST : [Key.KEY_CTRL, Key.KEY_ALT, Key.KEY_F10],
+}
+
+
+const SETTINGS_MAPPING: Dictionary[ShortCut, String] = {
+	ShortCut.RUN_TESTCASE : GdUnitSettings.SHORTCUT_EDITOR_RUN_TEST,
+	ShortCut.RUN_TESTCASE_DEBUG : GdUnitSettings.SHORTCUT_EDITOR_RUN_TEST_DEBUG,
+	ShortCut.CREATE_TEST : GdUnitSettings.SHORTCUT_EDITOR_CREATE_TEST,
+	ShortCut.RERUN_TESTS : GdUnitSettings.SHORTCUT_INSPECTOR_RERUN_TEST,
+	ShortCut.RERUN_TESTS_DEBUG : GdUnitSettings.SHORTCUT_INSPECTOR_RERUN_TEST_DEBUG,
+	ShortCut.RERUN_TESTS_UNTIL_FAILURE : GdUnitSettings.SHORTCUT_INSPECTOR_RERUN_TEST_UNTIL_FAILURE,
+	ShortCut.STOP_TEST_RUN : GdUnitSettings.SHORTCUT_INSPECTOR_RUN_TEST_STOP,
+	ShortCut.RUN_TESTS_OVERALL : GdUnitSettings.SHORTCUT_INSPECTOR_RUN_TEST_OVERALL,
+	ShortCut.RUN_TESTSUITE : GdUnitSettings.SHORTCUT_FILESYSTEM_RUN_TEST,
+	ShortCut.RUN_TESTSUITE_DEBUG : GdUnitSettings.SHORTCUT_FILESYSTEM_RUN_TEST_DEBUG
+}
+
+
+static func as_property(sortcut: ShortCut) -> String:
+	return SETTINGS_MAPPING[sortcut]
+
+
+static func default_keys(shortcut: ShortCut) -> PackedInt32Array:
+	match OS.get_name().to_lower():
+		'windows':
+			return DEFAULTS_WINDOWS[shortcut]
+		'macos':
+			return DEFAULTS_MACOS[shortcut]
+		_:
+			return DEFAULTS_WINDOWS[shortcut]

@@ -1,0 +1,59 @@
+schema_version: 1
+manifest_id: RuntimeWorkloadManifestV1
+owner: InputSystem
+source_gdd: design/gdd/input-system.md
+status: BLOCKED_PENDING_MIN_SPEC_AND_PROFILER
+sample_units:
+  PHYSICS_TICK: 1
+  CONTROL_PUMP_ITERATION: 2
+  COMPLETE_OPERATION: 3
+measurement_classes:
+  STEADY_ZERO_DELTA: 1
+  COLD_MEASURE_ONLY: 2
+  MEMORY_IO: 3
+rows:
+  - row_id: INPUT_STEADY_DRAG
+    measurement_class: STEADY_ZERO_DELTA
+    sample_unit: PHYSICS_TICK
+    driver: MOVEMENT_COMMIT
+    scenario: continuous_single_touch_drag
+    start_marker: INPUT_STEADY_DRAG_BEGIN
+    end_marker: INPUT_STEADY_DRAG_END
+    exact_operation_vector: [sample, finite_guard, normalize, carrier_commit]
+  - row_id: INPUT_240HZ_DUAL_TOUCH
+    measurement_class: STEADY_ZERO_DELTA
+    sample_unit: PHYSICS_TICK
+    driver: MOVEMENT_COMMIT
+    scenario: 240hz_burst_with_dual_touch_shield_terminal
+    start_marker: INPUT_240HZ_DUAL_TOUCH_BEGIN
+    end_marker: INPUT_240HZ_DUAL_TOUCH_END
+    exact_operation_vector: [sample, finite_guard, shield_accept, shield_terminal, normalize, carrier_commit]
+  - row_id: INPUT_PAUSE_BACKGROUND_RESUME
+    measurement_class: STEADY_ZERO_DELTA
+    sample_unit: CONTROL_PUMP_ITERATION
+    driver: PAUSED_CONTROL_PUMP
+    scenario: one_hundred_pause_background_resume_cycles
+    start_marker: INPUT_PAUSE_BACKGROUND_RESUME_BEGIN
+    end_marker: INPUT_PAUSE_BACKGROUND_RESUME_END
+    exact_operation_vector: [cancel, action_clear, shield_drain, readiness_check, resume_publish]
+  - row_id: INPUT_REBUILD_COLD
+    measurement_class: COLD_MEASURE_ONLY
+    sample_unit: COMPLETE_OPERATION
+    driver: ensure_rebuilt_after_invalidation
+    scenario: geometry_revision_candidate_replace
+    start_marker: INPUT_REBUILD_COLD_BEGIN
+    end_marker: INPUT_REBUILD_COLD_END
+    exact_operation_vector: [candidate_construct, old_disconnect, old_remove, new_register, epoch_publish]
+required_bindings:
+  - config_hash
+  - coverage_manifest_hash
+  - authority_manifest_hash
+  - owner_capacity_contribution_hash
+  - native_call_allowlist_hash
+  - build_sha
+  - device_model
+  - os_version
+  - export_preset
+  - profiler_artifact
+  - positive_control
+missing_binding_result: INCONCLUSIVE

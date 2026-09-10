@@ -1,0 +1,11 @@
+[gd_scene load_steps=2 format=3 uid="uid://bm5kdwn5suu1t"]
+
+[ext_resource type="Script" path="res://addons/gdUnit4/test/spy/resources/test_scene_with_parmeters.gd" id="1_0ll7j"]
+
+[node name="TestSceneWithParmeters" type="Node2D"]
+script = ExtResource("1_0ll7j")
+
+[node name="ProgressBar" type="ProgressBar" parent="."]
+unique_name_in_owner = true
+offset_right = 4.0
+offset_bottom = 27.0

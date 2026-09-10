@@ -1,0 +1,18 @@
+[gd_scene load_steps=2 format=3 uid="uid://t87enbab7q2c"]
+
+[sub_resource type="GDScript" id="GDScript_qh6va"]
+script/source = "# build-in script
+extends Control
+
+@warning_ignore(\"unused_private_class_variable\")
+var _a: int
+"
+
+[node name="SceneWithEmbeddedScript" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = SubResource("GDScript_qh6va")

@@ -1,0 +1,19 @@
+[gd_scene load_steps=2 format=3 uid="uid://7fcklvxjr88k"]
+
+[sub_resource type="GDScript" id="GDScript_h62nu"]
+script/source = "extends Control
+
+
+func _input(event: InputEvent) -> void:
+	prints(\">>\", GdAssertMessages.input_event_as_text(event))
+	get_viewport().set_input_as_handled()
+"
+
+[node name="KeyTest" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = SubResource("GDScript_h62nu")

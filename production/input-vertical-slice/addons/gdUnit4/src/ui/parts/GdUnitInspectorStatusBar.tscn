@@ -1,0 +1,362 @@
+[gd_scene format=3 uid="uid://c22l4odk7qesc"]
+
+[ext_resource type="Script" path="res://addons/gdUnit4/src/ui/parts/GdUnitInspectorStatusBar.gd" id="3"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_mb3ih"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_wo03e"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_jh28t"]
+
+[node name="StatusBar" type="VBoxContainer" unique_id=214621769]
+anchors_preset = 10
+anchor_right = 1.0
+offset_bottom = 132.0
+grow_horizontal = 2
+size_flags_horizontal = 3
+size_flags_vertical = 2
+script = ExtResource("3")
+
+[node name="tree_tools" type="HBoxContainer" parent="." unique_id=1524945370]
+layout_mode = 2
+size_flags_vertical = 0
+
+[node name="Label" type="Label" parent="tree_tools" unique_id=226892195]
+layout_mode = 2
+size_flags_horizontal = 0
+text = "Statistics:"
+autowrap_trim_flags = 0
+justification_flags = 0
+
+[node name="timings" type="HBoxContainer" parent="tree_tools" unique_id=1494080859]
+layout_mode = 2
+size_flags_horizontal = 2
+size_flags_vertical = 4
+alignment = 1
+
+[node name="time_icon" type="TextureRect" parent="tree_tools/timings" unique_id=156277722]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 0
+size_flags_vertical = 4
+stretch_mode = 2
+
+[node name="time_value" type="Label" parent="tree_tools/timings" unique_id=387690970]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(64, 0)
+layout_mode = 2
+size_flags_horizontal = 3
+text = "0ms"
+horizontal_alignment = 2
+vertical_alignment = 1
+autowrap_trim_flags = 0
+justification_flags = 0
+
+[node name="tree_buttons" type="HBoxContainer" parent="tree_tools" unique_id=1600307316]
+layout_mode = 2
+size_flags_horizontal = 10
+size_flags_vertical = 4
+alignment = 2
+
+[node name="VSeparator" type="VSeparator" parent="tree_tools/tree_buttons" unique_id=1191926359]
+layout_mode = 2
+
+[node name="btn_tree_sync" type="Button" parent="tree_tools/tree_buttons" unique_id=2138788372]
+unique_name_in_owner = true
+layout_mode = 2
+tooltip_text = "Run discover tests."
+theme_override_styles/normal = SubResource("StyleBoxEmpty_mb3ih")
+
+[node name="btn_tree_sort" type="MenuButton" parent="tree_tools/tree_buttons" unique_id=1452127838]
+unique_name_in_owner = true
+layout_mode = 2
+tooltip_text = "Sets tree sorting mode."
+theme_override_styles/normal = SubResource("StyleBoxEmpty_wo03e")
+flat = false
+
+[node name="btn_tree_mode" type="MenuButton" parent="tree_tools/tree_buttons" unique_id=1744382439]
+unique_name_in_owner = true
+layout_mode = 2
+tooltip_text = "Sets tree presentation mode."
+theme_override_styles/normal = SubResource("StyleBoxEmpty_jh28t")
+flat = false
+
+[node name="HSeparator" type="HSeparator" parent="." unique_id=1416084348]
+layout_mode = 2
+size_flags_vertical = 4
+theme_override_constants/separation = 0
+
+[node name="MarginContainer" type="MarginContainer" parent="." unique_id=89354949]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/margin_left = 4
+theme_override_constants/margin_top = 4
+theme_override_constants/margin_right = 4
+theme_override_constants/margin_bottom = 4
+
+[node name="status_bar" type="HFlowContainer" parent="MarginContainer" unique_id=1576624226]
+layout_direction = 2
+layout_mode = 2
+size_flags_vertical = 2
+
+[node name="icon_template" type="SpinBox" parent="MarginContainer/status_bar" unique_id=1487498266]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+
+[node name="ERROR" type="HBoxContainer" parent="MarginContainer/status_bar" unique_id=310880909]
+layout_mode = 2
+tooltip_text = "Detected Errors"
+
+[node name="value" type="LineEdit" parent="MarginContainer/status_bar/ERROR" unique_id=1630464164]
+layout_mode = 2
+size_flags_horizontal = 0
+size_flags_vertical = 4
+tooltip_text = "Detected Errors"
+text = "0"
+alignment = 2
+max_length = 3
+editable = false
+context_menu_enabled = false
+emoji_menu_enabled = false
+shortcut_keys_enabled = false
+middle_mouse_paste_enabled = false
+selecting_enabled = false
+deselect_on_focus_loss_enabled = false
+drag_and_drop_selection_enabled = false
+virtual_keyboard_enabled = false
+
+[node name="icon" type="TextureRect" parent="MarginContainer/status_bar/ERROR/value" unique_id=729348405]
+layout_mode = 1
+anchors_preset = 4
+anchor_top = 0.5
+anchor_bottom = 0.5
+offset_left = 4.0
+offset_top = -8.0
+offset_right = 20.0
+offset_bottom = 8.0
+grow_vertical = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+stretch_mode = 2
+
+[node name="buttons" type="VBoxContainer" parent="MarginContainer/status_bar/ERROR" unique_id=541942806]
+layout_mode = 2
+size_flags_horizontal = 0
+
+[node name="up" type="TextureButton" parent="MarginContainer/status_bar/ERROR/buttons" unique_id=1146002542]
+layout_mode = 2
+size_flags_horizontal = 0
+size_flags_vertical = 10
+
+[node name="down" type="TextureButton" parent="MarginContainer/status_bar/ERROR/buttons" unique_id=1867410350]
+layout_mode = 2
+size_flags_horizontal = 0
+size_flags_vertical = 2
+flip_v = true
+
+[node name="FAILED" type="HBoxContainer" parent="MarginContainer/status_bar" unique_id=1390016421]
+layout_mode = 2
+tooltip_text = "Failed Tests"
+
+[node name="value" type="LineEdit" parent="MarginContainer/status_bar/FAILED" unique_id=75554621]
+layout_mode = 2
+size_flags_horizontal = 0
+size_flags_vertical = 4
+tooltip_text = "Failed Tests"
+text = "0"
+alignment = 2
+max_length = 3
+editable = false
+context_menu_enabled = false
+emoji_menu_enabled = false
+shortcut_keys_enabled = false
+middle_mouse_paste_enabled = false
+selecting_enabled = false
+deselect_on_focus_loss_enabled = false
+drag_and_drop_selection_enabled = false
+virtual_keyboard_enabled = false
+
+[node name="icon" type="TextureRect" parent="MarginContainer/status_bar/FAILED/value" unique_id=1889621378]
+layout_mode = 1
+anchors_preset = 4
+anchor_top = 0.5
+anchor_bottom = 0.5
+offset_left = 4.0
+offset_top = -8.0
+offset_right = 20.0
+offset_bottom = 8.0
+grow_vertical = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+stretch_mode = 2
+
+[node name="buttons" type="VBoxContainer" parent="MarginContainer/status_bar/FAILED" unique_id=699611313]
+layout_mode = 2
+size_flags_horizontal = 0
+
+[node name="up" type="TextureButton" parent="MarginContainer/status_bar/FAILED/buttons" unique_id=1774403865]
+layout_mode = 2
+size_flags_horizontal = 0
+size_flags_vertical = 10
+
+[node name="down" type="TextureButton" parent="MarginContainer/status_bar/FAILED/buttons" unique_id=1605438045]
+layout_mode = 2
+size_flags_horizontal = 0
+size_flags_vertical = 2
+flip_v = true
+
+[node name="FLAKY" type="HBoxContainer" parent="MarginContainer/status_bar" unique_id=480870974]
+layout_mode = 2
+tooltip_text = "Flaky Tests"
+
+[node name="value" type="LineEdit" parent="MarginContainer/status_bar/FLAKY" unique_id=2059394293]
+layout_mode = 2
+size_flags_horizontal = 0
+size_flags_vertical = 4
+tooltip_text = "Flaky Tests"
+text = "0"
+alignment = 2
+max_length = 3
+editable = false
+context_menu_enabled = false
+emoji_menu_enabled = false
+shortcut_keys_enabled = false
+middle_mouse_paste_enabled = false
+selecting_enabled = false
+deselect_on_focus_loss_enabled = false
+drag_and_drop_selection_enabled = false
+virtual_keyboard_enabled = false
+
+[node name="icon" type="TextureRect" parent="MarginContainer/status_bar/FLAKY/value" unique_id=885817973]
+layout_mode = 1
+anchors_preset = 4
+anchor_top = 0.5
+anchor_bottom = 0.5
+offset_left = 4.0
+offset_top = -8.0
+offset_right = 20.0
+offset_bottom = 8.0
+grow_vertical = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+stretch_mode = 2
+
+[node name="buttons" type="VBoxContainer" parent="MarginContainer/status_bar/FLAKY" unique_id=968503310]
+layout_mode = 2
+size_flags_horizontal = 0
+
+[node name="up" type="TextureButton" parent="MarginContainer/status_bar/FLAKY/buttons" unique_id=1127861257]
+layout_mode = 2
+size_flags_horizontal = 0
+size_flags_vertical = 10
+
+[node name="down" type="TextureButton" parent="MarginContainer/status_bar/FLAKY/buttons" unique_id=949128796]
+layout_mode = 2
+size_flags_horizontal = 0
+size_flags_vertical = 2
+flip_v = true
+
+[node name="SKIPPED" type="HBoxContainer" parent="MarginContainer/status_bar" unique_id=2053554589]
+layout_mode = 2
+tooltip_text = "Skipped Tests"
+
+[node name="value" type="LineEdit" parent="MarginContainer/status_bar/SKIPPED" unique_id=1877800941]
+layout_mode = 2
+size_flags_horizontal = 0
+size_flags_vertical = 4
+tooltip_text = "Skipped Tests"
+text = "0"
+alignment = 2
+max_length = 3
+editable = false
+context_menu_enabled = false
+emoji_menu_enabled = false
+shortcut_keys_enabled = false
+middle_mouse_paste_enabled = false
+selecting_enabled = false
+deselect_on_focus_loss_enabled = false
+drag_and_drop_selection_enabled = false
+virtual_keyboard_enabled = false
+
+[node name="icon" type="TextureRect" parent="MarginContainer/status_bar/SKIPPED/value" unique_id=932936779]
+layout_mode = 1
+anchors_preset = 4
+anchor_top = 0.5
+anchor_bottom = 0.5
+offset_left = 4.0
+offset_top = -8.0
+offset_right = 20.0
+offset_bottom = 8.0
+grow_vertical = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+stretch_mode = 2
+
+[node name="buttons" type="VBoxContainer" parent="MarginContainer/status_bar/SKIPPED" unique_id=1650258492]
+layout_mode = 2
+size_flags_horizontal = 0
+
+[node name="up" type="TextureButton" parent="MarginContainer/status_bar/SKIPPED/buttons" unique_id=357027687]
+layout_mode = 2
+size_flags_horizontal = 0
+size_flags_vertical = 10
+
+[node name="down" type="TextureButton" parent="MarginContainer/status_bar/SKIPPED/buttons" unique_id=603266459]
+layout_mode = 2
+size_flags_horizontal = 0
+size_flags_vertical = 2
+flip_v = true
+
+[node name="ORPHAN" type="HBoxContainer" parent="MarginContainer/status_bar" unique_id=1284157443]
+layout_mode = 2
+tooltip_text = "Detected Orphan Nodes"
+
+[node name="value" type="LineEdit" parent="MarginContainer/status_bar/ORPHAN" unique_id=629163801]
+layout_mode = 2
+size_flags_horizontal = 0
+size_flags_vertical = 4
+tooltip_text = "Detected Orphan Nodes"
+text = "0"
+alignment = 2
+max_length = 3
+editable = false
+context_menu_enabled = false
+emoji_menu_enabled = false
+shortcut_keys_enabled = false
+middle_mouse_paste_enabled = false
+selecting_enabled = false
+deselect_on_focus_loss_enabled = false
+drag_and_drop_selection_enabled = false
+virtual_keyboard_enabled = false
+
+[node name="icon" type="TextureRect" parent="MarginContainer/status_bar/ORPHAN/value" unique_id=2121368482]
+layout_mode = 1
+anchors_preset = 4
+anchor_top = 0.5
+anchor_bottom = 0.5
+offset_left = 4.0
+offset_top = -8.0
+offset_right = 20.0
+offset_bottom = 8.0
+grow_vertical = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+stretch_mode = 2
+
+[node name="buttons" type="VBoxContainer" parent="MarginContainer/status_bar/ORPHAN" unique_id=433516040]
+layout_mode = 2
+size_flags_horizontal = 0
+
+[node name="up" type="TextureButton" parent="MarginContainer/status_bar/ORPHAN/buttons" unique_id=159317457]
+layout_mode = 2
+size_flags_horizontal = 0
+size_flags_vertical = 10
+
+[node name="down" type="TextureButton" parent="MarginContainer/status_bar/ORPHAN/buttons" unique_id=1357830825]
+layout_mode = 2
+size_flags_horizontal = 0
+size_flags_vertical = 2
+flip_v = true
+
+[connection signal="pressed" from="tree_tools/tree_buttons/btn_tree_sync" to="." method="_on_btn_tree_sync_pressed"]

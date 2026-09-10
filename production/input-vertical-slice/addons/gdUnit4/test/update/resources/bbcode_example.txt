@@ -1,0 +1,22 @@
+[font_size=20]GdUnit3 v0.9.4 - Release Candidate[/font_size][img=4000x2]res://addons/gdUnit4/src/update/assets/horizontal-line2.png[/img]
+
+[font_size=18]Improvements[/font_size]
+[img=12x12]res://addons/gdUnit4/src/update/assets/dot1.png[/img] Added project settings to configure:
+[img=12x12]res://addons/gdUnit4/src/update/assets/dot1.png[/img] [b]Verbose Orphans[/b] to enable/disable report detected orphans
+[img]res://addons/gdUnit4/tmp-update/119266895-e09d1900-bbec-11eb-91e9-45409ba2edb2.png[/img]
+[img=12x12]res://addons/gdUnit4/src/update/assets/dot1.png[/img] [b]Server Connection Timeout Minites[/b] to set test server connection timeout in minutes
+[img=12x12]res://addons/gdUnit4/src/update/assets/dot1.png[/img] [b]Test Timeout Seconds[/b] to set the default test case timeout in seconds
+[img]res://addons/gdUnit4/tmp-update/119266875-d1b66680-bbec-11eb-856f-8fac9b0ed31c.png[/img]
+
+test seperator
+[img=4000x2]res://addons/gdUnit4/src/update/assets/horizontal-line2.png[/img]
+
+[font_size=18]Bugfixes[/font_size]
+[img=12x12]res://addons/gdUnit4/src/update/assets/dot1.png[/img] GdUnit inspecor:
+   [img=12x12]res://addons/gdUnit4/src/update/assets/dot2.png[/img] Fixed invalid test case state visualisation for detected orphan nodes   (#63)
+   [img=12x12]res://addons/gdUnit4/src/update/assets/dot2.png[/img] Fixed a ui bug to auto select the first report failure after a test run
+   [img=12x12]res://addons/gdUnit4/src/update/assets/dot2.png[/img] Fixed invalid visualisation state and error counter    (#66)
+[img=12x12]res://addons/gdUnit4/src/update/assets/dot1.png[/img] TestSuite:
+   [img=12x12]res://addons/gdUnit4/src/update/assets/dot2.png[/img] Using asserts on stage after() now reporting
+[img=12x12]res://addons/gdUnit4/src/update/assets/dot1.png[/img] Core:
+   [img=12x12]res://addons/gdUnit4/src/update/assets/dot2.png[/img] The GdUnit network layer was replaced by a new TCP server/client architecture to enable network-related testing (#64 )

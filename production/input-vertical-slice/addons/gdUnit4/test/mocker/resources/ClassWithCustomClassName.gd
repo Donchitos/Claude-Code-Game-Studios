@@ -1,0 +1,3 @@
+class_name GdUnit_Test_CustomClassName
+extends Resource
+

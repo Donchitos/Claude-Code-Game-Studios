@@ -1,0 +1,90 @@
+; Root production Godot project. Nested prototype and harness projects are isolated
+; with .gdignore files and are not part of this runtime.
+
+config_version=5
+
+[application]
+
+config/name="掌天试炼"
+run/main_scene="res://src/core/GameRoot.tscn"
+config/features=PackedStringArray("4.7")
+config/icon="res://assets/branding/app_icon.svg"
+boot_splash/fullsize=false
+
+[display]
+
+window/size/viewport_width=720
+window/size/viewport_height=1280
+window/size/window_width_override=360
+window/size/window_height_override=640
+window/stretch/mode="canvas_items"
+window/stretch/aspect="expand"
+window/handheld/orientation=1
+
+[input]
+
+ui_focus_next={
+"deadzone": 0.0,
+"events": []
+}
+ui_focus_previous={
+"deadzone": 0.0,
+"events": []
+}
+ui_focus_left={
+"deadzone": 0.0,
+"events": []
+}
+ui_focus_right={
+"deadzone": 0.0,
+"events": []
+}
+ui_activate={
+"deadzone": 0.0,
+"events": []
+}
+ui_back={
+"deadzone": 0.0,
+"events": []
+}
+ui_increment={
+"deadzone": 0.0,
+"events": []
+}
+ui_decrement={
+"deadzone": 0.0,
+"events": []
+}
+
+touch_move_left={
+"deadzone": 0.0,
+"events": []
+}
+touch_move_right={
+"deadzone": 0.0,
+"events": []
+}
+touch_move_up={
+"deadzone": 0.0,
+"events": []
+}
+touch_move_down={
+"deadzone": 0.0,
+"events": []
+}
+
+[input_devices]
+
+pointing/emulate_touch_from_mouse=false
+buffering/agile_event_flushing=false
+
+[physics]
+
+common/physics_ticks_per_second=60
+
+[rendering]
+
+renderer/rendering_method="gl_compatibility"
+renderer/rendering_method.mobile="gl_compatibility"
+textures/vram_compression/import_etc2_astc=true
+environment/defaults/default_clear_color=Color(0.025, 0.045, 0.055, 1)

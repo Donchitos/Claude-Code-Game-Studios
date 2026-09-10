@@ -1,0 +1,49 @@
+[gd_scene format=3 uid="uid://dva3tonxsxrlk"]
+
+[ext_resource type="Script" path="res://addons/gdUnit4/src/ui/parts/GdUnitInspectorProgressBar.gd" id="1"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_ayfir"]
+bg_color = Color(1, 1, 1, 0)
+
+[node name="MarginContainer" type="MarginContainer" unique_id=542070056]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/margin_left = 4
+theme_override_constants/margin_top = 2
+theme_override_constants/margin_right = 4
+theme_override_constants/margin_bottom = 2
+
+[node name="ProgressBar" type="ProgressBar" parent="." unique_id=419200362]
+custom_minimum_size = Vector2(0, 20)
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 9
+theme_override_styles/fill = SubResource("StyleBoxFlat_ayfir")
+allow_greater = true
+show_percentage = false
+script = ExtResource("1")
+
+[node name="progess_counter" type="Label" parent="ProgressBar" unique_id=648033469]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -11.5
+offset_top = -11.5
+offset_right = 11.5
+offset_bottom = 11.5
+grow_horizontal = 2
+grow_vertical = 2
+size_flags_horizontal = 6
+size_flags_vertical = 6
+horizontal_alignment = 1
+vertical_alignment = 1
+autowrap_trim_flags = 0
+justification_flags = 0
+max_lines_visible = 1

@@ -1,0 +1,150 @@
+[gd_scene format=3 uid="uid://dx7xy4dgi3wwb"]
+
+[ext_resource type="Script" path="res://addons/gdUnit4/src/ui/parts/GdUnitInspectorToolBar.gd" id="3"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_c7rhl"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_3erui"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_p22nw"]
+
+[sub_resource type="InputEventKey" id="InputEventKey_4j3on"]
+alt_pressed = true
+pressed = true
+keycode = 4194338
+physical_keycode = 4194338
+
+[sub_resource type="Shortcut" id="Shortcut_5pa04"]
+events = [SubResource("InputEventKey_4j3on")]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_3lcek"]
+
+[sub_resource type="InputEventKey" id="InputEventKey_85ykl"]
+alt_pressed = true
+pressed = true
+keycode = 4194336
+physical_keycode = 4194336
+
+[sub_resource type="Shortcut" id="Shortcut_fpubx"]
+events = [SubResource("InputEventKey_85ykl")]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_ndw0i"]
+
+[sub_resource type="InputEventKey" id="InputEventKey_1iti7"]
+alt_pressed = true
+pressed = true
+keycode = 4194337
+physical_keycode = 4194337
+
+[sub_resource type="Shortcut" id="Shortcut_hpi24"]
+events = [SubResource("InputEventKey_1iti7")]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_eoihf"]
+
+[sub_resource type="InputEventKey" id="InputEventKey_hb3do"]
+alt_pressed = true
+pressed = true
+keycode = 4194339
+physical_keycode = 4194339
+
+[sub_resource type="Shortcut" id="Shortcut_lm2q6"]
+events = [SubResource("InputEventKey_hb3do")]
+
+[node name="ToolBar" type="HBoxContainer" unique_id=295615556]
+anchors_preset = 10
+anchor_right = 1.0
+offset_bottom = 32.0
+grow_horizontal = 2
+script = ExtResource("3")
+
+[node name="tools" type="HBoxContainer" parent="." unique_id=753222103]
+layout_mode = 2
+size_flags_horizontal = 0
+size_flags_vertical = 4
+
+[node name="help" type="Button" parent="tools" unique_id=1834372497]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_styles/normal = SubResource("StyleBoxEmpty_c7rhl")
+
+[node name="tool" type="Button" parent="tools" unique_id=144277615]
+unique_name_in_owner = true
+layout_mode = 2
+tooltip_text = "GdUnit Settings"
+theme_override_styles/normal = SubResource("StyleBoxEmpty_3erui")
+
+[node name="controls" type="HBoxContainer" parent="." unique_id=108317981]
+layout_mode = 2
+size_flags_horizontal = 6
+size_flags_vertical = 4
+alignment = 1
+
+[node name="VSeparator3" type="VSeparator" parent="controls" unique_id=1244151035]
+layout_mode = 2
+
+[node name="run_overall" type="Button" parent="controls" unique_id=95775836]
+unique_name_in_owner = true
+use_parent_material = true
+layout_mode = 2
+tooltip_text = "Run overall tests"
+theme_override_styles/normal = SubResource("StyleBoxEmpty_p22nw")
+shortcut = SubResource("Shortcut_5pa04")
+metadata/GdUnitCommand = "Run Tests Overall"
+
+[node name="run" type="Button" parent="controls" unique_id=121281977]
+unique_name_in_owner = true
+use_parent_material = true
+layout_mode = 2
+tooltip_text = "Rerun unit tests"
+theme_override_styles/normal = SubResource("StyleBoxEmpty_3lcek")
+disabled = true
+shortcut = SubResource("Shortcut_fpubx")
+metadata/GdUnitCommand = "Run Inspector Tests"
+
+[node name="debug" type="Button" parent="controls" unique_id=1188465777]
+unique_name_in_owner = true
+use_parent_material = true
+layout_mode = 2
+tooltip_text = "Rerun unit tests (Debug)"
+theme_override_styles/normal = SubResource("StyleBoxEmpty_ndw0i")
+disabled = true
+shortcut = SubResource("Shortcut_hpi24")
+metadata/GdUnitCommand = "Debug Inspector Tests"
+
+[node name="stop" type="Button" parent="controls" unique_id=2086070257]
+unique_name_in_owner = true
+use_parent_material = true
+layout_mode = 2
+tooltip_text = "Stops runing unit tests"
+theme_override_styles/normal = SubResource("StyleBoxEmpty_eoihf")
+disabled = true
+shortcut = SubResource("Shortcut_lm2q6")
+metadata/GdUnitCommand = "Stop Test Session"
+
+[node name="VSeparator4" type="VSeparator" parent="controls" unique_id=1661024234]
+layout_mode = 2
+
+[node name="CenterContainer" type="HBoxContainer" parent="." unique_id=1521483443]
+use_parent_material = true
+layout_mode = 2
+size_flags_horizontal = 10
+size_flags_vertical = 4
+alignment = 2
+
+[node name="version" type="Label" parent="CenterContainer" unique_id=558200171]
+unique_name_in_owner = true
+auto_translate_mode = 2
+use_parent_material = true
+layout_mode = 2
+size_flags_horizontal = 2
+size_flags_vertical = 13
+localize_numeral_system = false
+horizontal_alignment = 1
+justification_flags = 160
+
+[connection signal="pressed" from="tools/help" to="." method="_on_wiki_pressed"]
+[connection signal="pressed" from="tools/tool" to="." method="_on_btn_tool_pressed"]
+[connection signal="pressed" from="controls/run_overall" to="." method="_on_button_pressed" flags=18]
+[connection signal="pressed" from="controls/run" to="." method="_on_button_pressed" flags=18]
+[connection signal="pressed" from="controls/debug" to="." method="_on_button_pressed" flags=18]
+[connection signal="pressed" from="controls/stop" to="." method="_on_button_pressed" flags=18]

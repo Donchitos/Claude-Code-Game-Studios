@@ -1,8 +1,8 @@
 # InputSystem（输入系统）
 
-> **Status**: Re-review Pending — GameRoot第十轮契约后又同步Player四字段carrier/phase-context identity边界；须独立复审
+> **Status**: In Review / Re-review Pending — 2026-09-10 clean-context full review verdict `BLOCKED / XL`（至少 `MAJOR REVISION NEEDED / XL`）；当前不得宣称 implementation-ready 或 battle_ready
 > **Owner**: ux-designer + gameplay-programmer
-> **Last Updated**: 2026-09-08 — Zhangtian第七次独立full review后Meta UI本地focus/owner command边界传播
+> **Last Updated**: 2026-09-10 — 新一轮clean-context独立full re-review已完成；正式生产实现、端到端ABI、设备与性能证据仍阻断
 > **Depends on**: GameRoot & Scene Flow（Re-review Pending，phase/barrier与persistent root Window物理输入gate设计契约已同步）、Godot 4.7.1 `VirtualJoystick` / `Viewport.gui_disable_input`、项目 InputMap
 > **Downstream**: PlayerController（多轮整改后Full Re-review Pending）、BattleUI（Designed / Full Review Pending）
 > **Implements Pillar**: ① 移动躲避+自动御剑+功法进化的爽快度（移动手感）
@@ -36,7 +36,7 @@ InputSystem 同时参加 `POST_DEFERRED_BARRIER`：GameRoot latch pause intent �
 | MUI07/7 | UI_INCREMENT | Plus / Equal | GamepadRightShoulder | INCREMENT |
 | MUI08/8 | UI_DECREMENT | Minus | GamepadLeftShoulder | DECREMENT |
 
-allowed TopStates对八行均为`HOME|PREP|PRE_ACTIVE_CHOICE|BATTLE_PAUSED|SETTLEMENT|CONTROLLED_FAULT`，但active presenter仍按逐节点manifest验证target/enabled/action；PRE_ACTIVE_CHOICE的BACK节点可读但disabled并产生0 business command。analog stick必须先经Godot InputMap deadzone与数字化action映射；未经mapping的raw axis为0业务命令。八行缺失/重复/额外binding、焦点邻接缺失或任何row写movement action/carrier均`INVALID_INPUT_MAP`。同一screen/layout generation内，每个OS/Godot event先取得checked `input_event_id`；presenter的`UiActivationGateV1={screen_generation,layout_generation,node_id,accepted_command_id}`只接受首个未消费ACTIVATE/BACK/INCREMENT/DECREMENT，直到owner reducer消费并推进command ID。keyboard/gamepad/touch/native accessibility各自是独立事件；只有相同event ID或相同accepted command ID才视为duplicate，禁止按“同一帧”误合并两个真实玩家动作。
+allowed TopStates对八行均为`HOME|PREP|PRE_ACTIVE_CHOICE|BATTLE_ACTIVE|BATTLE_PAUSED|SETTLEMENT|CONTROLLED_FAULT`；在`BATTLE_ACTIVE`仅允许`ACTIVATE_FOCUSED`命中`7001/BATTLE_ACTIVE_PAUSE`，其余Meta action只能产生0业务命令并仍须drain。active presenter仍按逐节点manifest验证target/enabled/action；PRE_ACTIVE_CHOICE的BACK节点可读但disabled并产生0 business command。analog stick必须先经Godot InputMap deadzone与数字化action映射；未经mapping的raw axis为0业务命令。八行缺失/重复/额外binding、`DirectionalFocusNeighborManifestV1`缺失/不匹配或任何row写movement action/carrier均`INVALID_INPUT_MAP`。方向焦点必须引用ADR-0001的variant级canonical manifest、`algorithm_version`与golden，不得由presenter或Godot自动猜测。 同一screen/layout generation内，每个OS/Godot event先取得checked `input_event_id`；presenter的`UiActivationGateV1={screen_generation,layout_generation,node_id,accepted_command_id}`只接受首个未消费ACTIVATE/BACK/INCREMENT/DECREMENT，直到owner reducer消费并推进command ID。keyboard/gamepad/touch/native accessibility各自是独立事件；只有相同event ID或相同accepted command ID才视为duplicate，禁止按“同一帧”误合并两个真实玩家动作。
 
 ## Player Fantasy
 
@@ -59,7 +59,7 @@ allowed TopStates对八行均为`HOME|PREP|PRE_ACTIVE_CHOICE|BATTLE_PAUSED|SETTL
 
 > preactive invalidation命中后initialize必须立即返回，禁止继续seed/connect/arm；只有latch为空的分支才可执行trusted tick seed及后续步骤。
 
-1. **参与者与顺序**：InputSystem phase participant 在 BATTLE_LOADING 固定注册，允许 phase 为 `MOVEMENT_COMMIT` 与 `POST_DEFERRED_BARRIER`。在 `MOVEMENT_COMMIT` 内必须先于 PlayerController；Active 后不可增删或重排。
+1. **参与者与顺序**：InputSystem phase participant 在 BATTLE_LOADING 固定注册，允许 phase 为 `MOVEMENT_COMMIT` 与 `POST_DEFERRED_BARRIER`。其唯一 canonical row 为`INPUT_PHASE_ROW_V1={participant_id=INPUT,role_id=INPUT,stable_order=1,allowed_phases={MOVEMENT_COMMIT,POST_DEFERRED_BARRIER},allowed_success_statuses={OK},owner_contract_id=InputSystem/v1,owner_gdd_path=design/gdd/input-system.md,phase_row_id=INPUT_PHASE_ROW_V1,required=true}`；在 `MOVEMENT_COMMIT` 内必须先于 PlayerController；Active 后不可增删或重排。`OK_NOOP`不是Input participant success status，Input无业务字段贡献时仍必须返回`OK`并完成phase row exactly-once。
 2. **驱动职责分离与callback ABI**：pausable 的 InputSystem phase participant 禁定义 `_process`/`_physics_process`，仅由 GameRoot `run_phase(phase, context, lease_id) -> int status` 驱动。唯一GameRoot集中编排节点精确使用`PROCESS_MODE_ALWAYS`，作为项目禁participant自主process规则的显式例外：其`_physics_process(delta: float) -> void`仅在SceneTree未暂停且GameRoot处于允许技术tick的状态时驱动七个physics phase；其`_process(delta: float) -> void`仅在`BATTLE_PAUSED/RESUME_PREPARING`驱动control pump，未暂停时不得重复驱动七phase。两个callback都必须先做顶层state/pause gate，不能双跑phase或把Paused误跑为gameplay phase。`VirtualJoystickHost` 是独立的 `Control`/GUI adapter，使用 `PROCESS_MODE_ALWAYS` 接收引擎 GUI event、lifecycle notification与内置节点signal，并唯一持有预创建typed `MovementIngressShield`；shield同样固定为`PROCESS_MODE_ALWAYS`，Host只维护其预分配held-touch bank与只读阻塞predicate。Godot 4.7.1的VJ信号精确为`pressed()`与`released(input_vector: Vector2)`，没有独立`canceled` signal；项目adapter固定为`_on_vj_pressed(callback_epoch: int) -> void`与`_on_vj_released(input_vector: Vector2, callback_epoch: int) -> void`，其中epoch由主线程direct `Callable.bind(epoch)`追加。Host保存同一`pressed_callable/released_callable`身份并在旧节点移出树前精确disconnect；shield入口固定为`_gui_input(event: InputEvent) -> void`，Host lifecycle入口固定为`_notification(what: int) -> void`。ScreenTouch canceled由shield `_gui_input`处理，或在已归属VJ时经引擎non-pressed路径最终触发`released`，不得伪造第三种VJ callback。`callbacks_armed=true`只表示普通signal/GUI callback可进入adapter，直至teardown才关闭；`runtime_ingress_armed=true`只允许ACTIVE下新的VJ press、generation与movement action/carrier路径；`shield_bank_service_enabled=true`只允许LOCK_PENDING/FROZEN/RESUME_LOCKED下shield按current-epoch FSM写bank、choice predicate与first-error latch。consumer closed时旧VJ current-epoch terminal仍可在`callbacks_armed=true`下清claim/pending release，但不得创建新generation或movement intent。preactive阶段两类service都为false，touch统一走PREACTIVE_DISCARD，lifecycle callback只允许写preactive invalidation latch；runtime ingress曾开放后，仅APP_BACKGROUND/geometry invalidation callback除普通字段外，允许对当前active node执行一次预冻结的`mouse_filter=MOUSE_FILTER_IGNORE`或经Godot 4.7.1验证的等价hit-route disable。普通pause不得把仍持有claim的VJ改为IGNORE，而由同步state/cancel路径关闭runtime ingress并打开shield service。Host/shield callback不执行safe close、不发布gameplay intent、不写actions/carrier、不推进GameRoot/Input顶层状态；GameRoot paused control pump在引擎恢复派发main-loop后的最迟下一iteration调用typed `service_pending_input_fault`消费异步failure。
 3. **固定输入架构**：MVP 使用 Godot 4.7.1 内置 `VirtualJoystick`、`JOYSTICK_DYNAMIC`、`VISIBILITY_WHEN_TOUCHED` 和四个预声明 `StringName` action；不再保留“内置或自定义”双轨实现。稳定 API 边界上 Host 恰有一个在树、已连接的registered active VirtualJoystick与恰一个预创建、在树、typed `MovementIngressShield`。`shield_bank_capacity=max(manifest.max_concurrent_touches)`，其中max遍历本artifact全部支持Android/iOS设备的冻结`SupportedTouchEventOrderingManifest`且结果必须为正；bank按并发entry定容，以固定槽查找任意非负、可稀疏的`touch_index`，禁止以index直接寻址或运行时扩容。shield初始化只验证可内省事实：owner identity、Host/shield/registered VJ的精确process mode、默认effective closed、完整movement rect覆盖、位于交互UI下/VJ上、ancestor递归mouse/process均启用、consumer-closed时`get_mouse_filter_with_override()==MOUSE_FILTER_STOP`、ACTIVE时effective filter为IGNORE及bank容量；任一不满足返回`INVALID_CONFIG`且input不开放。`accept_event()`不属于可内省初始化属性，改由静态call-site与行为AC证明。只有`shield_bank_service_enabled=true`且state∈`{LOCK_PENDING,FROZEN,RESUME_LOCKED}`时才按Shield Bank FSM消费movement touch：新的current-epoch非负index press占用一个FREE槽并成为HELD；同一`{shield_epoch,touch_index}` duplicate press只消费并计诊断，不新增entry、不刷新epoch；matching release或`InputEventScreenTouch.is_canceled()`恰释放一次；duplicate/unknown/stale terminal只计诊断；terminal后新的press才可重新占用。UNARMED/armed-IDLE是明确例外：shield service=false，只PREACTIVE_DISCARD且bank始终空。capacity已满、负index或本地FSM非法边只由shield-service callback写`INVALID_ARGUMENT` first-error-wins latch、调用`accept_event()`并保持shield/consumer closed，safe close仅由随后同步Public API执行。跨epoch反序等callback不可辨识的平台违例不要求伪检测，只由`SupportedTouchEventOrderingManifest`与真机trace判FAIL。shield存在held touch时保持effective STOP以接收其motion/terminal且`is_choice_input_blocked()==true`；全部matching terminal后才允许撤shield并等待fresh OS press。已有VJ touch-focus的release/cancel仍直达保持`PROCESS_MODE_ALWAYS`且非IGNORE的旧VJ；Godot 4.7.1将canceled ScreenTouch作为非pressed分支触发VJ release/reset。rebuild内部registered VJ允许短暂为0，但旧、新节点不得同时对new press可达。普通暂停保留VJ及shield epoch直到matching terminal；APP_BACKGROUND或safe geometry invalidation不等待缺失terminal，consumer-closed rebuild同时checked推进VJ `gesture_epoch`与`shield_epoch`并清空旧epoch held bank，旧epoch迟到事件只计诊断；完成preflight后仍只接受fresh OS press。
 4. **唯一 deadzone**：`VirtualJoystick.deadzone_ratio=0.15`（provisional tuning）；四个 InputMap action deadzone 固定为 `0.0`，InputSystem 调 `Input.get_vector(..., 0.0)`，禁止再次判 px deadzone。
@@ -71,6 +71,8 @@ allowed TopStates对八行均为`HOME|PREP|PRE_ACTIVE_CHOICE|BATTLE_PAUSED|SETTL
 
 > Core Rule 10及后文未另行限定的“consumer closed时new press进入shield bank”只指runtime ingress曾开放后的LOCK_PENDING/FROZEN/RESUME_LOCKED；UNARMED/armed-IDLE始终按PREACTIVE_DISCARD且不形成held。Active中的退出请求必须先由GameRoot置`manual_exit_pending=true`并走同一`MANUAL`安全暂停；破坏性的退出确认只允许在`BATTLE_PAUSED`、consumer closed且两类held predicate clean时接受。Input只负责对应UI触点的现有fresh-press/terminal约束，不得从ACTIVE直接触发teardown或Save。
 
+`cancel_input`是consumer-close操作，不是终止操作：它只负责按当前state提交`LOCK_PENDING/FROZEN/RESUME_LOCKED`安全边界、清理action/carrier并保留旧claim的terminal责任；它不得直接写`TERMINATED`。只有同一owner的`teardown`才提交`TERMINATED=false/false/false`，随后执行disconnect/remove/queue_free。历史文字中的“cancel then terminal”均解释为“cancel成功后由GameRoot进入teardown”，不得实现为cancel自身的隐式terminal迁移。
+
 10. **fresh press、resume intent、background revision 与held drain**：普通 cancel 时仍 held 的旧 movement claim 进入 ignored-until-terminal；consumer closed期间movement rect中的new press由shield消费并成为shield-held touch，永不到达VJ/gesture FSM。GameRoot仅在旧VJ claim与shield-held bank都为空时才可开始resume。`resume_requested_latched`是唯一幂等bool，不计数、不排队：choice-only在全部blocking choice提交完成且无`MANUAL/APP_BACKGROUND` reason时置true；manual pause只在合法Continue被接受后置true；始终foreground的`INPUT_GEOMETRY_CHANGED`在reconfigure preflight、Grid pause/quarantine与FROZEN publish均成功且无blocking choice/MANUAL/APP_BACKGROUND残留时自动置true；geometry与choice重叠时等待preflight与全部choice完成后自动置true。GameRoot另持有checked monotonic `background_readiness_required_revision`与`background_readiness_acked_revision`：每个新的APP_BACKGROUND revision将required推进到最新值并立即使readiness gate未满足，duplicate同revision不推进；多个尚未确认的background可coalesce为最新revision。任意组合仍有`APP_BACKGROUND`时，foreground preflight/FROZEN/choice完成后仍保持Paused，合法readiness/Continue只确认当时最新required revision并令acked追平required；任意组合仍有`MANUAL`也必须等待Continue，MANUAL与APP_BACKGROUND重叠由同一个合法Continue同时满足manual intent与当时最新background revision，不叠加两次确认。background与geometry合并时background hold优先。`can_start_resume`必须同时满足`resume_requested_latched=true`、`background_readiness_acked_revision==background_readiness_required_revision`及held predicate clean；因此Continue后、ACTIVE publish前到达的新background revision即使保留generic resume latch也必须重新等待一次确认。readiness/Continue press只产生resume intent/ack，不得建立movement generation；ACTIVE后仍要求新的OS movement press。duplicate/coalesced reason不累计intent、不重复choice effect。generic latch只有ACTIVE publish成功、battle ending或fault cleanup才清除，不可逆点前的合法held或invalidation rollback必须保留；background ack不得跨越更新的required revision。每个resume attempt只捕获一次`attempt_input_rebuild_revision/attempt_background_revision/attempt_geometry_snapshot`；prepare、arm、swap、Grid/Pool/authority三次matching publish的相邻checkpoint之间、三次publish后、lease/quarantine cleanup后、每个held-drain iteration及最终ACTIVE尾段都必须比较当前revision/invalidation与该快照，pending Input fault与held检查不能替代。resume开始后、首次Grid publish前若出现shield-held touch，须abort未发布candidate、matching close lease、发布`RESUME_LOCKED→FROZEN`并回Paused等待terminal，不视为failure；matching release/cancel且pending fault service=OK后，只要完整`can_start_resume`为true且无resume transaction在途，paused pump必须自动且恰启动一次新resume attempt，不要求第二次Continue、不重复提交choice effect。连续提前press可重复安全rollback，但始终只有一个latched intent与一个在途attempt。不可逆点后出现held touch且无revision/invalidation变化时，须完成matching publish与所有lease/quarantine cleanup，保持SceneTree paused、consumer closed且state=`RESUME_LOCKED`，在无open lease的`RESUME_HELD_DRAIN`尾段等待bank清空；若不可逆点后出现新的input/background revision或invalidation latch，则仍完成正确tx的matching publish与全部cleanup，但必须保持`foreground_input_blocked=true`并进入fault，禁止清block、进入/继续held drain或发布ACTIVE。最终尾段只有在`required==acked==attempt_background_revision`、`input_rebuild_revision==attempt_input_rebuild_revision`、无新invalidation/pending fault且held为空时才可原子发布ACTIVE，不重跑Grid/Pool resume。随后必须观察新的OS `pressed`才建立generation，旧VJ或shield触点的motion/terminal都不得自动晋升为movement。cancel时无旧claim且shield bank为空则直接处于`WAIT_FRESH_PRESS`，不要求虚构terminal。选择UI中的press仍按choice gate处理；它由上层UI拥有touch focus，不登记为shield-held touch；其matching terminal ownership由IG-IS3关闭，未关闭前不得宣称integration-ready。
 
 > **Root Window physical gate + ACTIVE activation guard（权威阶段矩阵）**：所有`IDLE/RESUME_LOCKED→ACTIVE`都由唯一GameRoot管理persistent root Window；该Window同时承载Stage Camera与Host/Shield/VJ/BattleUI，MVP不创建逐局SubViewport。概念阶段固定为`PRE_ACQUIRE→SET_TRUE_IN_FLIGHT→GATE_HELD→reasoned release`。loading全过程固定`callbacks_armed=true、runtime_ingress_armed=false、shield_bank_service_enabled=false`，因此touch只走PREACTIVE_DISCARD；resume全过程直到ACTIVE局部提交固定`callbacks_armed=true、runtime_ingress_armed=false、shield_bank_service_enabled=true`，因此consumer-closed ScreenTouch可由shield FSM登记/清除bank，但不能进入VJ或movement路径。`PRE_ACQUIRE`先验证Input accumulated实时readback与ProjectSettings agile冻结值均false、root Window及Host/Shield/VJ identity、`gui_disable_input=false`且`viewport_input_gate_owned=false`；任一失败不取得owner、不调用setter。验证通过后checked置owner sentinel并调用`set_disable_input(true)`；setter-in-flight只允许既有typed latch/diagnostic或shield containment。true返回/readback后才进入`GATE_HELD`并保证Window/Control/VJ零投递。GameRoot执行service/revision/held observer，clean才`set_pause(false)`；返回后再显式observer，不依赖pause notification。两次observerclean才发布Input ACTIVE与GameRoot ACTIVE，最后`release_viewport_input_gate(ACTIVATION_SUCCESS)`调用false；false返回是物理route唯一0→1点。held-only先repause并reasoned release回drain；failure保持gate至battle input child detach且Home/Fault UI成为唯一target。项目静态审计要求GameRoot外root Window setter writer=0，并禁止activation callback直接注入InputEvent；完整同步重入矩阵以GameRoot R7/GATE-OQ-VIEWPORT为唯一权威。
@@ -80,7 +82,7 @@ allowed TopStates对八行均为`HOME|PREP|PRE_ACTIVE_CHOICE|BATTLE_PAUSED|SETTL
 > **第十轮GameRoot传播**：GameRoot的ALWAYS `_process`包含互斥的Paused/Resume control pump与无gameplay effect lifecycle pump。后者的资格由`ActivationCommitJournal/CleanupSubstate尚未terminal`决定，不限于旧TopState，因此top-state checkpoint完成后仍可推进。normal destination先`STAGED_NONINTERACTIVE`，逐checkpoint满足expose-or-NA、top-state、ACTIVE、release；retryable Loading使用`ExposureRequirement.NOT_APPLICABLE`。连续三次gate失败固定为`SAFE_TERMINAL_NONINTERACTIVE`且release=0。Input只提供terminal/callback清零后置条件，不拥有CleanupSubstate、ActivationCommitJournal、DestinationUIState或激活manifest。
 
 > Host的signal、`_gui_input`、`_notification`与其他引擎虚回调必须逐项登记在GameRoot `GameplayCallbackAllowlist`。回调只可写allowlist明列的control/invalidation/diagnostic latch；`NOTIFICATION_PAUSED/UNPAUSED`不得直接写movement、action、carrier、phase、顶层state或resume intent。GameRoot在preflight、每个ACTIVE physics tick前与resume checkpoints readback `Engine.physics_ticks_per_second==60`、`Engine.time_scale==1.0`及冻结Viewport topology；Input只消费通过门控后的调用。
-11. **唯一移动输入源**：四个 movement action 在生产 InputMap 中必须存在、互异、deadzone=0 且 `action_get_events(action).is_empty()`；生产设置 `input_devices/pointing/emulate_touch_from_mouse=false`。除内置 VirtualJoystick 的原生 action writer 与 InputSystem 私有 `release_movement_actions_and_clear` helper 外，项目 GDScript 不得对四 action 调用 `Input.action_press/release`；Host rebuild不得另写 actions。原始键盘、原始鼠标和gamepad不得改变movement carrier；mapped gamepad/keyboard只允许命中六行Meta UI action并由presenter生成typed UI command。直接注入的合法 `InputEventScreenTouch` 与真实 touch 使用同一引擎路径，属于有效输入，不虚构 device/synthetic filter。
+11. **唯一移动输入源**：四个 movement action 在生产 InputMap 中必须存在、互异、deadzone=0 且 `action_get_events(action).is_empty()`；生产设置 `input_devices/pointing/emulate_touch_from_mouse=false`。除内置 VirtualJoystick 的原生 action writer 与 InputSystem 私有 `release_movement_actions_and_clear` helper 外，项目 GDScript 不得对四 action 调用 `Input.action_press/release`；Host rebuild不得另写 actions。原始键盘、原始鼠标和gamepad不得改变movement carrier；mapped gamepad/keyboard只允许命中八行Meta UI action并由presenter生成typed UI command。直接注入的合法 `InputEventScreenTouch` 与真实 touch 使用同一引擎路径，属于有效输入，不虚构 device/synthetic filter。
 12. **单拇指 UX 与坐标 owner**：Dynamic 起按区为转换到 Host local Canvas 坐标后的interactive safe viewport下方45%，排除HUD、暂停按钮、活动bottom sheet与尚未被display safe area覆盖的system navigation gesture inset；左右手均可在不换握、不借助另一只手的条件下完成移动与选择。`SafeViewportGeometryProvider` 是 `display physical → window client physical → viewport logical → Host local Canvas` 转换及`residual_navigation_gesture_insets`的唯一owner；每个支持artifact须由冻结平台manifest证明inset已包含于display safe area（此时residual为0）或提供四边非负physical inset再走同一变换，禁止默认safe area自动覆盖系统手势区或跳过viewport stretch/final transform。
 13. **项目自有热路径禁已知分配构造**：范围为 InputSystem GDScript 的 action polling、normalization、carrier write 与普通 pause cancel；静态守卫只证明显式 denylist 未出现，不宣称证明引擎 C++、operator 或 native call 零分配。APP_BACKGROUND/geometry invalidation节点重建是非稳态lifecycle例外，须在gameplay重新开放前完成。
 14. **无 hover**：所有交互仅由 touch press/drag/release/cancel 驱动，不设计 hover 状态。
@@ -136,7 +138,7 @@ APP_BACKGROUND 与 `INPUT_GEOMETRY_CHANGED` 是 GameRoot pause reason，不是 I
 
 ### Runtime Contracts
 
-> 本文件后续出现的“同revision + fingerprint + canonical geometry fields”均为简写，权威含义固定为：geometry与instance-frozen candidate-config两个fingerprint均相等，且两组完整canonical fields逐项exact equality；任何旧句不得被解释为只比较geometry。
+> 本文件后续出现的“同revision + fingerprint + canonical geometry fields”均为简写，权威含义固定为：`geometry_revision`与`input_rebuild_revision`二元版本组匹配，geometry与instance-frozen candidate-config两个fingerprint均相等，且两组完整canonical fields逐项exact equality；任何旧句不得被解释为只比较geometry或只比较单一revision。
 
 - **MOVEMENT_COMMIT**：InputSystem 先写 carrier，PlayerController 后读；同 tick 顺序由 GameRoot 固定注册表保证。
 - **POST_DEFERRED_BARRIER**：若 `context.pause_intent_latched=true`，InputSystem 执行 `cancel_input(context.pause_reason, context.tick_revision)`；返回 `OK` 后 GameRoot 才能调用 Grid pause并进入 PAUSE_PENDING/BATTLE_PAUSED。
@@ -175,7 +177,7 @@ func clear(tick_revision: int) -> void:
 
 ### Public API and Status
 
-`InputStatus` 是 primitive int enum；只有 `OK` 属于 success class：`OK`、`INVALID_ARGUMENT`、`INVALID_CONFIG`、`INVALID_INPUT_MAP`、`NON_FINITE_INPUT`、`WRONG_STATE`、`WRONG_PHASE`、`STALE_TICK`、`GENERATION_EXHAUSTED`、`ACTION_CLEAR_FAILED`、`JOYSTICK_REBUILD_FAILED`。
+`InputStatus` 是 primitive int enum；只有 `OK` 属于 success class：`OK`、`INVALID_ARGUMENT`、`INVALID_CONFIG`、`INVALID_INPUT_MAP`、`NON_FINITE_INPUT`、`WRONG_STATE`、`WRONG_PHASE`、`STALE_TICK`、`GENERATION_EXHAUSTED`、`ACTION_CLEAR_FAILED`、`JOYSTICK_REBUILD_FAILED`。错误归属固定为：几何/候选配置/manifest前置失败=`INVALID_CONFIG`；四个专用action缺失、重复或存在非空event binding、或生产emulation未关闭=`INVALID_INPUT_MAP`；VJ实例候选替换、旧回调断开、新实例登记或树操作失败=`JOYSTICK_REBUILD_FAILED`，不得用后者掩盖更早的配置或InputMap错误。
 
 | API | Legal caller/state | Success postcondition | Failure postcondition |
 |---|---|---|---|
@@ -184,7 +186,7 @@ func clear(tick_revision: int) -> void:
 | `run_phase(phase,context,lease_id)->int` | GameRoot / Input state ACTIVE或LOCK_PENDING，且GameRoot处于对应ACTIVE/PAUSE_PENDING合法phase | MOVEMENT_COMMIT完整写carrier，或barrier完整cancel | carrier保持调用前值；NON_FINITE_INPUT或异步错误闩锁按安全规则完整clear |
 | `cancel_input(reason,tick_revision)->int` | GameRoot / 仅允许下方state×reason矩阵 | ACTIVE来源先由`commit_consumer_closed()`原子进入LOCK_PENDING=`true/false/true`，再设shield STOP、clear actions/carrier；既有locked state保持`true/false/true`后STOP/clear；IDLE ending/fault保持`true/false/false`、PREACTIVE_DISCARD并clear，随后直接teardown | 前置argument/tick/state/reason失败零修改；close commit后的`ACTION_CLEAR_FAILED`仍强制carrier当前tick精确clear、pending release空，ACTIVE来源保持LOCK_PENDING=`true/false/true`，locked保持原合法tuple，IDLE保持`true/false/false`，均不得回滚或部分开放 |
 | `service_pending_input_fault(tick_revision)->int` | GameRoot paused control pump / IDLE、LOCK_PENDING、FROZEN或RESUME_LOCKED；每个Paused/Resume main-loop iteration及choice/resume入口先调用 | 无pending latch时只验证参数/state，且包括`safe_close_tick_revision`在内完全零修改后返回OK；有latch时先原子capture+ack、使用调用前内部`safe_close_tick_revision`执行一次state-aware `ASYNC_SAFE_CLOSE`并返回captured status：IDLE保持`true/false/false`，三种locked state保持`true/false/true` | 无latch时argument/stale/state失败零修改；有latch时不采用或继续验证本次caller tick，captured非OK是权威root failure，GameRoot同iteration进入fault cleanup；safe-close自身新失败只作suppressed diagnostic |
-| `VirtualJoystickHost.ensure_rebuilt_after_invalidation(input_rebuild_revision,geometry_snapshot,tick_revision)->int` | GameRoot foreground/reconfigure preflight或RESUME_PREPARING / callbacks armed、shield enabled、ingress/gesture gate closed、carrier为当前tick精确clear值、pending release为空、四action均`pressed=false && raw=0` | 新revision时以initialize冻结的immutable candidate-config snapshot离树构建/validate，旧节点不可命中并用保存的同一Callable断signal、移出树并queue_free，VJ gesture epoch与shield epoch checked推进、旧shield bank清空，唯一新节点以`MOUSE_FILTER_IGNORE`入树并完成identity/signal登记；同revision仅在geometry与candidate-config的fingerprint及完整canonical fields均相等时无副作用OK | 参数非法=`INVALID_ARGUMENT`；较旧revision或同revision任一identity字段不等=`STALE_TICK`；callbacks/gate/shield/state前置非法=`WRONG_STATE`；new revision geometry/config domain非法或instance-frozen config漂移=`INVALID_CONFIG`；action/carrier/pending release不clean=`ACTION_CLEAR_FAILED`；epoch overflow=`GENERATION_EXHAUSTED`；candidate构造/属性/validate、old remove、new add、signal connect或identity登记故障=`JOYSTICK_REBUILD_FAILED`。所有failure保持consumer closed、carrier精确clear并按阶段矩阵清理 |
+| `VirtualJoystickHost.ensure_rebuilt_after_invalidation(input_rebuild_revision,geometry_snapshot,tick_revision)->int` | GameRoot foreground/reconfigure preflight或RESUME_PREPARING / callbacks armed、shield enabled、ingress/gesture gate closed、carrier为当前tick精确clear值、pending release为空、四action均`pressed=false && raw=0` | 新revision时以initialize冻结的immutable candidate-config snapshot离树构建/validate，旧节点不可命中并用保存的同一Callable断signal、移出树并queue_free，VJ gesture epoch与shield epoch checked推进、旧shield bank清空，唯一新节点以`MOUSE_FILTER_IGNORE`入树并完成identity/signal登记；同revision仅在二元版本组、geometry与candidate-config的fingerprint及完整canonical fields均相等，且`registered_active_vj_count==1`、identity/signal/tree ownership均匹配时才可无副作用返回OK；失败后active VJ为0时不得以同revision幂等短路恢复 | 参数非法=`INVALID_ARGUMENT`；较旧revision或同revision任一identity字段不等=`STALE_TICK`；callbacks/gate/shield/state前置非法=`WRONG_STATE`；new revision geometry/config domain非法或instance-frozen config漂移=`INVALID_CONFIG`；registered active VJ数量不是1、identity/signal/tree ownership不匹配或candidate构造/属性/validate、old remove、new add、signal connect故障=`JOYSTICK_REBUILD_FAILED`；action/carrier/pending release不clean=`ACTION_CLEAR_FAILED`；epoch overflow=`GENERATION_EXHAUSTED`。所有failure保持consumer closed、carrier精确clear并按阶段矩阵清理 |
 | `VirtualJoystickHost.is_choice_input_blocked()->bool` | BattleUI与GameRoot / 只读；任意pause UI press前、进入RESUME_PREPARING前及每个可重入resume stage boundary | 旧VJ claim或shield-held bank任一非空时true；两者为空且所需preflight完成时false | 无failure通道、无状态mutation；不消费pending async latch |
 | `teardown(tick_revision)->int` | GameRoot / BATTLE_ENDING或fault cleanup | ACTIVE来源先完成合法consumer-close；IDLE保持service=false，locked保持service=true。随后在任何filter/tree/Callable操作前单一局部提交`state=TERMINATED、callbacks/runtime/service=false/false/false`并撤销bank/choice/pending latch写权、清空bank，再使节点不可命中、断signal、移出树并queue_free且carrier clear；若本调用首次观察async latch，同次capture/ack+state-aware safe-close+terminal cleanup并返回captured root status | 保持consumer closed并记录teardown自身首错；terminal commit已完成时后续cleanup failure不得回滚三字段，迟到callback只作suppressed diagnostic且不得重填latch/bank；返回captured root status不表示cleanup未执行 |
 
@@ -210,17 +212,29 @@ func clear(tick_revision: int) -> void:
 ### F1 — Action Vector 到 Movement Intent
 
 ```text
-action_vector = Input.get_vector(
+# F1 is a total function over a verified sample and the current Input FSM.
+# Only GameRoot's MOVEMENT_COMMIT path may request this sample.
+sample = verified_action_sample(
     touch_move_left,
     touch_move_right,
     touch_move_up,
     touch_move_down,
-    0.0
+    0.0,
+    input_map_revision,
+    action_binding_manifest_hash
 )
 
+if not sample.ok:
+    return sample.status  # INVALID_INPUT_MAP / INVALID_CONFIG; no carrier write
+action_vector = sample.action_vector
 if not is_finite(action_vector.x) or not is_finite(action_vector.y):
     return NON_FINITE_INPUT  # InputSystem同步safe-clear，GameRoot fault
-elif not fresh_press_gate_open or action_vector == Vector2.ZERO:
+elif state != ACTIVE or not callbacks_armed or not runtime_ingress_armed \
+        or not fresh_press_gate_open or claim_state != CLAIM_ACTIVE \
+        or claim_epoch < 1 or claim_generation < 1 \
+        or pending_release_present or terminal_or_lock_pending:
+    out = Vector2.ZERO
+elif action_vector == Vector2.ZERO:
     out = Vector2.ZERO
 else:
     scale = max(abs(action_vector.x), abs(action_vector.y))  # finite且>0
@@ -231,23 +245,39 @@ else:
         return NON_FINITE_INPUT
 ```
 
+F1的错误优先级固定为：`verified_action_sample`配置/manifest状态 → action vector finite → Input FSM admission gate → ZERO判定 → scale-first归一化。任何gate失败只能输出ZERO，不能遮蔽已验证sample的`NON_FINITE_INPUT`；`NON_FINITE_INPUT`与`INVALID_*`均先执行同步safe-clear，再由GameRoot观察并fault。
+
 | Variable | Type | Range | Source | Description |
 |---|---|---|---|---|
 | `action_vector` | Vector2 | 每轴finite且`[-1,1]`，幅值`[0,√2]`；生产引擎通常≤1 | 四个专用 InputMap action | VirtualJoystick 已施加唯一 deadzone 后的方向/强度；仍须先做finite守卫 |
+| `sample` | typed `VerifiedActionSampleV1` | `ok/status/action_vector/revision/hash` | InputMap + four actions | 只允许当前MOVEMENT_COMMIT读取；revision/hash必须匹配已验证配置 |
 | `fresh_press_gate_open` | bool | true/false | press/release adapter | pause/恢复后阻止旧触点重放 |
+| `claim_state` | enum | `NO_CLAIM/CLAIM_ACTIVE` | VJ identity FSM | 仅当前epoch/generation的active claim可产生movement |
+| `claim_epoch/generation` | i64 | `>=1` when active | VJ/Host transaction | 旧节点、pending release或terminal边界不可借用旧claim |
 | `scale/scaled_length` | float | finite且`>0`（仅非ZERO分支） | derived | scale-first安全归一化，避免有限极小向量平方下溢；不是第二deadzone |
 | `out` | Vector2 | finite，幅值 `{0,1}` | derived | 写入 carrier 的二元移动方向 |
 | `deadzone_ratio` | float | `[0.05,0.30]` | VirtualJoystick | 唯一 deadzone owner；MVP 默认 `0.15` |
 
 **边界**：finite检查严格早于ZERO/gate/归一化分支。内置 VirtualJoystick 只有在触点距离严格大于 `deadzone_ratio × clampzone_radius` 时才产生非零 action strength；因此 `0.99×` 与 `1.00×` 阈值输出 ZERO，`1.01×` 输出非零 action，F1再以scale-first算法归一化为单位向量。该算法对任意finite非ZERO Vector2均不靠任意epsilon判零，不引入第二deadzone；若任一步产生非finite或不能满足单位后置条件则返回`NON_FINITE_INPUT`。InputMap event list为空、action deadzone与`Input.get_vector` deadzone均为`0.0`。
 
-**示例**：`action_vector=(0.25,-0.25)` 且 gate open → `out≈(0.707,-0.707)`；`action_vector=ZERO` 或 gate closed → `out=ZERO`。
+**总函数边界**：状态、callbacks、runtime ingress、fresh gate、claim identity、pending release、terminal/LOCK_PENDING与sample revision/hash均在采样前按固定顺序验证；任一不满足只返回ZERO且不写carrier。只有`ACTIVE + callbacks_armed + runtime_ingress_armed + fresh_press_gate_open + CLAIM_ACTIVE + 无pending release + 无terminal/lock`的当前claim，且verified sample为finite时，才进入归一化；配置/InputMap错误仍返回精确status并按safe-clear规则处理。`F1`不负责推进FSM、不消费pending release、不把ZERO解释为release。
+
+**示例**：`action_vector=(0.25,-0.25)` 且所有FSM前置满足 → `out≈(0.707,-0.707)`；`action_vector=ZERO` 或任一claim/lifecycle gate closed → `out=ZERO`。
 
 PlayerController下游公式不是F1的一部分：`velocity=out×4.5 units/s`，`displacement=velocity×gameplay_dt`，`candidate=readback_real_t32(position+displacement)`；Player只做`full_footprint_domain_guard`并原样提交合法candidate，不做Stage边界clamp。
 
 ### F2 — Safe Viewport 比例几何
 
 ```text
+# Checked preconditions run before any inverse or inset transform.
+require finite_rects_and_transform_inputs()
+require safe_rect_display.is_non_empty() and window_client_rect_display.is_non_empty()
+require safe_rect_clipped_display.is_non_empty()
+require viewport_to_window_physical.is_finite()
+require viewport_to_window_physical.determinant != 0.0
+require residual_navigation_gesture_insets_physical are integer >= 0
+require transform domain supports axis-aligned inset or return INVALID_CONFIG
+
 safe_rect_display = DisplayServer.get_display_safe_area()
 window_client_rect_display = SafeViewportGeometryProvider.get_window_client_rect_in_display(
     current_screen, window_id
@@ -258,7 +288,7 @@ safe_corners_window_physical = map_each(
     safe_rect_clipped_display.corners
 )
 viewport_to_window_physical = host.get_viewport().get_screen_transform()
-window_physical_to_viewport = affine_inverse(viewport_to_window_physical)
+window_physical_to_viewport = checked_affine_inverse(viewport_to_window_physical)
 safe_corners_viewport = map_each(window_physical_to_viewport, safe_corners_window_physical)
 safe_corners_local = map_each(host.make_canvas_position_local, safe_corners_viewport)
 safe_viewport = axis_aligned_rect(safe_corners_local)  # 旋转/剪切或退化则 INVALID_CONFIG
@@ -311,7 +341,9 @@ deadzone_radius = clampzone_radius × deadzone_ratio
 
 所有量最终都在同一Godot logical viewport/Host local transform下计算，不读取设备DPI，也不假定display physical px与window client px为1:1。Provider只支持当前native root window；它必须使用Godot当前Viewport的screen/final stretch transform构造`window_physical_to_viewport`，并对每个四角验证`window → viewport → window`往返误差`<=roundtrip_tolerance_physical`。`ulp_real_t(x)`定义为目标export中`x`到同方向相邻可表示finite值的距离，由Provider中固定的目标`real_t`相邻bit-pattern helper计算并以float32/float64边界fixture校验，不依赖不存在的引擎便利API；identity/1.1 scale、1080p/4K、非零display origin均须有positive fixture，超过容差的perturbed inverse须有negative fixture。`host.make_canvas_position_local()`只能接收上一步得到的viewport coordinate，不得接收window physical coordinate。每个artifact的geometry manifest必须同时记录OS navigation mode、四边residual inset及“已由display safe area覆盖/另行扣除”的来源；字段缺失或扣除后interactive safe rect退化均为`INVALID_CONFIG`。Project asset冻结为portrait base logical canvas`720×1280`、stretch mode=`canvas_items`、stretch aspect=`expand`；Host与BattleUI CanvasLayer编号/scene-tree顺序由BattleUI scene冻结但必须满足本GDD先交互UI、再shield、最后VJ的输入路由。未建立`project.godot`前IG-IS4保持BLOCKED，不得以引擎默认值替代。BATTLE_LOADING必须验证display safe/window client交集非空、window→viewport变换finite/invertible且往返误差合格、四角转换为有限/axis-aligned/非退化矩形，residual inset合法、`input_region_height_fraction`及全部比例在范围内，派生`movement_rect`包含于interactive safe viewport，且`joystick_size`、`tip_size`、`clampzone_radius`、`deadzone_radius` finite并满足`joystick_size>tip_size>0`、`clampzone_radius>0`。例：转换后的interactive safe viewport为`720×1280` logical px时，默认`input_region_height=576`、`joystick_size=158.4`、`tip_size=71.28`、`clampzone_radius=79.2`、`deadzone_radius=11.88` logical px。
 
-`SafeViewportGeometrySnapshot`是构建后不可变的typed value，字段至少为`{input_rebuild_revision,window_id,current_screen,safe_rect_display,window_client_rect_display,window_physical_to_viewport,viewport_to_host_local,safe_viewport,residual_navigation_gesture_insets_physical,residual_navigation_gesture_insets_local,interactive_safe_viewport,movement_rect,joystick_size,tip_size,clampzone_radius,deadzone_radius,real_t_precision,roundtrip_tolerance_physical,geometry_fingerprint}`。Host在initialize同时冻结不可变typed `VirtualJoystickCandidateConfigSnapshot={candidate_config_id,joystick_mode,visibility_mode,action_left,action_right,action_up,action_down,deadzone_ratio,clampzone_ratio,joystick_size_fraction,tip_size_ratio,initial_offset_ratio,theme_resource_uid,theme_content_hash,candidate_config_fingerprint}`；所有candidate setter只能读取该snapshot，实例存活期不接受配置替换，变更必须teardown并创建新InputSystem/Host实例。所有float在finite验证后将`-0.0`规范为`+0.0`；除revision/ID与fingerprint自身外，几何字段和candidate-config字段分别按上述固定顺序形成canonical sequence。两个fingerprint都只允许作为快速不等预筛或diagnostic：同revision幂等必须先要求两个fingerprint exact equality，再逐字段比较完整geometry与candidate-config canonical sequence exact equality；任一字段不同即返回`STALE_TICK`且不得跳过rebuild，禁止仅凭hash相等、epsilon、resource/object identity或可变对象指针判相等。若fingerprint需要跨进程/跨artifact持久化，届时必须由manifest另行冻结schema version、算法、位宽、字节序；未冻结时不把fingerprint值本身作为跨进程契约。
+`SafeViewportGeometrySnapshot`是构建后不可变的typed value，字段至少为`{input_rebuild_revision,geometry_revision,window_id,current_screen,safe_rect_display,window_client_rect_display,window_physical_to_viewport,viewport_to_host_local,safe_viewport,residual_navigation_gesture_insets_physical,residual_navigation_gesture_insets_local,interactive_safe_viewport,movement_rect,joystick_size,tip_size,clampzone_radius,deadzone_radius,real_t_precision,roundtrip_tolerance_physical,geometry_fingerprint}`。`geometry_revision`是`BattleInputGeometryRelay`唯一递增的源几何版本，`input_rebuild_revision`是GameRoot为一次coalesced rebuild提交分配的版本；两者不是别名。每个`INPUT_GEOMETRY_CHANGED`必须携带二元版本组及同一份完整snapshot；同一process frame只保留最新几何版本并最多提交一次rebuild，任何checkpoint都同时比较二元版本组与invalidation latch。Host在initialize同时冻结不可变typed `VirtualJoystickCandidateConfigSnapshot={candidate_config_id,joystick_mode,visibility_mode,action_left,action_right,action_up,action_down,deadzone_ratio,clampzone_ratio,joystick_size_fraction,tip_size_ratio,initial_offset_ratio,theme_resource_uid,theme_content_hash,candidate_config_fingerprint}`；所有candidate setter只能读取该snapshot，实例存活期不接受配置替换，变更必须teardown并创建新InputSystem/Host实例。所有float在finite验证后将`-0.0`规范为`+0.0`；除revision/ID与fingerprint自身外，几何字段和candidate-config字段分别按上述固定顺序形成canonical sequence。两个fingerprint都只允许作为快速不等预筛或diagnostic：同revision幂等必须先要求两个fingerprint exact equality，再逐字段比较完整geometry与candidate-config canonical sequence exact equality；任一字段不同即返回`STALE_TICK`且不得跳过rebuild，禁止仅凭hash相等、epsilon、resource/object identity或可变对象指针判相等。若fingerprint需要跨进程/跨artifact持久化，届时必须由manifest另行冻结schema version、算法、位宽、字节序；未冻结时不把fingerprint值本身作为跨进程契约。
+
+**F2 checked precondition / oracle**：先验证所有Rect/Transform输入finite、`Rect2i`采用半开区间`[position,end)`且display/window交集非空，再验证变换行列式非零并调用`checked_affine_inverse`；任何非finite、不可逆或超出支持域的旋转/剪切均在读取四角前返回`INVALID_CONFIG`。`transform_axis_aligned_insets`不得把旋转/剪切后的Vector4i边界伪装成local轴向量；无法证明等价时同样返回`INVALID_CONFIG`。四角只在这些前置通过后转换，最终还必须满足finite、axis-aligned、非退化、roundtrip tolerance与inset后包含关系。
 
 ## Edge Cases
 
@@ -319,7 +351,8 @@ deadzone_radius = clampzone_radius × deadzone_ratio
 
 - `action_vector` 含 NaN/inf：InputSystem 返回 `NON_FINITE_INPUT`，原子 clear carrier；GameRoot 集成层据 status 进入 CONTROLLED_FAULT。
 - F2任一display safe/window client交集为空、window/viewport/Canvas转换失败或往返误差超过精度感知容差、四角非axis-aligned/退化、`input_region_height_fraction`或其他比例非finite/越界、movement rect越出safe viewport，或派生结果不满足`joystick_size>tip_size>0`、`clampzone_radius>0`：BATTLE_LOADING返回`INVALID_CONFIG`，不开放battle input。
-- 四个 action 缺失、重复、event list非空，生产 mouse-to-touch emulation未关闭，registered active VirtualJoystick数量不等于1，或ACTIVE稳定边界的可命中VJ数量不等于1：返回`INVALID_INPUT_MAP`，不开放battle input。
+- 四个 action 缺失、重复、event list非空，或生产 mouse-to-touch emulation未关闭：返回`INVALID_INPUT_MAP`，不开放battle input。
+- geometry/candidate config、manifest字段/容量、变换逆或registered active VirtualJoystick数量/identity不等于1：返回`INVALID_CONFIG`；候选节点构造/替换、旧回调断开、新节点登记或树操作失败才返回`JOYSTICK_REBUILD_FAILED`。
 - action vector 为 ZERO：carrier 写 ZERO；不除零。
 
 ### B. 触摸路由与多点
@@ -336,7 +369,7 @@ deadzone_radius = clampzone_radius × deadzone_ratio
 - PAUSE_PENDING drain：InputSystem 已锁定；不得采样或产生新 intent。
 - BATTLE_PAUSED/RESUME_PREPARING：任何旧drag/release/cancel不得触发choice或movement；paused control pump先调用`service_pending_input_fault`，BattleUI每次choice press前再读取`is_choice_input_blocked()`，只接受返回false后的新press。
 - APP_BACKGROUND：不假定系统一定派发release；lifecycle callback同步把active node设为不可命中新press并设置`foreground_input_blocked=true`，但不在callback写action/carrier/state或重建。background barrier/foreground preflight先由InputSystem cancel，随后Host按`input_rebuild_revision`与instance-frozen candidate config离树配置candidate、精确disconnect并移出/queue_free旧节点、推进epoch、重建并验证唯一registered新节点；在PAUSE_PENDING/BATTLE_PAUSED/RESUME_PREPARING它仍不可命中。preflight/FROZEN/choice完成后仍保持Paused，必须由玩家明确readiness/Continue才允许ACTIVE；该press不得兼作movement press。旧epoch迟到signal无效，不等待永远不会到达的release。
-- safe geometry invalidation：InputSystem-owned `BattleInputGeometryRelay` 挂在 battle `Window`/目标Viewport边界，接收窗口尺寸、safe-area、orientation与stretch相关 signal/notification，读取并 canonicalize 完整geometry snapshot，checked推进`geometry_revision`后向Host转发typed `INPUT_GEOMETRY_CHANGED`。不得假定Control Host会收到Window-only通知（包括`NOTIFICATION_WM_SIZE_CHANGED`）。Host收到relay后同步关闭new-press ingress并latch invalidation；即使内置节点已静默reset，也只能使action归零，不能直接改carrier。GameRoot在下一安全barrier按同型安全协议cancel并以新geometry snapshot重建；若应用始终foreground且无MANUAL/APP_BACKGROUND/choice残留，FROZEN成功后可自动resume。active节点生命周期内禁止setter补丁式改尺寸。
+- safe geometry invalidation：InputSystem-owned `BattleInputGeometryRelay` 挂在 battle `Window`/目标Viewport边界，接收窗口尺寸、safe-area、orientation与stretch相关 signal/notification，读取并 canonicalize 完整geometry snapshot，checked推进唯一的`geometry_revision`，再由GameRoot为coalesced rebuild分配`input_rebuild_revision`并向Host转发携带二元版本组的typed `INPUT_GEOMETRY_CHANGED`。不得假定Control Host会收到Window-only通知（包括`NOTIFICATION_WM_SIZE_CHANGED`）。Host收到relay后同步关闭new-press ingress并latch invalidation；即使内置节点已静默reset，也只能使action归零，不能直接改carrier。GameRoot在下一安全barrier按同型安全协议cancel并以二元版本组对应的新geometry snapshot重建；若应用始终foreground且无MANUAL/APP_BACKGROUND/choice残留，FROZEN成功后可自动resume。active节点生命周期内禁止setter补丁式改尺寸。
 - normal resume：恢复首tick仍为ZERO；旧VJ claim与shield-held bank任一非空都不得开放ACTIVE。resume开始前存在held时保持Paused；resume开始后新shield press按Core Rule 10在不可逆点前回Paused、点后无lease drain，matching release/cancel后的下一次新press才可建立generation。两类held从始至终都为空时，ACTIVE后的下一次新press即可建立generation。
 - background resume：rebuild成功后保持Paused且gameplay phase、damage、timer均为0；合法readiness/Continue之后才发布ACTIVE，首tick仍为ZERO。readiness press不得成为movement；其后第一次新的OS movement press属于新epoch，可作为fresh press，旧节点及旧epoch不得重放movement。
 - BATTLE_ENDING/CONTROLLED_FAULT：cancel 后进入 TERMINATED，本局不可恢复。
@@ -381,8 +414,8 @@ Input role向`OwnerOrchestrationCapacityContributionManifest`提供以下实际�
 
 - **GameRoot & Scene Flow**（Draft，GDD exists）：已反向登记InputSystem在MOVEMENT_COMMIT先于PlayerController、callbacks arm与runtime ingress开放分离、PREACTIVE_DISCARD与BATTLE_LOADING lifecycle abort、latched intent后先cancel再请求Grid pause、paused fault service、per-background required/acked readiness、RESUME_PREPARING held-drain/emergency cleanup，以及foreground gameplay前完成background rebuild的设计契约；GameRoot还是Input accumulated/agile buffering bootstrap与persistent root Window gate的唯一owner，按`PRE_ACQUIRE→SET_TRUE_IN_FLIGHT→GATE_HELD→Input局部ACTIVE→GameRoot局部ACTIVE→reasoned release`阶段矩阵覆盖loading与resume，只有已持gate的failure才保持true至battle input teardown及PREP/ControlledFault/Home UI接管；实现与集成证据仍待建立。
 - **Godot 4.7.1 VirtualJoystick**（engine）：公开能力为 Dynamic模式、`deadzone_ratio`、四 action 属性、pressed/released等信号；`InputEventScreenTouch.is_canceled()`在VJ非pressed分支触发release/reset；无公开 `output/input_vector` 属性。
-- **Project InputMap / Project Settings**（project asset，尚未建立）：四个movement专用action存在且event list为空、deadzone=0；另有且仅有八行`MetaUiInputActionManifestV1`的keyboard/mapped-gamepad bindings。mouse-to-touch emulation关闭，portrait/stretch、residual navigation gesture inset来源冻结；`project.godot`固定`input_devices/buffering/agile_event_flushing=false`，BOOT由GameRoot唯一设置/读取Input accumulated=false并在所有项目input target激活前一次性flush历史buffer，保存readback、调用计数与唯一writer静态审计。
-- **SupportedTouchEventOrderingManifest**（per-artifact evidence，尚未建立）：冻结max concurrent touch、同index顺序、release/cancel/lifecycle终止路径、navigation mode与residual gesture insets；缺失或任一目标设备违反即不具备implementation-ready。
+- **Project InputMap / Project Settings**（production asset仍待建立；slice harness已隔离）：四个movement专用action存在且event list为空、deadzone=0；另有且仅有八行`MetaUiInputActionManifestV1`的keyboard/mapped-gamepad bindings。mouse-to-touch emulation关闭，portrait/stretch、residual navigation gesture inset来源冻结；正式`project.godot`必须固定`input_devices/buffering/agile_event_flushing=false`，BOOT由GameRoot唯一设置/读取Input accumulated=false并在所有项目input target激活前一次性flush历史buffer，保存readback、调用计数与唯一writer静态审计。`production/input-vertical-slice/project.godot`只作为harness，不满足本生产资产门。
+- **SupportedTouchEventOrderingManifestV1**（schema已建立于`design/registry/manifests/supported-touch-event-ordering-v1.yaml`，平台值/真机证据仍BLOCKED）：冻结max concurrent touch、同index顺序、release/cancel/lifecycle终止路径、navigation mode与residual gesture insets；任何平台值为null、manifest缺字段或目标设备违反即不具备implementation-ready，且不允许猜默认容量。
 - **Config/Data System**（Draft，可选未来依赖）：schema v1尚无 input config；当前冻结值由 InputSystem/BattleUI场景常量提供，待 schema 扩展后迁移，不阻塞 MVP 实现。
 
 ### 下游依赖
@@ -395,6 +428,17 @@ Input role向`OwnerOrchestrationCapacityContributionManifest`提供以下实际�
 - InputSystem 可做isolated code spike；GameRoot设计契约已同步，但在SupportedTouchEventOrderingManifest/target trace通过前不得宣称implementation-ready，在对应实现/集成测试、PlayerController与BattleUI GDD、项目InputMap/Settings资产建立前不得宣称integration-ready。
 - 本文件不把下游行为伪装成 InputSystem 单元 AC；跨系统条件列入本节和 Integration Gates。
 - carrier 归 GameRoot battle bundle 所有，InputSystem 写、PlayerController 读；所有权不再开放为 OQ。
+
+## Remediation boundary (2026-09-10)
+
+`production/input-vertical-slice/` is a harness only; it does not satisfy the production implementation or integration gates. The 2026-09-10 review authorized static contract remediation, but `implementation-ready`, `integration-ready`, runtime/device evidence and `battle_ready` remain false until the manifest platform values, production InputMap/Settings assets, real GameRoot/PlayerController/BattleUI path and target traces exist.
+
+本次整改后的跨系统最小合同如下：
+
+- GameRoot是唯一phase scheduler、唯一`SceneTree.set_pause`/`Window.gui_disable_input` writer，也是唯一调用`run_phase(MOVEMENT_COMMIT)`的生产owner；PlayerController只读同tick matching carrier与`PlayerPhaseContextV1`，不得直接采样Input。`BATTLE_ACTIVE`消费`1/60` gameplay dt；`PAUSE_PENDING`只允许一次0-dt technical drain；`BATTLE_PAUSED`/`FROZEN`/`RESUME_LOCKED`不运行gameplay movement。
+- `FROZEN`、pending release、shield bank、`service_pending_input_fault`与terminal close是生产生命周期合同，不得以`teardown=OK`的harness结果代替。`cancel_input`必须先提交consumer-closed tuple，再停止new press、清action/carrier并保留必要terminal drain；`teardown`首观察者必须在同一调用完成`TERMINATED={callbacks,runtime,service=false}`，迟到callback只作suppressed diagnostic。
+- VJ rebuild是一次identity transaction：consumer closed、carrier/actions/pending-release clean后，构造并验证离树candidate，断开旧bound Callable并使旧epoch不可命中，checked推进epoch/revision，登记唯一新节点与signals，只有全部后置条件通过才允许同revision幂等OK；任一中间失败不得以counter/epoch递增冒充replacement成功。
+- 状态与错误oracle统一：F1先判FSM/claim gate，F2先判finite/非空Rect/可逆变换/axis-aligned inset；`INVALID_CONFIG`、`INVALID_INPUT_MAP`与`JOYSTICK_REBUILD_FAILED`按上文固定边界，所有API仍保持first-error precedence与fail-closed。
 
 ## Tuning Knobs
 
@@ -483,7 +527,7 @@ InputSystem 不直接产生 VFX/SFX。Dynamic 摇杆只在触摸时显示：base
 - **AC-IS19 `[L][E]` 高频last-write-wins与支持平台事件顺序/终止**：单tick前注入240Hz有序drag burst+第二触点噪声，下一MOVEMENT_COMMIT精确等于最后一个合法movement action；额外覆盖`generation 1 drag→release/cancel→generation 2 fresh press→drag`全在同tick前发生，预期carrier为generation 2方向而非ZERO。不得保存坐标历史队列或随burst扩容；只保留定容的当前gesture、shield bank与一个pending release record。对每个支持Android/iOS artifact按Edge Cases E冻结`SupportedTouchEventOrderingManifest`，真机trace必须证明同index在matching release/cancel前不复用，且lifecycle旧epoch terminal不会晚于同index新epoch press；另分别执行左右边缘返回、底部Home、OS cancel但不background、cancel后同index fresh press，证明每种路径产生可观察canceled/released或可执行rebuild边界、action/carrier归零、bank有限步清空、误选/幽灵移动均0。旧terminal先到的合法序列不得结束后续新claim；“新epoch同index press先到、旧epoch terminal后到”仅作为UNSUPPORTED fault-injection fixture，不能记为PASS证据。任一目标设备观测到反序，或cancel既无事件也无lifecycle边界，即本AC FAIL并阻塞实现，重开raw-touch identity/retired-index ingress、平台bridge或自定义摇杆ADR。
 - **AC-IS20 `[L]` 无平滑层**：AST禁止InputSystem F1→carrier call graph出现`lerp/slerp/move_toward/smoothstep/damp/interpolate/filter/ease`；每类至少一项违例fixture，gate为BLOCKING。
 - **AC-IS21 `[L]` 有限静态守卫**：manifest列出steady roots及显式denylist：Array/Dictionary构造与复制、字符串拼接/format/StringName构造、`get_children`、`set_deferred/call_deferred`、带参signal、`Callable.call/callv`和方法字符串动态dispatch。checker保守遍历项目本地call graph；每项positive fixture必须失败，合法negative fixture必须通过。该AC只证明denylist，不宣称native heap零分配。
-- **AC-IS22 `[E]` 真机性能证据OPEN**：待producer冻结min-spec Android/iOS、export preset与60Hz physics manifest后，三场景各warm-up 60秒、采样10分钟：持续drag、240Hz burst+双触点、100次pause/background/resume；保存InputSystem CPU p50/p95/p99、frame-time与可观测全局allocation趋势及positive control。无可归因profiler和CPU通过预算前仅记录证据，不产生PASS结论。
+- **AC-IS22 `[E]` 真机性能证据OPEN**：只允许使用`design/registry/manifests/runtime-workload-input-v1.yaml`中的`INPUT_STEADY_DRAG`、`INPUT_240HZ_DUAL_TOUCH`、`INPUT_PAUSE_BACKGROUND_RESUME`、`INPUT_REBUILD_COLD`四个Input row；待producer冻结min-spec Android/iOS、export preset与60Hz physics manifest后，各row warm-up 60秒、采样10分钟。每个样本必须绑定row、config/coverage/authority/owner/native-call-allowlist hash、start/end marker、sample unit与exact operation vector；physics tick、control pump与complete operation不得混作一个样本。`STEADY_ZERO_DELTA`逐run检查allocator/growth/COW/native-call为0；cold loading/rebuild/teardown仅标记`COLD_MEASURE_ONLY`，Save仅标记`MEMORY_IO`。报告InputSystem CPU p50/p95/p99、frame-time、RSS与allocation趋势并含positive control；min-spec、预算或任一hash/marker/向量缺失时结果为`INCONCLUSIVE`，不得产生PASS结论。
 
 ### Typed carrier and UX
 

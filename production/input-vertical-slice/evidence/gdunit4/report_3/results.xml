@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<testsuites id="2026-09-09" name="report_3" tests="1" failures="2" skipped="0" flaky="0" time="0.000">
+	<testsuite id="0" name="input_touch_order_gdunit4_test" package="tests" timestamp="2026-09-09T10:28:15" hostname="localhost" tests="1" failures="2" errors="0" skipped="0" flaky="0" time="1.231">
+		<testcase name="test_screen_touch_drag_release_uses_real_scene_runner_path" classname="input_touch_order_gdunit4_test" time="1.225">
+			<failure message="FAILED: res://tests/input_touch_order_gdunit4_test.gd:14" type="FAILURE">
+<![CDATA[
+Expecting: 'true' but is 'false'
+	at 'test_screen_touch_drag_release_uses_real_scene_runner_path' in res://tests/input_touch_order_gdunit4_test.gd:14
+]]>
+			</failure>
+			<failure message="FAILED: res://tests/input_touch_order_gdunit4_test.gd:18" type="FAILURE">
+<![CDATA[
+Expecting: 'true' but is 'false'
+	at 'test_screen_touch_drag_release_uses_real_scene_runner_path' in res://tests/input_touch_order_gdunit4_test.gd:18
+]]>
+			</failure>
+		</testcase>
+	</testsuite>
+</testsuites>

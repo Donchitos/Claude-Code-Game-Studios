@@ -1,0 +1,66 @@
+{
+  "schema_version": 1,
+  "run": {
+    "duration_seconds": 75.0,
+    "smoke_speed_multiplier": 5.0,
+    "hud_refresh_seconds": 0.1
+  },
+  "player": {
+    "max_hp": 100.0,
+    "speed": 360.0,
+    "radius": 24.0,
+    "pickup_radius": 62.0,
+    "contact_cooldown": 0.55,
+    "attack_interval": 0.42,
+    "minimum_attack_interval": 0.16,
+    "sword_count": 1,
+    "sword_damage": 1
+  },
+  "combat": {
+    "projectile_speed": 680.0,
+    "projectile_radius": 9.0,
+    "projectile_despawn_radius": 980.0,
+    "xp_radius": 10.0,
+    "xp_magnet_speed": 520.0,
+    "grid_size": 72.0
+  },
+  "enemies": {
+    "beetle": {
+      "radius": 19.0,
+      "speed": 88.0,
+      "contact_damage": 12.0,
+      "hp": 1
+    },
+    "wolf": {
+      "radius": 15.0,
+      "speed": 152.0,
+      "contact_damage": 18.0,
+      "hp": 1
+    }
+  },
+  "waves": [
+    {"until_seconds": 20.0, "spawn_interval": 0.72, "wolf_probability": 0.0, "name": "试探"},
+    {"until_seconds": 50.0, "spawn_interval": 0.46, "wolf_probability": 0.24, "name": "群狼混入"},
+    {"until_seconds": 75.0, "spawn_interval": 0.31, "wolf_probability": 0.42, "name": "秘境崩塌"}
+  ],
+  "upgrades": {
+    "xp_base": 10,
+    "xp_per_level": 4,
+    "attack_interval_multiplier": 0.78,
+    "movement_speed_multiplier": 1.2,
+    "pickup_radius_multiplier": 1.12
+  },
+  "capacities": {
+    "enemies": 320,
+    "projectiles": 400,
+    "pickups": 300
+  },
+  "input": {
+    "joystick_size": 158.4,
+    "tip_size": 71.28,
+    "deadzone_ratio": 0.15,
+    "clampzone_ratio": 1.0,
+    "shield_bank_capacity": 4,
+    "initial_offset_ratio": [0.5, 0.5]
+  }
+}

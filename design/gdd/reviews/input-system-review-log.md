@@ -2,6 +2,120 @@
 
 审查历史记录。每次 `/design-review` 追加一条。
 
+## Author remediation authorized — 2026-09-10 — User replied “授权”
+
+针对上一条clean-context独立full re-review的`MAJOR REVISION NEEDED / XL` blocker，用户再次授权整改，尚未产生新的独立verdict。本轮完成以下跨文档与生产scaffold对齐：
+
+- F1固定为`verified sample status → finite → FSM admission → ZERO/normalize`，并明确`cancel_input`只做consumer-close，`teardown`才提交`TERMINATED`。
+- `MetaUiInputActionManifestV1`与`AppAdapterTopologyManifestV2`均纳入`BATTLE_ACTIVE`；`BattleActivePauseCommandV1`冻结为screen 8、node 7001、`PAUSE_REQUESTED/MANUAL`、generation与first-unseen command ID校验，persistent GameRoot为唯一reducer/SceneTree/Window writer。
+- 生产`ProductionInputSystem`补齐`FROZEN`及统一status名、pending release与generation exhaustion latch；生产Host的invalidation rebuild改为candidate构造、旧signal断连/移除、新节点注册、epoch推进、旧节点延迟释放的identity transaction。
+- 根`project.godot`声明八个Meta UI action；新增`design/registry/manifests/runtime-workload-input-v1.yaml`四个Input专属 workload rows，并把AC-IS22绑定到该manifest。
+- 同步InputSystem、GameRoot、BattleUI、ADR-0001、systems-index与`production/session-state/active.md`；`git diff --check`与两份manifest YAML parse通过。
+
+这些是授权后的作者整改与静态检查，不是独立复审、runtime/device/accessibility/performance/UX证据，也不改变`In Review / Re-review Pending`、`implementation-ready=false`、`runtime/device verified=false`或`battle_ready=false`。下一步必须在clean context重新执行准确目标`design/gdd/input-system.md`的独立full re-review。
+
+## Review — 2026-09-10 — New clean-context independent verdict: BLOCKED / XL
+
+这是上一条授权整改之后对准确目标`design/gdd/input-system.md`的新一轮独立full re-review：6名真实specialists并行只读返回，由fresh creative-director综合；specialists与director均未读取本review log作为本轮证据，也未修改文件。综合结论为`BLOCKED / XL`，修订级别至少为`MAJOR REVISION NEEDED / XL`。
+
+Closure matrix：
+
+- Core design：`PARTIAL`；单摇杆、唯一deadzone、binary movement、typed carrier、生命周期意图与AC结构可保留，但不因代码/证据缺失而关闭。
+- F1/F2：`BLOCKED`；正式BattleScope仍直接`Input.get_vector`并有键盘fallback，生产InputSystem仍接收外部向量；verified sample、scale-first、claim gate与F2 geometry provider/roundtrip oracle未接入。
+- Production call graph：`BLOCKED`；实际仍为`GameRoot→BattleScope.run_tick→BattleScope采样→InputSystem`，缺GameRoot唯一phase/sample owner、完整phase registry与`POST_DEFERRED_BARRIER`。
+- Pause/lifecycle/touch ownership：`BLOCKED`；正式路径缺三字段tuple、typed shield bank、FROZEN实际迁移、service observer、held drain、revision gate与terminal-first teardown。
+- BATTLE_ACTIVE/7001：`BLOCKED`；GameRoot虽有常量和Dictionary入口，但没有生产presenter/bridge producer与端到端`AccessibleScreenSnapshot→typed command→GameRoot reducer→pause barrier`接线。
+- Meta/InputMap/accessibility：`BLOCKED`；根工程八个Meta action仍为空events，正式BattleUI无Meta reducer/semantic bridge；TalkBack/VoiceOver与mapped-gamepad UI无runtime证据。
+- Manifest/registry：`BLOCKED`；Input workload四行仍只有描述字段/required binding名，缺实际hash、marker observer、raw artifact、expected counter、threshold；touch manifest平台值为null；entities记101而architecture记102 node rows。
+- Runtime/performance/device/UX：`BLOCKED`；现有9/9与GDUnit4仅是隔离harness证据，报告明确完整生产集成、Android/iOS、accessibility、performance/thermal与`battle_ready`均false。
+
+Top blockers：恢复正式生产权威链；实现真实pause/lifecycle/touch contract；将F1/F2从伪代码接入生产；完成7001端到端exactly-once ABI；补齐Meta/InputMap/accessibility资产；统一registry与workload schema并生成hash/marker/counter/threshold；最后执行Android/iOS、TalkBack/VoiceOver、UX、performance/thermal与production integration验证。
+
+本轮明确不得宣称`Approved`、`CLOSED`、`implementation-ready`、`integration-ready`、`runtime/device verified`、`battle_ready`、F1/F2/pause/touch/7001已闭合、已支持TalkBack/VoiceOver或mapped gamepad，亦不得把9/9 local slice PASS当作正式生产证据。状态继续`In Review / Re-review Pending`；下一轮整改前需用户重新授权。
+
+## Author remediation authorized — 2026-09-10 — User replied “授权整改”
+
+针对上一条`BLOCKED / XL`独立综合，用户授权继续整改。本轮完成实际生产scaffold收敛，未填充或伪造平台、设备、性能与无障碍证据：
+
+- GameRoot改为显式调用`run_input_phase`后再调用`run_gameplay_phase`；BattleScope不再直接采样Input或保留键盘movement fallback，ProductionInputSystem内部读取四个movement action并执行finite-first、scale-first binary normalization。
+- Carrier补齐`written_tick=-1`初值、finite/unit/generation/tick校验；InputSystem补`cancel_input`、FROZEN、prepare_resume、pending release、generation exhaustion与main-thread fault observer。
+- 增加固定槽`ProductionMovementIngressShield`，接入`BattleScope.tscn`，Host设置PROCESS_MODE_ALWAYS；invalidation rebuild执行candidate构造、旧signal断连/移除、新节点注册、epoch推进与旧节点延迟释放。
+- GameRoot补BOOT accumulated/agile readback与buffer flush、pause/resume root Viewport gate；BattleUI→BattleScope→GameRoot接入`BattleActivePauseCommandV1`，生产 smoke 实测首次接受、resume成功、duplicate拒绝、replacement/settlement成功。
+- 根InputMap声明八个Meta action；实体registry与architecture registry统一102 node rows；生产input offset修正为`[0.5,0.5]`；smoke-only使用显式保护，不改变普通运行路径。
+
+验证：Godot 4.7.1根工程解析通过；`PRODUCTION_SMOKE_PASS generation=2 level=2 kills=83 seconds=75.00`；`git diff --check`与4份YAML parse通过。下一步重新执行clean-context独立full re-review；当前仍不得宣称`Approved`、`implementation-ready`、`runtime/device verified`或`battle_ready`。
+
+## Review — 2026-09-10 — Post-remediation independent verdict: MAJOR REVISION NEEDED
+
+这是在上一轮授权整改完成后的第二次clean-context独立full re-review：6名真实specialists并行返回，由全新的creative-director综合。creative-director现场结论为`MAJOR REVISION NEEDED / XL`；本次未修改目标或生产实现。
+
+已确认（设计合同层）：核心`VirtualJoystick → four empty-binding actions → binary carrier`方向、普通pause高层意图、三字段tuple与persistent-root方向基本成立；A方案的`AHP07/ASN08/AAV01`、node `7001`、7 hash/8 profile/102 node/35 variant静态表已传播到ADR/BattleUI/GameRoot/registry/index。
+
+残余设计/契约blocker：
+
+1. F1伪代码仍为gate-first，而正文/既有AC要求finite-first，行为oracle不唯一。
+2. `BATTLE_ACTIVE`仍未完整进入InputSystem MetaUi allowed TopStates与GameRoot AppAdapter topology准入；gateway到`PAUSE_REQUESTED/MANUAL`的typed command owner、schema、enabled校验与exactly-once reducer未冻结。
+3. GDD中`cancel`后进入`TERMINATED`与“仅teardown允许非TERMINATED→TERMINATED”的责任边界仍有冲突；错误oracle还需与实际生产枚举统一。
+4. 生产路径仍缺完整InputSystem/FROZEN/shield bank/service observer/VJ candidate replacement/SceneTree pause/真实GameRoot-BattleUI-PlayerController装配；root project的主场景及8行Meta InputMap仍未闭合。slice仍是harness。
+
+证据门保持BLOCKED/OPEN：SupportedTouch manifest的Android/iOS平台值与trace、TalkBack/VoiceOver、单手UX、Input-specific RuntimeWorkload row/marker/阈值、性能/分配/RSS与production integration均未验证。当前保持`In Review / Re-review Pending`、`implementation-ready=false`、`runtime/device verified=false`、`battle_ready=false`。下一轮整改前需用户重新授权。
+
+## Review — 2026-09-10 — Verdict: MAJOR REVISION NEEDED
+
+这是对准确目标`design/gdd/input-system.md`的一次新的clean-context独立full re-review：6名真实specialists（game-designer、systems-designer、godot-specialist、ux/accessibility-specialist、performance-analyst、qa-lead）并行返回后，由fresh creative-director综合。9/9 local vertical-slice checks未被当作独立verdict；本次未修改文件。
+
+- Completeness：8/8；核心路径`VirtualJoystick → four empty-binding actions → binary F1 → typed carrier`可保留。
+- Verdict：`MAJOR REVISION NEEDED / XL`；`implementation-ready=false`、`runtime/device verified=false`、`battle_ready=false`。
+- Blockers：F1缺少claim/epoch/generation/pending-release/terminal与FSM总门；F2逆变换/inset前置与错误oracle不闭合；FROZEN/pending/shield/service/consumer-close/terminal实现对应物未闭合；GameRoot/SceneTree pause、physics read path与harness/production边界不一致；VJ rebuild缺真实candidate/旧callback断开/identity transaction；BATTLE_ACTIVE暂停按钮与ADR-0001当前无障碍范围冲突；平台touch ordering manifest与Android/iOS trace缺失；AC-IS22不可执行且runtime/device/UX证据缺失。
+
+## Author remediation authorized — 2026-09-10 — Option A
+
+用户授权先整改上述blocker，再进行下一轮独立复审，并选择 A：保留MVP无障碍承诺，为`BATTLE_ACTIVE`补一节点pause gateway。已完成本次静态传播：
+
+- InputSystem补F1 total typed sample/FSM gate、F2 checked inverse/inset precondition、`Rect2i`半开区间、status oracle与harness/production边界；AC-IS22绑定`RuntimeWorkloadManifestV1`与`STEADY_ZERO_DELTA`/`COLD_MEASURE_ONLY`/`MEMORY_IO`证据分类。
+- 新建`design/registry/manifests/supported-touch-event-ordering-v1.yaml`冻结schema与fail-closed规则；Android/iOS平台值、容量与trace仍为BLOCKED，不设默认值。
+- ADR-0001、BattleUI、technical preferences、architecture registry与systems-index同步`BATTLE_ACTIVE` gateway：`AHP07/ASN08/AAV01`、node `7001`、capacity1、snapshot356 bytes；现计8 profiles、102 nodes、35 variants、7 hash rows。
+
+这些是作者静态合同整改，不是独立复审或运行时/设备证据；下一步必须在整改完成后重新执行clean-context full re-review。
+
+## Implementation step — formal Input vertical slice — 2026-09-09
+
+已建立隔离的 `production/input-vertical-slice/` 正式 Godot 4.7.1 工程，包含 `project.godot`、内置 `VirtualJoystick` Dynamic/When Touched、`InputSystem`、`VirtualJoystickHost`、typed `MovementIntentCarrier`、最小 `MOVEMENT_COMMIT`/pause/resume/rebuild/teardown 链路与 headless smoke。
+
+验证结果：
+
+- editor/headless project import：PASS；
+- `tests/input_vertical_slice_smoke.gd`：PASS，输出 `INPUT_VERTICAL_SLICE_SMOKE_PASS`；
+- 真实场景 headless startup：PASS，输出 `INPUT_VERTICAL_SLICE_RUNTIME_OK state=ACTIVE active_vj_count=1 carrier=(0.0, 0.0)`；
+- `git diff --check`：PASS。
+
+该证据只证明 vertical-slice 工程可启动及唯一 VJ 初始注册，不证明完整 GameRoot/BattleUI 集成、VJ 私有 claim/reset、Android/iOS、无障碍、性能、玩家 UX 或 `battle_ready`。全局状态继续为 `In Review / Re-review Pending`。
+
+## Author remediation after post-remediation re-review — 2026-09-09 — User requested continue
+
+针对整改后独立复审继续发现的合同缺口，补充静态收敛：
+
+- InputSystem owner 文档定义唯一 `INPUT_PHASE_ROW_V1`，并将 Input participant success status 收敛为仅 `OK`；同revision active VJ 数量/identity/tree ownership 不满足时统一返回 `JOYSTICK_REBUILD_FAILED`，不再落入未覆盖的 status。
+- GameRoot 与 Config canonical resume schema 新增 `pool_binding_consumer_checkpoint`，冻结 `CLOSED → POOL_BINDING_CONSUMER_OPEN` 的 checkpoint tuple；该状态仍不开放 gameplay 或 Viewport physical input。
+- ADR 新增 `DirectionalFocusNeighborManifestV1`，冻结 `FOCUS_LEFT/RIGHT` 的 variant 级候选集、破平规则、无候选值与 golden 校验。
+
+这些修改仍只属于文档合同，未产生实现或证据；状态继续为 `In Review / Re-review Pending`、`implementation-ready=false`、`runtime/device verified=false`、`battle_ready=false`。需在下一次独立复审前重新生成 manifest/hash/golden 并建立正式 Godot/GDUnit4 与平台验证链路。
+
+## Author remediation after Review 13 — 2026-09-09 — User requested continue
+
+本次整改针对第十三次收敛性 full re-review 的静态 blocker，未修改生产实现，未生成或替代任何 runtime/device/player/performance evidence。已同步：
+
+- `RequiredParticipantManifest` 与 Config actual rows 新增唯一 `INPUT_PHASE_ROW_V1` 及四类零业务字段贡献；
+- `SafeViewportGeometrySnapshot` 明确同时携带 `geometry_revision` 与 `input_rebuild_revision`，并冻结二元版本组的coalesce/checkpoint比较关系；
+- 同revision rebuild 只有在 `registered_active_vj_count==1` 且 identity/signal/tree ownership 全匹配时才可返回幂等 OK；
+- Pool 的第三次 authority publish 后改为 typed `POOL_BINDING_CONSUMER_OPEN`，明确不开放 gameplay/Viewport physical input；
+- GameRoot AC-A2c 与 InputSystem 统一为 8 行 Meta UI，补入 INCREMENT/DECREMENT owner-gate 验证；
+- ADR 明确 MVP 的 `BATTLE_ACTIVE` 不发布 interactive native accessibility snapshot，战斗中保持 touch-only；扩展该范围需新增 ADR 与独立证据。
+
+随后复审发现的静态回归已再次修正：Config INPUT row 与 Input/GameRoot 统一为 `allowed_success_statuses={OK}`；Input 与 BattleUI 均显式引用 ADR-0001 的 `DirectionalFocusNeighborManifestV1`，包括 variant、algorithm version 与 golden 约束。
+
+整改后状态仍为 `In Review / Re-review Pending`，`implementation-ready=false`、`runtime/device verified=false`、`battle_ready=false`。下一步仍需正式 Godot 工程/InputMap/BattleUI/export artifact、静态 guard、GDUnit4/fixtures、平台时序、运行时/设备/性能与人工 UX 证据，再进行新的 clean-context independent full re-review。
+
 ## Review — 2026-08-26 — Verdict: NEEDS REVISION
 Scope signal: L (revision-effort M 端)
 Specialists: game-designer, systems-designer, qa-lead, performance-analyst, godot-specialist, godot-gdscript-specialist, ux-designer (7) + creative-director 终审
@@ -568,3 +682,63 @@ Prior verdict resolved: Yes — Nineteenth Focused Three-Field Closure Full Re-r
 - `Approved`仅表示InputSystem GDD设计契约通过；不表示实现、集成、运行AC、真机或性能证据已经通过。
 - PlayerController、BattleUI、`project.godot`/InputMap/battle Viewport/CanvasLayer route、choice/Continue/readiness terminal ownership、`SupportedTouchEventOrderingManifest`、Android/iOS真机trace、AC-IS25/27/28人体协议、静态守卫和min-spec性能证据继续保持BLOCKED/OPEN。
 - 核心`VirtualJoystick→4 empty-binding actions→binary F1→typed carrier`、Viewport gate、shield bank、fresh-press、held-drain与Grid/Pool resume transaction未改变；本轮未创建实现、project asset或新ADR。
+
+## Implementation checkpoint — 2026-09-09 — Formal Input Vertical Slice Contract Gate
+
+Scope: 执行第十三次收敛性复审后授权的下一步实现验证；不构成新的独立 full re-review 或 Approval。
+
+### Executed
+
+- 创建正式 Godot 4.7.1 工程 `production/input-vertical-slice`，包含 `project.godot`、`main.tscn`、`InputSystem`、`VirtualJoystickHost`、`MovementIntentCarrier` 与运行入口。
+- 固化四个 empty-binding movement actions、`deadzone=0.0`、`Input.set_use_accumulated_input(false)` readback，以及 `emulate_touch_from_mouse=false`、`agile_event_flushing=false` 配置。
+- 增加 18 项 headless contract test：InputMap、唯一内置 VirtualJoystick、三字段状态链、MOVEMENT_COMMIT 归一化、cancel/resume、revision rebuild、teardown 后置。
+- 增加 machine-readable static guard，检查正式工程入口、InputMap 行、输入 writer 禁止项、内置 VJ 实例化和唯一 active VJ 后置。
+
+### Evidence
+
+- Godot editor headless import: PASS。
+- `input_vertical_slice_contract.gd`: `INPUT_VERTICAL_SLICE_CONTRACT_PASS tests=18`。
+- `input_vertical_slice_smoke.gd`: `INPUT_VERTICAL_SLICE_SMOKE_PASS`。
+- Runtime startup: `INPUT_VERTICAL_SLICE_RUNTIME_OK state=ACTIVE active_vj_count=1 carrier=(0.0, 0.0)`。
+- Static guard: JSON `status=PASS`。
+- `git diff --check`: PASS。
+
+### Boundary remains open
+
+- 该证据只证明正式切片的静态合同、headless 状态链和启动时唯一 VJ 注册；尚未证明完整 GameRoot/BattleUI/Viewport route、VJ 私有 claim/reset/reentrancy、Android/iOS 真机 touch ordering、语义可访问性、GDUnit4、min-spec 性能/thermal 或玩家 UX。
+- Meta UI 八行目前已声明并受静态守卫覆盖，但尚未接入实际键盘/gamepad bindings 或 `DirectionalFocusNeighborManifestV1` 的运行时 presenter/golden。
+- InputSystem 状态仍为 `In Review / Re-review Pending`；`implementation-ready=false`、`runtime/device verified=false`、`battle_ready=false` 保持不变。
+
+## Implementation checkpoint — 2026-09-09 — Unified CI Evidence Report
+
+在已有 vertical-slice contract/smoke/static checks之上，新增真实 Godot `ScreenTouch→ScreenDrag→release` fixture，并将其与统一入口 `production/input-vertical-slice/tools/ci/run_checks.py` 一起执行；入口一次汇总 editor import、contract、smoke、touch-order fixture 与 static guard，并生成 `evidence/input_vertical_slice_check_report.json`。
+
+本次执行结果：suite `PASS`；六个子检查均 `PASS`，其中 Godot 版本为 `4.7.1.stable.official.a13da4feb`，contract 为 `18` 项，touch-order fixture 为 `10` 项，GDUnit4 为 `v6.2.1 / 2 test cases / 0 errors / 0 failures / 0 orphans`。报告显式记录 `complete_game_root_battle_ui_integration=false`、`gdunit4_framework_and_slice_contract=true`、`gdunit4_full_review_gate=false`、`android_ios_device=false`、`accessibility_runtime=false`、`performance_thermal=false`、`battle_ready=false`，避免将切片证据扩大解释为生产验收。
+
+InputSystem 仍保持 `In Review / Re-review Pending`，本 checkpoint 不构成独立 full re-review、Approved、implementation-ready 或 runtime/device verified。
+
+## Implementation checkpoint — 2026-09-09 — Steps 1–3: GDUnit4 Touch, VJ Reentrancy, Minimal BattleUI
+
+按授权执行下一步三项实现：
+
+1. 将 `ScreenTouch → ScreenDrag → release` 纳入真实非 headless GDUnit4 `scene_runner("res://main.tscn")` 测试，验证动态 VJ claim、右向 movement action 与 release 后四 action 清理。
+2. 补 VJ claim/reset/rebuild/reentrancy 合同：重复 `pressed` 不重复生成 claim；active claim 时 rebuild 返回 `STATUS_WRONG_STATE` 且不推进 epoch；release/reset 后新 revision rebuild 恰一次；同 revision 调用幂等；重复 initialize 不产生第二个 VJ。
+3. 接入最小 BattleUI slice：8 行 Meta UI、8 个 focusable button，以及按 `DirectionalFocusNeighborManifestV1.algorithm.v1` 生成并应用 left/right 邻接的 manifest。该 slice 只用于 harness，不替代完整 GameRoot/BattleUI 生产集成。
+
+### Evidence
+
+- GDUnit4 已安装并固定为 `v6.2.1`；三个 suite 分别通过：Input 状态合同 `3 test cases`、真实触摸场景 `1 test case`、BattleUI/manifest `2 test cases`，合计 `6 test cases | 0 errors | 0 failures | 0 flaky | 0 skipped | 0 orphans`。
+- 统一入口 `python3 production/input-vertical-slice/tools/ci/run_checks.py --write-report`：`PASS`；editor import、18 项 headless contract、smoke、10 项 touch fixture、三组 GDUnit4 suite、static guard 均 `PASS`。
+- 机器报告：`production/input-vertical-slice/evidence/input_vertical_slice_check_report.json`；新增边界标记 `real_touch_scene_runner=true`、`minimal_battle_ui_slice_integration=true`，同时保持 `complete_game_root_battle_ui_integration=false`、`gdunit4_full_review_gate=false`、`android_ios_device=false`、`accessibility_runtime=false`、`performance_thermal=false`、`battle_ready=false`。
+
+InputSystem 仍保持 `In Review / Re-review Pending`；本 checkpoint 不构成独立 full re-review、Approved、implementation-ready、runtime/device verified 或 `battle_ready`。
+
+## Implementation checkpoint — 2026-09-09 — Minimal GameRoot/BattleUI/Viewport Route
+
+在步骤 1–3 的切片基础上，将 harness 路由收敛为 `GameRootSlice → root Viewport.gui_disable_input → BattleUICanvasLayer(layer=10) → BattleUI`，VJ/InputSystem 仍由同一 root Viewport 接收。GameRoot 在 `_ready` 先取得并验证 root Viewport、持有 gate、完成 Input/BattleUI 装配，只有 `ACTIVATION_SUCCESS` readback 后才释放 `gui_disable_input=false`；错误 reason 不得释放。新增 GDUnit4 场景测试覆盖 CanvasLayer owner、root Viewport identity、gate-held 阻断 touch，以及成功 release 后重新开放 touch。
+
+### Evidence boundary
+
+- GameRoot/Viewport route GDUnit4：`2 test cases | 0 errors | 0 failures | 0 flaky | 0 skipped | 0 orphans`。
+- Godot editor import 与该场景测试均通过；当前环境未发现 `adb`，`xcrun simctl` 也不可用，故 Android/iOS 真机或模拟器证据未执行。
+- `accessibility_runtime=false`、`performance_thermal=false`、`gdunit4_full_review_gate=false`、`battle_ready=false` 保持不变。该实现是最小 route harness，不构成完整 GameRoot/BattleUI 生产集成或批准。

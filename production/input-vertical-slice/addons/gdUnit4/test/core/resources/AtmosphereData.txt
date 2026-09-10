@@ -1,0 +1,22 @@
+class AtmosphereData:
+enum {
+	WATER,
+	AIR,
+	SMOKY,
+}
+var _toxigen :float
+var _type :int
+
+func _init(type := AIR, toxigen := 0.0) -> void:
+	_type = type
+	_toxigen = toxigen
+# some comment, and an row staring with an space to simmulate invalid formatting
+
+
+# seter func with default values
+func set_data(type := AIR, toxigen := 0.0) -> void:
+	_type = type
+	_toxigen = toxigen
+
+static func to_atmosphere(_value :Dictionary) -> AtmosphereData:
+	return null

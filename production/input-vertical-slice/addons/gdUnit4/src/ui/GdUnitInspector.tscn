@@ -1,0 +1,68 @@
+[gd_scene format=3 uid="uid://mpo5o6d4uybu"]
+
+[ext_resource type="PackedScene" path="res://addons/gdUnit4/src/ui/parts/GdUnitInspectorToolBar.tscn" id="1"]
+[ext_resource type="Script" path="res://addons/gdUnit4/src/ui/GdUnitInspector.gd" id="1_j37cs"]
+[ext_resource type="PackedScene" path="res://addons/gdUnit4/src/ui/parts/GdUnitInspectorProgressBar.tscn" id="2"]
+[ext_resource type="PackedScene" path="res://addons/gdUnit4/src/ui/parts/GdUnitInspectorStatusBar.tscn" id="3"]
+[ext_resource type="PackedScene" path="res://addons/gdUnit4/src/ui/parts/GdUnitInspectorTreeMainPanel.tscn" id="7"]
+[ext_resource type="PackedScene" path="res://addons/gdUnit4/src/network/GdUnitServer.tscn" id="7_721no"]
+
+[node name="GdUnit" type="Control" unique_id=272268338]
+clip_contents = true
+custom_minimum_size = Vector2(360, 440)
+layout_mode = 3
+anchors_preset = 9
+anchor_bottom = 1.0
+grow_vertical = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+focus_mode = 2
+script = ExtResource("1_j37cs")
+
+[node name="VBoxContainer" type="VBoxContainer" parent="." unique_id=1550259230]
+clip_contents = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+size_flags_vertical = 11
+theme_override_constants/separation = 0
+
+[node name="Header" type="VBoxContainer" parent="VBoxContainer" unique_id=876343251]
+use_parent_material = true
+clip_contents = true
+layout_mode = 2
+
+[node name="ToolBar" parent="VBoxContainer/Header" unique_id=185399834 instance=ExtResource("1")]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="ProgressBar" parent="VBoxContainer/Header" unique_id=360281822 instance=ExtResource("2")]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 5
+
+[node name="StatusBar" parent="VBoxContainer/Header" unique_id=625414847 instance=ExtResource("3")]
+layout_mode = 2
+size_flags_horizontal = 1
+
+[node name="MainPanel" parent="VBoxContainer" unique_id=1133307707 instance=ExtResource("7")]
+unique_name_in_owner = true
+clip_contents = true
+layout_mode = 2
+
+[node name="event_server" parent="." unique_id=756999253 instance=ExtResource("7_721no")]
+
+[connection signal="select_error_next" from="VBoxContainer/Header/StatusBar" to="VBoxContainer/MainPanel" method="_on_select_next_item_by_state" binds= [7]]
+[connection signal="select_error_prevous" from="VBoxContainer/Header/StatusBar" to="VBoxContainer/MainPanel" method="_on_select_previous_item_by_state" binds= [7]]
+[connection signal="select_failure_next" from="VBoxContainer/Header/StatusBar" to="VBoxContainer/MainPanel" method="_on_select_next_item_by_state" binds= [6]]
+[connection signal="select_failure_prevous" from="VBoxContainer/Header/StatusBar" to="VBoxContainer/MainPanel" method="_on_select_previous_item_by_state" binds= [6]]
+[connection signal="select_flaky_next" from="VBoxContainer/Header/StatusBar" to="VBoxContainer/MainPanel" method="_on_select_next_item_by_state" binds= [5]]
+[connection signal="select_flaky_prevous" from="VBoxContainer/Header/StatusBar" to="VBoxContainer/MainPanel" method="_on_select_previous_item_by_state" binds= [5]]
+[connection signal="select_orphan_next" from="VBoxContainer/Header/StatusBar" to="VBoxContainer/MainPanel" method="_on_select_next_item_by_state" binds= [9]]
+[connection signal="select_orphan_prevous" from="VBoxContainer/Header/StatusBar" to="VBoxContainer/MainPanel" method="_on_select_previous_item_by_state" binds= [9]]
+[connection signal="select_skipped_next" from="VBoxContainer/Header/StatusBar" to="VBoxContainer/MainPanel" method="_on_select_next_item_by_state" binds= [2]]
+[connection signal="select_skipped_prevous" from="VBoxContainer/Header/StatusBar" to="VBoxContainer/MainPanel" method="_on_select_previous_item_by_state" binds= [2]]
+[connection signal="tree_view_mode_changed" from="VBoxContainer/Header/StatusBar" to="VBoxContainer/MainPanel" method="_on_status_bar_tree_view_mode_changed"]

@@ -452,4 +452,24 @@ Blocking items: 6个去重根因
 
 **Re-review Pending**。本轮仅完成静态设计修订与一致性检查，不等于Godot runtime、Save integration、project asset、target Android或benchmark evidence通过；其他required owner贡献仍缺失，`battle_ready=false`。下一步必须在clean context运行第十一轮独立full review。
 
+## Implementation checkpoint — 2026-09-09 — ADR-GR-001 Persistent Root Decision
+
+按执行顺序完成第 1 步：通过 `ADR-GR-001` 固定 GameRoot 采用 `main-scene persistent root`，不采用 Autoload。`run/main_scene` 指向唯一 root scene；页面与 battle 只作为可替换 child scope，root Window/Viewport、pause writer、`gui_disable_input` writer 与 app pump 均保持同一 GameRoot identity。已同步 GameRoot GDD、systems-index 与 architecture registry；OQ1 改为 `DESIGN ANSWERED / IMPLEMENTATION EVIDENCE OPEN`。
+
+当前 vertical slice 的 root 已改名为 `GameRoot` 并继续保留为 scaffold。该决策关闭的是落地方式，不关闭完整 lifecycle、Save、设备、可访问性或性能证据门。
+
+## Implementation checkpoint — 2026-09-09 — Battle Scope Lifecycle Binding
+
+按顺序执行第 2 步：将 `InputSystem`、`VirtualJoystickHost` 与 `BattleUI` 收入 `BattleScope_<generation>` child；GameRoot 保持 root scene、root Viewport 与 live identity 不变。新增 `pause_battle_scope`、`resume_battle_scope`、`replace_battle_scope` 与 `teardown_battle_scope`，replacement 先持有 Viewport gate、teardown 旧 Input/VJ、移除并 queue-free 旧 scope，再创建新 generation 并只通过 `ACTIVATION_SUCCESS` 释放 gate；teardown 则保持 gate held，等待下一页 owner 接管。
+
+GDUnit4 lifecycle suite 覆盖 root/Viewport identity 不变、两次 battle replacement、pause/resume、旧 scope detach、单 VJ 后置与 teardown 后 gate held。首次测试发现并修复了手工拆子节点导致的 28 个 orphan；修复后 suite 为 `4 test cases | 0 errors | 0 failures | 0 flaky | 0 skipped | 0 orphans`。
+
+这仍是 vertical-slice lifecycle harness，不等价于完整 GameRoot 七 phase、Save、Settlement、Fault 或真实项目 production scene；对应 integration/runtime/device gates 继续 OPEN。
+
+## Implementation checkpoint — 2026-09-09 — Ordered Execution: Device Evidence Boundary
+
+第 3 步已执行能力探测并写入 `production/input-vertical-slice/evidence/input_vertical_slice_check_report.json`：当前环境没有 `adb`，`xcrun simctl` 不可用，设备工具状态为 `BLOCKED`。因此没有执行 Android/iOS 真机或模拟器 touch trace，也没有声称 TalkBack/VoiceOver 或 thermal/performance 证据；本地 Godot/GDUnit4 场景证据继续有效，但不能替代目标设备证据。
+
+当前有序执行结果为：OQ1 设计决策已关闭；vertical-slice GameRoot/BattleUI/Viewport lifecycle harness 已通过；设备、语义可访问性、性能/thermal 以及完整生产集成仍是下一阻塞门。`battle_ready=false` 保持不变。
+
 ---

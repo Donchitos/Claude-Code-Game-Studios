@@ -1,0 +1,29 @@
+[gd_scene load_steps=2 format=3 uid="uid://cbdmsq72qtcyr"]
+
+[sub_resource type="GDScript" id="GDScript_54n73"]
+script/source = "# a small helper to debug the GdUnitCmdTool
+extends Node
+
+const CmdTool := preload(\"res://addons/gdUnit4/bin/GdUnitCmdTool.gd\")
+const CopyLog := preload(\"res://addons/gdUnit4/bin/GdUnitCopyLog.gd\")
+
+# Called when the node enters the scene tree for the first time.
+func _ready() -> void:
+	#var tool := CmdTool.new()
+
+	var runner := GdUnitTestCIRunner.new()
+	runner._debug_cmd_args = [\"GdUnitCmdTool.gd\", \"--add\", \"res://addons/gdUnit4/test/core/parse/GdUnitTestParameterSetResolverTest.gd\", \"--continue\", \"-rc\", \"1\"]
+
+	add_child(runner)
+
+
+func _notification(what: int) -> void:
+	if what == NOTIFICATION_PREDELETE:
+		var copy_log := CopyLog.new()
+		copy_log._debug_cmd_args = [\"GdUnitCopyLog.gd\"]
+		copy_log._process(0)
+		prints(\"exit\")
+"
+
+[node name="RuntestDebug" type="Node"]
+script = SubResource("GDScript_54n73")

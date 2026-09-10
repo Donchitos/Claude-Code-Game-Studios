@@ -1,0 +1,49 @@
+[gd_scene load_steps=8 format=3]
+
+[ext_resource type="Script" path="res://src/gameplay/battle/battle_scope.gd" id="1_scope"]
+[ext_resource type="PackedScene" path="res://src/gameplay/stage/StageRuntime.tscn" id="2_stage"]
+[ext_resource type="PackedScene" path="res://src/gameplay/player/PlayerController.tscn" id="3_player"]
+[ext_resource type="Script" path="res://src/input/input_system.gd" id="4_input"]
+[ext_resource type="Script" path="res://src/input/virtual_joystick_host.gd" id="5_host"]
+[ext_resource type="Script" path="res://src/input/movement_ingress_shield.gd" id="7_shield"]
+[ext_resource type="PackedScene" path="res://src/ui/BattleUI.tscn" id="6_ui"]
+
+[node name="BattleScope" type="Node"]
+script = ExtResource("1_scope")
+
+[node name="StageRuntime" parent="." instance=ExtResource("2_stage")]
+
+[node name="PlayerController" parent="." instance=ExtResource("3_player")]
+
+[node name="InputSystem" type="Node" parent="."]
+script = ExtResource("4_input")
+
+[node name="InputLayer" type="CanvasLayer" parent="."]
+layer = 5
+
+[node name="VirtualJoystickHost" type="Control" parent="InputLayer"]
+process_mode = 3
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("5_host")
+
+[node name="MovementIngressShield" type="Control" parent="InputLayer/VirtualJoystickHost"]
+process_mode = 3
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("7_shield")
+
+[node name="BattleUILayer" type="CanvasLayer" parent="."]
+layer = 10
+
+[node name="BattleUI" parent="BattleUILayer" instance=ExtResource("6_ui")]

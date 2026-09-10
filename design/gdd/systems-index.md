@@ -2,7 +2,9 @@
 
 > **Status**: Draft
 > **Created**: 2026-08-14
-> **Last Updated**: 2026-09-08
+> **Last Updated**: 2026-09-10
+
+> 2026-09-10: InputSystem准确目标完成新的clean-context独立full re-review，6 specialists + fresh creative-director verdict为`BLOCKED / XL`（至少`MAJOR REVISION NEEDED / XL`）。用户授权并完成Option A及后续合同/生产scaffold整改，但本轮仍发现正式调用链、pause/touch生命周期、7001端到端ABI、F1/F2生产接入、Meta binding、workload schema/hash/marker/threshold与101/102 registry口径冲突；平台与runtime证据仍BLOCKED，下一步需重新授权。历史条目中的APPROVED、六屏/六行均保留为审计记录，不代表当前InputSystem verdict。
 
 > 2026-09-08: Zhangtian第七次fresh-context full re-review仍为MAJOR REVISION NEEDED（XL），前轮7组闭合0、全部PARTIAL；用户“继续”后完成第七轮作者静态整改。Create升级204-byte V3并回显source correlation与operation identity，typed Save mailbox为484 bytes；durable receipt code与public reconcile code分层，update reconcile按selected OLD/NEW hash唯一裁决FOUND_OLD/FOUND。Crash真值拆为7-row operation×12-row cut并唯一生成84 rows；ADR冻结64-byte header+64×96-byte row的6208-byte MPSC64 ABI、94条逐node合同和34条逐state variant，Input区分本地focus导航与owner业务命令，Settlement冻结typed detail分页。两份YAML、246个entity name唯一、manifest/a11y计数、关键byte算术、stale扫描与`git diff --check`已通过。当前仍仅为作者合同传播，generated artifact、codec/hash/migration golden、Godot/GDUnit4、process-kill、真机accessibility/gamepad、性能、音频、经济/试玩与第八次fresh-context re-review仍BLOCKED/OPEN；状态保持In Review / Re-review Pending，`battle_ready=false`。
 
@@ -130,8 +132,8 @@ MVP 只验证三件事：①移动躲避+自动御剑+功法进化的爽快度�
 
 | # | System Name | Category | Priority | Status | Design Doc | Depends On |
 |---|-------------|----------|----------|--------|------------|------------|
-| 1 | GameRoot & Scene Flow | Core | MVP | In Review | design/gdd/game-root-scene-flow.md | 第十轮6根blocker已按授权修订；Re-review Pending，待第十一轮独立full review。runtime/Save/performance/evidence gates仍OPEN。 |
-| 2 | InputSystem | Core | MVP | In Review | design/gdd/input-system.md | 第九轮传播：lifecycle pump、staged destination、Input四类0贡献；私有FSM不复制。 |
+| 1 | GameRoot & Scene Flow | Core | MVP | In Review | design/gdd/game-root-scene-flow.md | ADR-GR-001已确定main-scene persistent root；当前仅有vertical-slice route harness，完整persistent lifecycle/Save/runtime/performance/evidence gates仍OPEN，待独立full review。 |
+| 2 | InputSystem | Core | MVP | In Review | design/gdd/input-system.md | 2026-09-10 clean-context full review 为 `MAJOR REVISION NEEDED / XL`；已授权修订F1/F2 total oracle、lifecycle/read-path边界、VJ transaction、touch manifest schema与BATTLE_ACTIVE一节点pause gateway。仍为Re-review Pending，runtime/device/evidence gates未通过。 |
 | 3 | SpatialGrid | Core | MVP | In Review | design/gdd/spatial-grid.md | V2为signed cell坐标的稀疏occupied-cell索引；大查询超过262144格时扫描≤1000 active entries；无dense world allocation。Re-review Pending。 |
 | 4 | Object Pooling (inferred) | Core | MVP | In Review | design/gdd/object-pooling.md | 一intent一mutable lifecycle row、Pool私有release FSM与visible-row exact publish已传播。 |
 | 5 | Config/Data System | Core | MVP | In Review | design/gdd/config-data-system.md | 第九轮传播实际guard/load/priority/workload rows、四类owner贡献与hash；当前缺owner rows使battle_ready=false。 |
@@ -340,6 +342,6 @@ MVP 只验证三件事：①移动躲避+自动御剑+功法进化的爽快度�
 - [ ] GameRoot另有待办：clean context运行下一轮`/design-review design/gdd/game-root-scene-flow.md`
 - [x] 全部28个MVP系统已获作者设计覆盖（27个独立GDD状态 + Buff并入Damage的1个Merged）；本批四份为Designed / Full Review Pending
 - [ ] 对Zhangtian及全部受影响GDD在clean context执行full re-review；不得以本次整改或静态检查代替独立verdict
-- [ ] 将GameRoot已枚举的30-row load/54-row guard/72-row action/5-row app-render作者表、Save 25-row hash/5-row reservation-payload/13-row reconcile/11×12=132-row crash-cut表与ADR 6-row accessibility hash、7-profile node、8-row Meta UI Input表导出为canonical artifact，并生成Hash256 golden、ReservationMax/SlotMax及persistent-domain codec manifests，随后再进入实现（旧84-row/6-row仅为历史记录）
+- [ ] 将GameRoot已枚举的30-row load/54-row guard/72-row action/5-row app-render作者表、Save 25-row hash/5-row reservation-payload/13-row reconcile/11×12=132-row crash-cut表与ADR当前7-row accessibility hash、8-profile/95-node/35-variant contract、8-row Meta UI Input表导出为canonical artifact，并生成Hash256 golden、ReservationMax/SlotMax及persistent-domain codec manifests，随后再进入实现（旧84-row/6-row仅为历史记录）
 - [ ] MVP 系统 GDD 全部完成后跑 `/gate-check pre-production`
 - [ ] 用 `/vertical-slice` 在承诺 Production 前验证最高风险系统（SpatialGrid / Object Pooling / EnemySystem 架构）

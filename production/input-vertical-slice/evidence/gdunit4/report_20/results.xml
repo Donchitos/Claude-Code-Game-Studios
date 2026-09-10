@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<testsuites id="2026-09-09" name="report_20" tests="4" failures="0" skipped="0" flaky="0" time="0.000">
+	<testsuite id="0" name="game_root_viewport_gdunit4_test" package="tests" timestamp="2026-09-09T10:58:19" hostname="localhost" tests="4" failures="0" errors="1" skipped="0" flaky="0" time="3.525">
+		<testcase name="test_game_root_owns_root_viewport_gate_and_battle_ui_canvas_route" classname="game_root_viewport_gdunit4_test" time="0.598">
+		</testcase>
+		<testcase name="test_gate_held_blocks_touch_until_activation_success_release" classname="game_root_viewport_gdunit4_test" time="0.598">
+		</testcase>
+		<testcase name="test_battle_scope_replacement_preserves_game_root_and_viewport_identity" classname="game_root_viewport_gdunit4_test" time="1.149">
+			<error message="ERROR: res://tests/game_root_viewport_gdunit4_test.gd:50" type="ABORT">
+<![CDATA[
+Godot Runtime Error !
+  'Cannot call method 'is_inside_tree' on a previously freed instance.'
+	at 'test_battle_scope_replacement_preserves_game_root_and_viewport_identity' in res://tests/game_root_viewport_gdunit4_test.gd:50
+]]>
+			</error>
+		</testcase>
+		<testcase name="test_teardown_detaches_battle_scope_and_keeps_gate_held" classname="game_root_viewport_gdunit4_test" time="1.166">
+		</testcase>
+	</testsuite>
+</testsuites>

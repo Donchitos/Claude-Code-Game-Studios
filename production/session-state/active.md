@@ -5,13 +5,23 @@
 <!-- STATUS -->
 Epic: 引擎与系统分解
 Feature: 正式战斗切片核心系统设计
-Task: Zhangtian第八次fresh-context full re-review为MAJOR REVISION NEEDED / XL；用户已授权完成第八轮8组跨文档合同整改，下一步第九次fresh-context full re-review
-Current section: eighth remediation complete / Re-review Pending
-File: design/gdd/zhangtian-bottle.md + Prep/Save/GameRoot/Settlement/Config/SkillDraft/RNG/Input/Home/Audio/BattleUI/technical preferences/registry/index/review log + ADR-0001
-Review mode: full remediation author context（基于已完成的第八次独立fresh-context verdict；本整改上下文不自批）
-Status: 第七次fresh-context verdict为MAJOR REVISION NEEDED / XL；第六轮7组历史blocker裁决为0 CLOSED/7 PARTIAL，并发现7组实现前根blocker。用户回复“继续”后的作者整改已冻结204-byte create V3/484-byte mailbox、durable receipt与public result code分层、OLD/NEW scratch reconcile、7×12 crash oracle、94 node/34 state accessibility合同、typed Settlement分页及6208-byte MPSC64并发ABI并跨文档传播。静态复核通过：两份YAML parse、246个entity name唯一、HPM/RUP/RRD/RCO/RCC=25/5/13/7/12、a11y profile/node/state=7/94/34、关键ABI byte arithmetic、current-contract stale扫描与`git diff --check`。相关GDD保持In Review / Re-review Pending。generated artifact、Hash256/codec/migration golden、Godot/GDUnit4、process kill、device accessibility/gamepad、performance/audio/economy/player evidence及第八次独立verdict仍BLOCKED/OPEN，battle_ready=false。
-Constraints: 仅增量修订设计文档、registry与追踪状态；不覆盖已有dirty worktree，不改生产实现代码。本轮整改上下文不得批准自身；未执行Godot/GDUnit4/真机/性能/UX/audio验证，battle_ready=false。
+Task: InputSystem新一轮授权整改已完成；等待下一次clean-context独立full re-review
+Current section: InputSystem post-remediation review / Major Revision Needed / Re-review Pending
+File: `design/gdd/input-system.md` + `design/gdd/game-root-scene-flow.md` + `design/gdd/battle-ui.md` + `docs/architecture/adr-0001-mobile-accessibility-bridge.md` + `docs/architecture/adr-0002-game-root-persistent-scene.md` + `design/registry/manifests/supported-touch-event-ordering-v1.yaml` + corresponding registry/index/review logs
+Review mode: implementation checkpoint（本轮授权整改已完成；下一步由clean context执行独立full re-review）
+Status: 2026-09-10对准确目标`design/gdd/input-system.md`完成新的clean-context独立full re-review：6 specialists并行返回后由fresh creative-director综合，结论为`BLOCKED / XL`，修订级别至少`MAJOR REVISION NEEDED / XL`。用户随后授权整改；本轮已将正式生产调用链拆为GameRoot调度Input/Gameplay、InputSystem内部读取movement actions并执行F1、补入FROZEN/consumer-close/shield bank/fault observer、VJ candidate replacement、root gate/readback/flush、7001 payload生产接线与exactly-once smoke断言，统一102 node count并修正生产geometry offset。当前仍未闭合的正式F2 provider、完整resume/touch事务、Meta真实binding/native accessibility、workload schema/hash/marker/threshold、平台与runtime/performance/UX证据保持BLOCKED。`git diff --check`、4份YAML parse、Godot 4.7.1 root parse与production smoke（含7001重复拒绝）通过；仍保持`In Review / Re-review Pending`、`implementation-ready=false`、`integration-ready=false`、`runtime/device verified=false`、`battle_ready=false`。
+Constraints: 保留已有dirty worktree与历史记录；不得把vertical-slice harness证据扩大解释为完整生产集成、真机、性能或`battle_ready`证据。下一轮整改需针对本次新blocker重新获得用户授权；本作者上下文不修改独立评审结论、不自批准。
 <!-- /STATUS -->
+
+<!-- CURRENT_INPUT_VERTICAL_SLICE -->
+2026-09-09已完成当前实现验证 checkpoint：
+
+- ADR-GR-001固定main-scene persistent GameRoot；root Window/Viewport、pause writer、`gui_disable_input` writer及app pump保持同一identity。
+- `InputSystem`、`VirtualJoystickHost`、`BattleUI`绑定到`BattleScope_<generation>`；支持pause/resume/replace/teardown，replacement在`ACTIVATION_SUCCESS`后才释放Viewport gate。
+- 统一报告 `production/input-vertical-slice/evidence/input_vertical_slice_check_report.json` 状态为`PASS`；本地9/9检查通过，GDUnit4无error/failure/flaky/skipped/orphan。
+- 设备探测为`adb=false`、`simctl=false`，因此Android/iOS、TalkBack/VoiceOver、性能/thermal证据保持`BLOCKED`，不得据此宣称完整集成或`battle_ready`。
+- 独立复审已于2026-09-10完成，结果记入`design/gdd/reviews/input-system-review-log.md`；本轮授权整改已完成，下一步执行新的clean-context独立full re-review。
+<!-- /CURRENT_INPUT_VERTICAL_SLICE -->
 
 <!-- EIGHTH_REMEDIATION_CURRENT -->
 第八次独立 verdict 为 `MAJOR REVISION NEEDED / XL`；本轮已完成用户授权的8组跨文档合同整改：hash 分层、create correlation/identity lease、1152/724-byte reservation、11×12=132 crash oracle、Save 六行 SGH、ADR 101-row（互斥choice）动态 choice/Settings/Input/MPSC ABI 与 43200 tick 边界。状态继续 `In Review / Re-review Pending`，`battle_ready=false`；generated/runtime/device/性能/经济证据及第九次独立复审仍 OPEN。

@@ -108,7 +108,7 @@ MVP schema v1冻结：
 
 - BOOT可以发布不含本局run_seed/battle identity的基础snapshot；每次BATTLE_LOADING必须用manifest+`RunStartRequest.{run_seed,battle_instance_id}`构建本局`BattleConfigSnapshot`，并把同一snapshot ID与battle identity传给GameRoot runtime banks；Pool/Grid/owners继续以同一snapshot ID做Config一致性预检。
 - 进入BATTLE_ACTIVE后，Config API只读；Resource changed通知、remote config、dev inspector编辑或文件变化不得修改当前snapshot。请求reload只设置“next battle rebuild”标志。
-- pause/resume沿用同一snapshot ID。Pool与Grid必须在init时复制该非零ID并提供无分配、只读scalar getter；owner authority bundle同样携带该ID。Config只引用GameRoot canonical resume attempt schema `{battle_instance_id,config_snapshot_id,input_revision,background_required_revision,background_acked_revision,geometry_revision,source_authority_revision,next_authority_revision,source_grid_snapshot_revision,next_grid_snapshot_revision,pool_epoch,topology_revision,resume_requested_latched}`，不得复制旧名或第二套字段。在 arm 与 `Grid→Pool→authority` 三次发布的expected tuple checkpoint分别核对；任一额外变化都保持consumer关闭并进入ControlledGameplayFault。
+- pause/resume沿用同一snapshot ID。Pool与Grid必须在init时复制该非零ID并提供无分配、只读scalar getter；owner authority bundle同样携带该ID。Config只引用GameRoot canonical resume attempt schema `{battle_instance_id,config_snapshot_id,input_rebuild_revision,background_required_revision,background_acked_revision,geometry_revision,pool_binding_consumer_checkpoint,source_authority_revision,next_authority_revision,source_grid_snapshot_revision,next_grid_snapshot_revision,pool_epoch,topology_revision,resume_requested_latched}`，其中`pool_binding_consumer_checkpoint∈{CLOSED,POOL_BINDING_CONSUMER_OPEN}`且后者不开放gameplay/Viewport physical input，不得复制旧名或第二套字段。在 arm 与 `Grid→Pool→authority` 三次发布的expected tuple checkpoint分别核对；任一额外变化都保持consumer关闭并进入ControlledGameplayFault。
 - Config snapshot teardown不拥有pooled Node或Grid handle；GameRoot先按既定Grid→Pool顺序teardown battle，再释放snapshot引用。
 
 ### R9 — Readiness 分级与缺失依赖
@@ -139,6 +139,10 @@ MVP schema v1冻结：
 - 清除不配置独立距离旋钮。MVP所有NORMAL必须声明`shape_code=CIRCLE`，且`enemy_shape_bound`逐bit等于实际玩法碰撞圆半径；Player只按`player_radius + enemy_shape_bound`判断真实重叠/相切。非圆NORMAL或额外clear-distance字段均使battle load失败。
 - 标准Godot export的position/direction ABI为real_t32 `Vector2`；Config标量与计算域为float64。validator必须分别检查real_t32可表示/canonical边界与float64 finite/domain，不以float64 ULP替代runtime ABI。
 - artifact manifest必须登记export template precision=`single`及Player inward-rounding bit-golden hash；double-precision模板、±0/subnormal/最大finite golden不匹配或Stage parent/canvas identity contract缺失均令Player consumer reference无效。
+
+INPUT participant actual row必须逐字段为`{participant_id=INPUT,role_id=INPUT,stable_order=1,allowed_phases={MOVEMENT_COMMIT,POST_DEFERRED_BARRIER},allowed_success_statuses={OK},owner_contract_id=InputSystem/v1,owner_gdd_path=design/gdd/input-system.md,phase_row_id=INPUT_PHASE_ROW_V1,required=true}`。
+
+INPUT owner contribution actual rows共同字段为`{required_role_id=INPUT,outcome_field_id_or_none=NONE,owner_contract_id=InputSystem/v1,source_gdd_path=design/gdd/input-system.md,role_stable_order=1,field_stable_order=0}`，四行分别为`{LIFECYCLE_INTENT,0,1}`、`{FACT_COMMIT,0,2}`、`{PAUSE_CLOSURE,0,3}`、`{BLOCKING_CHOICE,0,4}`。Input只声明phase participant与零业务字段贡献，不得借此拥有GameRoot顶层状态、Player fact或Choice authority。
 
 PLAYER participant actual row必须逐字段为`{participant_id=PLAYER,role_id=PLAYER,stable_order=2,allowed_phases={MOVEMENT_COMMIT,DEFERRED_REMOVAL},allowed_success_statuses={OK,OK_NOOP},owner_contract_id=PlayerController/v1,owner_gdd_path=design/gdd/player-controller.md,phase_row_id=PLAYER_PHASE_ROW_V1,required=true}`。
 

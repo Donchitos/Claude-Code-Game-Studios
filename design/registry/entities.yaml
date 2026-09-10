@@ -1372,6 +1372,7 @@ constants:
       - design/gdd/projectile-system.md
       - design/gdd/weapon-system.md
       - design/gdd/drop-leveling-system.md
+      - design/gdd/input-system.md
     value: 60
     unit: ticks_per_second
     added: 2026-08-28
@@ -3261,7 +3262,7 @@ constants:
     status: active
     source: docs/architecture/adr-0001-mobile-accessibility-bridge.md
     referenced_by: [docs/architecture/adr-0001-mobile-accessibility-bridge.md, docs/registry/architecture.yaml]
-    value: 101
+    value: 102
     unit: manifest_rows
     added: 2026-09-08
     revised: ""

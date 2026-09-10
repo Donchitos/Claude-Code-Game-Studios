@@ -1,0 +1,22 @@
+## GdUnit3 v0.9.4 - Release Candidate
+
+### Improvements
+- Added project settings to configure:
+ - <b>Verbose Orphans</b> to enable/disable report detected orphans
+![image](https://user-images.githubusercontent.com/347037/119266895-e09d1900-bbec-11eb-91e9-45409ba2edb2.png)
+ - <b>Server Connection Timeout Minites</b> to set test server connection timeout in minutes
+ - <b>Test Timeout Seconds</b> to set the default test case timeout in seconds
+![image](https://user-images.githubusercontent.com/347037/119266875-d1b66680-bbec-11eb-856f-8fac9b0ed31c.png)
+
+test seperator
+---
+
+### Bugfixes
+- GdUnit inspecor:
+  - Fixed invalid test case state visualisation for detected orphan nodes   (#63)
+  - Fixed a ui bug to auto select the first report failure after a test run
+  - Fixed invalid visualisation state and error counter    (#66)
+- TestSuite:
+  - Using asserts on stage after() now reporting
+- Core:
+  - The GdUnit network layer was replaced by a new TCP server/client architecture to enable network-related testing (#64 )

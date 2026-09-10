@@ -1,8 +1,8 @@
 # BattleUI（战斗界面）
 
-> **Status**: Designed / Full Review Pending
+> **Status**: Designed / Full Review Pending — synced with 2026-09-10 InputSystem blocker remediation; BATTLE_ACTIVE pause gateway remains runtime/device unverified
 > **Author**: 用户 + Codex（lean authoring；consulted systems-designer / qa-lead / ux-designer / art-director）
-> **Created / Last Updated**: 2026-09-07 — Zhangtian第六次独立full review后mobile accessibility整改传播
+> **Created / Last Updated**: 2026-09-10 — InputSystem clean-context full review remediation（Option A pause gateway）
 > **Implements Pillar**: 竖屏单手低打扰战斗；让生存、构筑、风险与终局信息一眼可读
 > **Scope**: MVP battle HUD、暂停/选择交互、关键提示与 terminal handoff；不含 Settlement/Home/Prep 完整页面或最终资产
 
@@ -230,7 +230,7 @@ The `battle_ui_capacity` formula is defined as:
 | System | Contract | Status |
 |---|---|---|
 | GameRoot | atomic bundle、TopState/pause/terminal、touch-drain gate、cleanup | In Review；actual binding待传播 |
-| InputSystem | geometry、blocked predicate、touch manifest、event route | Re-review Pending；真机trace BLOCKED |
+| InputSystem | geometry、blocked predicate、touch manifest、event route、BATTLE_ACTIVE pause gateway | Re-review Pending；2026-09-10 MAJOR REVISION NEEDED / XL整改中，真机trace BLOCKED |
 | PlayerController | HUD/frame、consumer bit与critical ACK | Full Re-review Pending |
 | Drop + Leveling | live level/xp/kill/tick view | Designed；正式view缺失 |
 | SkillDraft / RiskChoice | offer、typed command/receipt、14+2 pending | Designed；full review pending |
@@ -269,7 +269,9 @@ The `battle_ui_capacity` formula is defined as:
 ## 9. UI Requirements
 
 - 触屏、键盘、控制器焦点独立；复杂页面显式focus neighbor，不依赖自动猜测。
-- accessible name/state/value与reading order完整；live region只播choice打开/commit、低血首次、revive、Boss phase、terminal，禁止逐damage/cooldown播报。`BATTLE_PAUSED`是ADR-0001的action-bearing TopState，必须按ASN05发布固定capacity24、exact bytes6060、最多21行的`AccessibleScreenSnapshotV2`，unused tail全零。`CONTROLLED_FAULT`固定capacity12 snapshot由persistent GameRoot root fault presenter按ASN07发布，BattleUI生产数0。Active HUD不发布交互tree但GameRoot仍每render frame drain adapter mailbox。
+- 方向焦点唯一采用 ADR-0001 的 `DirectionalFocusNeighborManifestV1`；BattleUI 对每个 screen/variant 只消费其 `left_node_id/right_node_id` 与 `algorithm_version`，动态可见性变化时重建并匹配对应 golden，不自行推导邻接，也不退化为 previous/next。
+- accessible name/state/value与reading order完整；live region只播choice打开/commit、低血首次、revive、Boss phase、terminal，禁止逐damage/cooldown播报。`BATTLE_ACTIVE`按ADR-0001新增仅含暂停入口的`ASN08/AHP07` gateway：固定capacity1、exact bytes356、node `7001` 为唯一可激活按钮，不发布战斗HUD交互节点；激活只进入现有typed pause command路径。`BATTLE_PAUSED`是ADR-0001的action-bearing TopState，必须按ASN05发布固定capacity24、exact bytes6060、最多21行的`AccessibleScreenSnapshotV2`，unused tail全零。`CONTROLLED_FAULT`固定capacity12 snapshot由persistent GameRoot root fault presenter按ASN07发布，BattleUI生产数0。BattleUI仍只消费snapshot/typed command，GameRoot每render frame drain adapter mailbox。
+- `BATTLE_ACTIVE` gateway的唯一业务输入为`BattleActivePauseCommandV1`：BattleUI只校验`screen_generation/layout_generation/node_id=7001/enabled/accepted_command_id`并发给GameRoot；GameRoot以`command_id`首见原则exactly-once接纳，转换为`PAUSE_REQUESTED(reason=MANUAL)`。任何stale、duplicate、disabled、非7001或非BATTLE_ACTIVE command为0 effect；BattleUI不得直接调用GameRoot pause、SceneTree或Window setter。
 - 248-byte row必须携带当前layout generation、safe-area logical bounds、visible/clipped及typed localization args；reflow后旧layout native action为0 command。Godot 4.7.1 Control transform、RichTextLabel、AccessibilityLiveMode等路径须目标build spike；TalkBack/VoiceOver未验证前保持`BLOCKED-ACCESSIBILITY-MOBILE-RUNTIME`。
 - 100/115/130%字体、简中、英文扩展30%、伪本地化；关键代价不可截断，不能靠缩字体过线。
 - resize/rotation期间通过GEOMETRY pause原子切layout；Active中不临时setter修补hit target。
@@ -296,7 +298,7 @@ The `battle_ui_capacity` formula is defined as:
 - **AC-BUI15 `[R]` event uniqueness**：目标build记录Control tree/effective filter/accept trace，每个touch terminal唯一owner；z-index截图不能作为通过证据。
 - **AC-BUI16 `[R][UX]` safe/readability**：720×1280、360×640、390×844、430×932+cutout/gesture；HUD不侵入lower45%。5人×设备×手×核心控件20次，命中≥19/20、误选0。
 - **AC-BUI17 `[UX][A]` glance/non-color**：HP/符/ward/UNSAFE/Boss phase/choice代价每人20次正确≥19、中位≤1s；灰阶/三类色觉/静音分别过线，缺raw记录为INCONCLUSIVE。
-- **AC-BUI18 `[A][R]` focus/a11y**：触屏/键盘/控制器完整旅程，name/state/value/flow准确；BATTLE_PAUSED V2 rows的bounds/layout generation/typed args逐值matching，reflow后stale callback命令0；BATTLE_ACTIVE无interactive snapshot但adapter drain恰1；damage number不形成live洪水；移动screen-reader未验证不得PASS。
+- **AC-BUI18 `[A][R]` focus/a11y**：触屏/键盘/控制器完整旅程，name/state/value/flow准确；BATTLE_ACTIVE必须可到达并激活唯一`7001/BATTLE_ACTIVE_PAUSE` gateway，且不得出现其他战斗HUD rows；BATTLE_PAUSED V2 rows的bounds/layout generation/typed args逐值matching，reflow后stale callback命令0；adapter在所有TopState恰每render frame drain一次；damage number不形成live洪水；移动screen-reader未验证不得PASS。
 - **AC-BUI19 `[P]` semantic cues**：revive/unsafe/level/Boss/choice/terminal cue只在matching committed edge一次；VICTORY+lethal death cue=0；P0耗尽测试丢失/遮挡/输入变化=0。
 - **AC-BUI20 `[M]` allocation/performance**：full-load Active与Paused choice各10000 iteration×3，预热后动态Node/Tween/容器增长=0并有positive control；报告CPU/GPU p50/p95/p99/max、draw/overdraw/RSS。min-spec与阈值未冻结前保持OPEN。
 - **AC-BUI21 `[I]` evidence truth**：每项记录fixture、build SHA、config hash、device与raw artifact；静态grep、headless smoke、单张截图不得替代runtime/UX/a11y/perf。

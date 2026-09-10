@@ -1,0 +1,47 @@
+[gd_scene format=3 uid="uid://dga8nhaxnyr53"]
+
+[ext_resource type="Script" path="res://addons/gdUnit4/src/ui/parts/GdUnitReportPanel.gd" id="1_w8qy0"]
+
+[node name="report" type="Panel" unique_id=1075065511]
+clip_contents = true
+custom_minimum_size = Vector2(120, 80)
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+script = ExtResource("1_w8qy0")
+
+[node name="message" type="RichTextLabel" parent="." unique_id=1680360176]
+unique_name_in_owner = true
+auto_translate_mode = 2
+visible = false
+layout_mode = 0
+size_flags_horizontal = 3
+size_flags_vertical = 3
+focus_mode = 2
+mouse_filter = 1
+bbcode_enabled = true
+fit_content = true
+autowrap_mode = 0
+selection_enabled = true
+
+[node name="ScrollContainer" type="ScrollContainer" parent="." unique_id=385317760]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+size_flags_vertical = 3
+
+[node name="report_list" type="VBoxContainer" parent="ScrollContainer" unique_id=1467163528]
+unique_name_in_owner = true
+clip_contents = true
+custom_minimum_size = Vector2(120, 0)
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 2
+theme_override_constants/separation = 2

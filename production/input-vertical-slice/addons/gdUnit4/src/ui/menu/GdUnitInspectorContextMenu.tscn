@@ -1,0 +1,70 @@
+[gd_scene format=3 uid="uid://bjcc71p2h1trr"]
+
+[ext_resource type="Script" path="res://addons/gdUnit4/src/ui/menu/GdUnitInspectorContextMenu.gd" id="1_0x0vc"]
+
+[sub_resource type="DPITexture" id="DPITexture_miuuy"]
+_source = "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"16\" height=\"16\"><path fill=\"#e0e0e0\" d=\"M4 12a1 1 0 0 0 1.555.832l6-4a1 1 0 0 0 0-1.664l-6-4A1 1 0 0 0 4 4z\"/></svg>
+"
+saturation = 2.0
+color_map = {
+Color(1, 0.37254903, 0.37254903, 1): Color(1, 0.47, 0.42, 1),
+Color(0.37254903, 1, 0.5921569, 1): Color(0.45, 0.95, 0.5, 1),
+Color(1, 0.8666667, 0.39607844, 1): Color(0.83, 0.78, 0.62, 1)
+}
+
+[sub_resource type="DPITexture" id="DPITexture_ern2r"]
+_source = "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"16\" height=\"16\"><path fill=\"#e0e0e0\" d=\"M3 3a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h1a1 1 0 0 0 1-1V4a1 1 0 0 0-1-1zm4.975 0A1 1 0 0 0 7 3.998v8a1 1 0 0 0 1.625.781l5-4a1 1 0 0 0 0-1.56l-5-4A1 1 0 0 0 7.975 3z\"/></svg>
+"
+saturation = 2.0
+color_map = {
+Color(1, 0.37254903, 0.37254903, 1): Color(1, 0.47, 0.42, 1),
+Color(0.37254903, 1, 0.5921569, 1): Color(0.45, 0.95, 0.5, 1),
+Color(1, 0.8666667, 0.39607844, 1): Color(0.83, 0.78, 0.62, 1)
+}
+
+[sub_resource type="DPITexture" id="DPITexture_qdci2"]
+_source = "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"16\" height=\"16\"><path fill=\"#e0e0e0\" d=\"m8 9.669-3.536 2.583H7v2.537h2v-2.537h2.536zm0-3.314L4.464 3.772H7V1.235h2v2.537h2.536zm-7.296.73h14.591v1.831H.704z\"/></svg>
+"
+saturation = 2.0
+color_map = {
+Color(1, 0.37254903, 0.37254903, 1): Color(1, 0.47, 0.42, 1),
+Color(0.37254903, 1, 0.5921569, 1): Color(0.45, 0.95, 0.5, 1),
+Color(1, 0.8666667, 0.39607844, 1): Color(0.83, 0.78, 0.62, 1)
+}
+
+[sub_resource type="DPITexture" id="DPITexture_hed0i"]
+_source = "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"16\" height=\"16\"><path fill=\"#e0e0e0\" d=\"m8 16-3.5-2.5H7V11h2v2.5h2.5zM8 0 4.5 2.5H7V5h2V2.5h2.5zM1 7h14v2H1z\"/></svg>
+"
+saturation = 2.0
+color_map = {
+Color(1, 0.37254903, 0.37254903, 1): Color(1, 0.47, 0.42, 1),
+Color(0.37254903, 1, 0.5921569, 1): Color(0.45, 0.95, 0.5, 1),
+Color(1, 0.8666667, 0.39607844, 1): Color(0.83, 0.78, 0.62, 1)
+}
+
+[node name="contextMenu" type="PopupMenu" unique_id=1824556050]
+auto_translate_mode = 2
+oversampling_override = 1.0
+size = Vector2i(241, 170)
+visible = true
+item_count = 6
+item_0/text = "Run Tests"
+item_0/icon = SubResource("DPITexture_miuuy")
+item_0/id = 0
+item_1/text = "Debug Tests"
+item_1/icon = SubResource("DPITexture_ern2r")
+item_1/id = 1
+item_2/text = "Run Tests Until Fail"
+item_2/icon = SubResource("DPITexture_miuuy")
+item_2/id = 2
+item_3/id = 3
+item_3/separator = true
+item_4/text = "Collapse All"
+item_4/icon = SubResource("DPITexture_qdci2")
+item_4/id = 4
+item_5/text = "Expand All"
+item_5/icon = SubResource("DPITexture_hed0i")
+item_5/id = 5
+script = ExtResource("1_0x0vc")
+
+[connection signal="index_pressed" from="." to="." method="_on_index_pressed"]

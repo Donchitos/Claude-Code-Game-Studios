@@ -2,7 +2,7 @@
 
 ## Status
 
-Accepted for MVP design on 2026-09-03; semantic ABI, fixed capacities, explicit node/state contracts, MPSC-to-serial ingress and mapped Meta UI input were revised after the seventh Zhangtian review on 2026-09-08. Runtime and device evidence remain blocking for release.
+Accepted for MVP design on 2026-09-03; semantic ABI, fixed capacities, explicit node/state contracts, MPSC-to-serial ingress and mapped Meta UI input were revised after the seventh Zhangtian review on 2026-09-08. The 2026-09-10 authorized amendment adds a one-node `BATTLE_ACTIVE` pause gateway while keeping full active-gameplay semantics out of MVP scope. Runtime and device evidence remain blocking for release.
 
 ## Date
 
@@ -53,9 +53,15 @@ Godot Control accessibility metadata alone does not establish that exported Andr
 
 Adopt an app-scope `MobileAccessibilityBridgeV1` owned by the persistent app root and registered in the separate `AppAdapterTopologyManifestV2` row `MOBILE_ACCESSIBILITY`; it is not one of the five business `AppServiceTopologyManifestV1` rows and not a seven-phase participant. The bridge and platform adapter are constructed once on the main thread after persistent root creation, remain alive across every TopState, are pumped once per render frame in every TopState, stop accepting callbacks before UI presenters detach, drain/retire queued commands, then shut down before the persistent root is freed.
 
-Each action-bearing presenter in `{HOME,PREP,PRE_ACTIVE_CHOICE,BATTLE_PAUSED,SETTLEMENT,CONTROLLED_FAULT}` publishes a complete immutable `AccessibleScreenSnapshotV2`; all other TopStates publish no interactive snapshot but still drain stale callbacks. CONTROLLED_FAULT is always owned by the persistent GameRoot fault presenter, never by a battle-scoped UI node. The bridge validates and copies the snapshot into exactly one platform adapter. Android uses `AndroidAccessibilityAdapterV1` to expose an accessibility node provider for TalkBack, and iOS uses `IOSAccessibilityAdapterV1` to expose UIAccessibility elements for VoiceOver. OS callbacks may arrive on arbitrary platform threads: they enter the fixed 6,208-byte `AccessibilityNativeMpscIngressV1` using the per-slot sequence/CAS protocol below. The successful enqueue CAS position is the checked i64 arrival ticket; a full queue consumes no ticket and leaves no hole. A single adapter-owned serial ingress executor drains tickets in ascending order, allocates the canonical `native_event_sequence` there, and is the only producer allowed to copy fixed commands into the preallocated SPSC mailbox of capacity32. Either queue full, sequence exhaustion or shutdown race fails closed and makes the current interactive screen unavailable; it never allocates, overwrites or silently drops. GameRoot's main-thread render-frame pump is the sole SPSC consumer, drains that mailbox at most once per frame in every TopState, and forwards `AccessibilityActionCommandV2` to the active presenter. Platform callbacks never call Godot Node, SceneTree, signals or business services directly.
+Each action-bearing presenter in `{HOME,PREP,PRE_ACTIVE_CHOICE,BATTLE_ACTIVE,BATTLE_PAUSED,SETTLEMENT,CONTROLLED_FAULT}` publishes a complete immutable `AccessibleScreenSnapshotV2`; `BATTLE_ACTIVE` is intentionally a minimal accessibility gateway containing exactly one enabled `BUTTON/ACTIVATE` pause node and no gameplay HUD rows or live region. All other non-action TopStates publish no interactive snapshot but still drain stale callbacks. The gateway preserves the MVP promise that a screen-reader user can reach pause without claiming full active-gameplay semantics. CONTROLLED_FAULT is always owned by the persistent GameRoot fault presenter, never by a battle-scoped UI node. The bridge validates and copies the snapshot into exactly one platform adapter. Android uses `AndroidAccessibilityAdapterV1` to expose an accessibility node provider for TalkBack, and iOS uses `IOSAccessibilityAdapterV1` to expose UIAccessibility elements for VoiceOver. OS callbacks may arrive on arbitrary platform threads: they enter the fixed 6,208-byte `AccessibilityNativeMpscIngressV1` using the per-slot sequence/CAS protocol below. The successful enqueue CAS position is the checked i64 arrival ticket; a full queue consumes no ticket and leaves no hole. A single adapter-owned serial ingress executor drains tickets in ascending order, allocates the canonical `native_event_sequence` there, and is the only producer allowed to copy fixed commands into the preallocated SPSC mailbox of capacity32. Either queue full, sequence exhaustion or shutdown race fails closed and makes the current interactive screen unavailable; it never allocates, overwrites or silently drops. GameRoot's main-thread render-frame pump is the sole SPSC consumer, drains that mailbox at most once per frame in every TopState, and forwards `AccessibilityActionCommandV2` to the active presenter. Platform callbacks never call Godot Node, SceneTree, signals or business services directly.
 
-The bridge does not infer semantics from visual Node traversal and does not call business services directly. A mobile build that declares screen-reader support must receive `SUPPORTED` from the platform adapter capability handshake before activating any of the six action-bearing states above. `UNAVAILABLE` or `INCOMPATIBLE` presents a noninteractive, localized support error and fails the accessibility release gate; it does not silently downgrade to unlabeled Controls.
+The bridge does not infer semantics from visual Node traversal and does not call business services directly. A mobile build that declares screen-reader support must receive `SUPPORTED` from the platform adapter capability handshake before activating any of the seven action-bearing states above, including the one-node `BATTLE_ACTIVE` pause gateway. `UNAVAILABLE` or `INCOMPATIBLE` presents a noninteractive, localized support error and fails the accessibility release gate; it does not silently downgrade to unlabeled Controls.
+
+### MVP active-battle accessibility amendment (2026-09-10)
+
+The previous touch-only boundary for `BATTLE_ACTIVE` is superseded by the authorized MVP gateway decision: `BATTLE_ACTIVE` publishes one `BUTTON/ACTIVATE` node, `BATTLE_ACTIVE_PAUSE`, and no other active-gameplay rows. Its activation is validated as the existing typed pause command and cannot write SceneTree, gameplay or Window state directly. This is a pause gateway, not a claim of full active-battle screen-reader semantics; it still requires the same Android/iOS capability, golden, runtime and device evidence gates.
+
+The gateway command is frozen as `BattleActivePauseCommandV1={schema_version:i32=1,command_id:i64,input_event_id:i64,screen_id:i32=8,screen_generation:i64,layout_generation:i64,node_id:i64=7001,command_kind:i32=1,pause_reason:i32=1,source:i32=1}` where enum value 1 means `PAUSE_REQUESTED`, `MANUAL` and `BATTLE_ACTIVE_ACCESSIBILITY_GATEWAY` respectively. BattleUI/presenter owns snapshot validation and emits this typed value; persistent GameRoot is the sole command owner and sole SceneTree/Window writer. GameRoot accepts it only while `TopState=BATTLE_ACTIVE`, the node is enabled, screen/layout generations match, and `command_id` is the first unseen checked ID; stale, duplicate, disabled or any other node is a zero-effect diagnostic. An accepted command is consumed exactly once, becomes the existing `PAUSE_REQUESTED`/`MANUAL` intent, and then follows the existing Input cancel → pause barrier → SceneTree pause path. The bridge, adapter and BattleUI never call `request_pause`, write `SceneTree` or write `Window` directly.
 
 ### Architecture Diagram
 
@@ -181,8 +187,9 @@ shutdown容量闭环：停止接纳并等待`IN_FLIGHT=0`后，serial ingress以
 | AHP04 / 4 | BATTLE_PAUSED | 24 | 6060 | 6028 |
 | AHP05 / 5 | SETTLEMENT | 24 | 6060 | 6028 |
 | AHP06 / 6 | CONTROLLED_FAULT | 12 | 3084 | 3052 |
+| AHP07 / 7 | BATTLE_ACTIVE | 1 | 356 | 324 |
 
-独立`AccessibilityHashPreimageManifestV1={row_id,stable_order,screen_id,tag_ascii_with_nul,hash_mode,capacity,exact_length,zero_offset,zero_length}`必须恰含上述六行，tag固定`AccessibleScreenSnapshotV2\0`、mode=`SELF_ZERO_FIELD`、zero_length=32，并逐行按公式重算；它不并入Save的25-row `HashPreimageManifestV1`。missing/duplicate、screen/capacity/length/offset漂移在publish前`INVALID_MANIFEST`。
+独立`AccessibilityHashPreimageManifestV1={row_id,stable_order,screen_id,tag_ascii_with_nul,hash_mode,capacity,exact_length,zero_offset,zero_length}`必须恰含上述七行，tag固定`AccessibleScreenSnapshotV2\0`、mode=`SELF_ZERO_FIELD`、zero_length=32，并逐行按公式重算；它不并入Save的25-row `HashPreimageManifestV1`。missing/duplicate、screen/capacity/length/offset漂移在publish前`INVALID_MANIFEST`。
 
 `AccessibleScreenProfileManifestV1={profile_id,screen_id,state_variant,group_order,group_role,max_rows,required,pagination_rule,owner_gdd}`只汇总screen/group的容量预算，actual profiles固定如下；逐node语义只能来自其后的`AccessibleNodeContractV1`，不得把本汇总表当成node contract。每个profile按group order展开stable node IDs，checked sum必须≤对应capacity，未列group不得由实现临时追加：
 
@@ -195,6 +202,7 @@ shutdown容量闭环：停止接纳并等待`IN_FLIGHT=0`后，serial ingress以
 | ASN05 | BATTLE_PAUSED/ALL | title1 + status1 + primary controls3 + core stats6 + skill summary4 + active reason rows4 + navigation2 | 21 / 24 |
 | ASN06 | SETTLEMENT/ALL | title1 + save status1 + primary CTA1 + reward rows6 + core stats3 + detail page status1 + detail window rows6 + prev/next2 + resolved navigation2 | 23 / 24 |
 | ASN07 | CONTROLLED_FAULT/ALL | title1 + status1 + diagnostic summary1 + retry1 + safe exit1 + export diagnostic1 | 6 / 12 |
+| ASN08 | BATTLE_ACTIVE/ALL | pause gateway1 | 1 / 1 |
 
 `AccessibleNodeContractV1={profile_id,row_id,stable_order,node_id,parent_node_id,role,allowed_actions,focus_previous_node_id,focus_next_node_id,localization_key,state_rule}`的actual rows固定如下。`-`表示0/NONE；focus previous/next是完整reading/focus序中的相邻node，disabled row仍保留位置但不能激活。动态文本只通过对应localization key的typed args变化，不能改node identity。
 
@@ -301,8 +309,9 @@ shutdown容量闭环：停止接纳并等待`IN_FLIGHT=0`后，serial ingress以
 | ASN07 | F04/4 | 6004 | 0 | BUTTON/ACTIVATE | 6003→6005 | FAULT_RETRY/RETRYABLE_ONLY |
 | ASN07 | F05/5 | 6005 | 0 | BUTTON/ACTIVATE | 6004→6006 | FAULT_SAFE_EXIT/EXIT_ALLOWED |
 | ASN07 | F06/6 | 6006 | 0 | BUTTON/ACTIVATE | 6005→0 | FAULT_EXPORT/DIAGNOSTIC_AVAILABLE |
+| ASN08 | A01/1 | 7001 | 0 | BUTTON/ACTIVATE | 0→0 | BATTLE_ACTIVE_PAUSE/ALWAYS |
 
-`AccessibleScreenStateVariantManifestV1={variant_id,profile_id,owner_state,enabled_action_nodes,initial_focus_node_id,live_node_id,state_localization_key}`固定为以下34条actual rows；`{}`是canonical空集合，不是省略：
+`AccessibleScreenStateVariantManifestV1={variant_id,profile_id,owner_state,enabled_action_nodes,initial_focus_node_id,live_node_id,state_localization_key}`固定为以下35条actual rows；`{}`是canonical空集合，不是省略：
 
 | variant/order | profile | owner state | enabled action nodes | initial focus | live node | state localization key |
 |---|---|---|---|---:|---:|---|
@@ -336,14 +345,17 @@ shutdown容量闭环：停止接纳并等待`IN_FLIGHT=0`后，serial ingress以
 | ATV06/28 | ASN06 | SAVE_SUCCEEDED | {5003,5020,5021,5022,5023} | 5003 | 5002 | SETTLEMENT_SAVE_SUCCEEDED_STATUS |
 | ATV07/29 | ASN06 | DISCARDED | {5003,5020,5021,5022,5023} | 5003 | 5002 | SETTLEMENT_DISCARDED_STATUS |
 | ATV08/30 | ASN06 | DISCARD_CONFIRM | {5003} | 5003 | 5002 | SETTLEMENT_DISCARD_CONFIRM_STATUS |
-| AFV01/31 | ASN07 | NO_PROFILE | {6005,6006} | 6005 | 6002 | FAULT_NO_PROFILE_STATUS |
-| AFV02/32 | ASN07 | PRE_BATTLE_RETRYABLE | {6004,6005,6006} | 6004 | 6002 | FAULT_PRE_BATTLE_STATUS |
-| AFV03/33 | ASN07 | BATTLE_SAFE_EXIT | {6005,6006} | 6005 | 6002 | FAULT_BATTLE_STATUS |
-| AFV04/34 | ASN07 | CORRUPT_OR_CONFLICT | {6005,6006} | 6005 | 6002 | FAULT_CONFLICT_STATUS |
+| AAV01/31 | ASN08 | GAMEPLAY | {7001} | 7001 | 0 | BATTLE_ACTIVE_STATUS |
+| AFV01/32 | ASN07 | NO_PROFILE | {6005,6006} | 6005 | 6002 | FAULT_NO_PROFILE_STATUS |
+| AFV02/33 | ASN07 | PRE_BATTLE_RETRYABLE | {6004,6005,6006} | 6004 | 6002 | FAULT_PRE_BATTLE_STATUS |
+| AFV03/34 | ASN07 | BATTLE_SAFE_EXIT | {6005,6006} | 6005 | 6002 | FAULT_BATTLE_STATUS |
+| AFV04/35 | ASN07 | CORRUPT_OR_CONFLICT | {6005,6006} | 6005 | 6002 | FAULT_CONFLICT_STATUS |
 
 generated artifact必须再展开每个variant/node/action组合为独立row，不允许range token进入artifact。节点合同允许互斥动态组：`PAUSE_CHOICE_*`六行只在`choice_visible=1`时出现，并替换同一variant中的四个`PAUSE_REASON_*`行；presenter必须证明任一时刻同时可见行数≤24。未列variant、node/action不属于enabled集合却被激活、initial focus不可见/disabled或live node缺失均`INVALID_MANIFEST`。
 
 焦点图规则：`focus_previous_node_id/focus_next_node_id`仅是完整reading顺序的base邻接；presenter发布时按`visible`与动态predicate过滤不可见`PAGE_SLOT`/条件行并重连剩余可见节点，disabled行仍保留可读位置但不可激活。四个focus action只移动该图，不产生业务command。
+
+方向焦点另有唯一 canonical `DirectionalFocusNeighborManifestV1={profile_id,variant_id,node_id,left_node_id,right_node_id,algorithm_version}`；它只对当前variant中`allowed_actions`含focus且`visible=1`的node生成一行。`left/right`按同一variant的可见、enabled focusable node集合计算：先最小化主轴距离，再最小化横向距离，最后按`stable_order`升序破平；无候选写`0`。presenter每次variant/dynamic predicate变化必须按该算法重建并逐行匹配golden，`FOCUS_LEFT/RIGHT`只沿对应字段移动，禁止交给Godot自动猜测或退化为previous/next；缺row、算法版本、候选或golden不匹配均`INVALID_MANIFEST`。
 
 Settings 的持久布尔节点必须与 `home-ui.md` 的 `reduce_motion/reduce_sensory_load/high_contrast/screen_reader_hints` 四字段逐位一致；不得把测试用的 mono audio 或 haptics 开关冒充持久 Settings 合同。
 
@@ -422,7 +434,7 @@ Rows are canonical by `stable_order ASC`; IDs and generations are positive check
 ## Validation Criteria
 
 - Schema tests reject missing, duplicate, cyclic, unordered, stale or unsupported rows/actions.
-- All six action-bearing TopStates publish expected semantic-tree goldens at 100/115/130% text, long locale, cutout and documented state combinations; row counts fit the fixed 16/16/12/24/24/12 capacities, exact snapshot lengths and self-hash offsets match the six-row manifest, and non-action TopStates publish no interactive snapshot but still drain stale commands.
+- All seven action-bearing TopStates publish expected semantic-tree goldens at 100/115/130% text, long locale, cutout and documented state combinations; row counts fit the fixed 16/16/12/24/24/12/1 capacities, exact snapshot lengths and self-hash offsets match the seven-row manifest, and non-action TopStates publish no interactive snapshot but still drain stale commands. The BATTLE_ACTIVE golden contains exactly the pause gateway node and no gameplay HUD rows.
 - Golden rows verify exact bounds, `layout_generation`, visible/clipped state and typed localization args; reflow followed by an old native callback produces zero business commands.
 - TalkBack and VoiceOver can reach, identify and activate every enabled control in documented order; disabled items remain readable but not activatable.
 - Arbitrary-thread native callbacks first pass the fixed 6208-byte MPSC64 ingress; 64/65-row concurrent bursts逐slot验证CAS only-on-free、full不推进enqueue、不产生ticket hole、payload-before-release-publish与consumer acquire。Only the serial ingress allocates checked i64 `native_event_sequence` and writes SPSC; stale/duplicate callbacks produce zero business commands, 32/33-row SPSC bursts prove downstream full/overflow, and either sequence exhaustion fails closed without wrap. Shutdown proves stop-accepting→producer-in-flight=0→MPSC drain/retire→SPSC drain/retire before generation reset，并注入producer已increment、CAS前/后、payload publish前/后的race。

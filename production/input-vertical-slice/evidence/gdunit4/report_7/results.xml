@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<testsuites id="2026-09-09" name="report_7" tests="2" failures="0" skipped="0" flaky="0" time="0.000">
+	<testsuite id="0" name="battle_ui_gdunit4_test" package="tests" timestamp="2026-09-09T10:30:57" hostname="localhost" tests="2" failures="0" errors="0" skipped="0" flaky="0" time="1.193">
+		<testcase name="test_battle_ui_exposes_eight_meta_rows_and_canonical_focus_manifest" classname="battle_ui_gdunit4_test" time="1.183">
+		</testcase>
+		<testcase name="test_focus_manifest_filters_ineligible_nodes" classname="battle_ui_gdunit4_test" time="0.002">
+		</testcase>
+	</testsuite>
+</testsuites>
