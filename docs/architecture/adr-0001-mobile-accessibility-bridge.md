@@ -2,7 +2,7 @@
 
 ## Status
 
-Accepted for MVP design on 2026-09-03; semantic ABI, fixed capacities, explicit node/state contracts, MPSC-to-serial ingress and mapped Meta UI input were revised after the seventh Zhangtian review on 2026-09-08. The 2026-09-10 authorized amendment adds a one-node `BATTLE_ACTIVE` pause gateway while keeping full active-gameplay semantics out of MVP scope. Runtime and device evidence remain blocking for release.
+Accepted for post-Steam mobile-port design on 2026-09-03; semantic ABI, fixed capacities, explicit node/state contracts, MPSC-to-serial ingress and mapped Meta UI input were revised after the seventh Zhangtian review on 2026-09-08. The 2026-09-10 authorized amendment adds a one-node `BATTLE_ACTIVE` pause gateway while keeping full active-gameplay semantics out of the first mobile port scope. Runtime and device evidence remain blocking for mobile release.
 
 ## Date
 
@@ -25,7 +25,7 @@ Accepted for MVP design on 2026-09-03; semantic ABI, fixed capacities, explicit 
 |---|---|
 | **Depends On** | None |
 | **Enables** | Home, Prep, Pre-active choice, Battle pause, Settlement and controlled-fault mobile accessibility implementation |
-| **Blocks** | Mobile accessibility release evidence until both platform adapters pass validation |
+| **Blocks** | Android/iOS accessibility release evidence until both platform adapters pass validation; does not block the Steam-first desktop baseline |
 | **Ordering Note** | Build semantic snapshot and typed action adapter before platform plugins; device evidence cannot be replaced by desktop AccessKit evidence |
 
 ## Context
@@ -36,7 +36,7 @@ Godot Control accessibility metadata alone does not establish that exported Andr
 
 ### Constraints
 
-- Android and iOS remain MVP target platforms.
+- Android and iOS are post-Steam port targets, not the first commercial release baseline.
 - Godot is pinned to 4.7.1, whose accessibility API is post-training-cutoff and must be verified against the repository engine references and target builds.
 - UI presenters remain consumer-only; platform code cannot write inventory, Save, TopState or gameplay authority.
 - Touch focus and keyboard/screen-reader focus remain distinct.

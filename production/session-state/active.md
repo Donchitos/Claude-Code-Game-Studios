@@ -3,6 +3,7 @@
 > 会话崩溃或 `/clear` 后，先读本文件恢复上下文。
 
 <!-- STATUS -->
+Release strategy: 2026-09-10用户已调整为Steam PC商业完整版优先（Windows首要验证目标），后续再做Android、iOS与微信小游戏/其他小游戏适配；当前工作名及凡人相关名称仅限内部设计，商业Steam build前必须原创化改名并清理第三方IP元素。详见`docs/architecture/adr-0004-steam-first-release-strategy.md`。
 Epic: 引擎与系统分解
 Feature: 正式战斗切片核心系统设计
 Task: InputSystem新一轮授权整改已完成；等待下一次clean-context独立full re-review
@@ -10,7 +11,7 @@ Current section: InputSystem post-remediation review / Major Revision Needed / R
 File: `design/gdd/input-system.md` + `design/gdd/game-root-scene-flow.md` + `design/gdd/battle-ui.md` + `docs/architecture/adr-0001-mobile-accessibility-bridge.md` + `docs/architecture/adr-0002-game-root-persistent-scene.md` + `design/registry/manifests/supported-touch-event-ordering-v1.yaml` + corresponding registry/index/review logs
 Review mode: implementation checkpoint（本轮授权整改已完成；下一步由clean context执行独立full re-review）
 Status: 2026-09-10对准确目标`design/gdd/input-system.md`完成新的clean-context独立full re-review：6 specialists并行返回后由fresh creative-director综合，结论为`BLOCKED / XL`，修订级别至少`MAJOR REVISION NEEDED / XL`。用户随后授权整改；本轮已将正式生产调用链拆为GameRoot调度Input/Gameplay、InputSystem内部读取movement actions并执行F1、补入FROZEN/consumer-close/shield bank/fault observer、VJ candidate replacement、root gate/readback/flush、7001 payload生产接线与exactly-once smoke断言，统一102 node count并修正生产geometry offset。当前仍未闭合的正式F2 provider、完整resume/touch事务、Meta真实binding/native accessibility、workload schema/hash/marker/threshold、平台与runtime/performance/UX证据保持BLOCKED。`git diff --check`、4份YAML parse、Godot 4.7.1 root parse与production smoke（含7001重复拒绝）通过；仍保持`In Review / Re-review Pending`、`implementation-ready=false`、`integration-ready=false`、`runtime/device verified=false`、`battle_ready=false`。
-Constraints: 保留已有dirty worktree与历史记录；不得把vertical-slice harness证据扩大解释为完整生产集成、真机、性能或`battle_ready`证据。下一轮整改需针对本次新blocker重新获得用户授权；本作者上下文不修改独立评审结论、不自批准。
+Constraints: 保留已有dirty worktree与历史记录；不得把vertical-slice harness证据扩大解释为完整生产集成、Steam release、真机、性能或`battle_ready`证据。Steam-first只改变发行优先级，不关闭现有设计复审、runtime、generated artifact、PC输入/UI、性能、玩家体验或IP清理门；下一轮整改需针对本次新blocker重新获得用户授权；本作者上下文不修改独立评审结论、不自批准。
 <!-- /STATUS -->
 
 <!-- CURRENT_INPUT_VERTICAL_SLICE -->

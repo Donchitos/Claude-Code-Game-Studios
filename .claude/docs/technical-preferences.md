@@ -21,12 +21,13 @@ ADR 当前逐node contract 为 102 行（其中 BATTLE_PAUSED choice 组与 reas
 <!-- Written by /setup-engine. Read by /ux-design, /ux-review, /test-setup, /team-ui, and /dev-story -->
 <!-- to scope interaction specs, test helpers, and implementation to the correct input methods. -->
 
-- **Target Platforms**: Mobile (Android, iOS) — 优先竖屏
-- **Input Methods**: Touch
-- **Primary Input**: Touch (虚拟摇杆移动，攻击自动释放)
-- **Gamepad Support**: Meta UI only — mapped D-pad/digital focus、South activate、East back、肩键增减按8-row `MetaUiInputActionManifestV1`进入typed presenter command；战斗移动仍仅Touch VirtualJoystick，unmapped raw axis为0业务命令
-- **Touch Support**: Full
-- **Platform Notes**: 竖屏单手操作；所有交互必须单手可达；移动端无 hover，不得设计悬停态交互；升级 / 机缘选择时暂停战斗。
+- **Release Priority**: Steam PC commercial complete first; Windows is the primary release validation target
+- **Target Platforms**: Steam PC first; Android, iOS and mini-game runtimes are post-Steam ports
+- **Input Methods**: Keyboard/mouse and gamepad first; Touch is a later adapter
+- **Primary Input**: Keyboard/mouse and gamepad movement, attack auto-released; preserve a platform-neutral movement intent contract
+- **Gamepad Support**: Full gameplay and Meta UI path for Steam baseline; mapped D-pad/digital focus、South activate、East back、肩键增减进入 typed presenter command
+- **Touch Support**: Deferred to Android/iOS/mini-game adapters; existing touch contracts remain future-port requirements
+- **Platform Notes**: Steam baseline is landscape/adaptive desktop layout with keyboard/mouse and gamepad; mobile portrait/single-hand constraints apply only to later ports; upgrade / risk choices pause battle on every platform.
 - **Meta UI Baseline**: Home/Prep/Settlement采用safe-area响应式纵向布局，内容区最大宽600 logical px、交互目标最小56×56 logical px，并验证100%/115%/130%字体；touch与keyboard/screen-reader focus是两条独立路径。移动端采用`docs/architecture/adr-0001-mobile-accessibility-bridge.md`的`AccessibleScreenSnapshotV2` + Android/iOS原生adapter + typed action回传；248-byte row包含layout generation、logical bounds、visible/clipped与8 typed localization args。action-bearing states固定HOME/PREP/PRE_ACTIVE_CHOICE/BATTLE_ACTIVE/BATTLE_PAUSED/SETTLEMENT/CONTROLLED_FAULT；BATTLE_ACTIVE只发布一节点pause gateway，不宣称完整战斗HUD语义。架构路径已冻结，插件实现、能力握手、accessible tree与真机trace仍`BLOCKED-MOBILE-A11Y-RUNTIME`，静态Control属性或桌面读屏不得替代。
 - **Prep Safety**: 有可用种子才进入Prep且每次默认NONE；未解锁/available全0时Home与resolved Settlement分别从同一confirmed bundle内128-byte `DirectNoneStartSliceV2`构造`HOME_DIRECT_NONE`/`SETTLEMENT_DIRECT_NONE`，且只接受unlock/claim flag为`0/0或1/1`，不制造空Prep二次确认，也不交叉复用页面generation。不自动沿用、选择或消费丹药；只有Save durable reservation readback成功才进入Loading。`RunStartRequestV2`冻结后不可回写，132-byte seed candidate与pre-active choice逐步写入固定360-byte recovery，以durable config content revision+hash确定性重放；首个聚气offer durable/visible后不得release重抽。
 - **Settlement Truth**: 奖励只来自sealed Outcome和matching immutable mutation bundle；durable success前统一显示待保存，UNCERTAIN只允许核对，不以超时或动画完成宣称到账。
@@ -42,7 +43,7 @@ ADR 当前逐node contract 为 102 行（其中 BATTLE_PAUSED choice 组与 reas
 
 ## Performance Budgets
 
-- **Target Framerate**: 60 FPS (中端 Android 设备平均 50 FPS+)
+- **Target Framerate**: 60 FPS on the Steam Windows baseline; later mobile gates retain a separate min-spec Android/iOS budget
 - **Frame Budget**: 16.6 ms
 - **Fixed Gameplay Timestep**: `physics/common/physics_ticks_per_second=60`且`Engine.time_scale=1.0`，gameplay只消费`1/60`或技术drain的0；callback delta仅作telemetry
 - **Draw Calls**: [待定 — 依赖后续渲染批处理 ADR]
@@ -198,6 +199,7 @@ ADR 当前逐node contract 为 102 行（其中 BATTLE_PAUSED choice 组与 reas
 
 <!-- Quick reference linking to full ADRs in docs/architecture/ -->
 - [ADR-0001: Mobile Accessibility Bridge](../../docs/architecture/adr-0001-mobile-accessibility-bridge.md) — MVP保留BATTLE_ACTIVE的一节点可访问暂停gateway；完整移动端runtime/device evidence仍为BLOCKED。
+- [ADR-0004: Steam-first release strategy](../../docs/architecture/adr-0004-steam-first-release-strategy.md) — Steam PC商业完整版首发；Android/iOS/小游戏为后续适配。
 
 ## Engine Specialists
 
