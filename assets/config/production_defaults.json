@@ -6,6 +6,9 @@
     "smoke_speed_multiplier": 5.0,
     "hud_refresh_seconds": 0.1
   },
+  "rendering": {
+    "geometry_batch_enabled": true
+  },
   "player": {
     "max_hp": 100.0,
     "speed": 360.0,

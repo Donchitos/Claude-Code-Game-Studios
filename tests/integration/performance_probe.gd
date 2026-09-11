@@ -13,6 +13,7 @@ func percentile(values: Array[float], fraction: float) -> float:
 func _run() -> void:
 	var graphical := DisplayServer.get_name() != "headless"
 	var split := "--split" in OS.get_cmdline_user_args()
+	var dense := "--dense" in OS.get_cmdline_user_args()
 	var disable_vsync := "--no-vsync" in OS.get_cmdline_user_args()
 	if graphical and disable_vsync:
 		DisplayServer.window_set_vsync_mode(DisplayServer.VSYNC_DISABLED)
@@ -23,7 +24,7 @@ func _run() -> void:
 	await game.boot_completed
 	game.set_physics_process(false)
 	var results: Array[Dictionary] = []
-	var modes := ["capacity_stress", "capacity_stress_no_stage", "capacity_stress_no_canvas"] if split else ["ordinary", "capacity_stress", "boss_phase2"]
+	var modes := ["capacity_stress_dense"] if dense else (["capacity_stress", "capacity_stress_no_stage", "capacity_stress_no_canvas"] if split else ["ordinary", "capacity_stress", "boss_phase2"])
 	for mode: String in modes:
 		if await game.request_start_battle(101, false) != 0:
 			failed = true
@@ -71,8 +72,12 @@ func _run() -> void:
 			if mode.begins_with("capacity_stress"):
 				stage._projectile_count = stage._projectile_positions.size()
 				for index in stage._projectile_count:
-					stage._projectile_positions[index] = Vector2(0, -700)
-					stage._projectile_velocities[index] = Vector2.RIGHT
+					if mode == "capacity_stress_dense":
+						stage._projectile_positions[index] = battle.player.position + Vector2(-580 + (index % 28) * 43, -280 + (index / 28) * 40)
+						stage._projectile_velocities[index] = Vector2.RIGHT.rotated((index % 16) * TAU / 16.0)
+					else:
+						stage._projectile_positions[index] = Vector2(0, -700)
+						stage._projectile_velocities[index] = Vector2.RIGHT
 					stage._projectile_damage[index] = 0.0
 			var start := Time.get_ticks_usec()
 			var ok: bool = battle.run_gameplay_phase(1.0 / 60.0)
@@ -141,6 +146,8 @@ func _run() -> void:
 		path = path.trim_suffix(".json") + "-optimized.json"
 	if "--culled" in OS.get_cmdline_user_args():
 		path = path.trim_suffix(".json") + "-culled.json"
+	if dense:
+		path = path.trim_suffix(".json") + "-dense.json"
 	var file := FileAccess.open(path, FileAccess.WRITE)
 	if file == null:
 		failed = true

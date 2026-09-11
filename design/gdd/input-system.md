@@ -1,8 +1,8 @@
 # InputSystem（输入系统）
 
-> **Status**: In Review / Re-review Pending — 2026-09-10 clean-context full review verdict `BLOCKED / XL`（至少 `MAJOR REVISION NEEDED / XL`）；当前不得宣称 implementation-ready 或 battle_ready
+> **Status**: In Review / Re-review Pending — 2026-09-11 clean-context full re-review verdict `BLOCKED / XL`（至少 `MAJOR REVISION NEEDED / XL`）；当前不得宣称 implementation-ready 或 battle_ready
 > **Owner**: ux-designer + gameplay-programmer
-> **Last Updated**: 2026-09-10 — 新一轮clean-context独立full re-review已完成；正式生产实现、端到端ABI、设备与性能证据仍阻断
+> **Last Updated**: 2026-09-11 — 三份真实specialist报告经fresh creative-director综合；Steam/mobile profile、生产ABI/routing/lifecycle及平台证据仍阻断
 > **Depends on**: GameRoot & Scene Flow（Re-review Pending，phase/barrier与persistent root Window物理输入gate设计契约已同步）、Godot 4.7.1 `VirtualJoystick` / `Viewport.gui_disable_input`、项目 InputMap
 > **Downstream**: PlayerController（多轮整改后Full Re-review Pending）、BattleUI（Designed / Full Review Pending）
 > **Implements Pillar**: ① 移动躲避+自动御剑+功法进化的爽快度（移动手感）

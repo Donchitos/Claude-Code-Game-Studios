@@ -2,6 +2,7 @@ class_name ProductionStageRuntime
 extends Node2D
 
 const SpatialGrid = preload("res://src/gameplay/stage/spatial_grid.gd")
+const BatchedRenderer = preload("res://src/gameplay/stage/batched_combat_renderer.gd")
 const SpatialHandleBuffer = preload("res://src/gameplay/stage/spatial_handle_buffer.gd")
 const SpatialNearestBuffer = preload("res://src/gameplay/stage/spatial_nearest_buffer.gd")
 const SpatialQueryBuffer = preload("res://src/gameplay/stage/spatial_query_buffer.gd")
@@ -13,6 +14,8 @@ var draw_measurement_count := 0
 var draw_culling_enabled := true
 var draw_objects_submitted := 0
 var draw_objects_culled := 0
+var geometry_batch_enabled := true
+var _batched_renderer: Node2D
 
 # Inclusive conservative footprint check: touching the viewport is still visible.
 static func draw_footprint_visible(view: Rect2, center: Vector2, radius: float) -> bool:
@@ -153,6 +156,13 @@ func configure(config: Dictionary, seed: int) -> bool:
 	_projectile_positions.resize(friendly_capacity)
 	_projectile_velocities.resize(friendly_capacity)
 	_projectile_damage.resize(friendly_capacity)
+	geometry_batch_enabled = bool((config.get("rendering", {}) as Dictionary).get("geometry_batch_enabled", true))
+	_batched_renderer = BatchedRenderer.new()
+	_batched_renderer.name = "BatchedCombatRenderer"
+	_batched_renderer.process_mode = Node.PROCESS_MODE_DISABLED
+	add_child(_batched_renderer)
+	if not _batched_renderer.initialize(enemy_capacity, friendly_capacity, float(_beetle["radius"]), float(_wolf["radius"]), _projectile_radius):
+		return false
 	_projectile_candidates.configure(enemy_capacity)
 	_weapon_pending_positions.resize(WEAPON_PENDING_CAPACITY)
 	_weapon_pending_velocities.resize(WEAPON_PENDING_CAPACITY)
@@ -200,6 +210,9 @@ func reset_run() -> void:
 	for index in _enemy_borrow_ids.size():
 		_enemy_borrow_ids[index] = 0
 		_enemy_grid_handles[index] = 0
+	if _batched_renderer != null:
+		_batched_renderer.begin_frame()
+		_batched_renderer.finish_frame()
 	queue_redraw()
 
 ## Removes Grid ownership before returning every enemy identity to its pool.
@@ -214,6 +227,9 @@ func teardown() -> bool:
 	_ring_pending = false
 	_summon_pending = false
 	_hostile_count = 0
+	if _batched_renderer != null:
+		_batched_renderer.begin_frame()
+		_batched_renderer.finish_frame()
 	while _enemy_count > 0:
 		if not _remove_enemy(_enemy_count - 1):
 			return false
@@ -735,6 +751,7 @@ func _draw() -> void:
 	var draw_started := Time.get_ticks_usec() if measure_draw_cpu else 0
 	draw_objects_submitted = 0
 	draw_objects_culled = 0
+	_batched_renderer.begin_frame()
 	# Convert the viewport through the actual camera/canvas transform, not player position.
 	var draw_view := (get_global_transform_with_canvas().affine_inverse() * get_viewport_rect()).grow(1.0)
 	var visible_size := get_viewport_rect().size
@@ -777,30 +794,39 @@ func _draw() -> void:
 		if not _keep_draw_object(draw_view, _hostile_positions[i], 11.8):
 			continue
 		draw_circle(_hostile_positions[i], 10.8, Color("dd88ff"))
+	var enemy_batch_active := geometry_batch_enabled and boss_spawn_count == 0
 	for index in _enemy_count:
 		var enemy: Dictionary = _enemy_data(_enemy_kind[index])
 		var position_value := _enemy_positions[index]
 		var radius := float(enemy["radius"])
 		if not _keep_draw_object(draw_view, position_value, radius + 10.0):
 			continue
-		if _enemy_kind[index] == ENEMY_BOSS:
-			draw_circle(position_value, radius, Color("77bb44"))
-			draw_arc(position_value, radius + 6.0, 0, TAU * maxf(0.0, _enemy_hp[index]) / float(_boss["hp"]), 48, Color.YELLOW, 5.0)
-		elif _enemy_kind[index] == ENEMY_WOLF:
-			draw_line(position_value + Vector2(0.0, -radius), position_value + Vector2(radius, 0.0), Color("e17a45"), 9.0)
-			draw_line(position_value + Vector2(radius, 0.0), position_value + Vector2(0.0, radius), Color("e17a45"), 9.0)
-			draw_line(position_value + Vector2(0.0, radius), position_value + Vector2(-radius, 0.0), Color("e17a45"), 9.0)
-			draw_line(position_value + Vector2(-radius, 0.0), position_value + Vector2(0.0, -radius), Color("e17a45"), 9.0)
-		else:
-			draw_circle(position_value, radius + 4.0, Color(0.0, 0.0, 0.0, 0.3))
-			draw_circle(position_value, radius, Color("a93d49"))
+		if enemy_batch_active and _batched_renderer.append_enemy(_enemy_kind[index], position_value):
+			continue
+		_draw_enemy(index, position_value, radius)
 	for index in _projectile_count:
 		if not _keep_draw_object(draw_view, _projectile_positions[index], maxf(_projectile_radius + 1.0, 21.0)):
 			continue
 		var velocity := _projectile_velocities[index]
+		if geometry_batch_enabled and _batched_renderer.append_projectile(_projectile_positions[index], velocity):
+			continue
 		var direction := velocity.normalized()
 		draw_line(_projectile_positions[index] - direction * 16.0, _projectile_positions[index] + direction * 12.0, Color("d6f5ff"), 7.0)
 		draw_circle(_projectile_positions[index], _projectile_radius, Color("80d9ef"))
+	_batched_renderer.finish_frame()
 	if measure_draw_cpu:
 		last_draw_cpu_usec = Time.get_ticks_usec() - draw_started
 		draw_measurement_count += 1
+
+func _draw_enemy(index: int, position_value: Vector2, radius: float) -> void:
+	if _enemy_kind[index] == ENEMY_BOSS:
+		draw_circle(position_value, radius, Color("77bb44"))
+		draw_arc(position_value, radius + 6.0, 0, TAU * maxf(0.0, _enemy_hp[index]) / float(_boss["hp"]), 48, Color.YELLOW, 5.0)
+	elif _enemy_kind[index] == ENEMY_WOLF:
+		draw_line(position_value + Vector2(0.0, -radius), position_value + Vector2(radius, 0.0), Color("e17a45"), 9.0)
+		draw_line(position_value + Vector2(radius, 0.0), position_value + Vector2(0.0, radius), Color("e17a45"), 9.0)
+		draw_line(position_value + Vector2(0.0, radius), position_value + Vector2(-radius, 0.0), Color("e17a45"), 9.0)
+		draw_line(position_value + Vector2(-radius, 0.0), position_value + Vector2(0.0, -radius), Color("e17a45"), 9.0)
+	else:
+		draw_circle(position_value, radius + 4.0, Color(0.0, 0.0, 0.0, 0.3))
+		draw_circle(position_value, radius, Color("a93d49"))

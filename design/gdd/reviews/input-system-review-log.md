@@ -742,3 +742,40 @@ InputSystem 仍保持 `In Review / Re-review Pending`；本 checkpoint 不构成
 - GameRoot/Viewport route GDUnit4：`2 test cases | 0 errors | 0 failures | 0 flaky | 0 skipped | 0 orphans`。
 - Godot editor import 与该场景测试均通过；当前环境未发现 `adb`，`xcrun simctl` 也不可用，故 Android/iOS 真机或模拟器证据未执行。
 - `accessibility_runtime=false`、`performance_thermal=false`、`gdunit4_full_review_gate=false`、`battle_ready=false` 保持不变。该实现是最小 route harness，不构成完整 GameRoot/BattleUI 生产集成或批准。
+
+## Review — 2026-09-11 — Clean-context Full Re-review — Verdict: BLOCKED / XL
+
+Scope signal: XL | Minimum revision effort: XL (`MAJOR REVISION NEEDED`)
+Specialists: game+systems、Godot+GDScript+performance、UX/UI/accessibility+QA + fresh creative-director synthesis
+Structure: 8/8 required sections | 35 unique AC IDs | AC independence audit: Y=13 / D=20 / N=2
+
+本轮对准确目标`design/gdd/input-system.md`执行只读clean-context full re-review；三份真实specialist报告由fresh creative-director综合，review期间未修改文件。Stage/render/batched-renderer不在本次Input verdict范围内。
+
+### Prior blocker closure
+
+- 正式主场景、Steam横屏/WASD scaffold、GameRoot先调Input再调gameplay、FROZEN/Shield/VJ rebuild、7001入口、102-node registry与四行workload manifest已出现，但都只形成`PARTIAL`或`REOPENED`；没有任何顶层blocker可记为完整`CLOSED`。
+- F2 geometry、正式phase/context/lease ABI、完整pause/resume transaction、Meta/focus/native accessibility、Input workload阈值与runtime/device/UX证据继续`OPEN/BLOCKED`。
+- 既有static、synthetic、isolated vertical-slice与本地headless smoke只在其声明边界内有效，不构成production runtime/device证据。
+
+### BLOCKING findings
+
+1. `[game+systems][UX/QA][Godot/performance]` Steam `move_*` active profile与canonical touch-only F1、portrait/VJ正文及生产双采样互相冲突；尚无真正互斥、逐公式/逐AC可审计的InputProfile。
+2. `[game+systems][Godot/performance]` PC action deadzone=0且binary normalize会把手柄漂移放大为满速；键盘/手柄路径以`maxi(generation,1)`伪造generation，一次Input sample还可能被accumulator的多个fixed gameplay tick复用。
+3. `[systems][creative-director]` 正式实现缺`run_phase(phase,context,lease_id)`、七phase/`POST_DEFERRED_BARRIER`、typed identity/revision与carrier消费ABI，无法证明pause ordering、stale input和exactly-once。
+4. `[UX/UI/QA][Godot]` layer10全屏BattleUI的`MOUSE_FILTER_PASS`不能证明事件穿透layer5 VJ；Host内VJ晚于Shield加入且两者STOP时VJ先命中；resize/reset还可能遗留Host claim，正式GUI bank route不成立。
+5. `[game+systems][UX/QA][Godot]` pause/background/resume缺三字段原子close、action clean readback、epoch-bound callback、typed pending release、revision snapshot、fresh-press rollback、held drain/readiness、不可逆点检查与terminal-first teardown；合法held-only不得升级为fault。
+6. `[game+systems][UX/UI/accessibility/QA][Godot]` 八个Meta action events为空且P/R旁路；BattleUI发送Dictionary、screen/layout generation固定1，command ID每实例重置而GameRoot last ID跨局持久，第二局首个7001存在ABA拒绝。
+7. `[accessibility/QA][performance][creative-director]` ASN05汇总21/capacity24与actual B01-B28共28行冲突；AC-IS3/22未按Steam profile重写，touch capacity manifest仍null而生产config硬编码4；缺唯一oracle与重新生成的capacity/hash/golden。
+8. `[QA][performance]` 缺Windows release artifact上的物理键盘/控制器、deadzone/noise、remap/hotplug/focus/held、第二局7001、正式BattleScope routing/F2，以及CPU/frame/RSS/allocation证据。Android/iOS、TalkBack/VoiceOver与portrait UX在profile隔离后应作为future-port独立门，不阻塞Steam，但当前尚未隔离。
+
+### Specialist disagreements resolved by Creative Director
+
+- Android/iOS touch-order、TalkBack/VoiceOver与portrait UX本身不应阻塞Steam；当前阻断是profile未隔离。隔离后移动端保持`BLOCKED-FUTURE-PORT`，不得用Steam证据外推。
+- Shield/VJ节点存在不等于lifecycle blocker关闭；实际CanvasLayer、`mouse_filter`和child顺序反例优先，正式routing仍`OPEN`。
+- 7001 smoke只证明同一command重复拒绝，没有覆盖BattleUI replacement后的合法首击；不得据此宣称exactly-once关闭。
+
+### Final boundary
+
+最终verdict：`BLOCKED / XL`，最低修订级别`MAJOR REVISION NEEDED / XL`。InputSystem继续`In Review / Re-review Pending`；`implementation-ready=false`、`integration-ready=false`、`runtime/device verified=false`、`battle_ready=false`。
+
+建议依赖顺序：先冻结Steam/mobile profile、PC source/deadzone/fresh-resume/arbitration与AC适用矩阵；再实现typed carrier/context/phase、真实GUI route、三字段close及完整pause/resume；最后在同一Windows release artifact上补物理输入、焦点/生命周期和Input workload证据。移动端证据保持独立future-port gate。

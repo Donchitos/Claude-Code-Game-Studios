@@ -1,0 +1,38 @@
+{
+	"cases": [
+		{
+			"engine_static_after_teardown_bytes": 131665584,
+			"engine_static_bytes_samples": [
+				131443458,
+				131446482,
+				131727834,
+				131731362,
+				131736858,
+				131736858,
+				131744922,
+				131744922,
+				131756298,
+				131756658
+			],
+			"frame_interval_p95_ms": 14.753,
+			"frame_interval_p99_ms": 22.91,
+			"mode": "capacity_stress_dense",
+			"peak_enemies": 319,
+			"peak_friendly": 390,
+			"peak_hostile": 0,
+			"samples": 600,
+			"simulation_max_ms": 13.285,
+			"simulation_over_16_67ms": 0,
+			"simulation_p50_ms": 6.708,
+			"simulation_p95_ms": 7.031,
+			"simulation_p99_ms": 7.488
+		}
+	],
+	"cpu": "Apple M4",
+	"godot": "4.7.1-stable (official)",
+	"passed_execution": true,
+	"platform": "macOS",
+	"renderer": "macOS",
+	"temporary_profile": true,
+	"warmup_ticks": 120
+}

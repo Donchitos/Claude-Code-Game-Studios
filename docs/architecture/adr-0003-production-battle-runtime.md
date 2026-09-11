@@ -19,6 +19,12 @@
 
 ## Consequences
 
+### 2026-09-11 几何批量绘制 checkpoint
+
+普通敌人与友方飞剑采用固定容量MultiMesh几何批次；甲虫/召唤物与狼通过同一mesh的instance custom类型选择保持原数组顺序，飞剑按正式velocity旋转。可见范围剔除在实例提交前执行。Boss存在时敌人自动退回原Canvas primitive路径，以保留Boss血条与敌人遮挡顺序；友方飞剑继续批量绘制。生产开关由`rendering.geometry_batch_enabled`注入，false路径保留给A/B验证。
+
+该方案不使用预渲染纹理。旋转/缩放专项逐像素一致；正式Stage三种319敌/392飞剑布局最大通道差1、差值大于1的像素为0。Apple M4图形复测中普通/容量/Boss/屏内密集容量场景帧间隔P95分别为13.862/10.398/13.912/14.753ms；这只关闭当前Mac基线P95，不转移为Windows、min-spec或长时P99证据。详情见`production/playtest-evidence/2026-09-11-batched-renderer-production.md`。
+
 2026-09-10调参/协议补充：Stage现在先收集普通碰撞最大值与Boss攻击总额，再一次提交Player HP/致命/长春恢复；碰撞冷却只影响普通接触。飞剑使用连续扫掠最早接触，扇形采用圆弧与边距离。T+1毒弹验证source handle/action generation；Boss召唤已从固定两点改为48-word、8候选/child的局部环采样，容量与候选失败均0或2并保持RNG消费，异常插入回滚。完整Config epoch/typed ABI/归因/hazard协议尚未完成。普通血量策略模拟、临时练习入口与真实渲染截图见`production/playtest-evidence/2026-09-10-combat-tuning.md`；移速上限600为待玩家验证的暂定参数。
 
 ### 2026-09-10 长局接入 checkpoint（取代下方75秒与隔离Boss现状描述）
@@ -48,6 +54,9 @@ BossCombat作为当前Stage敌人适配层执行312/444 tick动作轮转、入�
 /Applications/Godot.app/Contents/MacOS/Godot --headless --path . --script tests/integration/production_battle_loop_test.gd
 /Applications/Godot.app/Contents/MacOS/Godot --headless --path . --script tests/integration/spatial_grid_test.gd
 /Applications/Godot.app/Contents/MacOS/Godot --headless --path . --script tests/integration/object_pool_test.gd
+/Applications/Godot.app/Contents/MacOS/Godot --path . --script tests/integration/batched_renderer_visual_test.gd
+/Applications/Godot.app/Contents/MacOS/Godot --path . --script tests/integration/dense_batch_probe.gd
+/Applications/Godot.app/Contents/MacOS/Godot --path . --script tests/integration/performance_probe.gd -- --dense
 /Applications/Godot.app/Contents/MacOS/Godot --headless --path . --script tests/integration/save_system_test.gd
 /Applications/Godot.app/Contents/MacOS/Godot --headless --path . --script tests/integration/progression_system_test.gd
 /Applications/Godot.app/Contents/MacOS/Godot --headless --path . --script tests/integration/home_progression_test.gd

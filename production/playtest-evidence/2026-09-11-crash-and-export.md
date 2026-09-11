@@ -24,9 +24,9 @@ macOS / Godot 4.7.1结果（5个子进程exit137）：
 
 本地export_presets.cfg保留已有iOS配置，追加Windows Internal；版本副本在production/windows-internal-preset.cfg。仅内部测试，不签名，不改已有工作名，不代表原创IP清理或Steam上架完成。
 
-首次只选择GameRoot资源的PCK独立启动漏依赖，已改为all_resources并排除tests/production/design/docs/prototypes/.claude及Markdown。PCK成功生成于build/windows-internal/TrialInternal.pck。导出Windows exe实际失败：本机4.7.1.stable模板目录仅有ios.zip，缺windows_debug_x86_64.exe/windows_release_x86_64.exe；必须安装匹配模板后重试。Windows实机还需单独安排。
+首次只选择GameRoot资源的PCK独立启动漏依赖，已改为all_resources并排除tests/production/design/docs/prototypes/.claude及Markdown。首次导出因本机4.7.1.stable模板目录仅有ios.zip、缺Windows模板而失败；随后下载官方同版本完整模板包、校验SHA512并只安装两个Windows x86_64模板，`Windows Internal` release导出已exit 0。产物、hash与证据边界见`2026-09-11-windows-export.md`。Windows实机仍需单独安排。
 
-资源包是数据文件，不能直接作为Windows游戏运行。源码目录之外的PCK启动/高HP自动烟测已PASS：generation=2、level=25、kills=1505、seconds=733.60。此项属于本机Godot验证，不是Windows平台验收。PCK SHA256：1fbc2e37aa1ff2e6152d4268844916e3e4dcda2f0d3b13c70f4639ad8655febb。
+资源包是数据文件，不能单独作为Windows游戏运行。最终release输出为`TrialInternal.exe`加`TrialInternal.pck`；本轮macOS主机只完成交叉导出，没有执行Windows运行。此前源码目录之外的PCK启动/高HP自动烟测已PASS：generation=2、level=25、kills=1505、seconds=733.60；该旧PCK SHA256为`1fbc2e37aa1ff2e6152d4268844916e3e4dcda2f0d3b13c70f4639ad8655febb`，不应与本轮最终release PCK hash混用。
 
 save_system_test与production_lifecycle_test回归通过；git diff --check通过。
 
