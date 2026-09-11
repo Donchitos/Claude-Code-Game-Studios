@@ -1,13 +1,15 @@
 {
   "schema_version": 1,
   "run": {
-    "duration_seconds": 75.0,
+    "duration_seconds": 900.0,
+    "boss_enabled": true,
     "smoke_speed_multiplier": 5.0,
     "hud_refresh_seconds": 0.1
   },
   "player": {
     "max_hp": 100.0,
     "speed": 360.0,
+    "maximum_speed": 600.0,
     "radius": 24.0,
     "pickup_radius": 62.0,
     "contact_cooldown": 0.55,
@@ -22,9 +24,12 @@
     "projectile_despawn_radius": 980.0,
     "xp_radius": 10.0,
     "xp_magnet_speed": 520.0,
-    "grid_size": 72.0
+    "grid_size": 72.0,
+    "world_half_extent": 1000000.0,
+    "max_query_cells": 262144
   },
   "enemies": {
+    "boss": {"radius": 40.0, "speed": 150.0, "contact_damage": 24.0, "hp": 320.0},
     "beetle": {
       "radius": 19.0,
       "speed": 88.0,
@@ -39,9 +44,14 @@
     }
   },
   "waves": [
-    {"until_seconds": 20.0, "spawn_interval": 0.72, "wolf_probability": 0.0, "name": "试探"},
-    {"until_seconds": 50.0, "spawn_interval": 0.46, "wolf_probability": 0.24, "name": "群狼混入"},
-    {"until_seconds": 75.0, "spawn_interval": 0.31, "wolf_probability": 0.42, "name": "秘境崩塌"}
+    {"until_seconds": 90.0, "spawn_interval": 0.72, "wolf_probability": 0.0, "name": "初入秘境"},
+    {"until_seconds": 180.0, "spawn_interval": 0.55, "wolf_probability": 0.20, "name": "群狼试探"},
+    {"until_seconds": 240.0, "spawn_interval": 0.85, "wolf_probability": 0.10, "name": "林间喘息"},
+    {"until_seconds": 360.0, "spawn_interval": 0.40, "wolf_probability": 0.35, "name": "兽潮合围"},
+    {"until_seconds": 420.0, "spawn_interval": 0.70, "wolf_probability": 0.15, "name": "收集补给"},
+    {"until_seconds": 540.0, "spawn_interval": 0.33, "wolf_probability": 0.45, "name": "狼群追猎"},
+    {"until_seconds": 600.0, "spawn_interval": 0.60, "wolf_probability": 0.25, "name": "决战前夕"},
+    {"until_seconds": 720.0, "spawn_interval": 0.28, "wolf_probability": 0.50, "name": "最后兽潮"}
   ],
   "upgrades": {
     "xp_base": 10,

@@ -1,0 +1,180 @@
+{
+	"cases": [
+		{
+			"engine_static_after_teardown_bytes": 131648759,
+			"engine_static_bytes_samples": [
+				131313827,
+				131324411,
+				131614523,
+				131626451,
+				131644547,
+				131644547,
+				131671571,
+				131671571,
+				131711387,
+				131711747
+			],
+			"frame_interval_p95_ms": 18.041,
+			"frame_interval_p99_ms": 20.002,
+			"mode": "capacity_stress",
+			"peak_enemies": 319,
+			"peak_friendly": 392,
+			"peak_hostile": 0,
+			"samples": 600,
+			"simulation_max_ms": 4.784,
+			"simulation_over_16_67ms": 0,
+			"simulation_p50_ms": 4.588,
+			"simulation_p95_ms": 4.692,
+			"simulation_p99_ms": 4.73,
+			"split": {
+				"bookkeeping": {
+					"count": 600,
+					"mean_ms": 0.00182166666666666,
+					"p95_ms": 0.003
+				},
+				"fixture_fill": {
+					"count": 600,
+					"mean_ms": 0.040155,
+					"p95_ms": 0.043
+				},
+				"loop_total": {
+					"count": 600,
+					"mean_ms": 16.7842216666667,
+					"p95_ms": 18.026
+				},
+				"simulation": {
+					"count": 600,
+					"mean_ms": 4.58880499999999,
+					"p95_ms": 4.692
+				},
+				"stage_draw_cpu": {
+					"count": 600,
+					"mean_ms": 2.30988166666667,
+					"p95_ms": 2.571
+				},
+				"wait_next_frame": {
+					"count": 600,
+					"mean_ms": 12.1533916666667,
+					"p95_ms": 13.277
+				}
+			}
+		},
+		{
+			"engine_static_after_teardown_bytes": 131640951,
+			"engine_static_bytes_samples": [
+				132276543,
+				132285615,
+				132302299,
+				132312403,
+				132327835,
+				132327835,
+				132350395,
+				132350395,
+				132384523,
+				132384883
+			],
+			"frame_interval_p95_ms": 11.381,
+			"frame_interval_p99_ms": 11.683,
+			"mode": "capacity_stress_no_stage",
+			"peak_enemies": 319,
+			"peak_friendly": 392,
+			"peak_hostile": 0,
+			"samples": 600,
+			"simulation_max_ms": 4.978,
+			"simulation_over_16_67ms": 0,
+			"simulation_p50_ms": 4.557,
+			"simulation_p95_ms": 4.697,
+			"simulation_p99_ms": 4.772,
+			"split": {
+				"bookkeeping": {
+					"count": 600,
+					"mean_ms": 0.00125166666666667,
+					"p95_ms": 0.002
+				},
+				"fixture_fill": {
+					"count": 600,
+					"mean_ms": 0.0392416666666667,
+					"p95_ms": 0.043
+				},
+				"loop_total": {
+					"count": 600,
+					"mean_ms": 8.33168,
+					"p95_ms": 11.38
+				},
+				"simulation": {
+					"count": 600,
+					"mean_ms": 4.56447,
+					"p95_ms": 4.697
+				},
+				"wait_next_frame": {
+					"count": 600,
+					"mean_ms": 3.72664166666666,
+					"p95_ms": 6.787
+				}
+			}
+		},
+		{
+			"engine_static_after_teardown_bytes": 131646419,
+			"engine_static_bytes_samples": [
+				132264011,
+				132273083,
+				132284423,
+				132294527,
+				132309695,
+				132309695,
+				132332519,
+				132332519,
+				132366647,
+				132366743
+			],
+			"frame_interval_p95_ms": 11.544,
+			"frame_interval_p99_ms": 12.045,
+			"mode": "capacity_stress_no_canvas",
+			"peak_enemies": 319,
+			"peak_friendly": 392,
+			"peak_hostile": 0,
+			"samples": 600,
+			"simulation_max_ms": 5.024,
+			"simulation_over_16_67ms": 0,
+			"simulation_p50_ms": 4.532,
+			"simulation_p95_ms": 4.694,
+			"simulation_p99_ms": 4.766,
+			"split": {
+				"bookkeeping": {
+					"count": 600,
+					"mean_ms": 0.001205,
+					"p95_ms": 0.002
+				},
+				"fixture_fill": {
+					"count": 600,
+					"mean_ms": 0.0391550000000001,
+					"p95_ms": 0.042
+				},
+				"loop_total": {
+					"count": 600,
+					"mean_ms": 8.32991166666668,
+					"p95_ms": 11.537
+				},
+				"simulation": {
+					"count": 600,
+					"mean_ms": 4.55677166666667,
+					"p95_ms": 4.694
+				},
+				"wait_next_frame": {
+					"count": 600,
+					"mean_ms": 3.73273,
+					"p95_ms": 6.99
+				}
+			}
+		}
+	],
+	"cpu": "Apple M4",
+	"engine_max_fps": 0,
+	"godot": "4.7.1-stable (official)",
+	"passed_execution": true,
+	"platform": "macOS",
+	"renderer": "macOS",
+	"temporary_profile": true,
+	"vsync_mode": 1,
+	"warmup_ticks": 120
+}

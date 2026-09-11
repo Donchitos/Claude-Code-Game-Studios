@@ -26,6 +26,16 @@ func _run() -> void:
 	_expect(game_root.state == ProductionGameRoot.State.BATTLE_ACTIVE, "battle must be active")
 	_expect(game_root.current_battle.input_system.state == ProductionInputSystem.State.ACTIVE, "input must be active")
 	_expect(game_root.current_battle.joystick_host.active_joystick_count() == 1, "exactly one joystick must exist")
+	for action: StringName in [&"move_left", &"move_right", &"move_up", &"move_down"]:
+		_expect(InputMap.has_action(action) and not InputMap.action_get_events(action).is_empty(), "PC movement action must be configured: %s" % action)
+	var start_position := game_root.current_battle.player.position
+	Input.action_press(&"move_right")
+	for _frame in 6:
+		await process_frame
+		if game_root.current_battle.player.position.x > start_position.x:
+			break
+	Input.action_release(&"move_right")
+	_expect(game_root.current_battle.player.position.x > start_position.x, "PC keyboard input must move the player")
 	var first_scope_ref: WeakRef = weakref(game_root.current_battle)
 
 	_expect(game_root.request_pause(false) == ProductionGameRoot.Status.OK, "pause must succeed")
@@ -50,6 +60,11 @@ func _run() -> void:
 	_expect(game_root.state == ProductionGameRoot.State.SETTLEMENT, "settlement must be active")
 	_expect(game_root.current_battle == null, "settlement must not retain a battle scope")
 	_expect(not paused, "SceneTree must be running in settlement")
+	var saved_profile: Dictionary = game_root.save_system.call("profile_snapshot")
+	_expect(int(saved_profile["generation"]) == 1 and int(saved_profile["total_runs"]) == 1 and int(saved_profile["victories"]) == 1, "settlement must commit one in-memory battle record")
+	var progression_domain: Dictionary = saved_profile["domains"]["progression"]
+	_expect(int(progression_domain["unspent_pages"]) == 0 and int(progression_domain["earned_pages_total"]) == 0, "a sub-90-second run must grant zero cultivation pages")
+	_expect(game_root.last_result_pages_granted == 0, "settlement must present the zero-page result honestly")
 	_expect(not game_root.viewport_gate_held, "settlement activation must release the gate")
 	_expect(game_root.get_instance_id() == root_id, "GameRoot identity must survive settlement")
 	_expect(game_root.get_viewport().get_instance_id() == viewport_id, "Viewport identity must survive settlement")

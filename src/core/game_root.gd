@@ -22,6 +22,7 @@ enum Status {
 	CONFIG_ERROR,
 	VIEWPORT_GATE_ERROR,
 	BATTLE_CREATE_ERROR,
+	PROGRESSION_ERROR,
 }
 
 const CONFIG_PATH := "res://assets/config/production_defaults.json"
@@ -34,6 +35,8 @@ const BATTLE_ACTIVE_PAUSE_SOURCE := 1
 const BattleScopeScene := preload("res://src/gameplay/battle/BattleScope.tscn")
 const HomeScreenScene := preload("res://src/ui/HomeScreen.tscn")
 const SettlementScreenScene := preload("res://src/ui/SettlementScreen.tscn")
+const SaveSystem = preload("res://src/persistence/save_system.gd")
+const ProgressionSystem = preload("res://src/progression/progression_system.gd")
 
 @onready var page_host: Node = $PageHost
 
@@ -50,6 +53,8 @@ var last_result_victory: bool = false
 var last_result_level: int = 0
 var last_result_kills: int = 0
 var last_result_elapsed: float = 0.0
+var last_result_pages_granted: int = 0
+var last_result_reason := ""
 
 var _config: Dictionary
 var _touch_trace_enabled: bool = false
@@ -60,12 +65,32 @@ var _accessibility_layout_generation: int = 1
 var _last_battle_active_pause_command_id: int = 0
 var _last_battle_active_pause_input_event_id: int = 0
 var _input_bootstrap_valid: bool = true
+var _save_bootstrap_valid: bool = true
+var _progression_bootstrap_valid: bool = true
+var save_system: Node
+var transient_profile := false
+var progression_system: Node
 
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	_install_production_theme()
+	_install_pc_gamepad_bindings()
+	save_system = SaveSystem.new()
+	save_system.name = "SaveSystem"
+	add_child(save_system)
+	var use_memory_save := transient_profile or DisplayServer.get_name() == "headless"
+	var slot_a := "" if use_memory_save else "user://profile_a.save"
+	var slot_b := "" if use_memory_save else "user://profile_b.save"
+	var default_domains := {ProgressionSystem.DOMAIN_KEY: ProgressionSystem.empty_domain()}
+	_save_bootstrap_valid = save_system.call("initialize", slot_a, slot_b, default_domains) == SaveSystem.Status.OK
+	progression_system = ProgressionSystem.new()
+	progression_system.name = "ProgressionSystem"
+	add_child(progression_system)
+	var saved_profile: Dictionary = save_system.call("profile_snapshot")
+	var saved_domains: Dictionary = saved_profile.get("domains", {})
+	_progression_bootstrap_valid = progression_system.call("initialize", saved_domains.get(ProgressionSystem.DOMAIN_KEY, {})) == ProgressionSystem.Status.OK
 	Input.set_use_accumulated_input(false)
 	root_viewport = get_viewport()
 	root_identity = get_instance_id()
@@ -126,12 +151,31 @@ func _input(event: InputEvent) -> void:
 		print("TOUCH_TRACE seq=%d type=drag index=%d pos=%s relative=%s state=%s" % [_touch_trace_count, drag.index, drag.position, drag.relative, State.keys()[state]])
 
 func _install_production_theme() -> void:
-	var cjk_font := SystemFont.new()
-	cjk_font.font_names = PackedStringArray(["PingFang SC", "Heiti SC", "Arial Unicode MS"])
-	cjk_font.allow_system_fallback = true
+	var cjk_font := preload("res://assets/fonts/NotoSansCJKsc-Regular.otf")
 	var production_theme := Theme.new()
 	production_theme.default_font = cjk_font
 	theme = production_theme
+
+func _install_pc_gamepad_bindings() -> void:
+	var bindings := {
+		&"move_left": [JOY_AXIS_LEFT_X, -1.0],
+		&"move_right": [JOY_AXIS_LEFT_X, 1.0],
+		&"move_up": [JOY_AXIS_LEFT_Y, -1.0],
+		&"move_down": [JOY_AXIS_LEFT_Y, 1.0],
+	}
+	for action: StringName in bindings:
+		if not InputMap.has_action(action):
+			InputMap.add_action(action)
+		var axis := InputEventJoypadMotion.new()
+		axis.axis = bindings[action][0]
+		axis.axis_value = bindings[action][1]
+		var already_bound := false
+		for event: InputEvent in InputMap.action_get_events(action):
+			if event is InputEventJoypadMotion and event.axis == axis.axis and is_equal_approx(event.axis_value, axis.axis_value):
+				already_bound = true
+				break
+		if not already_bound:
+			InputMap.action_add_event(action, axis)
 
 ## Starts a production battle while retaining GameRoot and the root Viewport.
 ## Example: `await game_root.request_start_battle(1234, false)`.
@@ -257,6 +301,20 @@ func request_home() -> Status:
 		return _enter_fault("HOME_GATE_RELEASE_FAILED")
 	return Status.OK
 
+## Persists one Progression-owned purchase after-image while HOME is active.
+func request_progression_purchase(branch_id: int) -> Status:
+	if state != State.HOME or progression_system == null:
+		return Status.WRONG_STATE
+	var result: Dictionary = progression_system.call("build_purchase_after_image", branch_id)
+	if int(result.get("status", ProgressionSystem.Status.INVALID_ARGUMENT)) != ProgressionSystem.Status.OK:
+		return Status.PROGRESSION_ERROR
+	var next_domain: Dictionary = result["domain"]
+	if save_system.call("commit_domain_after_images", {ProgressionSystem.DOMAIN_KEY: next_domain}) != SaveSystem.Status.OK:
+		return _enter_fault("SAVE_PURCHASE_FAILED")
+	if progression_system.call("publish_after_image", next_domain) != ProgressionSystem.Status.OK:
+		return _enter_fault("PROGRESSION_PUBLISH_FAILED")
+	return Status.OK
+
 ## Acquires the physical root Viewport gate. GameRoot is its only writer.
 ## Example: `assert(game_root.acquire_viewport_input_gate() == Status.OK)`.
 func acquire_viewport_input_gate() -> Status:
@@ -278,8 +336,11 @@ func release_viewport_input_gate(reason: StringName) -> Status:
 	return Status.OK
 
 func _boot() -> void:
-	if not _input_bootstrap_valid:
-		_enter_fault("INPUT_BOOTSTRAP_INVALID")
+	if not _save_bootstrap_valid:
+		_enter_fault("SAVE_LOAD_FAILED")
+		return
+	if not _input_bootstrap_valid or not _save_bootstrap_valid or not _progression_bootstrap_valid:
+		_enter_fault("BOOTSTRAP_INVALID")
 		return
 	if acquire_viewport_input_gate() != Status.OK:
 		_enter_fault("BOOT_GATE_ACQUIRE_FAILED")
@@ -307,15 +368,20 @@ func _create_home() -> void:
 	current_page = HomeScreenScene.instantiate() as Control
 	current_page.name = "HomeScreen"
 	current_page.theme = theme
-	(current_page as ProductionHomeScreen).start_requested.connect(_on_start_requested)
+	var home := current_page as ProductionHomeScreen
+	home.start_requested.connect(_on_start_requested)
+	home.progression_purchase_requested.connect(_on_progression_purchase_requested)
 	page_host.add_child(current_page)
+	home.present_progression(progression_system.call("domain_snapshot"))
 
 func _create_battle(seed: int, use_smoke_mode: bool) -> Status:
 	battle_generation += 1
 	current_battle = BattleScopeScene.instantiate() as ProductionBattleScope
 	current_battle.name = "BattleScope_%03d" % battle_generation
 	page_host.add_child(current_battle)
-	if not current_battle.configure(_config, seed, use_smoke_mode):
+	var battle_config := _config.duplicate(true)
+	battle_config["progression_projection"] = progression_system.call("battle_projection")
+	if not current_battle.configure(battle_config, seed, use_smoke_mode):
 		return Status.BATTLE_CREATE_ERROR
 	current_battle.battle_ui.theme = theme
 	current_battle.pause_requested.connect(_on_pause_requested)
@@ -331,7 +397,7 @@ func _create_settlement() -> void:
 	current_page.theme = theme
 	page_host.add_child(current_page)
 	var settlement := current_page as ProductionSettlementScreen
-	settlement.present(last_result_victory, last_result_level, last_result_kills, last_result_elapsed)
+	settlement.present(last_result_victory, last_result_level, last_result_kills, last_result_elapsed, last_result_pages_granted, last_result_reason)
 	settlement.retry_requested.connect(_on_retry_requested)
 	settlement.home_requested.connect(_on_home_requested)
 
@@ -354,9 +420,25 @@ func _complete_battle_end(victory_value: bool) -> Status:
 	if acquire_viewport_input_gate() != Status.OK:
 		return _enter_fault("END_GATE_ACQUIRE_FAILED")
 	last_result_victory = victory_value
+	last_result_reason = ""
+	if not victory_value:
+		if not current_battle.player.is_alive():
+			last_result_reason = "致命伤害：" + current_battle.player.last_damage_sources
+		elif current_battle.elapsed_time >= current_battle.duration_seconds:
+			last_result_reason = "时间耗尽：未及时击败首领"
 	last_result_level = current_battle.level
 	last_result_kills = current_battle.kills
 	last_result_elapsed = minf(current_battle.elapsed_time, current_battle.duration_seconds)
+	var survival_ticks := current_battle.completed_active_ticks
+	var income_result: Dictionary = progression_system.call("build_income_after_image", survival_ticks, false)
+	if int(income_result.get("status", ProgressionSystem.Status.INVALID_ARGUMENT)) != ProgressionSystem.Status.OK:
+		return _enter_fault("PROGRESSION_INCOME_FAILED")
+	last_result_pages_granted = int(income_result.get("granted_pages", 0))
+	var next_progression_domain: Dictionary = income_result["domain"]
+	if save_system.call("commit_battle_result", last_result_victory, last_result_level, last_result_kills, last_result_elapsed, {ProgressionSystem.DOMAIN_KEY: next_progression_domain}) != SaveSystem.Status.OK:
+		return _enter_fault("SAVE_COMMIT_FAILED")
+	if progression_system.call("publish_after_image", next_progression_domain) != ProgressionSystem.Status.OK:
+		return _enter_fault("PROGRESSION_PUBLISH_FAILED")
 	get_tree().paused = false
 	await _detach_current_child()
 	_create_settlement()
@@ -368,6 +450,13 @@ func _complete_battle_end(victory_value: bool) -> Status:
 
 func _on_start_requested() -> void:
 	request_start_battle.call_deferred(0, false)
+
+func _on_progression_purchase_requested(branch_id: int) -> void:
+	var result := request_progression_purchase(branch_id)
+	if current_page == null or not current_page is ProductionHomeScreen:
+		return
+	var message := "修炼成功，加成将在下一局生效" if result == Status.OK else "购买未完成，请核对余额和存档状态"
+	(current_page as ProductionHomeScreen).present_progression(progression_system.call("domain_snapshot"), message)
 
 func _on_retry_requested() -> void:
 	request_start_battle.call_deferred(0, false)
@@ -398,6 +487,23 @@ func _enter_fault(reason: String) -> Status:
 	get_tree().paused = false
 	state = State.CONTROLLED_FAULT
 	_transition_pending = false
+	if not has_node("FaultNotice"):
+		var notice := ColorRect.new()
+		notice.name = "FaultNotice"
+		notice.z_index = 100
+		notice.color = Color("071a20")
+		add_child(notice)
+		notice.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+		var label := Label.new()
+		notice.add_child(label)
+		label.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+		label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+		label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		label.add_theme_font_size_override("font_size", 24)
+		label.text = "游戏已停止继续操作\n请关闭游戏后重新启动。\n错误：" + reason
+		if reason.begins_with("SAVE_"):
+			label.text = "存档未能确认，已停止继续操作\n请先备份存档目录，再关闭游戏重新启动。\n请勿删除存档；本次进度是否保存需重新加载确认。\n存档目录：%s\n错误：%s" % [ProjectSettings.globalize_path("user://"), reason]
 	push_error("PRODUCTION_CONTROLLED_FAULT reason=%s" % reason)
 	return Status.CONFIG_ERROR
 
@@ -432,7 +538,7 @@ func _run_production_smoke() -> void:
 		print("PRODUCTION_SMOKE_FAIL phase=replace status=%d" % replace_status)
 		get_tree().quit(1)
 		return
-	var deadline := Time.get_ticks_msec() + 25000
+	var deadline := Time.get_ticks_msec() + 210000
 	while state != State.SETTLEMENT and Time.get_ticks_msec() < deadline:
 		await get_tree().process_frame
 	if state != State.SETTLEMENT or not last_result_victory or last_result_level < 1:

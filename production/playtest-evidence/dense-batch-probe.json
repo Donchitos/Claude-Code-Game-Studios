@@ -1,0 +1,129 @@
+{
+	"cases": [
+		{
+			"batched": {
+				"frame": {
+					"mean_ms": 8.33491666666666,
+					"p95_ms": 13.59
+				},
+				"stage_draw_cpu": {
+					"mean_ms": 0.00815555555555554,
+					"p95_ms": 0.012
+				},
+				"upload_cpu": {
+					"mean_ms": 0.133811111111111,
+					"p95_ms": 0.17
+				}
+			},
+			"image_comparison": {
+				"changed_pixels": 9473,
+				"max_channel_delta": 224,
+				"pixel_identical": false,
+				"pixels_channel_delta_gt8": 9408
+			},
+			"layout": "spread",
+			"reference": {
+				"frame": {
+					"mean_ms": 18.2906111111111,
+					"p95_ms": 20.523
+				},
+				"stage_draw_cpu": {
+					"mean_ms": 3.55935,
+					"p95_ms": 3.831
+				},
+				"upload_cpu": {
+					"mean_ms": 0.00118333333333333,
+					"p95_ms": 0.002
+				}
+			}
+		},
+		{
+			"batched": {
+				"frame": {
+					"mean_ms": 8.3304,
+					"p95_ms": 13.601
+				},
+				"stage_draw_cpu": {
+					"mean_ms": 0.00854999999999999,
+					"p95_ms": 0.012
+				},
+				"upload_cpu": {
+					"mean_ms": 0.140061111111111,
+					"p95_ms": 0.176
+				}
+			},
+			"image_comparison": {
+				"changed_pixels": 17554,
+				"max_channel_delta": 233,
+				"pixel_identical": false,
+				"pixels_channel_delta_gt8": 9408
+			},
+			"layout": "overlap",
+			"order_negative_control": {
+				"changed_pixels": 48138,
+				"max_channel_delta": 112,
+				"pixel_identical": false,
+				"pixels_channel_delta_gt8": 48138
+			},
+			"reference": {
+				"frame": {
+					"mean_ms": 18.4612833333333,
+					"p95_ms": 20.563
+				},
+				"stage_draw_cpu": {
+					"mean_ms": 3.5925,
+					"p95_ms": 3.855
+				},
+				"upload_cpu": {
+					"mean_ms": 0.00118888888888889,
+					"p95_ms": 0.002
+				}
+			}
+		},
+		{
+			"batched": {
+				"frame": {
+					"mean_ms": 8.49272777777778,
+					"p95_ms": 14.576
+				},
+				"stage_draw_cpu": {
+					"mean_ms": 0.0106777777777778,
+					"p95_ms": 0.017
+				},
+				"upload_cpu": {
+					"mean_ms": 0.155427777777778,
+					"p95_ms": 0.236
+				}
+			},
+			"image_comparison": {
+				"changed_pixels": 6399,
+				"max_channel_delta": 233,
+				"pixel_identical": false,
+				"pixels_channel_delta_gt8": 6384
+			},
+			"layout": "mixed",
+			"reference": {
+				"frame": {
+					"mean_ms": 18.2010722222222,
+					"p95_ms": 20.183
+				},
+				"stage_draw_cpu": {
+					"mean_ms": 3.54095555555555,
+					"p95_ms": 3.804
+				},
+				"upload_cpu": {
+					"mean_ms": 0.00118333333333333,
+					"p95_ms": 0.002
+				}
+			}
+		}
+	],
+	"enemy_count": 319,
+	"platform": "macOS",
+	"production_enabled": false,
+	"renderer": "macOS",
+	"samples": 180,
+	"simulation_included": false,
+	"sword_count": 392,
+	"warmup": 30
+}

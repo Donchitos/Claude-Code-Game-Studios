@@ -1,0 +1,86 @@
+{
+	"cases": [
+		{
+			"engine_static_after_teardown_bytes": 123878253,
+			"engine_static_bytes_samples": [
+				123583441,
+				123584953,
+				123587421,
+				123589125,
+				123592313,
+				123592313,
+				123595557,
+				123596177,
+				123601245,
+				123601961
+			],
+			"mode": "ordinary",
+			"peak_enemies": 3,
+			"peak_friendly": 4,
+			"peak_hostile": 0,
+			"samples": 600,
+			"simulation_max_ms": 0.12,
+			"simulation_over_16_67ms": 0,
+			"simulation_p50_ms": 0.044,
+			"simulation_p95_ms": 0.06,
+			"simulation_p99_ms": 0.068
+		},
+		{
+			"engine_static_after_teardown_bytes": 123882265,
+			"engine_static_bytes_samples": [
+				124587317,
+				124588829,
+				124590953,
+				124592657,
+				124595225,
+				124595225,
+				124599089,
+				124599089,
+				124604777,
+				124604873
+			],
+			"mode": "capacity_stress",
+			"peak_enemies": 319,
+			"peak_friendly": 392,
+			"peak_hostile": 0,
+			"samples": 600,
+			"simulation_max_ms": 146.863,
+			"simulation_over_16_67ms": 600,
+			"simulation_p50_ms": 42.544,
+			"simulation_p95_ms": 45.539,
+			"simulation_p99_ms": 56.639
+		},
+		{
+			"engine_static_after_teardown_bytes": 124018217,
+			"engine_static_bytes_samples": [
+				124389293,
+				124390805,
+				124394069,
+				124396757,
+				124398593,
+				124399317,
+				124403181,
+				124408677,
+				124414365,
+				124411089
+			],
+			"mode": "boss_phase2",
+			"peak_enemies": 3,
+			"peak_friendly": 2,
+			"peak_hostile": 8,
+			"samples": 600,
+			"simulation_max_ms": 0.507,
+			"simulation_over_16_67ms": 0,
+			"simulation_p50_ms": 0.036,
+			"simulation_p95_ms": 0.057,
+			"simulation_p99_ms": 0.118
+		}
+	],
+	"cpu": "Apple M4",
+	"godot": "4.7.1-stable (official)",
+	"passed_execution": true,
+	"platform": "macOS",
+	"renderer": "headless",
+	"temporary_profile": true,
+	"warmup_ticks": 120
+}

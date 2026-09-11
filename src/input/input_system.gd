@@ -26,7 +26,8 @@ enum Status {
 	JOYSTICK_REBUILD_FAILED,
 }
 
-const MOVEMENT_ACTIONS := [&"touch_move_left", &"touch_move_right", &"touch_move_up", &"touch_move_down"]
+const PC_MOVEMENT_ACTIONS := [&"move_left", &"move_right", &"move_up", &"move_down"]
+const TOUCH_MOVEMENT_ACTIONS := [&"touch_move_left", &"touch_move_right", &"touch_move_up", &"touch_move_down"]
 
 var state: State = State.UNARMED
 var carrier := ProductionMovementIntentCarrier.new()
@@ -44,7 +45,10 @@ var pending_input_status: Status = Status.OK
 func initialize(input_host: ProductionVirtualJoystickHost) -> Status:
 	if state != State.UNARMED or input_host == null:
 		return Status.WRONG_STATE
-	for action: StringName in MOVEMENT_ACTIONS:
+	for action: StringName in PC_MOVEMENT_ACTIONS:
+		if not InputMap.has_action(action) or InputMap.action_get_events(action).is_empty():
+			return Status.INVALID_INPUT_MAP
+	for action: StringName in TOUCH_MOVEMENT_ACTIONS:
 		if not InputMap.has_action(action) or not InputMap.action_get_events(action).is_empty():
 			return Status.INVALID_INPUT_MAP
 	if Input.is_using_accumulated_input():
@@ -102,7 +106,9 @@ func run_phase(phase: StringName, tick: int) -> Status:
 		pending_release = false
 		carrier.clear(tick)
 		return Status.OK
-	var action_vector := Input.get_vector(MOVEMENT_ACTIONS[0], MOVEMENT_ACTIONS[1], MOVEMENT_ACTIONS[2], MOVEMENT_ACTIONS[3], 0.0)
+	var pc_vector := Input.get_vector(PC_MOVEMENT_ACTIONS[0], PC_MOVEMENT_ACTIONS[1], PC_MOVEMENT_ACTIONS[2], PC_MOVEMENT_ACTIONS[3], 0.0)
+	var touch_vector := Input.get_vector(TOUCH_MOVEMENT_ACTIONS[0], TOUCH_MOVEMENT_ACTIONS[1], TOUCH_MOVEMENT_ACTIONS[2], TOUCH_MOVEMENT_ACTIONS[3], 0.0)
+	var action_vector := pc_vector if pc_vector != Vector2.ZERO else touch_vector
 	if not action_vector.is_finite():
 		carrier.clear(tick)
 		return Status.NON_FINITE_INPUT

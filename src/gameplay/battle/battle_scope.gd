@@ -29,6 +29,9 @@ var pending_upgrade: bool = false
 var terminal_pending: bool = false
 var victory: bool = false
 var smoke_mode: bool = false
+var progression_projection: Dictionary = {}
+var completed_active_ticks := 0
+var _tick_accumulator := 0.0
 
 var _config: Dictionary
 var _upgrades: Dictionary
@@ -45,6 +48,7 @@ func configure(config: Dictionary, seed: int, use_smoke_mode: bool) -> bool:
 	if state != State.CREATED or config.is_empty():
 		return false
 	_config = config
+	progression_projection = (config.get("progression_projection", {}) as Dictionary).duplicate(true)
 	_upgrades = config["upgrades"]
 	_xp_base = int(_upgrades["xp_base"])
 	_xp_per_level = int(_upgrades["xp_per_level"])
@@ -53,8 +57,9 @@ func configure(config: Dictionary, seed: int, use_smoke_mode: bool) -> bool:
 	_smoke_speed_multiplier = float(run_config["smoke_speed_multiplier"])
 	_hud_refresh_seconds = float(run_config["hud_refresh_seconds"])
 	smoke_mode = use_smoke_mode
-	player.configure(config["player"])
-	stage.configure(config, seed)
+	player.configure(config["player"], progression_projection)
+	if not stage.configure(config, seed):
+		return false
 	if smoke_mode:
 		# Smoke mode validates lifecycle and settlement, not balance or movement UX.
 		player.hp = 1000000000.0
@@ -96,11 +101,24 @@ func run_gameplay_phase(delta: float) -> bool:
 	if state != State.ACTIVE or terminal_pending:
 		return false
 	var step_delta := delta * (_smoke_speed_multiplier if smoke_mode else 1.0)
-	elapsed_time += step_delta
-	if not player.run_phase(&"PLAYER_MOVE", input_system.carrier.direction, step_delta):
+	_tick_accumulator += step_delta
+	while _tick_accumulator + 0.000000001 >= 1.0 / 60.0 and not terminal_pending and not pending_upgrade:
+		_tick_accumulator -= 1.0 / 60.0
+		if not _run_fixed_tick():
+			return false
+	return true
+
+func _run_fixed_tick() -> bool:
+	var step_delta := 1.0 / 60.0
+	elapsed_time = float(completed_active_ticks + 1) / 60.0
+	var direction: Vector2 = input_system.carrier.direction
+	if smoke_mode:
+		direction = stage.smoke_move_direction(elapsed_time, player.position)
+	if not player.run_phase(&"PLAYER_MOVE", direction, step_delta):
 		return false
 	if not stage.run_phase(&"STAGE_SIMULATE", step_delta, elapsed_time, player):
 		return false
+	completed_active_ticks += 1
 	kills += stage.kills_gained_this_tick
 	if stage.xp_gained_this_tick > 0:
 		xp += stage.xp_gained_this_tick
@@ -109,12 +127,17 @@ func run_gameplay_phase(delta: float) -> bool:
 	if _hud_left <= 0.0:
 		_hud_left += _hud_refresh_seconds
 		battle_ui.update_hud(self)
-	if not player.is_alive():
+	if stage.boss_defeated:
+		victory = true
+		terminal_pending = true
+	elif not player.is_alive():
 		victory = false
 		terminal_pending = true
 	elif elapsed_time >= duration_seconds:
-		victory = true
+		victory = not stage.boss_enabled
 		terminal_pending = true
+	if terminal_pending:
+		pending_upgrade = false
 	return true
 
 ## Locks input before GameRoot pauses SceneTree. Example: `scope.lock_for_pause(20)`.
@@ -157,9 +180,10 @@ func apply_upgrade(choice: int) -> bool:
 func teardown() -> bool:
 	if state == State.TERMINATED:
 		return true
+	var stage_clean := stage.teardown()
 	input_system.teardown()
 	state = State.TERMINATED
-	return true
+	return stage_clean
 
 ## Returns required XP for the current level. Example: `scope.xp_required()`.
 func xp_required() -> int:
