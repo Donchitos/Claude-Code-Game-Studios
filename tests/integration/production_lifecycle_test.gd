@@ -25,7 +25,7 @@ func _run() -> void:
 	_expect(game_root.state == ProductionGameRoot.State.BATTLE_ACTIVE, "HOME start signal must activate battle")
 	_expect(game_root.state == ProductionGameRoot.State.BATTLE_ACTIVE, "battle must be active")
 	_expect(game_root.current_battle.input_system.state == ProductionInputSystem.State.ACTIVE, "input must be active")
-	_expect(game_root.current_battle.joystick_host.active_joystick_count() == 1, "exactly one joystick must exist")
+	_expect(game_root.current_battle.joystick_host.active_joystick_count() == 0, "STEAM_PC must not instantiate a mobile joystick")
 	for action: StringName in [&"move_left", &"move_right", &"move_up", &"move_down"]:
 		_expect(InputMap.has_action(action) and not InputMap.action_get_events(action).is_empty(), "PC movement action must be configured: %s" % action)
 	var start_position := game_root.current_battle.player.position

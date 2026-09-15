@@ -1,5 +1,9 @@
 # SettlementSystem（结算系统，含BATTLE_RULES终局投影）
 
+> 2026-09-14 WP04c：商业恢复责任与 pending/barrier 盘点见 `design/registry/manifests/steam-recovery-responsibilities-v1.json`；显式合同、绑定封装、全量预检及联合验证见 [Steam域与快照适配](steam-save-domain-adapters.md)。清单是责任盘点，商业 owner/schema/容量仍 OPEN，不改变本文件既有 verdict。
+
+> 2026-09-11 Steam合同路由（作者传播，implementation gate OPEN）：STEAM_MISSION_V1适配以campaign-flow.md及save-steam-pc.md为新合同：目标证明的胜利无旧43200tick下限；禁用旧首次结算三starter自动授予，备战仅M01-03 Campaign grant开放；终态（含放弃/技术故障）经STAGE_RESULT→COMPLETE，只有COMPLETE匹配COMMITTED曝光。技术故障保留故障前committed stones/pages及旧owner备战补偿。新奖励矩阵ECON-MISSION-01及adapter/AC尚未冻结，生产禁止启用；下文legacy规则不自动迁入新profile。
+
 > **Status**: In Review / Re-review Pending
 > **Author**: 用户 + Codex（lean authoring；consulted systems-designer / economy-designer / qa-lead / UX reviewer）
 > **Created / Last Updated**: 2026-09-08 — Zhangtian第七次独立full review后typed detail pagination整改传播

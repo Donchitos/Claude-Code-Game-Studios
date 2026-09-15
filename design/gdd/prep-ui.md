@@ -1,5 +1,7 @@
 # Prep UI（掌天瓶开局准备页）
 
+> 2026-09-11 Steam合同路由（作者传播，implementation gate OPEN）：Steam新任务选择/继续与备战入口遵循campaign-flow.md、save-steam-pc.md；M01-03首次grant后开放，PREPARED取消需owner资格，承诺offer只能恢复同页。新UI adapter/恢复态与输入journey待实现；下文legacy首次结算开放规则不得接入STEAM_MISSION_V1。
+
 > **Status**: In Review / Re-review Pending
 > **Author**: 用户 + Codex（lean authoring；consulted UX reviewer / qa-lead）
 > **Created / Last Updated**: 2026-09-08 — Zhangtian第七次独立full review后作者整改传播

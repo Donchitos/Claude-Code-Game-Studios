@@ -1,0 +1,18 @@
+{
+  "src/campaign/campaign_arena_render.gd": "e8cd058da7e1756a1c441a3a32fc694a95e2eae8264a7bebad8add93a5ff8c3d",
+  "src/campaign/campaign_arena_codec.gd": "289eeefbd6eec6adaf2e52e2173f1c0a6559d62202911d4539139586dab8d882",
+  "src/campaign/campaign_mission.gd": "61587719792731b89af1e3a98de7f6ace193756d1d94f53e498294c3a199009b",
+  "src/campaign/campaign_ui.gd": "00ca362854df05460281e60d16985a9a4b61c47e2e620e79c35b86e2878d821a",
+  "src/campaign/campaign_arena.gd": "4b2a2b4600363184caa3cdc6c9c4194dc813b2bbebbff9681991cc47e0aecc90",
+  "src/campaign/campaign_profile.gd": "aea38234af5a41b3b2e1bb13026304452ce85be4577cececcf26014a142485eb",
+  "src/campaign/campaign_audio.gd": "4ace09abaddadce84f30a890dec97a8b0f68a966c37fef6c94c3a632d1832fc2",
+  "src/campaign/campaign_arena_validation.gd": "b050cc88230701ff8a89cd91a6bea3c9cbf230b51fad7903c808caf19d31cf9f",
+  "src/campaign/campaign_game_root.gd": "74f800b6f4e1c6c326e01fdb6fd53cd81cfb230c7ed706beeba993295e722314",
+  "src/campaign/campaign_combat.gd": "27ba11f9839229da7e6de62f78f2c0449fb7662d4337cd77fcaaa9ce5d0cad1e",
+  "src/campaign/campaign_catalog.gd": "f1b82e3ca1028797f68d565ab5fcb6d586ac4626bc566f0f7b6b233b67bb488f",
+  "src/campaign/campaign_ui_art.gd": "784ac1fb374c0feaecd5c0a88694c9e7f96606afd0cffc17f999d9eaec9b0791",
+  "assets/config/campaign_game.json": "71d615925151600c8a1255808f20a03d5d44f5fa4efd9f047874e231f45949ca",
+  "src/persistence/save_system.gd": "e6864cffc7eb96ffa4c4237912053d7fa4af7124924e059c5dcb5fce5599cf3a",
+  "tests/integration/campaign_journey_test.gd": "5493d591d2c63817224f8c20d9f7a669ad1d881c822f94c96818785eeaf630cb",
+  "tests/integration/campaign_snapshot_safety_test.gd": "9456ce791078f58afb058c5aa30b94f6647e686db6774e0eb1fbd759f9719b0d"
+}

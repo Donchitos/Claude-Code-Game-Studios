@@ -79,6 +79,10 @@ var _enemy_kind := PackedByteArray()
 var _enemy_borrow_ids := PackedInt64Array()
 var _enemy_grid_handles := PackedInt64Array()
 var _enemy_count: int = 0
+# Durable logical identities are independent of Pool/Grid process handles.
+var _snapshot_entity_ids := PackedInt64Array()
+var _snapshot_next_entity_id := 1
+var _spawn_viewport_size := Vector2.ZERO
 
 var _spatial_grid: Node
 var _enemy_pool: Node
@@ -145,6 +149,8 @@ func configure(config: Dictionary, seed: int) -> bool:
 	_xp_radius = float(combat["xp_radius"])
 	_xp_magnet_speed = float(combat["xp_magnet_speed"])
 	_grid_size = float(combat["grid_size"])
+	_spawn_viewport_size = get_viewport_rect().size
+	_snapshot_entity_ids.resize(enemy_capacity)
 	_enemy_positions.resize(enemy_capacity)
 	_enemy_hp.resize(enemy_capacity)
 	_enemy_kind.resize(enemy_capacity)
@@ -398,7 +404,7 @@ func _update_spawning(delta: float, elapsed: float, player_position: Vector2) ->
 	var kind := ENEMY_WOLF if _rng.randf() < float(wave["wolf_probability"]) else ENEMY_BEETLE
 	var enemy: Dictionary = _wolf if kind == ENEMY_WOLF else _beetle
 	var radius := float(enemy["radius"])
-	var half_view := get_viewport_rect().size * 0.5
+	var half_view := _spawn_viewport_size * 0.5
 	var horizontal_edge := half_view.x + radius + 65.0
 	var vertical_edge := half_view.y + radius + 65.0
 	var offset := Vector2.ZERO
@@ -415,7 +421,7 @@ func _update_spawning(delta: float, elapsed: float, player_position: Vector2) ->
 	return _spawn_enemy(kind, spawn_position)
 
 func _spawn_enemy(kind: int, spawn_position: Vector2) -> bool:
-	if _enemy_count >= _enemy_positions.size():
+	if _enemy_count >= _enemy_positions.size() or _snapshot_next_entity_id <= 0 or _snapshot_next_entity_id == 9223372036854775807:
 		return false
 	var enemy := _enemy_data(kind)
 	_pool_borrow_buffer.clear()
@@ -440,6 +446,8 @@ func _spawn_enemy(kind: int, spawn_position: Vector2) -> bool:
 		_spatial_grid.call("remove", grid_handle)
 		_enemy_pool.call("release", borrow_id)
 		return false
+	_snapshot_entity_ids[_enemy_count] = _snapshot_next_entity_id
+	_snapshot_next_entity_id += 1
 	_enemy_positions[_enemy_count] = spawn_position
 	_enemy_hp[_enemy_count] = float(enemy["hp"])
 	_enemy_kind[_enemy_count] = kind
@@ -604,6 +612,7 @@ func _remove_enemy(index: int) -> bool:
 		return false
 	_enemy_count -= 1
 	if index != _enemy_count:
+		_snapshot_entity_ids[index] = _snapshot_entity_ids[_enemy_count]
 		_enemy_positions[index] = _enemy_positions[_enemy_count]
 		_enemy_hp[index] = _enemy_hp[_enemy_count]
 		_enemy_kind[index] = _enemy_kind[_enemy_count]
@@ -655,7 +664,7 @@ func _update_boss_schedule(elapsed: float, player_position: Vector2) -> bool:
 	if not boss_enabled or boss_defeated:
 		return true
 	if boss_spawn_count == 0 and elapsed >= 720.0:
-		var offset := Vector2(get_viewport_rect().size.x * 0.5 + float(_boss["radius"]) + 65.0, 0.0)
+		var offset := Vector2(_spawn_viewport_size.x * 0.5 + float(_boss["radius"]) + 65.0, 0.0)
 		if not _spawn_enemy(ENEMY_BOSS, player_position + offset):
 			return false
 	if _ring_pending:

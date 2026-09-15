@@ -1,25 +1,30 @@
 # InputSystem（输入系统）
 
-> **Status**: In Review / Re-review Pending — 2026-09-11 clean-context full re-review verdict `BLOCKED / XL`（至少 `MAJOR REVISION NEEDED / XL`）；当前不得宣称 implementation-ready 或 battle_ready
+> **Status**: In Review — 2026-09-11 fresh senior：STEAM_PC R3–R8局部APPROVED WITH ADVISORIES，R1/R2本地回归CLOSED；极小deadzone下溢P3、完整ABI/Windows/性能门OPEN，battle_ready=false。详见production/playtest-evidence/2026-09-11-pc-input-r3-r8.md。
 > **Owner**: ux-designer + gameplay-programmer
-> **Last Updated**: 2026-09-11 — 三份真实specialist报告经fresh creative-director综合；Steam/mobile profile、生产ABI/routing/lifecycle及平台证据仍阻断
+> **Last Updated**: 2026-09-11 — 本轮修复与独立局部复审完成：profile99、Meta134、reentry71，六界面×两尺寸图形139 checks通过；全量26脚本25PASS/1图形SKIP。
 > **Depends on**: GameRoot & Scene Flow（Re-review Pending，phase/barrier与persistent root Window物理输入gate设计契约已同步）、Godot 4.7.1 `VirtualJoystick` / `Viewport.gui_disable_input`、项目 InputMap
 > **Downstream**: PlayerController（多轮整改后Full Re-review Pending）、BattleUI（Designed / Full Review Pending）
 > **Implements Pillar**: ① 移动躲避+自动御剑+功法进化的爽快度（移动手感）
 
-## Summary
+## Summary — MOBILE_TOUCH
 
 InputSystem 是本项目唯一的**战斗移动输入路径**。MVP 使用 Godot 4.7.1 内置 `VirtualJoystick` 的 Dynamic 模式和四个专用、无 InputMap event binding 的 action，将单拇指拖动转换为二元移动方向（停止或满速），再写入预分配 `MovementIntentCarrier` 供 PlayerController 在同一 `MOVEMENT_COMMIT` phase 消费。普通暂停时，InputSystem 在 pause barrier 冻结前关闭 gameplay gate、开启覆盖完整movement rect且由Host唯一持有的typed new-press shield、释放四个 action 并原子清零 carrier，但不冒充已取消内置节点私有的 touch claim；已归属VJ的旧 movement touch仍按Godot touch-focus路由终止事件，暂停期间由shield接收的新movement touch也必须matching release/cancel后才能允许resume开放movement ingress。`callbacks_armed`只表达adapter生命周期，`runtime_ingress_armed`只表达ACTIVE movement/VJ新press写入权，独立的`shield_bank_service_enabled`只在曾进入ACTIVE后的LOCK_PENDING/FROZEN/RESUME_LOCKED服务consumer-closed touch ownership；三者不得互相替代。resume事务期间新落入shield的合法触点只会使事务在安全边界回Paused或完成已不可逆publish后无lease等待终止，不得升级为technical fault；回Paused时保留唯一resume intent，terminal后自动单次重试且不重复choice effect。每个resume attempt固定捕获input/background revision；不可逆点后的publish、cleanup、held-drain与ACTIVE提交都必须复核该快照，新invalidation只能在资源收敛后进入fault，不能被激活尾段清除。最终激活采用persistent root Window物理屏障协议：项目bootstrap在BOOT冻结Input accumulated=false、只读确认ProjectSettings agile=false，并在任何项目input target激活前一次性flush历史buffer，避免全局Input缓冲把gate-held期间到达的事件延迟到物理开放后；GameRoot再按`PRE_ACQUIRE→SET_TRUE_IN_FLIGHT→GATE_HELD→reasoned release`矩阵独占persistent root Window。setter-in-flight时合法ScreenTouch由shield containment：loading只PREACTIVE_DISCARD，resume按现有FSM记录held并由first observer回drain；只有true setter返回后的`GATE_HELD`区间保证Viewport零投递。Input与GameRoot完成局部ACTIVE提交后，最终`gui_disable_input=false`才是唯一物理开放点。BATTLE_LOADING把callbacks连接、shield service与runtime ingress开放分离，并使用同一Viewport阶段矩阵完成`IDLE→ACTIVE`；加载期touch只丢弃、不形成held或跨ACTIVE晋升。APP_BACKGROUND 不依赖系统补发 release：GameRoot 在任何 foreground gameplay tick 前要求 `VirtualJoystickHost` 重建其唯一内置节点、推进 `gesture_epoch`并保持 carrier 为 ZERO；每个新的background revision都必须由当时最新的readiness确认，恢复后的下一次 OS press 才是 fresh movement press。
 
 Meta UI 的keyboard/mapped-gamepad导航是独立的app-root presenter输入域，只能按八行`MetaUiInputActionManifestV1`生成typed UI command，永不写`MovementIntentCarrier`。因此“raw gamepad不影响战斗移动”不等于“项目不支持gamepad UI”。
 
-### Steam-first active profile（2026-09-10）
+### Release profile routing（ADR-0005，2026-09-11）
 
-当前正式生产目标是 Steam PC（Windows 优先）。PC 战斗 profile 使用 `move_left/right/up/down` 四个 InputMap action：键盘 WASD 与映射后的手柄左摇杆统一由 InputSystem 采样并写入同一 `MovementIntentCarrier`；触摸 profile 的 `touch_move_left/right/up/down` 继续保留为空事件 action，作为 Android/iOS/小游戏后续适配入口。下文明确写“仅触摸”“portrait”或“键盘/gamepad不得改变movement carrier”的条款，若未特别标注 Steam profile，均属于移动端 future-port 合同，不构成 Steam 首发阻断条件。
+| Profile | 权威规格 | 实例/来源 | 适用验收 |
+| --- | --- | --- | --- |
+| STEAM_PC v1 / active | [input-steam-pc.md](input-steam-pc.md)全部八章、PC01–10 | keyboard-only move actions + 独立mapped left stick，0.20径向死区；不创建VJ | PC01–09本地范围；PC10 Windows物理设备 |
+| MOBILE_TOUCH / future-port | 本文各标记MOBILE_TOUCH章节、F1/F2及IS系列AC | VJ→empty touch actions、shield、touch ordering与safe geometry | IS1–30（含后缀AC）、Android/iOS及native a11y；BLOCKED-FUTURE-PORT |
+
+PC不通过移动端F1 claim gate或借用VJ generation；carrier finite/unit/tick规则仍共用。GameRoot/Player正式七phase与持久identity继续独立追踪。
 
 > **Quick reference** — Layer: `Foundation` · Priority: `MVP` · Key deps: `GameRoot & Scene Flow, Godot VirtualJoystick, InputMap`
 
-## Overview
+## Overview — MOBILE_TOUCH
 
 玩家在竖屏设备interactive safe viewport下方45%的移动输入区内，用左手或右手单拇指按下并拖动 Dynamic 虚拟摇杆；所有攻击和法术自动释放，无普攻、闪避或主动大招键。内置 `VirtualJoystick` 是四个专用 action `touch_move_left/right/up/down` 的唯一生产 writer；四个 action 必须存在但 event list 为空，生产配置关闭 mouse-to-touch emulation，项目其他代码不得对其调用 `Input.action_press`。`VirtualJoystick.deadzone_ratio` 是唯一 deadzone owner；`Input.get_vector(..., deadzone=0.0)` 不再施加第二层 deadzone。InputSystem 每个 `MOVEMENT_COMMIT` tick 读取 action vector，归一化后写 carrier，不读取不存在的 `VirtualJoystick.output/input_vector` 公共属性，也不重建 thumb/origin 像素公式。
 
@@ -42,7 +47,7 @@ InputSystem 同时参加 `POST_DEFERRED_BARRIER`：GameRoot latch pause intent �
 
 allowed TopStates对八行均为`HOME|PREP|PRE_ACTIVE_CHOICE|BATTLE_ACTIVE|BATTLE_PAUSED|SETTLEMENT|CONTROLLED_FAULT`；在`BATTLE_ACTIVE`仅允许`ACTIVATE_FOCUSED`命中`7001/BATTLE_ACTIVE_PAUSE`，其余Meta action只能产生0业务命令并仍须drain。active presenter仍按逐节点manifest验证target/enabled/action；PRE_ACTIVE_CHOICE的BACK节点可读但disabled并产生0 business command。analog stick必须先经Godot InputMap deadzone与数字化action映射；未经mapping的raw axis为0业务命令。八行缺失/重复/额外binding、`DirectionalFocusNeighborManifestV1`缺失/不匹配或任何row写movement action/carrier均`INVALID_INPUT_MAP`。方向焦点必须引用ADR-0001的variant级canonical manifest、`algorithm_version`与golden，不得由presenter或Godot自动猜测。 同一screen/layout generation内，每个OS/Godot event先取得checked `input_event_id`；presenter的`UiActivationGateV1={screen_generation,layout_generation,node_id,accepted_command_id}`只接受首个未消费ACTIVATE/BACK/INCREMENT/DECREMENT，直到owner reducer消费并推进command ID。keyboard/gamepad/touch/native accessibility各自是独立事件；只有相同event ID或相同accepted command ID才视为duplicate，禁止按“同一帧”误合并两个真实玩家动作。
 
-## Player Fantasy
+## Player Fantasy — MOBILE_TOUCH
 
 **玩家幻想：手指即身法。**
 
@@ -55,7 +60,7 @@ allowed TopStates对八行均为`HOME|PREP|PRE_ACTIVE_CHOICE|BATTLE_ACTIVE|BATTL
 3. **精准是方向与时机**：MVP 不提供模拟慢速；analog/hysteresis 仅作为灰盒比较项，不进入当前公开契约。
 4. **整 tick hitch 不是 selective skip**：若整个 physics tick 未运行，InputSystem 与 PlayerController 都不运行；恢复后的首个 tick 必须采最新 action 状态。系统不再定义“只跳过 InputSystem”的虚构路径。
 
-## Detailed Rules
+## Detailed Rules — MOBILE_TOUCH
 
 ### Core Rules
 
@@ -211,7 +216,7 @@ func clear(tick_revision: int) -> void:
 | `TERMINATED` | 任意reason | `WRONG_STATE` | 零修改，保持TERMINATED |
 | 其他state×reason组合 | 任意直接调用 | `WRONG_STATE` | 零修改；不得由InputSystem推断或补写GameRoot phase |
 
-## Formulas
+## Formulas — MOBILE_TOUCH
 
 ### F1 — Action Vector 到 Movement Intent
 
@@ -349,7 +354,7 @@ deadzone_radius = clampzone_radius × deadzone_ratio
 
 **F2 checked precondition / oracle**：先验证所有Rect/Transform输入finite、`Rect2i`采用半开区间`[position,end)`且display/window交集非空，再验证变换行列式非零并调用`checked_affine_inverse`；任何非finite、不可逆或超出支持域的旋转/剪切均在读取四角前返回`INVALID_CONFIG`。`transform_axis_aligned_insets`不得把旋转/剪切后的Vector4i边界伪装成local轴向量；无法证明等价时同样返回`INVALID_CONFIG`。四角只在这些前置通过后转换，最终还必须满足finite、axis-aligned、非退化、roundtrip tolerance与inset后包含关系。
 
-## Edge Cases
+## Edge Cases — MOBILE_TOUCH
 
 ### A. 输入值与配置
 
@@ -412,13 +417,13 @@ Input role向`OwnerOrchestrationCapacityContributionManifest`提供以下实际�
 
 0表示Input自身不产生GameRoot lifecycle/fact/closure/choice row；touch bank与movement carrier使用本GDD私有预分配容量，不得混入中央aggregate。未来若Input承担blocking choice owner，必须先修订本行而非直接调高Config。
 
-## Dependencies
+## Dependencies — MOBILE_TOUCH
 
 ### 上游依赖
 
 - **GameRoot & Scene Flow**（Draft，GDD exists）：已反向登记InputSystem在MOVEMENT_COMMIT先于PlayerController、callbacks arm与runtime ingress开放分离、PREACTIVE_DISCARD与BATTLE_LOADING lifecycle abort、latched intent后先cancel再请求Grid pause、paused fault service、per-background required/acked readiness、RESUME_PREPARING held-drain/emergency cleanup，以及foreground gameplay前完成background rebuild的设计契约；GameRoot还是Input accumulated/agile buffering bootstrap与persistent root Window gate的唯一owner，按`PRE_ACQUIRE→SET_TRUE_IN_FLIGHT→GATE_HELD→Input局部ACTIVE→GameRoot局部ACTIVE→reasoned release`阶段矩阵覆盖loading与resume，只有已持gate的failure才保持true至battle input teardown及PREP/ControlledFault/Home UI接管；实现与集成证据仍待建立。
 - **Godot 4.7.1 VirtualJoystick**（engine）：公开能力为 Dynamic模式、`deadzone_ratio`、四 action 属性、pressed/released等信号；`InputEventScreenTouch.is_canceled()`在VJ非pressed分支触发release/reset；无公开 `output/input_vector` 属性。
-- **Project InputMap / Project Settings**（production asset已建立 PC 基线；移动端扩展仍待建立）：Steam profile 的 `move_left/right/up/down` action 具有 WASD keyboard events，并由 GameRoot 在 BOOT 注册 mapped left-stick events；mobile profile 的四个 `touch_move_*` action 仍存在且 event list为空、deadzone=0。mouse-to-touch emulation关闭，Steam 使用 landscape/stretch 基线，移动端另有 portrait/safe-area 适配；正式`project.godot`必须固定`input_devices/buffering/agile_event_flushing=false`，BOOT由GameRoot唯一设置/读取Input accumulated=false并在所有项目input target激活前一次性flush历史buffer，保存readback、调用计数与唯一writer静态审计。`production/input-vertical-slice/project.godot`只作为harness，不满足本生产资产门。
+- **Project InputMap / Project Settings**（production asset已建立 PC 基线；移动端扩展仍待建立）：Steam profile 的 `move_left/right/up/down` action 具有 WASD keyboard events，mapped left-stick由PcInputSource独立采样，BOOT不向move_*注册轴事件；mobile profile 的四个 `touch_move_*` action 仍存在且 event list为空、deadzone=0。mouse-to-touch emulation关闭，Steam 使用 landscape/stretch 基线，移动端另有 portrait/safe-area 适配；正式`project.godot`必须固定`input_devices/buffering/agile_event_flushing=false`，BOOT由GameRoot唯一设置/读取Input accumulated=false并在所有项目input target激活前一次性flush历史buffer，保存readback、调用计数与唯一writer静态审计。`production/input-vertical-slice/project.godot`只作为harness，不满足本生产资产门。
 - **SupportedTouchEventOrderingManifestV1**（schema已建立于`design/registry/manifests/supported-touch-event-ordering-v1.yaml`，平台值/真机证据仍BLOCKED）：冻结max concurrent touch、同index顺序、release/cancel/lifecycle终止路径、navigation mode与residual gesture insets；任何平台值为null、manifest缺字段或目标设备违反即不具备implementation-ready，且不允许猜默认容量。
 - **Config/Data System**（Draft，可选未来依赖）：schema v1尚无 input config；当前冻结值由 InputSystem/BattleUI场景常量提供，待 schema 扩展后迁移，不阻塞 MVP 实现。
 
@@ -444,7 +449,7 @@ Input role向`OwnerOrchestrationCapacityContributionManifest`提供以下实际�
 - VJ rebuild是一次identity transaction：consumer closed、carrier/actions/pending-release clean后，构造并验证离树candidate，断开旧bound Callable并使旧epoch不可命中，checked推进epoch/revision，登记唯一新节点与signals，只有全部后置条件通过才允许同revision幂等OK；任一中间失败不得以counter/epoch递增冒充replacement成功。
 - 状态与错误oracle统一：F1先判FSM/claim gate，F2先判finite/非空Rect/可逆变换/axis-aligned inset；`INVALID_CONFIG`、`INVALID_INPUT_MAP`与`JOYSTICK_REBUILD_FAILED`按上文固定边界，所有API仍保持first-error precedence与fail-closed。
 
-## Tuning Knobs
+## Tuning Knobs — MOBILE_TOUCH
 
 ### 系统拥有
 
@@ -465,13 +470,13 @@ Input role向`OwnerOrchestrationCapacityContributionManifest`提供以下实际�
 
 - `out`、`action_vector`、carrier字段和 `p95≤50ms` 下游停步目标均为契约或派生值，不得通过运营配置热改。
 
-## Visual/Audio Requirements
+## Visual/Audio Requirements — MOBILE_TOUCH
 
 InputSystem 不直接产生 VFX/SFX。Dynamic 摇杆只在触摸时显示：base ring alpha `0.25–0.35`，thumb alpha `0.5–0.7`，透明 hit region 不渲染；直径按F2计算。移动VFX归PlayerController/VFX；按钮与选择音归BattleUI/Audio。
 
 最高密度怪潮、毒区和 Boss 预警截图中，即使摇杆可见也必须能辨识危险形状与方向；不能仅凭 alpha 数值宣称无遮挡。
 
-## UI Requirements
+## UI Requirements — MOBILE_TOUCH
 
 - **移动区**：interactive safe viewport下方45%，排除顶部HUD、暂停按钮、display safe-area与residual navigation gesture inset以及任何活动bottom sheet；左右手均可在同一区域起按。Display safe rect先与window client rect求交，四角与residual inset再依次转为window client physical、viewport logical与Host local Canvas；所有区域与触点只在最后的Host local坐标系比较。
 - **Dynamic 摇杆**：press 时在合法起按点建立 origin，release 后消失；不使用 Fixed/Following，不要求 handedness 设置或镜像配置。
@@ -479,7 +484,7 @@ InputSystem 不直接产生 VFX/SFX。Dynamic 摇杆只在触摸时显示：base
 - **选择 bottom sheet**：三选一为三条纵向choice row，整行可点击；每行热区高度为 `max(56 logical px, safe_height×0.044)`，相邻净间距为 `max(8 logical px, safe_height×0.00625)`，面板高度不超过safe viewport 50%，底部保留safe-area inset。内容超高时行内文字最多三行后省略，详情由同一行展开层承接；不得缩小热区。二选一沿用两条同型row。
 - **单手任务**：左手与右手各自单持设备时，移动、暂停、选择、恢复移动均不得换握或借助另一只手。
 
-## Acceptance Criteria
+## Acceptance Criteria — MOBILE_TOUCH
 
 > `[L]`=Logic BLOCKING，`[I]`=Integration BLOCKING，`[P]`=Performance BLOCKING，`[U]`=UX BLOCKING，`[E]`=EVIDENCE ONLY。设计契约不等于已执行证据；没有min-spec真机时不得把`[E]`记录写成pass。
 
@@ -550,9 +555,9 @@ InputSystem 不直接产生 VFX/SFX。Dynamic 摇杆只在触摸时显示：base
   - **第四轮GameRoot公共义务同步**：GameRoot从BOOT至应用退出保持同一identity，且是`SceneTree.paused`唯一writer；pause barrier须在Input FROZEN后`set_pause(true)`并readback。每个BATTLE_PAUSED/RESUME_PREPARING pump iteration固定先`service_pending_input_fault`，再读typed input/background/geometry revisions、reason completion与held，最后决定attempt。attempt在prepare/arm/首次publish前/三次publish的相邻checkpoint之间/cleanup后/held-drain每iteration/unpause返回/Input ACTIVE前/Viewport release前复核捕获快照；点前abort回Paused，点后invalidation收敛fault，点后held保持top state RESUME_PREPARING且substate=RESUME_HELD_DRAIN。GameRoot禁止注册或镜像Window/Viewport geometry事件源，只消费本系统typed revision。以上是调用与可观察后置条件，不复制Input私有FSM。
 - **IG-IS2 PlayerController**：在clean context独立full re-review当前Player GDD；实现后验证四字段carrier/phase-context identity边界、float64计算→real_t32 readback、release→ZERO `p95≤50ms`协议及AC-IS28灰盒。当前静态传播不等于integration-ready。
 - **IG-IS3 BattleUI**：GDD已建立并选定持久全屏`ChoiceTouchDrain`；静态冻结UI→shield→VJ、每次操作即时读取blocked predicate、旧触点terminal、1/2/3/4行与manual/background/geometry旅程。仍须用平台manifest定容touch bank、接入GameRoot reason完成门，并以真实mouse_filter/accept_event trace、各设备/左右手/动态字体证据关闭本gate；作者文档不等于运行通过。
-- **IG-IS4 Project asset**：Steam profile 已建立`project.godot`/InputMap与BattleUI scene，当前首发基线为landscape base logical canvas=`1280×720`、stretch mode=`canvas_items`、aspect=`expand`，并满足交互UI→shield→VJ输入路由的CanvasLayer/scene-tree order；WASD与mapped left-stick movement action已加入独立PC profile，移动端portrait `720×1280` 与safe-area/真机证据另列 future-port。bootstrap证据证明Input accumulated/agile buffering在battle input节点前均冻结为false且本局无漂移；保存Display safe rect→window client→viewport→Host local的identity/1.1/non-1.0 stretch、1080p/4K、非全屏/非零display origin与precision-aware roundtrip fixture后，AC-IS3/7/16资产审计全部通过。
+- **IG-IS4 Project asset**：STEAM_PC后置条件：landscape logical canvas=`1280×720`、`canvas_items/expand`；move_*仅WASD键盘事件，mapped left-stick独立采样；生产active VJ=0、touch bank=0，PC UI由GameRoot Meta dispatcher处理，不经过Shield/VJ。bootstrap需在battle节点前冻结accumulated/agile=false。MOBILE_TOUCH future-port后置条件另列：交互UI→shield→VJ路由、portrait `720×1280`、safe-area及Display→window→viewport→Host坐标证据，含identity/1.1/non-1.0 stretch、1080p/4K/非零origin与roundtrip；这些移动证据不由PC静态资产推断通过。
 
-## Open Questions
+## Open Questions — MOBILE_TOUCH
 
 已冻结：内置VirtualJoystick、Dynamic模式、四个无event binding专用actions、唯一deadzone owner、carrier归GameRoot且trusted void方法仅由InputSystem私有commit helper调用、MOVEMENT_COMMIT顺序、唯一GameRoot ALWAYS及physics/paused callback职责、Input内部`safe_close_tick_revision`且无latch service真正no-op、GameRoot typed state publish与choice/manual/lifecycle pause reason→幂等resume latch矩阵、不可逆点前resume-abort rollback/既有latch自动单次重试/点后无lease held-drain、Host唯一持有typed/ALWAYS/full-rect shield及按manifest定容的稀疏held-touch bank FSM、paused fault必达observer、Godot callback void+latch边界、带epoch/generation的release/cancel顺序、支持平台同index与terminal事件manifest边界、APP_BACKGROUND/safe geometry invalidation由Host以离树candidate重建节点+推进epoch、geometry幂等需fingerprint与完整canonical bits双重相等、active节点几何不可变、effective filter/accept-event行为验证、合法ScreenTouch语义、display→window client→viewport→Host local转换与precision-aware容差/interactive safe viewport比例尺寸、Host只读choice gate、纵向bottom sheet与左右手单拇指目标、AC-IS28 timeout公式与owner。
 

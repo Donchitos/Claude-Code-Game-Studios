@@ -1,0 +1,20 @@
+{
+	"allocation_verified": false,
+	"amortized_p50_us": 2.2734375,
+	"amortized_p95_us": 2.515625,
+	"amortized_p99_us": 3.1953125,
+	"cpu": "Apple M4",
+	"engine_static_after_bytes": 124180738,
+	"engine_static_before_bytes": 124163442,
+	"godot": "4.7.1-stable (official)",
+	"input_samples": 79360,
+	"mapped_device_count": 0,
+	"passed_execution": true,
+	"physical_input_verified": false,
+	"platform": "macOS",
+	"player_consumptions": 79360,
+	"sample_batches": 600,
+	"scope": "idle PC poll + context lease + Player consume; batched amortized CPU only",
+	"ticks_per_batch": 128,
+	"warmup_batches": 20
+}

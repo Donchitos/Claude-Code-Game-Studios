@@ -70,13 +70,20 @@ var _progression_bootstrap_valid: bool = true
 var save_system: Node
 var transient_profile := false
 var progression_system: Node
+var window_focused := true
+var focus_revision := 0
+var _resume_in_progress := false
 
 
 func _ready() -> void:
+	transient_profile = transient_profile or "--input-validation" in OS.get_cmdline_user_args()
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	_install_production_theme()
-	_install_pc_gamepad_bindings()
+	PcMetaInput.install()
+	get_window().focus_exited.connect(_on_window_focus_exited)
+	get_window().focus_entered.connect(_on_window_focus_entered)
+	Input.joy_connection_changed.connect(_on_joy_connection_changed)
 	save_system = SaveSystem.new()
 	save_system.name = "SaveSystem"
 	add_child(save_system)
@@ -107,12 +114,9 @@ func _exit_tree() -> void:
 		root_viewport.gui_disable_input = false
 
 func _physics_process(delta: float) -> void:
-	if state != State.BATTLE_ACTIVE or current_battle == null or _transition_pending:
+	if state != State.BATTLE_ACTIVE or current_battle == null or _transition_pending or not window_focused or _resume_in_progress:
 		return
 	physics_tick += 1
-	if not current_battle.run_input_phase(physics_tick):
-		_enter_fault("INPUT_MOVEMENT_COMMIT_FAILED")
-		return
 	if not current_battle.run_gameplay_phase(delta):
 		_enter_fault("BATTLE_TICK_FAILED")
 		return
@@ -125,20 +129,23 @@ func _physics_process(delta: float) -> void:
 		_complete_battle_end.call_deferred(current_battle.victory)
 
 func _process(_delta: float) -> void:
+	if current_battle != null and state in [State.BATTLE_ACTIVE, State.BATTLE_PAUSED, State.RESUME_PREPARING]:
+		current_battle.battle_ui.set_neutral_waiting(current_battle.input_system.neutral_required)
 	if current_battle == null or (state != State.BATTLE_PAUSED and state != State.RESUME_PREPARING):
 		return
 	var input_status := current_battle.service_pending_input_fault(physics_tick)
 	if input_status != ProductionInputSystem.Status.OK:
 		_enter_fault("INPUT_CALLBACK_FAILURE_%d" % input_status)
 
-func _unhandled_input(event: InputEvent) -> void:
-	if event is InputEventKey and event.pressed and not event.echo:
-		if event.keycode == KEY_P and state == State.BATTLE_ACTIVE:
-			request_pause(false)
-		elif event.keycode == KEY_R and state == State.BATTLE_PAUSED:
-			request_resume()
-
 func _input(event: InputEvent) -> void:
+	var action := PcMetaInput.action_for(event)
+	for bound_action: StringName in PcMetaInput.ROWS:
+		if event.is_action(bound_action, true):
+			# Rejected sources, releases and echoes must not fall through to Control.
+			get_viewport().set_input_as_handled()
+			if action != &"" and window_focused and not viewport_gate_held and not _resume_in_progress:
+				_dispatch_meta(action)
+			return
 	if not _touch_trace_enabled or _touch_trace_count >= 256:
 		return
 	if event is InputEventScreenTouch:
@@ -156,26 +163,69 @@ func _install_production_theme() -> void:
 	production_theme.default_font = cjk_font
 	theme = production_theme
 
-func _install_pc_gamepad_bindings() -> void:
-	var bindings := {
-		&"move_left": [JOY_AXIS_LEFT_X, -1.0],
-		&"move_right": [JOY_AXIS_LEFT_X, 1.0],
-		&"move_up": [JOY_AXIS_LEFT_Y, -1.0],
-		&"move_down": [JOY_AXIS_LEFT_Y, 1.0],
-	}
-	for action: StringName in bindings:
-		if not InputMap.has_action(action):
-			InputMap.add_action(action)
-		var axis := InputEventJoypadMotion.new()
-		axis.axis = bindings[action][0]
-		axis.axis_value = bindings[action][1]
-		var already_bound := false
-		for event: InputEvent in InputMap.action_get_events(action):
-			if event is InputEventJoypadMotion and event.axis == axis.axis and is_equal_approx(event.axis_value, axis.axis_value):
-				already_bound = true
-				break
-		if not already_bound:
-			InputMap.action_add_event(action, axis)
+func _focus_buttons() -> Array[Button]:
+	if current_battle != null:
+		return current_battle.battle_ui.focus_buttons()
+	var buttons: Array[Button] = []
+	if current_page is ProductionHomeScreen:
+		buttons.append(current_page._start_button)
+		for button: Button in current_page._branch_buttons:
+			if not button.disabled:
+				buttons.append(button)
+	elif current_page is ProductionSettlementScreen:
+		buttons.assign([current_page._retry, current_page._home])
+	return buttons
+
+func _focus_first() -> void:
+	var buttons := _focus_buttons()
+	if not buttons.is_empty():
+		buttons[0].grab_focus()
+
+func _dispatch_meta(action: StringName) -> void:
+	if action == &"pc_pause":
+		if state == State.BATTLE_ACTIVE:
+			current_battle.battle_ui._on_battle_active_pause_pressed()
+		return
+	if action == &"pc_resume" or action == &"ui_back":
+		if state == State.BATTLE_PAUSED and not current_battle.pending_upgrade:
+			request_resume()
+		elif action == &"ui_back" and state == State.SETTLEMENT:
+			request_home.call_deferred()
+		return
+	if action in [&"ui_increment", &"ui_decrement"]:
+		return
+	var buttons := _focus_buttons()
+	if buttons.is_empty():
+		return
+	var focused_control := get_viewport().gui_get_focus_owner()
+	var index := buttons.find(focused_control)
+	if action == &"ui_activate":
+		if index < 0:
+			buttons[0].grab_focus()
+			return
+		buttons[index].pressed.emit()
+		return
+	var step := -1 if action in [&"ui_focus_previous", &"ui_focus_left"] else 1
+	index = 0 if index < 0 else posmod(index + step, buttons.size())
+	buttons[index].grab_focus()
+
+func _on_window_focus_exited() -> void:
+	window_focused = false
+	focus_revision += 1
+	if current_battle != null:
+		current_battle.input_system.set_focused(false)
+		if state == State.BATTLE_ACTIVE and not _resume_in_progress:
+			request_pause(false)
+
+func _on_window_focus_entered() -> void:
+	window_focused = true
+	focus_revision += 1
+	if current_battle != null:
+		current_battle.input_system.set_focused(true)
+
+func _on_joy_connection_changed(_device: int, _connected: bool) -> void:
+	if current_battle != null:
+		current_battle.input_system.invalidate_sources()
 
 ## Starts a production battle while retaining GameRoot and the root Viewport.
 ## Example: `await game_root.request_start_battle(1234, false)`.
@@ -195,6 +245,8 @@ func request_start_battle(seed: int = 0, use_smoke_mode: bool = false) -> Status
 	get_tree().paused = false
 	if release_viewport_input_gate(ACTIVATION_SUCCESS) != Status.OK:
 		return _enter_fault("START_GATE_RELEASE_FAILED")
+	if not window_focused:
+		_on_window_focus_exited()
 	return Status.OK
 
 ## Pauses the active battle after input cancellation. Example: `game_root.request_pause(false)`.
@@ -202,10 +254,10 @@ func request_pause(for_upgrade: bool = false) -> Status:
 	if state != State.BATTLE_ACTIVE or current_battle == null:
 		return Status.WRONG_STATE
 	state = State.PAUSE_PENDING
-	if acquire_viewport_input_gate() != Status.OK:
-		return _enter_fault("PAUSE_GATE_ACQUIRE_FAILED")
 	if not current_battle.lock_for_pause(physics_tick):
 		return _enter_fault("PAUSE_INPUT_LOCK_FAILED")
+	if acquire_viewport_input_gate() != Status.OK:
+		return _enter_fault("PAUSE_GATE_ACQUIRE_FAILED")
 	get_tree().paused = true
 	state = State.BATTLE_PAUSED
 	if for_upgrade:
@@ -214,6 +266,7 @@ func request_pause(for_upgrade: bool = false) -> Status:
 		current_battle.battle_ui.show_pause()
 	if release_viewport_input_gate(ACTIVATION_SUCCESS) != Status.OK:
 		return _enter_fault("PAUSE_GATE_RELEASE_FAILED")
+	_focus_first()
 	return Status.OK
 
 ## Sole owner/reducer for BattleActivePauseCommandV1. The presenter and bridge
@@ -242,19 +295,58 @@ func submit_battle_active_pause_command(command: Dictionary) -> Status:
 ## Resumes only after the battle modal and old carrier are cleared.
 ## Example: `game_root.request_resume()`.
 func request_resume() -> Status:
-	if state != State.BATTLE_PAUSED or current_battle == null or current_battle.pending_upgrade:
+	if _resume_in_progress or state != State.BATTLE_PAUSED or current_battle == null or current_battle.pending_upgrade or not window_focused:
 		return Status.WRONG_STATE
+	_resume_in_progress = true
+	var result := _resume_battle(current_battle, focus_revision)
+	_resume_in_progress = false
+	return result
+
+func _resume_battle(battle: ProductionBattleScope, resume_revision: int) -> Status:
 	state = State.RESUME_PREPARING
 	if acquire_viewport_input_gate() != Status.OK:
 		return _enter_fault("RESUME_GATE_ACQUIRE_FAILED")
-	current_battle.battle_ui.hide_modal()
-	if not current_battle.resume():
-		return _enter_fault("RESUME_INPUT_OPEN_FAILED")
+	if not _resume_valid(battle, resume_revision, State.RESUME_PREPARING):
+		return _cancel_resume(battle)
 	get_tree().paused = false
+	if not _resume_valid(battle, resume_revision, State.RESUME_PREPARING):
+		return _cancel_resume(battle)
+	# Keep Input frozen through visibility and focus callbacks.
+	battle.battle_ui.hide_modal()
+	if not _resume_valid(battle, resume_revision, State.RESUME_PREPARING):
+		return _cancel_resume(battle)
+	if not battle.resume():
+		return _enter_fault("RESUME_INPUT_OPEN_FAILED")
 	state = State.BATTLE_ACTIVE
 	if release_viewport_input_gate(ACTIVATION_SUCCESS) != Status.OK:
 		return _enter_fault("RESUME_GATE_RELEASE_FAILED")
+	if not _resume_valid(battle, resume_revision, State.BATTLE_ACTIVE):
+		return _cancel_resume(battle)
 	return Status.OK
+
+func _resume_valid(battle: ProductionBattleScope, revision: int, expected_state: State) -> bool:
+	return is_instance_valid(battle) and current_battle == battle and state == expected_state \
+			and window_focused and focus_revision == revision and not battle.terminal_pending
+
+func _cancel_resume(battle: ProductionBattleScope) -> Status:
+	# A callback may have ended/replaced the battle; never restore its retired owner.
+	if not is_instance_valid(battle) or current_battle != battle \
+			or state not in [State.RESUME_PREPARING, State.BATTLE_ACTIVE, State.BATTLE_PAUSED]:
+		return Status.WRONG_STATE
+	if battle.state == ProductionBattleScope.State.ACTIVE and not battle.lock_for_pause(physics_tick):
+		return _enter_fault("RESUME_CANCEL_INPUT_LOCK_FAILED")
+	if battle.state != ProductionBattleScope.State.PAUSED:
+		return _enter_fault("RESUME_CANCEL_SCOPE_NOT_PAUSED")
+	state = State.BATTLE_PAUSED
+	if not viewport_gate_held and acquire_viewport_input_gate() != Status.OK:
+		return _enter_fault("RESUME_CANCEL_GATE_FAILED")
+	get_tree().paused = true
+	battle.battle_ui.show_pause()
+	if current_battle != battle or state != State.BATTLE_PAUSED:
+		return Status.WRONG_STATE
+	if release_viewport_input_gate(ACTIVATION_SUCCESS) != Status.OK:
+		return _enter_fault("RESUME_CANCEL_GATE_RELEASE_FAILED")
+	return Status.WRONG_STATE
 
 ## Replaces only the battle child and preserves persistent-root identities.
 ## Example: `await game_root.request_replace_battle(5678, true)`.
@@ -263,6 +355,7 @@ func request_replace_battle(seed: int = 0, use_smoke_mode: bool = false) -> Stat
 		return Status.WRONG_STATE
 	_transition_pending = true
 	state = State.BATTLE_LOADING
+	current_battle.input_system.teardown()
 	if acquire_viewport_input_gate() != Status.OK:
 		return _enter_fault("REPLACE_GATE_ACQUIRE_FAILED")
 	get_tree().paused = false
@@ -274,6 +367,8 @@ func request_replace_battle(seed: int = 0, use_smoke_mode: bool = false) -> Stat
 	_transition_pending = false
 	if release_viewport_input_gate(ACTIVATION_SUCCESS) != Status.OK:
 		return _enter_fault("REPLACE_GATE_RELEASE_FAILED")
+	if not window_focused:
+		_on_window_focus_exited()
 	return Status.OK
 
 ## Ends a battle and opens settlement after the frame-end destruction barrier.
@@ -333,6 +428,7 @@ func release_viewport_input_gate(reason: StringName) -> Status:
 	if root_viewport.gui_disable_input:
 		return Status.VIEWPORT_GATE_ERROR
 	viewport_gate_held = false
+	_focus_first()
 	return Status.OK
 
 func _boot() -> void:
@@ -360,6 +456,7 @@ func _boot() -> void:
 		_enter_fault("BOOT_GATE_RELEASE_FAILED")
 		return
 	boot_completed.emit()
+	_focus_first()
 	print("PRODUCTION_BOOT_OK root=%d viewport=%d state=HOME" % [root_identity, viewport_identity])
 	if "--production-smoke" in OS.get_cmdline_user_args():
 		_run_production_smoke.call_deferred()
@@ -376,12 +473,18 @@ func _create_home() -> void:
 
 func _create_battle(seed: int, use_smoke_mode: bool) -> Status:
 	battle_generation += 1
+	_accessibility_screen_generation = battle_generation
+	_last_battle_active_pause_command_id = 0
+	_last_battle_active_pause_input_event_id = 0
 	current_battle = BattleScopeScene.instantiate() as ProductionBattleScope
 	current_battle.name = "BattleScope_%03d" % battle_generation
 	page_host.add_child(current_battle)
 	var battle_config := _config.duplicate(true)
 	battle_config["progression_projection"] = progression_system.call("battle_projection")
-	if not current_battle.configure(battle_config, seed, use_smoke_mode):
+	var movement := ProductionMovementIntentCarrier.new()
+	var movement_frame := PcMovementContext.new()
+	movement_frame.battle_generation = battle_generation
+	if not current_battle.configure(battle_config, seed, use_smoke_mode, movement, movement_frame):
 		return Status.BATTLE_CREATE_ERROR
 	current_battle.battle_ui.theme = theme
 	current_battle.pause_requested.connect(_on_pause_requested)
@@ -417,6 +520,7 @@ func _detach_current_child() -> void:
 func _complete_battle_end(victory_value: bool) -> Status:
 	if current_battle == null:
 		return _enter_fault("END_WITHOUT_BATTLE")
+	current_battle.input_system.teardown()
 	if acquire_viewport_input_gate() != Status.OK:
 		return _enter_fault("END_GATE_ACQUIRE_FAILED")
 	last_result_victory = victory_value
@@ -484,6 +588,8 @@ func _on_upgrade_selected(choice: int) -> void:
 		request_resume()
 
 func _enter_fault(reason: String) -> Status:
+	if current_battle != null:
+		current_battle.input_system.teardown()
 	get_tree().paused = false
 	state = State.CONTROLLED_FAULT
 	_transition_pending = false

@@ -1,0 +1,365 @@
+content_id,content_type,name,chapter,owner,work_item,dependencies,first_available_after,description,design_status,runtime_status,art_status,audio_status,test_status,evidence,asset_key,localization_key,release_gate
+S1-O-SURVIVE,objective,守候突破,ALL,Mission Objectives,ST-S02,,START,在明示存活时段内保持生存；到达撤离窗口后完成任务，不要求每局必有Boss,PLANNED,NOT_IMPLEMENTED,USES_REFERENCES,USES_REFERENCES,NOT_RUN,,,content.s1-o-survive,R01
+S1-O-BREAK,objective,破阵,ALL,Mission Objectives,ST-S02,,START,破坏有限锚点；任务明确固定提示顺序或玩家自由选择，结合移动攻击与危险窗口,PLANNED,NOT_IMPLEMENTED,USES_REFERENCES,USES_REFERENCES,NOT_RUN,,,content.s1-o-break,R01
+S1-O-CLEANSE,objective,净化,ALL,Mission Objectives,ST-S02,,START,在若干区域维持清理窗口；受压离开可重新进入，避免一次失误全盘回退,PLANNED,NOT_IMPLEMENTED,USES_REFERENCES,USES_REFERENCES,NOT_RUN,,,content.s1-o-cleanse,R01
+S1-O-HUNT,objective,追猎,ALL,Mission Objectives,ST-S02,,START,追踪可见目标，限制其逃逸路线；目标越技术域必须恢复到合法挑战状态，不能无故判玩家失败,PLANNED,NOT_IMPLEMENTED,USES_REFERENCES,USES_REFERENCES,NOT_RUN,,,content.s1-o-hunt,R01
+S1-O-ESCORT,objective,护送,ALL,Mission Objectives,ST-S02,,START,护送自动沿短路线移动的目标；玩家接近才前进，离开停止，失败/恢复与目标HP需独立设计,PLANNED,NOT_IMPLEMENTED,USES_REFERENCES,USES_REFERENCES,NOT_RUN,,,content.s1-o-escort,R01
+S1-O-BOSS,objective,决战,ALL,Mission Objectives,ST-S02,,START,任务指定Boss死亡事实满足目标；不得将任意Boss死亡直接解释为全局或章节通关,PLANNED,NOT_IMPLEMENTED,USES_REFERENCES,USES_REFERENCES,NOT_RUN,,,content.s1-o-boss,R01
+S1-R01,region,岚壑,1,Stage & Map,L06,,START,林间顺风带会改变撤退路线,PLANNED,NOT_IMPLEMENTED,NOT_STARTED,NOT_STARTED,NOT_RUN,,asset.s1-r01,content.s1-r01,R01
+S1-S01-01,scene,断桥林道,1,Stage & Map,L06,S1-R01,START,林间顺风带会改变撤退路线,PLANNED,NOT_IMPLEMENTED,NOT_STARTED,NOT_STARTED,NOT_RUN,,asset.s1-s01-01,content.s1-s01-01,R01
+S1-S01-02,scene,风井遗址,1,Stage & Map,L06,S1-R01,START,林间顺风带会改变撤退路线,PLANNED,NOT_IMPLEMENTED,NOT_STARTED,NOT_STARTED,NOT_RUN,,asset.s1-s01-02,content.s1-s01-02,R01
+S1-CH01,chapter,第1章·岚壑,1,Campaign Flow,ST-S01,,START,找回沿途失联者，确认第一座枢纽失衡,PLANNED,NOT_IMPLEMENTED,USES_REFERENCES,USES_REFERENCES,NOT_RUN,,,content.s1-ch01,R01
+S1-C01,character,游剑客,1,Character Loadout,ST-S03,S1-A01,START,移动后首轮飞剑获得穿透窗口；持续站桩不累积，偏中距游走,PLANNED,NOT_IMPLEMENTED,NOT_STARTED,NOT_STARTED,NOT_RUN,,asset.s1-c01,content.s1-c01,R01
+S1-A01,active,巡光飞剑,1,WeaponSystem,L14,,START,穿透直线；移动寻找贯穿角度,PLANNED,NOT_IMPLEMENTED,NOT_STARTED,NOT_STARTED,NOT_RUN,,asset.s1-a01,content.s1-a01,R01
+S1-P01,passive,贯锋谱,1,SkillDraftSystem,L15,,START,穿透次数与命中衰减取舍,PLANNED,NOT_IMPLEMENTED,NOT_STARTED,NOT_STARTED,NOT_RUN,,asset.s1-p01,content.s1-p01,R01
+S1-N01,normal_enemy,岚齿兽,1,EnemySystem,L09,,START,间歇加速追击,PLANNED,NOT_IMPLEMENTED,NOT_STARTED,NOT_STARTED,NOT_RUN,,asset.s1-n01,content.s1-n01,R01
+S1-A02,active,折星短刃,1,WeaponSystem,L14,,START,回旋弹道；去程回程均可命中,PLANNED,NOT_IMPLEMENTED,NOT_STARTED,NOT_STARTED,NOT_RUN,,asset.s1-a02,content.s1-a02,R01
+S1-P02,passive,归刃诀,1,SkillDraftSystem,L15,,START,回旋回收速度,PLANNED,NOT_IMPLEMENTED,NOT_STARTED,NOT_STARTED,NOT_RUN,,asset.s1-p02,content.s1-p02,R01
+S1-N02,normal_enemy,刺蓬虫,1,EnemySystem,L09,,START,停步蓄势后散射短刺,PLANNED,NOT_IMPLEMENTED,NOT_STARTED,NOT_STARTED,NOT_RUN,,asset.s1-n02,content.s1-n02,R01
+S1-A03,active,裂岩重印,1,WeaponSystem,L14,,START,延迟落点重击；逼迫提前预测,PLANNED,NOT_IMPLEMENTED,NOT_STARTED,NOT_STARTED,NOT_RUN,,asset.s1-a03,content.s1-a03,R01
+S1-P03,passive,沉印法,1,SkillDraftSystem,L15,,START,延迟重击范围,PLANNED,NOT_IMPLEMENTED,NOT_STARTED,NOT_STARTED,NOT_RUN,,asset.s1-p03,content.s1-p03,R01
+S1-N03,normal_enemy,盘枝蜥,1,EnemySystem,L09,,START,绕侧切入封锁退路,PLANNED,NOT_IMPLEMENTED,NOT_STARTED,NOT_STARTED,NOT_RUN,,asset.s1-n03,content.s1-n03,R01
+S1-E01,elite,盘根猎首,1,Elite Enemies,L19,,START,折返冲锋后在根结处停顿,PLANNED,NOT_IMPLEMENTED,NOT_STARTED,NOT_STARTED,NOT_RUN,,asset.s1-e01,content.s1-e01,R01
+S1-B01,boss,伏岚古兽,1,BossStateMachine,L18,,S1-M01-07,追风扑袭与根区围堵,PLANNED,NOT_IMPLEMENTED,NOT_STARTED,NOT_STARTED,NOT_RUN,,asset.s1-b01,content.s1-b01,R01
+S1-M01-01,mission,风口初行,1,Campaign Flow / Mission Objectives,ST-S01;ST-S02,S1-S01-01;S1-O-SURVIVE,START,引导移动、自动攻击与首次升级,PLANNED,NOT_IMPLEMENTED,USES_REFERENCES,USES_REFERENCES,NOT_RUN,,,content.s1-m01-01,R01
+S1-M01-02,mission,拆除根钉,1,Campaign Flow / Mission Objectives,ST-S01;ST-S02,S1-S01-01;S1-O-BREAK;S1-M01-01,S1-M01-01,三个根钉错位布置，迫使离开安全直线,PLANNED,NOT_IMPLEMENTED,USES_REFERENCES,USES_REFERENCES,NOT_RUN,,,content.s1-m01-02,R01
+S1-M01-03,mission,护送采药人,1,Campaign Flow / Mission Objectives,ST-S01;ST-S02,S1-S01-01;S1-O-ESCORT;S1-M01-02,S1-M01-02,在风带间护送一名缓行目标,PLANNED,NOT_IMPLEMENTED,USES_REFERENCES,USES_REFERENCES,NOT_RUN,,,content.s1-m01-03,R01
+S1-M01-04,mission,追踪断枝兽,1,Campaign Flow / Mission Objectives,ST-S01;ST-S02,S1-S01-01;S1-O-HUNT;S1-M01-03,S1-M01-03,沿可见足迹追猎，避免被引入根区,PLANNED,NOT_IMPLEMENTED,USES_REFERENCES,USES_REFERENCES,NOT_RUN,,,content.s1-m01-04,R01
+S1-M01-05,mission,清理风井,1,Campaign Flow / Mission Objectives,ST-S01;ST-S02,S1-S01-02;S1-O-CLEANSE;S1-M01-04,S1-M01-04,两个净化区交替受压,PLANNED,NOT_IMPLEMENTED,USES_REFERENCES,USES_REFERENCES,NOT_RUN,,,content.s1-m01-05,R01
+S1-M01-06,mission,守住归路,1,Campaign Flow / Mission Objectives,ST-S01;ST-S02,S1-S01-02;S1-O-SURVIVE;S1-M01-05,S1-M01-05,远程刺群与追击兽首次混编,PLANNED,NOT_IMPLEMENTED,USES_REFERENCES,USES_REFERENCES,NOT_RUN,,,content.s1-m01-06,R01
+S1-M01-07,mission,拔除井心锁,1,Campaign Flow / Mission Objectives,ST-S01;ST-S02,S1-S01-02;S1-O-BREAK;S1-M01-06,S1-M01-06,三处锚点产生不同进攻角度,PLANNED,NOT_IMPLEMENTED,USES_REFERENCES,USES_REFERENCES,NOT_RUN,,,content.s1-m01-07,R01
+S1-M01-08,mission,伏岚古兽,1,Campaign Flow / Mission Objectives,ST-S01;ST-S02,S1-S01-02;S1-O-BOSS;S1-M01-07;S1-B01,S1-M01-07,读取扑袭后摇并利用根区空隙,PLANNED,NOT_IMPLEMENTED,USES_REFERENCES,USES_REFERENCES,NOT_RUN,,,content.s1-m01-08,R01
+S1-R02,region,赤窑,2,Stage & Map,L06,,S1-M01-08,喷口按预警轮替关闭通道,PLANNED,NOT_IMPLEMENTED,NOT_STARTED,NOT_STARTED,NOT_RUN,,asset.s1-r02,content.s1-r02,R01
+S1-S02-01,scene,流火矿脊,2,Stage & Map,L06,S1-R02,S1-M01-08,喷口按预警轮替关闭通道,PLANNED,NOT_IMPLEMENTED,NOT_STARTED,NOT_STARTED,NOT_RUN,,asset.s1-s02-01,content.s1-s02-01,R01
+S1-S02-02,scene,熄炉深井,2,Stage & Map,L06,S1-R02,S1-M01-08,喷口按预警轮替关闭通道,PLANNED,NOT_IMPLEMENTED,NOT_STARTED,NOT_STARTED,NOT_RUN,,asset.s1-s02-02,content.s1-s02-02,R01
+S1-CH02,chapter,第2章·赤窑,2,Campaign Flow,ST-S01,,S1-M01-08,停止失控冶炼，发现矿石被送往中央,PLANNED,NOT_IMPLEMENTED,USES_REFERENCES,USES_REFERENCES,NOT_RUN,,,content.s1-ch02,R01
+S1-C02,character,烬术师,2,Character Loadout,ST-S03,S1-A04,S1-M01-08,灼烧区接力延续火势；离开火区后重建慢，偏路线布局,PLANNED,NOT_IMPLEMENTED,NOT_STARTED,NOT_STARTED,NOT_RUN,,asset.s1-c02,content.s1-c02,R01
+S1-A04,active,流焰珠,2,WeaponSystem,L14,,S1-M01-08,抛物爆破与燃烧区,PLANNED,NOT_IMPLEMENTED,NOT_STARTED,NOT_STARTED,NOT_RUN,,asset.s1-a04,content.s1-a04,R01
+S1-P04,passive,燃芯诀,2,SkillDraftSystem,L15,,S1-M01-08,持续灼烧时间,PLANNED,NOT_IMPLEMENTED,NOT_STARTED,NOT_STARTED,NOT_RUN,,asset.s1-p04,content.s1-p04,R01
+S1-N04,normal_enemy,背炉蜗,2,EnemySystem,L09,,S1-M01-08,沿路留下短时热区,PLANNED,NOT_IMPLEMENTED,NOT_STARTED,NOT_STARTED,NOT_RUN,,asset.s1-n04,content.s1-n04,R01
+S1-A05,active,烬流扇,2,WeaponSystem,L14,,S1-M01-08,扇面热浪；控制接敌方向,PLANNED,NOT_IMPLEMENTED,NOT_STARTED,NOT_STARTED,NOT_RUN,,asset.s1-a05,content.s1-a05,R01
+S1-P05,passive,回息法,2,SkillDraftSystem,L15,,S1-M01-08,技能冷却,PLANNED,NOT_IMPLEMENTED,NOT_STARTED,NOT_STARTED,NOT_RUN,,asset.s1-p05,content.s1-p05,R01
+S1-N05,normal_enemy,灰翼蝠,2,EnemySystem,L09,,S1-M01-08,成排飞掠后折返,PLANNED,NOT_IMPLEMENTED,NOT_STARTED,NOT_STARTED,NOT_RUN,,asset.s1-n05,content.s1-n05,R01
+S1-A06,active,炭雨灯,2,WeaponSystem,L14,,S1-M01-08,周期散射火星；持续封路,PLANNED,NOT_IMPLEMENTED,NOT_STARTED,NOT_STARTED,NOT_RUN,,asset.s1-a06,content.s1-a06,R01
+S1-P06,passive,留火术,2,SkillDraftSystem,L15,,S1-M01-08,地带持续时间,PLANNED,NOT_IMPLEMENTED,NOT_STARTED,NOT_STARTED,NOT_RUN,,asset.s1-p06,content.s1-p06,R01
+S1-N06,normal_enemy,熔壳蛹,2,EnemySystem,L09,,S1-M01-08,预警后破壳冲击,PLANNED,NOT_IMPLEMENTED,NOT_STARTED,NOT_STARTED,NOT_RUN,,asset.s1-n06,content.s1-n06,R01
+S1-E02,elite,熔脊行者,2,Elite Enemies,L19,,S1-M01-08,开闭散热甲与喷口联动,PLANNED,NOT_IMPLEMENTED,NOT_STARTED,NOT_STARTED,NOT_RUN,,asset.s1-e02,content.s1-e02,R01
+S1-B02,boss,炉心巨傀,2,BossStateMachine,L18,,S1-M02-07,炉门弱点与地热喷发,PLANNED,NOT_IMPLEMENTED,NOT_STARTED,NOT_STARTED,NOT_RUN,,asset.s1-b02,content.s1-b02,R01
+S1-M02-01,mission,穿过灰翼群,2,Campaign Flow / Mission Objectives,ST-S01;ST-S02,S1-S02-01;S1-O-SURVIVE;S1-M01-08,S1-M01-08,横向飞掠迫使改变走位节奏,PLANNED,NOT_IMPLEMENTED,USES_REFERENCES,USES_REFERENCES,NOT_RUN,,,content.s1-m02-01,R01
+S1-M02-02,mission,关闭三座喷口,2,Campaign Flow / Mission Objectives,ST-S01;ST-S02,S1-S02-01;S1-O-BREAK;S1-M02-01,S1-M02-01,攻击锚点时避开轮替喷发,PLANNED,NOT_IMPLEMENTED,USES_REFERENCES,USES_REFERENCES,NOT_RUN,,,content.s1-m02-02,R01
+S1-M02-03,mission,护送冷却匣,2,Campaign Flow / Mission Objectives,ST-S01;ST-S02,S1-S02-01;S1-O-ESCORT;S1-M02-02,S1-M02-02,把缓行冷却装置带过热带,PLANNED,NOT_IMPLEMENTED,USES_REFERENCES,USES_REFERENCES,NOT_RUN,,,content.s1-m02-03,R01
+S1-M02-04,mission,截住背炉首领,2,Campaign Flow / Mission Objectives,ST-S01;ST-S02,S1-S02-01;S1-O-HUNT;S1-M02-03,S1-M02-03,追击留下热区的目标并选择切线,PLANNED,NOT_IMPLEMENTED,USES_REFERENCES,USES_REFERENCES,NOT_RUN,,,content.s1-m02-04,R01
+S1-M02-05,mission,洗净炉灰,2,Campaign Flow / Mission Objectives,ST-S01;ST-S02,S1-S02-02;S1-O-CLEANSE;S1-M02-04,S1-M02-04,净化区之间有喷口轮替,PLANNED,NOT_IMPLEMENTED,USES_REFERENCES,USES_REFERENCES,NOT_RUN,,,content.s1-m02-05,R01
+S1-M02-06,mission,撤出炉工,2,Campaign Flow / Mission Objectives,ST-S01;ST-S02,S1-S02-02;S1-O-ESCORT;S1-M02-05,S1-M02-05,双阶段护送，中途可停靠安全点,PLANNED,NOT_IMPLEMENTED,USES_REFERENCES,USES_REFERENCES,NOT_RUN,,,content.s1-m02-06,R01
+S1-M02-07,mission,切断燃芯管,2,Campaign Flow / Mission Objectives,ST-S01;ST-S02,S1-S02-02;S1-O-BREAK;S1-M02-06,S1-M02-06,破坏顺序改变剩余喷口节奏,PLANNED,NOT_IMPLEMENTED,USES_REFERENCES,USES_REFERENCES,NOT_RUN,,,content.s1-m02-07,R01
+S1-M02-08,mission,炉心巨傀,2,Campaign Flow / Mission Objectives,ST-S01;ST-S02,S1-S02-02;S1-O-BOSS;S1-M02-07;S1-B02,S1-M02-07,炉门开启窗口输出，关闭时处理热区,PLANNED,NOT_IMPLEMENTED,USES_REFERENCES,USES_REFERENCES,NOT_RUN,,,content.s1-m02-08,R01
+S1-R03,region,沉潮,3,Stage & Map,L06,,S1-M02-08,涨落潮显露不同安全通路,PLANNED,NOT_IMPLEMENTED,NOT_STARTED,NOT_STARTED,NOT_RUN,,asset.s1-r03,content.s1-r03,R01
+S1-S03-01,scene,浅滩旧港,3,Stage & Map,L06,S1-R03,S1-M02-08,涨落潮显露不同安全通路,PLANNED,NOT_IMPLEMENTED,NOT_STARTED,NOT_STARTED,NOT_RUN,,asset.s1-s03-01,content.s1-s03-01,R01
+S1-S03-02,scene,潮底石庭,3,Stage & Map,L06,S1-R03,S1-M02-08,涨落潮显露不同安全通路,PLANNED,NOT_IMPLEMENTED,NOT_STARTED,NOT_STARTED,NOT_RUN,,asset.s1-s03-02,content.s1-s03-02,R01
+S1-CH03,chapter,第3章·沉潮,3,Campaign Flow,ST-S01,,S1-M02-08,打通水路，取得输送船队账册,PLANNED,NOT_IMPLEMENTED,USES_REFERENCES,USES_REFERENCES,NOT_RUN,,,content.s1-ch03,R01
+S1-C03,character,环刃卫,3,Character Loadout,ST-S03,S1-A07,S1-M02-08,擦身防御给环刃充能；远程追击弱，偏近身反击,PLANNED,NOT_IMPLEMENTED,NOT_STARTED,NOT_STARTED,NOT_RUN,,asset.s1-c03,content.s1-c03,R01
+S1-A07,active,回环刃,3,WeaponSystem,L14,,S1-M02-08,近身环绕并击退,PLANNED,NOT_IMPLEMENTED,NOT_STARTED,NOT_STARTED,NOT_RUN,,asset.s1-a07,content.s1-a07,R01
+S1-P07,passive,护环经,3,SkillDraftSystem,L15,,S1-M02-08,近身减伤窗口,PLANNED,NOT_IMPLEMENTED,NOT_STARTED,NOT_STARTED,NOT_RUN,,asset.s1-p07,content.s1-p07,R01
+S1-N07,normal_enemy,潮甲蟹,3,EnemySystem,L09,,S1-M02-08,侧行拦截狭路,PLANNED,NOT_IMPLEMENTED,NOT_STARTED,NOT_STARTED,NOT_RUN,,asset.s1-n07,content.s1-n07,R01
+S1-A08,active,潮音铃,3,WeaponSystem,L14,,S1-M02-08,向外扩张声波；补足环绕盲区,PLANNED,NOT_IMPLEMENTED,NOT_STARTED,NOT_STARTED,NOT_RUN,,asset.s1-a08,content.s1-a08,R01
+S1-P08,passive,扩音诀,3,SkillDraftSystem,L15,,S1-M02-08,波形半径,PLANNED,NOT_IMPLEMENTED,NOT_STARTED,NOT_STARTED,NOT_RUN,,asset.s1-p08,content.s1-p08,R01
+S1-N08,normal_enemy,汲水灵,3,EnemySystem,L09,,S1-M02-08,蓄水直线喷流,PLANNED,NOT_IMPLEMENTED,NOT_STARTED,NOT_STARTED,NOT_RUN,,asset.s1-n08,content.s1-n08,R01
+S1-A09,active,断浪枪,3,WeaponSystem,L14,,S1-M02-08,远距窄线突刺；面对齐线敌群,PLANNED,NOT_IMPLEMENTED,NOT_STARTED,NOT_STARTED,NOT_RUN,,asset.s1-a09,content.s1-a09,R01
+S1-P09,passive,凝线谱,3,SkillDraftSystem,L15,,S1-M02-08,窄线伤害集中,PLANNED,NOT_IMPLEMENTED,NOT_STARTED,NOT_STARTED,NOT_RUN,,asset.s1-p09,content.s1-p09,R01
+S1-N09,normal_enemy,潜鳍兽,3,EnemySystem,L09,,S1-M02-08,地面预告后跃出,PLANNED,NOT_IMPLEMENTED,NOT_STARTED,NOT_STARTED,NOT_RUN,,asset.s1-n09,content.s1-n09,R01
+S1-E03,elite,覆潮祭卫,3,Elite Enemies,L19,,S1-M02-08,周期涨水并露出中断窗口,PLANNED,NOT_IMPLEMENTED,NOT_STARTED,NOT_STARTED,NOT_RUN,,asset.s1-e03,content.s1-e03,R01
+S1-B03,boss,沉潮双鳍,3,BossStateMachine,L18,,S1-M03-07,潮汐换路与交错冲击,PLANNED,NOT_IMPLEMENTED,NOT_STARTED,NOT_STARTED,NOT_RUN,,asset.s1-b03,content.s1-b03,R01
+S1-M03-01,mission,守住涨潮口,3,Campaign Flow / Mission Objectives,ST-S01;ST-S02,S1-S03-01;S1-O-SURVIVE;S1-M02-08,S1-M02-08,涨潮期间更换安全滩,PLANNED,NOT_IMPLEMENTED,USES_REFERENCES,USES_REFERENCES,NOT_RUN,,,content.s1-m03-01,R01
+S1-M03-02,mission,夺回船队账册,3,Campaign Flow / Mission Objectives,ST-S01;ST-S02,S1-S03-01;S1-O-HUNT;S1-M03-01,S1-M03-01,追猎携物目标，不让护卫挡住路线,PLANNED,NOT_IMPLEMENTED,USES_REFERENCES,USES_REFERENCES,NOT_RUN,,,content.s1-m03-02,R01
+S1-M03-03,mission,护送渡船,3,Campaign Flow / Mission Objectives,ST-S01;ST-S02,S1-S03-01;S1-O-ESCORT;S1-M03-02,S1-M03-02,随短航线移动，处理侧行拦路敌,PLANNED,NOT_IMPLEMENTED,USES_REFERENCES,USES_REFERENCES,NOT_RUN,,,content.s1-m03-03,R01
+S1-M03-04,mission,净化旧港,3,Campaign Flow / Mission Objectives,ST-S01;ST-S02,S1-S03-01;S1-O-CLEANSE;S1-M03-03,S1-M03-03,退潮开放额外净化位置,PLANNED,NOT_IMPLEMENTED,USES_REFERENCES,USES_REFERENCES,NOT_RUN,,,content.s1-m03-04,R01
+S1-M03-05,mission,拆除水闸印,3,Campaign Flow / Mission Objectives,ST-S01;ST-S02,S1-S03-02;S1-O-BREAK;S1-M03-04,S1-M03-04,闸印影响不同水流方向,PLANNED,NOT_IMPLEMENTED,USES_REFERENCES,USES_REFERENCES,NOT_RUN,,,content.s1-m03-05,R01
+S1-M03-06,mission,穿越潜鳍群,3,Campaign Flow / Mission Objectives,ST-S01;ST-S02,S1-S03-02;S1-O-SURVIVE;S1-M03-05,S1-M03-05,地面跃出预警与喷流混合,PLANNED,NOT_IMPLEMENTED,USES_REFERENCES,USES_REFERENCES,NOT_RUN,,,content.s1-m03-06,R01
+S1-M03-07,mission,追击深庭祭卫,3,Campaign Flow / Mission Objectives,ST-S01;ST-S02,S1-S03-02;S1-O-HUNT;S1-M03-06,S1-M03-06,打断蓄水并抢占退路,PLANNED,NOT_IMPLEMENTED,USES_REFERENCES,USES_REFERENCES,NOT_RUN,,,content.s1-m03-07,R01
+S1-M03-08,mission,沉潮双鳍,3,Campaign Flow / Mission Objectives,ST-S01;ST-S02,S1-S03-02;S1-O-BOSS;S1-M03-07;S1-B03,S1-M03-07,两侧潮流交替，保留明确穿越窗口,PLANNED,NOT_IMPLEMENTED,USES_REFERENCES,USES_REFERENCES,NOT_RUN,,,content.s1-m03-08,R01
+S1-R04,region,铜陵,4,Stage & Map,L06,,S1-M03-08,反射板改变敌方弹道与视线,PLANNED,NOT_IMPLEMENTED,NOT_STARTED,NOT_STARTED,NOT_RUN,,asset.s1-r04,content.s1-r04,R01
+S1-S04-01,scene,折镜甬道,4,Stage & Map,L06,S1-R04,S1-M03-08,反射板改变敌方弹道与视线,PLANNED,NOT_IMPLEMENTED,NOT_STARTED,NOT_STARTED,NOT_RUN,,asset.s1-s04-01,content.s1-s04-01,R01
+S1-S04-02,scene,机核运台,4,Stage & Map,L06,S1-R04,S1-M03-08,反射板改变敌方弹道与视线,PLANNED,NOT_IMPLEMENTED,NOT_STARTED,NOT_STARTED,NOT_RUN,,asset.s1-s04-02,content.s1-s04-02,R01
+S1-CH04,chapter,第4章·铜陵,4,Campaign Flow,ST-S01,,S1-M03-08,夺回维护权限，证实装置正抽取生机,PLANNED,NOT_IMPLEMENTED,USES_REFERENCES,USES_REFERENCES,NOT_RUN,,,content.s1-ch04,R01
+S1-C04,character,机巧师,4,Character Loadout,ST-S03,S1-A10,S1-M03-08,可维持额外轻型构造物但部署需时间，偏据点预布置,PLANNED,NOT_IMPLEMENTED,NOT_STARTED,NOT_STARTED,NOT_RUN,,asset.s1-c04,content.s1-c04,R01
+S1-A10,active,机关弩台,4,WeaponSystem,L14,,S1-M03-08,固定短驻召唤；走位引怪进入火线,PLANNED,NOT_IMPLEMENTED,NOT_STARTED,NOT_STARTED,NOT_RUN,,asset.s1-a10,content.s1-a10,R01
+S1-P10,passive,布机图,4,SkillDraftSystem,L15,,S1-M03-08,构造物部署速度,PLANNED,NOT_IMPLEMENTED,NOT_STARTED,NOT_STARTED,NOT_RUN,,asset.s1-p10,content.s1-p10,R01
+S1-N10,normal_enemy,镜棱偶,4,EnemySystem,L09,,S1-M03-08,举盾反弹正面投射物,PLANNED,NOT_IMPLEMENTED,NOT_STARTED,NOT_STARTED,NOT_RUN,,asset.s1-n10,content.s1-n10,R01
+S1-A11,active,游蜂匣,4,WeaponSystem,L14,,S1-M03-08,移动蜂群追击；偏单体,PLANNED,NOT_IMPLEMENTED,NOT_STARTED,NOT_STARTED,NOT_RUN,,asset.s1-a11,content.s1-a11,R01
+S1-P11,passive,引蜂诀,4,SkillDraftSystem,L15,,S1-M03-08,召唤索敌距离,PLANNED,NOT_IMPLEMENTED,NOT_STARTED,NOT_STARTED,NOT_RUN,,asset.s1-p11,content.s1-p11,R01
+S1-N11,normal_enemy,铆钉机,4,EnemySystem,L09,,S1-M03-08,扇形齐射后换位,PLANNED,NOT_IMPLEMENTED,NOT_STARTED,NOT_STARTED,NOT_RUN,,asset.s1-n11,content.s1-n11,R01
+S1-A12,active,震地偶,4,WeaponSystem,L14,,S1-M03-08,近身构造物震荡；低频高控制,PLANNED,NOT_IMPLEMENTED,NOT_STARTED,NOT_STARTED,NOT_RUN,,asset.s1-a12,content.s1-a12,R01
+S1-P12,passive,稳基法,4,SkillDraftSystem,L15,,S1-M03-08,召唤驻留时间,PLANNED,NOT_IMPLEMENTED,NOT_STARTED,NOT_STARTED,NOT_RUN,,asset.s1-p12,content.s1-p12,R01
+S1-N12,normal_enemy,游轴球,4,EnemySystem,L09,,S1-M03-08,弹跳碰壁式追踪，实际边界由场景规则定义,PLANNED,NOT_IMPLEMENTED,NOT_STARTED,NOT_STARTED,NOT_RUN,,asset.s1-n12,content.s1-n12,R01
+S1-E04,elite,双镜司械,4,Elite Enemies,L19,,S1-M03-08,两面镜盾交替保护弱侧,PLANNED,NOT_IMPLEMENTED,NOT_STARTED,NOT_STARTED,NOT_RUN,,asset.s1-e04,content.s1-e04,R01
+S1-B04,boss,千镜司枢,4,BossStateMachine,L18,,S1-M04-07,镜阵反射与本体暴露,PLANNED,NOT_IMPLEMENTED,NOT_STARTED,NOT_STARTED,NOT_RUN,,asset.s1-b04,content.s1-b04,R01
+S1-M04-01,mission,关闭折镜节点,4,Campaign Flow / Mission Objectives,ST-S01;ST-S02,S1-S04-01;S1-O-BREAK;S1-M03-08,S1-M03-08,先观察反射角度再切入,PLANNED,NOT_IMPLEMENTED,USES_REFERENCES,USES_REFERENCES,NOT_RUN,,,content.s1-m04-01,R01
+S1-M04-02,mission,护送维修偶,4,Campaign Flow / Mission Objectives,ST-S01;ST-S02,S1-S04-01;S1-O-ESCORT;S1-M04-01,S1-M04-01,把修复目标带过弹幕交叉点,PLANNED,NOT_IMPLEMENTED,USES_REFERENCES,USES_REFERENCES,NOT_RUN,,,content.s1-m04-02,R01
+S1-M04-03,mission,截获巡检机,4,Campaign Flow / Mission Objectives,ST-S01;ST-S02,S1-S04-01;S1-O-HUNT;S1-M04-02,S1-M04-02,利用弱侧打断逃离,PLANNED,NOT_IMPLEMENTED,USES_REFERENCES,USES_REFERENCES,NOT_RUN,,,content.s1-m04-03,R01
+S1-M04-04,mission,净化镜尘,4,Campaign Flow / Mission Objectives,ST-S01;ST-S02,S1-S04-01;S1-O-CLEANSE;S1-M04-03,S1-M04-03,净化后减少局部反射干扰,PLANNED,NOT_IMPLEMENTED,USES_REFERENCES,USES_REFERENCES,NOT_RUN,,,content.s1-m04-04,R01
+S1-M04-05,mission,守住机核运台,4,Campaign Flow / Mission Objectives,ST-S01;ST-S02,S1-S04-02;S1-O-SURVIVE;S1-M04-04,S1-M04-04,镜盾与扇射机首次协同,PLANNED,NOT_IMPLEMENTED,USES_REFERENCES,USES_REFERENCES,NOT_RUN,,,content.s1-m04-05,R01
+S1-M04-06,mission,拆开权限锁,4,Campaign Flow / Mission Objectives,ST-S01;ST-S02,S1-S04-02;S1-O-BREAK;S1-M04-05,S1-M04-05,按取得的权限提示关闭节点,PLANNED,NOT_IMPLEMENTED,USES_REFERENCES,USES_REFERENCES,NOT_RUN,,,content.s1-m04-06,R01
+S1-M04-07,mission,夺回核心钥匙,4,Campaign Flow / Mission Objectives,ST-S01;ST-S02,S1-S04-02;S1-O-HUNT;S1-M04-06,S1-M04-06,双镜精英交替露出弱侧,PLANNED,NOT_IMPLEMENTED,USES_REFERENCES,USES_REFERENCES,NOT_RUN,,,content.s1-m04-07,R01
+S1-M04-08,mission,千镜司枢,4,Campaign Flow / Mission Objectives,ST-S01;ST-S02,S1-S04-02;S1-O-BOSS;S1-M04-07;S1-B04,S1-M04-07,破解镜阵暴露本体，不对全反射面硬打,PLANNED,NOT_IMPLEMENTED,USES_REFERENCES,USES_REFERENCES,NOT_RUN,,,content.s1-m04-08,R01
+S1-R05,region,雪脊,5,Stage & Map,L06,,S1-M04-08,冰裂带预告路线崩断，强迫分段移动,PLANNED,NOT_IMPLEMENTED,NOT_STARTED,NOT_STARTED,NOT_RUN,,asset.s1-r05,content.s1-r05,R01
+S1-S05-01,scene,裂冰栈道,5,Stage & Map,L06,S1-R05,S1-M04-08,冰裂带预告路线崩断，强迫分段移动,PLANNED,NOT_IMPLEMENTED,NOT_STARTED,NOT_STARTED,NOT_RUN,,asset.s1-s05-01,content.s1-s05-01,R01
+S1-S05-02,scene,霜灯高台,5,Stage & Map,L06,S1-R05,S1-M04-08,冰裂带预告路线崩断，强迫分段移动,PLANNED,NOT_IMPLEMENTED,NOT_STARTED,NOT_STARTED,NOT_RUN,,asset.s1-s05-02,content.s1-s05-02,R01
+S1-CH05,chapter,第5章·雪脊,5,Campaign Flow,ST-S01,,S1-M04-08,点亮信标联络各域，打开登塔路线,PLANNED,NOT_IMPLEMENTED,USES_REFERENCES,USES_REFERENCES,NOT_RUN,,,content.s1-ch05,R01
+S1-C05,character,鸣雷使,5,Character Loadout,ST-S03,S1-A13,S1-M04-08,连续换目标积累雷链；单目标蓄势较慢，偏群体转火,PLANNED,NOT_IMPLEMENTED,NOT_STARTED,NOT_STARTED,NOT_RUN,,asset.s1-c05,content.s1-c05,R01
+S1-A13,active,鸣雷签,5,WeaponSystem,L14,,S1-M04-08,目标间跳跃的雷链,PLANNED,NOT_IMPLEMENTED,NOT_STARTED,NOT_STARTED,NOT_RUN,,asset.s1-a13,content.s1-a13,R01
+S1-P13,passive,导电经,5,SkillDraftSystem,L15,,S1-M04-08,连锁目标上限,PLANNED,NOT_IMPLEMENTED,NOT_STARTED,NOT_STARTED,NOT_RUN,,asset.s1-p13,content.s1-p13,R01
+S1-N13,normal_enemy,雪鬃猊,5,EnemySystem,L09,,S1-M04-08,冲刺后滑行暴露侧面,PLANNED,NOT_IMPLEMENTED,NOT_STARTED,NOT_STARTED,NOT_RUN,,asset.s1-n13,content.s1-n13,R01
+S1-A14,active,引霆针,5,WeaponSystem,L14,,S1-M04-08,标记落点后延迟雷击,PLANNED,NOT_IMPLEMENTED,NOT_STARTED,NOT_STARTED,NOT_RUN,,asset.s1-a14,content.s1-a14,R01
+S1-P14,passive,聚霆诀,5,SkillDraftSystem,L15,,S1-M04-08,延迟标记爆发,PLANNED,NOT_IMPLEMENTED,NOT_STARTED,NOT_STARTED,NOT_RUN,,asset.s1-p14,content.s1-p14,R01
+S1-N14,normal_enemy,霜灯蛾,5,EnemySystem,L09,,S1-M04-08,短暂照亮并强化附近同类,PLANNED,NOT_IMPLEMENTED,NOT_STARTED,NOT_STARTED,NOT_RUN,,asset.s1-n14,content.s1-n14,R01
+S1-A15,active,逐电轮,5,WeaponSystem,L14,,S1-M04-08,沿移动轨迹发射折返电轮,PLANNED,NOT_IMPLEMENTED,NOT_STARTED,NOT_STARTED,NOT_RUN,,asset.s1-a15,content.s1-a15,R01
+S1-P15,passive,回流法,5,SkillDraftSystem,L15,,S1-M04-08,弹道返回效率,PLANNED,NOT_IMPLEMENTED,NOT_STARTED,NOT_STARTED,NOT_RUN,,asset.s1-p15,content.s1-p15,R01
+S1-N15,normal_enemy,冰棘蠕虫,5,EnemySystem,L09,,S1-M04-08,分段刺出逼迫横移,PLANNED,NOT_IMPLEMENTED,NOT_STARTED,NOT_STARTED,NOT_RUN,,asset.s1-n15,content.s1-n15,R01
+S1-E05,elite,霜灯哨长,5,Elite Enemies,L19,,S1-M04-08,点灯蓄势，可破灯打断,PLANNED,NOT_IMPLEMENTED,NOT_STARTED,NOT_STARTED,NOT_RUN,,asset.s1-e05,content.s1-e05,R01
+S1-B05,boss,照夜霜鹫,5,BossStateMachine,L18,,S1-M05-07,光暗信标与俯冲冰裂,PLANNED,NOT_IMPLEMENTED,NOT_STARTED,NOT_STARTED,NOT_RUN,,asset.s1-b05,content.s1-b05,R01
+S1-M05-01,mission,点亮风雪信标,5,Campaign Flow / Mission Objectives,ST-S01;ST-S02,S1-S05-01;S1-O-CLEANSE;S1-M04-08,S1-M04-08,短时安全灯区帮助识别冰裂,PLANNED,NOT_IMPLEMENTED,USES_REFERENCES,USES_REFERENCES,NOT_RUN,,,content.s1-m05-01,R01
+S1-M05-02,mission,护送暖源车,5,Campaign Flow / Mission Objectives,ST-S01;ST-S02,S1-S05-01;S1-O-ESCORT;S1-M05-01,S1-M05-01,移动暖源与冰裂路段交替,PLANNED,NOT_IMPLEMENTED,USES_REFERENCES,USES_REFERENCES,NOT_RUN,,,content.s1-m05-02,R01
+S1-M05-03,mission,追猎失控哨长,5,Campaign Flow / Mission Objectives,ST-S01;ST-S02,S1-S05-01;S1-O-HUNT;S1-M05-02,S1-M05-02,优先破灯打断强化,PLANNED,NOT_IMPLEMENTED,USES_REFERENCES,USES_REFERENCES,NOT_RUN,,,content.s1-m05-03,R01
+S1-M05-04,mission,守住裂冰入口,5,Campaign Flow / Mission Objectives,ST-S01;ST-S02,S1-S05-01;S1-O-SURVIVE;S1-M05-03,S1-M05-03,滑行冲锋与地刺混编,PLANNED,NOT_IMPLEMENTED,USES_REFERENCES,USES_REFERENCES,NOT_RUN,,,content.s1-m05-04,R01
+S1-M05-05,mission,拆除霜链,5,Campaign Flow / Mission Objectives,ST-S01;ST-S02,S1-S05-02;S1-O-BREAK;S1-M05-04,S1-M05-04,选择跨过裂带的输出窗口,PLANNED,NOT_IMPLEMENTED,USES_REFERENCES,USES_REFERENCES,NOT_RUN,,,content.s1-m05-05,R01
+S1-M05-06,mission,恢复高台灯阵,5,Campaign Flow / Mission Objectives,ST-S01;ST-S02,S1-S05-02;S1-O-CLEANSE;S1-M05-05,S1-M05-05,多个光区需要不同先后顺序,PLANNED,NOT_IMPLEMENTED,USES_REFERENCES,USES_REFERENCES,NOT_RUN,,,content.s1-m05-06,R01
+S1-M05-07,mission,护送信使登台,5,Campaign Flow / Mission Objectives,ST-S01;ST-S02,S1-S05-02;S1-O-ESCORT;S1-M05-06,S1-M05-06,暴风阶段在停靠点防守,PLANNED,NOT_IMPLEMENTED,USES_REFERENCES,USES_REFERENCES,NOT_RUN,,,content.s1-m05-07,R01
+S1-M05-08,mission,照夜霜鹫,5,Campaign Flow / Mission Objectives,ST-S01;ST-S02,S1-S05-02;S1-O-BOSS;S1-M05-07;S1-B05,S1-M05-07,信标揭示俯冲落点，避开冰裂围堵,PLANNED,NOT_IMPLEMENTED,USES_REFERENCES,USES_REFERENCES,NOT_RUN,,,content.s1-m05-08,R01
+S1-R06,region,墨泽,6,Stage & Map,L06,,S1-M05-08,孢雾遮挡危险外缘，净化后恢复视野,PLANNED,NOT_IMPLEMENTED,NOT_STARTED,NOT_STARTED,NOT_RUN,,asset.s1-r06,content.s1-r06,R01
+S1-S06-01,scene,菌沼环岸,6,Stage & Map,L06,S1-R06,S1-M05-08,孢雾遮挡危险外缘，净化后恢复视野,PLANNED,NOT_IMPLEMENTED,NOT_STARTED,NOT_STARTED,NOT_RUN,,asset.s1-s06-01,content.s1-s06-01,R01
+S1-S06-02,scene,残碑内泽,6,Stage & Map,L06,S1-R06,S1-M05-08,孢雾遮挡危险外缘，净化后恢复视野,PLANNED,NOT_IMPLEMENTED,NOT_STARTED,NOT_STARTED,NOT_RUN,,asset.s1-s06-02,content.s1-s06-02,R01
+S1-CH06,chapter,第6章·墨泽,6,Campaign Flow,ST-S01,,S1-M05-08,找到逆转抽取的方法与受污染灵药,PLANNED,NOT_IMPLEMENTED,USES_REFERENCES,USES_REFERENCES,NOT_RUN,,,content.s1-ch06,R01
+S1-C06,character,缚根者,6,Character Loadout,ST-S03,S1-A16,S1-M05-08,控制区内资源循环较好；对抗免控强敌需组合，偏控制,PLANNED,NOT_IMPLEMENTED,NOT_STARTED,NOT_STARTED,NOT_RUN,,asset.s1-c06,content.s1-c06,R01
+S1-A16,active,缚根环,6,WeaponSystem,L14,,S1-M05-08,根须范围束缚；对Boss改为减速窗口,PLANNED,NOT_IMPLEMENTED,NOT_STARTED,NOT_STARTED,NOT_RUN,,asset.s1-a16,content.s1-a16,R01
+S1-P16,passive,生根诀,6,SkillDraftSystem,L15,,S1-M05-08,控制覆盖与衰减,PLANNED,NOT_IMPLEMENTED,NOT_STARTED,NOT_STARTED,NOT_RUN,,asset.s1-p16,content.s1-p16,R01
+S1-N16,normal_enemy,囊孢兽,6,EnemySystem,L09,,S1-M05-08,受击膨胀，延迟爆裂可脱离,PLANNED,NOT_IMPLEMENTED,NOT_STARTED,NOT_STARTED,NOT_RUN,,asset.s1-n16,content.s1-n16,R01
+S1-A17,active,孢光囊,6,WeaponSystem,L14,,S1-M05-08,扩散孢子后延迟引爆,PLANNED,NOT_IMPLEMENTED,NOT_STARTED,NOT_STARTED,NOT_RUN,,asset.s1-a17,content.s1-a17,R01
+S1-P17,passive,蕴孢谱,6,SkillDraftSystem,L15,,S1-M05-08,延迟爆发范围,PLANNED,NOT_IMPLEMENTED,NOT_STARTED,NOT_STARTED,NOT_RUN,,asset.s1-p17,content.s1-p17,R01
+S1-N17,normal_enemy,泥缚手,6,EnemySystem,L09,,S1-M05-08,固定区域拉扯减速,PLANNED,NOT_IMPLEMENTED,NOT_STARTED,NOT_STARTED,NOT_RUN,,asset.s1-n17,content.s1-n17,R01
+S1-A18,active,刺藤鞭,6,WeaponSystem,L14,,S1-M05-08,方向性扫击与牵引小型敌人,PLANNED,NOT_IMPLEMENTED,NOT_STARTED,NOT_STARTED,NOT_RUN,,asset.s1-a18,content.s1-a18,R01
+S1-P18,passive,韧藤法,6,SkillDraftSystem,L15,,S1-M05-08,控制失效后的补偿伤害,PLANNED,NOT_IMPLEMENTED,NOT_STARTED,NOT_STARTED,NOT_RUN,,asset.s1-p18,content.s1-p18,R01
+S1-N18,normal_enemy,映雾蛉,6,EnemySystem,L09,,S1-M05-08,投射诱饵后本体位移,PLANNED,NOT_IMPLEMENTED,NOT_STARTED,NOT_STARTED,NOT_RUN,,asset.s1-n18,content.s1-n18,R01
+S1-E06,elite,孢冠守者,6,Elite Enemies,L19,,S1-M05-08,孢区接力，可提前净化,PLANNED,NOT_IMPLEMENTED,NOT_STARTED,NOT_STARTED,NOT_RUN,,asset.s1-e06,content.s1-e06,R01
+S1-B06,boss,泽心孢母,6,BossStateMachine,L18,,S1-M06-07,净化空间与孢潮转换,PLANNED,NOT_IMPLEMENTED,NOT_STARTED,NOT_STARTED,NOT_RUN,,asset.s1-b06,content.s1-b06,R01
+S1-M06-01,mission,净化菌沼入口,6,Campaign Flow / Mission Objectives,ST-S01;ST-S02,S1-S06-01;S1-O-CLEANSE;S1-M05-08,S1-M05-08,清理近处雾区恢复视野,PLANNED,NOT_IMPLEMENTED,USES_REFERENCES,USES_REFERENCES,NOT_RUN,,,content.s1-m06-01,R01
+S1-M06-02,mission,猎取污染样本,6,Campaign Flow / Mission Objectives,ST-S01;ST-S02,S1-S06-01;S1-O-HUNT;S1-M06-01,S1-M06-01,诱饵与真身区分,PLANNED,NOT_IMPLEMENTED,USES_REFERENCES,USES_REFERENCES,NOT_RUN,,,content.s1-m06-02,R01
+S1-M06-03,mission,护送采样灯,6,Campaign Flow / Mission Objectives,ST-S01;ST-S02,S1-S06-01;S1-O-ESCORT;S1-M06-02,S1-M06-02,移动照明揭示拉扯区,PLANNED,NOT_IMPLEMENTED,USES_REFERENCES,USES_REFERENCES,NOT_RUN,,,content.s1-m06-03,R01
+S1-M06-04,mission,拔除孢根,6,Campaign Flow / Mission Objectives,ST-S01;ST-S02,S1-S06-01;S1-O-BREAK;S1-M06-03,S1-M06-03,断根防止相邻区域扩散,PLANNED,NOT_IMPLEMENTED,USES_REFERENCES,USES_REFERENCES,NOT_RUN,,,content.s1-m06-04,R01
+S1-M06-05,mission,守住残碑,6,Campaign Flow / Mission Objectives,ST-S01;ST-S02,S1-S06-02;S1-O-SURVIVE;S1-M06-04,S1-M06-04,延迟孢爆迫使控制击杀位置,PLANNED,NOT_IMPLEMENTED,USES_REFERENCES,USES_REFERENCES,NOT_RUN,,,content.s1-m06-05,R01
+S1-M06-06,mission,净化三块残碑,6,Campaign Flow / Mission Objectives,ST-S01;ST-S02,S1-S06-02;S1-O-CLEANSE;S1-M06-05,S1-M06-05,净化窗口被不同敌群轮替压迫,PLANNED,NOT_IMPLEMENTED,USES_REFERENCES,USES_REFERENCES,NOT_RUN,,,content.s1-m06-06,R01
+S1-M06-07,mission,追猎孢冠守者,6,Campaign Flow / Mission Objectives,ST-S01;ST-S02,S1-S06-02;S1-O-HUNT;S1-M06-06,S1-M06-06,提前清掉下一片孢区取得窗口,PLANNED,NOT_IMPLEMENTED,USES_REFERENCES,USES_REFERENCES,NOT_RUN,,,content.s1-m06-07,R01
+S1-M06-08,mission,泽心孢母,6,Campaign Flow / Mission Objectives,ST-S01;ST-S02,S1-S06-02;S1-O-BOSS;S1-M06-07;S1-B06,S1-M06-07,开辟净化路线，在孢潮切换时进攻,PLANNED,NOT_IMPLEMENTED,USES_REFERENCES,USES_REFERENCES,NOT_RUN,,,content.s1-m06-08,R01
+S1-R07,region,悬台,7,Stage & Map,L06,,S1-M06-08,风向与移动平台迫使观察过桥窗口,PLANNED,NOT_IMPLEMENTED,NOT_STARTED,NOT_STARTED,NOT_RUN,,asset.s1-r07,content.s1-r07,R01
+S1-S07-01,scene,逐风索桥,7,Stage & Map,L06,S1-R07,S1-M06-08,风向与移动平台迫使观察过桥窗口,PLANNED,NOT_IMPLEMENTED,NOT_STARTED,NOT_STARTED,NOT_RUN,,asset.s1-s07-01,content.s1-s07-01,R01
+S1-S07-02,scene,断锚天台,7,Stage & Map,L06,S1-R07,S1-M06-08,风向与移动平台迫使观察过桥窗口,PLANNED,NOT_IMPLEMENTED,NOT_STARTED,NOT_STARTED,NOT_RUN,,asset.s1-s07-02,content.s1-s07-02,R01
+S1-CH07,chapter,第7章·悬台,7,Campaign Flow,ST-S01,,S1-M06-08,断开外层锚链，阻止中枢继续补充能量,PLANNED,NOT_IMPLEMENTED,USES_REFERENCES,USES_REFERENCES,NOT_RUN,,,content.s1-ch07,R01
+S1-C07,character,寒弓客,7,Character Loadout,ST-S03,S1-A19,S1-M06-08,移动中蓄力、停步短窗释放；近身容错低，偏节奏射击,PLANNED,NOT_IMPLEMENTED,NOT_STARTED,NOT_STARTED,NOT_RUN,,asset.s1-c07,content.s1-c07,R01
+S1-A19,active,霜羽弓,7,WeaponSystem,L14,,S1-M06-08,蓄力穿透冰箭,PLANNED,NOT_IMPLEMENTED,NOT_STARTED,NOT_STARTED,NOT_RUN,,asset.s1-a19,content.s1-a19,R01
+S1-P19,passive,凝霜诀,7,SkillDraftSystem,L15,,S1-M06-08,蓄力效率,PLANNED,NOT_IMPLEMENTED,NOT_STARTED,NOT_STARTED,NOT_RUN,,asset.s1-p19,content.s1-p19,R01
+S1-N19,normal_enemy,鸣风隼,7,EnemySystem,L09,,S1-M06-08,交错俯冲形成路线夹击,PLANNED,NOT_IMPLEMENTED,NOT_STARTED,NOT_STARTED,NOT_RUN,,asset.s1-n19,content.s1-n19,R01
+S1-A20,active,碎冰镜,7,WeaponSystem,L14,,S1-M06-08,受击方向形成短时反射碎片,PLANNED,NOT_IMPLEMENTED,NOT_STARTED,NOT_STARTED,NOT_RUN,,asset.s1-a20,content.s1-a20,R01
+S1-P20,passive,映寒经,7,SkillDraftSystem,L15,,S1-M06-08,反射次数,PLANNED,NOT_IMPLEMENTED,NOT_STARTED,NOT_STARTED,NOT_RUN,,asset.s1-p20,content.s1-p20,R01
+S1-N20,normal_enemy,浮锚偶,7,EnemySystem,L09,,S1-M06-08,投下可摧毁锚索封路,PLANNED,NOT_IMPLEMENTED,NOT_STARTED,NOT_STARTED,NOT_RUN,,asset.s1-n20,content.s1-n20,R01
+S1-A21,active,雪尘幡,7,WeaponSystem,L14,,S1-M06-08,移动留下减速地带,PLANNED,NOT_IMPLEMENTED,NOT_STARTED,NOT_STARTED,NOT_RUN,,asset.s1-a21,content.s1-a21,R01
+S1-P21,passive,踏雪法,7,SkillDraftSystem,L15,,S1-M06-08,移动地带宽度,PLANNED,NOT_IMPLEMENTED,NOT_STARTED,NOT_STARTED,NOT_RUN,,asset.s1-p21,content.s1-p21,R01
+S1-N21,normal_enemy,巡桥灵,7,EnemySystem,L09,,S1-M06-08,移动屏障掩护身后敌群,PLANNED,NOT_IMPLEMENTED,NOT_STARTED,NOT_STARTED,NOT_RUN,,asset.s1-n21,content.s1-n21,R01
+S1-E07,elite,断索飞卫,7,Elite Enemies,L19,,S1-M06-08,沿桥跨越，落点预警可反制,PLANNED,NOT_IMPLEMENTED,NOT_STARTED,NOT_STARTED,NOT_RUN,,asset.s1-e07,content.s1-e07,R01
+S1-B07,boss,悬锚巨灵,7,BossStateMachine,L18,,S1-M07-07,锚点破坏与移动桥面,PLANNED,NOT_IMPLEMENTED,NOT_STARTED,NOT_STARTED,NOT_RUN,,asset.s1-b07,content.s1-b07,R01
+S1-M07-01,mission,守住逐风桥,7,Campaign Flow / Mission Objectives,ST-S01;ST-S02,S1-S07-01;S1-O-SURVIVE;S1-M06-08,S1-M06-08,交错俯冲与风向改变移动窗口,PLANNED,NOT_IMPLEMENTED,USES_REFERENCES,USES_REFERENCES,NOT_RUN,,,content.s1-m07-01,R01
+S1-M07-02,mission,护送解锚使,7,Campaign Flow / Mission Objectives,ST-S01;ST-S02,S1-S07-01;S1-O-ESCORT;S1-M07-01,S1-M07-01,短桥停靠点与追兵交替,PLANNED,NOT_IMPLEMENTED,USES_REFERENCES,USES_REFERENCES,NOT_RUN,,,content.s1-m07-02,R01
+S1-M07-03,mission,追击断索飞卫,7,Campaign Flow / Mission Objectives,ST-S01;ST-S02,S1-S07-01;S1-O-HUNT;S1-M07-02,S1-M07-02,预判落点截击，避免无限追逐,PLANNED,NOT_IMPLEMENTED,USES_REFERENCES,USES_REFERENCES,NOT_RUN,,,content.s1-m07-03,R01
+S1-M07-04,mission,净化浮桥锚座,7,Campaign Flow / Mission Objectives,ST-S01;ST-S02,S1-S07-01;S1-O-CLEANSE;S1-M07-03,S1-M07-03,先处理封路索，再进入净化区,PLANNED,NOT_IMPLEMENTED,USES_REFERENCES,USES_REFERENCES,NOT_RUN,,,content.s1-m07-04,R01
+S1-M07-05,mission,拆断外层锚链,7,Campaign Flow / Mission Objectives,ST-S01;ST-S02,S1-S07-02;S1-O-BREAK;S1-M07-04,S1-M07-04,锚链解除改变下一段桥面,PLANNED,NOT_IMPLEMENTED,USES_REFERENCES,USES_REFERENCES,NOT_RUN,,,content.s1-m07-05,R01
+S1-M07-06,mission,护送地脉容器,7,Campaign Flow / Mission Objectives,ST-S01;ST-S02,S1-S07-02;S1-O-ESCORT;S1-M07-05,S1-M07-05,保持距离保护容器并引开屏障敌,PLANNED,NOT_IMPLEMENTED,USES_REFERENCES,USES_REFERENCES,NOT_RUN,,,content.s1-m07-06,R01
+S1-M07-07,mission,切断援军升台,7,Campaign Flow / Mission Objectives,ST-S01;ST-S02,S1-S07-02;S1-O-BREAK;S1-M07-06,S1-M07-06,同时压力下选择拆除次序,PLANNED,NOT_IMPLEMENTED,USES_REFERENCES,USES_REFERENCES,NOT_RUN,,,content.s1-m07-07,R01
+S1-M07-08,mission,悬锚巨灵,7,Campaign Flow / Mission Objectives,ST-S01;ST-S02,S1-S07-02;S1-O-BOSS;S1-M07-07;S1-B07,S1-M07-07,在移动桥面周期中处理锚点与本体,PLANNED,NOT_IMPLEMENTED,USES_REFERENCES,USES_REFERENCES,NOT_RUN,,,content.s1-m07-08,R01
+S1-R08,region,寂庭,8,Stage & Map,L06,,S1-M07-08,已学环境机制按可预告顺序组合,PLANNED,NOT_IMPLEMENTED,NOT_STARTED,NOT_STARTED,NOT_RUN,,asset.s1-r08,content.s1-r08,R01
+S1-S08-01,scene,空庭回廊,8,Stage & Map,L06,S1-R08,S1-M07-08,已学环境机制按可预告顺序组合,PLANNED,NOT_IMPLEMENTED,NOT_STARTED,NOT_STARTED,NOT_RUN,,asset.s1-s08-01,content.s1-s08-01,R01
+S1-S08-02,scene,归脉中枢,8,Stage & Map,L06,S1-R08,S1-M07-08,已学环境机制按可预告顺序组合,PLANNED,NOT_IMPLEMENTED,NOT_STARTED,NOT_STARTED,NOT_RUN,,asset.s1-s08-02,content.s1-s08-02,R01
+S1-CH08,chapter,第8章·寂庭,8,Campaign Flow,ST-S01,,S1-M07-08,进入中枢，解除守门装置并终止抽取,PLANNED,NOT_IMPLEMENTED,USES_REFERENCES,USES_REFERENCES,NOT_RUN,,,content.s1-ch08,R01
+S1-C08,character,墨印师,8,Character Loadout,ST-S03,S1-A22,S1-M07-08,不同印记轮替产生连携；重复同印无额外收益，偏顺序构筑,PLANNED,NOT_IMPLEMENTED,NOT_STARTED,NOT_STARTED,NOT_RUN,,asset.s1-c08,content.s1-c08,R01
+S1-A22,active,回墨符,8,WeaponSystem,L14,,S1-M07-08,命中留下可被异类印记触发的墨印,PLANNED,NOT_IMPLEMENTED,NOT_STARTED,NOT_STARTED,NOT_RUN,,asset.s1-a22,content.s1-a22,R01
+S1-P22,passive,藏墨谱,8,SkillDraftSystem,L15,,S1-M07-08,印记容量,PLANNED,NOT_IMPLEMENTED,NOT_STARTED,NOT_STARTED,NOT_RUN,,asset.s1-p22,content.s1-p22,R01
+S1-N22,normal_enemy,空壳卫,8,EnemySystem,L09,,S1-M07-08,短时护盾后追击,PLANNED,NOT_IMPLEMENTED,NOT_STARTED,NOT_STARTED,NOT_RUN,,asset.s1-n22,content.s1-n22,R01
+S1-A23,active,蚀纹盘,8,WeaponSystem,L14,,S1-M07-08,固定区域周期消耗印记,PLANNED,NOT_IMPLEMENTED,NOT_STARTED,NOT_STARTED,NOT_RUN,,asset.s1-a23,content.s1-a23,R01
+S1-P23,passive,蚀痕诀,8,SkillDraftSystem,L15,,S1-M07-08,消耗印记返还,PLANNED,NOT_IMPLEMENTED,NOT_STARTED,NOT_STARTED,NOT_RUN,,asset.s1-p23,content.s1-p23,R01
+S1-N23,normal_enemy,缄印使,8,EnemySystem,L09,,S1-M07-08,可打断的范围封印施法,PLANNED,NOT_IMPLEMENTED,NOT_STARTED,NOT_STARTED,NOT_RUN,,asset.s1-n23,content.s1-n23,R01
+S1-A24,active,空相针,8,WeaponSystem,L14,,S1-M07-08,穿越目标后回击有印记敌人,PLANNED,NOT_IMPLEMENTED,NOT_STARTED,NOT_STARTED,NOT_RUN,,asset.s1-a24,content.s1-a24,R01
+S1-P24,passive,空纹法,8,SkillDraftSystem,L15,,S1-M07-08,跨目标印记转移,PLANNED,NOT_IMPLEMENTED,NOT_STARTED,NOT_STARTED,NOT_RUN,,asset.s1-p24,content.s1-p24,R01
+S1-N24,normal_enemy,噬流体,8,EnemySystem,L09,,S1-M07-08,吸收附近印记区后改变攻击方向,PLANNED,NOT_IMPLEMENTED,NOT_STARTED,NOT_STARTED,NOT_RUN,,asset.s1-n24,content.s1-n24,R01
+S1-E08,elite,寂印执卫,8,Elite Enemies,L19,,S1-M07-08,三类封印轮替后有统一空窗,PLANNED,NOT_IMPLEMENTED,NOT_STARTED,NOT_STARTED,NOT_RUN,,asset.s1-e08,content.s1-e08,R01
+S1-B08,boss,守庭无面,8,BossStateMachine,L18,,S1-M08-06,组合封印与关键解除窗口,PLANNED,NOT_IMPLEMENTED,NOT_STARTED,NOT_STARTED,NOT_RUN,,asset.s1-b08,content.s1-b08,R01
+S1-M08-01,mission,清除空庭残印,8,Campaign Flow / Mission Objectives,ST-S01;ST-S02,S1-S08-01;S1-O-CLEANSE;S1-M07-08,S1-M07-08,复合危险按预告顺序出现,PLANNED,NOT_IMPLEMENTED,USES_REFERENCES,USES_REFERENCES,NOT_RUN,,,content.s1-m08-01,R01
+S1-M08-02,mission,破开回廊锁,8,Campaign Flow / Mission Objectives,ST-S01;ST-S02,S1-S08-01;S1-O-BREAK;S1-M08-01,S1-M08-01,利用此前获取的信息选择锚点顺序,PLANNED,NOT_IMPLEMENTED,USES_REFERENCES,USES_REFERENCES,NOT_RUN,,,content.s1-m08-02,R01
+S1-M08-03,mission,护送归脉匣,8,Campaign Flow / Mission Objectives,ST-S01;ST-S02,S1-S08-01;S1-O-ESCORT;S1-M08-02,S1-M08-02,处理封印施法，保护缓行目标,PLANNED,NOT_IMPLEMENTED,USES_REFERENCES,USES_REFERENCES,NOT_RUN,,,content.s1-m08-03,R01
+S1-M08-04,mission,追猎缄印核心,8,Campaign Flow / Mission Objectives,ST-S01;ST-S02,S1-S08-01;S1-O-HUNT;S1-M08-03,S1-M08-03,敌群掩护可打断目标，必须转火,PLANNED,NOT_IMPLEMENTED,USES_REFERENCES,USES_REFERENCES,NOT_RUN,,,content.s1-m08-04,R01
+S1-M08-05,mission,守住中枢入口,8,Campaign Flow / Mission Objectives,ST-S01;ST-S02,S1-S08-02;S1-O-SURVIVE;S1-M08-04,S1-M08-04,各域代表敌群按可读节奏轮替,PLANNED,NOT_IMPLEMENTED,USES_REFERENCES,USES_REFERENCES,NOT_RUN,,,content.s1-m08-05,R01
+S1-M08-06,mission,关闭输送节点,8,Campaign Flow / Mission Objectives,ST-S01;ST-S02,S1-S08-02;S1-O-BREAK;S1-M08-05,S1-M08-05,每个节点对应一种已掌握反制,PLANNED,NOT_IMPLEMENTED,USES_REFERENCES,USES_REFERENCES,NOT_RUN,,,content.s1-m08-06,R01
+S1-M08-07,mission,守庭无面,8,Campaign Flow / Mission Objectives,ST-S01;ST-S02,S1-S08-02;S1-O-BOSS;S1-M08-06;S1-B08,S1-M08-06,解除三类封印，取得终局入口,PLANNED,NOT_IMPLEMENTED,USES_REFERENCES,USES_REFERENCES,NOT_RUN,,,content.s1-m08-07,R01
+S1-M08-08,mission,归脉中枢,8,Campaign Flow / Mission Objectives,ST-S01;ST-S02,S1-S08-02;S1-O-BOSS;S1-M08-07;S1-B09,S1-M08-07,终止抽取并进入结局；完成即持久化主线通关,PLANNED,NOT_IMPLEMENTED,USES_REFERENCES,USES_REFERENCES,NOT_RUN,,,content.s1-m08-08,R01
+S1-B09,boss,归脉中枢,8,BossStateMachine,L18,,S1-M08-07,关闭输送节点后开放核心；收束此前六类目标经验,PLANNED,NOT_IMPLEMENTED,NOT_STARTED,NOT_STARTED,NOT_RUN,,asset.s1-b09,content.s1-b09,R01
+S1-V01,evolution,流光回阵,1,WeaponSystem / SkillDraftSystem,L14;L15,S1-A01;S1-P01,START,飞剑来回穿行组成移动走廊,PLANNED,NOT_IMPLEMENTED,NOT_STARTED,NOT_STARTED,NOT_RUN,,asset.s1-v01,content.s1-v01,R01
+S1-V02,evolution,星环追刃,1,WeaponSystem / SkillDraftSystem,L14;L15,S1-A02;S1-P02,START,回旋刃围绕标记目标展开,PLANNED,NOT_IMPLEMENTED,NOT_STARTED,NOT_STARTED,NOT_RUN,,asset.s1-v02,content.s1-v02,R01
+S1-V03,evolution,薪火接界,2,WeaponSystem / SkillDraftSystem,L14;L15,S1-A04;S1-P04,S1-M01-08,相邻燃烧区接力扩散,PLANNED,NOT_IMPLEMENTED,NOT_STARTED,NOT_STARTED,NOT_RUN,,asset.s1-v03,content.s1-v03,R01
+S1-V04,evolution,千焰折扇,2,WeaponSystem / SkillDraftSystem,L14;L15,S1-A05;S1-P05,S1-M01-08,热浪折返并向侧翼展开,PLANNED,NOT_IMPLEMENTED,NOT_STARTED,NOT_STARTED,NOT_RUN,,asset.s1-v04,content.s1-v04,R01
+S1-V05,evolution,回刃护城,3,WeaponSystem / SkillDraftSystem,L14;L15,S1-A07;S1-P07,S1-M02-08,近身防御与环刃反击联动,PLANNED,NOT_IMPLEMENTED,NOT_STARTED,NOT_STARTED,NOT_RUN,,asset.s1-v05,content.s1-v05,R01
+S1-V06,evolution,沧音连环,3,WeaponSystem / SkillDraftSystem,L14;L15,S1-A08;S1-P08,S1-M02-08,声波回响形成安全退路,PLANNED,NOT_IMPLEMENTED,NOT_STARTED,NOT_STARTED,NOT_RUN,,asset.s1-v06,content.s1-v06,R01
+S1-V07,evolution,交织弩阵,4,WeaponSystem / SkillDraftSystem,L14;L15,S1-A10;S1-P10,S1-M03-08,两座弩台形成交叉火线,PLANNED,NOT_IMPLEMENTED,NOT_STARTED,NOT_STARTED,NOT_RUN,,asset.s1-v07,content.s1-v07,R01
+S1-V08,evolution,蜂群换巢,4,WeaponSystem / SkillDraftSystem,L14;L15,S1-A11;S1-P11,S1-M03-08,蜂群消灭目标后转移强化,PLANNED,NOT_IMPLEMENTED,NOT_STARTED,NOT_STARTED,NOT_RUN,,asset.s1-v08,content.s1-v08,R01
+S1-V09,evolution,九转鸣霆,5,WeaponSystem / SkillDraftSystem,L14;L15,S1-A13;S1-P13,S1-M04-08,雷链回流到初始目标,PLANNED,NOT_IMPLEMENTED,NOT_STARTED,NOT_STARTED,NOT_RUN,,asset.s1-v09,content.s1-v09,R01
+S1-V10,evolution,连霆落印,5,WeaponSystem / SkillDraftSystem,L14;L15,S1-A14;S1-P14,S1-M04-08,标记按先后顺序引爆,PLANNED,NOT_IMPLEMENTED,NOT_STARTED,NOT_STARTED,NOT_RUN,,asset.s1-v10,content.s1-v10,R01
+S1-V11,evolution,森罗织界,6,WeaponSystem / SkillDraftSystem,L14;L15,S1-A16;S1-P16,S1-M05-08,根区随控制目标连接,PLANNED,NOT_IMPLEMENTED,NOT_STARTED,NOT_STARTED,NOT_RUN,,asset.s1-v11,content.s1-v11,R01
+S1-V12,evolution,流孢星爆,6,WeaponSystem / SkillDraftSystem,L14;L15,S1-A17;S1-P17,S1-M05-08,孢子击破传播延迟爆发,PLANNED,NOT_IMPLEMENTED,NOT_STARTED,NOT_STARTED,NOT_RUN,,asset.s1-v12,content.s1-v12,R01
+S1-V13,evolution,霜羽贯空,7,WeaponSystem / SkillDraftSystem,L14;L15,S1-A19;S1-P19,S1-M06-08,蓄力冰箭分裂成贯穿侧翼,PLANNED,NOT_IMPLEMENTED,NOT_STARTED,NOT_STARTED,NOT_RUN,,asset.s1-v13,content.s1-v13,R01
+S1-V14,evolution,万镜寒轮,7,WeaponSystem / SkillDraftSystem,L14;L15,S1-A20;S1-P20,S1-M06-08,定向碎片形成反击环,PLANNED,NOT_IMPLEMENTED,NOT_STARTED,NOT_STARTED,NOT_RUN,,asset.s1-v14,content.s1-v14,R01
+S1-V15,evolution,百墨回书,8,WeaponSystem / SkillDraftSystem,L14;L15,S1-A22;S1-P22,S1-M07-08,轮替印记形成回击链,PLANNED,NOT_IMPLEMENTED,NOT_STARTED,NOT_STARTED,NOT_RUN,,asset.s1-v15,content.s1-v15,R01
+S1-V16,evolution,蚀相回盘,8,WeaponSystem / SkillDraftSystem,L14;L15,S1-A23;S1-P23,S1-M07-08,消耗印记生成移动蚀区,PLANNED,NOT_IMPLEMENTED,NOT_STARTED,NOT_STARTED,NOT_RUN,,asset.s1-v16,content.s1-v16,R01
+S1-RISK01,risk_event,残药篓,1,RiskChoiceSystem,L17,,S1-M01-03,直接取普通补给；或保留原位引来追猎群后取额外材料,PLANNED,NOT_IMPLEMENTED,USES_REFERENCES,USES_REFERENCES,NOT_RUN,,,content.s1-risk01,R01
+S1-RISK02,risk_event,风井回声,1,RiskChoiceSystem,L17,,S1-M01-03,关闭回声取得安全路线；或维持噪声挑战围攻,PLANNED,NOT_IMPLEMENTED,USES_REFERENCES,USES_REFERENCES,NOT_RUN,,,content.s1-risk02,R01
+S1-RISK03,risk_event,断桥急援,1,RiskChoiceSystem,L17,,S1-M01-03,走现有路线；或绕到伤者位置救援取得备战材料,PLANNED,NOT_IMPLEMENTED,USES_REFERENCES,USES_REFERENCES,NOT_RUN,,,content.s1-risk03,R01
+S1-RISK04,risk_event,封炉余火,2,RiskChoiceSystem,L17,,S1-M01-08,熄灭余火恢复；或借火强化并承受周期热区,PLANNED,NOT_IMPLEMENTED,USES_REFERENCES,USES_REFERENCES,NOT_RUN,,,content.s1-risk04,R01
+S1-RISK05,risk_event,矿脉裂隙,2,RiskChoiceSystem,L17,,S1-M01-08,封闭裂口；或开采后迎接破壳群,PLANNED,NOT_IMPLEMENTED,USES_REFERENCES,USES_REFERENCES,NOT_RUN,,,content.s1-risk05,R01
+S1-RISK06,risk_event,失联炉工,2,RiskChoiceSystem,L17,,S1-M01-08,交付冷却物资；或护送炉工穿过高压区域,PLANNED,NOT_IMPLEMENTED,USES_REFERENCES,USES_REFERENCES,NOT_RUN,,,content.s1-risk06,R01
+S1-RISK07,risk_event,漂流箱,3,RiskChoiceSystem,L17,,S1-M02-08,取岸边补给；或冒险到涨潮区回收大箱,PLANNED,NOT_IMPLEMENTED,USES_REFERENCES,USES_REFERENCES,NOT_RUN,,,content.s1-risk07,R01
+S1-RISK08,risk_event,旧港求救,3,RiskChoiceSystem,L17,,S1-M02-08,稳住港口；或追击劫掠者带回物资,PLANNED,NOT_IMPLEMENTED,USES_REFERENCES,USES_REFERENCES,NOT_RUN,,,content.s1-risk08,R01
+S1-RISK09,risk_event,潮碑刻痕,3,RiskChoiceSystem,L17,,S1-M02-08,抄取已露文字；或延长停留应对潮群,PLANNED,NOT_IMPLEMENTED,USES_REFERENCES,USES_REFERENCES,NOT_RUN,,,content.s1-risk09,R01
+S1-RISK10,risk_event,镜核残片,4,RiskChoiceSystem,L17,,S1-M03-08,销毁不稳定残片；或携带残片换取奖励并吸引弹幕机,PLANNED,NOT_IMPLEMENTED,USES_REFERENCES,USES_REFERENCES,NOT_RUN,,,content.s1-risk10,R01
+S1-RISK11,risk_event,停摆弩机,4,RiskChoiceSystem,L17,,S1-M03-08,拆成材料；或修复它同时唤醒守卫,PLANNED,NOT_IMPLEMENTED,USES_REFERENCES,USES_REFERENCES,NOT_RUN,,,content.s1-risk11,R01
+S1-RISK12,risk_event,遗失通行印,4,RiskChoiceSystem,L17,,S1-M03-08,走已知通道；或开启侧门挑战精英,PLANNED,NOT_IMPLEMENTED,USES_REFERENCES,USES_REFERENCES,NOT_RUN,,,content.s1-risk12,R01
+S1-RISK13,risk_event,雪灯燃芯,5,RiskChoiceSystem,L17,,S1-M04-08,当场取暖恢复；或携芯前行但暂减安全灯区,PLANNED,NOT_IMPLEMENTED,USES_REFERENCES,USES_REFERENCES,NOT_RUN,,,content.s1-risk13,R01
+S1-RISK14,risk_event,冰下残匣,5,RiskChoiceSystem,L17,,S1-M04-08,封存危险冰面；或打破冰层迎击潜藏敌,PLANNED,NOT_IMPLEMENTED,USES_REFERENCES,USES_REFERENCES,NOT_RUN,,,content.s1-risk14,R01
+S1-RISK15,risk_event,迷途旅人,5,RiskChoiceSystem,L17,,S1-M04-08,标记回路；或护送旅人通过暴风窗口,PLANNED,NOT_IMPLEMENTED,USES_REFERENCES,USES_REFERENCES,NOT_RUN,,,content.s1-risk15,R01
+S1-RISK16,risk_event,稀有孢种,6,RiskChoiceSystem,L17,,S1-M05-08,焚毁净化；或封装孢种并承受追踪孢群,PLANNED,NOT_IMPLEMENTED,USES_REFERENCES,USES_REFERENCES,NOT_RUN,,,content.s1-risk16,R01
+S1-RISK17,risk_event,残碑记忆,6,RiskChoiceSystem,L17,,S1-M05-08,读取安全片段；或解除封印挑战守碑者,PLANNED,NOT_IMPLEMENTED,USES_REFERENCES,USES_REFERENCES,NOT_RUN,,,content.s1-risk17,R01
+S1-RISK18,risk_event,净水余量,6,RiskChoiceSystem,L17,,S1-M05-08,当场恢复；或留作清理一片危险菌区取得材料,PLANNED,NOT_IMPLEMENTED,USES_REFERENCES,USES_REFERENCES,NOT_RUN,,,content.s1-risk18,R01
+S1-RISK19,risk_event,摇晃吊仓,7,RiskChoiceSystem,L17,,S1-M06-08,固定吊仓清路；或拆锁取得物资并迎击空袭,PLANNED,NOT_IMPLEMENTED,USES_REFERENCES,USES_REFERENCES,NOT_RUN,,,content.s1-risk19,R01
+S1-RISK20,risk_event,松脱锚索,7,RiskChoiceSystem,L17,,S1-M06-08,切断索链；或暂留锚索引精英上桥,PLANNED,NOT_IMPLEMENTED,USES_REFERENCES,USES_REFERENCES,NOT_RUN,,,content.s1-risk20,R01
+S1-RISK21,risk_event,守桥残阵,7,RiskChoiceSystem,L17,,S1-M06-08,关闭残阵；或修复防线同时承受多路攻击,PLANNED,NOT_IMPLEMENTED,USES_REFERENCES,USES_REFERENCES,NOT_RUN,,,content.s1-risk21,R01
+S1-RISK22,risk_event,空庭封藏,8,RiskChoiceSystem,L17,,S1-M07-08,留下封藏平稳通过；或开启残箱迎击封印卫,PLANNED,NOT_IMPLEMENTED,USES_REFERENCES,USES_REFERENCES,NOT_RUN,,,content.s1-risk22,R01
+S1-RISK23,risk_event,回流灵脉,8,RiskChoiceSystem,L17,,S1-M07-08,直接切断回流；或短时引流换取资源并承受组合危险,PLANNED,NOT_IMPLEMENTED,USES_REFERENCES,USES_REFERENCES,NOT_RUN,,,content.s1-risk23,R01
+S1-RISK24,risk_event,旧日投影,8,RiskChoiceSystem,L17,,S1-M07-08,记录投影；或触发战斗重演取得材料,PLANNED,NOT_IMPLEMENTED,USES_REFERENCES,USES_REFERENCES,NOT_RUN,,,content.s1-risk24,R01
+S1-PREP01,prep_effect,凝息散,1,Herb Preparation (legacy Zhangtian),L22,,S1-M01-03,短期开局恢复缓冲,PLANNED,NOT_IMPLEMENTED,NOT_STARTED,NOT_STARTED,NOT_RUN,,asset.s1-prep01,content.s1-prep01,R01
+S1-PREP02,prep_effect,引灵露,1,Herb Preparation (legacy Zhangtian),L22,,S1-M01-03,开局拾取范围提升,PLANNED,NOT_IMPLEMENTED,NOT_STARTED,NOT_STARTED,NOT_RUN,,asset.s1-prep02,content.s1-prep02,R01
+S1-PREP03,prep_effect,护脉丸,2,Herb Preparation (legacy Zhangtian),L22,,S1-M01-08,首次重大受击提供有限保护,PLANNED,NOT_IMPLEMENTED,NOT_STARTED,NOT_STARTED,NOT_RUN,,asset.s1-prep03,content.s1-prep03,R01
+S1-PREP04,prep_effect,燃芯饮,2,Herb Preparation (legacy Zhangtian),L22,,S1-M01-08,初期灼烧构筑辅助,PLANNED,NOT_IMPLEMENTED,NOT_STARTED,NOT_STARTED,NOT_RUN,,asset.s1-prep04,content.s1-prep04,R01
+S1-PREP05,prep_effect,澄潮露,3,Herb Preparation (legacy Zhangtian),L22,,S1-M02-08,短期改善减速应对,PLANNED,NOT_IMPLEMENTED,NOT_STARTED,NOT_STARTED,NOT_RUN,,asset.s1-prep05,content.s1-prep05,R01
+S1-PREP06,prep_effect,稳机散,4,Herb Preparation (legacy Zhangtian),L22,,S1-M03-08,召唤初始部署辅助,PLANNED,NOT_IMPLEMENTED,NOT_STARTED,NOT_STARTED,NOT_RUN,,asset.s1-prep06,content.s1-prep06,R01
+S1-PREP07,prep_effect,续光丹,4,Herb Preparation (legacy Zhangtian),L22,,S1-M03-08,首个控制效果后的短期恢复,PLANNED,NOT_IMPLEMENTED,NOT_STARTED,NOT_STARTED,NOT_RUN,,asset.s1-prep07,content.s1-prep07,R01
+S1-PREP08,prep_effect,暖骨饮,5,Herb Preparation (legacy Zhangtian),L22,,S1-M04-08,抵御首轮环境伤害,PLANNED,NOT_IMPLEMENTED,NOT_STARTED,NOT_STARTED,NOT_RUN,,asset.s1-prep08,content.s1-prep08,R01
+S1-PREP09,prep_effect,净孢丸,6,Herb Preparation (legacy Zhangtian),L22,,S1-M05-08,降低首段持续区域伤害,PLANNED,NOT_IMPLEMENTED,NOT_STARTED,NOT_STARTED,NOT_RUN,,asset.s1-prep09,content.s1-prep09,R01
+S1-PREP10,prep_effect,生根露,6,Herb Preparation (legacy Zhangtian),L22,,S1-M05-08,开局控制收益辅助,PLANNED,NOT_IMPLEMENTED,NOT_STARTED,NOT_STARTED,NOT_RUN,,asset.s1-prep10,content.s1-prep10,R01
+S1-PREP11,prep_effect,御风散,7,Herb Preparation (legacy Zhangtian),L22,,S1-M06-08,开局移动加速但有明确上限,PLANNED,NOT_IMPLEMENTED,NOT_STARTED,NOT_STARTED,NOT_RUN,,asset.s1-prep11,content.s1-prep11,R01
+S1-PREP12,prep_effect,定印丹,8,Herb Preparation (legacy Zhangtian),L22,,S1-M07-08,初次构筑刷新机会辅助,PLANNED,NOT_IMPLEMENTED,NOT_STARTED,NOT_STARTED,NOT_RUN,,asset.s1-prep12,content.s1-prep12,R01
+S1-CHAL01,challenge,岚壑·余压回潮,1,Challenge Rules,ST-S04,S1-R01,S1-M01-08,同区域混合敌群加强；验证空间压力应对,PLANNED,NOT_IMPLEMENTED,USES_REFERENCES,USES_REFERENCES,NOT_RUN,,,content.s1-chal01,R01
+S1-CHAL02,challenge,岚壑·简装试炼,1,Challenge Rules,ST-S04,S1-R01,S1-M01-08,限制开局备战与部分构筑选项；条件进场前公开,PLANNED,NOT_IMPLEMENTED,USES_REFERENCES,USES_REFERENCES,NOT_RUN,,,content.s1-chal02,R01
+S1-CHAL03,challenge,岚壑·险路连行,1,Challenge Rules,ST-S04,S1-R01,S1-M01-08,同时出现两种该章危险机制；保持预警与可避路径,PLANNED,NOT_IMPLEMENTED,USES_REFERENCES,USES_REFERENCES,NOT_RUN,,,content.s1-chal03,R01
+S1-CHAL04,challenge,赤窑·余压回潮,2,Challenge Rules,ST-S04,S1-R02,S1-M02-08,同区域混合敌群加强；验证空间压力应对,PLANNED,NOT_IMPLEMENTED,USES_REFERENCES,USES_REFERENCES,NOT_RUN,,,content.s1-chal04,R01
+S1-CHAL05,challenge,赤窑·简装试炼,2,Challenge Rules,ST-S04,S1-R02,S1-M02-08,限制开局备战与部分构筑选项；条件进场前公开,PLANNED,NOT_IMPLEMENTED,USES_REFERENCES,USES_REFERENCES,NOT_RUN,,,content.s1-chal05,R01
+S1-CHAL06,challenge,赤窑·险路连行,2,Challenge Rules,ST-S04,S1-R02,S1-M02-08,同时出现两种该章危险机制；保持预警与可避路径,PLANNED,NOT_IMPLEMENTED,USES_REFERENCES,USES_REFERENCES,NOT_RUN,,,content.s1-chal06,R01
+S1-CHAL07,challenge,沉潮·余压回潮,3,Challenge Rules,ST-S04,S1-R03,S1-M03-08,同区域混合敌群加强；验证空间压力应对,PLANNED,NOT_IMPLEMENTED,USES_REFERENCES,USES_REFERENCES,NOT_RUN,,,content.s1-chal07,R01
+S1-CHAL08,challenge,沉潮·简装试炼,3,Challenge Rules,ST-S04,S1-R03,S1-M03-08,限制开局备战与部分构筑选项；条件进场前公开,PLANNED,NOT_IMPLEMENTED,USES_REFERENCES,USES_REFERENCES,NOT_RUN,,,content.s1-chal08,R01
+S1-CHAL09,challenge,沉潮·险路连行,3,Challenge Rules,ST-S04,S1-R03,S1-M03-08,同时出现两种该章危险机制；保持预警与可避路径,PLANNED,NOT_IMPLEMENTED,USES_REFERENCES,USES_REFERENCES,NOT_RUN,,,content.s1-chal09,R01
+S1-CHAL10,challenge,铜陵·余压回潮,4,Challenge Rules,ST-S04,S1-R04,S1-M04-08,同区域混合敌群加强；验证空间压力应对,PLANNED,NOT_IMPLEMENTED,USES_REFERENCES,USES_REFERENCES,NOT_RUN,,,content.s1-chal10,R01
+S1-CHAL11,challenge,铜陵·简装试炼,4,Challenge Rules,ST-S04,S1-R04,S1-M04-08,限制开局备战与部分构筑选项；条件进场前公开,PLANNED,NOT_IMPLEMENTED,USES_REFERENCES,USES_REFERENCES,NOT_RUN,,,content.s1-chal11,R01
+S1-CHAL12,challenge,铜陵·险路连行,4,Challenge Rules,ST-S04,S1-R04,S1-M04-08,同时出现两种该章危险机制；保持预警与可避路径,PLANNED,NOT_IMPLEMENTED,USES_REFERENCES,USES_REFERENCES,NOT_RUN,,,content.s1-chal12,R01
+S1-CHAL13,challenge,雪脊·余压回潮,5,Challenge Rules,ST-S04,S1-R05,S1-M05-08,同区域混合敌群加强；验证空间压力应对,PLANNED,NOT_IMPLEMENTED,USES_REFERENCES,USES_REFERENCES,NOT_RUN,,,content.s1-chal13,R01
+S1-CHAL14,challenge,雪脊·简装试炼,5,Challenge Rules,ST-S04,S1-R05,S1-M05-08,限制开局备战与部分构筑选项；条件进场前公开,PLANNED,NOT_IMPLEMENTED,USES_REFERENCES,USES_REFERENCES,NOT_RUN,,,content.s1-chal14,R01
+S1-CHAL15,challenge,雪脊·险路连行,5,Challenge Rules,ST-S04,S1-R05,S1-M05-08,同时出现两种该章危险机制；保持预警与可避路径,PLANNED,NOT_IMPLEMENTED,USES_REFERENCES,USES_REFERENCES,NOT_RUN,,,content.s1-chal15,R01
+S1-CHAL16,challenge,墨泽·余压回潮,6,Challenge Rules,ST-S04,S1-R06,S1-M06-08,同区域混合敌群加强；验证空间压力应对,PLANNED,NOT_IMPLEMENTED,USES_REFERENCES,USES_REFERENCES,NOT_RUN,,,content.s1-chal16,R01
+S1-CHAL17,challenge,墨泽·简装试炼,6,Challenge Rules,ST-S04,S1-R06,S1-M06-08,限制开局备战与部分构筑选项；条件进场前公开,PLANNED,NOT_IMPLEMENTED,USES_REFERENCES,USES_REFERENCES,NOT_RUN,,,content.s1-chal17,R01
+S1-CHAL18,challenge,墨泽·险路连行,6,Challenge Rules,ST-S04,S1-R06,S1-M06-08,同时出现两种该章危险机制；保持预警与可避路径,PLANNED,NOT_IMPLEMENTED,USES_REFERENCES,USES_REFERENCES,NOT_RUN,,,content.s1-chal18,R01
+S1-CHAL19,challenge,悬台·余压回潮,7,Challenge Rules,ST-S04,S1-R07,S1-M07-08,同区域混合敌群加强；验证空间压力应对,PLANNED,NOT_IMPLEMENTED,USES_REFERENCES,USES_REFERENCES,NOT_RUN,,,content.s1-chal19,R01
+S1-CHAL20,challenge,悬台·简装试炼,7,Challenge Rules,ST-S04,S1-R07,S1-M07-08,限制开局备战与部分构筑选项；条件进场前公开,PLANNED,NOT_IMPLEMENTED,USES_REFERENCES,USES_REFERENCES,NOT_RUN,,,content.s1-chal20,R01
+S1-CHAL21,challenge,悬台·险路连行,7,Challenge Rules,ST-S04,S1-R07,S1-M07-08,同时出现两种该章危险机制；保持预警与可避路径,PLANNED,NOT_IMPLEMENTED,USES_REFERENCES,USES_REFERENCES,NOT_RUN,,,content.s1-chal21,R01
+S1-CHAL22,challenge,寂庭·余压回潮,8,Challenge Rules,ST-S04,S1-R08,S1-M08-08,同区域混合敌群加强；验证空间压力应对,PLANNED,NOT_IMPLEMENTED,USES_REFERENCES,USES_REFERENCES,NOT_RUN,,,content.s1-chal22,R01
+S1-CHAL23,challenge,寂庭·简装试炼,8,Challenge Rules,ST-S04,S1-R08,S1-M08-08,限制开局备战与部分构筑选项；条件进场前公开,PLANNED,NOT_IMPLEMENTED,USES_REFERENCES,USES_REFERENCES,NOT_RUN,,,content.s1-chal23,R01
+S1-CHAL24,challenge,寂庭·险路连行,8,Challenge Rules,ST-S04,S1-R08,S1-M08-08,同时出现两种该章危险机制；保持预警与可避路径,PLANNED,NOT_IMPLEMENTED,USES_REFERENCES,USES_REFERENCES,NOT_RUN,,,content.s1-chal24,R01
+S1-ACH01,achievement,岚壑平息,1,Codex & Achievements / Steam,ST-S05;ST-S08,S1-M01-08,START,首次持久化第1章完成,PLANNED,NOT_IMPLEMENTED,NOT_STARTED,NOT_STARTED,NOT_RUN,,asset.s1-ach01,content.s1-ach01,R10
+S1-ACH02,achievement,赤窑平息,2,Codex & Achievements / Steam,ST-S05;ST-S08,S1-M02-08,START,首次持久化第2章完成,PLANNED,NOT_IMPLEMENTED,NOT_STARTED,NOT_STARTED,NOT_RUN,,asset.s1-ach02,content.s1-ach02,R10
+S1-ACH03,achievement,沉潮平息,3,Codex & Achievements / Steam,ST-S05;ST-S08,S1-M03-08,START,首次持久化第3章完成,PLANNED,NOT_IMPLEMENTED,NOT_STARTED,NOT_STARTED,NOT_RUN,,asset.s1-ach03,content.s1-ach03,R10
+S1-ACH04,achievement,铜陵平息,4,Codex & Achievements / Steam,ST-S05;ST-S08,S1-M04-08,START,首次持久化第4章完成,PLANNED,NOT_IMPLEMENTED,NOT_STARTED,NOT_STARTED,NOT_RUN,,asset.s1-ach04,content.s1-ach04,R10
+S1-ACH05,achievement,雪脊平息,5,Codex & Achievements / Steam,ST-S05;ST-S08,S1-M05-08,START,首次持久化第5章完成,PLANNED,NOT_IMPLEMENTED,NOT_STARTED,NOT_STARTED,NOT_RUN,,asset.s1-ach05,content.s1-ach05,R10
+S1-ACH06,achievement,墨泽平息,6,Codex & Achievements / Steam,ST-S05;ST-S08,S1-M06-08,START,首次持久化第6章完成,PLANNED,NOT_IMPLEMENTED,NOT_STARTED,NOT_STARTED,NOT_RUN,,asset.s1-ach06,content.s1-ach06,R10
+S1-ACH07,achievement,悬台平息,7,Codex & Achievements / Steam,ST-S05;ST-S08,S1-M07-08,START,首次持久化第7章完成,PLANNED,NOT_IMPLEMENTED,NOT_STARTED,NOT_STARTED,NOT_RUN,,asset.s1-ach07,content.s1-ach07,R10
+S1-ACH08,achievement,寂庭平息,8,Codex & Achievements / Steam,ST-S05;ST-S08,S1-M08-08,START,首次持久化第8章完成,PLANNED,NOT_IMPLEMENTED,NOT_STARTED,NOT_STARTED,NOT_RUN,,asset.s1-ach08,content.s1-ach08,R10
+S1-ACH09,achievement,游剑客初捷,1,Codex & Achievements / Steam,ST-S05;ST-S08,S1-C01,START,使用该角色首次完成任意主线任务,PLANNED,NOT_IMPLEMENTED,NOT_STARTED,NOT_STARTED,NOT_RUN,,asset.s1-ach09,content.s1-ach09,R10
+S1-ACH10,achievement,烬术师初捷,2,Codex & Achievements / Steam,ST-S05;ST-S08,S1-C02,START,使用该角色首次完成任意主线任务,PLANNED,NOT_IMPLEMENTED,NOT_STARTED,NOT_STARTED,NOT_RUN,,asset.s1-ach10,content.s1-ach10,R10
+S1-ACH11,achievement,环刃卫初捷,3,Codex & Achievements / Steam,ST-S05;ST-S08,S1-C03,START,使用该角色首次完成任意主线任务,PLANNED,NOT_IMPLEMENTED,NOT_STARTED,NOT_STARTED,NOT_RUN,,asset.s1-ach11,content.s1-ach11,R10
+S1-ACH12,achievement,机巧师初捷,4,Codex & Achievements / Steam,ST-S05;ST-S08,S1-C04,START,使用该角色首次完成任意主线任务,PLANNED,NOT_IMPLEMENTED,NOT_STARTED,NOT_STARTED,NOT_RUN,,asset.s1-ach12,content.s1-ach12,R10
+S1-ACH13,achievement,鸣雷使初捷,5,Codex & Achievements / Steam,ST-S05;ST-S08,S1-C05,START,使用该角色首次完成任意主线任务,PLANNED,NOT_IMPLEMENTED,NOT_STARTED,NOT_STARTED,NOT_RUN,,asset.s1-ach13,content.s1-ach13,R10
+S1-ACH14,achievement,缚根者初捷,6,Codex & Achievements / Steam,ST-S05;ST-S08,S1-C06,START,使用该角色首次完成任意主线任务,PLANNED,NOT_IMPLEMENTED,NOT_STARTED,NOT_STARTED,NOT_RUN,,asset.s1-ach14,content.s1-ach14,R10
+S1-ACH15,achievement,寒弓客初捷,7,Codex & Achievements / Steam,ST-S05;ST-S08,S1-C07,START,使用该角色首次完成任意主线任务,PLANNED,NOT_IMPLEMENTED,NOT_STARTED,NOT_STARTED,NOT_RUN,,asset.s1-ach15,content.s1-ach15,R10
+S1-ACH16,achievement,墨印师初捷,8,Codex & Achievements / Steam,ST-S05;ST-S08,S1-C08,START,使用该角色首次完成任意主线任务,PLANNED,NOT_IMPLEMENTED,NOT_STARTED,NOT_STARTED,NOT_RUN,,asset.s1-ach16,content.s1-ach16,R10
+S1-ACH17,achievement,流光回阵成型,1,Codex & Achievements / Steam,ST-S05;ST-S08,S1-V01,START,首次完成该进化并持久化记录,PLANNED,NOT_IMPLEMENTED,NOT_STARTED,NOT_STARTED,NOT_RUN,,asset.s1-ach17,content.s1-ach17,R10
+S1-ACH18,achievement,星环追刃成型,1,Codex & Achievements / Steam,ST-S05;ST-S08,S1-V02,START,首次完成该进化并持久化记录,PLANNED,NOT_IMPLEMENTED,NOT_STARTED,NOT_STARTED,NOT_RUN,,asset.s1-ach18,content.s1-ach18,R10
+S1-ACH19,achievement,薪火接界成型,2,Codex & Achievements / Steam,ST-S05;ST-S08,S1-V03,START,首次完成该进化并持久化记录,PLANNED,NOT_IMPLEMENTED,NOT_STARTED,NOT_STARTED,NOT_RUN,,asset.s1-ach19,content.s1-ach19,R10
+S1-ACH20,achievement,千焰折扇成型,2,Codex & Achievements / Steam,ST-S05;ST-S08,S1-V04,START,首次完成该进化并持久化记录,PLANNED,NOT_IMPLEMENTED,NOT_STARTED,NOT_STARTED,NOT_RUN,,asset.s1-ach20,content.s1-ach20,R10
+S1-ACH21,achievement,回刃护城成型,3,Codex & Achievements / Steam,ST-S05;ST-S08,S1-V05,START,首次完成该进化并持久化记录,PLANNED,NOT_IMPLEMENTED,NOT_STARTED,NOT_STARTED,NOT_RUN,,asset.s1-ach21,content.s1-ach21,R10
+S1-ACH22,achievement,沧音连环成型,3,Codex & Achievements / Steam,ST-S05;ST-S08,S1-V06,START,首次完成该进化并持久化记录,PLANNED,NOT_IMPLEMENTED,NOT_STARTED,NOT_STARTED,NOT_RUN,,asset.s1-ach22,content.s1-ach22,R10
+S1-ACH23,achievement,交织弩阵成型,4,Codex & Achievements / Steam,ST-S05;ST-S08,S1-V07,START,首次完成该进化并持久化记录,PLANNED,NOT_IMPLEMENTED,NOT_STARTED,NOT_STARTED,NOT_RUN,,asset.s1-ach23,content.s1-ach23,R10
+S1-ACH24,achievement,蜂群换巢成型,4,Codex & Achievements / Steam,ST-S05;ST-S08,S1-V08,START,首次完成该进化并持久化记录,PLANNED,NOT_IMPLEMENTED,NOT_STARTED,NOT_STARTED,NOT_RUN,,asset.s1-ach24,content.s1-ach24,R10
+S1-ACH25,achievement,九转鸣霆成型,5,Codex & Achievements / Steam,ST-S05;ST-S08,S1-V09,START,首次完成该进化并持久化记录,PLANNED,NOT_IMPLEMENTED,NOT_STARTED,NOT_STARTED,NOT_RUN,,asset.s1-ach25,content.s1-ach25,R10
+S1-ACH26,achievement,连霆落印成型,5,Codex & Achievements / Steam,ST-S05;ST-S08,S1-V10,START,首次完成该进化并持久化记录,PLANNED,NOT_IMPLEMENTED,NOT_STARTED,NOT_STARTED,NOT_RUN,,asset.s1-ach26,content.s1-ach26,R10
+S1-ACH27,achievement,森罗织界成型,6,Codex & Achievements / Steam,ST-S05;ST-S08,S1-V11,START,首次完成该进化并持久化记录,PLANNED,NOT_IMPLEMENTED,NOT_STARTED,NOT_STARTED,NOT_RUN,,asset.s1-ach27,content.s1-ach27,R10
+S1-ACH28,achievement,流孢星爆成型,6,Codex & Achievements / Steam,ST-S05;ST-S08,S1-V12,START,首次完成该进化并持久化记录,PLANNED,NOT_IMPLEMENTED,NOT_STARTED,NOT_STARTED,NOT_RUN,,asset.s1-ach28,content.s1-ach28,R10
+S1-ACH29,achievement,霜羽贯空成型,7,Codex & Achievements / Steam,ST-S05;ST-S08,S1-V13,START,首次完成该进化并持久化记录,PLANNED,NOT_IMPLEMENTED,NOT_STARTED,NOT_STARTED,NOT_RUN,,asset.s1-ach29,content.s1-ach29,R10
+S1-ACH30,achievement,万镜寒轮成型,7,Codex & Achievements / Steam,ST-S05;ST-S08,S1-V14,START,首次完成该进化并持久化记录,PLANNED,NOT_IMPLEMENTED,NOT_STARTED,NOT_STARTED,NOT_RUN,,asset.s1-ach30,content.s1-ach30,R10
+S1-ACH31,achievement,百墨回书成型,8,Codex & Achievements / Steam,ST-S05;ST-S08,S1-V15,START,首次完成该进化并持久化记录,PLANNED,NOT_IMPLEMENTED,NOT_STARTED,NOT_STARTED,NOT_RUN,,asset.s1-ach31,content.s1-ach31,R10
+S1-ACH32,achievement,蚀相回盘成型,8,Codex & Achievements / Steam,ST-S05;ST-S08,S1-V16,START,首次完成该进化并持久化记录,PLANNED,NOT_IMPLEMENTED,NOT_STARTED,NOT_STARTED,NOT_RUN,,asset.s1-ach32,content.s1-ach32,R10
+S1-ACH33,achievement,险路印记01,1,Codex & Achievements / Steam,ST-S05;ST-S08,S1-CHAL01,START,首次完成对应可选挑战,PLANNED,NOT_IMPLEMENTED,NOT_STARTED,NOT_STARTED,NOT_RUN,,asset.s1-ach33,content.s1-ach33,R10
+S1-ACH34,achievement,险路印记02,1,Codex & Achievements / Steam,ST-S05;ST-S08,S1-CHAL02,START,首次完成对应可选挑战,PLANNED,NOT_IMPLEMENTED,NOT_STARTED,NOT_STARTED,NOT_RUN,,asset.s1-ach34,content.s1-ach34,R10
+S1-ACH35,achievement,险路印记03,1,Codex & Achievements / Steam,ST-S05;ST-S08,S1-CHAL03,START,首次完成对应可选挑战,PLANNED,NOT_IMPLEMENTED,NOT_STARTED,NOT_STARTED,NOT_RUN,,asset.s1-ach35,content.s1-ach35,R10
+S1-ACH36,achievement,险路印记04,2,Codex & Achievements / Steam,ST-S05;ST-S08,S1-CHAL04,START,首次完成对应可选挑战,PLANNED,NOT_IMPLEMENTED,NOT_STARTED,NOT_STARTED,NOT_RUN,,asset.s1-ach36,content.s1-ach36,R10
+S1-ACH37,achievement,险路印记05,2,Codex & Achievements / Steam,ST-S05;ST-S08,S1-CHAL05,START,首次完成对应可选挑战,PLANNED,NOT_IMPLEMENTED,NOT_STARTED,NOT_STARTED,NOT_RUN,,asset.s1-ach37,content.s1-ach37,R10
+S1-ACH38,achievement,险路印记06,2,Codex & Achievements / Steam,ST-S05;ST-S08,S1-CHAL06,START,首次完成对应可选挑战,PLANNED,NOT_IMPLEMENTED,NOT_STARTED,NOT_STARTED,NOT_RUN,,asset.s1-ach38,content.s1-ach38,R10
+S1-ACH39,achievement,险路印记07,3,Codex & Achievements / Steam,ST-S05;ST-S08,S1-CHAL07,START,首次完成对应可选挑战,PLANNED,NOT_IMPLEMENTED,NOT_STARTED,NOT_STARTED,NOT_RUN,,asset.s1-ach39,content.s1-ach39,R10
+S1-ACH40,achievement,险路印记08,3,Codex & Achievements / Steam,ST-S05;ST-S08,S1-CHAL08,START,首次完成对应可选挑战,PLANNED,NOT_IMPLEMENTED,NOT_STARTED,NOT_STARTED,NOT_RUN,,asset.s1-ach40,content.s1-ach40,R10
+S1-ACH41,achievement,险路印记09,3,Codex & Achievements / Steam,ST-S05;ST-S08,S1-CHAL09,START,首次完成对应可选挑战,PLANNED,NOT_IMPLEMENTED,NOT_STARTED,NOT_STARTED,NOT_RUN,,asset.s1-ach41,content.s1-ach41,R10
+S1-ACH42,achievement,险路印记10,4,Codex & Achievements / Steam,ST-S05;ST-S08,S1-CHAL10,START,首次完成对应可选挑战,PLANNED,NOT_IMPLEMENTED,NOT_STARTED,NOT_STARTED,NOT_RUN,,asset.s1-ach42,content.s1-ach42,R10
+S1-ACH43,achievement,险路印记11,4,Codex & Achievements / Steam,ST-S05;ST-S08,S1-CHAL11,START,首次完成对应可选挑战,PLANNED,NOT_IMPLEMENTED,NOT_STARTED,NOT_STARTED,NOT_RUN,,asset.s1-ach43,content.s1-ach43,R10
+S1-ACH44,achievement,险路印记12,4,Codex & Achievements / Steam,ST-S05;ST-S08,S1-CHAL12,START,首次完成对应可选挑战,PLANNED,NOT_IMPLEMENTED,NOT_STARTED,NOT_STARTED,NOT_RUN,,asset.s1-ach44,content.s1-ach44,R10
+S1-ACH45,achievement,险路印记13,5,Codex & Achievements / Steam,ST-S05;ST-S08,S1-CHAL13,START,首次完成对应可选挑战,PLANNED,NOT_IMPLEMENTED,NOT_STARTED,NOT_STARTED,NOT_RUN,,asset.s1-ach45,content.s1-ach45,R10
+S1-ACH46,achievement,险路印记14,5,Codex & Achievements / Steam,ST-S05;ST-S08,S1-CHAL14,START,首次完成对应可选挑战,PLANNED,NOT_IMPLEMENTED,NOT_STARTED,NOT_STARTED,NOT_RUN,,asset.s1-ach46,content.s1-ach46,R10
+S1-ACH47,achievement,险路印记15,5,Codex & Achievements / Steam,ST-S05;ST-S08,S1-CHAL15,START,首次完成对应可选挑战,PLANNED,NOT_IMPLEMENTED,NOT_STARTED,NOT_STARTED,NOT_RUN,,asset.s1-ach47,content.s1-ach47,R10
+S1-ACH48,achievement,险路印记16,6,Codex & Achievements / Steam,ST-S05;ST-S08,S1-CHAL16,START,首次完成对应可选挑战,PLANNED,NOT_IMPLEMENTED,NOT_STARTED,NOT_STARTED,NOT_RUN,,asset.s1-ach48,content.s1-ach48,R10
+S1-ACH49,achievement,险路印记17,6,Codex & Achievements / Steam,ST-S05;ST-S08,S1-CHAL17,START,首次完成对应可选挑战,PLANNED,NOT_IMPLEMENTED,NOT_STARTED,NOT_STARTED,NOT_RUN,,asset.s1-ach49,content.s1-ach49,R10
+S1-ACH50,achievement,险路印记18,6,Codex & Achievements / Steam,ST-S05;ST-S08,S1-CHAL18,START,首次完成对应可选挑战,PLANNED,NOT_IMPLEMENTED,NOT_STARTED,NOT_STARTED,NOT_RUN,,asset.s1-ach50,content.s1-ach50,R10
+S1-ACH51,achievement,险路印记19,7,Codex & Achievements / Steam,ST-S05;ST-S08,S1-CHAL19,START,首次完成对应可选挑战,PLANNED,NOT_IMPLEMENTED,NOT_STARTED,NOT_STARTED,NOT_RUN,,asset.s1-ach51,content.s1-ach51,R10
+S1-ACH52,achievement,险路印记20,7,Codex & Achievements / Steam,ST-S05;ST-S08,S1-CHAL20,START,首次完成对应可选挑战,PLANNED,NOT_IMPLEMENTED,NOT_STARTED,NOT_STARTED,NOT_RUN,,asset.s1-ach52,content.s1-ach52,R10
+S1-ACH53,achievement,险路印记21,7,Codex & Achievements / Steam,ST-S05;ST-S08,S1-CHAL21,START,首次完成对应可选挑战,PLANNED,NOT_IMPLEMENTED,NOT_STARTED,NOT_STARTED,NOT_RUN,,asset.s1-ach53,content.s1-ach53,R10
+S1-ACH54,achievement,险路印记22,8,Codex & Achievements / Steam,ST-S05;ST-S08,S1-CHAL22,START,首次完成对应可选挑战,PLANNED,NOT_IMPLEMENTED,NOT_STARTED,NOT_STARTED,NOT_RUN,,asset.s1-ach54,content.s1-ach54,R10
+S1-ACH55,achievement,险路印记23,8,Codex & Achievements / Steam,ST-S05;ST-S08,S1-CHAL23,START,首次完成对应可选挑战,PLANNED,NOT_IMPLEMENTED,NOT_STARTED,NOT_STARTED,NOT_RUN,,asset.s1-ach55,content.s1-ach55,R10
+S1-ACH56,achievement,险路印记24,8,Codex & Achievements / Steam,ST-S05;ST-S08,S1-CHAL24,START,首次完成对应可选挑战,PLANNED,NOT_IMPLEMENTED,NOT_STARTED,NOT_STARTED,NOT_RUN,,asset.s1-ach56,content.s1-ach56,R10
+S1-ACH57,achievement,第一帖备战,1,Codex & Achievements / Steam,ST-S05;ST-S08,S1-PREP01,START,首次使用已合法解锁的备战效果,PLANNED,NOT_IMPLEMENTED,NOT_STARTED,NOT_STARTED,NOT_RUN,,asset.s1-ach57,content.s1-ach57,R10
+S1-ACH58,achievement,留有余地,1,Codex & Achievements / Steam,ST-S05;ST-S08,S1-RISK01,START,首次选安全路径并完成本局,PLANNED,NOT_IMPLEMENTED,NOT_STARTED,NOT_STARTED,NOT_RUN,,asset.s1-ach58,content.s1-ach58,R10
+S1-ACH59,achievement,险中取证,1,Codex & Achievements / Steam,ST-S05;ST-S08,S1-RISK02,START,首次完成风险挑战并领取一次奖励,PLANNED,NOT_IMPLEMENTED,NOT_STARTED,NOT_STARTED,NOT_RUN,,asset.s1-ach59,content.s1-ach59,R10
+S1-ACH60,achievement,归脉终章,8,Codex & Achievements / Steam,ST-S05;ST-S08,S1-B09,START,首次持久化最终结局,PLANNED,NOT_IMPLEMENTED,NOT_STARTED,NOT_STARTED,NOT_RUN,,asset.s1-ach60,content.s1-ach60,R10
+S1-UI01,screen,主菜单,ALL,Frontend & Settings,ST-S06,,START,新档/继续/设置/退出,PLANNED,NOT_IMPLEMENTED,NOT_STARTED,NOT_STARTED,NOT_RUN,,asset.s1-ui01,content.s1-ui01,R05
+S1-UI02,screen,角色与关卡选择,ALL,Frontend & Settings,ST-S06,,START,章节图/角色详情/任务前置,PLANNED,NOT_IMPLEMENTED,NOT_STARTED,NOT_STARTED,NOT_RUN,,asset.s1-ui02,content.s1-ui02,R05
+S1-UI03,screen,灵药备战,ALL,Frontend & Settings,ST-S06,,START,培育/选择/资源消耗确认,PLANNED,NOT_IMPLEMENTED,NOT_STARTED,NOT_STARTED,NOT_RUN,,asset.s1-ui03,content.s1-ui03,R05
+S1-UI04,screen,永久成长,ALL,Frontend & Settings,ST-S06,,START,分支效果/购买确认,PLANNED,NOT_IMPLEMENTED,NOT_STARTED,NOT_STARTED,NOT_RUN,,asset.s1-ui04,content.s1-ui04,R05
+S1-UI05,screen,图鉴与成就,ALL,Frontend & Settings,ST-S06,,START,配方/敌人/解锁记录,PLANNED,NOT_IMPLEMENTED,NOT_STARTED,NOT_STARTED,NOT_RUN,,asset.s1-ui05,content.s1-ui05,R05
+S1-UI06,screen,战斗HUD,ALL,Frontend & Settings,ST-S06,,START,目标进度/危险/构筑/资源,PLANNED,NOT_IMPLEMENTED,NOT_STARTED,NOT_STARTED,NOT_RUN,,asset.s1-ui06,content.s1-ui06,R05
+S1-UI07,screen,暂停与保存退出,ALL,Frontend & Settings,ST-S06,,START,继续/保存退出/放弃的区别,PLANNED,NOT_IMPLEMENTED,NOT_STARTED,NOT_STARTED,NOT_RUN,,asset.s1-ui07,content.s1-ui07,R05
+S1-UI08,screen,任务结算,ALL,Frontend & Settings,ST-S06,,START,首次奖励/解锁/重试/下一任务,PLANNED,NOT_IMPLEMENTED,NOT_STARTED,NOT_STARTED,NOT_RUN,,asset.s1-ui08,content.s1-ui08,R05
+S1-UI09,screen,设置与改键,ALL,Frontend & Settings,ST-S06,,START,画面/音频/输入/可读性/语言,PLANNED,NOT_IMPLEMENTED,NOT_STARTED,NOT_STARTED,NOT_RUN,,asset.s1-ui09,content.s1-ui09,R05
+S1-UI10,screen,存档异常,ALL,Frontend & Settings,ST-S06,,START,故障提示/恢复来源/不确定结果,PLANNED,NOT_IMPLEMENTED,NOT_STARTED,NOT_STARTED,NOT_RUN,,asset.s1-ui10,content.s1-ui10,R05
+S1-UI11,screen,章节节点与结局,ALL,Frontend & Settings,ST-S06,,START,信息调查/决定/章节过渡/制作名单,PLANNED,NOT_IMPLEMENTED,NOT_STARTED,NOT_STARTED,NOT_RUN,,asset.s1-ui11,content.s1-ui11,R05
+S1-DIFF01,difficulty,普通,ALL,Challenge Rules,ST-S04,,START,主流程基础难度,PLANNED,NOT_IMPLEMENTED,USES_REFERENCES,USES_REFERENCES,NOT_RUN,,,content.s1-diff01,R01
+S1-DIFF02,difficulty,进阶,ALL,Challenge Rules,ST-S04,,S1-M08-08,已通关后的机制强化组合,PLANNED,NOT_IMPLEMENTED,USES_REFERENCES,USES_REFERENCES,NOT_RUN,,,content.s1-diff02,R01
+S1-DIFF03,difficulty,极境,ALL,Challenge Rules,ST-S04,,S1-M08-08,明确约束下的高压重玩,PLANNED,NOT_IMPLEMENTED,USES_REFERENCES,USES_REFERENCES,NOT_RUN,,,content.s1-diff03,R01
+S1-TREE01-01,progression_node,锋意1阶,ALL,Progression Tree,L21,,START,继承三分支五级的功能基线；每级数值和末级消费须由owner复核，不重置现有玩家进度,PLANNED,NOT_IMPLEMENTED,USES_REFERENCES,USES_REFERENCES,NOT_RUN,,,content.s1-tree01-01,R01
+S1-TREE01-02,progression_node,锋意2阶,ALL,Progression Tree,L21,S1-TREE01-01,START,继承三分支五级的功能基线；每级数值和末级消费须由owner复核，不重置现有玩家进度,PLANNED,NOT_IMPLEMENTED,USES_REFERENCES,USES_REFERENCES,NOT_RUN,,,content.s1-tree01-02,R01
+S1-TREE01-03,progression_node,锋意3阶,ALL,Progression Tree,L21,S1-TREE01-02,START,继承三分支五级的功能基线；每级数值和末级消费须由owner复核，不重置现有玩家进度,PLANNED,NOT_IMPLEMENTED,USES_REFERENCES,USES_REFERENCES,NOT_RUN,,,content.s1-tree01-03,R01
+S1-TREE01-04,progression_node,锋意4阶,ALL,Progression Tree,L21,S1-TREE01-03,START,继承三分支五级的功能基线；每级数值和末级消费须由owner复核，不重置现有玩家进度,PLANNED,NOT_IMPLEMENTED,USES_REFERENCES,USES_REFERENCES,NOT_RUN,,,content.s1-tree01-04,R01
+S1-TREE01-05,progression_node,锋意5阶,ALL,Progression Tree,L21,S1-TREE01-04,START,继承三分支五级的功能基线；每级数值和末级消费须由owner复核，不重置现有玩家进度,PLANNED,NOT_IMPLEMENTED,USES_REFERENCES,USES_REFERENCES,NOT_RUN,,,content.s1-tree01-05,R01
+S1-TREE02-01,progression_node,守元1阶,ALL,Progression Tree,L21,,START,继承三分支五级的功能基线；每级数值和末级消费须由owner复核，不重置现有玩家进度,PLANNED,NOT_IMPLEMENTED,USES_REFERENCES,USES_REFERENCES,NOT_RUN,,,content.s1-tree02-01,R01
+S1-TREE02-02,progression_node,守元2阶,ALL,Progression Tree,L21,S1-TREE02-01,START,继承三分支五级的功能基线；每级数值和末级消费须由owner复核，不重置现有玩家进度,PLANNED,NOT_IMPLEMENTED,USES_REFERENCES,USES_REFERENCES,NOT_RUN,,,content.s1-tree02-02,R01
+S1-TREE02-03,progression_node,守元3阶,ALL,Progression Tree,L21,S1-TREE02-02,START,继承三分支五级的功能基线；每级数值和末级消费须由owner复核，不重置现有玩家进度,PLANNED,NOT_IMPLEMENTED,USES_REFERENCES,USES_REFERENCES,NOT_RUN,,,content.s1-tree02-03,R01
+S1-TREE02-04,progression_node,守元4阶,ALL,Progression Tree,L21,S1-TREE02-03,START,继承三分支五级的功能基线；每级数值和末级消费须由owner复核，不重置现有玩家进度,PLANNED,NOT_IMPLEMENTED,USES_REFERENCES,USES_REFERENCES,NOT_RUN,,,content.s1-tree02-04,R01
+S1-TREE02-05,progression_node,守元5阶,ALL,Progression Tree,L21,S1-TREE02-04,START,继承三分支五级的功能基线；每级数值和末级消费须由owner复核，不重置现有玩家进度,PLANNED,NOT_IMPLEMENTED,USES_REFERENCES,USES_REFERENCES,NOT_RUN,,,content.s1-tree02-05,R01
+S1-TREE03-01,progression_node,灵识1阶,ALL,Progression Tree,L21,,START,继承三分支五级的功能基线；每级数值和末级消费须由owner复核，不重置现有玩家进度,PLANNED,NOT_IMPLEMENTED,USES_REFERENCES,USES_REFERENCES,NOT_RUN,,,content.s1-tree03-01,R01
+S1-TREE03-02,progression_node,灵识2阶,ALL,Progression Tree,L21,S1-TREE03-01,START,继承三分支五级的功能基线；每级数值和末级消费须由owner复核，不重置现有玩家进度,PLANNED,NOT_IMPLEMENTED,USES_REFERENCES,USES_REFERENCES,NOT_RUN,,,content.s1-tree03-02,R01
+S1-TREE03-03,progression_node,灵识3阶,ALL,Progression Tree,L21,S1-TREE03-02,START,继承三分支五级的功能基线；每级数值和末级消费须由owner复核，不重置现有玩家进度,PLANNED,NOT_IMPLEMENTED,USES_REFERENCES,USES_REFERENCES,NOT_RUN,,,content.s1-tree03-03,R01
+S1-TREE03-04,progression_node,灵识4阶,ALL,Progression Tree,L21,S1-TREE03-03,START,继承三分支五级的功能基线；每级数值和末级消费须由owner复核，不重置现有玩家进度,PLANNED,NOT_IMPLEMENTED,USES_REFERENCES,USES_REFERENCES,NOT_RUN,,,content.s1-tree03-04,R01
+S1-TREE03-05,progression_node,灵识5阶,ALL,Progression Tree,L21,S1-TREE03-04,START,继承三分支五级的功能基线；每级数值和末级消费须由owner复核，不重置现有玩家进度,PLANNED,NOT_IMPLEMENTED,USES_REFERENCES,USES_REFERENCES,NOT_RUN,,,content.s1-tree03-05,R01

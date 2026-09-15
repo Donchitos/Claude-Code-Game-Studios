@@ -1,0 +1,55 @@
+extends SceneTree
+const Snap = preload("res://src/persistence/steam_battle_snapshot.gd")
+const C = preload("res://src/persistence/steam_canonical_codec.gd")
+const L = {"max_bytes":8000000,"max_depth":48}
+func _initialize():
+ run.call_deferred()
+func fresh(c, g):
+ var s=load("res://src/gameplay/battle/BattleScope.tscn").instantiate()
+ root.add_child(s)
+ var x=PcMovementContext.new()
+ x.battle_generation=g
+ s.configure(c,82345,false,ProductionMovementIntentCarrier.new(),x)
+ return s
+func run():
+ Input.set_use_accumulated_input(false)
+ var c=JSON.parse_string(FileAccess.get_file_as_string("res://assets/config/production_defaults.json"))
+ var a=fresh(c,1)
+ a.activate()
+ a.lock_for_pause(0)
+ var cap=Snap.capture(a,L)
+ print("base=",cap.status)
+ for kind in ["projectile_velocity","late_missing_boss","spawn_timer"]:
+  var w=cap.value.duplicate(true)
+  match kind:
+   "projectile_velocity":
+    w.weapon.due_tick="1"
+    w.weapon.rows=[{"position":[C.float_to_hex(0.0).value,C.float_to_hex(0.0).value],"velocity":[C.float_to_hex(float(Vector2(3e38,0).x)).value,C.float_to_hex(0.0).value],"damage":C.float_to_hex(1.0).value}]
+   "late_missing_boss":
+    w.scope.completed_active_ticks="44000"
+    w.stage._simulation_tick="44000"
+   "spawn_timer":
+    w.stage._spawn_left=C.float_to_hex(1e100).value
+  print(kind," validate=",Snap.validate(w,c,L).status)
+  if true:
+   var b=fresh(c,2)
+   print(kind," restore=",Snap.restore(b,w,L).status)
+   if kind=="free_upgrade":
+    print("free upgrade applied=",b.apply_upgrade(0)," swords=",b.player.sword_count," level=",b.level)
+   else:
+    b.resume()
+    var ok=true
+    for i in 20:
+     if not b.run_gameplay_phase(1.0/60.0):
+      ok=false
+      break
+    print(kind," next20ticks=",ok)
+    if ok:
+     b.lock_for_pause(b.movement_context.tick)
+     print(kind," recapture=",Snap.capture(b,L).status)
+   b.teardown()
+   b.queue_free()
+ a.teardown()
+ a.queue_free()
+ await process_frame
+ quit()

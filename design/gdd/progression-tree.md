@@ -1,5 +1,9 @@
 # Progression Tree（功法树）
 
+> 2026-09-11 WP04b 适配路由：五域结构/联合校验与当前 `LEGACY_STAGE_PC_V1` capture/restore 见 [Steam域与快照适配](steam-save-domain-adapters.md)。Pool/Grid 原生引用不落盘；当前生成逻辑viewport冻结，RNG保存实际seed/state并绑定engine commit；全Scope tick结束才捕获。此实现不补齐本文件全部商业owner合同；真实v2迁移/事务、Mission/SkillDraft/Preparation/Settlement语义和商业最大预算仍OPEN，battle_ready=false。
+
+> 2026-09-11 Steam合同路由（作者传播，implementation gate OPEN）：Steam v2保持旧3×5成长原值，章节/内容解锁另属Campaign；新迁移与完成after-image按save-steam-pc.md、campaign-flow.md。具体domain schema/migration/快照预算待本owner冻结，不能因路由声明视为生产接入。
+
 > **Status**: In Review / Re-review Pending
 > **Author**: 用户 + Codex（lean authoring；consulted systems-designer / economy-designer / qa-lead / UX reviewer）
 > **Created / Last Updated**: 2026-09-07 — Save generic mutation V2 ABI传播

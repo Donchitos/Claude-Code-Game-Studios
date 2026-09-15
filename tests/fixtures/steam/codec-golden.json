@@ -1,0 +1,73 @@
+[
+  {
+    "value": null,
+    "canonical": "null",
+    "sha256": "74234e98afe7498fb5daf1f36ac2d78acc339464f950703b8c019892f982b90b"
+  },
+  {
+    "value": true,
+    "canonical": "true",
+    "sha256": "b5bea41b6c623f7c09f1bf24dcae58ebab3c0cdd90ad966bc43a45b44867e12b"
+  },
+  {
+    "value": false,
+    "canonical": "false",
+    "sha256": "fcbcf165908dd18a9e49f7ff27810176db8e9f63b4352213741664245224f8aa"
+  },
+  {
+    "value": [],
+    "canonical": "[]",
+    "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+  },
+  {
+    "value": {},
+    "canonical": "{}",
+    "sha256": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a"
+  },
+  {
+    "value": {
+      "quote": "\"\\/\n\t\u0001",
+      "unicode": "任务😀"
+    },
+    "canonical": "{\"quote\":\"\\\"\\\\/\\u000a\\u0009\\u0001\",\"unicode\":\"任务😀\"}",
+    "sha256": "b29c50cec20edbace848a6aa1f293e8ac90855922da7934e79504f269767c85b"
+  },
+  {
+    "value": {
+      "order": [
+        "B",
+        "A",
+        "C"
+      ],
+      "u63": "9223372036854775807"
+    },
+    "canonical": "{\"order\":[\"B\",\"A\",\"C\"],\"u63\":\"9223372036854775807\"}",
+    "sha256": "591733eddbb2cfc1df9b04428ed9c93939198ec7c1a358ce32be1a2ee4f09249"
+  },
+  {
+    "value": {
+      "a": {
+        "b": [
+          "9007199254740993",
+          "3ff0000000000000"
+        ]
+      }
+    },
+    "canonical": "{\"a\":{\"b\":[\"9007199254740993\",\"3ff0000000000000\"]}}",
+    "sha256": "eea619cbcf7b0a50b9467c82fb8b6842ecaaabcaebba53d33e6a9d3fb86339d9"
+  },
+  {
+    "value": {
+      "z": {
+        "later": false,
+        "earlier": true
+      },
+      "a": [
+        "B",
+        "A"
+      ]
+    },
+    "canonical": "{\"a\":[\"B\",\"A\"],\"z\":{\"earlier\":true,\"later\":false}}",
+    "sha256": "254c8e35e8fe76bffc1a83b9030df0169f82b98e955a0d7ae034dddcb5b9a155"
+  }
+]

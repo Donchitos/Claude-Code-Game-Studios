@@ -1,0 +1,411 @@
+{
+  "schema": "1",
+  "profile": "STEAM_MISSION_V1",
+  "status": "RESPONSIBILITY_INVENTORY_NOT_INSTALLABLE",
+  "source_adr": "docs/architecture/adr-0006-steam-save-and-mission-contracts.md",
+  "registration_rule": "Responsibility IDs below are planning IDs, not frozen runtime owner IDs. Installed owner mapping, closed schemas and mission definition hashes must be bound in trusted Config before capture/restore.",
+  "snapshot_owners": [
+    {
+      "responsibility_id": "Scope",
+      "owner_gdd": "design/gdd/game-root-scene-flow.md",
+      "persist": [
+        "completed_active_tick",
+        "fixed-step remainder",
+        "next fact sequence",
+        "per-owner consumed high-water marks"
+      ],
+      "barrier_requires_empty": [
+        "unconsumed same-tick mission input",
+        "unfinished movement/damage/mission barrier"
+      ],
+      "legacy_coverage": "LEGACY_SCOPE",
+      "commercial_provider": null,
+      "commercial_schema": null,
+      "max_snapshot_bytes": null,
+      "status": "OPEN"
+    },
+    {
+      "responsibility_id": "Player",
+      "owner_gdd": "design/gdd/player-controller.md",
+      "persist": [
+        "HP/life/revive state",
+        "committed motion",
+        "invulnerability/cooldowns",
+        "applied build and pending effect ledgers"
+      ],
+      "barrier_requires_empty": [
+        "uncommitted same-tick player projection"
+      ],
+      "legacy_coverage": "LEGACY_PLAYER",
+      "commercial_provider": null,
+      "commercial_schema": null,
+      "max_snapshot_bytes": null,
+      "status": "OPEN"
+    },
+    {
+      "responsibility_id": "Stage",
+      "owner_gdd": "design/gdd/stage-map.md",
+      "persist": [
+        "logical world/target identities",
+        "target HP/pose/routes",
+        "zone state",
+        "BREAK applied revision plus pending next-tick effects"
+      ],
+      "barrier_requires_empty": [
+        "partially committed world mutations"
+      ],
+      "legacy_coverage": "LEGACY_STAGE",
+      "commercial_provider": null,
+      "commercial_schema": null,
+      "max_snapshot_bytes": null,
+      "status": "OPEN"
+    },
+    {
+      "responsibility_id": "Enemy",
+      "owner_gdd": "design/gdd/enemy-system.md",
+      "persist": [
+        "logical IDs and execution order",
+        "lifecycle/FSM",
+        "pending next-tick intents and retirements"
+      ],
+      "barrier_requires_empty": [
+        "uncommitted same-tick death facts"
+      ],
+      "legacy_coverage": "LEGACY_ENEMY",
+      "commercial_provider": null,
+      "commercial_schema": null,
+      "max_snapshot_bytes": null,
+      "status": "OPEN"
+    },
+    {
+      "responsibility_id": "Boss",
+      "owner_gdd": "design/gdd/boss-state-machine.md",
+      "persist": [
+        "phase/action/age",
+        "generation",
+        "fog/hazard state",
+        "delayed ring/summon",
+        "hit-once ledger"
+      ],
+      "barrier_requires_empty": [
+        "unconsumed current-tick damage receipt"
+      ],
+      "legacy_coverage": "LEGACY_BOSS",
+      "commercial_provider": null,
+      "commercial_schema": null,
+      "max_snapshot_bytes": null,
+      "status": "OPEN"
+    },
+    {
+      "responsibility_id": "Spawn",
+      "owner_gdd": "design/gdd/spawn-director.md",
+      "persist": [
+        "mission schedule/cursors",
+        "pending spawn intents",
+        "logical ID allocation",
+        "RNG stream references"
+      ],
+      "barrier_requires_empty": [
+        "half-published current-tick spawn batch"
+      ],
+      "legacy_coverage": "LEGACY_STAGE_TIMERS",
+      "commercial_provider": null,
+      "commercial_schema": null,
+      "max_snapshot_bytes": null,
+      "status": "OPEN"
+    },
+    {
+      "responsibility_id": "Weapon",
+      "owner_gdd": "design/gdd/weapon-system.md",
+      "persist": [
+        "build/cooldowns",
+        "T+1 pending requests with due tick, source identity, frozen geometry and damage"
+      ],
+      "barrier_requires_empty": [
+        "unpublished current-tick weapon production"
+      ],
+      "legacy_coverage": "LEGACY_WEAPON",
+      "commercial_provider": null,
+      "commercial_schema": null,
+      "max_snapshot_bytes": null,
+      "status": "OPEN"
+    },
+    {
+      "responsibility_id": "Projectile",
+      "owner_gdd": "design/gdd/projectile-system.md",
+      "persist": [
+        "logical IDs",
+        "pose/velocity/lifetime/hit history",
+        "pending next-tick emissions",
+        "owner references"
+      ],
+      "barrier_requires_empty": [
+        "unconsumed same-tick collision results"
+      ],
+      "legacy_coverage": "LEGACY_PROJECTILES",
+      "commercial_provider": null,
+      "commercial_schema": null,
+      "max_snapshot_bytes": null,
+      "status": "OPEN"
+    },
+    {
+      "responsibility_id": "Damage",
+      "owner_gdd": "design/gdd/damage-system.md",
+      "persist": [
+        "receipt/fact counters",
+        "deferred eligible work",
+        "applied and pending damage/death ledger identity"
+      ],
+      "barrier_requires_empty": [
+        "uncommitted current-tick damage batch"
+      ],
+      "legacy_coverage": "LEGACY_DAMAGE_RECEIPT_ONLY",
+      "commercial_provider": null,
+      "commercial_schema": null,
+      "max_snapshot_bytes": null,
+      "status": "OPEN"
+    },
+    {
+      "responsibility_id": "DropLeveling",
+      "owner_gdd": "design/gdd/drop-leveling-system.md",
+      "persist": [
+        "pickup identities/pose/reward",
+        "XP/level",
+        "pending upgrade and unapplied reward identities"
+      ],
+      "barrier_requires_empty": [
+        "unconsumed current-tick XP/kill publication"
+      ],
+      "legacy_coverage": "LEGACY_DROP_LEVEL",
+      "commercial_provider": null,
+      "commercial_schema": null,
+      "max_snapshot_bytes": null,
+      "status": "OPEN"
+    },
+    {
+      "responsibility_id": "SkillDraftLoadout",
+      "owner_gdd": "design/gdd/skill-draft-system.md",
+      "persist": [
+        "applied build",
+        "exposed offer/candidate/hash",
+        "selected command",
+        "refresh and handoff commitments"
+      ],
+      "barrier_requires_empty": [
+        "partially applied upgrade transaction"
+      ],
+      "legacy_coverage": "LEGACY_THREE_UPGRADES_ONLY",
+      "commercial_provider": null,
+      "commercial_schema": null,
+      "max_snapshot_bytes": null,
+      "status": "OPEN"
+    },
+    {
+      "responsibility_id": "RNG",
+      "owner_gdd": "design/gdd/rng-system.md",
+      "persist": [
+        "all installed stream algorithm/version/seed/state/cursor and request identities"
+      ],
+      "barrier_requires_empty": [
+        "partially consumed RNG transaction"
+      ],
+      "legacy_coverage": "LEGACY_SINGLE_STREAM",
+      "commercial_provider": null,
+      "commercial_schema": null,
+      "max_snapshot_bytes": null,
+      "status": "OPEN"
+    },
+    {
+      "responsibility_id": "Mission",
+      "owner_gdd": "design/gdd/mission-objectives.md",
+      "persist": [
+        "six-kind progress",
+        "completion order",
+        "progress revision",
+        "next fact sequence",
+        "sealed result",
+        "stable target references"
+      ],
+      "barrier_requires_empty": [
+        "unvalidated/unconsumed authoritative same-tick fact batch"
+      ],
+      "legacy_coverage": null,
+      "commercial_provider": null,
+      "commercial_schema": null,
+      "max_snapshot_bytes": null,
+      "status": "OPEN"
+    }
+  ],
+  "persistent_features": [
+    {
+      "responsibility_id": "Preparation",
+      "owner_gdd": "design/gdd/zhangtian-bottle.md",
+      "persist": [
+        "reservation/consume receipt",
+        "exposed offer/RNG/selection/handoff",
+        "seed conservation",
+        "no refund or redraw after START"
+      ],
+      "commercial_provider": null,
+      "commercial_schema": null,
+      "max_domain_bytes": null,
+      "status": "OPEN"
+    },
+    {
+      "responsibility_id": "SettlementComplete",
+      "owner_gdd": "design/gdd/settlement-system.md",
+      "persist": [
+        "sealed result",
+        "original COMPLETE identity/hash",
+        "exact seven-domain after-image",
+        "retirement and first-grant proof"
+      ],
+      "commercial_provider": null,
+      "commercial_schema": null,
+      "max_domain_bytes": null,
+      "status": "OPEN"
+    },
+    {
+      "responsibility_id": "CampaignUnlocks",
+      "owner_gdd": "design/gdd/campaign-flow.md",
+      "persist": [
+        "64 mission definitions/hashes",
+        "completed prefix",
+        "first grants",
+        "ending",
+        "M01-03 prep unlock"
+      ],
+      "commercial_provider": null,
+      "commercial_schema": null,
+      "max_domain_bytes": null,
+      "status": "OPEN"
+    },
+    {
+      "responsibility_id": "ProgressionRecordsSettings",
+      "owner_gdd": "design/gdd/steam-save-domain-adapters.md",
+      "persist": [
+        "migration provenance",
+        "lifetime/resource ledgers",
+        "purchase receipts",
+        "persistent settings"
+      ],
+      "commercial_provider": null,
+      "commercial_schema": null,
+      "max_domain_bytes": null,
+      "status": "OPEN"
+    },
+    {
+      "responsibility_id": "CharacterCodexNarrative",
+      "owner_gdd": "design/gdd/campaign-flow.md",
+      "persist": [
+        "versioned content catalogs",
+        "unlock/acquisition/progression and narrative facts",
+        "pending grant identities"
+      ],
+      "commercial_provider": null,
+      "commercial_schema": null,
+      "max_domain_bytes": null,
+      "status": "OPEN"
+    }
+  ],
+  "mission_overlays": [
+    {
+      "objective_kind": "SURVIVE",
+      "required_state": [
+        "survive ticks and extraction activation",
+        "extraction region sample and world region identity"
+      ],
+      "production_definition": null,
+      "phase_manifest": null,
+      "fact_capacity": null,
+      "status": "OPEN"
+    },
+    {
+      "objective_kind": "BREAK",
+      "required_state": [
+        "target definition order and committed completion order",
+        "Stage applied progress revision and pending effects with due tick; exactly-once revision consumer"
+      ],
+      "production_definition": null,
+      "phase_manifest": null,
+      "fact_capacity": null,
+      "status": "OPEN"
+    },
+    {
+      "objective_kind": "CLEANSE",
+      "required_state": [
+        "current ordered zone and accumulated legal hold ticks",
+        "zone bounds/blockers and current sample validity"
+      ],
+      "production_definition": null,
+      "phase_manifest": null,
+      "fact_capacity": null,
+      "status": "OPEN"
+    },
+    {
+      "objective_kind": "HUNT",
+      "required_state": [
+        "required target IDs, persistent spawn bindings and death ledger",
+        "no ordinary far-distance retirement of mission targets"
+      ],
+      "production_definition": null,
+      "phase_manifest": null,
+      "fact_capacity": null,
+      "status": "OPEN"
+    },
+    {
+      "objective_kind": "ESCORT",
+      "required_state": [
+        "target HP/pose and waypoint cursor",
+        "versioned route and follow/arrival radii; movement/path pending work"
+      ],
+      "production_definition": null,
+      "phase_manifest": null,
+      "fact_capacity": null,
+      "status": "OPEN"
+    },
+    {
+      "objective_kind": "BOSS",
+      "required_state": [
+        "required boss IDs and committed death facts",
+        "per-mission schedule plus full Boss state and delayed attack work"
+      ],
+      "production_definition": null,
+      "phase_manifest": null,
+      "fact_capacity": null,
+      "status": "OPEN"
+    }
+  ],
+  "rebuild_only": [
+    "Pool borrow tokens and Grid handles",
+    "Godot instance IDs and new instance epoch",
+    "render/HUD caches and input held state; fresh-neutral context",
+    "derived hazard views from restored authoritative state"
+  ],
+  "joint_invariants": [
+    "same durable run/config/mission definition and completed tick across all required owners",
+    "all stable references resolve to matching logical entity and generation",
+    "Mission progress revision = Stage applied revision plus exactly corresponding pending ordered effects",
+    "no duplicate pending reward/consume/retirement across feature domains and battle queues",
+    "all due ticks and consumed high-water marks correspond to the capture barrier"
+  ],
+  "budget": {
+    "status": "OPEN",
+    "production_limits": null,
+    "required_states": [
+      "PREPARED",
+      "RUNNING",
+      "SUSPENDED",
+      "RESULT_PENDING"
+    ],
+    "measured_scope": "LEGACY_STAGE_PC_V1 pressure fixtures only; not natural-reachable commercial maxima",
+    "release_evidence": [
+      "per-mission six-kind maximum workload/capacity and bounded ID/text lengths",
+      "full seven-domain canonical payload plus escaped slot envelope",
+      "RESULT_PENDING current domains plus complete_next_domains without recursive intent",
+      "capture/encode/decode/readback/restore and peak memory on target Windows hardware"
+    ]
+  },
+  "production_enabled": false,
+  "battle_ready": false
+}

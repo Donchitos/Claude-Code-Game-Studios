@@ -1,0 +1,60 @@
+extends "res://tests/integration/steam_recovery_contract_test.gd"
+func _run() -> void:
+	var f := fixture()
+	var d: Dictionary = JSON.parse_string(FileAccess.get_file_as_string("res://tests/fixtures/steam/domains-fixture.json"))
+	var cf: Dictionary = JSON.parse_string(FileAccess.get_file_as_string("res://tests/fixtures/steam/campaign-fixture.json"))
+	var campaign := Campaign.new()
+	check(campaign.initialize(cf.definition, cf.catalog, LIMITS).status == "OK", "domain campaign")
+	for key: String in ["offer_max", "loadout_max", "refresh_max"]:
+		d.context[key] = int(d.context[key])
+	d.context.required_owner_ids = ["TEST-A", "TEST-B"]
+	d.context.owner_validators = {"TEST-A": semantic, "TEST-B": semantic}
+	d.context.preparation_validator = func(_run: Dictionary, _domains: Dictionary) -> Dictionary: return {"status": "OK"}
+	d.context.complete_validator = null
+	var run: Dictionary = d.prepared_run.duplicate(true)
+	run.run_status = "SUSPENDED"
+	for key: String in ["mission_id", "mission_definition_hash", "config_hash"]:
+		f.manifest[key] = run[key]
+		f.binding[key] = run[key]
+	for owner: Dictionary in f.checkpoint.owner_snapshots:
+		owner.payload.binding = f.binding.duplicate(true)
+	for i: int in range(f.manifest.owners.size()):
+		f.manifest.owners[i].max_snapshot_bytes = str(Codec.encode(f.checkpoint.owner_snapshots[i], LIMITS).bytes)
+	f.manifest.max_checkpoint_bytes = str(Codec.encode(f.checkpoint, LIMITS).bytes)
+	var contract = initialized(f)
+	var schema := Domains.new()
+	check(schema.initialize(campaign, d.context, LIMITS, contract).status == "OK", "install bound checkpoint in seven-domain validator")
+	run.checkpoint = f.checkpoint.duplicate(true)
+	d.domains.current_run.payload.run = run
+	d.domains.preparation.payload.next_preparation_id = "2"
+	d.domains.preparation.payload.active_reservation = {"receipt": run.prep_receipt.duplicate(true), "state": "CONSUMED", "recovery_revision": "0"}
+	var next_image: Dictionary = d.domains.duplicate(true)
+	next_image.current_run.payload.run = null
+	next_image.preparation.payload.active_reservation = null
+	run.run_status = "RESULT_PENDING"
+	var result := {"schema": "1", "profile_id": d.root.profile_id, "branch_id": d.root.branch_id, "run_seq": run.run_seq, "mission_id": run.mission_id, "mission_definition_hash": run.mission_definition_hash, "terminal_tick": "12", "result_kind": "TECHNICAL_ABORT", "reason": "TEST", "objective_progress_hash": "a".repeat(64)}
+	run.terminal_intent = {"sealed_result": result, "result_hash": Codec.encode(result, LIMITS).sha256, "complete_operation_id": "9".repeat(32), "complete_base_revision": d.root.revision, "complete_request_hash": "d".repeat(64), "complete_next_domains": next_image}
+	for response: Variant in [true, null, {}, {"status": []}, {"status": "UNKNOWN"}, {"status": "OK", "extra": true}]:
+		d.context.complete_validator = func(_domains: Dictionary, _identity: Dictionary) -> Variant: return response
+		var c := Domains.new()
+		check(c.initialize(campaign, d.context, LIMITS, contract).status == "OK", "complete setup")
+		check(c.validate(d.domains, d.root).get("status") == "INVALID_PROVIDER", "complete malformed")
+	d.context.complete_validator = func(local_domains: Dictionary, local_identity: Dictionary) -> Dictionary:
+		local_domains.current_run.payload.run.clear()
+		local_identity.clear()
+		return {"status": "OK"}
+	var c := Domains.new()
+	check(c.initialize(campaign, d.context, LIMITS, contract).status == "OK", "complete copy setup")
+	var before := d.duplicate(true)
+	check(c.validate(d.domains, d.root).get("status") == "OK", "complete detached accepted")
+	check(d == before, "complete keeps both caller arguments unchanged")
+	run.run_status = "SUSPENDED"
+	run.terminal_intent = null
+	d.context.owner_validators = {"TEST-A": func(_owner: Dictionary, _tick: String) -> Dictionary: return {"status": "OK"}, "TEST-B": func(_owner: Dictionary, _tick: String) -> Dictionary: return {"status": "OK"}}
+	var legacy := Domains.new()
+	check(legacy.initialize(campaign, d.context, LIMITS).status == "OK", "legacy setup")
+	check(legacy.validate(d.domains, d.root).get("status") == "OK", "legacy v1")
+	run.checkpoint.owner_snapshots[0].schema = "2"
+	check(legacy.validate(d.domains, d.root).get("status") == "UNSUPPORTED_SCHEMA", "legacy v2 rejected")
+	print("INDEPENDENT_COMPLETE_LEGACY checks=%d failures=%d" % [checks, failures])
+	quit(0 if failures == 0 else 1)

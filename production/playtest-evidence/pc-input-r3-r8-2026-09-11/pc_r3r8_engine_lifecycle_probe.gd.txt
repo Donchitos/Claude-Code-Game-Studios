@@ -1,0 +1,62 @@
+extends SceneTree
+class EndHook extends ProductionGameRoot:
+	var ending_hook := false
+	var end_done := false
+	var end_status := -1
+	func release_viewport_input_gate(reason: StringName) -> ProductionGameRoot.Status:
+		var result := super.release_viewport_input_gate(reason)
+		if _resume_in_progress and ending_hook:
+			ending_hook = false
+			end_now()
+		return result
+	func end_now() -> void:
+		end_status = await request_end_battle(false)
+		end_done = true
+var checks := 0
+var failures := 0
+func check(ok: bool, message: String) -> void:
+	checks += 1
+	if not ok:
+		failures += 1
+		push_error(message)
+func _initialize() -> void:
+	_run.call_deferred()
+func _run() -> void:
+	var game = load("res://src/core/GameRoot.tscn").instantiate()
+	game.set_script(EndHook)
+	game.transient_profile = true
+	root.add_child(game)
+	await game.boot_completed
+	game.set_physics_process(false)
+	check(await game.request_start_battle(44, false) == 0, "start")
+	var battle: ProductionBattleScope = game.current_battle
+	var ui: ProductionBattleUI = battle.battle_ui
+	Input.action_press(&"move_right")
+	game._physics_process(1.0/60.0)
+	check(game.request_pause() == 0, "pause")
+	await process_frame
+	await process_frame
+	check(ui._neutral_waiting and ui._overlay_subtitle.text.contains(ProductionBattleUI.NEUTRAL_HINT), "natural ALWAYS process updates paused UI")
+	check(battle.input_system.sample_count == 1, "render pump does not sample while paused")
+	Input.action_release(&"move_right")
+	await process_frame
+	await process_frame
+	check(ui._neutral_waiting and battle.input_system.neutral_required and battle.input_system.sample_count == 1, "release while paused does not let UI clear input barrier")
+	check(game.request_resume() == 0, "resume")
+	game._physics_process(1.0/60.0)
+	await process_frame
+	await process_frame
+	check(not ui._neutral_waiting and not ui._overlay_subtitle.text.contains(ProductionBattleUI.NEUTRAL_HINT), "natural process clears both hints after owner neutral tick")
+	check(game.request_pause() == 0, "second pause")
+	var context: PcMovementContext = battle.movement_context
+	var carrier: ProductionMovementIntentCarrier = battle.movement_carrier
+	game.ending_hook = true
+	check(game.request_resume() == ProductionGameRoot.Status.WRONG_STATE, "ending at release rejects old resume")
+	check(game.state == ProductionGameRoot.State.BATTLE_ENDING and context.retired and not carrier.is_active and game.current_battle == null, "old resume cannot overwrite ending or retired context")
+	await process_frame
+	await process_frame
+	check(game.end_done and game.end_status == 0 and game.state == ProductionGameRoot.State.SETTLEMENT and not paused and not game.viewport_gate_held, "ending completes usable settlement with automatic render pump")
+	game.queue_free()
+	await process_frame
+	print("ENGINE_ADVERSARIAL_LIFECYCLE_%s checks=%d" % ["PASS" if failures == 0 else "FAIL", checks])
+	quit(0 if failures == 0 else 1)

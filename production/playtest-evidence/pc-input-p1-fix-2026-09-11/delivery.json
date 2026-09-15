@@ -1,0 +1,28 @@
+{
+  "macos_pack_boot": true,
+  "windows_runtime": "NOT_RUN",
+  "physical_input_verified": false,
+  "zip_crc_ok": true,
+  "source_hashes": {
+    "src/core/game_root.gd": "a7560717b0e3743767d9f931897c4745a4d089438c4e2e62327005bb3c39292c",
+    "src/ui/battle_ui.gd": "3d2126d707aac94d5db69673c4dff91b53180b44f6f783bb09e9bc5094effe81",
+    "src/input/pc_meta_input.gd": "a7b1d781025cbe635910e1cb5b03686dc7699cf0396a733eab9578456cb43072"
+  },
+  "artifacts": {
+    "TrialInternal.exe": {
+      "path": "build/windows-pc-input-p1-fixed/TrialInternal.exe",
+      "bytes": 109114368,
+      "sha256": "4e5e07b73a38be1452888ba41c0a7a8729abe601cbf47aca726857b524a79404"
+    },
+    "TrialInternal.pck": {
+      "path": "build/windows-pc-input-p1-fixed/TrialInternal.pck",
+      "bytes": 14640872,
+      "sha256": "2e106d23c3a22db1e41fa0c513968aa30c3980f538d307a9a8632cdc9985573e"
+    },
+    "windows-pc-input-validation.zip": {
+      "path": "build/windows-pc-input-p1-fixed/windows-pc-input-validation.zip",
+      "bytes": 52646386,
+      "sha256": "005be631ce8a66a84767e26a6e6812352edeb41a672d1fe30ace1fcbcafc2e88"
+    }
+  }
+}

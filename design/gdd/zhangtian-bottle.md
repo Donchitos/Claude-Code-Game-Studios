@@ -1,5 +1,11 @@
 # Zhangtian Bottle（掌天瓶）
 
+> 2026-09-14 WP04c：商业恢复责任与 pending/barrier 盘点见 `design/registry/manifests/steam-recovery-responsibilities-v1.json`；显式合同、绑定封装、全量预检及联合验证见 [Steam域与快照适配](steam-save-domain-adapters.md)。清单是责任盘点，商业 owner/schema/容量仍 OPEN，不改变本文件既有 verdict。
+
+> 2026-09-11 WP04b 适配路由：五域结构/联合校验与当前 `LEGACY_STAGE_PC_V1` capture/restore 见 [Steam域与快照适配](steam-save-domain-adapters.md)。Pool/Grid 原生引用不落盘；当前生成逻辑viewport冻结，RNG保存实际seed/state并绑定engine commit；全Scope tick结束才捕获。此实现不补齐本文件全部商业owner合同；真实v2迁移/事务、Mission/SkillDraft/Preparation/Settlement语义和商业最大预算仍OPEN，battle_ready=false。
+
+> 2026-09-11 Steam合同路由（作者传播，implementation gate OPEN）：新Steam任务/存档适配见campaign-flow.md与save-steam-pc.md：M01-03首次grant唯一开放备战，禁用旧首次胜败starter；PREPARED内offer持久曝光后不可取消/重抽，恢复同reservation/seed/offer。具体v2 preparation schema、grant资源映射、补偿after-image与预算待本owner冻结，legacy byte ABI不自动套用。
+
 > **Status**: In Review / Re-review Pending
 > **Author**: 用户 + Codex（lean authoring；consulted systems-designer / economy-designer / qa-lead / UX reviewer）
 > **Created / Last Updated**: 2026-09-08 — 第七次fresh-context full review仍为MAJOR REVISION NEEDED；用户“继续”后完成第七轮作者静态整改，待第八次独立复审

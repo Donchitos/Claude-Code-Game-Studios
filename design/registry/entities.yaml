@@ -1,5 +1,17 @@
 # Game World Entity Registry
 #
+# Steam 1.0 planning (2026-09-11): product scope is
+# design/steam-1.0-product-scope.md; planned S1-* content IDs are tracked in
+# production/steam-1.0-content-matrix.csv. They are not runtime entity IDs,
+# approved numeric contracts, or replacements for entries below. Promotion
+# requires owner GDD review, explicit schema/ID mapping and consumer propagation.
+#
+# Steam contract route (planned, not generated/runtime):
+# design/registry/manifests/steam-save-mission-contracts-v1.json
+# STEAM_SAVE_V2 / STEAM_MISSION_V1 use ADR-0006 and their new owner GDDs.
+# Legacy binary sizes, Boss timing and starter facts below do not define the new profiles.
+# Domain codecs, entity/phase registration, budgets and economic adapters remain OPEN.
+#
 # PURPOSE: Single source of truth for all named game-world facts that appear
 # in more than one document. Skills check this before writing new content to
 # detect cross-doc inconsistencies at authoring time.
@@ -3320,3 +3332,14 @@ constants:
 #     unit: slots
 #     added: 2026-03-26
 #     revised: ""
+
+# WP04b adapter registration (not new formal BATTLE_RULES owners or capacities):
+# SteamSaveDomains / LEGACY_STAGE_PC_V1: design/gdd/steam-save-domain-adapters.md
+# Machine route: design/registry/manifests/steam-save-mission-contracts-v1.json
+# Seven domain structures exist; complete commercial owner semantics/budget OPEN.
+
+# WP04c recovery-contract route (no new gameplay capacity constants):
+# SteamRecoveryContract: src/data/steam_recovery_contract.gd
+# Responsibility inventory: design/registry/manifests/steam-recovery-responsibilities-v1.json
+# IDs in that inventory are responsibility labels, not installed runtime owner IDs.
+# All commercial bounds remain null/OPEN; no test ceiling promoted to registry value.

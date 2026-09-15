@@ -1,0 +1,228 @@
+[
+  {
+    "test": "batched_renderer_visual_test",
+    "exit": 0,
+    "passed_execution": true,
+    "markers": [
+      "BATCHED_RENDERER_VISUAL_SKIP graphical_required=true"
+    ],
+    "seconds": 0.288
+  },
+  {
+    "test": "boss_combat_test",
+    "exit": 0,
+    "passed_execution": true,
+    "markers": [
+      "BOSS_COMBAT_PASS p1_312=true p2_444=true telegraphs=true geometry=true"
+    ],
+    "seconds": 0.186
+  },
+  {
+    "test": "boss_state_machine_test",
+    "exit": 0,
+    "passed_execution": true,
+    "markers": [
+      "BOSS_FSM_PASS schedule=true arrival=true phase=true pause=true fog=true ring=true lethal=true"
+    ],
+    "seconds": 0.185
+  },
+  {
+    "test": "combat_protocol_test",
+    "exit": 0,
+    "passed_execution": true,
+    "markers": [
+      "COMBAT_PROTOCOL_PASS swept_collision=true sector=true aggregate_damage=true fixed_rng=true"
+    ],
+    "seconds": 0.286
+  },
+  {
+    "test": "draw_culling_test",
+    "exit": 0,
+    "passed_execution": true,
+    "markers": [
+      "DRAW_CULLING_PASS graphical_cases=0"
+    ],
+    "seconds": 0.492
+  },
+  {
+    "test": "font_coverage_test",
+    "exit": 0,
+    "passed_execution": true,
+    "markers": [
+      "FONT_COVERAGE_PASS unique_cjk=180 system_fallback=false"
+    ],
+    "seconds": 0.286
+  },
+  {
+    "test": "hazard_query_test",
+    "exit": 0,
+    "passed_execution": true,
+    "markers": [
+      "HAZARD_QUERY_PASS"
+    ],
+    "seconds": 0.397
+  },
+  {
+    "test": "hit_feedback_test",
+    "exit": 0,
+    "passed_execution": true,
+    "markers": [
+      "HIT_FEEDBACK_PASS"
+    ],
+    "seconds": 0.501
+  },
+  {
+    "test": "home_progression_test",
+    "exit": 0,
+    "passed_execution": true,
+    "markers": [
+      "HOME_PROGRESSION_PASS confirm=true durable=true next_run=true"
+    ],
+    "seconds": 0.394
+  },
+  {
+    "test": "long_run_test",
+    "exit": 0,
+    "passed_execution": true,
+    "markers": [
+      "LONG_RUN_PASS reward_boundary=true boss_boundary=true pause=true projectile_kill=true settlement=true"
+    ],
+    "seconds": 0.972
+  },
+  {
+    "test": "macos_graphical_test",
+    "exit": 0,
+    "passed_execution": true,
+    "markers": [
+      "MACOS_GRAPHICAL_PASS renderer=headless synthetic_input=true"
+    ],
+    "seconds": 0.399
+  },
+  {
+    "test": "object_pool_test",
+    "exit": 0,
+    "passed_execution": true,
+    "markers": [
+      "OBJECT_POOL_PASS fixed_capacity=true borrow=true binding=true remove_before_release=true conservation=true"
+    ],
+    "seconds": 0.194
+  },
+  {
+    "test": "pc_input_profile_test",
+    "exit": 0,
+    "passed_execution": true,
+    "markers": [
+      "PC_INPUT_PROFILE_PASS checks=81 synthetic=true physical_device=false"
+    ],
+    "seconds": 0.369
+  },
+  {
+    "test": "pc_meta_input_test",
+    "exit": 0,
+    "passed_execution": true,
+    "markers": [
+      "PC_META_INPUT_PASS checks=36 event_route=true physical_device=false renderer=headless"
+    ],
+    "seconds": 0.364
+  },
+  {
+    "test": "pc_resume_reentry_test",
+    "exit": 0,
+    "passed_execution": true,
+    "markers": [
+      "PC_RESUME_REENTRY_PASS checks=71 synthetic_focus=true physical_device=false"
+    ],
+    "seconds": 0.48
+  },
+  {
+    "test": "production_battle_loop_test",
+    "exit": 0,
+    "passed_execution": true,
+    "markers": [
+      "PRODUCTION_BATTLE_LOOP_PASS normal_start=true upgrade_pause=true upgrade_resume=true settlement=true"
+    ],
+    "seconds": 6.425
+  },
+  {
+    "test": "production_lifecycle_test",
+    "exit": 0,
+    "passed_execution": true,
+    "markers": [
+      "PRODUCTION_LIFECYCLE_PASS root_persistent=true viewport_persistent=true replacements=1"
+    ],
+    "seconds": 0.502
+  },
+  {
+    "test": "progression_system_test",
+    "exit": 0,
+    "passed_execution": true,
+    "markers": [
+      "PROGRESSION_SYSTEM_PASS income=true purchase=true conservation=true persistence=true projection=true"
+    ],
+    "seconds": 0.295
+  },
+  {
+    "test": "projectile_lifecycle_test",
+    "exit": 0,
+    "passed_execution": true,
+    "markers": [
+      "PROJECTILE_LIFECYCLE_PASS"
+    ],
+    "seconds": 0.398
+  },
+  {
+    "test": "projectile_spatial_equivalence_test",
+    "exit": 0,
+    "passed_execution": true,
+    "markers": [
+      "PROJECTILE_SPATIAL_EQUIVALENCE_PASS trials=160 targets=80"
+    ],
+    "seconds": 0.454
+  },
+  {
+    "test": "save_crash_test",
+    "exit": 0,
+    "passed_execution": true,
+    "markers": [
+      "SAVE_CRASH_PASS cases=5 platform=macOS"
+    ],
+    "seconds": 0.837
+  },
+  {
+    "test": "save_fault_surface_test",
+    "exit": 0,
+    "passed_execution": true,
+    "markers": [
+      "ERROR: PRODUCTION_CONTROLLED_FAULT reason=SAVE_COMMIT_FAILED",
+      "SAVE_FAULT_SURFACE_PASS expected_injected_error=true"
+    ],
+    "seconds": 0.395
+  },
+  {
+    "test": "save_system_test",
+    "exit": 0,
+    "passed_execution": true,
+    "markers": [
+      "SAVE_SYSTEM_PASS dual_slot=true sha256=true readback=true fallback=true"
+    ],
+    "seconds": 0.292
+  },
+  {
+    "test": "spatial_grid_test",
+    "exit": 0,
+    "passed_execution": true,
+    "markers": [
+      "SPATIAL_GRID_PASS sparse=true fixed_capacity=true pending_sync=true query=true nearest=true bounds=true"
+    ],
+    "seconds": 0.295
+  },
+  {
+    "test": "weapon_publication_test",
+    "exit": 0,
+    "passed_execution": true,
+    "markers": [
+      "WEAPON_PUBLICATION_PASS"
+    ],
+    "seconds": 0.397
+  }
+]

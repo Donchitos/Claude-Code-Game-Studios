@@ -1,0 +1,1413 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:xiuxian:steam:user_settings-domain-v1",
+  "$comment": "Structural only; owner registry, exact content, cross-domain semantics and admission gates are mandatory.",
+  "$defs": {
+    "u63": {
+      "type": "string",
+      "pattern": "^(?:0|[1-9][0-9]{0,17}|9223372036854775807|[1-8][0-9]{18}|9[0-1][0-9]{17}|92[0-1][0-9]{16}|922[0-2][0-9]{15}|9223[0-2][0-9]{14}|92233[0-6][0-9]{13}|922337[0-1][0-9]{12}|92233720[0-2][0-9]{10}|922337203[0-5][0-9]{9}|9223372036[0-7][0-9]{8}|92233720368[0-4][0-9]{7}|922337203685[0-3][0-9]{6}|9223372036854[0-6][0-9]{5}|92233720368547[0-6][0-9]{4}|922337203685477[0-4][0-9]{3}|9223372036854775[0-7][0-9]{2}|922337203685477580[0-6][0-9]{0})$(?![\\s\\S])"
+    },
+    "hex64": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$(?![\\s\\S])"
+    },
+    "hex32": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{32}$(?![\\s\\S])"
+    },
+    "bits64": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{16}$(?![\\s\\S])"
+    },
+    "f64": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{16}$(?![\\s\\S])",
+      "format": "steam-f64"
+    },
+    "id": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^[\\x01-\\x7f]+$(?![\\s\\S])"
+    },
+    "legacy_records": {
+      "type": "object",
+      "properties": {
+        "total_runs": {
+          "$ref": "#/$defs/u63"
+        },
+        "victories": {
+          "$ref": "#/$defs/u63"
+        },
+        "best_level": {
+          "$ref": "#/$defs/u63"
+        },
+        "best_kills": {
+          "$ref": "#/$defs/u63"
+        },
+        "best_seconds": {
+          "$ref": "#/$defs/f64"
+        }
+      },
+      "required": [
+        "total_runs",
+        "victories",
+        "best_level",
+        "best_kills",
+        "best_seconds"
+      ],
+      "additionalProperties": false
+    },
+    "economy": {
+      "type": "object",
+      "properties": {
+        "unspent": {
+          "$ref": "#/$defs/u63"
+        },
+        "earned": {
+          "$ref": "#/$defs/u63"
+        },
+        "spent": {
+          "$ref": "#/$defs/u63"
+        }
+      },
+      "required": [
+        "unspent",
+        "earned",
+        "spent"
+      ],
+      "additionalProperties": false
+    },
+    "records": {
+      "type": "object",
+      "properties": {
+        "schema": {
+          "const": "1"
+        },
+        "domain_revision": {
+          "$ref": "#/$defs/u63"
+        },
+        "content_revision": {
+          "$ref": "#/$defs/u63"
+        },
+        "legacy_records": {
+          "$ref": "#/$defs/legacy_records"
+        },
+        "mission_records": {
+          "type": "object",
+          "properties": {
+            "completed_runs": {
+              "$ref": "#/$defs/u63"
+            },
+            "victories": {
+              "$ref": "#/$defs/u63"
+            },
+            "defeats": {
+              "$ref": "#/$defs/u63"
+            },
+            "abandoned": {
+              "$ref": "#/$defs/u63"
+            },
+            "technical_aborts": {
+              "$ref": "#/$defs/u63"
+            },
+            "total_kills": {
+              "$ref": "#/$defs/u63"
+            }
+          },
+          "required": [
+            "completed_runs",
+            "victories",
+            "defeats",
+            "abandoned",
+            "technical_aborts",
+            "total_kills"
+          ],
+          "additionalProperties": false
+        },
+        "spirit_stones": {
+          "$ref": "#/$defs/economy"
+        },
+        "core_herb_count": {
+          "$ref": "#/$defs/u63"
+        }
+      },
+      "required": [
+        "schema",
+        "domain_revision",
+        "content_revision",
+        "legacy_records",
+        "mission_records",
+        "spirit_stones",
+        "core_herb_count"
+      ],
+      "additionalProperties": false
+    },
+    "purchase_receipt": {
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "const": "LEGACY_V1"
+            },
+            "purchase_id": {
+              "$ref": "#/$defs/u63"
+            },
+            "branch_id": {
+              "enum": [
+                "QINGYUAN",
+                "LONGCHUN",
+                "DAYAN"
+              ]
+            },
+            "from_level": {
+              "$ref": "#/$defs/u63"
+            },
+            "to_level": {
+              "$ref": "#/$defs/u63"
+            },
+            "cost_pages": {
+              "$ref": "#/$defs/u63"
+            },
+            "balance_before": {
+              "$ref": "#/$defs/u63"
+            },
+            "balance_after": {
+              "$ref": "#/$defs/u63"
+            }
+          },
+          "required": [
+            "kind",
+            "purchase_id",
+            "branch_id",
+            "from_level",
+            "to_level",
+            "cost_pages",
+            "balance_before",
+            "balance_after"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "const": "V2"
+            },
+            "purchase_id": {
+              "$ref": "#/$defs/u63"
+            },
+            "branch_id": {
+              "enum": [
+                "QINGYUAN",
+                "LONGCHUN",
+                "DAYAN"
+              ]
+            },
+            "from_level": {
+              "$ref": "#/$defs/u63"
+            },
+            "to_level": {
+              "$ref": "#/$defs/u63"
+            },
+            "cost_pages": {
+              "$ref": "#/$defs/u63"
+            },
+            "balance_before": {
+              "$ref": "#/$defs/u63"
+            },
+            "balance_after": {
+              "$ref": "#/$defs/u63"
+            },
+            "base_domain_revision": {
+              "$ref": "#/$defs/u63"
+            },
+            "next_domain_revision": {
+              "$ref": "#/$defs/u63"
+            },
+            "request_hash": {
+              "$ref": "#/$defs/hex64"
+            }
+          },
+          "required": [
+            "kind",
+            "purchase_id",
+            "branch_id",
+            "from_level",
+            "to_level",
+            "cost_pages",
+            "balance_before",
+            "balance_after",
+            "base_domain_revision",
+            "next_domain_revision",
+            "request_hash"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "progression": {
+      "type": "object",
+      "properties": {
+        "schema": {
+          "const": "1"
+        },
+        "domain_revision": {
+          "$ref": "#/$defs/u63"
+        },
+        "content_revision": {
+          "$ref": "#/$defs/u63"
+        },
+        "unspent_pages": {
+          "$ref": "#/$defs/u63"
+        },
+        "earned_pages_total": {
+          "$ref": "#/$defs/u63"
+        },
+        "spent_pages_total": {
+          "$ref": "#/$defs/u63"
+        },
+        "upgrade_sequence": {
+          "$ref": "#/$defs/u63"
+        },
+        "next_purchase_id": {
+          "$ref": "#/$defs/u63"
+        },
+        "branch_levels": {
+          "type": "object",
+          "properties": {
+            "QINGYUAN": {
+              "enum": [
+                "0",
+                "1",
+                "2",
+                "3",
+                "4",
+                "5"
+              ]
+            },
+            "LONGCHUN": {
+              "enum": [
+                "0",
+                "1",
+                "2",
+                "3",
+                "4",
+                "5"
+              ]
+            },
+            "DAYAN": {
+              "enum": [
+                "0",
+                "1",
+                "2",
+                "3",
+                "4",
+                "5"
+              ]
+            }
+          },
+          "required": [
+            "QINGYUAN",
+            "LONGCHUN",
+            "DAYAN"
+          ],
+          "additionalProperties": false
+        },
+        "last_purchase_receipt": {
+          "anyOf": [
+            {
+              "type": "null"
+            },
+            {
+              "$ref": "#/$defs/purchase_receipt"
+            }
+          ]
+        }
+      },
+      "required": [
+        "schema",
+        "domain_revision",
+        "content_revision",
+        "unspent_pages",
+        "earned_pages_total",
+        "spent_pages_total",
+        "upgrade_sequence",
+        "next_purchase_id",
+        "branch_levels",
+        "last_purchase_receipt"
+      ],
+      "additionalProperties": false
+    },
+    "selection": {
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "const": "NO_PILL"
+            }
+          },
+          "required": [
+            "kind"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "const": "PILL"
+            },
+            "seed_id": {
+              "$ref": "#/$defs/id"
+            },
+            "recipe_id": {
+              "$ref": "#/$defs/id"
+            }
+          },
+          "required": [
+            "kind",
+            "seed_id",
+            "recipe_id"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "prep_receipt": {
+      "type": "object",
+      "properties": {
+        "preparation_id": {
+          "$ref": "#/$defs/u63"
+        },
+        "run_seq": {
+          "$ref": "#/$defs/u63"
+        },
+        "selection": {
+          "$ref": "#/$defs/selection"
+        },
+        "source_content_hash": {
+          "$ref": "#/$defs/hex64"
+        },
+        "create_operation_id": {
+          "$ref": "#/$defs/hex32"
+        },
+        "create_request_hash": {
+          "$ref": "#/$defs/hex64"
+        }
+      },
+      "required": [
+        "preparation_id",
+        "run_seq",
+        "selection",
+        "source_content_hash",
+        "create_operation_id",
+        "create_request_hash"
+      ],
+      "additionalProperties": false
+    },
+    "reservation": {
+      "type": "object",
+      "properties": {
+        "receipt": {
+          "$ref": "#/$defs/prep_receipt"
+        },
+        "state": {
+          "enum": [
+            "RESERVED",
+            "CONSUMED"
+          ]
+        },
+        "recovery_revision": {
+          "$ref": "#/$defs/u63"
+        }
+      },
+      "required": [
+        "receipt",
+        "state",
+        "recovery_revision"
+      ],
+      "additionalProperties": false
+    },
+    "preparation": {
+      "type": "object",
+      "properties": {
+        "schema": {
+          "const": "1"
+        },
+        "domain_revision": {
+          "$ref": "#/$defs/u63"
+        },
+        "content_revision": {
+          "$ref": "#/$defs/u63"
+        },
+        "next_preparation_id": {
+          "$ref": "#/$defs/u63"
+        },
+        "seed_ledgers": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "seed_id": {
+                "$ref": "#/$defs/id"
+              },
+              "available": {
+                "$ref": "#/$defs/u63"
+              },
+              "reserved": {
+                "$ref": "#/$defs/u63"
+              },
+              "consumed": {
+                "$ref": "#/$defs/u63"
+              },
+              "earned": {
+                "$ref": "#/$defs/u63"
+              }
+            },
+            "required": [
+              "seed_id",
+              "available",
+              "reserved",
+              "consumed",
+              "earned"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "legacy_starter_claimed": {
+          "type": "boolean"
+        },
+        "applied_campaign_grant_ids": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/id"
+          },
+          "uniqueItems": true
+        },
+        "active_reservation": {
+          "anyOf": [
+            {
+              "type": "null"
+            },
+            {
+              "$ref": "#/$defs/reservation"
+            }
+          ]
+        },
+        "last_resolution": {
+          "anyOf": [
+            {
+              "type": "null"
+            },
+            {
+              "type": "object",
+              "properties": {
+                "preparation_id": {
+                  "$ref": "#/$defs/u63"
+                },
+                "run_seq": {
+                  "$ref": "#/$defs/u63"
+                },
+                "outcome": {
+                  "enum": [
+                    "CANCELLED",
+                    "CONSUMED"
+                  ]
+                },
+                "operation_id": {
+                  "$ref": "#/$defs/hex32"
+                }
+              },
+              "required": [
+                "preparation_id",
+                "run_seq",
+                "outcome",
+                "operation_id"
+              ],
+              "additionalProperties": false
+            }
+          ]
+        }
+      },
+      "required": [
+        "schema",
+        "domain_revision",
+        "content_revision",
+        "next_preparation_id",
+        "seed_ledgers",
+        "legacy_starter_claimed",
+        "applied_campaign_grant_ids",
+        "active_reservation",
+        "last_resolution"
+      ],
+      "additionalProperties": false
+    },
+    "user_settings": {
+      "type": "object",
+      "properties": {
+        "schema": {
+          "const": "1"
+        },
+        "domain_revision": {
+          "$ref": "#/$defs/u63"
+        },
+        "content_revision": {
+          "$ref": "#/$defs/u63"
+        },
+        "volume_percent": {
+          "type": "object",
+          "properties": {
+            "master": {
+              "enum": [
+                "0",
+                "1",
+                "2",
+                "3",
+                "4",
+                "5",
+                "6",
+                "7",
+                "8",
+                "9",
+                "10",
+                "11",
+                "12",
+                "13",
+                "14",
+                "15",
+                "16",
+                "17",
+                "18",
+                "19",
+                "20",
+                "21",
+                "22",
+                "23",
+                "24",
+                "25",
+                "26",
+                "27",
+                "28",
+                "29",
+                "30",
+                "31",
+                "32",
+                "33",
+                "34",
+                "35",
+                "36",
+                "37",
+                "38",
+                "39",
+                "40",
+                "41",
+                "42",
+                "43",
+                "44",
+                "45",
+                "46",
+                "47",
+                "48",
+                "49",
+                "50",
+                "51",
+                "52",
+                "53",
+                "54",
+                "55",
+                "56",
+                "57",
+                "58",
+                "59",
+                "60",
+                "61",
+                "62",
+                "63",
+                "64",
+                "65",
+                "66",
+                "67",
+                "68",
+                "69",
+                "70",
+                "71",
+                "72",
+                "73",
+                "74",
+                "75",
+                "76",
+                "77",
+                "78",
+                "79",
+                "80",
+                "81",
+                "82",
+                "83",
+                "84",
+                "85",
+                "86",
+                "87",
+                "88",
+                "89",
+                "90",
+                "91",
+                "92",
+                "93",
+                "94",
+                "95",
+                "96",
+                "97",
+                "98",
+                "99",
+                "100"
+              ]
+            },
+            "music": {
+              "enum": [
+                "0",
+                "1",
+                "2",
+                "3",
+                "4",
+                "5",
+                "6",
+                "7",
+                "8",
+                "9",
+                "10",
+                "11",
+                "12",
+                "13",
+                "14",
+                "15",
+                "16",
+                "17",
+                "18",
+                "19",
+                "20",
+                "21",
+                "22",
+                "23",
+                "24",
+                "25",
+                "26",
+                "27",
+                "28",
+                "29",
+                "30",
+                "31",
+                "32",
+                "33",
+                "34",
+                "35",
+                "36",
+                "37",
+                "38",
+                "39",
+                "40",
+                "41",
+                "42",
+                "43",
+                "44",
+                "45",
+                "46",
+                "47",
+                "48",
+                "49",
+                "50",
+                "51",
+                "52",
+                "53",
+                "54",
+                "55",
+                "56",
+                "57",
+                "58",
+                "59",
+                "60",
+                "61",
+                "62",
+                "63",
+                "64",
+                "65",
+                "66",
+                "67",
+                "68",
+                "69",
+                "70",
+                "71",
+                "72",
+                "73",
+                "74",
+                "75",
+                "76",
+                "77",
+                "78",
+                "79",
+                "80",
+                "81",
+                "82",
+                "83",
+                "84",
+                "85",
+                "86",
+                "87",
+                "88",
+                "89",
+                "90",
+                "91",
+                "92",
+                "93",
+                "94",
+                "95",
+                "96",
+                "97",
+                "98",
+                "99",
+                "100"
+              ]
+            },
+            "sfx": {
+              "enum": [
+                "0",
+                "1",
+                "2",
+                "3",
+                "4",
+                "5",
+                "6",
+                "7",
+                "8",
+                "9",
+                "10",
+                "11",
+                "12",
+                "13",
+                "14",
+                "15",
+                "16",
+                "17",
+                "18",
+                "19",
+                "20",
+                "21",
+                "22",
+                "23",
+                "24",
+                "25",
+                "26",
+                "27",
+                "28",
+                "29",
+                "30",
+                "31",
+                "32",
+                "33",
+                "34",
+                "35",
+                "36",
+                "37",
+                "38",
+                "39",
+                "40",
+                "41",
+                "42",
+                "43",
+                "44",
+                "45",
+                "46",
+                "47",
+                "48",
+                "49",
+                "50",
+                "51",
+                "52",
+                "53",
+                "54",
+                "55",
+                "56",
+                "57",
+                "58",
+                "59",
+                "60",
+                "61",
+                "62",
+                "63",
+                "64",
+                "65",
+                "66",
+                "67",
+                "68",
+                "69",
+                "70",
+                "71",
+                "72",
+                "73",
+                "74",
+                "75",
+                "76",
+                "77",
+                "78",
+                "79",
+                "80",
+                "81",
+                "82",
+                "83",
+                "84",
+                "85",
+                "86",
+                "87",
+                "88",
+                "89",
+                "90",
+                "91",
+                "92",
+                "93",
+                "94",
+                "95",
+                "96",
+                "97",
+                "98",
+                "99",
+                "100"
+              ]
+            },
+            "ui": {
+              "enum": [
+                "0",
+                "1",
+                "2",
+                "3",
+                "4",
+                "5",
+                "6",
+                "7",
+                "8",
+                "9",
+                "10",
+                "11",
+                "12",
+                "13",
+                "14",
+                "15",
+                "16",
+                "17",
+                "18",
+                "19",
+                "20",
+                "21",
+                "22",
+                "23",
+                "24",
+                "25",
+                "26",
+                "27",
+                "28",
+                "29",
+                "30",
+                "31",
+                "32",
+                "33",
+                "34",
+                "35",
+                "36",
+                "37",
+                "38",
+                "39",
+                "40",
+                "41",
+                "42",
+                "43",
+                "44",
+                "45",
+                "46",
+                "47",
+                "48",
+                "49",
+                "50",
+                "51",
+                "52",
+                "53",
+                "54",
+                "55",
+                "56",
+                "57",
+                "58",
+                "59",
+                "60",
+                "61",
+                "62",
+                "63",
+                "64",
+                "65",
+                "66",
+                "67",
+                "68",
+                "69",
+                "70",
+                "71",
+                "72",
+                "73",
+                "74",
+                "75",
+                "76",
+                "77",
+                "78",
+                "79",
+                "80",
+                "81",
+                "82",
+                "83",
+                "84",
+                "85",
+                "86",
+                "87",
+                "88",
+                "89",
+                "90",
+                "91",
+                "92",
+                "93",
+                "94",
+                "95",
+                "96",
+                "97",
+                "98",
+                "99",
+                "100"
+              ]
+            }
+          },
+          "required": [
+            "master",
+            "music",
+            "sfx",
+            "ui"
+          ],
+          "additionalProperties": false
+        },
+        "font_scale_id": {
+          "enum": [
+            "100",
+            "115",
+            "130"
+          ]
+        },
+        "reduce_motion": {
+          "type": "boolean"
+        },
+        "reduce_sensory_load": {
+          "type": "boolean"
+        },
+        "high_contrast": {
+          "type": "boolean"
+        },
+        "screen_reader_hints": {
+          "type": "boolean"
+        },
+        "locale_id": {
+          "$ref": "#/$defs/id"
+        }
+      },
+      "required": [
+        "schema",
+        "domain_revision",
+        "content_revision",
+        "volume_percent",
+        "font_scale_id",
+        "reduce_motion",
+        "reduce_sensory_load",
+        "high_contrast",
+        "screen_reader_hints",
+        "locale_id"
+      ],
+      "additionalProperties": false
+    },
+    "offer_row": {
+      "type": "object",
+      "properties": {
+        "candidate_id": {
+          "$ref": "#/$defs/id"
+        },
+        "skill_id": {
+          "$ref": "#/$defs/id"
+        },
+        "rank": {
+          "$ref": "#/$defs/u63"
+        }
+      },
+      "required": [
+        "candidate_id",
+        "skill_id",
+        "rank"
+      ],
+      "additionalProperties": false
+    },
+    "loadout_row": {
+      "type": "object",
+      "properties": {
+        "skill_id": {
+          "$ref": "#/$defs/id"
+        },
+        "rank": {
+          "$ref": "#/$defs/u63"
+        }
+      },
+      "required": [
+        "skill_id",
+        "rank"
+      ],
+      "additionalProperties": false
+    },
+    "preparation_checkpoint": {
+      "type": "object",
+      "properties": {
+        "preparation_id": {
+          "$ref": "#/$defs/u63"
+        },
+        "run_seq": {
+          "$ref": "#/$defs/u63"
+        },
+        "revision": {
+          "$ref": "#/$defs/u63"
+        },
+        "offer_revision": {
+          "$ref": "#/$defs/u63"
+        },
+        "offer_rows": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/offer_row"
+          }
+        },
+        "offer_hash": {
+          "anyOf": [
+            {
+              "type": "null"
+            },
+            {
+              "$ref": "#/$defs/hex64"
+            }
+          ]
+        },
+        "refresh_used": {
+          "$ref": "#/$defs/u63"
+        },
+        "refresh_remaining": {
+          "$ref": "#/$defs/u63"
+        },
+        "selected_candidate_id": {
+          "anyOf": [
+            {
+              "type": "null"
+            },
+            {
+              "$ref": "#/$defs/id"
+            }
+          ]
+        },
+        "choice_command_id": {
+          "anyOf": [
+            {
+              "type": "null"
+            },
+            {
+              "$ref": "#/$defs/hex32"
+            }
+          ]
+        },
+        "loadout_rows": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/loadout_row"
+          }
+        },
+        "loadout_hash": {
+          "$ref": "#/$defs/hex64"
+        },
+        "rng": {
+          "type": "object",
+          "properties": {
+            "algorithm_id": {
+              "$ref": "#/$defs/id"
+            },
+            "version": {
+              "$ref": "#/$defs/id"
+            },
+            "seed": {
+              "$ref": "#/$defs/bits64"
+            },
+            "state": {
+              "$ref": "#/$defs/bits64"
+            },
+            "cursor": {
+              "$ref": "#/$defs/u63"
+            }
+          },
+          "required": [
+            "algorithm_id",
+            "version",
+            "seed",
+            "state",
+            "cursor"
+          ],
+          "additionalProperties": false
+        },
+        "handoff_revision": {
+          "$ref": "#/$defs/u63"
+        }
+      },
+      "required": [
+        "preparation_id",
+        "run_seq",
+        "revision",
+        "offer_revision",
+        "offer_rows",
+        "offer_hash",
+        "refresh_used",
+        "refresh_remaining",
+        "selected_candidate_id",
+        "choice_command_id",
+        "loadout_rows",
+        "loadout_hash",
+        "rng",
+        "handoff_revision"
+      ],
+      "additionalProperties": false
+    },
+    "owner_snapshot": {
+      "type": "object",
+      "properties": {
+        "owner_id": {
+          "$ref": "#/$defs/id"
+        },
+        "schema": {
+          "$ref": "#/$defs/u63"
+        },
+        "revision": {
+          "$ref": "#/$defs/u63"
+        },
+        "payload": {
+          "type": "object"
+        }
+      },
+      "required": [
+        "owner_id",
+        "schema",
+        "revision",
+        "payload"
+      ],
+      "additionalProperties": false
+    },
+    "checkpoint": {
+      "type": "object",
+      "properties": {
+        "checkpoint_seq": {
+          "$ref": "#/$defs/u63"
+        },
+        "active_tick": {
+          "$ref": "#/$defs/u63"
+        },
+        "owner_snapshots": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/owner_snapshot"
+          }
+        }
+      },
+      "required": [
+        "checkpoint_seq",
+        "active_tick",
+        "owner_snapshots"
+      ],
+      "additionalProperties": false
+    },
+    "result": {
+      "type": "object",
+      "properties": {
+        "schema": {
+          "const": "1"
+        },
+        "profile_id": {
+          "$ref": "#/$defs/hex32"
+        },
+        "branch_id": {
+          "$ref": "#/$defs/hex32"
+        },
+        "run_seq": {
+          "$ref": "#/$defs/u63"
+        },
+        "mission_id": {
+          "$ref": "#/$defs/id"
+        },
+        "mission_definition_hash": {
+          "$ref": "#/$defs/hex64"
+        },
+        "terminal_tick": {
+          "$ref": "#/$defs/u63"
+        },
+        "result_kind": {
+          "enum": [
+            "VICTORY",
+            "DEFEAT",
+            "ABANDONED",
+            "TECHNICAL_ABORT"
+          ]
+        },
+        "reason": {
+          "$ref": "#/$defs/id"
+        },
+        "objective_progress_hash": {
+          "$ref": "#/$defs/hex64"
+        }
+      },
+      "required": [
+        "schema",
+        "profile_id",
+        "branch_id",
+        "run_seq",
+        "mission_id",
+        "mission_definition_hash",
+        "terminal_tick",
+        "result_kind",
+        "reason",
+        "objective_progress_hash"
+      ],
+      "additionalProperties": false
+    },
+    "terminal_intent": {
+      "type": "object",
+      "properties": {
+        "sealed_result": {
+          "$ref": "#/$defs/result"
+        },
+        "result_hash": {
+          "$ref": "#/$defs/hex64"
+        },
+        "complete_operation_id": {
+          "$ref": "#/$defs/hex32"
+        },
+        "complete_base_revision": {
+          "$ref": "#/$defs/u63"
+        },
+        "complete_request_hash": {
+          "$ref": "#/$defs/hex64"
+        },
+        "complete_next_domains": {
+          "type": "object"
+        }
+      },
+      "required": [
+        "sealed_result",
+        "result_hash",
+        "complete_operation_id",
+        "complete_base_revision",
+        "complete_request_hash",
+        "complete_next_domains"
+      ],
+      "additionalProperties": false
+    },
+    "run": {
+      "type": "object",
+      "properties": {
+        "run_seq": {
+          "$ref": "#/$defs/u63"
+        },
+        "mission_id": {
+          "$ref": "#/$defs/id"
+        },
+        "run_status": {
+          "enum": [
+            "PREPARED",
+            "RUNNING",
+            "SUSPENDED",
+            "RESULT_PENDING"
+          ]
+        },
+        "mission_definition_hash": {
+          "$ref": "#/$defs/hex64"
+        },
+        "config_hash": {
+          "$ref": "#/$defs/hex64"
+        },
+        "seed": {
+          "$ref": "#/$defs/bits64"
+        },
+        "prep_receipt": {
+          "$ref": "#/$defs/prep_receipt"
+        },
+        "preparation_checkpoint": {
+          "$ref": "#/$defs/preparation_checkpoint"
+        },
+        "checkpoint": {
+          "anyOf": [
+            {
+              "type": "null"
+            },
+            {
+              "$ref": "#/$defs/checkpoint"
+            }
+          ]
+        },
+        "terminal_intent": {
+          "anyOf": [
+            {
+              "type": "null"
+            },
+            {
+              "$ref": "#/$defs/terminal_intent"
+            }
+          ]
+        }
+      },
+      "required": [
+        "run_seq",
+        "mission_id",
+        "run_status",
+        "mission_definition_hash",
+        "config_hash",
+        "seed",
+        "prep_receipt",
+        "preparation_checkpoint",
+        "checkpoint",
+        "terminal_intent"
+      ],
+      "additionalProperties": false
+    },
+    "current_run": {
+      "type": "object",
+      "properties": {
+        "run": {
+          "anyOf": [
+            {
+              "type": "null"
+            },
+            {
+              "$ref": "#/$defs/run"
+            }
+          ]
+        }
+      },
+      "required": [
+        "run"
+      ],
+      "additionalProperties": false
+    }
+  },
+  "type": "object",
+  "properties": {
+    "schema": {
+      "const": "1"
+    },
+    "payload": {
+      "$ref": "#/$defs/user_settings"
+    }
+  },
+  "required": [
+    "schema",
+    "payload"
+  ],
+  "additionalProperties": false
+}

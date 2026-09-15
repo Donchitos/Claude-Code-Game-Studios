@@ -1,0 +1,271 @@
+{
+  "domains": {
+    "campaign": {
+      "schema": "1",
+      "payload": {
+        "schema": "1",
+        "domain_revision": "0",
+        "completed_mission_ids": [],
+        "ending_seen": false
+      }
+    },
+    "unlocks": {
+      "schema": "1",
+      "payload": {
+        "schema": "1",
+        "domain_revision": "0",
+        "unlocked_content_ids": [
+          "TEST-START"
+        ]
+      }
+    },
+    "records": {
+      "schema": "1",
+      "payload": {
+        "schema": "1",
+        "domain_revision": "0",
+        "content_revision": "1",
+        "legacy_records": {
+          "total_runs": "0",
+          "victories": "0",
+          "best_level": "0",
+          "best_kills": "0",
+          "best_seconds": "0000000000000000"
+        },
+        "mission_records": {
+          "completed_runs": "0",
+          "victories": "0",
+          "defeats": "0",
+          "abandoned": "0",
+          "technical_aborts": "0",
+          "total_kills": "0"
+        },
+        "spirit_stones": {
+          "unspent": "0",
+          "earned": "0",
+          "spent": "0"
+        },
+        "core_herb_count": "0"
+      }
+    },
+    "progression": {
+      "schema": "1",
+      "payload": {
+        "schema": "1",
+        "domain_revision": "0",
+        "content_revision": "1",
+        "unspent_pages": "0",
+        "earned_pages_total": "0",
+        "spent_pages_total": "0",
+        "upgrade_sequence": "0",
+        "next_purchase_id": "1",
+        "branch_levels": {
+          "QINGYUAN": "0",
+          "LONGCHUN": "0",
+          "DAYAN": "0"
+        },
+        "last_purchase_receipt": null
+      }
+    },
+    "preparation": {
+      "schema": "1",
+      "payload": {
+        "schema": "1",
+        "domain_revision": "0",
+        "content_revision": "1",
+        "next_preparation_id": "1",
+        "seed_ledgers": [
+          {
+            "seed_id": "TEST-SEED-A",
+            "available": "0",
+            "reserved": "0",
+            "consumed": "0",
+            "earned": "0"
+          },
+          {
+            "seed_id": "TEST-SEED-B",
+            "available": "0",
+            "reserved": "0",
+            "consumed": "0",
+            "earned": "0"
+          },
+          {
+            "seed_id": "TEST-SEED-C",
+            "available": "0",
+            "reserved": "0",
+            "consumed": "0",
+            "earned": "0"
+          }
+        ],
+        "legacy_starter_claimed": false,
+        "applied_campaign_grant_ids": [],
+        "active_reservation": null,
+        "last_resolution": null
+      }
+    },
+    "user_settings": {
+      "schema": "1",
+      "payload": {
+        "schema": "1",
+        "domain_revision": "0",
+        "content_revision": "1",
+        "volume_percent": {
+          "master": "100",
+          "music": "100",
+          "sfx": "100",
+          "ui": "100"
+        },
+        "font_scale_id": "100",
+        "reduce_motion": false,
+        "reduce_sensory_load": false,
+        "high_contrast": false,
+        "screen_reader_hints": false,
+        "locale_id": "zh-CN"
+      }
+    },
+    "current_run": {
+      "schema": "1",
+      "payload": {
+        "run": null
+      }
+    }
+  },
+  "context": {
+    "content_revision": "1",
+    "config_hash": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+    "seed_caps": {
+      "TEST-SEED-A": "999",
+      "TEST-SEED-B": "999",
+      "TEST-SEED-C": "999"
+    },
+    "recipe_seeds": {
+      "TEST-RECIPE-A": "TEST-SEED-A"
+    },
+    "locale_ids": [
+      "en",
+      "zh-CN"
+    ],
+    "offer_max": 3,
+    "loadout_max": 8,
+    "refresh_max": 2,
+    "required_owner_ids": [
+      "LEGACY_STAGE"
+    ],
+    "mission_hashes": {
+      "S1-M01-01": "aa7fa3cf1961b4a2cfddc7a3101718c9e47d2defef1acb370716705c3b0cb4dd",
+      "S1-M01-02": "4914b4c1ce9be63fc618bf8da6e2c8fbdd0f41d4a4f647c3a5098cc48856ae24",
+      "S1-M01-03": "0982a925b3f0585630b58869fcf12e890e74f7127d24549ae389aa1a6f13247b",
+      "S1-M01-04": "70d9fb2eedf8c66d2f434bf1b6001215d0fab92e98713e812db67bdc4182ddf0",
+      "S1-M01-05": "9b90be1b30d7481a6e5ed17a2a64d5a340680a3e09b8d009c55e6c864daa6b95",
+      "S1-M01-06": "d7921a694ef8c2dc070a408ec68c34cd63f14be8eec6beb070c5fd88dba9e7b6",
+      "S1-M01-07": "a05f5b3b5374e9ce473314e49b783bf652bc20c551cfb14d50745e89ebad35a4",
+      "S1-M01-08": "0e4162f8155fa282033651301b6588790c4df67502494e82e61a0cf6a9e05fd9",
+      "S1-M02-01": "9bc82175ad7b6682f4d39576d9d85fcaf02f737fef4133abb827402ad08dd70c",
+      "S1-M02-02": "ff5568e56b9ff2ac0488a02bdf6245381f7e6ba7a22b8ed35e923804db2216ca",
+      "S1-M02-03": "944c584659c3c77f349493678182ef2108d73bea55415d35a289f2bd82227082",
+      "S1-M02-04": "e01e66191858ee42f8131e38d5fd93a968a4c250c1a70f1620c6eee55b0c129f",
+      "S1-M02-05": "7cde85a03654b5dde228144a12c928058eda805dbb45a2702e19454ffb763ffb",
+      "S1-M02-06": "9bb14ea3b7b2046d8694cda3c95697abfb580be3c7926af54eb3086250a8a77f",
+      "S1-M02-07": "0672121547622e0fe8dd2a91bae2d8a4f35e923ee0346ef0f12336116a02cefe",
+      "S1-M02-08": "45538b0d82bd7a9b74985e600009685101e17e7c77f3ec32b6f674d62a5eebfa",
+      "S1-M03-01": "58f2bcc51acda1aae929c01c76c2435deddd9f0b97134587cb1d99465d411444",
+      "S1-M03-02": "ef772b5858c732c08316b626695bbf4320dc0eb0597eb5f56b9fccef1841341e",
+      "S1-M03-03": "6048ba7e0afcc2eb93438a9835bde1159e1648c9bada174d413f3840d31907a9",
+      "S1-M03-04": "aaf9b547620fc27397dbb1b401f2a0bb7c7bf9619abc12e5735800d74bf1bdda",
+      "S1-M03-05": "936272c66197208a86d152c2f9ac69cd70fd4baf38407e9c4c54e089e28eda7a",
+      "S1-M03-06": "309e42c949955acbd25f92c33923ee44c22be4dc3d2ae100404b1e028e436865",
+      "S1-M03-07": "8b27663588e2d0a2e9fd71427f9464cebdd5f1c4b1748012203aa5899036c7ea",
+      "S1-M03-08": "ed7e57060021a52e4e028e4cb481f0853684133580d4a15450e54af2f1d36e47",
+      "S1-M04-01": "e0104308312136f0b1410e97d82b2ab59d16a2ab01334b72036e3aeeebaad7c8",
+      "S1-M04-02": "2a9fe7fcd6b3ab63bf1cf93453d0ced1eb89e301673d26489ea885eb805696d3",
+      "S1-M04-03": "5de8b013baaa2fd889ae1e698076bc33a85894770adced666db557a2900642ba",
+      "S1-M04-04": "9c4c00d690c3aa2fd63f704ec01e3b99de5f2a17f425687055bb6ac5b05c45bc",
+      "S1-M04-05": "136e2e32c7e6c4f3ca4c245c048d7302ec96a58f4ff9d465fd5783986e6a0dfe",
+      "S1-M04-06": "9c053af5cfa2652aa81509ec9fc0e0d153cd07786e1b381e5543fc426b72e514",
+      "S1-M04-07": "99a1f8238039ccbe969f35b92f6d5f184e1655e78f437acfc8b86aeb5f86ea20",
+      "S1-M04-08": "e96cf2d8a0ef3cf635fe088892094ac0f5aacef51c3793af7f04da5243595330",
+      "S1-M05-01": "142f707e4aa2ce66c92bb73debdb4794705ed2d19c063ca2970a6e075562a896",
+      "S1-M05-02": "5cbfa6b98afdec027351efd8665760cfbfd68832ce8a4fd2accb7c7dbbce2cc8",
+      "S1-M05-03": "a83ea1d908668d443ebdcac92f961925cdc23ec71dad7f6ff2b8616d4ed90f3e",
+      "S1-M05-04": "e6058ab1868a38fb2508bdbb8f30b8f9e2dfdd7eb3a6bf2d4578142996dd1723",
+      "S1-M05-05": "b27d3fb5eb20fe82f5483ffdc22aeac3ed698aa410d180867255c4d2f48866dd",
+      "S1-M05-06": "0d897381cb94e5cfae1c856a28d843b56773fd1fd432d78da091fdd0f6098584",
+      "S1-M05-07": "e79b9ce73ad7f469e243db86a2c9989b791184efddf4f905eee605718798be8b",
+      "S1-M05-08": "48c88c2a6329e3793e109e9382bee61a7f554bd1fdfa7555cd7f349e91d2f55d",
+      "S1-M06-01": "131b97bd84f515594aa2393cd9e0bf6828e986cdca9262ea73e07fe897955d5c",
+      "S1-M06-02": "78eb02f8b24d5b61aada6cf10b3ad06cfce14f7cc91023bb29f5a74ee9c3c7d1",
+      "S1-M06-03": "18f48b5ae819a2cd5aeaba9ddb832be35c07426a1a6dc42ddba363ba718803dd",
+      "S1-M06-04": "455971f3515f57181ba017988c1bb11579e55de1db38f4c6b47771cd80b17da3",
+      "S1-M06-05": "e64c9f278619cecd03fa9e732703a5e04b9c356cb4787d05af6c6c6de2393c86",
+      "S1-M06-06": "d5b107c2dbc15a2d92c3bcacd3cf9f434a7e63abd4cdca5e7bbcd6cf476164a1",
+      "S1-M06-07": "ddaaf7ab047ec524c1bfd39ce11d3eecd428e56e720144d26492fc1bc45c132a",
+      "S1-M06-08": "572811d7861fbd72fa3b2b0cb39732c4ecad67e508b82e9e579399e936e87dd9",
+      "S1-M07-01": "03d37a137053b177a513e8dad97df51a75e93f1df0a65d06ba18c8da1f230b90",
+      "S1-M07-02": "d8aab20539e62bbd540c2b3571b49d016f3a3122790077ede0a947fab4046249",
+      "S1-M07-03": "eab4f5fb27ff8701b08af869170ed147e03f7bd8d61a6dfb3960a7454e7fabb8",
+      "S1-M07-04": "6c2aed1aa4c0bec97c45a41d3bee45e40ecd74fda8dfae40dececc0f43c748cc",
+      "S1-M07-05": "fb996fffb39fbfe540b48004382c67c6b7cb1687e82e6b59bcb40d9488776aef",
+      "S1-M07-06": "5d159fb8bf0ca569c1598f83cb1c492ba70c39821fc6db48a0892c0f078c4678",
+      "S1-M07-07": "c71186c416e1662fcf073da482c278af0b1d9e9509baaad7b49808eff540f58b",
+      "S1-M07-08": "799c49308e00d3aa9370aad75a508f3516cee978bca9df74e7e821244b448c99",
+      "S1-M08-01": "9eef408b8fd2ed2f62bc827b06004fbd87ccb4679725d0d7251326799181bbcd",
+      "S1-M08-02": "27f56edc056bab66606f3b2008e1c2c48c264b72d053edbe813e267833452875",
+      "S1-M08-03": "cd6ee6db555ca87d4dd38d4e6b16883f8345725a1514c13207422fab4b025923",
+      "S1-M08-04": "bdd098cbf1b668da5078a26bbf9858ff14d6a54f418045dd72f34c49f10bd63c",
+      "S1-M08-05": "38ba7fa5225838dc5b38aa3969c78b5ef36fd843982ce865710d7f73d4890f7a",
+      "S1-M08-06": "9d7cb39a490b2697892ed8cd8c133347aac08137c26a02ad4aef8fe1cce7ae4d",
+      "S1-M08-07": "7d7672da3e98e94a060987f3c4feb3d73fdcb3cd80b2ff5057593ec036de4557",
+      "S1-M08-08": "66d663dfad4050db4128037c756c62ed446b3d3b1d41b330c90b5e9c53c6cbdf"
+    }
+  },
+  "root": {
+    "profile_id": "11111111111111111111111111111111",
+    "branch_id": "22222222222222222222222222222222",
+    "revision": "1",
+    "resolved_run_seq": "0",
+    "next_run_seq": "2",
+    "operation_id": "33333333333333333333333333333333"
+  },
+  "prepared_run": {
+    "run_seq": "1",
+    "mission_id": "S1-M01-01",
+    "run_status": "PREPARED",
+    "mission_definition_hash": "aa7fa3cf1961b4a2cfddc7a3101718c9e47d2defef1acb370716705c3b0cb4dd",
+    "config_hash": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+    "seed": "ffffffffffffffff",
+    "prep_receipt": {
+      "preparation_id": "1",
+      "run_seq": "1",
+      "selection": {
+        "kind": "NO_PILL"
+      },
+      "source_content_hash": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+      "create_operation_id": "44444444444444444444444444444444",
+      "create_request_hash": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd"
+    },
+    "preparation_checkpoint": {
+      "preparation_id": "1",
+      "run_seq": "1",
+      "revision": "0",
+      "offer_revision": "0",
+      "offer_rows": [],
+      "offer_hash": null,
+      "refresh_used": "0",
+      "refresh_remaining": "2",
+      "selected_candidate_id": null,
+      "choice_command_id": null,
+      "loadout_rows": [],
+      "loadout_hash": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "rng": {
+        "algorithm_id": "TEST-RNG",
+        "version": "1",
+        "seed": "ffffffffffffffff",
+        "state": "abcdef0123456789",
+        "cursor": "0"
+      },
+      "handoff_revision": "0"
+    },
+    "checkpoint": null,
+    "terminal_intent": null
+  }
+}

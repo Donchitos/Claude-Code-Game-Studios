@@ -1,0 +1,18 @@
+{
+  "status": "PASS",
+  "checks": 12,
+  "negative_cases": [
+    "snapshot_owners missing",
+    "snapshot_owners duplicate",
+    "persistent_features missing",
+    "persistent_features duplicate",
+    "mission_overlays missing",
+    "mission_overlays duplicate",
+    "production_enabled cannot self-certify",
+    "battle_ready cannot self-certify",
+    "test ceiling cannot become production budget",
+    "mock not installed owner",
+    "dangling owner route"
+  ],
+  "scope": "inventory consistency only"
+}

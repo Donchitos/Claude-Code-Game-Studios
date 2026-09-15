@@ -1,5 +1,11 @@
 # DropSystem + Leveling/XP
 
+> 2026-09-14 WP04c：商业恢复责任与 pending/barrier 盘点见 `design/registry/manifests/steam-recovery-responsibilities-v1.json`；显式合同、绑定封装、全量预检及联合验证见 [Steam域与快照适配](steam-save-domain-adapters.md)。清单是责任盘点，商业 owner/schema/容量仍 OPEN，不改变本文件既有 verdict。
+
+> 2026-09-11 WP04b 适配路由：五域结构/联合校验与当前 `LEGACY_STAGE_PC_V1` capture/restore 见 [Steam域与快照适配](steam-save-domain-adapters.md)。Pool/Grid 原生引用不落盘；当前生成逻辑viewport冻结，RNG保存实际seed/state并绑定engine commit；全Scope tick结束才捕获。此实现不补齐本文件全部商业owner合同；真实v2迁移/事务、Mission/SkillDraft/Preparation/Settlement语义和商业最大预算仍OPEN，battle_ready=false。
+
+> 2026-09-11 Steam合同路由（作者传播，implementation gate OPEN）：新STEAM_MISSION_V1首次grant归Campaign、重复与失败收入归本owner/Settlement；短局数值矩阵ECON-MISSION-01未冻结，禁止直接沿用全局局长公式。Save v2续局须保留拾取/经验/升级队列及未完成ledger的matching-tick snapshot，具体schema/预算待本owner冻结。
+
 > **Status**: In Review / Re-review Pending
 > **Author**: User + Codex
 > **Last Updated**: 2026-09-03

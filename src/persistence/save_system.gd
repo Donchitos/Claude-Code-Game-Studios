@@ -93,7 +93,7 @@ func _write_profile(next_profile: Dictionary) -> int:
 		_profile = next_profile
 		return Status.OK
 	var target_path := _slot_b_path if _active_slot == _slot_a_path else _slot_a_path
-	var payload_json := JSON.stringify(next_profile)
+	var payload_json := JSON.stringify(next_profile, "", true, true)
 	var envelope := {
 		"schema_version": PROFILE_SCHEMA_VERSION,
 		"generation": int(next_profile["generation"]),
@@ -106,7 +106,7 @@ func _write_profile(next_profile: Dictionary) -> int:
 		_write_blocked = true
 		return Status.IO_ERROR
 	_write_checkpoint(&"after_open")
-	file.store_string(JSON.stringify(envelope))
+	file.store_string(JSON.stringify(envelope, "", true, true))
 	_write_checkpoint(&"after_store")
 	file.flush()
 	_write_checkpoint(&"after_flush")

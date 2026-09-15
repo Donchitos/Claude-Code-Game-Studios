@@ -1,5 +1,11 @@
 # Config/Data System（配置与运行时快照）
 
+> 2026-09-14 WP04c：商业恢复责任与 pending/barrier 盘点见 `design/registry/manifests/steam-recovery-responsibilities-v1.json`；显式合同、绑定封装、全量预检及联合验证见 [Steam域与快照适配](steam-save-domain-adapters.md)。清单是责任盘点，商业 owner/schema/容量仍 OPEN，不改变本文件既有 verdict。
+
+> 2026-09-11 WP04b 适配路由：五域结构/联合校验与当前 `LEGACY_STAGE_PC_V1` capture/restore 见 [Steam域与快照适配](steam-save-domain-adapters.md)。Pool/Grid 原生引用不落盘；当前生成逻辑viewport冻结，RNG保存实际seed/state并绑定engine commit；全Scope tick结束才捕获。此实现不补齐本文件全部商业owner合同；真实v2迁移/事务、Mission/SkillDraft/Preparation/Settlement语义和商业最大预算仍OPEN，battle_ready=false。
+
+> 2026-09-11 Steam合同路由（作者传播，implementation gate OPEN）：Steam新合同由campaign-flow.md、mission-objectives.md、save-steam-pc.md定义；须生成稳定任务/grant/目标schema、domain validator/migration、最大合法快照与字节/耗时预算、MISSION phase/capacity、ECON-MISSION-01。规划CSV不可直接作runtime配置，缺任一必需注册/预算拒绝新profile。路由manifest为design/registry/manifests/steam-save-mission-contracts-v1.json，仅规划非generated产物。
+
 > **Status**: Re-review Pending — 已同步“感知无限、技术有限”Stage V2、稀疏Grid与Player world-domain契约；须独立full复审
 > **Author**: 用户 + Codex
 > **Created**: 2026-08-19

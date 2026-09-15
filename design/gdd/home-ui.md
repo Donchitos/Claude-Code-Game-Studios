@@ -1,5 +1,9 @@
 # Home UI（黄枫谷洞府首页）
 
+> 2026-09-11 WP04b 适配路由：五域结构/联合校验与当前 `LEGACY_STAGE_PC_V1` capture/restore 见 [Steam域与快照适配](steam-save-domain-adapters.md)。Pool/Grid 原生引用不落盘；当前生成逻辑viewport冻结，RNG保存实际seed/state并绑定engine commit；全Scope tick结束才捕获。此实现不补齐本文件全部商业owner合同；真实v2迁移/事务、Mission/SkillDraft/Preparation/Settlement语义和商业最大预算仍OPEN，battle_ready=false。
+
+> 2026-09-11 Steam合同路由（作者传播，implementation gate OPEN）：Steam新档案/章节入口由campaign-flow.md、save-steam-pc.md定义：只在COMPLETE匹配COMMITTED后展示新解锁；RESULT_PENDING重试原结算，不开启新run；RUNNING/SUSPENDED提供最后checkpoint继续。当前UI尚未实现这些新profile流程。
+
 > **Status**: In Review / Re-review Pending
 > **Author**: 用户 + Codex（lean authoring；consulted UX reviewer / qa-lead）
 > **Created / Last Updated**: 2026-09-07 — Zhangtian第六次独立full review后作者整改传播

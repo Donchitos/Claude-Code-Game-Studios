@@ -32,6 +32,9 @@ var smoke_mode: bool = false
 var progression_projection: Dictionary = {}
 var completed_active_ticks := 0
 var _tick_accumulator := 0.0
+var _snapshot_barrier_ready := true
+var movement_context: PcMovementContext
+var movement_carrier: ProductionMovementIntentCarrier
 
 var _config: Dictionary
 var _upgrades: Dictionary
@@ -44,7 +47,8 @@ var _hud_left: float = 0.0
 
 ## Injects immutable run configuration and preallocates battle-owned systems.
 ## Example: `scope.configure(config, 1234, false)`.
-func configure(config: Dictionary, seed: int, use_smoke_mode: bool) -> bool:
+func configure(config: Dictionary, seed: int, use_smoke_mode: bool,
+		carrier: ProductionMovementIntentCarrier, context: PcMovementContext) -> bool:
 	if state != State.CREATED or config.is_empty():
 		return false
 	_config = config
@@ -63,10 +67,14 @@ func configure(config: Dictionary, seed: int, use_smoke_mode: bool) -> bool:
 	if smoke_mode:
 		# Smoke mode validates lifecycle and settlement, not balance or movement UX.
 		player.hp = 1000000000.0
-	if not joystick_host.initialize(config["input"]):
+	movement_carrier = carrier
+	movement_context = context
+	# The mobile Host stays uninitialized and hidden in the PC scene.
+	joystick_host.hide()
+	if input_system.initialize(config["input"], carrier, context) != ProductionInputSystem.Status.OK:
 		return false
-	if input_system.initialize(joystick_host) != ProductionInputSystem.Status.OK:
-		return false
+	player.bind_movement(carrier, context)
+	battle_ui.configure_generation(context.battle_generation)
 	battle_ui.battle_active_pause_command.connect(func(command: Dictionary) -> void: battle_active_pause_command.emit(command))
 	battle_ui.upgrade_selected.connect(func(choice: int) -> void: upgrade_selected.emit(choice))
 	battle_ui.update_hud(self)
@@ -84,7 +92,7 @@ func activate() -> bool:
 ## Runs one production battle tick; this scope has no autonomous process callback.
 ## Example: `scope.run_tick(delta, tick)`.
 func run_tick(delta: float, tick: int) -> bool:
-	if not run_input_phase(tick):
+	if tick < 1:
 		return false
 	return run_gameplay_phase(delta)
 
@@ -92,13 +100,15 @@ func run_tick(delta: float, tick: int) -> bool:
 func run_input_phase(tick: int) -> bool:
 	if state != State.ACTIVE or terminal_pending:
 		return false
-	if input_system.run_phase(&"MOVEMENT_COMMIT", tick) != ProductionInputSystem.Status.OK:
+	if not movement_context.begin(tick):
+		return false
+	if input_system.run_phase(&"MOVEMENT_COMMIT", movement_context, movement_context.lease_id) != ProductionInputSystem.Status.OK:
 		return false
 	return true
 
 ## GameRoot calls this after InputSystem's MOVEMENT_COMMIT has completed.
 func run_gameplay_phase(delta: float) -> bool:
-	if state != State.ACTIVE or terminal_pending:
+	if state != State.ACTIVE or terminal_pending or not is_finite(delta) or delta < 0.0:
 		return false
 	var step_delta := delta * (_smoke_speed_multiplier if smoke_mode else 1.0)
 	_tick_accumulator += step_delta
@@ -109,12 +119,21 @@ func run_gameplay_phase(delta: float) -> bool:
 	return true
 
 func _run_fixed_tick() -> bool:
+	_snapshot_barrier_ready = false
+	if not run_input_phase(movement_context.tick + 1):
+		return false
 	var step_delta := 1.0 / 60.0
 	elapsed_time = float(completed_active_ticks + 1) / 60.0
-	var direction: Vector2 = input_system.carrier.direction
 	if smoke_mode:
-		direction = stage.smoke_move_direction(elapsed_time, player.position)
-	if not player.run_phase(&"PLAYER_MOVE", direction, step_delta):
+		# Explicit smoke mode supplies a deterministic test carrier, never the normal PC path.
+		var direction := stage.smoke_move_direction(elapsed_time, player.position)
+		if direction == Vector2.ZERO:
+			movement_carrier.clear(movement_context.tick)
+		else:
+			movement_carrier.write(direction.normalized(), 1, movement_context.tick)
+	if not player.consume_movement(movement_carrier, movement_context, movement_context.lease_id, step_delta):
+		return false
+	if not movement_context.finish():
 		return false
 	if not stage.run_phase(&"STAGE_SIMULATE", step_delta, elapsed_time, player):
 		return false
@@ -138,6 +157,7 @@ func _run_fixed_tick() -> bool:
 		terminal_pending = true
 	if terminal_pending:
 		pending_upgrade = false
+	_snapshot_barrier_ready = true
 	return true
 
 ## Locks input before GameRoot pauses SceneTree. Example: `scope.lock_for_pause(20)`.
@@ -180,9 +200,9 @@ func apply_upgrade(choice: int) -> bool:
 func teardown() -> bool:
 	if state == State.TERMINATED:
 		return true
-	var stage_clean := stage.teardown()
 	input_system.teardown()
 	state = State.TERMINATED
+	var stage_clean := stage.teardown()
 	return stage_clean
 
 ## Returns required XP for the current level. Example: `scope.xp_required()`.

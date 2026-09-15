@@ -1,11 +1,24 @@
 # PlayerController
 
+> 2026-09-14 WP04c：商业恢复责任与 pending/barrier 盘点见 `design/registry/manifests/steam-recovery-responsibilities-v1.json`；显式合同、绑定封装、全量预检及联合验证见 [Steam域与快照适配](steam-save-domain-adapters.md)。清单是责任盘点，商业 owner/schema/容量仍 OPEN，不改变本文件既有 verdict。
+
+> 2026-09-11 WP04b 适配路由：五域结构/联合校验与当前 `LEGACY_STAGE_PC_V1` capture/restore 见 [Steam域与快照适配](steam-save-domain-adapters.md)。Pool/Grid 原生引用不落盘；当前生成逻辑viewport冻结，RNG保存实际seed/state并绑定engine commit；全Scope tick结束才捕获。此实现不补齐本文件全部商业owner合同；真实v2迁移/事务、Mission/SkillDraft/Preparation/Settlement语义和商业最大预算仍OPEN，battle_ready=false。
+
+> 2026-09-11 Steam合同路由（作者传播，implementation gate OPEN）：STEAM_MISSION_V1/STEAM_SAVE_V2的目标、终态与完整恢复要求见mission-objectives.md、save-steam-pc.md及ADR-0006。本owner的目标身份/生命周期（适用时）、matching-tick snapshot、schema/validator/migration、required-owner与容量贡献待正式冻结并接线；下方legacy合同不因本路由而自动满足新profile，缺失时禁止生产启用。
+
 > **Status**: In Review（“感知无限、技术有限”跨文档修订已合入；Full Re-review Pending）
 > **Author**: 用户 + Codex agents
 > **Last Updated**: 2026-09-02
 > **Implements Pillar**: 移动躲避 + 自动御剑 + 功法进化的爽快度
 
 ## Overview
+
+| 输入profile | 来源与生命周期权威 | 消费合同 |
+| --- | --- | --- |
+| STEAM_PC | `input-steam-pc.md` PC01–10；WASD/左轴、fresh-neutral | `PcMovementContext`+共享carrier同tick租约；当前ADR-0003像素尺度 |
+| MOBILE_TOUCH / future-port | `input-system.md` MOBILE_TOUCH章节；VJ/fresh touch | 本文PlayerPhaseContextV1、4.5世界单位/秒及移动端AC仍待完整实现 |
+
+下文“单拇指/手指推动摇杆”的来源描述仅适用于MOBILE_TOUCH；PC同样以方向和时机控制身法，不借用VJ claim。
 
 PlayerController 是战局中玩家实体与权威位置的唯一拥有者。玩家通过单拇指虚拟摇杆直接控制韩立走位，系统在每个固定玩法 tick 消费 InputSystem 提供的移动意图，以满速或停止的二元规则提交位置；正式战场不设玩家可见arena边界，Stage相机持续锁定已提交位置，地表与后续怪潮围绕玩家延展。底层位置仍必须落在Stage的大型有限安全域内，但正常配置的可达性证明保证玩家不会在合法局时长触及该技术边界。自动攻击、拾取、受伤、死亡与替身符等系统只通过明确接口读取玩家状态或提交作用，不得绕过 PlayerController 改写位置。
 

@@ -1,5 +1,12 @@
 extends SceneTree
 
+class PolicySource extends PcInputSource:
+	func poll(_deadzone: float) -> void:
+		keyboard_held = keyboard != Vector2.ZERO
+		stick = Vector2.ZERO
+		all_sticks_neutral = true
+		valid = keyboard.is_finite()
+
 # Diagnostic simulation, not a player playtest or a pass/fail balance oracle.
 func _initialize() -> void:
 	_run.call_deferred()
@@ -12,11 +19,13 @@ func _run() -> void:
 	for seed_value in [101, 202, 303]:
 		await game.request_start_battle(seed_value, false)
 		var battle = game.current_battle
+		var policy := PolicySource.new()
+		battle.input_system.source_reader = policy
 		var min_hp := 100.0
 		while not battle.terminal_pending:
-			battle.input_system.carrier.direction = battle.stage.smoke_move_direction(battle.elapsed_time, battle.player.position)
+			policy.keyboard = battle.stage.smoke_move_direction(battle.elapsed_time, battle.player.position)
 			if "--dodge" in OS.get_cmdline_user_args() and battle.stage.boss_spawn_count > 0:
-				battle.input_system.carrier.direction = _dodge_direction(battle)
+				policy.keyboard = _dodge_direction(battle)
 			if not battle.run_gameplay_phase(1.0 / 60.0):
 				push_error("BALANCE_PROBE simulation fault")
 				quit(1)
@@ -26,6 +35,9 @@ func _run() -> void:
 				game.request_pause(true)
 				battle.apply_upgrade((battle.level - 2) % 3)
 				game.request_resume()
+				# Diagnostic policy observes one neutral sample before its next fresh direction.
+				policy.keyboard = Vector2.ZERO
+				battle.run_gameplay_phase(1.0 / 60.0)
 		print("BALANCE_PROBE ", JSON.stringify({"policy": "dodge" if "--dodge" in OS.get_cmdline_user_args() else "stand_at_boss", "seed": seed_value, "seconds": battle.elapsed_time, "level": battle.level, "kills": battle.kills, "victory": battle.victory, "hp": battle.player.hp, "min_hp": min_hp, "first_upgrade_seconds": battle.first_upgrade_time, "speed": battle.player.move_speed, "boss_hp": battle.stage.boss_hp()}))
 		await game.request_end_battle(battle.victory)
 	game.queue_free()

@@ -1,196 +1,179 @@
 class_name ProductionInputSystem
 extends Node
 
-## State machine for movement ingress. GameRoot is the only caller of run_phase.
-enum State {
-	UNARMED,
-	IDLE,
-	ACTIVE,
-	LOCK_PENDING,
-	FROZEN,
-	RESUME_LOCKED,
-	TERMINATED,
-}
-
-enum Status {
-	OK,
-	INVALID_CONFIG,
-	INVALID_INPUT_MAP,
-	INVALID_ARGUMENT,
-	NON_FINITE_INPUT,
-	ACTION_CLEAR_FAILED,
-	GENERATION_EXHAUSTED,
-	WRONG_STATE,
-	WRONG_PHASE,
-	STALE_TICK,
-	JOYSTICK_REBUILD_FAILED,
-}
-
+## STEAM_PC adapter; MOBILE_TOUCH implementation remains an isolated future port.
+enum State { UNARMED, IDLE, ACTIVE, LOCK_PENDING, FROZEN, RESUME_LOCKED, TERMINATED }
+enum Status { OK, INVALID_CONFIG, INVALID_INPUT_MAP, INVALID_ARGUMENT, NON_FINITE_INPUT,
+	ACTION_CLEAR_FAILED, GENERATION_EXHAUSTED, WRONG_STATE, WRONG_PHASE, STALE_TICK, JOYSTICK_REBUILD_FAILED }
+enum Source { NONE, KEYBOARD, GAMEPAD }
 const PC_MOVEMENT_ACTIONS := [&"move_left", &"move_right", &"move_up", &"move_down"]
 const TOUCH_MOVEMENT_ACTIONS := [&"touch_move_left", &"touch_move_right", &"touch_move_up", &"touch_move_down"]
 
-var state: State = State.UNARMED
-var carrier := ProductionMovementIntentCarrier.new()
-var host: ProductionVirtualJoystickHost
-var current_tick: int = 0
-var generation: int = 0
-var callbacks_armed: bool = false
-var ingress_armed: bool = false
-var pending_release: bool = false
-var pending_input_status: Status = Status.OK
+var state := State.UNARMED
+var carrier: ProductionMovementIntentCarrier
+var context: PcMovementContext
+var source_reader: PcInputSource
+var current_tick := 0
+var generation := 0
+var callbacks_armed := false
+var ingress_armed := false
+var shield_bank_service_enabled := false
+var neutral_required := false
+var focused := true
+var source := Source.NONE
+var stick_deadzone := 0.0
+var sample_count := 0
+var _first_resume_tick := false
 
-
-## Validates project input invariants and arms the host.
-## Example: `assert(input_system.initialize(host) == Status.OK)`.
-func initialize(input_host: ProductionVirtualJoystickHost) -> Status:
-	if state != State.UNARMED or input_host == null:
+## Validates the explicit profile and receives GameRoot-owned per-battle storage.
+func initialize(input_config: Dictionary, movement: ProductionMovementIntentCarrier,
+		phase_context: PcMovementContext, reader: PcInputSource = null) -> Status:
+	if state != State.UNARMED:
 		return Status.WRONG_STATE
+	var deadzone := float(input_config.get("stick_deadzone", NAN))
+	if input_config.get("active_profile", "") != "STEAM_PC" or int(input_config.get("profile_revision", 0)) != 1 \
+			or not is_finite(deadzone) or deadzone <= 0.0 or deadzone >= 1.0 \
+			or movement == null or phase_context == null or phase_context.battle_generation < 1:
+		return Status.INVALID_CONFIG
+	# Config floats are float64; reject thresholds rounded out of domain by real_t.
+	var engine_deadzone := Vector2(deadzone, 0.0).x
+	if not is_finite(engine_deadzone) or engine_deadzone <= 0.0 or engine_deadzone >= 1.0:
+		return Status.INVALID_CONFIG
 	for action: StringName in PC_MOVEMENT_ACTIONS:
 		if not InputMap.has_action(action) or InputMap.action_get_events(action).is_empty():
 			return Status.INVALID_INPUT_MAP
-	for action: StringName in TOUCH_MOVEMENT_ACTIONS:
-		if not InputMap.has_action(action) or not InputMap.action_get_events(action).is_empty():
-			return Status.INVALID_INPUT_MAP
+		for event: InputEvent in InputMap.action_get_events(action):
+			if not event is InputEventKey:
+				return Status.INVALID_INPUT_MAP
 	if Input.is_using_accumulated_input():
 		return Status.INVALID_CONFIG
-	if input_host.active_joystick_count() != 1:
-		return Status.INVALID_CONFIG
-	host = input_host
-	host.movement_pressed.connect(_on_movement_pressed)
-	host.movement_released.connect(_on_movement_released)
-	host.shield_fault.connect(_on_shield_fault)
+	carrier = movement
+	context = phase_context
+	source_reader = reader if reader != null else PcInputSource.new()
+	source_reader.refresh_devices()
+	# Match the engine Vector2 component precision at the inclusive threshold.
+	stick_deadzone = engine_deadzone
+	source_reader.poll(stick_deadzone)
+	neutral_required = source_reader.keyboard_held or not source_reader.all_sticks_neutral
 	callbacks_armed = true
 	state = State.IDLE
 	return Status.OK
 
-## Opens movement ingress after the battle scope is active.
-## Example: `input_system.activate()`.
+## Opens the PC consumer after GameRoot has unpaused behind its physical gate.
 func activate() -> Status:
-	if state != State.IDLE and state != State.RESUME_LOCKED:
+	if (state != State.IDLE and state != State.RESUME_LOCKED) or not focused:
 		return Status.WRONG_STATE
-	if host == null or not host.can_resume():
-		return Status.WRONG_STATE
-	host.set_shield_service_enabled(false)
-	ingress_armed = true
 	state = State.ACTIVE
+	ingress_armed = true
 	return Status.OK
 
-## Consumer-close entry used by the GameRoot POST_DEFERRED_BARRIER.
-func cancel_input(reason: StringName, tick: int) -> Status:
-	if reason == &"" or state != State.ACTIVE:
+## Atomically closes scalar ingress before carrier cleanup or engine setters.
+func cancel_input(reason: StringName, _tick: int) -> Status:
+	if reason == &"" or state not in [State.ACTIVE, State.LOCK_PENDING, State.FROZEN, State.RESUME_LOCKED]:
 		return Status.WRONG_STATE
-	current_tick = maxi(current_tick, tick)
-	carrier.clear(current_tick)
+	if state == State.ACTIVE:
+		state = State.LOCK_PENDING
 	ingress_armed = false
-	state = State.LOCK_PENDING
-	if host != null:
-		host.set_shield_service_enabled(true)
+	shield_bank_service_enabled = false
+	neutral_required = true
+	source = Source.NONE
+	carrier.clear(current_tick)
 	return Status.OK
 
-## Commits one sampled movement vector for a monotonically increasing physics tick.
-## Example: `input_system.run_phase(&"MOVEMENT_COMMIT", 8)`.
-func run_phase(phase: StringName, tick: int) -> Status:
+## Samples exactly once for the currently open PC movement lease.
+func run_phase(phase: StringName, frame: PcMovementContext, lease: int) -> Status:
 	if phase != &"MOVEMENT_COMMIT":
 		return Status.WRONG_PHASE
-	if tick <= current_tick:
+	if frame == null or frame != context or not frame.open or frame.retired or lease != frame.lease_id or frame.tick <= current_tick:
 		return Status.STALE_TICK
-	current_tick = tick
-	if pending_input_status != Status.OK:
-		var status := pending_input_status
-		pending_input_status = Status.OK
-		carrier.clear(tick)
-		return status
-	if state != State.ACTIVE or not ingress_armed:
+	if state != State.ACTIVE or not ingress_armed or not focused:
 		return Status.WRONG_STATE
-	if pending_release:
-		pending_release = false
-		carrier.clear(tick)
+	current_tick = frame.tick
+	sample_count += 1
+	source_reader.poll(stick_deadzone)
+	if not source_reader.valid or not source_reader.keyboard.is_finite() or not source_reader.stick.is_finite():
+		carrier.clear(current_tick)
+		return Status.NON_FINITE_INPUT
+	var neutral := not source_reader.keyboard_held and source_reader.all_sticks_neutral
+	if neutral_required or _first_resume_tick:
+		neutral_required = not neutral
+		_first_resume_tick = false
+		carrier.clear(current_tick)
+		source = Source.NONE
 		return Status.OK
-	var pc_vector := Input.get_vector(PC_MOVEMENT_ACTIONS[0], PC_MOVEMENT_ACTIONS[1], PC_MOVEMENT_ACTIONS[2], PC_MOVEMENT_ACTIONS[3], 0.0)
-	var touch_vector := Input.get_vector(TOUCH_MOVEMENT_ACTIONS[0], TOUCH_MOVEMENT_ACTIONS[1], TOUCH_MOVEMENT_ACTIONS[2], TOUCH_MOVEMENT_ACTIONS[3], 0.0)
-	var action_vector := pc_vector if pc_vector != Vector2.ZERO else touch_vector
-	if not action_vector.is_finite():
-		carrier.clear(tick)
-		return Status.NON_FINITE_INPUT
-	if action_vector == Vector2.ZERO:
-		carrier.clear(tick)
+	var next_source := Source.NONE
+	var vector := Vector2.ZERO
+	if source_reader.keyboard_held:
+		vector = source_reader.keyboard
+		next_source = Source.KEYBOARD
+	elif source_reader.stick.length() > stick_deadzone:
+		vector = source_reader.stick
+		next_source = Source.GAMEPAD
+	if vector == Vector2.ZERO:
+		# Opposing held keys suspend output without ending an existing keyboard epoch.
+		# A different or fully released source retires it; its next nonzero sample
+		# receives a new generation below.
+		if next_source != source:
+			source = Source.NONE
+		carrier.clear(current_tick)
 		return Status.OK
-	var scale := maxf(absf(action_vector.x), absf(action_vector.y))
-	if not is_finite(scale) or scale <= 0.0:
-		carrier.clear(tick)
-		return Status.NON_FINITE_INPUT
-	var scaled := action_vector / scale
-	var length := scaled.length()
-	if not is_finite(length) or length <= 0.0:
-		carrier.clear(tick)
-		return Status.NON_FINITE_INPUT
-	var normalized := scaled / length
-	if not carrier.write(normalized, maxi(generation, 1), tick):
-		carrier.clear(tick)
-		return Status.NON_FINITE_INPUT
-	return Status.OK
+	if next_source != source:
+		if generation == 9223372036854775807:
+			carrier.clear(current_tick)
+			return Status.GENERATION_EXHAUSTED
+		generation += 1
+		source = next_source
+	var scale := maxf(absf(vector.x), absf(vector.y))
+	var scaled := vector / scale
+	return Status.OK if carrier.write(scaled / scaled.length(), generation, current_tick) else Status.NON_FINITE_INPUT
 
-## Closes ingress and clears movement before SceneTree pause.
-## Example: `input_system.lock_for_pause(12)`.
+## Closes the battle consumer for a manual or choice pause.
 func lock_for_pause(tick: int) -> Status:
-	return cancel_input(&"MANUAL", tick)
+	return cancel_input(&"PAUSE", tick)
 
-## Completes the pause barrier. Example: `input_system.confirm_paused()`.
+## Marks completion of the current PC simulation pause barrier.
 func confirm_paused() -> Status:
 	if state != State.LOCK_PENDING:
 		return Status.WRONG_STATE
 	state = State.FROZEN
 	return Status.OK
 
-## Moves a safely paused input instance to the resume-locked state.
+## Held sources remain a neutral barrier, never a technical failure.
 func prepare_resume() -> Status:
-	if state != State.FROZEN or host == null or not host.can_resume():
+	if state != State.FROZEN or not focused:
 		return Status.WRONG_STATE
 	state = State.RESUME_LOCKED
+	_first_resume_tick = true
 	return Status.OK
 
-## Rebuilds input after a layout invalidation while ingress is closed.
-## Example: `input_system.rebuild_after_invalidation(3)`.
-func rebuild_after_invalidation(revision: int) -> Status:
-	if state != State.RESUME_LOCKED or host == null:
-		return Status.WRONG_STATE
-	return Status.OK if host.rebuild_after_invalidation(revision) else Status.JOYSTICK_REBUILD_FAILED
-
-## Permanently closes this battle-owned input system. Example: `input_system.teardown()`.
-func teardown() -> Status:
-	if state == State.TERMINATED:
-		return Status.OK
+## Retires the sampled source after a controller connection/mapping change.
+func invalidate_sources() -> void:
+	if not callbacks_armed:
+		return
+	source = Source.NONE
+	neutral_required = true
 	carrier.clear(current_tick)
-	pending_release = false
-	pending_input_status = Status.OK
-	ingress_armed = false
-	callbacks_armed = false
+	source_reader.refresh_devices()
+
+## Receives app-root focus state; refocus never opens movement by itself.
+func set_focused(value: bool) -> void:
+	focused = value
+	if not value:
+		invalidate_sources()
+
+## Terminal commit precedes all fallible node cleanup.
+func teardown() -> Status:
 	state = State.TERMINATED
-	if host != null:
-		host.teardown()
+	callbacks_armed = false
+	ingress_armed = false
+	shield_bank_service_enabled = false
+	source = Source.NONE
+	if carrier != null:
+		carrier.clear(current_tick)
+	if context != null:
+		context.retire()
 	return Status.OK
 
-## Main-thread observer for callback-latched failures.
-func service_pending_input_fault(tick: int) -> Status:
-	if pending_input_status == Status.OK:
-		return Status.OK
-	var status := pending_input_status
-	pending_input_status = Status.OK
-	carrier.clear(maxi(tick, current_tick))
-	return status
-
-func _on_movement_pressed() -> void:
-	if callbacks_armed and state == State.ACTIVE:
-		if generation == 9223372036854775807:
-			pending_input_status = Status.GENERATION_EXHAUSTED
-			ingress_armed = false
-			return
-		generation += 1
-
-func _on_movement_released() -> void:
-	if callbacks_armed:
-		pending_release = true
-
-func _on_shield_fault(raw_status: int) -> void:
-	if callbacks_armed and pending_input_status == Status.OK:
-		pending_input_status = Status.INVALID_ARGUMENT if raw_status == 1 else Status.INVALID_CONFIG
+## PC has no callback-driven touch fault mailbox.
+func service_pending_input_fault(_tick: int) -> Status:
+	return Status.OK

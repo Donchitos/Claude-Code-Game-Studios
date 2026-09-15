@@ -1,8 +1,16 @@
-# Systems Index: 凡人修仙传·掌天试炼（MVP）
+# Systems Index: Steam 1.0 商业版规划与既有系统基线
+
+> 2026-09-14 WP04c：Save recovery contract 已实现局部准入校验；13战斗责任/5持久feature/6目标盘点见 `design/registry/manifests/steam-recovery-responsibilities-v1.json`。责任清单不等于新增已实现系统，商业owner与预算仍OPEN，独立code review限定范围APPROVED；不提升既有设计verdict或battle_ready。
+
+> 2026-09-11 WP04b：五域结构与联合validator、当前legacy战斗恢复适配已补，七域双层封装压力样本与本地耗时/内存已测。见[适配合同](steam-save-domain-adapters.md)及`production/playtest-evidence/steam-domains-2026-09-11/`。完整商业最大预算、迁移/事务/新owner与Windows仍OPEN；下方WP04a“其余五域未开始”是历史状态。
+
+> 2026-09-11 WP04a：Steam codec与Campaign/Unlock数据校验基础已实现、独立code-review完成，82单元/104集成/70机器schema检查和5组legacy回归通过。新profile仍不启用；其它5域/owner快照、NUL适配、预算/真实Mission配置未齐备，battle_ready=false。详见production/playtest-evidence/2026-09-11-steam-schema-foundation.md。
 
 > **Status**: Draft
 > **Created**: 2026-08-14
-> **Last Updated**: 2026-09-10
+> **Last Updated**: 2026-09-11
+
+> 2026-09-11商业范围checkpoint：用户目标为完整Steam游戏、主要内容20小时以上，继续后已展开[商业范围](../steam-1.0-product-scope.md)、[8章64任务](../steam-1.0-campaign.md)、[364项内容矩阵](../../production/steam-1.0-content-matrix.csv)及[系统迁移](../../production/steam-1.0-system-migration.md)。下方1–32枚举与28/28仅是既有MVP范围的历史设计覆盖；商业新增9域中ST-S01/02已有八节合同并获独立senior设计基线APPROVED，其余7域待系统设计，不能视作商业版覆盖完成。当前为Working Baseline / Design Review Pending，SCOPE-TIME-01时长风险OPEN，battle_ready=false。
 
 > 调参/协议 checkpoint：Stage伤害先聚合后提交、飞剑连续扫掠、扇形角落判定、T+1来源与action校验、48-word召唤0/2及回滚已补测试。三seed普通血量模拟：站桩三败/预警躲避三胜；移速暂限600。Godot渲染截图已检查，真人反馈与完整typed ABI仍OPEN。详见production/playtest-evidence/2026-09-10-combat-tuning.md。
 
@@ -129,8 +137,8 @@ iOS 与微信小游戏为 Steam 版本稳定后的后续适配目标。
 机械范围以"300 普通敌人 + 400 投射物 + 300 掉落物同屏、Steam Windows 60 FPS"为
 首发性能约束；后续 Android/iOS 仍需独立 min-spec 性能门。因此对象池、稀疏空间网格、
 固定容量生成/退役与视口draw-cull是Foundation级刚需。
-MVP 只验证三件事：①移动躲避+自动御剑+功法进化的爽快度；②避险或夺宝的风险决策
-是否体现谨慎取舍气质；③掌天瓶催熟→下局增益的局外循环是否简单明确。
+既有MVP子集验证三件事：①移动躲避+自动御剑+功法进化的爽快度；②避险或夺宝的风险决策
+是否体现谨慎取舍气质；③灵药备战→下局增益的局外循环是否简单明确。当前产品完成标准由商业范围与发售计划定义，还需完整章节、内容、资产和发行证据。
 
 ## Current release strategy (2026-09-10)
 
@@ -140,12 +148,28 @@ MVP 只验证三件事：①移动躲避+自动御剑+功法进化的爽快度�
 
 ---
 
+## Commercial additions（待设计，独立于既有1–32计数）
+
+| 工作ID | 商业域 | 状态 | 路由 |
+|---|---|---|---|
+| ST-S01 | Campaign Flow / 章节推进 | Design Baseline APPROVED / Implementation OPEN — [GDD](campaign-flow.md) | 章节任务图、L01/L05/L23/L25 |
+| ST-S02 | Mission Objectives / 任务目标 | Design Baseline APPROVED / Implementation OPEN — [GDD](mission-objectives.md) | 六目标、L06/L09/L10/L11/L23 |
+| ST-S03 | Character Loadout / 角色装配 | Planned / System GDD Not Started | L08/L11/L14/ST-S01 |
+| ST-S04 | Challenge Rules / 难度挑战 | Planned / System GDD Not Started | ST-S01/ST-S02/L05 |
+| ST-S05 | Codex & Achievements / 图鉴成就 | Planned / System GDD Not Started | ST-S01/L14/L23/L25 |
+| ST-S06 | Frontend & Settings / 前端设置 | Planned / System GDD Not Started | L02/L24/L26/L27 |
+| ST-S07 | Narrative Nodes / 章节节点 | Planned / System GDD Not Started | ST-S01/ST-S06/L23 |
+| ST-S08 | Steam Platform / 平台发行 | Planned / System GDD Not Started | L23/ST-S05/ST-S06 |
+| ST-S09 | Localization & Asset Pipeline / 文本资产 | Planned / System GDD Not Started | L05/L28/L29/ST-S06 |
+
+完整32项保留/修订映射及WP00–WP10顺序见[迁移表](../../production/steam-1.0-system-migration.md)。VFX、Tutorial、Perf等原后续优先级属于历史层级，商业首发处理以迁移表为准；本轮不更改已有GDD verdict和生产容量。
+
 ## Systems Enumeration
 
 | # | System Name | Category | Priority | Status | Design Doc | Depends On |
 |---|-------------|----------|----------|--------|------------|------------|
 | 1 | GameRoot & Scene Flow | Core | MVP | In Review | design/gdd/game-root-scene-flow.md | ADR-GR-001已确定main-scene persistent root；当前仅有vertical-slice route harness，完整persistent lifecycle/Save/runtime/performance/evidence gates仍OPEN，待独立full review。 |
-| 2 | InputSystem | Core | MVP | In Review | design/gdd/input-system.md | 2026-09-11 clean-context full re-review 为 `BLOCKED / XL`（至少`MAJOR REVISION NEEDED / XL`）：8/8章节、35个unique AC，但Steam/mobile profile、PC deadzone/generation、phase/context/lease、GUI route与Shield/VJ stacking、pause/resume原子事务、Meta/7001 identity、manifest/AC和平台证据均未闭合。仍为Re-review Pending，runtime/device/evidence gates未通过。 |
+| 2 | InputSystem | Core | MVP | In Review | design/gdd/input-system.md | 2026-09-11 fresh senior：STEAM_PC R3–R8局部APPROVED WITH ADVISORIES、R1/R2本地CLOSED；26脚本25PASS/1图形SKIP，六界面×两尺寸已图形验证。极小deadzone长度下溢P3保留；完整ABI/Windows/性能门OPEN。详见2026-09-11-pc-input-r3-r8.md，battle_ready=false。 |
 | 3 | SpatialGrid | Core | MVP | In Review | design/gdd/spatial-grid.md | 2026-09-10 runtime checkpoint已接入Stage敌人identity与最近目标查询；固定容量、pending→sync、remove与越域测试通过。完整phase lease、投射物/Drop查询、pause/resume transaction与benchmark仍OPEN，Re-review Pending。 |
 | 4 | Object Pooling (inferred) | Core | MVP | In Review | design/gdd/object-pooling.md | 2026-09-10 runtime checkpoint已接入敌人预创建identity与Grid binding；死亡/teardown按remove→unbind→release，守恒测试通过。Projectile/Drop pool、quarantine/resume与完整release FSM仍OPEN。 |
 | 5 | Config/Data System | Core | MVP | In Review | design/gdd/config-data-system.md | 第九轮传播实际guard/load/priority/workload rows、四类owner贡献与hash；当前缺owner rows使battle_ready=false。 |
@@ -166,7 +190,7 @@ MVP 只验证三件事：①移动躲避+自动御剑+功法进化的爽快度�
 | 20 | Leveling/XP (inferred) | Progression | MVP | In Review | design/gdd/drop-leveling-system.md | 逐fact XP、`8+5L+ceil(3L²/5)`、level cap40、39 debt/10 visible queue；聚气起始credit已同步，Re-review Pending。 |
 | 21 | Progression Tree (功法树) | Progression | MVP | In Review | design/gdd/progression-tree.md | 2026-09-10 runtime foundation覆盖收入/钱包/3×5购买/Save after-image；Home二次确认及青元attack、长春HP/L5恢复、大衍pickup下一局消费通过。75秒局无法触发90秒收入；crit/pierce/refresh、不确定态、完整ABI/恢复、经济试玩与独立re-review仍BLOCKED。 |
 | 22 | Zhangtian Bottle (掌天瓶) | Progression | MVP | In Review | design/gdd/zhangtian-bottle.md | 第八轮fresh-context verdict为MAJOR REVISION NEEDED/XL；用户已授权完成8组跨文档整改（hash/identity、reservation ABI、crash oracle、a11y/Input/MPSC、Boss tick）；待第九次fresh-context full re-review。 |
-| 23 | SaveSystem | Persistence | MVP | In Review | design/gdd/save-system.md | 2026-09-10 runtime foundation已接入GameRoot：双槽JSON、payload SHA-256、写后读回、损坏槽回退及opaque domain after-image通过；结算原子保存纪录+Progression。完整65,536-byte codec、reservation、process-kill reconcile、完整多domain协议及UI状态仍Re-review Pending。 |
+| 23 | SaveSystem | Persistence | MVP | In Review | design/gdd/save-system.md | 2026-09-10 runtime foundation已接入GameRoot：双槽JSON、payload SHA-256、写后读回、损坏槽回退及opaque domain after-image通过；结算原子保存纪录+Progression。完整65,536-byte codec、reservation、process-kill reconcile、完整多domain协议及UI状态仍Re-review Pending。  新Steam范围另见save-steam-pc.md/ADR-0006：JSON v2合同设计基线独立senior APPROVED，当前runtime仍v1，未具完整续局。 |
 | 24 | BattleUI | UI | MVP | Designed | design/gdd/battle-ui.md | 只读presentation consumer+typed command adapter；atomic revision-vector bundle、fresh-touch drain、HUD/choice/terminal语义已冻结。Full Review Pending；producer views/input/assets/runtime证据BLOCKED。 |
 | 25 | SettlementSystem | UI | MVP | In Review | design/gdd/settlement-system.md | 含BATTLE_RULES；Victory×3/Boss线Defeat×1/starter、held-cap饱和与ABANDONED consume已同步；Re-review Pending。 |
 | 26 | Home UI (洞府首页) | UI | MVP | In Review | design/gdd/home-ui.md | 有库存进Prep、无库存direct NONE、恢复focus与60-byte Settings domain已冻结；Re-review Pending。 |
@@ -336,7 +360,8 @@ MVP 只验证三件事：①移动躲避+自动御剑+功法进化的爽快度�
 
 | Metric | Count |
 |--------|-------|
-| Total systems identified | 32 |
+| Legacy systems identified | 32（下方设计统计只统计这一范围） |
+| Commercial additional domains planned | 9（ST-S01/02作者GDD已建立，7域未开始；不计为9域已批准） |
 | Design docs started | 26 |
 | Design docs reviewed | 9 |
 | Design docs approved | 0（多轮公共契约传播后的受影响设计均保持In Review/Re-review Pending；须各自clean-context复审后重新计数） |
@@ -346,6 +371,12 @@ MVP 只验证三件事：①移动躲避+自动御剑+功法进化的爽快度�
 ---
 
 ## Next Steps
+
+- [x] Steam商业作者基线：范围、8章64任务、364内容项、32+9系统迁移与首批工作包。
+- [ ] 当前入口：WP01关闭PC输入R3–R8与独立复审；WP02/03确定Save策略与章节/目标owner合同，再推进技能/任务闭环。
+- [ ] 用完整第一章验证SCOPE-TIME-01和生产速度，再扩其余7章；最终时长、Windows/Steam及发售质量门仍OPEN。
+
+以下为既有系统设计待办，按商业迁移表裁定适用范围；不再以MVP验证完成作为产品终点。
 
 - [x] 审阅并冻结本系统枚举（已完成枚举/依赖/优先级三轮评审）
 - [x] 完成全部MVP-tier作者设计覆盖

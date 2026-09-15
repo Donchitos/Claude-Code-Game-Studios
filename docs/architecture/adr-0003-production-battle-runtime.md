@@ -1,5 +1,7 @@
 # ADR-0003：正式 BattleScope 采用显式阶段驱动与固定容量运行时
 
+> 2026-09-11后续方向：ADR-0006已选择未来STEAM_SAVE_V2/STEAM_MISSION_V1；新Save/Campaign/Mission合同和owner路由已写，schema/预算/接线未完成。本文记录当前JSON v1与legacy运行适配，不因新ADR自动升级为v2或完整续局。
+
 - **Status**: Accepted for initial production implementation
 - **Date**: 2026-09-10
 - **Owners**: Technical Director / Gameplay / Input / Battle UI

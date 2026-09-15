@@ -1,0 +1,18 @@
+{
+  "date": "2026-09-11",
+  "scope": "STATUS_METADATA_ONLY_NO_RULE_CHANGES",
+  "reviewed_sha256": {
+    "docs/architecture/adr-0006-steam-save-and-mission-contracts.md": "6380884b4b01f1cca68f63f64f6e80791c5a5ddca82699a9e2011cd3ca2c91ed",
+    "design/gdd/save-steam-pc.md": "ead5b4a98690541c51bf0e29149e94cbcc79e59e41eaccf89060990abf8c8a5e",
+    "design/gdd/campaign-flow.md": "442c4d9903dd469581f5c411cd76b37caaae43e082421f7bdee49f2b3b88c785",
+    "design/gdd/mission-objectives.md": "07aae9fda0e3b1de500ba95cd646f6c63531050ff2c3b10df4047f1c7b602960"
+  },
+  "after_status_update_sha256": {
+    "docs/architecture/adr-0006-steam-save-and-mission-contracts.md": "24b78e753855a1228dc687bdf0ea152b459be05a3173c3302ad02941dfc0462d",
+    "design/gdd/save-steam-pc.md": "37ce8bca415b8512c392f302f74106a6ae8dca1e5aca84a383ebab96984a9ecc",
+    "design/gdd/campaign-flow.md": "c2196fec967021582c4949dfc34a12515951b25a741741c1e707a256739ee5b0",
+    "design/gdd/mission-objectives.md": "ff954b68486ed68850bdfc42b3bbe15d54c32367cb711425c0f60e21311b300b"
+  },
+  "senior_report": "review-director-followup.md",
+  "battle_ready": false
+}

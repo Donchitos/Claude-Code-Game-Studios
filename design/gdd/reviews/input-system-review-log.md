@@ -779,3 +779,46 @@ Structure: 8/8 required sections | 35 unique AC IDs | AC independence audit: Y=1
 最终verdict：`BLOCKED / XL`，最低修订级别`MAJOR REVISION NEEDED / XL`。InputSystem继续`In Review / Re-review Pending`；`implementation-ready=false`、`integration-ready=false`、`runtime/device verified=false`、`battle_ready=false`。
 
 建议依赖顺序：先冻结Steam/mobile profile、PC source/deadzone/fresh-resume/arbitration与AC适用矩阵；再实现typed carrier/context/phase、真实GUI route、三字段close及完整pause/resume；最后在同一Windows release artifact上补物理输入、焦点/生命周期和Input workload证据。移动端证据保持独立future-port gate。
+
+## Authorized remediation checkpoint — 2026-09-11 — Re-review Pending
+
+用户明确要求按上述顺序裁定并整改。本条为作者实施记录，不是独立verdict，前一轮`BLOCKED / XL`保留。
+
+1. ADR-0005与PC八章/10 AC子规格冻结STEAM_PC v1，原touch章节全部标记MOBILE_TOUCH。Player/BattleUI/GameRoot/technical preferences/index同步；PC不实例化VJ、不分配touch bank。profile config与作者manifest字段一致。
+2. WASD action与独立mapped left stick分开采样；0.20闭径向死区、keyboard-held priority、checked source generation、neutral resume。每局GameRoot注入carrier/context，每fixed tick唯一Input采样、Player消费与lease关闭；hitch不再复用采样。
+3. PC暂停scalar-close在setter之前；resume首tick ZERO及全部来源中立门；focus loss暂停且显式继续；terminal/replacement先退休输入。八Meta binding和单一dispatcher接入Home/暂停/升级/结算；7001 generation按battle分区，第二局首击、duplicate和旧局拒绝有本地断言。
+4. 24项headless regression全部通过，新增输入81 checks、Meta26 headless/30 graphical checks。两尺寸焦点/neutral文案截图已查看。新Windows release导出与macOS加载其PCK启动通过；Windows物理键盘/手柄仍NOT_RUN，14项检查表与收证脚本已备。
+5. ASN05历史finding精确纠正：原ADR已经写了choice/reason互斥，并非28行必须同时可见；错误是把B22–B28写成“六行”及汇总上界21。现明确nonchoice=21、choice=21−4+7=24，不增加capacity、不宣称native验证。
+
+PC工作负载：macOS无控制器idle poll+lease+Player均摊P95=2.516us；dense战斗720 Input/Player对齐，模拟P95=7.027ms、整帧P95/P99=29.838/32.489ms，不能称稳定60FPS。原始JSON、artifact hashes与边界见`production/playtest-evidence/2026-09-11-pc-input-remediation.md`。
+
+仍OPEN：完整七phase/Save身份/native typed UI ABI、PC06真实设备选择与remap、Windows物理/低配性能、独立full re-review。Mobile GUI/touch/native/a11y/thermal保留BLOCKED-FUTURE-PORT，不能靠删除生产VJ视为已实现。作者solo自查仅记录在input-steam-pc-review-log.md；无新specialist/creative-director verdict，battle_ready=false。
+
+
+## Review — 2026-09-11 — Post-remediation Clean-context Full — Verdict: MAJOR REVISION NEEDED
+
+Specialists: 三个真实独立分组（game+systems、Godot/GDScript+performance、UX/UI/accessibility+QA），全部返回后由fresh creative-director综合。两主目标均8/8节；35个IS AC、10个PC AC。PC修订范围信号L、完整合同XL（协调者估计）。
+
+PC05 FAIL：resume尾段hide_modal同步回调失焦后被ACTIVE提交覆盖，回焦无需Continue即可推进tick。PC07 FAIL：升级modal按默认Up，焦点外泄到PauseButton。均有Godot 4.7.1 headless探针和原始日志，不是Windows物理设备证据。未知joy South绕过假设未复现，已撤回。
+
+B1 profile裁定/运行隔离关闭，传播PARTIAL；B2常规输入整改成立，real_t边界与抵消generation待修；B3局部lease成立/完整ABI OPEN；B4移动future-port；B5 REOPENED；B6跨局identity局部关闭/modal FAIL；B7 ASN 21−4+7=24算术关闭，generated/native未关闭；B8 Windows/发行workload OPEN。
+
+P2还包括neutral反馈遗漏、具体binding/default GUI测试覆盖与多界面显示证据不足。完整报告和覆盖声明：production/playtest-evidence/2026-09-11-pc-input-independent-review.md。复审未修改生产代码；历史作者测试不冒充本次重跑。系统保持In Review / Re-review Pending，battle_ready=false。继续用户授权的性能A/B与Windows证据检查，未将review转换为代码整改或批准。
+
+
+## Authorized P1 remediation — 2026-09-11 — Re-review Pending
+
+用户授权修复R1/R2。GameRoot恢复事务锁及逐可重入边界identity/state/focus复核，Input在hide_modal/focus期间FROZEN，失效退回暂停且回焦不自动继续；modal背景pause禁用focus，默认GUI旁路移除，拒绝设备/release/echo同样消费。
+
+六边界恢复回归71 checks在headless/图形均PASS；Meta36/40、输入81 checks通过。25项integration脚本正常退出（24PASS、1图形专属SKIP），旧两个探针复跑不再出现原反例。两尺寸暂停PNG已查看。新版Windows验证包为build/windows-pc-input-p1-fixed，PCK SHA256 2e106d23c3a22db1e41fa0c513968aa30c3980f538d307a9a8632cdc9985573e；导出与macOS PCK启动、ZIP完整性通过，Windows实机仍NOT_RUN。
+
+本条是作者整改，不覆盖前一独立MAJOR REVISION NEEDED；R3–R8及完整ABI/Windows/性能门保持OPEN，battle_ready=false。详见production/playtest-evidence/2026-09-11-pc-input-p1-fix.md。
+
+
+## Review — 2026-09-11 — R3–R8 Clean-context Full — Senior: APPROVED WITH ADVISORIES (local STEAM_PC scope)
+
+三真实独立工作组（game/systems、Godot/GDScript/performance、UX/UI/accessibility/QA）全部返回后由fresh creative-director综合。R3转换后配置域、R4抵消generation、R5指定profile传播、R6neutral提示、R7exact binding oracle与R8六面双尺寸覆盖CLOSED；R1/R2本地回归CLOSED。没有新确认P1/P2。整体InputSystem保持In Review，battle_ready=false；本条不批准全部PC AC或Windows发行。
+
+本地profile99/Meta134/reentry71/surfaces127通过，实际macOS图形surfaces139通过；全量26脚本25PASS/1图形SKIP。独立组另有21/24/11/11 checks的数值/生命周期/替换探针，范围见原始报告。P3极小合法deadzone下length下溢OPEN；旧摘要P3作者已更正，但保留senior被审快照。完整ABI、设备、任意分辨率与性能预算未关闭。
+
+详见production/playtest-evidence/2026-09-11-pc-input-r3-r8.md与pc-input-r3-r8-2026-09-11/review-director.md。新Windows包导出及macOS PCK boot/ZIP CRC通过，Windows实机NOT_RUN；PCK SHA256 d21ce17a010ff9cc9d52ed1847dd56c49ffbda1bd91d0f73fd4d3c8f2fa86bb9。历史verdict保留为对应快照，不继续把其R1–R8状态当当前结论。

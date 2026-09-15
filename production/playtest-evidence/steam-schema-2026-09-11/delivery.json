@@ -1,0 +1,29 @@
+{
+  "schema": 1,
+  "date": "2026-09-11",
+  "work_package": "WP04a",
+  "head": "e45f1350757bb8e217199444fe4adff51217e570",
+  "workspace": "EXISTING_DIRTY_TREE_NO_COMMIT",
+  "sha256": {
+    "assets/schemas/steam/unlock-domain-v1.schema.json": "ba96839e2386f987f80809b66aa49142dfd8f59dca43f40292c325222399974e",
+    "assets/schemas/steam/campaign-definition-v1.schema.json": "df9b9dd4bf6da4a838bb46227d1d34e0d7893a6de1e88e5a460461980763a563",
+    "assets/schemas/steam/campaign-domain-v1.schema.json": "2473d4d4149809a14a23e5fd9584a715943f5199951dc67caa9dd8d80b6b7b9a",
+    "tests/fixtures/steam/campaign-fixture.json": "5fc10bf188e39bcd45247d09e006dc58b09d6edfa510fc56e321c391ba279627",
+    "tests/fixtures/steam/codec-golden.json": "042dc7a03083502d465a328f763de68fe10c5dffe2054066b3853c8c97572355",
+    "src/persistence/steam_canonical_codec.gd": "31b098d2913c86d3b7e7983ef38051ba2c2bc9b3b2cf5ded37f1f21d22ddae7a",
+    "src/data/steam_campaign_schema.gd": "ef0d7ae237398806a750d87840a103ab1677d37c0011c5b013130d39c5d77734",
+    "tests/unit/steam/steam_codec_test.gd": "d338815358c4720369a9fdf863396bd318fad49fce2eb24ba9e58c436289cbf6",
+    "tests/integration/steam_schema_test.gd": "5dba3279a1824357620106604b6bba8b6861f720860b481602879a3dddc2d18b",
+    "tools/steam/build_schema_fixtures.py": "1e6f112c6aae1e0ab98ed1d104ca94f2f222eba5fc2fc192fa69079bdebee5c2",
+    "tools/steam/build_schemas.py": "9359d56ce96ea10db418a5b9b62e5c264ed708a4577b2aefc82487d0b636a954",
+    "tools/steam/check_schema_artifacts.py": "caa916482c16719160c49c4cb8a55c43f1957431de24808cabbfbcf90b62c6b5"
+  },
+  "generator_repeat": "BYTE_IDENTICAL",
+  "unit_checks": 82,
+  "integration_checks": 104,
+  "structural_checks": 70,
+  "legacy_regression_groups": 5,
+  "runtime_save_format": "JSON_V1",
+  "windows_status": "NOT_RUN",
+  "battle_ready": false
+}

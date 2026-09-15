@@ -1,0 +1,132 @@
+[
+  {
+    "test": "tests/integration/batched_renderer_visual_test.gd",
+    "exit_code": 0,
+    "status": "SKIP"
+  },
+  {
+    "test": "tests/integration/boss_combat_test.gd",
+    "exit_code": 0,
+    "status": "PASS"
+  },
+  {
+    "test": "tests/integration/boss_state_machine_test.gd",
+    "exit_code": 0,
+    "status": "PASS"
+  },
+  {
+    "test": "tests/integration/combat_protocol_test.gd",
+    "exit_code": 0,
+    "status": "PASS"
+  },
+  {
+    "test": "tests/integration/draw_culling_test.gd",
+    "exit_code": 0,
+    "status": "PASS"
+  },
+  {
+    "test": "tests/integration/font_coverage_test.gd",
+    "exit_code": 0,
+    "status": "PASS"
+  },
+  {
+    "test": "tests/integration/hazard_query_test.gd",
+    "exit_code": 0,
+    "status": "PASS"
+  },
+  {
+    "test": "tests/integration/hit_feedback_test.gd",
+    "exit_code": 0,
+    "status": "PASS"
+  },
+  {
+    "test": "tests/integration/home_progression_test.gd",
+    "exit_code": 0,
+    "status": "PASS"
+  },
+  {
+    "test": "tests/integration/long_run_test.gd",
+    "exit_code": 0,
+    "status": "PASS"
+  },
+  {
+    "test": "tests/integration/macos_graphical_test.gd",
+    "exit_code": 0,
+    "status": "PASS"
+  },
+  {
+    "test": "tests/integration/object_pool_test.gd",
+    "exit_code": 0,
+    "status": "PASS"
+  },
+  {
+    "test": "tests/integration/pc_input_profile_test.gd",
+    "exit_code": 0,
+    "status": "PASS"
+  },
+  {
+    "test": "tests/integration/pc_meta_input_test.gd",
+    "exit_code": 0,
+    "status": "PASS"
+  },
+  {
+    "test": "tests/integration/pc_resume_reentry_test.gd",
+    "exit_code": 0,
+    "status": "PASS"
+  },
+  {
+    "test": "tests/integration/pc_ui_surfaces_test.gd",
+    "exit_code": 0,
+    "status": "PASS"
+  },
+  {
+    "test": "tests/integration/production_battle_loop_test.gd",
+    "exit_code": 0,
+    "status": "PASS"
+  },
+  {
+    "test": "tests/integration/production_lifecycle_test.gd",
+    "exit_code": 0,
+    "status": "PASS"
+  },
+  {
+    "test": "tests/integration/progression_system_test.gd",
+    "exit_code": 0,
+    "status": "PASS"
+  },
+  {
+    "test": "tests/integration/projectile_lifecycle_test.gd",
+    "exit_code": 0,
+    "status": "PASS"
+  },
+  {
+    "test": "tests/integration/projectile_spatial_equivalence_test.gd",
+    "exit_code": 0,
+    "status": "PASS"
+  },
+  {
+    "test": "tests/integration/save_crash_test.gd",
+    "exit_code": 0,
+    "status": "PASS"
+  },
+  {
+    "test": "tests/integration/save_fault_surface_test.gd",
+    "exit_code": 0,
+    "status": "PASS"
+  },
+  {
+    "test": "tests/integration/save_system_test.gd",
+    "exit_code": 0,
+    "status": "PASS"
+  },
+  {
+    "test": "tests/integration/spatial_grid_test.gd",
+    "exit_code": 0,
+    "status": "PASS"
+  },
+  {
+    "test": "tests/integration/weapon_publication_test.gd",
+    "exit_code": 0,
+    "status": "PASS"
+  }
+]

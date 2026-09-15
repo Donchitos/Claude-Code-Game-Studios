@@ -1,5 +1,7 @@
 # SaveSystem（本地存档与崩溃恢复）
 
+> 2026-09-11 Steam合同路由（作者传播，implementation gate OPEN）：STEAM_SAVE_V2由save-steam-pc.md与ADR-0006定义：严格JSON、双槽/单写者、run恢复与STAGE_RESULT→COMPLETE。本文旧binary字节/无中途续局限制只属于legacy；业务uncertain/exact-once继续保留。当前runtime仍JSON v1，新schema/Windows adapter/预算未实现，禁止自动启用v2。
+
 > **Status**: In Review / Re-review Pending
 > **Author**: 用户 + Codex（lean authoring；consulted systems-designer / qa-lead / UX reviewer）
 > **Created / Last Updated**: 2026-09-08 — Zhangtian第七次独立full review后作者整改传播；runtime evidence仍OPEN

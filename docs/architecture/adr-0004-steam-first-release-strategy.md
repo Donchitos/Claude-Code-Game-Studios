@@ -4,6 +4,8 @@
 
 Accepted for release strategy on 2026-09-10.
 
+2026-09-11产品规模细化：用户确认主要内容20小时以上，商业工作基线见[产品范围](../../design/steam-1.0-product-scope.md)、[章节任务](../../design/steam-1.0-campaign.md)及[发售计划](../../production/steam-1.0-release-plan.md)。这些作者规划未改变本ADR的平台决策，也不构成新增系统/发行批准；MVP基线仅为商业版的核心子集。
+
 ## Decision
 
 本项目发行顺序调整为：

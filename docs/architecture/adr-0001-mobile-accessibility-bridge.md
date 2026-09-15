@@ -199,7 +199,7 @@ shutdown容量闭环：停止接纳并等待`IN_FLIGHT=0`后，serial ingress以
 | ASN02 | HOME/SETTINGS | title1 + status1 + volume adjustable4 + font/locale combobox2 + boolean switches4 + apply1 + back1 | 14 / 16 |
 | ASN03 | PREP/ALL | back1 + title1 + summary1 + radio group1 + options4 + cost/status2 + primary CTA1 | 11 / 16 |
 | ASN04 | PRE_ACTIVE_CHOICE/ALL | disabled back1 + title1 + status1 + radio group1 + candidate options3 + refresh1 + commit1 | 9 / 12 |
-| ASN05 | BATTLE_PAUSED/ALL | title1 + status1 + primary controls3 + core stats6 + skill summary4 + active reason rows4 + navigation2 | 21 / 24 |
+| ASN05 | BATTLE_PAUSED/ALL | base21（含reason4）；choice可见时以B22–B28七行替换B16–B19四行 | 24 / 24 |
 | ASN06 | SETTLEMENT/ALL | title1 + save status1 + primary CTA1 + reward rows6 + core stats3 + detail page status1 + detail window rows6 + prev/next2 + resolved navigation2 | 23 / 24 |
 | ASN07 | CONTROLLED_FAULT/ALL | title1 + status1 + diagnostic summary1 + retry1 + safe exit1 + export diagnostic1 | 6 / 12 |
 | ASN08 | BATTLE_ACTIVE/ALL | pause gateway1 | 1 / 1 |
@@ -351,7 +351,7 @@ shutdown容量闭环：停止接纳并等待`IN_FLIGHT=0`后，serial ingress以
 | AFV03/34 | ASN07 | BATTLE_SAFE_EXIT | {6005,6006} | 6005 | 6002 | FAULT_BATTLE_STATUS |
 | AFV04/35 | ASN07 | CORRUPT_OR_CONFLICT | {6005,6006} | 6005 | 6002 | FAULT_CONFLICT_STATUS |
 
-generated artifact必须再展开每个variant/node/action组合为独立row，不允许range token进入artifact。节点合同允许互斥动态组：`PAUSE_CHOICE_*`六行只在`choice_visible=1`时出现，并替换同一variant中的四个`PAUSE_REASON_*`行；presenter必须证明任一时刻同时可见行数≤24。未列variant、node/action不属于enabled集合却被激活、initial focus不可见/disabled或live node缺失均`INVALID_MANIFEST`。
+generated artifact必须再展开每个variant/node/action组合为独立row，不允许range token进入artifact。节点合同允许互斥动态组：`PAUSE_CHOICE_*`七行（B22–B28，含group、四candidate、refresh、commit）只在`choice_visible=1`时出现，并替换同一variant中的B16–B19四个`PAUSE_REASON_*`行。非choice上界为B01–B21共21；choice上界为B01–B15、B20–B28共24，即21−4+7=24。presenter必须按每variant展开并证明可见行数≤24。未列variant、node/action不属于enabled集合却被激活、initial focus不可见/disabled或live node缺失均`INVALID_MANIFEST`。此为MOBILE_TOUCH future-port计数澄清，不代表native运行证据。
 
 焦点图规则：`focus_previous_node_id/focus_next_node_id`仅是完整reading顺序的base邻接；presenter发布时按`visible`与动态predicate过滤不可见`PAGE_SLOT`/条件行并重连剩余可见节点，disabled行仍保留可读位置但不可激活。四个focus action只移动该图，不产生业务command。
 

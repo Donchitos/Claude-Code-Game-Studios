@@ -1,5 +1,9 @@
 # BattleUI（战斗界面）
 
+> Steam任务/续局路由：mission-objectives.md与save-steam-pc.md定义六目标、暂停恢复点与RESULT_PENDING状态；UI只显示owner事实，COMPLETE匹配COMMITTED后才显示已到账/下一任务，STAGE_RESULT成功不作完成反馈。新目标HUD/保存退出旅程尚未实现。
+
+> 2026-09-11 STEAM_PC R6：BattleUI只读InputSystem.neutral_required，在普通暂停/升级modal及恢复、active hotplug等待时显示回中说明，解除后移除；不额外poll输入、不改变门。Home/Active/Pause/Upgrade/Active-neutral/Settlement两尺寸均纳入R8表，Windows实测单列。
+
 > **Status**: Designed / Full Review Pending — synced with 2026-09-10 InputSystem blocker remediation; BATTLE_ACTIVE pause gateway remains runtime/device unverified
 > **Author**: 用户 + Codex（lean authoring；consulted systems-designer / qa-lead / ux-designer / art-director）
 > **Created / Last Updated**: 2026-09-10 — InputSystem clean-context full review remediation（Option A pause gateway）
@@ -7,6 +11,15 @@
 > **Scope**: MVP battle HUD、暂停/选择交互、关键提示与 terminal handoff；不含 Settlement/Home/Prep 完整页面或最终资产
 
 ## 1. Overview
+
+| 输入profile | 布局/交互权威 | 平台门 |
+| --- | --- | --- |
+| STEAM_PC | `input-steam-pc.md` PC07–10，1280×720响应横屏、键鼠/手柄focus、generation-bound 7001 | Windows完整菜单旅程与物理设备 |
+| MOBILE_TOUCH / future-port | 本文3.4竖屏HUD、touch/ChoiceGestureSurface、ADR-0001原生ASN与移动AC | Android/iOS touch/safe-area/native a11y；BLOCKED-FUTURE-PORT |
+
+PC modal P1补充（2026-09-11）：打开modal前背景pause按钮disabled/FOCUS_NONE，关闭后恢复。仅按PC显式binding表导航，规格外Up/Down/KpEnter不走Godot默认GUI旁路；拒绝设备、echo和release不得借默认Control转移焦点。
+
+共享HP/XP/choice/Save owner边界保持不变。PC按钮序列不宣称实现移动ASN或方向几何golden。
 
 BattleUI 是战斗态唯一玩家可见 UI composition owner，也是只读 presentation consumer。它把 GameRoot 原子捕获的同一逻辑时点、多 owner revision vector 组合为常驻 HUD、Boss/精英方向提示、暂停页、升级/宝匣/机缘选择页与 terminal/fault 暂存层。它不拥有 HP、XP、计时、技能冷却、选择结果、pause、terminal、Enemy、伤害或 Save truth。
 
@@ -270,7 +283,7 @@ The `battle_ui_capacity` formula is defined as:
 
 - 触屏、键盘、控制器焦点独立；复杂页面显式focus neighbor，不依赖自动猜测。
 - 方向焦点唯一采用 ADR-0001 的 `DirectionalFocusNeighborManifestV1`；BattleUI 对每个 screen/variant 只消费其 `left_node_id/right_node_id` 与 `algorithm_version`，动态可见性变化时重建并匹配对应 golden，不自行推导邻接，也不退化为 previous/next。
-- accessible name/state/value与reading order完整；live region只播choice打开/commit、低血首次、revive、Boss phase、terminal，禁止逐damage/cooldown播报。`BATTLE_ACTIVE`按ADR-0001新增仅含暂停入口的`ASN08/AHP07` gateway：固定capacity1、exact bytes356、node `7001` 为唯一可激活按钮，不发布战斗HUD交互节点；激活只进入现有typed pause command路径。`BATTLE_PAUSED`是ADR-0001的action-bearing TopState，必须按ASN05发布固定capacity24、exact bytes6060、最多21行的`AccessibleScreenSnapshotV2`，unused tail全零。`CONTROLLED_FAULT`固定capacity12 snapshot由persistent GameRoot root fault presenter按ASN07发布，BattleUI生产数0。BattleUI仍只消费snapshot/typed command，GameRoot每render frame drain adapter mailbox。
+- accessible name/state/value与reading order完整；live region只播choice打开/commit、低血首次、revive、Boss phase、terminal，禁止逐damage/cooldown播报。`BATTLE_ACTIVE`按ADR-0001新增仅含暂停入口的`ASN08/AHP07` gateway：固定capacity1、exact bytes356、node `7001` 为唯一可激活按钮，不发布战斗HUD交互节点；激活只进入现有typed pause command路径。`BATTLE_PAUSED`是ADR-0001的action-bearing TopState，必须按ASN05发布固定capacity24、exact bytes6060、非choice最多21行、choice用七行替换四个reason后最多24行的`AccessibleScreenSnapshotV2`，unused tail全零。`CONTROLLED_FAULT`固定capacity12 snapshot由persistent GameRoot root fault presenter按ASN07发布，BattleUI生产数0。BattleUI仍只消费snapshot/typed command，GameRoot每render frame drain adapter mailbox。
 - `BATTLE_ACTIVE` gateway的唯一业务输入为`BattleActivePauseCommandV1`：BattleUI只校验`screen_generation/layout_generation/node_id=7001/enabled/accepted_command_id`并发给GameRoot；GameRoot以`command_id`首见原则exactly-once接纳，转换为`PAUSE_REQUESTED(reason=MANUAL)`。任何stale、duplicate、disabled、非7001或非BATTLE_ACTIVE command为0 effect；BattleUI不得直接调用GameRoot pause、SceneTree或Window setter。
 - 248-byte row必须携带当前layout generation、safe-area logical bounds、visible/clipped及typed localization args；reflow后旧layout native action为0 command。Godot 4.7.1 Control transform、RichTextLabel、AccessibilityLiveMode等路径须目标build spike；TalkBack/VoiceOver未验证前保持`BLOCKED-ACCESSIBILITY-MOBILE-RUNTIME`。
 - 100/115/130%字体、简中、英文扩展30%、伪本地化；关键代价不可截断，不能靠缩字体过线。

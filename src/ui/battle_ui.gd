@@ -18,15 +18,36 @@ var _damage_notice: Label
 var _choice_buttons: Array[Button] = []
 var _accessibility_command_id: int = 0
 var _accessibility_input_event_id: int = 0
+var _screen_generation := 0
+var _neutral_waiting := false
+var _modal_instruction := ""
+const MOVEMENT_HINT := "WASD / 左摇杆移动 · P / Start 暂停 · 飞剑自动攻击"
+const NEUTRAL_HINT := "松开方向键并让摇杆回中后，再重新移动。"
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	mouse_filter = Control.MOUSE_FILTER_PASS
+	mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_build_hud()
 	_build_overlay()
 	get_viewport().size_changed.connect(_layout)
 	_layout()
+
+## Binds command identity to the persistent owner's current battle generation.
+func configure_generation(generation: int) -> void:
+	_screen_generation = generation
+	_accessibility_command_id = 0
+	_accessibility_input_event_id = 0
+
+## Lists only currently reachable controls for the app-root focus dispatcher.
+func focus_buttons() -> Array[Button]:
+	if not _overlay.visible:
+		return [_pause_button]
+	var result: Array[Button] = []
+	for button: Button in _choice_buttons:
+		if button.visible and not button.disabled:
+			result.append(button)
+	return result
 
 ## Updates the battle presentation snapshot. Example: `ui.update_hud(scope)`.
 func update_hud(scope: ProductionBattleScope) -> void:
@@ -46,11 +67,25 @@ func update_hud(scope: ProductionBattleScope) -> void:
 	_damage_notice.visible = scope.player.hit_feedback_left > 0.0
 	_damage_notice.text = "受伤 -%s · %s" % [String.num(scope.player.last_damage_amount, 1), scope.player.last_damage_sources]
 
+## Displays the input owner's barrier state without sampling or clearing input.
+func set_neutral_waiting(waiting: bool) -> void:
+	if waiting == _neutral_waiting:
+		return
+	_neutral_waiting = waiting
+	_refresh_input_hint()
+
+func _refresh_input_hint() -> void:
+	_hint.text = NEUTRAL_HINT if _neutral_waiting else MOVEMENT_HINT
+	_overlay_subtitle.text = _modal_instruction + ("\n" + NEUTRAL_HINT if _neutral_waiting else "")
+
 ## Presents a modal pause surface. Example: `ui.show_pause()`.
 func show_pause() -> void:
+	_pause_button.focus_mode = Control.FOCUS_NONE
+	_pause_button.disabled = true
 	_overlay.visible = true
 	_overlay_title.text = "试炼暂停"
-	_overlay_subtitle.text = "试炼已暂停。点击继续或按 R 返回战斗。"
+	_modal_instruction = "点击继续、按 R 或确认键返回。"
+	_refresh_input_hint()
 	_choice_buttons[0].text = "继续试炼"
 	_choice_buttons[0].visible = true
 	_choice_buttons[1].visible = false
@@ -58,9 +93,12 @@ func show_pause() -> void:
 
 ## Presents the three deterministic level-up choices. Example: `ui.show_upgrade()`.
 func show_upgrade() -> void:
+	_pause_button.focus_mode = Control.FOCUS_NONE
+	_pause_button.disabled = true
 	_overlay.visible = true
 	_overlay_title.text = "修为突破 · 选择一项"
-	_overlay_subtitle.text = "战斗已暂停，选择后继续试炼"
+	_modal_instruction = "战斗已暂停，选择后继续试炼"
+	_refresh_input_hint()
 	_choice_buttons[0].text = "青元剑诀\n飞剑数量 +1"
 	_choice_buttons[1].text = "御剑术\n攻击间隔 -22%"
 	_choice_buttons[2].text = "罗烟步\n移动速度 +20%"
@@ -70,6 +108,9 @@ func show_upgrade() -> void:
 ## Closes any battle modal. Example: `ui.hide_modal()`.
 func hide_modal() -> void:
 	_overlay.visible = false
+	_pause_button.disabled = false
+	_pause_button.focus_mode = Control.FOCUS_ALL
+	_pause_button.grab_focus()
 
 func _build_hud() -> void:
 	_hud_background = ColorRect.new()
@@ -104,7 +145,7 @@ func _build_hud() -> void:
 	_pause_button.pressed.connect(_on_battle_active_pause_pressed)
 	add_child(_pause_button)
 	_hint = Label.new()
-	_hint.text = "WASD / 方向键移动 · 鼠标或手柄可操作 · 飞剑自动攻击"
+	_hint.text = MOVEMENT_HINT
 	_hint.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_hint.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_hint.add_theme_font_size_override("font_size", 18)
@@ -184,6 +225,8 @@ func _on_choice_pressed(choice: int) -> void:
 	upgrade_selected.emit(choice)
 
 func _on_battle_active_pause_pressed() -> void:
+	if _screen_generation < 1 or _accessibility_command_id == 9223372036854775807:
+		return
 	_accessibility_command_id += 1
 	_accessibility_input_event_id += 1
 	battle_active_pause_command.emit({
@@ -191,7 +234,7 @@ func _on_battle_active_pause_pressed() -> void:
 		"command_id": _accessibility_command_id,
 		"input_event_id": _accessibility_input_event_id,
 		"screen_id": 8,
-		"screen_generation": 1,
+		"screen_generation": _screen_generation,
 		"layout_generation": 1,
 		"node_id": 7001,
 		"command_kind": 1,

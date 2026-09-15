@@ -1,0 +1,2856 @@
+{
+	"cases": [
+		{
+			"case": "objective fixture exists SURVIVE",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "configure S1-M01-01",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "configure S1-M01-01",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "SURVIVE cannot win by time alone away from objective",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "actual advance objective SURVIVE",
+			"detail": {
+				"objective": {
+					"completed_ids": [
+						"S1-M01-01:T1"
+					],
+					"completion_order": [
+						"S1-M01-01:T1"
+					],
+					"elapsed": 1.15,
+					"escort_hp": 10000.0,
+					"extraction_ready": true,
+					"extraction_was_inside": true,
+					"finished": true,
+					"hold": 0.0,
+					"kind": "SURVIVE",
+					"player_alive": true,
+					"pressure": 0.0,
+					"progress": 1,
+					"reason": "extracted",
+					"victory": true,
+					"waypoint": 0,
+					"x": 0.0,
+					"y": 0.0
+				},
+				"player": {
+					"facing": 0.0,
+					"hp": 10000.0,
+					"invulnerable": 0.0,
+					"kills": 0,
+					"level": 1,
+					"max_hp": 10000.0,
+					"x": 34.3000106811523,
+					"xp": 0.0,
+					"y": 0.0
+				},
+				"reason": "extracted",
+				"stats": {
+					"boss_kills": 0,
+					"damage_dealt": 0.0,
+					"damage_taken": 0.0,
+					"elapsed": 1.15,
+					"elite_kills": 0,
+					"event_reward": 0,
+					"events_taken": 0,
+					"evolution_ids": [],
+					"evolutions": 0,
+					"kills": 0,
+					"level": 1,
+					"risk_choices": 0,
+					"safe_choices": 0,
+					"skills_used": [
+						"S1-A01"
+					]
+				}
+			},
+			"pass": true
+		},
+		{
+			"case": "SURVIVE consumed simulation ticks",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "SURVIVE actual terminal snapshot validates",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "objective fixture exists ESCORT",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "configure S1-M01-03",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "configure S1-M01-03",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "ESCORT cannot win by time alone away from objective",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "actual advance objective ESCORT",
+			"detail": {
+				"objective": {
+					"completed_ids": [
+						"S1-M01-03:T1",
+						"S1-M01-03:T2",
+						"S1-M01-03:T3",
+						"S1-M01-03:T4"
+					],
+					"completion_order": [
+						"S1-M01-03:T1",
+						"S1-M01-03:T2",
+						"S1-M01-03:T3",
+						"S1-M01-03:T4"
+					],
+					"elapsed": 8.58333333333334,
+					"escort_hp": 9996.0,
+					"extraction_ready": false,
+					"extraction_was_inside": false,
+					"finished": true,
+					"hold": 0.0,
+					"kind": "ESCORT",
+					"player_alive": true,
+					"pressure": 0.0,
+					"progress": 4,
+					"reason": "escort_arrived",
+					"victory": true,
+					"waypoint": 4,
+					"x": 226.0,
+					"y": 0.0
+				},
+				"player": {
+					"facing": 0.0,
+					"hp": 9996.0,
+					"invulnerable": 0.3,
+					"kills": 1,
+					"level": 1,
+					"max_hp": 10000.0,
+					"x": 215.599899291992,
+					"xp": 0.0,
+					"y": 0.0
+				},
+				"reason": "escort_arrived",
+				"stats": {
+					"boss_kills": 0,
+					"damage_dealt": 24.0,
+					"damage_taken": 4.0,
+					"elapsed": 8.58333333333334,
+					"elite_kills": 0,
+					"event_reward": 0,
+					"events_taken": 0,
+					"evolution_ids": [],
+					"evolutions": 0,
+					"kills": 1,
+					"level": 1,
+					"risk_choices": 0,
+					"safe_choices": 0,
+					"skills_used": [
+						"S1-A01"
+					]
+				}
+			},
+			"pass": true
+		},
+		{
+			"case": "ESCORT consumed simulation ticks",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "ESCORT actual terminal snapshot validates",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "objective fixture exists HUNT",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "configure S1-M01-04",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "configure S1-M01-04",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "actual advance objective HUNT",
+			"detail": {
+				"objective": {
+					"completed_ids": [
+						"S1-M01-04:HUNT"
+					],
+					"completion_order": [
+						"S1-M01-04:HUNT"
+					],
+					"elapsed": 0.116666666666667,
+					"escort_hp": 10000.0,
+					"extraction_ready": false,
+					"extraction_was_inside": false,
+					"finished": true,
+					"hold": 0.0,
+					"kind": "HUNT",
+					"player_alive": true,
+					"pressure": 0.0,
+					"progress": 1,
+					"reason": "targets_hunted",
+					"victory": true,
+					"waypoint": 0,
+					"x": 0.0,
+					"y": 0.0
+				},
+				"player": {
+					"facing": -0.126187369227409,
+					"hp": 10000.0,
+					"invulnerable": 0.0,
+					"kills": 1,
+					"level": 1,
+					"max_hp": 10000.0,
+					"x": 34.208984375,
+					"xp": 0.0,
+					"y": -2.03976249694824
+				},
+				"reason": "targets_hunted",
+				"stats": {
+					"boss_kills": 0,
+					"damage_dealt": 24.0,
+					"damage_taken": 0.0,
+					"elapsed": 0.116666666666667,
+					"elite_kills": 1,
+					"event_reward": 0,
+					"events_taken": 0,
+					"evolution_ids": [],
+					"evolutions": 0,
+					"kills": 1,
+					"level": 1,
+					"risk_choices": 0,
+					"safe_choices": 0,
+					"skills_used": [
+						"S1-A01"
+					]
+				}
+			},
+			"pass": true
+		},
+		{
+			"case": "HUNT consumed simulation ticks",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "HUNT actual terminal snapshot validates",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "objective fixture exists CLEANSE",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "configure S1-M01-05",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "configure S1-M01-05",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "CLEANSE cannot win by time alone away from objective",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "actual advance objective CLEANSE",
+			"detail": {
+				"objective": {
+					"completed_ids": [
+						"S1-M01-05:T1",
+						"S1-M01-05:T2"
+					],
+					"completion_order": [
+						"S1-M01-05:T1",
+						"S1-M01-05:T2"
+					],
+					"elapsed": 1.13333333333333,
+					"escort_hp": 10000.0,
+					"extraction_ready": false,
+					"extraction_was_inside": false,
+					"finished": true,
+					"hold": 0.0,
+					"kind": "CLEANSE",
+					"player_alive": true,
+					"pressure": 0.0,
+					"progress": 2,
+					"reason": "zones_cleansed",
+					"victory": true,
+					"waypoint": 2,
+					"x": 0.0,
+					"y": 0.0
+				},
+				"player": {
+					"facing": 0.0,
+					"hp": 10000.0,
+					"invulnerable": 0.0,
+					"kills": 0,
+					"level": 1,
+					"max_hp": 10000.0,
+					"x": 176.399963378906,
+					"xp": 0.0,
+					"y": 0.0
+				},
+				"reason": "zones_cleansed",
+				"stats": {
+					"boss_kills": 0,
+					"damage_dealt": 0.0,
+					"damage_taken": 0.0,
+					"elapsed": 1.13333333333333,
+					"elite_kills": 0,
+					"event_reward": 0,
+					"events_taken": 0,
+					"evolution_ids": [],
+					"evolutions": 0,
+					"kills": 0,
+					"level": 1,
+					"risk_choices": 0,
+					"safe_choices": 0,
+					"skills_used": [
+						"S1-A01"
+					]
+				}
+			},
+			"pass": true
+		},
+		{
+			"case": "CLEANSE consumed simulation ticks",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "CLEANSE actual terminal snapshot validates",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "objective fixture exists BREAK",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "configure S1-M01-02",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "configure S1-M01-02",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "legal persisted choice",
+			"detail": "S1-A01",
+			"pass": true
+		},
+		{
+			"case": "legal persisted choice",
+			"detail": "S1-A01",
+			"pass": true
+		},
+		{
+			"case": "actual advance objective BREAK",
+			"detail": {
+				"objective": {
+					"completed_ids": [
+						"S1-M01-02:T1",
+						"S1-M01-02:T2",
+						"S1-M01-02:T3"
+					],
+					"completion_order": [
+						"S1-M01-02:T1",
+						"S1-M01-02:T2",
+						"S1-M01-02:T3"
+					],
+					"elapsed": 0.3,
+					"escort_hp": 10000.0,
+					"extraction_ready": false,
+					"extraction_was_inside": false,
+					"finished": true,
+					"hold": 0.0,
+					"kind": "BREAK",
+					"player_alive": true,
+					"pressure": 0.0,
+					"progress": 3,
+					"reason": "anchors_destroyed",
+					"victory": true,
+					"waypoint": 0,
+					"x": 0.0,
+					"y": 0.0
+				},
+				"player": {
+					"facing": 0.0,
+					"hp": 10000.0,
+					"invulnerable": 0.0,
+					"kills": 3,
+					"level": 3,
+					"max_hp": 10000.0,
+					"x": 88.2000122070312,
+					"xp": 1.0,
+					"y": 0.0
+				},
+				"reason": "anchors_destroyed",
+				"stats": {
+					"boss_kills": 0,
+					"damage_dealt": 72.0,
+					"damage_taken": 0.0,
+					"elapsed": 0.3,
+					"elite_kills": 0,
+					"event_reward": 0,
+					"events_taken": 0,
+					"evolution_ids": [],
+					"evolutions": 0,
+					"kills": 3,
+					"level": 3,
+					"risk_choices": 0,
+					"safe_choices": 0,
+					"skills_used": [
+						"S1-A01"
+					]
+				}
+			},
+			"pass": true
+		},
+		{
+			"case": "BREAK consumed simulation ticks",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "BREAK actual terminal snapshot validates",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "objective fixture exists BOSS",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "configure S1-M01-08",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "configure S1-M01-08",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "actual advance objective BOSS",
+			"detail": {
+				"objective": {
+					"completed_ids": [
+						"S1-B01"
+					],
+					"completion_order": [
+						"S1-B01"
+					],
+					"elapsed": 0.1,
+					"escort_hp": 10000.0,
+					"extraction_ready": false,
+					"extraction_was_inside": false,
+					"finished": true,
+					"hold": 0.0,
+					"kind": "BOSS",
+					"player_alive": true,
+					"pressure": 0.0,
+					"progress": 1,
+					"reason": "boss_defeated",
+					"victory": true,
+					"waypoint": 0,
+					"x": 0.0,
+					"y": 0.0
+				},
+				"player": {
+					"facing": 0.0,
+					"hp": 10000.0,
+					"invulnerable": 0.0,
+					"kills": 1,
+					"level": 1,
+					"max_hp": 10000.0,
+					"x": 29.3999996185303,
+					"xp": 0.0,
+					"y": 0.0
+				},
+				"reason": "boss_defeated",
+				"stats": {
+					"boss_kills": 1,
+					"damage_dealt": 24.0,
+					"damage_taken": 0.0,
+					"elapsed": 0.1,
+					"elite_kills": 0,
+					"event_reward": 0,
+					"events_taken": 0,
+					"evolution_ids": [],
+					"evolutions": 0,
+					"kills": 1,
+					"level": 1,
+					"risk_choices": 0,
+					"safe_choices": 0,
+					"skills_used": [
+						"S1-A01"
+					]
+				}
+			},
+			"pass": true
+		},
+		{
+			"case": "BOSS consumed simulation ticks",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "BOSS actual terminal snapshot validates",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "configure S1-M01-04",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "active real damage S1-A01 sword",
+			"detail": {
+				"damage": 240.0,
+				"projectiles": 2,
+				"zones": 0
+			},
+			"pass": true
+		},
+		{
+			"case": "configure S1-M01-04",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "active real damage S1-A02 fan",
+			"detail": {
+				"damage": 330.0,
+				"projectiles": 5,
+				"zones": 0
+			},
+			"pass": true
+		},
+		{
+			"case": "configure S1-M01-04",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "active real damage S1-A03 orbit",
+			"detail": {
+				"damage": 190.0,
+				"projectiles": 0,
+				"zones": 12
+			},
+			"pass": true
+		},
+		{
+			"case": "configure S1-M01-04",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "active real damage S1-A04 fireball",
+			"detail": {
+				"damage": 183.6,
+				"projectiles": 0,
+				"zones": 0
+			},
+			"pass": true
+		},
+		{
+			"case": "configure S1-M01-04",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "active real damage S1-A05 flame",
+			"detail": {
+				"damage": 135.0,
+				"projectiles": 0,
+				"zones": 3
+			},
+			"pass": true
+		},
+		{
+			"case": "configure S1-M01-04",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "active real damage S1-A06 meteor",
+			"detail": {
+				"damage": 180.0,
+				"projectiles": 0,
+				"zones": 0
+			},
+			"pass": true
+		},
+		{
+			"case": "configure S1-M01-04",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "active real damage S1-A07 disc",
+			"detail": {
+				"damage": 42.0,
+				"projectiles": 2,
+				"zones": 0
+			},
+			"pass": true
+		},
+		{
+			"case": "configure S1-M01-04",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "active real damage S1-A08 boomerang",
+			"detail": {
+				"damage": 266.0,
+				"projectiles": 2,
+				"zones": 0
+			},
+			"pass": true
+		},
+		{
+			"case": "configure S1-M01-04",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "active real damage S1-A09 shield",
+			"detail": {
+				"damage": 444.0,
+				"projectiles": 0,
+				"zones": 2
+			},
+			"pass": true
+		},
+		{
+			"case": "configure S1-M01-04",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "active real damage S1-A10 turret",
+			"detail": {
+				"damage": 403.0,
+				"projectiles": 0,
+				"zones": 3
+			},
+			"pass": true
+		},
+		{
+			"case": "configure S1-M01-04",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "active real damage S1-A11 drone",
+			"detail": {
+				"damage": 972.0,
+				"projectiles": 6,
+				"zones": 12
+			},
+			"pass": true
+		},
+		{
+			"case": "configure S1-M01-04",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "active real damage S1-A12 stomp",
+			"detail": {
+				"damage": 70.0,
+				"projectiles": 0,
+				"zones": 0
+			},
+			"pass": true
+		},
+		{
+			"case": "configure S1-M01-04",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "active real damage S1-A13 chain",
+			"detail": {
+				"damage": 81.9,
+				"projectiles": 0,
+				"zones": 0
+			},
+			"pass": true
+		},
+		{
+			"case": "configure S1-M01-04",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "active real damage S1-A14 lightning",
+			"detail": {
+				"damage": 152.0,
+				"projectiles": 0,
+				"zones": 0
+			},
+			"pass": true
+		},
+		{
+			"case": "configure S1-M01-04",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "active real damage S1-A15 return_arc",
+			"detail": {
+				"damage": 270.0,
+				"projectiles": 3,
+				"zones": 0
+			},
+			"pass": true
+		},
+		{
+			"case": "configure S1-M01-04",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "active real damage S1-A16 roots",
+			"detail": {
+				"damage": 173.6,
+				"projectiles": 0,
+				"zones": 4
+			},
+			"pass": true
+		},
+		{
+			"case": "configure S1-M01-04",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "active real damage S1-A17 thorns",
+			"detail": {
+				"damage": 110.0,
+				"projectiles": 0,
+				"zones": 0
+			},
+			"pass": true
+		},
+		{
+			"case": "configure S1-M01-04",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "active real damage S1-A18 spores",
+			"detail": {
+				"damage": 327.6,
+				"projectiles": 0,
+				"zones": 3
+			},
+			"pass": true
+		},
+		{
+			"case": "configure S1-M01-04",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "active real damage S1-A19 ice_arrow",
+			"detail": {
+				"damage": 128.0,
+				"projectiles": 0,
+				"zones": 0
+			},
+			"pass": true
+		},
+		{
+			"case": "configure S1-M01-04",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "active real damage S1-A20 frost",
+			"detail": {
+				"damage": 60.0,
+				"projectiles": 0,
+				"zones": 0
+			},
+			"pass": true
+		},
+		{
+			"case": "configure S1-M01-04",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "active real damage S1-A21 winter",
+			"detail": {
+				"damage": 128.25,
+				"projectiles": 0,
+				"zones": 4
+			},
+			"pass": true
+		},
+		{
+			"case": "configure S1-M01-04",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "active real damage S1-A22 ink",
+			"detail": {
+				"damage": 174.72,
+				"projectiles": 0,
+				"zones": 0
+			},
+			"pass": true
+		},
+		{
+			"case": "configure S1-M01-04",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "active real damage S1-A23 seal",
+			"detail": {
+				"damage": 237.552,
+				"projectiles": 0,
+				"zones": 4
+			},
+			"pass": true
+		},
+		{
+			"case": "configure S1-M01-04",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "active real damage S1-A24 void",
+			"detail": {
+				"damage": 204.0,
+				"projectiles": 0,
+				"zones": 0
+			},
+			"pass": true
+		},
+		{
+			"case": "configure S1-M01-01",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "configure S1-M01-01",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "passive acquired through real XP/choice S1-P01",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "passive changes real simulation S1-P01 damage",
+			"detail": {
+				"effect_stats": {
+					"boss_kills": 0,
+					"damage_dealt": 717.12,
+					"damage_taken": 74.0,
+					"elapsed": 7.14999999999998,
+					"elite_kills": 0,
+					"event_reward": 0,
+					"events_taken": 0,
+					"evolution_ids": [],
+					"evolutions": 0,
+					"kills": 2,
+					"level": 2,
+					"risk_choices": 0,
+					"safe_choices": 0,
+					"skills_used": [
+						"S1-A01"
+					]
+				},
+				"scope": "paired synthetic acquisition/stimulus; a failure can require a more targeted stimulus",
+				"zero_effect_stats": {
+					"boss_kills": 0,
+					"damage_dealt": 648.0,
+					"damage_taken": 74.0,
+					"elapsed": 7.14999999999998,
+					"elite_kills": 0,
+					"event_reward": 0,
+					"events_taken": 0,
+					"evolution_ids": [],
+					"evolutions": 0,
+					"kills": 2,
+					"level": 2,
+					"risk_choices": 0,
+					"safe_choices": 0,
+					"skills_used": [
+						"S1-A01"
+					]
+				}
+			},
+			"pass": true
+		},
+		{
+			"case": "configure S1-M01-01",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "configure S1-M01-01",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "passive acquired through real XP/choice S1-P02",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "passive changes real simulation S1-P02 cooldown_reduction",
+			"detail": {
+				"effect_stats": {
+					"boss_kills": 0,
+					"damage_dealt": 720.0,
+					"damage_taken": 74.0,
+					"elapsed": 7.14999999999998,
+					"elite_kills": 0,
+					"event_reward": 0,
+					"events_taken": 0,
+					"evolution_ids": [],
+					"evolutions": 0,
+					"kills": 2,
+					"level": 2,
+					"risk_choices": 0,
+					"safe_choices": 0,
+					"skills_used": [
+						"S1-A01"
+					]
+				},
+				"scope": "paired synthetic acquisition/stimulus; a failure can require a more targeted stimulus",
+				"zero_effect_stats": {
+					"boss_kills": 0,
+					"damage_dealt": 648.0,
+					"damage_taken": 74.0,
+					"elapsed": 7.14999999999998,
+					"elite_kills": 0,
+					"event_reward": 0,
+					"events_taken": 0,
+					"evolution_ids": [],
+					"evolutions": 0,
+					"kills": 2,
+					"level": 2,
+					"risk_choices": 0,
+					"safe_choices": 0,
+					"skills_used": [
+						"S1-A01"
+					]
+				}
+			},
+			"pass": true
+		},
+		{
+			"case": "configure S1-M01-01",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "configure S1-M01-01",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "passive acquired through real XP/choice S1-P03",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "passive changes real simulation S1-P03 area",
+			"detail": {
+				"effect_stats": {
+					"boss_kills": 0,
+					"damage_dealt": 648.0,
+					"damage_taken": 74.0,
+					"elapsed": 7.14999999999998,
+					"elite_kills": 0,
+					"event_reward": 0,
+					"events_taken": 0,
+					"evolution_ids": [],
+					"evolutions": 0,
+					"kills": 2,
+					"level": 2,
+					"risk_choices": 0,
+					"safe_choices": 0,
+					"skills_used": [
+						"S1-A01"
+					]
+				},
+				"scope": "paired synthetic acquisition/stimulus; a failure can require a more targeted stimulus",
+				"zero_effect_stats": {
+					"boss_kills": 0,
+					"damage_dealt": 648.0,
+					"damage_taken": 74.0,
+					"elapsed": 7.14999999999998,
+					"elite_kills": 0,
+					"event_reward": 0,
+					"events_taken": 0,
+					"evolution_ids": [],
+					"evolutions": 0,
+					"kills": 2,
+					"level": 2,
+					"risk_choices": 0,
+					"safe_choices": 0,
+					"skills_used": [
+						"S1-A01"
+					]
+				}
+			},
+			"pass": true
+		},
+		{
+			"case": "configure S1-M01-01",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "configure S1-M01-01",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "passive acquired through real XP/choice S1-P04",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "passive changes real simulation S1-P04 duration",
+			"detail": {
+				"effect_stats": {
+					"boss_kills": 0,
+					"damage_dealt": 1558.89999999998,
+					"damage_taken": 81.0,
+					"elapsed": 7.31666666666665,
+					"elite_kills": 0,
+					"event_reward": 0,
+					"events_taken": 0,
+					"evolution_ids": [],
+					"evolutions": 0,
+					"kills": 2,
+					"level": 2,
+					"risk_choices": 0,
+					"safe_choices": 0,
+					"skills_used": [
+						"S1-A16"
+					]
+				},
+				"scope": "paired synthetic acquisition/stimulus; a failure can require a more targeted stimulus",
+				"zero_effect_stats": {
+					"boss_kills": 0,
+					"damage_dealt": 1482.31999999999,
+					"damage_taken": 81.0,
+					"elapsed": 7.31666666666665,
+					"elite_kills": 0,
+					"event_reward": 0,
+					"events_taken": 0,
+					"evolution_ids": [],
+					"evolutions": 0,
+					"kills": 2,
+					"level": 2,
+					"risk_choices": 0,
+					"safe_choices": 0,
+					"skills_used": [
+						"S1-A16"
+					]
+				}
+			},
+			"pass": true
+		},
+		{
+			"case": "configure S1-M01-01",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "configure S1-M01-01",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "passive acquired through real XP/choice S1-P05",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "passive changes real simulation S1-P05 move_speed",
+			"detail": {
+				"effect_stats": {
+					"boss_kills": 0,
+					"damage_dealt": 672.0,
+					"damage_taken": 74.0,
+					"elapsed": 7.14999999999998,
+					"elite_kills": 0,
+					"event_reward": 0,
+					"events_taken": 0,
+					"evolution_ids": [],
+					"evolutions": 0,
+					"kills": 2,
+					"level": 2,
+					"risk_choices": 0,
+					"safe_choices": 0,
+					"skills_used": [
+						"S1-A01"
+					]
+				},
+				"scope": "paired synthetic acquisition/stimulus; a failure can require a more targeted stimulus",
+				"zero_effect_stats": {
+					"boss_kills": 0,
+					"damage_dealt": 648.0,
+					"damage_taken": 74.0,
+					"elapsed": 7.14999999999998,
+					"elite_kills": 0,
+					"event_reward": 0,
+					"events_taken": 0,
+					"evolution_ids": [],
+					"evolutions": 0,
+					"kills": 2,
+					"level": 2,
+					"risk_choices": 0,
+					"safe_choices": 0,
+					"skills_used": [
+						"S1-A01"
+					]
+				}
+			},
+			"pass": true
+		},
+		{
+			"case": "configure S1-M01-01",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "configure S1-M01-01",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "passive acquired through real XP/choice S1-P06",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "passive changes real simulation S1-P06 projectile_speed",
+			"detail": {
+				"effect_stats": {
+					"boss_kills": 0,
+					"damage_dealt": 649.0,
+					"damage_taken": 67.0,
+					"elapsed": 7.14999999999998,
+					"elite_kills": 0,
+					"event_reward": 0,
+					"events_taken": 0,
+					"evolution_ids": [],
+					"evolutions": 0,
+					"kills": 2,
+					"level": 2,
+					"risk_choices": 0,
+					"safe_choices": 0,
+					"skills_used": [
+						"S1-A02"
+					]
+				},
+				"scope": "paired synthetic acquisition/stimulus; a failure can require a more targeted stimulus",
+				"zero_effect_stats": {
+					"boss_kills": 0,
+					"damage_dealt": 649.0,
+					"damage_taken": 67.0,
+					"elapsed": 7.14999999999998,
+					"elite_kills": 0,
+					"event_reward": 0,
+					"events_taken": 0,
+					"evolution_ids": [],
+					"evolutions": 0,
+					"kills": 2,
+					"level": 2,
+					"risk_choices": 0,
+					"safe_choices": 0,
+					"skills_used": [
+						"S1-A02"
+					]
+				}
+			},
+			"pass": true
+		},
+		{
+			"case": "configure S1-M01-01",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "configure S1-M01-01",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "passive acquired through real XP/choice S1-P07",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "passive changes real simulation S1-P07 armor",
+			"detail": {
+				"effect_stats": {
+					"boss_kills": 0,
+					"damage_dealt": 648.0,
+					"damage_taken": 56.0,
+					"elapsed": 7.14999999999998,
+					"elite_kills": 0,
+					"event_reward": 0,
+					"events_taken": 0,
+					"evolution_ids": [],
+					"evolutions": 0,
+					"kills": 2,
+					"level": 2,
+					"risk_choices": 0,
+					"safe_choices": 0,
+					"skills_used": [
+						"S1-A01"
+					]
+				},
+				"scope": "paired synthetic acquisition/stimulus; a failure can require a more targeted stimulus",
+				"zero_effect_stats": {
+					"boss_kills": 0,
+					"damage_dealt": 648.0,
+					"damage_taken": 74.0,
+					"elapsed": 7.14999999999998,
+					"elite_kills": 0,
+					"event_reward": 0,
+					"events_taken": 0,
+					"evolution_ids": [],
+					"evolutions": 0,
+					"kills": 2,
+					"level": 2,
+					"risk_choices": 0,
+					"safe_choices": 0,
+					"skills_used": [
+						"S1-A01"
+					]
+				}
+			},
+			"pass": true
+		},
+		{
+			"case": "configure S1-M01-01",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "configure S1-M01-01",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "passive acquired through real XP/choice S1-P08",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "passive changes real simulation S1-P08 pickup_radius",
+			"detail": {
+				"effect_stats": {
+					"boss_kills": 0,
+					"damage_dealt": 48.0,
+					"damage_taken": 8.0,
+					"elapsed": 7.14999999999998,
+					"elite_kills": 0,
+					"event_reward": 0,
+					"events_taken": 0,
+					"evolution_ids": [],
+					"evolutions": 0,
+					"kills": 2,
+					"level": 2,
+					"risk_choices": 0,
+					"safe_choices": 0,
+					"skills_used": [
+						"S1-A01"
+					]
+				},
+				"scope": "paired synthetic acquisition/stimulus; a failure can require a more targeted stimulus",
+				"zero_effect_stats": {
+					"boss_kills": 0,
+					"damage_dealt": 48.0,
+					"damage_taken": 8.0,
+					"elapsed": 7.14999999999998,
+					"elite_kills": 0,
+					"event_reward": 0,
+					"events_taken": 0,
+					"evolution_ids": [],
+					"evolutions": 0,
+					"kills": 2,
+					"level": 2,
+					"risk_choices": 0,
+					"safe_choices": 0,
+					"skills_used": [
+						"S1-A01"
+					]
+				}
+			},
+			"pass": true
+		},
+		{
+			"case": "configure S1-M01-01",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "configure S1-M01-01",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "passive acquired through real XP/choice S1-P09",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "passive changes real simulation S1-P09 max_hp",
+			"detail": {
+				"effect_stats": {
+					"boss_kills": 0,
+					"damage_dealt": 648.0,
+					"damage_taken": 74.0,
+					"elapsed": 7.14999999999998,
+					"elite_kills": 0,
+					"event_reward": 0,
+					"events_taken": 0,
+					"evolution_ids": [],
+					"evolutions": 0,
+					"kills": 2,
+					"level": 2,
+					"risk_choices": 0,
+					"safe_choices": 0,
+					"skills_used": [
+						"S1-A01"
+					]
+				},
+				"scope": "paired synthetic acquisition/stimulus; a failure can require a more targeted stimulus",
+				"zero_effect_stats": {
+					"boss_kills": 0,
+					"damage_dealt": 648.0,
+					"damage_taken": 74.0,
+					"elapsed": 7.14999999999998,
+					"elite_kills": 0,
+					"event_reward": 0,
+					"events_taken": 0,
+					"evolution_ids": [],
+					"evolutions": 0,
+					"kills": 2,
+					"level": 2,
+					"risk_choices": 0,
+					"safe_choices": 0,
+					"skills_used": [
+						"S1-A01"
+					]
+				}
+			},
+			"pass": true
+		},
+		{
+			"case": "configure S1-M01-01",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "configure S1-M01-01",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "passive acquired through real XP/choice S1-P10",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "passive changes real simulation S1-P10 summon_damage",
+			"detail": {
+				"effect_stats": {
+					"boss_kills": 0,
+					"damage_dealt": 486.2,
+					"damage_taken": 81.0,
+					"elapsed": 7.11666666666665,
+					"elite_kills": 0,
+					"event_reward": 0,
+					"events_taken": 0,
+					"evolution_ids": [],
+					"evolutions": 0,
+					"kills": 2,
+					"level": 2,
+					"risk_choices": 0,
+					"safe_choices": 0,
+					"skills_used": [
+						"S1-A10"
+					]
+				},
+				"scope": "paired synthetic acquisition/stimulus; a failure can require a more targeted stimulus",
+				"zero_effect_stats": {
+					"boss_kills": 0,
+					"damage_dealt": 455.0,
+					"damage_taken": 81.0,
+					"elapsed": 7.11666666666665,
+					"elite_kills": 0,
+					"event_reward": 0,
+					"events_taken": 0,
+					"evolution_ids": [],
+					"evolutions": 0,
+					"kills": 2,
+					"level": 2,
+					"risk_choices": 0,
+					"safe_choices": 0,
+					"skills_used": [
+						"S1-A10"
+					]
+				}
+			},
+			"pass": true
+		},
+		{
+			"case": "configure S1-M01-01",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "configure S1-M01-01",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "passive acquired through real XP/choice S1-P11",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "passive changes real simulation S1-P11 summon_range",
+			"detail": {
+				"effect_stats": {
+					"boss_kills": 0,
+					"damage_dealt": 429.0,
+					"damage_taken": 0.0,
+					"elapsed": 7.11666666666665,
+					"elite_kills": 0,
+					"event_reward": 0,
+					"events_taken": 0,
+					"evolution_ids": [],
+					"evolutions": 0,
+					"kills": 1,
+					"level": 2,
+					"risk_choices": 0,
+					"safe_choices": 0,
+					"skills_used": [
+						"S1-A10"
+					]
+				},
+				"scope": "paired synthetic acquisition/stimulus; a failure can require a more targeted stimulus",
+				"zero_effect_stats": {
+					"boss_kills": 0,
+					"damage_dealt": 13.0,
+					"damage_taken": 0.0,
+					"elapsed": 7.11666666666665,
+					"elite_kills": 0,
+					"event_reward": 0,
+					"events_taken": 0,
+					"evolution_ids": [],
+					"evolutions": 0,
+					"kills": 1,
+					"level": 2,
+					"risk_choices": 0,
+					"safe_choices": 0,
+					"skills_used": [
+						"S1-A10"
+					]
+				}
+			},
+			"pass": true
+		},
+		{
+			"case": "configure S1-M01-01",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "configure S1-M01-01",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "passive acquired through real XP/choice S1-P12",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "passive changes real simulation S1-P12 summon_duration",
+			"detail": {
+				"effect_stats": {
+					"boss_kills": 0,
+					"damage_dealt": 455.0,
+					"damage_taken": 81.0,
+					"elapsed": 7.11666666666665,
+					"elite_kills": 0,
+					"event_reward": 0,
+					"events_taken": 0,
+					"evolution_ids": [],
+					"evolutions": 0,
+					"kills": 2,
+					"level": 2,
+					"risk_choices": 0,
+					"safe_choices": 0,
+					"skills_used": [
+						"S1-A10"
+					]
+				},
+				"scope": "paired synthetic acquisition/stimulus; a failure can require a more targeted stimulus",
+				"zero_effect_stats": {
+					"boss_kills": 0,
+					"damage_dealt": 455.0,
+					"damage_taken": 81.0,
+					"elapsed": 7.11666666666665,
+					"elite_kills": 0,
+					"event_reward": 0,
+					"events_taken": 0,
+					"evolution_ids": [],
+					"evolutions": 0,
+					"kills": 2,
+					"level": 2,
+					"risk_choices": 0,
+					"safe_choices": 0,
+					"skills_used": [
+						"S1-A10"
+					]
+				}
+			},
+			"pass": true
+		},
+		{
+			"case": "configure S1-M01-01",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "configure S1-M01-01",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "passive acquired through real XP/choice S1-P13",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "passive changes real simulation S1-P13 chain_count",
+			"detail": {
+				"effect_stats": {
+					"boss_kills": 0,
+					"damage_dealt": 309.11826859375,
+					"damage_taken": 81.0,
+					"elapsed": 7.09999999999998,
+					"elite_kills": 0,
+					"event_reward": 0,
+					"events_taken": 0,
+					"evolution_ids": [],
+					"evolutions": 0,
+					"kills": 2,
+					"level": 2,
+					"risk_choices": 0,
+					"safe_choices": 0,
+					"skills_used": [
+						"S1-A13"
+					]
+				},
+				"scope": "paired synthetic acquisition/stimulus; a failure can require a more targeted stimulus",
+				"zero_effect_stats": {
+					"boss_kills": 0,
+					"damage_dealt": 282.7178025,
+					"damage_taken": 81.0,
+					"elapsed": 7.09999999999998,
+					"elite_kills": 0,
+					"event_reward": 0,
+					"events_taken": 0,
+					"evolution_ids": [],
+					"evolutions": 0,
+					"kills": 2,
+					"level": 2,
+					"risk_choices": 0,
+					"safe_choices": 0,
+					"skills_used": [
+						"S1-A13"
+					]
+				}
+			},
+			"pass": true
+		},
+		{
+			"case": "configure S1-M01-01",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "configure S1-M01-01",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "passive acquired through real XP/choice S1-P14",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "passive changes real simulation S1-P14 critical_chance",
+			"detail": {
+				"effect_stats": {
+					"boss_kills": 0,
+					"damage_dealt": 672.0,
+					"damage_taken": 74.0,
+					"elapsed": 7.14999999999998,
+					"elite_kills": 0,
+					"event_reward": 0,
+					"events_taken": 0,
+					"evolution_ids": [],
+					"evolutions": 0,
+					"kills": 2,
+					"level": 2,
+					"risk_choices": 0,
+					"safe_choices": 0,
+					"skills_used": [
+						"S1-A01"
+					]
+				},
+				"scope": "paired synthetic acquisition/stimulus; a failure can require a more targeted stimulus",
+				"zero_effect_stats": {
+					"boss_kills": 0,
+					"damage_dealt": 648.0,
+					"damage_taken": 74.0,
+					"elapsed": 7.14999999999998,
+					"elite_kills": 0,
+					"event_reward": 0,
+					"events_taken": 0,
+					"evolution_ids": [],
+					"evolutions": 0,
+					"kills": 2,
+					"level": 2,
+					"risk_choices": 0,
+					"safe_choices": 0,
+					"skills_used": [
+						"S1-A01"
+					]
+				}
+			},
+			"pass": true
+		},
+		{
+			"case": "configure S1-M01-01",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "configure S1-M01-01",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "passive acquired through real XP/choice S1-P15",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "passive changes real simulation S1-P15 return_damage",
+			"detail": {
+				"effect_stats": {
+					"boss_kills": 0,
+					"damage_dealt": 2078.64,
+					"damage_taken": 67.0,
+					"elapsed": 7.14999999999998,
+					"elite_kills": 0,
+					"event_reward": 0,
+					"events_taken": 0,
+					"evolution_ids": [],
+					"evolutions": 0,
+					"kills": 3,
+					"level": 2,
+					"risk_choices": 0,
+					"safe_choices": 0,
+					"skills_used": [
+						"S1-A15"
+					]
+				},
+				"scope": "paired synthetic acquisition/stimulus; a failure can require a more targeted stimulus",
+				"zero_effect_stats": {
+					"boss_kills": 0,
+					"damage_dealt": 1800.0,
+					"damage_taken": 67.0,
+					"elapsed": 7.14999999999998,
+					"elite_kills": 0,
+					"event_reward": 0,
+					"events_taken": 0,
+					"evolution_ids": [],
+					"evolutions": 0,
+					"kills": 3,
+					"level": 2,
+					"risk_choices": 0,
+					"safe_choices": 0,
+					"skills_used": [
+						"S1-A15"
+					]
+				}
+			},
+			"pass": true
+		},
+		{
+			"case": "configure S1-M01-01",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "configure S1-M01-01",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "passive acquired through real XP/choice S1-P16",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "passive changes real simulation S1-P16 slow_strength",
+			"detail": {
+				"effect_stats": {
+					"boss_kills": 0,
+					"damage_dealt": 416.0,
+					"damage_taken": 67.0,
+					"elapsed": 7.14999999999998,
+					"elite_kills": 0,
+					"event_reward": 0,
+					"events_taken": 0,
+					"evolution_ids": [],
+					"evolutions": 0,
+					"kills": 2,
+					"level": 2,
+					"risk_choices": 0,
+					"safe_choices": 0,
+					"skills_used": [
+						"S1-A19"
+					]
+				},
+				"scope": "paired synthetic acquisition/stimulus; a failure can require a more targeted stimulus",
+				"zero_effect_stats": {
+					"boss_kills": 0,
+					"damage_dealt": 416.0,
+					"damage_taken": 67.0,
+					"elapsed": 7.14999999999998,
+					"elite_kills": 0,
+					"event_reward": 0,
+					"events_taken": 0,
+					"evolution_ids": [],
+					"evolutions": 0,
+					"kills": 2,
+					"level": 2,
+					"risk_choices": 0,
+					"safe_choices": 0,
+					"skills_used": [
+						"S1-A19"
+					]
+				}
+			},
+			"pass": true
+		},
+		{
+			"case": "configure S1-M01-01",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "configure S1-M01-01",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "passive acquired through real XP/choice S1-P17",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "passive changes real simulation S1-P17 explosion_radius",
+			"detail": {
+				"effect_stats": {
+					"boss_kills": 0,
+					"damage_dealt": 576.315,
+					"damage_taken": 81.0,
+					"elapsed": 7.16666666666665,
+					"elite_kills": 0,
+					"event_reward": 0,
+					"events_taken": 0,
+					"evolution_ids": [],
+					"evolutions": 0,
+					"kills": 2,
+					"level": 2,
+					"risk_choices": 0,
+					"safe_choices": 0,
+					"skills_used": [
+						"S1-A04"
+					]
+				},
+				"scope": "paired synthetic acquisition/stimulus; a failure can require a more targeted stimulus",
+				"zero_effect_stats": {
+					"boss_kills": 0,
+					"damage_dealt": 557.415,
+					"damage_taken": 81.0,
+					"elapsed": 7.16666666666665,
+					"elite_kills": 0,
+					"event_reward": 0,
+					"events_taken": 0,
+					"evolution_ids": [],
+					"evolutions": 0,
+					"kills": 2,
+					"level": 2,
+					"risk_choices": 0,
+					"safe_choices": 0,
+					"skills_used": [
+						"S1-A04"
+					]
+				}
+			},
+			"pass": true
+		},
+		{
+			"case": "configure S1-M01-01",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "configure S1-M01-01",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "passive acquired through real XP/choice S1-P18",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "passive changes real simulation S1-P18 control_damage",
+			"detail": {
+				"effect_stats": {
+					"boss_kills": 0,
+					"damage_dealt": 1741.07360000001,
+					"damage_taken": 81.0,
+					"elapsed": 7.31666666666665,
+					"elite_kills": 0,
+					"event_reward": 0,
+					"events_taken": 0,
+					"evolution_ids": [],
+					"evolutions": 0,
+					"kills": 2,
+					"level": 2,
+					"risk_choices": 0,
+					"safe_choices": 0,
+					"skills_used": [
+						"S1-A16"
+					]
+				},
+				"scope": "paired synthetic acquisition/stimulus; a failure can require a more targeted stimulus",
+				"zero_effect_stats": {
+					"boss_kills": 0,
+					"damage_dealt": 1482.31999999999,
+					"damage_taken": 81.0,
+					"elapsed": 7.31666666666665,
+					"elite_kills": 0,
+					"event_reward": 0,
+					"events_taken": 0,
+					"evolution_ids": [],
+					"evolutions": 0,
+					"kills": 2,
+					"level": 2,
+					"risk_choices": 0,
+					"safe_choices": 0,
+					"skills_used": [
+						"S1-A16"
+					]
+				}
+			},
+			"pass": true
+		},
+		{
+			"case": "configure S1-M01-01",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "configure S1-M01-01",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "passive acquired through real XP/choice S1-P19",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "passive changes real simulation S1-P19 charge_speed",
+			"detail": {
+				"effect_stats": {
+					"boss_kills": 0,
+					"damage_dealt": 744.0,
+					"damage_taken": 67.0,
+					"elapsed": 7.14999999999998,
+					"elite_kills": 0,
+					"event_reward": 0,
+					"events_taken": 0,
+					"evolution_ids": [],
+					"evolutions": 0,
+					"kills": 2,
+					"level": 2,
+					"risk_choices": 0,
+					"safe_choices": 0,
+					"skills_used": [
+						"S1-A01"
+					]
+				},
+				"scope": "paired synthetic acquisition/stimulus; a failure can require a more targeted stimulus",
+				"zero_effect_stats": {
+					"boss_kills": 0,
+					"damage_dealt": 648.0,
+					"damage_taken": 74.0,
+					"elapsed": 7.14999999999998,
+					"elite_kills": 0,
+					"event_reward": 0,
+					"events_taken": 0,
+					"evolution_ids": [],
+					"evolutions": 0,
+					"kills": 2,
+					"level": 2,
+					"risk_choices": 0,
+					"safe_choices": 0,
+					"skills_used": [
+						"S1-A01"
+					]
+				}
+			},
+			"pass": true
+		},
+		{
+			"case": "configure S1-M01-01",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "configure S1-M01-01",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "passive acquired through real XP/choice S1-P20",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "passive changes real simulation S1-P20 reflect_count",
+			"detail": {
+				"effect_stats": {
+					"boss_kills": 0,
+					"damage_dealt": 3382.8,
+					"damage_taken": 81.0,
+					"elapsed": 7.09999999999998,
+					"elite_kills": 0,
+					"event_reward": 0,
+					"events_taken": 0,
+					"evolution_ids": [],
+					"evolutions": 0,
+					"kills": 2,
+					"level": 2,
+					"risk_choices": 0,
+					"safe_choices": 0,
+					"skills_used": [
+						"S1-A09"
+					]
+				},
+				"scope": "paired synthetic acquisition/stimulus; a failure can require a more targeted stimulus",
+				"zero_effect_stats": {
+					"boss_kills": 0,
+					"damage_dealt": 3318.8,
+					"damage_taken": 81.0,
+					"elapsed": 7.09999999999998,
+					"elite_kills": 0,
+					"event_reward": 0,
+					"events_taken": 0,
+					"evolution_ids": [],
+					"evolutions": 0,
+					"kills": 2,
+					"level": 2,
+					"risk_choices": 0,
+					"safe_choices": 0,
+					"skills_used": [
+						"S1-A09"
+					]
+				}
+			},
+			"pass": true
+		},
+		{
+			"case": "configure S1-M01-01",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "configure S1-M01-01",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "passive acquired through real XP/choice S1-P21",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "passive changes real simulation S1-P21 trail_width",
+			"detail": {
+				"effect_stats": {
+					"boss_kills": 0,
+					"damage_dealt": 135.0,
+					"damage_taken": 0.0,
+					"elapsed": 7.09999999999998,
+					"elite_kills": 0,
+					"event_reward": 0,
+					"events_taken": 0,
+					"evolution_ids": [],
+					"evolutions": 0,
+					"kills": 1,
+					"level": 2,
+					"risk_choices": 0,
+					"safe_choices": 0,
+					"skills_used": [
+						"S1-A21"
+					]
+				},
+				"scope": "paired synthetic acquisition/stimulus; a failure can require a more targeted stimulus",
+				"zero_effect_stats": {
+					"boss_kills": 0,
+					"damage_dealt": 2.25,
+					"damage_taken": 0.0,
+					"elapsed": 7.09999999999998,
+					"elite_kills": 0,
+					"event_reward": 0,
+					"events_taken": 0,
+					"evolution_ids": [],
+					"evolutions": 0,
+					"kills": 1,
+					"level": 2,
+					"risk_choices": 0,
+					"safe_choices": 0,
+					"skills_used": [
+						"S1-A21"
+					]
+				}
+			},
+			"pass": true
+		},
+		{
+			"case": "configure S1-M01-01",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "configure S1-M01-01",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "passive acquired through real XP/choice S1-P22",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "passive changes real simulation S1-P22 mark_capacity",
+			"detail": {
+				"effect_stats": {
+					"boss_kills": 0,
+					"damage_dealt": 189.76,
+					"damage_taken": 39.0,
+					"elapsed": 7.14999999999998,
+					"elite_kills": 0,
+					"event_reward": 0,
+					"events_taken": 0,
+					"evolution_ids": [],
+					"evolutions": 0,
+					"kills": 2,
+					"level": 2,
+					"risk_choices": 0,
+					"safe_choices": 0,
+					"skills_used": [
+						"S1-A22"
+					]
+				},
+				"scope": "paired synthetic acquisition/stimulus; a failure can require a more targeted stimulus",
+				"zero_effect_stats": {
+					"boss_kills": 0,
+					"damage_dealt": 186.56,
+					"damage_taken": 39.0,
+					"elapsed": 7.14999999999998,
+					"elite_kills": 0,
+					"event_reward": 0,
+					"events_taken": 0,
+					"evolution_ids": [],
+					"evolutions": 0,
+					"kills": 2,
+					"level": 2,
+					"risk_choices": 0,
+					"safe_choices": 0,
+					"skills_used": [
+						"S1-A22"
+					]
+				}
+			},
+			"pass": true
+		},
+		{
+			"case": "configure S1-M01-01",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "configure S1-M01-01",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "passive acquired through real XP/choice S1-P23",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "passive changes real simulation S1-P23 mark_heal",
+			"detail": {
+				"effect_stats": {
+					"boss_kills": 0,
+					"damage_dealt": 186.56,
+					"damage_taken": 39.0,
+					"elapsed": 7.14999999999998,
+					"elite_kills": 0,
+					"event_reward": 0,
+					"events_taken": 0,
+					"evolution_ids": [],
+					"evolutions": 0,
+					"kills": 2,
+					"level": 2,
+					"risk_choices": 0,
+					"safe_choices": 0,
+					"skills_used": [
+						"S1-A22"
+					]
+				},
+				"scope": "paired synthetic acquisition/stimulus; a failure can require a more targeted stimulus",
+				"zero_effect_stats": {
+					"boss_kills": 0,
+					"damage_dealt": 186.56,
+					"damage_taken": 39.0,
+					"elapsed": 7.14999999999998,
+					"elite_kills": 0,
+					"event_reward": 0,
+					"events_taken": 0,
+					"evolution_ids": [],
+					"evolutions": 0,
+					"kills": 2,
+					"level": 2,
+					"risk_choices": 0,
+					"safe_choices": 0,
+					"skills_used": [
+						"S1-A22"
+					]
+				}
+			},
+			"pass": true
+		},
+		{
+			"case": "configure S1-M01-01",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "configure S1-M01-01",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "passive acquired through real XP/choice S1-P24",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "passive changes real simulation S1-P24 mark_spread",
+			"detail": {
+				"effect_stats": {
+					"boss_kills": 0,
+					"damage_dealt": 186.56,
+					"damage_taken": 39.0,
+					"elapsed": 7.14999999999998,
+					"elite_kills": 0,
+					"event_reward": 0,
+					"events_taken": 0,
+					"evolution_ids": [],
+					"evolutions": 0,
+					"kills": 2,
+					"level": 2,
+					"risk_choices": 0,
+					"safe_choices": 0,
+					"skills_used": [
+						"S1-A22"
+					]
+				},
+				"scope": "paired synthetic acquisition/stimulus; a failure can require a more targeted stimulus",
+				"zero_effect_stats": {
+					"boss_kills": 0,
+					"damage_dealt": 186.56,
+					"damage_taken": 39.0,
+					"elapsed": 7.14999999999998,
+					"elite_kills": 0,
+					"event_reward": 0,
+					"events_taken": 0,
+					"evolution_ids": [],
+					"evolutions": 0,
+					"kills": 2,
+					"level": 2,
+					"risk_choices": 0,
+					"safe_choices": 0,
+					"skills_used": [
+						"S1-A22"
+					]
+				}
+			},
+			"pass": true
+		},
+		{
+			"case": "configure S1-M01-01",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "pending upgrade freezes RNG and all work",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "draft applies offered candidate S1-P01",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "draft applies offered candidate S1-P01",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "draft applies offered candidate S1-A01",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "draft applies offered candidate S1-P01",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "draft applies offered candidate S1-P01",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "draft applies offered candidate S1-P01",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "draft applies offered candidate S1-A01",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "draft applies offered candidate S1-A01",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "draft applies offered candidate S1-A01",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "evolution respects both catalog rank prerequisites S1-V01",
+			"detail": {
+				"active": 5,
+				"passive": 5
+			},
+			"pass": true
+		},
+		{
+			"case": "draft applies offered candidate S1-V01",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "draft applies offered candidate S1-P10",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "draft applies offered candidate S1-P10",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "draft applies offered candidate S1-P10",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "draft applies offered candidate S1-P10",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "draft applies offered candidate S1-P10",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "draft applies offered candidate S1-A18",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "draft applies offered candidate S1-A18",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "draft applies offered candidate S1-A18",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "draft applies offered candidate S1-A18",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "draft applies offered candidate S1-A18",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "draft applies offered candidate S1-P07",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "draft applies offered candidate S1-P07",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "draft applies offered candidate S1-P07",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "draft applies offered candidate S1-P07",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "draft applies offered candidate S1-P07",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "draft applies offered candidate S1-A06",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "draft applies offered candidate S1-A06",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "draft applies offered candidate S1-A06",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "draft applies offered candidate S1-A06",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "draft applies offered candidate S1-A06",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "draft applies offered candidate S1-A08",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "draft applies offered candidate S1-P08",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "draft applies offered candidate S1-P08",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "draft applies offered candidate S1-P08",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "draft applies offered candidate S1-A08",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "draft applies offered candidate S1-A08",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "draft applies offered candidate S1-P08",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "draft applies offered candidate S1-A08",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "draft applies offered candidate S1-A08",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "draft applies offered candidate S1-P08",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "evolution respects both catalog rank prerequisites S1-V06",
+			"detail": {
+				"active": 5,
+				"passive": 5
+			},
+			"pass": true
+		},
+		{
+			"case": "draft applies offered candidate S1-V06",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "real draft saturates without 4+4 or rank5 overflow",
+			"detail": {
+				"choices": 41,
+				"passives": {
+					"S1-P01": 5,
+					"S1-P07": 5,
+					"S1-P08": 5,
+					"S1-P10": 5
+				},
+				"skills": {
+					"S1-A01": 5,
+					"S1-A06": 5,
+					"S1-A08": 5,
+					"S1-A18": 5
+				}
+			},
+			"pass": true
+		},
+		{
+			"case": "actual upgrade trigger reached",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "actual evolution selected with rank5 active and auxiliary",
+			"detail": [
+				"S1-V01",
+				"S1-V06"
+			],
+			"pass": true
+		},
+		{
+			"case": "configure S1-M01-01",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "configure S1-M01-01",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "same seeded event genuinely triggered",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "pending event freezes RNG and all work",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "safe and risk legal resolution",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "safe/risk cause actual different resource or pressure",
+			"detail": {
+				"risk": {
+					"damage": 0.0,
+					"pickup_radius": 0.0,
+					"projectile_speed": 0.15
+				},
+				"risk_hp": 9986.0,
+				"safe": {
+					"damage": 0.0,
+					"pickup_radius": 0.0,
+					"projectile_speed": 0.15
+				},
+				"safe_hp": 10000.0
+			},
+			"pass": true
+		},
+		{
+			"case": "event cannot be consumed twice",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "root real double-slot storage initialize",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "root injected synthetic catalog profile",
+			"detail": "",
+			"pass": true
+		},
+		{
+			"case": "root begin real first mission",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "root observes real pending upgrade",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "unserialized reference branch before disk exit",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "root save exit preserves unresolved choice",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "fresh storage reads actual disk",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "fresh profile reads disk domain",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "fresh root continues saved run",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "exit/new root restores exact pending choice and RNG",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "legal persisted choice",
+			"detail": "S1-A01",
+			"pass": true
+		},
+		{
+			"case": "legal persisted choice",
+			"detail": "S1-A01",
+			"pass": true
+		},
+		{
+			"case": "legal persisted choice",
+			"detail": "S1-A01",
+			"pass": true
+		},
+		{
+			"case": "legal persisted choice",
+			"detail": "S1-A01",
+			"pass": true
+		},
+		{
+			"case": "legal persisted choice",
+			"detail": "S1-P01",
+			"pass": true
+		},
+		{
+			"case": "legal persisted choice",
+			"detail": "S1-P01",
+			"pass": true
+		},
+		{
+			"case": "legal persisted choice",
+			"detail": "S1-P01",
+			"pass": true
+		},
+		{
+			"case": "legal persisted choice",
+			"detail": "S1-P01",
+			"pass": true
+		},
+		{
+			"case": "legal persisted choice",
+			"detail": "S1-P01",
+			"pass": true
+		},
+		{
+			"case": "legal persisted choice",
+			"detail": "S1-V01",
+			"pass": true
+		},
+		{
+			"case": "legal persisted choice",
+			"detail": "S1-A02",
+			"pass": true
+		},
+		{
+			"case": "legal persisted choice",
+			"detail": "S1-A02",
+			"pass": true
+		},
+		{
+			"case": "legal persisted choice",
+			"detail": "S1-A02",
+			"pass": true
+		},
+		{
+			"case": "legal persisted choice",
+			"detail": "S1-A02",
+			"pass": true
+		},
+		{
+			"case": "legal persisted choice",
+			"detail": "S1-A02",
+			"pass": true
+		},
+		{
+			"case": "legal persisted choice",
+			"detail": "S1-P02",
+			"pass": true
+		},
+		{
+			"case": "legal persisted choice",
+			"detail": "S1-P02",
+			"pass": true
+		},
+		{
+			"case": "legal persisted choice",
+			"detail": "S1-P02",
+			"pass": true
+		},
+		{
+			"case": "legal persisted choice",
+			"detail": "S1-P02",
+			"pass": true
+		},
+		{
+			"case": "legal persisted choice",
+			"detail": "S1-P02",
+			"pass": true
+		},
+		{
+			"case": "legal persisted choice",
+			"detail": "S1-V02",
+			"pass": true
+		},
+		{
+			"case": "legal persisted choice",
+			"detail": "S1-A03",
+			"pass": true
+		},
+		{
+			"case": "legal persisted choice",
+			"detail": "S1-A03",
+			"pass": true
+		},
+		{
+			"case": "legal persisted choice",
+			"detail": "S1-A03",
+			"pass": true
+		},
+		{
+			"case": "legal persisted choice",
+			"detail": "S1-A03",
+			"pass": true
+		},
+		{
+			"case": "legal persisted choice",
+			"detail": "S1-A03",
+			"pass": true
+		},
+		{
+			"case": "legal persisted choice",
+			"detail": "S1-P03",
+			"pass": true
+		},
+		{
+			"case": "legal persisted choice",
+			"detail": "S1-P03",
+			"pass": true
+		},
+		{
+			"case": "legal persisted choice",
+			"detail": "S1-P03",
+			"pass": true
+		},
+		{
+			"case": "legal persisted choice",
+			"detail": "S1-P03",
+			"pass": true
+		},
+		{
+			"case": "legal persisted choice",
+			"detail": "S1-P03",
+			"pass": true
+		},
+		{
+			"case": "real disk root resume next200 exact",
+			"detail": {
+				"first_divergence": -1
+			},
+			"pass": true
+		},
+		{
+			"case": "real first objective settles through root",
+			"detail": {
+				"ending": false,
+				"event_reward": 0,
+				"first_clear": true,
+				"reward": 45,
+				"stats": {
+					"boss_kills": 0,
+					"damage_dealt": 1000.0,
+					"damage_taken": 4.0,
+					"elapsed": 8.66666666666668,
+					"elite_kills": 0,
+					"event_reward": 0,
+					"events_taken": 0,
+					"evolution_ids": [
+						"S1-V01",
+						"S1-V02"
+					],
+					"evolutions": 2,
+					"kills": 1,
+					"level": 100,
+					"risk_choices": 0,
+					"safe_choices": 0,
+					"skills_used": [
+						"S1-A01",
+						"S1-A02",
+						"S1-A03"
+					]
+				},
+				"status": "OK",
+				"unlocks": [
+					"S1-ACH09",
+					"S1-ACH17",
+					"S1-ACH18"
+				],
+				"victory": true
+			},
+			"pass": true
+		},
+		{
+			"case": "duplicate finish adds no rewards or unlocks",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "actual first settlement unlocks next mission",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "next mission clean save exit tears down input lifecycle",
+			"detail": {},
+			"pass": true
+		}
+	],
+	"checks": 286,
+	"engine": "4.7.1-stable (official)",
+	"failures": 0,
+	"scope": "Headless synthetic short/low-HP acceptance; not production balance, 64 mission completion, device or release evidence",
+	"suite": "journey"
+}

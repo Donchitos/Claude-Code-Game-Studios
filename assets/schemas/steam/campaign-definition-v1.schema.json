@@ -1,0 +1,87 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:xiuxian:steam:campaign-definition-v1",
+  "$comment": "Structural only. Must also pass SteamCampaignSchema semantics and production admission gates.",
+  "$defs": {
+    "u63": {
+      "type": "string",
+      "pattern": "^(?:0|[1-9][0-9]{0,17}|9223372036854775807|[1-8][0-9]{18}|9[0-1][0-9]{17}|92[0-1][0-9]{16}|922[0-2][0-9]{15}|9223[0-2][0-9]{14}|92233[0-6][0-9]{13}|922337[0-1][0-9]{12}|92233720[0-2][0-9]{10}|922337203[0-5][0-9]{9}|9223372036[0-7][0-9]{8}|92233720368[0-4][0-9]{7}|922337203685[0-3][0-9]{6}|9223372036854[0-6][0-9]{5}|92233720368547[0-6][0-9]{4}|922337203685477[0-4][0-9]{3}|9223372036854775[0-7][0-9]{2}|922337203685477580[0-6][0-9]{0})$(?![\\s\\S])"
+    },
+    "hex64": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$(?![\\s\\S])"
+    },
+    "id": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^[\\x00-\\x7f]+$(?![\\s\\S])"
+    }
+  },
+  "type": "object",
+  "properties": {
+    "schema": {
+      "const": "1"
+    },
+    "content_revision": {
+      "$ref": "#/$defs/u63"
+    },
+    "content_hash": {
+      "$ref": "#/$defs/hex64"
+    },
+    "missions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "mission_id": {
+            "$ref": "#/$defs/id"
+          },
+          "chapter_id": {
+            "$ref": "#/$defs/id"
+          },
+          "ordinal": {
+            "$ref": "#/$defs/u63"
+          },
+          "prerequisite_id_or_null": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/id"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "mission_definition_hash": {
+            "$ref": "#/$defs/hex64"
+          },
+          "first_grants": {
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/id"
+            },
+            "uniqueItems": true
+          }
+        },
+        "required": [
+          "mission_id",
+          "chapter_id",
+          "ordinal",
+          "prerequisite_id_or_null",
+          "mission_definition_hash",
+          "first_grants"
+        ],
+        "additionalProperties": false
+      },
+      "minItems": 64,
+      "maxItems": 64
+    }
+  },
+  "required": [
+    "schema",
+    "content_revision",
+    "content_hash",
+    "missions"
+  ],
+  "additionalProperties": false
+}

@@ -132,6 +132,8 @@ func _run() -> void:
 						total += value
 					row["split"][key] = {"count": values.size(), "mean_ms": total / values.size(), "p95_ms": percentile(values, 0.95)}
 		results.append(row)
+		row["input_samples"] = battle.input_system.sample_count
+		row["player_consumptions"] = battle.player.movement_consume_count
 		await game.request_end_battle(false)
 		await process_frame
 		row["engine_static_after_teardown_bytes"] = OS.get_static_memory_usage()
@@ -148,6 +150,8 @@ func _run() -> void:
 		path = path.trim_suffix(".json") + "-culled.json"
 	if dense:
 		path = path.trim_suffix(".json") + "-dense.json"
+	if "--pc-input" in OS.get_cmdline_user_args():
+		path = path.trim_suffix(".json") + "-pc-input.json"
 	var file := FileAccess.open(path, FileAccess.WRITE)
 	if file == null:
 		failed = true

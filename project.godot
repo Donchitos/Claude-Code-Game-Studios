@@ -5,10 +5,10 @@ config_version=5
 
 [application]
 
-config/name="掌天试炼"
-run/main_scene="res://src/core/GameRoot.tscn"
+config/name="灵枢行纪 / Spirit Nexus"
+run/main_scene="res://src/campaign/CampaignGame.tscn"
 config/features=PackedStringArray("4.7")
-config/icon="res://assets/branding/app_icon.svg"
+config/icon="res://assets/branding/campaign_icon.svg"
 boot_splash/fullsize=false
 
 [display]

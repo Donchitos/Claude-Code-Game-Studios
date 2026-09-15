@@ -1,5 +1,13 @@
 # Technical Preferences
 
+## Steam 1.0 商业范围入口（2026-09-11）
+
+目标为完整Steam游戏、主要内容20小时以上。商业范围以`design/steam-1.0-product-scope.md`、章节以`design/steam-1.0-campaign.md`、内容ID以`production/steam-1.0-content-matrix.csv`、实现顺序以`production/steam-1.0-system-migration.md`为规划入口。8章64任务/364内容行仍为作者工作基线，未通过独立设计或发行验收；SCOPE-TIME-01时长缺口待整章试玩验证。下方现有系统数值/ABI保持原owner权威，新增内容不能直接改变production_defaults或容量；mobile继续future-port。
+
+## Steam新存档与任务profile（2026-09-11）
+
+ADR-0006选择STEAM_SAVE_V2严格JSON与STEAM_MISSION_V1章节任务。权威GDD为save-steam-pc/campaign-flow/mission-objectives；当前运行仍JSON v1/legacy任务。下方binary大小、旧全局Boss胜利窗口和首次starter只适用原profile；不得作为新profile默认值。新domain/owner schema、阶段、预算和ECON-MISSION-01未齐备，禁止生产启用；规划路由manifest不是generated验证结果。
+
 ## 第八轮当前合同覆盖（2026-09-08）
 
 ADR 当前逐node contract 为 102 行（其中 BATTLE_PAUSED choice 组与 reason 组互斥，不可同时计入24-row capacity；BATTLE_ACTIVE另含1行pause gateway）。
@@ -17,6 +25,8 @@ ADR 当前逐node contract 为 102 行（其中 BATTLE_PAUSED choice 组与 reas
 - **Physics**: Godot Physics 2D (内置 — Jolt 是 3D 选项，本项目 2D 不适用)
 
 ## Input & Platform
+
+2026-09-11 ADR-0005执行口径：STEAM_PC配置v1，WASD动作仅keyboard绑定，mapped left stick独立采样且径向死区默认0.20；keyboard优先、对向键不视为neutral；pause/focus/device变更后全来源neutral再fresh movement。生产不创建VJ、不分配touch bank；本文VirtualJoystick/Shield/移动原生a11y技术约束仅MOBILE_TOUCH future-port。PC输入/Player同tick用`PcMovementContext`租约验证，完整七phase/持久Save ABI仍待独立实现与验证。
 
 <!-- Written by /setup-engine. Read by /ux-design, /ux-review, /test-setup, /team-ui, and /dev-story -->
 <!-- to scope interaction specs, test helpers, and implementation to the correct input methods. -->

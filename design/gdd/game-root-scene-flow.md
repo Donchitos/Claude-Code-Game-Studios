@@ -1,5 +1,11 @@
 # GameRoot & Scene Flow（全局根与场景流）
 
+> 2026-09-14 WP04c：商业恢复责任与 pending/barrier 盘点见 `design/registry/manifests/steam-recovery-responsibilities-v1.json`；显式合同、绑定封装、全量预检及联合验证见 [Steam域与快照适配](steam-save-domain-adapters.md)。清单是责任盘点，商业 owner/schema/容量仍 OPEN，不改变本文件既有 verdict。
+
+> 2026-09-11 WP04b 适配路由：五域结构/联合校验与当前 `LEGACY_STAGE_PC_V1` capture/restore 见 [Steam域与快照适配](steam-save-domain-adapters.md)。Pool/Grid 原生引用不落盘；当前生成逻辑viewport冻结，RNG保存实际seed/state并绑定engine commit；全Scope tick结束才捕获。此实现不补齐本文件全部商业owner合同；真实v2迁移/事务、Mission/SkillDraft/Preparation/Settlement语义和商业最大预算仍OPEN，battle_ready=false。
+
+> 2026-09-11 Steam合同路由（作者传播，implementation gate OPEN）：STEAM_MISSION_V1/STEAM_SAVE_V2计划由mission-objectives.md、campaign-flow.md、save-steam-pc.md与ADR-0006定义。GameRoot须发布MISSION phase/事实聚合/barrier/required-owner恢复manifest；boot按PREPARED/RUNNING/SUSPENDED/RESULT_PENDING分派，sealed经STAGE_RESULT→COMPLETE，不用任意Boss死亡结束campaign。新profile未启用，完整manifest/owner schema与经济adapter是实现前门。
+
 > **Status**: Re-review Pending — 已同步“感知无限、技术有限”Stage V2、Camera follow、SpawnDirector与稀疏Grid边界；待独立full复审
 > **Author**: 用户 + Codex
 > **Created**: 2026-08-19
@@ -9,6 +15,10 @@
 > **Review Mode**: full；InputSystem 内部 FSM 以 `input-system.md` 为唯一权威
 
 ## Overview
+
+Release InputProfile（ADR-0005）：`STEAM_PC`来源、焦点/neutral恢复和PC movement租约以`input-steam-pc.md`为准；不装配VJ/Shield/native accessibility。本文touch bank、F2、移动background rebuild/readiness事务属于MOBILE_TOUCH future-port。共享persistent root、唯一pause writer、Input先于Player和terminal退役边界保持有效；PC局部租约不关闭完整七phase/Save持久identity合同。
+
+PC恢复P1补充（2026-09-11）：事务锁阻止嵌套Continue/玩法tick；取得gate、unpause、hide_modal/focus及release返回后均复核原battle/state/focus revision。Input在呈现回调期间保持FROZEN；失败退回可交互暂停，回焦不自动继续，terminal/replacement不被旧attempt覆盖。此为PC适配整改，完整七phase独立门保持OPEN。
 
 第八轮并发/容量覆盖：native MPSC ingress 使用 64-byte header、64 个 96-byte row（其中 68-byte `AccessibilityNativeActionPayloadV1`），总计 6208 bytes；serial ingress 负责补齐 76-byte `AccessibilityActionCommandV2` 并写入 32-row/2476-byte SPSC。shutdown 在 producer retire 后以有界批次交替 drain 两队列，直到均为空才换代。
 
