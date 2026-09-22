@@ -1,0 +1,682 @@
+{
+	"cases": [
+		{
+			"case": "production mission config S1-M01-01",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "production bot objective S1-M01-01",
+			"detail": {
+				"choices": [
+					"S1-A01",
+					"S1-A01",
+					"S1-A01",
+					"S1-A01",
+					"S1-P02"
+				],
+				"elapsed": 74.849999999997,
+				"finished": true,
+				"kind": "SURVIVE",
+				"mission": "S1-M01-01",
+				"objective": {
+					"completed_ids": [
+						"S1-M01-01:T1"
+					],
+					"completion_order": [
+						"S1-M01-01:T1"
+					],
+					"elapsed": 74.849999999997,
+					"escort_hp": 490.0,
+					"extraction_ready": true,
+					"extraction_was_inside": true,
+					"finished": true,
+					"hold": 0.0,
+					"kind": "SURVIVE",
+					"player_alive": true,
+					"pressure": 0.0,
+					"progress": 1,
+					"reason": "extracted",
+					"victory": true,
+					"waypoint": 0,
+					"x": 0.0,
+					"y": 0.0
+				},
+				"passives": {
+					"S1-P02": 1
+				},
+				"player": {
+					"facing": 0.0,
+					"hp": 160.0,
+					"invulnerable": 0.0,
+					"kills": 33,
+					"level": 6,
+					"max_hp": 160.0,
+					"x": 633.141357421875,
+					"xp": 20.0,
+					"y": 17.5506935119629
+				},
+				"reason": "extracted",
+				"scope": "Unmodified production catalog, independent mission at prescribed unlock count; failures do not count as campaign progression",
+				"seed": 711,
+				"skills": {
+					"S1-A01": 5
+				},
+				"stats": {
+					"boss_kills": 0,
+					"damage_dealt": 1329.6,
+					"damage_taken": 0.0,
+					"elapsed": 74.849999999997,
+					"elite_kills": 0,
+					"event_reward": 0,
+					"events_taken": 0,
+					"evolution_ids": [],
+					"evolutions": 0,
+					"kills": 33,
+					"level": 6,
+					"risk_choices": 0,
+					"safe_choices": 0,
+					"skills_used": [
+						"S1-A01"
+					]
+				},
+				"victory": true,
+				"wall_ms": 443
+			},
+			"pass": true
+		},
+		{
+			"case": "production mission config S1-M01-02",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "production bot objective S1-M01-02",
+			"detail": {
+				"choices": [
+					"S1-A01",
+					"S1-A01",
+					"S1-A01"
+				],
+				"elapsed": 13.9333333333336,
+				"finished": true,
+				"kind": "BREAK",
+				"mission": "S1-M01-02",
+				"objective": {
+					"completed_ids": [
+						"S1-M01-02:T1",
+						"S1-M01-02:T2",
+						"S1-M01-02:T3"
+					],
+					"completion_order": [
+						"S1-M01-02:T1",
+						"S1-M01-02:T2",
+						"S1-M01-02:T3"
+					],
+					"elapsed": 13.9333333333336,
+					"escort_hp": 490.0,
+					"extraction_ready": false,
+					"extraction_was_inside": false,
+					"finished": true,
+					"hold": 0.0,
+					"kind": "BREAK",
+					"player_alive": true,
+					"pressure": 0.0,
+					"progress": 3,
+					"reason": "anchors_destroyed",
+					"victory": true,
+					"waypoint": 0,
+					"x": 0.0,
+					"y": 0.0
+				},
+				"passives": {},
+				"player": {
+					"facing": -1.17809700965881,
+					"hp": 160.0,
+					"invulnerable": 0.0,
+					"kills": 16,
+					"level": 4,
+					"max_hp": 160.0,
+					"x": 480.423248291016,
+					"xp": 18.0,
+					"y": 56.2126770019531
+				},
+				"reason": "anchors_destroyed",
+				"scope": "Unmodified production catalog, independent mission at prescribed unlock count; failures do not count as campaign progression",
+				"seed": 712,
+				"skills": {
+					"S1-A01": 4
+				},
+				"stats": {
+					"boss_kills": 0,
+					"damage_dealt": 920.64,
+					"damage_taken": 0.0,
+					"elapsed": 13.9333333333336,
+					"elite_kills": 0,
+					"event_reward": 0,
+					"events_taken": 0,
+					"evolution_ids": [],
+					"evolutions": 0,
+					"kills": 16,
+					"level": 4,
+					"risk_choices": 0,
+					"safe_choices": 0,
+					"skills_used": [
+						"S1-A01"
+					]
+				},
+				"victory": true,
+				"wall_ms": 294
+			},
+			"pass": true
+		},
+		{
+			"case": "production mission config S1-M01-03",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "production bot objective S1-M01-03",
+			"detail": {
+				"choices": [
+					"S1-A01",
+					"S1-A01",
+					"S1-A01"
+				],
+				"elapsed": 20.1833333333335,
+				"finished": true,
+				"kind": "ESCORT",
+				"mission": "S1-M01-03",
+				"objective": {
+					"completed_ids": [
+						"S1-M01-03:T1",
+						"S1-M01-03:T2",
+						"S1-M01-03:T3",
+						"S1-M01-03:T4"
+					],
+					"completion_order": [
+						"S1-M01-03:T1",
+						"S1-M01-03:T2",
+						"S1-M01-03:T3",
+						"S1-M01-03:T4"
+					],
+					"elapsed": 20.1833333333335,
+					"escort_hp": 487.6632,
+					"extraction_ready": false,
+					"extraction_was_inside": false,
+					"finished": true,
+					"hold": 0.0,
+					"kind": "ESCORT",
+					"player_alive": true,
+					"pressure": 0.0,
+					"progress": 4,
+					"reason": "escort_arrived",
+					"victory": true,
+					"waypoint": 4,
+					"x": 637.129577636719,
+					"y": 32.0158538818359
+				},
+				"passives": {},
+				"player": {
+					"facing": -1.17809700965881,
+					"hp": 160.0,
+					"invulnerable": 0.0,
+					"kills": 15,
+					"level": 4,
+					"max_hp": 160.0,
+					"x": 571.158081054688,
+					"xp": 9.0,
+					"y": 65.3870697021484
+				},
+				"reason": "escort_arrived",
+				"scope": "Unmodified production catalog, independent mission at prescribed unlock count; failures do not count as campaign progression",
+				"seed": 713,
+				"skills": {
+					"S1-A01": 4
+				},
+				"stats": {
+					"boss_kills": 0,
+					"damage_dealt": 676.8,
+					"damage_taken": 0.0,
+					"elapsed": 20.1833333333335,
+					"elite_kills": 0,
+					"event_reward": 0,
+					"events_taken": 0,
+					"evolution_ids": [],
+					"evolutions": 0,
+					"kills": 15,
+					"level": 4,
+					"risk_choices": 0,
+					"safe_choices": 0,
+					"skills_used": [
+						"S1-A01"
+					]
+				},
+				"victory": true,
+				"wall_ms": 333
+			},
+			"pass": true
+		},
+		{
+			"case": "production mission config S1-M01-04",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "production bot objective S1-M01-04",
+			"detail": {
+				"choices": [
+					"S1-A01",
+					"S1-A01",
+					"S1-A01"
+				],
+				"elapsed": 9.38333333333338,
+				"finished": true,
+				"kind": "HUNT",
+				"mission": "S1-M01-04",
+				"objective": {
+					"completed_ids": [
+						"S1-M01-04:HUNT"
+					],
+					"completion_order": [
+						"S1-M01-04:HUNT"
+					],
+					"elapsed": 9.38333333333338,
+					"escort_hp": 490.0,
+					"extraction_ready": false,
+					"extraction_was_inside": false,
+					"finished": true,
+					"hold": 0.0,
+					"kind": "HUNT",
+					"player_alive": true,
+					"pressure": 0.0,
+					"progress": 1,
+					"reason": "targets_hunted",
+					"victory": true,
+					"waypoint": 0,
+					"x": 0.0,
+					"y": 0.0
+				},
+				"passives": {},
+				"player": {
+					"facing": 2.35619449615479,
+					"hp": 160.0,
+					"invulnerable": 0.0,
+					"kills": 5,
+					"level": 4,
+					"max_hp": 160.0,
+					"x": 221.153671264648,
+					"xp": 3.0,
+					"y": -280.190490722656
+				},
+				"reason": "targets_hunted",
+				"scope": "Unmodified production catalog, independent mission at prescribed unlock count; failures do not count as campaign progression",
+				"seed": 714,
+				"skills": {
+					"S1-A01": 4
+				},
+				"stats": {
+					"boss_kills": 0,
+					"damage_dealt": 366.72,
+					"damage_taken": 0.0,
+					"elapsed": 9.38333333333338,
+					"elite_kills": 1,
+					"event_reward": 14,
+					"events_taken": 1,
+					"evolution_ids": [],
+					"evolutions": 0,
+					"kills": 5,
+					"level": 4,
+					"risk_choices": 0,
+					"safe_choices": 1,
+					"skills_used": [
+						"S1-A01"
+					]
+				},
+				"victory": true,
+				"wall_ms": 66
+			},
+			"pass": true
+		},
+		{
+			"case": "production mission config S1-M01-05",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "production bot objective S1-M01-05",
+			"detail": {
+				"choices": [
+					"S1-A01",
+					"S1-A01"
+				],
+				"elapsed": 17.8500000000003,
+				"finished": true,
+				"kind": "CLEANSE",
+				"mission": "S1-M01-05",
+				"objective": {
+					"completed_ids": [
+						"S1-M01-05:T1",
+						"S1-M01-05:T2"
+					],
+					"completion_order": [
+						"S1-M01-05:T1",
+						"S1-M01-05:T2"
+					],
+					"elapsed": 17.8500000000003,
+					"escort_hp": 490.0,
+					"extraction_ready": false,
+					"extraction_was_inside": false,
+					"finished": true,
+					"hold": 0.0,
+					"kind": "CLEANSE",
+					"player_alive": true,
+					"pressure": 0.0,
+					"progress": 2,
+					"reason": "zones_cleansed",
+					"victory": true,
+					"waypoint": 2,
+					"x": 0.0,
+					"y": 0.0
+				},
+				"passives": {},
+				"player": {
+					"facing": 2.35619449615479,
+					"hp": 160.0,
+					"invulnerable": 0.0,
+					"kills": 16,
+					"level": 3,
+					"max_hp": 160.0,
+					"x": 483.106750488281,
+					"xp": 14.0,
+					"y": 99.0357971191406
+				},
+				"reason": "zones_cleansed",
+				"scope": "Unmodified production catalog, independent mission at prescribed unlock count; failures do not count as campaign progression",
+				"seed": 715,
+				"skills": {
+					"S1-A01": 3
+				},
+				"stats": {
+					"boss_kills": 0,
+					"damage_dealt": 799.68,
+					"damage_taken": 0.0,
+					"elapsed": 17.8500000000003,
+					"elite_kills": 0,
+					"event_reward": 0,
+					"events_taken": 0,
+					"evolution_ids": [],
+					"evolutions": 0,
+					"kills": 16,
+					"level": 3,
+					"risk_choices": 0,
+					"safe_choices": 0,
+					"skills_used": [
+						"S1-A01"
+					]
+				},
+				"victory": true,
+				"wall_ms": 338
+			},
+			"pass": true
+		},
+		{
+			"case": "production mission config S1-M01-06",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "production bot objective S1-M01-06",
+			"detail": {
+				"choices": [
+					"S1-A01",
+					"S1-A01",
+					"S1-A01",
+					"S1-A01",
+					"S1-P02",
+					"S1-P02",
+					"S1-P02"
+				],
+				"elapsed": 95.5833333333292,
+				"finished": true,
+				"kind": "SURVIVE",
+				"mission": "S1-M01-06",
+				"objective": {
+					"completed_ids": [
+						"S1-M01-06:T1"
+					],
+					"completion_order": [
+						"S1-M01-06:T1"
+					],
+					"elapsed": 95.5833333333292,
+					"escort_hp": 490.0,
+					"extraction_ready": true,
+					"extraction_was_inside": true,
+					"finished": true,
+					"hold": 0.0,
+					"kind": "SURVIVE",
+					"player_alive": true,
+					"pressure": 0.0,
+					"progress": 1,
+					"reason": "extracted",
+					"victory": true,
+					"waypoint": 0,
+					"x": 0.0,
+					"y": 0.0
+				},
+				"passives": {
+					"S1-P02": 3
+				},
+				"player": {
+					"facing": 2.74889349937439,
+					"hp": 156.0,
+					"invulnerable": 0.0,
+					"kills": 86,
+					"level": 8,
+					"max_hp": 160.0,
+					"x": -633.550476074219,
+					"xp": 24.0,
+					"y": -16.2527236938477
+				},
+				"reason": "extracted",
+				"scope": "Unmodified production catalog, independent mission at prescribed unlock count; failures do not count as campaign progression",
+				"seed": 716,
+				"skills": {
+					"S1-A01": 5
+				},
+				"stats": {
+					"boss_kills": 0,
+					"damage_dealt": 4287.36,
+					"damage_taken": 4.0,
+					"elapsed": 95.5833333333292,
+					"elite_kills": 1,
+					"event_reward": 14,
+					"events_taken": 1,
+					"evolution_ids": [],
+					"evolutions": 0,
+					"kills": 86,
+					"level": 8,
+					"risk_choices": 0,
+					"safe_choices": 1,
+					"skills_used": [
+						"S1-A01"
+					]
+				},
+				"victory": true,
+				"wall_ms": 1661
+			},
+			"pass": true
+		},
+		{
+			"case": "production mission config S1-M01-07",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "production bot objective S1-M01-07",
+			"detail": {
+				"choices": [
+					"S1-A01",
+					"S1-A01",
+					"S1-A01"
+				],
+				"elapsed": 15.866666666667,
+				"finished": true,
+				"kind": "BREAK",
+				"mission": "S1-M01-07",
+				"objective": {
+					"completed_ids": [
+						"S1-M01-07:T1",
+						"S1-M01-07:T2",
+						"S1-M01-07:T3"
+					],
+					"completion_order": [
+						"S1-M01-07:T1",
+						"S1-M01-07:T2",
+						"S1-M01-07:T3"
+					],
+					"elapsed": 15.866666666667,
+					"escort_hp": 490.0,
+					"extraction_ready": false,
+					"extraction_was_inside": false,
+					"finished": true,
+					"hold": 0.0,
+					"kind": "BREAK",
+					"player_alive": true,
+					"pressure": 0.0,
+					"progress": 3,
+					"reason": "anchors_destroyed",
+					"victory": true,
+					"waypoint": 0,
+					"x": 0.0,
+					"y": 0.0
+				},
+				"passives": {},
+				"player": {
+					"facing": 2.74889349937439,
+					"hp": 160.0,
+					"invulnerable": 0.0,
+					"kills": 12,
+					"level": 4,
+					"max_hp": 160.0,
+					"x": -213.710784912109,
+					"xp": 9.0,
+					"y": 224.234924316406
+				},
+				"reason": "anchors_destroyed",
+				"scope": "Unmodified production catalog, independent mission at prescribed unlock count; failures do not count as campaign progression",
+				"seed": 717,
+				"skills": {
+					"S1-A01": 4
+				},
+				"stats": {
+					"boss_kills": 0,
+					"damage_dealt": 926.4,
+					"damage_taken": 0.0,
+					"elapsed": 15.866666666667,
+					"elite_kills": 0,
+					"event_reward": 0,
+					"events_taken": 0,
+					"evolution_ids": [],
+					"evolutions": 0,
+					"kills": 12,
+					"level": 4,
+					"risk_choices": 0,
+					"safe_choices": 0,
+					"skills_used": [
+						"S1-A01"
+					]
+				},
+				"victory": true,
+				"wall_ms": 226
+			},
+			"pass": true
+		},
+		{
+			"case": "production mission config S1-M01-08",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "production bot objective S1-M01-08",
+			"detail": {
+				"choices": [
+					"S1-A01",
+					"S1-A01",
+					"S1-A01"
+				],
+				"elapsed": 13.8333333333336,
+				"finished": true,
+				"kind": "BOSS",
+				"mission": "S1-M01-08",
+				"objective": {
+					"completed_ids": [
+						"S1-B01"
+					],
+					"completion_order": [
+						"S1-B01"
+					],
+					"elapsed": 13.8333333333336,
+					"escort_hp": 490.0,
+					"extraction_ready": false,
+					"extraction_was_inside": false,
+					"finished": true,
+					"hold": 0.0,
+					"kind": "BOSS",
+					"player_alive": true,
+					"pressure": 0.0,
+					"progress": 1,
+					"reason": "boss_defeated",
+					"victory": true,
+					"waypoint": 0,
+					"x": 0.0,
+					"y": 0.0
+				},
+				"passives": {},
+				"player": {
+					"facing": -3.14159250259399,
+					"hp": 157.216,
+					"invulnerable": 0.0,
+					"kills": 3,
+					"level": 4,
+					"max_hp": 160.0,
+					"x": 33.6568298339844,
+					"xp": 12.0,
+					"y": 120.183441162109
+				},
+				"reason": "boss_defeated",
+				"scope": "Unmodified production catalog, independent mission at prescribed unlock count; failures do not count as campaign progression",
+				"seed": 718,
+				"skills": {
+					"S1-A01": 4
+				},
+				"stats": {
+					"boss_kills": 1,
+					"damage_dealt": 755.52,
+					"damage_taken": 41.184,
+					"elapsed": 13.8333333333336,
+					"elite_kills": 0,
+					"event_reward": 0,
+					"events_taken": 0,
+					"evolution_ids": [],
+					"evolutions": 0,
+					"kills": 3,
+					"level": 4,
+					"risk_choices": 0,
+					"safe_choices": 0,
+					"skills_used": [
+						"S1-A01"
+					]
+				},
+				"victory": true,
+				"wall_ms": 131
+			},
+			"pass": true
+		}
+	],
+	"checks": 16,
+	"engine": "4.7.1-stable (official)",
+	"failures": 0,
+	"scope": "Unmodified production catalog bot diagnosis; independent prescribed unlock counts; not player playtest, sequential profile clear, 20h or release evidence",
+	"suite": "production-chapter"
+}

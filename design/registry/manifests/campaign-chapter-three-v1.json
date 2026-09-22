@@ -1,0 +1,15 @@
+{
+  "scope": "chapter-three local playable",
+  "catalog_hash": "6cea8186b024592bf3edb298df02400964c246eeab4cb6e475afdbfd3a8fe35a",
+  "pck_sha256": "b9746276b48eda130e8531b02be54e18d749863314777149abd6cf1d9e4316b3",
+  "snapshot": "CAMPAIGN_CHAPTER3_V1",
+  "report": "production/playtest-evidence/2026-09-17-chapter-three.md",
+  "battle_ready": false,
+  "new_player_test": "SKIPPED_BY_USER",
+  "scoped_journeys": [
+    24,
+    24
+  ],
+  "all64_independent_wins": 54,
+  "sequential64_completed": 45
+}

@@ -40,6 +40,8 @@ func _roundtrip(value: Dictionary) -> Dictionary:
 	return JSON.parse_string(JSON.stringify(value, "", true, true))
 
 func _quiet(a) -> void:
+	# Synthetic radial skill fixtures are centered at the origin, independent of map entrance.
+	a.set_pos(a.state.player, Vector2.ZERO)
 	a.state.entities.clear()
 	a.state.projectiles.clear()
 	a.state.zones.clear()
@@ -168,8 +170,8 @@ func _test_bosses() -> void:
 func _test_objectives() -> void:
 	for kind in ["SURVIVE","BREAK","CLEANSE","HUNT","ESCORT","BOSS"]:
 		var m: Dictionary = {}
-		for row in catalog.missions:
-			if row.kind == kind:
+		for row in JSON.parse_string(FileAccess.get_file_as_string("res://tests/fixtures/campaign_generic_missions.json")).missions:
+			if row.kind == kind: # Preserved generic objective fixture; real chapters run in full_journey.
 				m = row
 				break
 		var a = _arena(m)
@@ -181,9 +183,9 @@ func _test_objectives() -> void:
 		if kind == "SURVIVE":
 			a.state.elapsed = m.target_seconds
 			a.state.objective.elapsed = m.target_seconds
-			a.advance(0.01, Vector2.ZERO)
+			a.advance(1.0 / 60, Vector2.ZERO)
 			a.set_pos(a.state.player, a.target_position(0))
-			a.advance(0.01, Vector2.ZERO)
+			a.advance(1.0 / 60, Vector2.ZERO)
 		elif kind == "CLEANSE":
 			for i in int(m.target_count):
 				a.set_pos(a.state.player, a.target_position(i))
@@ -192,7 +194,7 @@ func _test_objectives() -> void:
 			for i in int(m.target_count):
 				a.set_pos(a.state.player, a.target_position(i))
 				a.set_pos(a.state.objective, a.target_position(i))
-				a.advance(0.01, Vector2.ZERO)
+				a.advance(1.0 / 60, Vector2.ZERO)
 		else:
 			for i in int(m.target_count):
 				var target: Dictionary = {}
@@ -253,10 +255,11 @@ func _test_build_events_and_caps() -> void:
 		a.free()
 
 func _test_natural_evolution() -> void:
-	# Real catalog, fresh starting character, no stat/XP/entity mutation. Input and choices only.
+	# Real mission 06, starting character and zero branches; completion=5 is a fixture, not a journey.
+	# No stat/XP/entity mutation. First mission no longer promises evolution.
 	var l := loadout.duplicate(true)
-	l.completed = 0
-	var a = _arena({}, l)
+	l.completed = 5
+	var a = _arena(catalog.missions[5], l)
 	var recipe: Dictionary = catalog.evolutions[0]
 	for tick in 60 * 150:
 		if a.state.finished: break

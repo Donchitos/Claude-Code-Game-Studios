@@ -1,0 +1,11 @@
+{
+	"arguments": [
+		"--campaign-validation",
+		"--evidence-root=/tmp/g1-qa-SmXzIz",
+		"--qa-production-evolution"
+	],
+	"content_hash": "0ae0a6ad59ad1208df092ece6fcf509f55604013f4ac902e47f661fa63852533",
+	"engine": "4.7.1-stable (official)",
+	"scope": "automated test evidence, not human or release certification",
+	"suite": "journey-e"
+}

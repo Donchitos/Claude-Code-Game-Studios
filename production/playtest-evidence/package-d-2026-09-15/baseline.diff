@@ -1,0 +1,2063 @@
+diff --git a/assets/config/campaign_game.json b/assets/config/campaign_game.json
+index 4559f9e..ffb989f 100644
+--- a/assets/config/campaign_game.json
++++ b/assets/config/campaign_game.json
+@@ -219,8 +219,8 @@
+       "kind": "SURVIVE",
+       "scene_id": "S1-S01-01",
+       "prerequisite_id": "START",
+-      "briefing": "引导移动、自动攻击与首次升级 存活72秒后进入撤离圈。",
+-      "briefing_en": "Gale Ravine: First Steps in the Wind. Survive 72s, then enter the marked extraction circle.",
++      "briefing": "学习移动、自动攻击、拾取与升级；45秒后风带开放，72秒后进入东侧撤离圈。",
++      "briefing_en": "Learn movement, automatic attacks, pickups and upgrades. Wind lanes open at 45s; enter the eastern exit after 72s.",
+       "success_text": "风口初行完成。新的道路已经开放。",
+       "success_text_en": "First Steps in the Wind complete. The next route is open.",
+       "timeout_seconds": 380.0,
+@@ -230,7 +230,7 @@
+       "target_hp": 99.0,
+       "target_positions": [
+         [
+-          420,
++          720,
+           0
+         ]
+       ],
+@@ -238,9 +238,7 @@
+         "S1-M01-01:T1"
+       ],
+       "enemy_ids": [
+-        "S1-N01",
+-        "S1-N02",
+-        "S1-N03"
++        "S1-N01"
+       ],
+       "boss_id": "",
+       "reward": 45,
+@@ -254,7 +252,90 @@
+       "escort_hp": 490.0,
+       "order_pressure_max": 0.3,
+       "enemy_scaling": 1.0,
+-      "spawn_interval": 0.95
++      "spawn_interval": 0.95,
++      "scene_layout_id": "S1-S01-01",
++      "wind_start_tick": 2700,
++      "tutorial": true,
++      "elite_ids": [],
++      "spawn_safe_radius": 620,
++      "spawn_attempts": 16,
++      "encounter_stages": [
++        {
++          "id": "LEARN_MOVE",
++          "trigger": "ACTIVE_TICK",
++          "value": 0,
++          "rows": [
++            {
++              "enemy_ids": [
++                "S1-N01"
++              ],
++              "sector": 2,
++              "count": 8,
++              "interval": 75,
++              "offset": 120
++            }
++          ]
++        },
++        {
++          "id": "LEARN_SIDES",
++          "trigger": "ACTIVE_TICK",
++          "value": 1200,
++          "rows": [
++            {
++              "enemy_ids": [
++                "S1-N01"
++              ],
++              "sector": 0,
++              "count": 8,
++              "interval": 75,
++              "offset": 0
++            },
++            {
++              "enemy_ids": [
++                "S1-N01"
++              ],
++              "sector": 1,
++              "count": 8,
++              "interval": 75,
++              "offset": 150
++            }
++          ]
++        },
++        {
++          "id": "LEARN_WIND",
++          "trigger": "ACTIVE_TICK",
++          "value": 2700,
++          "rows": [
++            {
++              "enemy_ids": [
++                "S1-N01"
++              ],
++              "sector": 0,
++              "count": 8,
++              "interval": 75,
++              "offset": 0
++            },
++            {
++              "enemy_ids": [
++                "S1-N01"
++              ],
++              "sector": 1,
++              "count": 8,
++              "interval": 75,
++              "offset": 150
++            },
++            {
++              "enemy_ids": [
++                "S1-N01"
++              ],
++              "sector": 2,
++              "count": 8,
++              "interval": 75,
++              "offset": 300
++            }
++          ]
++        }
++      ]
+     },
+     {
+       "id": "S1-M01-02",
+@@ -280,16 +361,16 @@
+       "target_hp": 104.0,
+       "target_positions": [
+         [
+-          435,
+-          51
++          -380,
++          -280
+         ],
+         [
+-          -290,
+-          206
++          80,
++          300
+         ],
+         [
+-          -145,
+-          -257
++          600,
++          -140
+         ]
+       ],
+       "target_ids": [
+@@ -299,8 +380,7 @@
+       ],
+       "enemy_ids": [
+         "S1-N01",
+-        "S1-N02",
+-        "S1-N03"
++        "S1-N02"
+       ],
+       "boss_id": "",
+       "reward": 48,
+@@ -314,7 +394,74 @@
+       "escort_hp": 490.0,
+       "order_pressure_max": 0.3,
+       "enemy_scaling": 1.008,
+-      "spawn_interval": 0.915
++      "spawn_interval": 0.915,
++      "scene_layout_id": "S1-S01-01",
++      "wind_start_tick": 0,
++      "tutorial": false,
++      "elite_ids": [],
++      "spawn_safe_radius": 620,
++      "spawn_attempts": 16,
++      "encounter_stages": [
++        {
++          "id": "NORTH_FANGS",
++          "trigger": "ANCHOR_PROGRESS",
++          "value": 0,
++          "rows": [
++            {
++              "enemy_ids": [
++                "S1-N01"
++              ],
++              "sector": 0,
++              "count": 8,
++              "interval": 75,
++              "offset": 0
++            }
++          ]
++        },
++        {
++          "id": "SOUTH_SPITTERS",
++          "trigger": "ANCHOR_PROGRESS",
++          "value": 1,
++          "rows": [
++            {
++              "enemy_ids": [
++                "S1-N02"
++              ],
++              "sector": 1,
++              "count": 8,
++              "interval": 75,
++              "offset": 0
++            }
++          ]
++        },
++        {
++          "id": "TWO_SIDES",
++          "trigger": "ANCHOR_PROGRESS",
++          "value": 2,
++          "rows": [
++            {
++              "enemy_ids": [
++                "S1-N01",
++                "S1-N02"
++              ],
++              "sector": 2,
++              "count": 8,
++              "interval": 75,
++              "offset": 0
++            },
++            {
++              "enemy_ids": [
++                "S1-N01",
++                "S1-N02"
++              ],
++              "sector": 3,
++              "count": 8,
++              "interval": 75,
++              "offset": 90
++            }
++          ]
++        }
++      ]
+     },
+     {
+       "id": "S1-M01-03",
+@@ -329,8 +476,8 @@
+       "kind": "ESCORT",
+       "scene_id": "S1-S01-01",
+       "prerequisite_id": "S1-M01-02",
+-      "briefing": "在风带间护送一名缓行目标 靠近护送物穿过4个路标并保护生命。",
+-      "briefing_en": "Gale Ravine: Escort the Herbalist. Stay near the escort through 4 waypoints; protect its health.",
++      "briefing": "陪采药人经过四个路标；靠近才前进，可离队拦截远程与侧袭敌人。",
++      "briefing_en": "Escort the herbalist through four waypoints. Stay nearby to move; intercept ranged and flanking enemies, then return.",
+       "success_text": "护送采药人完成。新的道路已经开放。",
+       "success_text_en": "Escort the Herbalist complete. The next route is open.",
+       "timeout_seconds": 390.0,
+@@ -340,20 +487,20 @@
+       "target_hp": 109.0,
+       "target_positions": [
+         [
+-          -600,
+-          202
++          -720,
++          0
+         ],
+         [
+           -200,
+-          80
++          -320
+         ],
+         [
+-          200,
+-          -238
++          180,
++          300
+         ],
+         [
+-          600,
+-          28
++          720,
++          0
+         ]
+       ],
+       "target_ids": [
+@@ -385,7 +532,80 @@
+       "escort_hp": 490.0,
+       "order_pressure_max": 0.3,
+       "enemy_scaling": 1.016,
+-      "spawn_interval": 0.88
++      "spawn_interval": 0.88,
++      "scene_layout_id": "S1-S01-01",
++      "wind_start_tick": 0,
++      "tutorial": false,
++      "elite_ids": [],
++      "spawn_safe_radius": 620,
++      "spawn_attempts": 16,
++      "encounter_stages": [
++        {
++          "id": "SET_OUT",
++          "trigger": "WAYPOINT",
++          "value": 0,
++          "rows": [
++            {
++              "enemy_ids": [
++                "S1-N01"
++              ],
++              "sector": 2,
++              "count": 8,
++              "interval": 75,
++              "offset": 0
++            }
++          ]
++        },
++        {
++          "id": "NORTH_RIDGE",
++          "trigger": "WAYPOINT",
++          "value": 1,
++          "rows": [
++            {
++              "enemy_ids": [
++                "S1-N02"
++              ],
++              "sector": 0,
++              "count": 8,
++              "interval": 75,
++              "offset": 0
++            }
++          ]
++        },
++        {
++          "id": "SOUTH_BEND",
++          "trigger": "WAYPOINT",
++          "value": 2,
++          "rows": [
++            {
++              "enemy_ids": [
++                "S1-N03"
++              ],
++              "sector": 1,
++              "count": 8,
++              "interval": 75,
++              "offset": 0
++            }
++          ]
++        },
++        {
++          "id": "HOME_STRETCH",
++          "trigger": "WAYPOINT",
++          "value": 3,
++          "rows": [
++            {
++              "enemy_ids": [
++                "S1-N01",
++                "S1-N03"
++              ],
++              "sector": 3,
++              "count": 8,
++              "interval": 75,
++              "offset": 0
++            }
++          ]
++        }
++      ]
+     },
+     {
+       "id": "S1-M01-04",
+@@ -400,8 +620,8 @@
+       "kind": "HUNT",
+       "scene_id": "S1-S01-01",
+       "prerequisite_id": "S1-M01-03",
+-      "briefing": "沿可见足迹追猎，避免被引入根区 击杀标记追猎目标。",
+-      "briefing_en": "Gale Ravine: Track the Broken-Bough Beast. Defeat the marked hunt target, not its ordinary escorts.",
++      "briefing": "沿足迹依次寻找三处线索；首处可选择机缘，末处发现断枝兽。躲开直线预警，利用冲锋后的停顿反击。",
++      "briefing_en": "Follow three ordered clues. Choose an encounter at the first; reveal the beast at the last. Dodge the warned charge and counter during its rest.",
+       "success_text": "追踪断枝兽完成。新的道路已经开放。",
+       "success_text_en": "Track the Broken-Bough Beast complete. The next route is open.",
+       "timeout_seconds": 395.0,
+@@ -411,8 +631,8 @@
+       "target_hp": 114.0,
+       "target_positions": [
+         [
+-          412,
+-          147
++          680,
++          -320
+         ]
+       ],
+       "target_ids": [
+@@ -435,7 +655,77 @@
+       "escort_hp": 490.0,
+       "order_pressure_max": 0.3,
+       "enemy_scaling": 1.024,
+-      "spawn_interval": 0.845
++      "spawn_interval": 0.845,
++      "scene_layout_id": "S1-S01-01",
++      "wind_start_tick": 0,
++      "tutorial": false,
++      "elite_ids": [],
++      "spawn_safe_radius": 620,
++      "spawn_attempts": 16,
++      "chapter_c": true,
++      "encounter_stages": [
++        {
++          "id": "CLUE_AMBUSH",
++          "trigger": "CLUE_PROGRESS",
++          "value": 1,
++          "rows": [
++            {
++              "enemy_ids": [
++                "S1-N01"
++              ],
++              "sector": 0,
++              "count": 6,
++              "interval": 75,
++              "offset": 0
++            }
++          ]
++        },
++        {
++          "id": "TRAIL_SIDES",
++          "trigger": "CLUE_PROGRESS",
++          "value": 2,
++          "rows": [
++            {
++              "enemy_ids": [
++                "S1-N02",
++                "S1-N03"
++              ],
++              "sector": 1,
++              "count": 6,
++              "interval": 75,
++              "offset": 0
++            }
++          ]
++        }
++      ],
++      "clues": [
++        [
++          -200,
++          -320
++        ],
++        [
++          180,
++          300
++        ],
++        [
++          720,
++          0
++        ]
++      ],
++      "clue_radius": 65,
++      "hunt_enemy_id": "S1-E01",
++      "hunt_retry_ticks": 60,
++      "event_ids": [
++        "S1-RISK01",
++        "S1-RISK02",
++        "S1-RISK03"
++      ],
++      "hunt_charge": {
++        "warning_ticks": 54,
++        "rush_ticks": 42,
++        "rest_ticks": 72,
++        "speed": 620
++      }
+     },
+     {
+       "id": "S1-M01-05",
+@@ -450,8 +740,8 @@
+       "kind": "CLEANSE",
+       "scene_id": "S1-S01-02",
+       "prerequisite_id": "S1-M01-04",
+-      "briefing": "两个净化区交替受压 在2个净化圈内分别保持6.6秒，附近有敌暂停累计。",
+-      "briefing_en": "Gale Ravine: Cleanse the Wind Well. Clear 2 circles, stay inside each for 6.6s with no enemies nearby.",
++      "briefing": "清空两个净化圈并各累计停留6.6秒；开始净化和半程时会有有限增援。离圈或敌人靠近只暂停进度。",
++      "briefing_en": "Clear each circle and hold for 6.6s. Limited reinforcements arrive at the start and halfway. Leaving or nearby enemies pauses progress.",
+       "success_text": "清理风井完成。新的道路已经开放。",
+       "success_text_en": "Cleanse the Wind Well complete. The next route is open.",
+       "timeout_seconds": 400.0,
+@@ -461,12 +751,12 @@
+       "target_hp": 119.0,
+       "target_positions": [
+         [
+-          371,
+-          187
++          -440,
++          220
+         ],
+         [
+-          -371,
+-          -187
++          480,
++          100
+         ]
+       ],
+       "target_ids": [
+@@ -490,7 +780,116 @@
+       "escort_hp": 490.0,
+       "order_pressure_max": 0.3,
+       "enemy_scaling": 1.032,
+-      "spawn_interval": 0.81
++      "spawn_interval": 0.81,
++      "scene_layout_id": "S1-S01-02",
++      "wind_start_tick": 0,
++      "tutorial": false,
++      "elite_ids": [],
++      "spawn_safe_radius": 620,
++      "spawn_attempts": 16,
++      "chapter_c": true,
++      "encounter_stages": [
++        {
++          "id": "CLEANSE_0",
++          "trigger": "CLEANSE_HALF",
++          "value": 0,
++          "rows": [
++            {
++              "enemy_ids": [
++                "S1-N01"
++              ],
++              "sector": 2,
++              "count": 6,
++              "interval": 75,
++              "offset": 0
++            },
++            {
++              "enemy_ids": [
++                "S1-N02"
++              ],
++              "sector": 0,
++              "count": 4,
++              "interval": 75,
++              "offset": 90
++            }
++          ]
++        },
++        {
++          "id": "CLEANSE_1",
++          "trigger": "CLEANSE_HALF",
++          "value": 1,
++          "rows": [
++            {
++              "enemy_ids": [
++                "S1-N01"
++              ],
++              "sector": 3,
++              "count": 6,
++              "interval": 75,
++              "offset": 0
++            },
++            {
++              "enemy_ids": [
++                "S1-N02"
++              ],
++              "sector": 0,
++              "count": 4,
++              "interval": 75,
++              "offset": 90
++            }
++          ]
++        },
++        {
++          "id": "CLEANSE_2",
++          "trigger": "CLEANSE_HALF",
++          "value": 2,
++          "rows": [
++            {
++              "enemy_ids": [
++                "S1-N03"
++              ],
++              "sector": 2,
++              "count": 6,
++              "interval": 75,
++              "offset": 0
++            },
++            {
++              "enemy_ids": [
++                "S1-N01"
++              ],
++              "sector": 0,
++              "count": 4,
++              "interval": 75,
++              "offset": 90
++            }
++          ]
++        },
++        {
++          "id": "CLEANSE_3",
++          "trigger": "CLEANSE_HALF",
++          "value": 3,
++          "rows": [
++            {
++              "enemy_ids": [
++                "S1-N03"
++              ],
++              "sector": 3,
++              "count": 6,
++              "interval": 75,
++              "offset": 0
++            },
++            {
++              "enemy_ids": [
++                "S1-N01"
++              ],
++              "sector": 0,
++              "count": 4,
++              "interval": 75,
++              "offset": 90
++            }
++          ]
++        }
++      ]
+     },
+     {
+       "id": "S1-M01-06",
+@@ -505,8 +904,8 @@
+       "kind": "SURVIVE",
+       "scene_id": "S1-S01-02",
+       "prerequisite_id": "S1-M01-05",
+-      "briefing": "远程刺群与追击兽首次混编 存活92秒后进入撤离圈。",
+-      "briefing_en": "Gale Ravine: Hold the Way Home. Survive 92s, then enter the marked extraction circle.",
++      "briefing": "应对远程与侧袭交替的敌潮；60秒后出现一只断枝兽精英，92秒后进入西侧撤离圈。",
++      "briefing_en": "Face alternating ranged and flanking waves. One elite arrives after 60s; enter the western exit after 92s.",
+       "success_text": "守住归路完成。新的道路已经开放。",
+       "success_text_en": "Hold the Way Home complete. The next route is open.",
+       "timeout_seconds": 405.0,
+@@ -516,8 +915,8 @@
+       "target_hp": 124.0,
+       "target_positions": [
+         [
+-          311,
+-          221
++          -720,
++          0
+         ]
+       ],
+       "target_ids": [
+@@ -540,7 +939,148 @@
+       "escort_hp": 490.0,
+       "order_pressure_max": 0.3,
+       "enemy_scaling": 1.04,
+-      "spawn_interval": 0.775
++      "spawn_interval": 0.775,
++      "scene_layout_id": "S1-S01-02",
++      "wind_start_tick": 0,
++      "tutorial": false,
++      "elite_ids": [
++        "S1-E01"
++      ],
++      "spawn_safe_radius": 620,
++      "spawn_attempts": 16,
++      "chapter_c": true,
++      "encounter_stages": [
++        {
++          "id": "HOLD_0",
++          "trigger": "ACTIVE_TICK",
++          "value": 0,
++          "rows": [
++            {
++              "enemy_ids": [
++                "S1-N01",
++                "S1-N02"
++              ],
++              "sector": 0,
++              "count": 8,
++              "interval": 75,
++              "offset": 0
++            },
++            {
++              "enemy_ids": [
++                "S1-N01",
++                "S1-N02"
++              ],
++              "sector": 1,
++              "count": 8,
++              "interval": 75,
++              "offset": 120
++            },
++            {
++              "enemy_ids": [
++                "S1-N01",
++                "S1-N02"
++              ],
++              "sector": 2,
++              "count": 8,
++              "interval": 75,
++              "offset": 240
++            }
++          ]
++        },
++        {
++          "id": "HOLD_1",
++          "trigger": "ACTIVE_TICK",
++          "value": 1800,
++          "rows": [
++            {
++              "enemy_ids": [
++                "S1-N01",
++                "S1-N03"
++              ],
++              "sector": 0,
++              "count": 8,
++              "interval": 75,
++              "offset": 0
++            },
++            {
++              "enemy_ids": [
++                "S1-N01",
++                "S1-N03"
++              ],
++              "sector": 1,
++              "count": 8,
++              "interval": 75,
++              "offset": 120
++            },
++            {
++              "enemy_ids": [
++                "S1-N01",
++                "S1-N03"
++              ],
++              "sector": 2,
++              "count": 8,
++              "interval": 75,
++              "offset": 240
++            }
++          ]
++        },
++        {
++          "id": "HOLD_2",
++          "trigger": "ACTIVE_TICK",
++          "value": 3600,
++          "rows": [
++            {
++              "enemy_ids": [
++                "S1-N01",
++                "S1-N02",
++                "S1-N03"
++              ],
++              "sector": 0,
++              "count": 8,
++              "interval": 75,
++              "offset": 0
++            },
++            {
++              "enemy_ids": [
++                "S1-N01",
++                "S1-N02",
++                "S1-N03"
++              ],
++              "sector": 1,
++              "count": 8,
++              "interval": 75,
++              "offset": 120
++            },
++            {
++              "enemy_ids": [
++                "S1-N01",
++                "S1-N02",
++                "S1-N03"
++              ],
++              "sector": 2,
++              "count": 8,
++              "interval": 75,
++              "offset": 240
++            }
++          ]
++        },
++        {
++          "id": "ONE_ELITE",
++          "trigger": "ACTIVE_TICK",
++          "value": 3600,
++          "rows": [
++            {
++              "enemy_ids": [
++                "S1-E01"
++              ],
++              "sector": 3,
++              "count": 1,
++              "interval": 75,
++              "offset": 0
++            }
++          ]
++        }
++      ]
+     },
+     {
+       "id": "S1-M01-07",
+@@ -555,8 +1095,8 @@
+       "kind": "BREAK",
+       "scene_id": "S1-S01-02",
+       "prerequisite_id": "S1-M01-06",
+-      "briefing": "三处锚点产生不同进攻角度 击破3个锚点；依编号击破，未激活目标免伤。",
+-      "briefing_en": "Gale Ravine: Break the Well Locks. Destroy 3 marked anchors; inactive anchors cannot be damaged.",
++      "briefing": "依次拆除三锚：永久关闭北、东、西南根区，包括尚未生效的预警。安全空间随拆锚扩大。",
++      "briefing_en": "Break three ordered anchors to permanently shut down north, east and southwest roots, including pending warnings.",
+       "success_text": "拔除井心锁完成。新的道路已经开放。",
+       "success_text_en": "Break the Well Locks complete. The next route is open.",
+       "timeout_seconds": 410.0,
+@@ -566,16 +1106,16 @@
+       "target_hp": 129.0,
+       "target_positions": [
+         [
+-          233,
+-          247
++          0,
++          -300
+         ],
+         [
+-          -556,
+-          -25
++          480,
++          100
+         ],
+         [
+-          323,
+-          -222
++          -440,
++          220
+         ]
+       ],
+       "target_ids": [
+@@ -600,7 +1140,71 @@
+       "escort_hp": 490.0,
+       "order_pressure_max": 0.3,
+       "enemy_scaling": 1.048,
+-      "spawn_interval": 0.74
++      "spawn_interval": 0.74,
++      "scene_layout_id": "S1-S01-02",
++      "wind_start_tick": 0,
++      "tutorial": false,
++      "elite_ids": [],
++      "spawn_safe_radius": 620,
++      "spawn_attempts": 16,
++      "chapter_c": true,
++      "encounter_stages": [
++        {
++          "id": "LOCK_0",
++          "trigger": "ANCHOR_PROGRESS",
++          "value": 0,
++          "rows": [
++            {
++              "enemy_ids": [
++                "S1-N01",
++                "S1-N02",
++                "S1-N03"
++              ],
++              "sector": 0,
++              "count": 6,
++              "interval": 75,
++              "offset": 0
++            }
++          ]
++        },
++        {
++          "id": "LOCK_1",
++          "trigger": "ANCHOR_PROGRESS",
++          "value": 1,
++          "rows": [
++            {
++              "enemy_ids": [
++                "S1-N01",
++                "S1-N02",
++                "S1-N03"
++              ],
++              "sector": 1,
++              "count": 6,
++              "interval": 75,
++              "offset": 0
++            }
++          ]
++        },
++        {
++          "id": "LOCK_2",
++          "trigger": "ANCHOR_PROGRESS",
++          "value": 2,
++          "rows": [
++            {
++              "enemy_ids": [
++                "S1-N01",
++                "S1-N02",
++                "S1-N03"
++              ],
++              "sector": 2,
++              "count": 6,
++              "interval": 75,
++              "offset": 0
++            }
++          ]
++        }
++      ],
++      "close_roots": true
+     },
+     {
+       "id": "S1-M01-08",
+@@ -615,8 +1219,8 @@
+       "kind": "BOSS",
+       "scene_id": "S1-S01-02",
+       "prerequisite_id": "S1-M01-07",
+-      "briefing": "读取扑袭后摇并利用根区空隙 击杀本任务指定首领。",
+-      "briefing_en": "Gale Ravine: Ancient Gale Beast. Defeat this mission’s designated boss through all phases.",
++      "briefing": "击败伏岚古兽：扑袭、双落点追击、扑袭与根区围堵。沿预警留出的空隙移动并反击。",
++      "briefing_en": "Defeat the beast through pounce, double impact, then pounce with root containment. Use gaps in the warnings to counterattack.",
+       "success_text": "伏岚古兽完成。新的道路已经开放。",
+       "success_text_en": "Ancient Gale Beast complete. The next route is open.",
+       "timeout_seconds": 415.0,
+@@ -666,7 +1270,42 @@
+       "escort_hp": 490.0,
+       "order_pressure_max": 0.3,
+       "enemy_scaling": 1.056,
+-      "spawn_interval": 0.705
++      "spawn_interval": 0.705,
++      "scene_layout_id": "S1-S01-02",
++      "wind_start_tick": 0,
++      "tutorial": false,
++      "elite_ids": [],
++      "spawn_safe_radius": 620,
++      "spawn_attempts": 16,
++      "chapter_c": true,
++      "encounter_stages": [
++        {
++          "id": "BEAST_GUARD",
++          "trigger": "ACTIVE_TICK",
++          "value": 0,
++          "rows": [
++            {
++              "enemy_ids": [
++                "S1-N01",
++                "S1-N03"
++              ],
++              "sector": 1,
++              "count": 8,
++              "interval": 75,
++              "offset": 0
++            }
++          ]
++        }
++      ],
++      "boss_chapter": {
++        "warning_ticks": 54,
++        "cooldown_ticks": 150,
++        "impact_radius": 90,
++        "second_delay_ticks": 30,
++        "root_radius": 65,
++        "root_duration_ticks": 150,
++        "root_distance": 160
++      }
+     },
+     {
+       "id": "S1-M02-01",
+@@ -5624,15 +6263,15 @@
+       "id": "S1-B01",
+       "name": "伏岚古兽",
+       "name_en": "Ancient Gale Beast",
+-      "description": "三阶段依次使用：扑袭与延迟落点冲击；短暂护盾与扇射；锚环冲击与召援。先避开预警区再反击。",
+-      "description_en": "Three phases: pounces and delayed impact strikes; brief shields and fan volleys; anchor-ring strikes and reinforcements. Dodge the warning zones, then counterattack.",
++      "description": "扑袭、双落点追击、扑袭与根区围堵；无额外无敌阶段。",
++      "description_en": "Pounce, double impact, then pounce with roots; no added invulnerability phase.",
+       "unlock_after": 7,
+       "planning_description": "追风扑袭与根区围堵",
+       "pattern": "pounce",
+       "phase_patterns": [
+         "pounce",
+-        "mirror",
+-        "anchors"
++        "pounce",
++        "pounce"
+       ],
+       "hp": 650,
+       "speed": 65,
+@@ -8117,16 +8756,172 @@
+       "description": "林间顺风带会改变撤退路线",
+       "description_en": "Wind lanes alter movement routes.",
+       "unlock_after": 0,
+-      "planning_description": "林间顺风带会改变撤退路线"
++      "planning_description": "林间顺风带会改变撤退路线",
++      "layout": {
++        "start": [
++          -720,
++          0
++        ],
++        "route": [
++          [
++            -720,
++            0
++          ],
++          [
++            -200,
++            -320
++          ],
++          [
++            180,
++            300
++          ],
++          [
++            720,
++            0
++          ]
++        ],
++        "obstacles": [
++          {
++            "x": -420,
++            "y": 90,
++            "radius": 52
++          },
++          {
++            "x": -170,
++            "y": 40,
++            "radius": 65
++          },
++          {
++            "x": 330,
++            "y": -120,
++            "radius": 60
++          }
++        ],
++        "winds": [
++          {
++            "id": "W01",
++            "center": [
++              -240,
++              -180
++            ],
++            "size": [
++              320,
++              120
++            ],
++            "direction": 1,
++            "forward": 1.15,
++            "backward": 0.9
++          },
++          {
++            "id": "W02",
++            "center": [
++              260,
++              180
++            ],
++            "size": [
++              320,
++              120
++            ],
++            "direction": -1,
++            "forward": 1.15,
++            "backward": 0.9
++          }
++        ],
++        "roots": []
++      }
+     },
+     {
+       "id": "S1-S01-02",
+       "name": "风井遗址",
+       "name_en": "Wind Well Ruins",
+-      "description": "林间顺风带会改变撤退路线",
+-      "description_en": "Wind lanes alter movement routes.",
++      "description": "绕行井心与根区，在预警间隙选择安全路径。",
++      "description_en": "Circle the well and cross root fields during safe intervals.",
+       "unlock_after": 0,
+-      "planning_description": "林间顺风带会改变撤退路线"
++      "planning_description": "林间顺风带会改变撤退路线",
++      "layout": {
++        "start": [
++          -720,
++          0
++        ],
++        "route": [
++          [
++            -720,
++            0
++          ],
++          [
++            -440,
++            220
++          ],
++          [
++            480,
++            100
++          ],
++          [
++            0,
++            -300
++          ],
++          [
++            -720,
++            0
++          ]
++        ],
++        "obstacles": [
++          {
++            "x": 0,
++            "y": 0,
++            "radius": 80
++          },
++          {
++            "x": -230,
++            "y": -170,
++            "radius": 48
++          },
++          {
++            "x": 380,
++            "y": 380,
++            "radius": 48
++          }
++        ],
++        "winds": [],
++        "roots": [
++          {
++            "center": [
++              0,
++              -160
++            ],
++            "radius": 65,
++            "warning_ticks": 72,
++            "active_ticks": 120,
++            "rest_ticks": 240,
++            "offset_ticks": 0,
++            "damage": 4
++          },
++          {
++            "center": [
++              300,
++              100
++            ],
++            "radius": 65,
++            "warning_ticks": 72,
++            "active_ticks": 120,
++            "rest_ticks": 240,
++            "offset_ticks": 144,
++            "damage": 4
++          },
++          {
++            "center": [
++              -320,
++              180
++            ],
++            "radius": 65,
++            "warning_ticks": 72,
++            "active_ticks": 120,
++            "rest_ticks": 240,
++            "offset_ticks": 288,
++            "damage": 4
++          }
++        ]
++      }
+     },
+     {
+       "id": "S1-S02-01",
+@@ -8327,7 +9122,7 @@
+       "name_en": "Edge Rank 2",
+       "description": "永久伤害每级增加8%。",
+       "description_en": "Permanently adds 8% damage per rank.",
+-      "unlock_after": 0,
++      "unlock_after": 8,
+       "planning_description": "继承三分支五级的功能基线；每级数值和末级消费须由owner复核，不重置现有玩家进度"
+     },
+     {
+@@ -8336,7 +9131,7 @@
+       "name_en": "Edge Rank 3",
+       "description": "永久伤害每级增加8%。",
+       "description_en": "Permanently adds 8% damage per rank.",
+-      "unlock_after": 0,
++      "unlock_after": 24,
+       "planning_description": "继承三分支五级的功能基线；每级数值和末级消费须由owner复核，不重置现有玩家进度"
+     },
+     {
+@@ -8345,7 +9140,7 @@
+       "name_en": "Edge Rank 4",
+       "description": "永久伤害每级增加8%。",
+       "description_en": "Permanently adds 8% damage per rank.",
+-      "unlock_after": 0,
++      "unlock_after": 40,
+       "planning_description": "继承三分支五级的功能基线；每级数值和末级消费须由owner复核，不重置现有玩家进度"
+     },
+     {
+@@ -8354,12 +9149,12 @@
+       "name_en": "Edge Rank 5",
+       "description": "永久伤害每级增加8%。",
+       "description_en": "Permanently adds 8% damage per rank.",
+-      "unlock_after": 0,
++      "unlock_after": 56,
+       "planning_description": "继承三分支五级的功能基线；每级数值和末级消费须由owner复核，不重置现有玩家进度"
+     },
+     {
+       "id": "S1-TREE02-01",
+-      "name": "守元1阶",
++      "name": "体魄1阶",
+       "name_en": "Vitality Rank 1",
+       "description": "永久生命上限每级增加10。",
+       "description_en": "Permanently adds 10 maximum health per rank.",
+@@ -8368,44 +9163,44 @@
+     },
+     {
+       "id": "S1-TREE02-02",
+-      "name": "守元2阶",
++      "name": "体魄2阶",
+       "name_en": "Vitality Rank 2",
+       "description": "永久生命上限每级增加10。",
+       "description_en": "Permanently adds 10 maximum health per rank.",
+-      "unlock_after": 0,
++      "unlock_after": 8,
+       "planning_description": "继承三分支五级的功能基线；每级数值和末级消费须由owner复核，不重置现有玩家进度"
+     },
+     {
+       "id": "S1-TREE02-03",
+-      "name": "守元3阶",
++      "name": "体魄3阶",
+       "name_en": "Vitality Rank 3",
+       "description": "永久生命上限每级增加10。",
+       "description_en": "Permanently adds 10 maximum health per rank.",
+-      "unlock_after": 0,
++      "unlock_after": 24,
+       "planning_description": "继承三分支五级的功能基线；每级数值和末级消费须由owner复核，不重置现有玩家进度"
+     },
+     {
+       "id": "S1-TREE02-04",
+-      "name": "守元4阶",
++      "name": "体魄4阶",
+       "name_en": "Vitality Rank 4",
+       "description": "永久生命上限每级增加10。",
+       "description_en": "Permanently adds 10 maximum health per rank.",
+-      "unlock_after": 0,
++      "unlock_after": 40,
+       "planning_description": "继承三分支五级的功能基线；每级数值和末级消费须由owner复核，不重置现有玩家进度"
+     },
+     {
+       "id": "S1-TREE02-05",
+-      "name": "守元5阶",
++      "name": "体魄5阶",
+       "name_en": "Vitality Rank 5",
+       "description": "永久生命上限每级增加10。",
+       "description_en": "Permanently adds 10 maximum health per rank.",
+-      "unlock_after": 0,
++      "unlock_after": 56,
+       "planning_description": "继承三分支五级的功能基线；每级数值和末级消费须由owner复核，不重置现有玩家进度"
+     },
+     {
+       "id": "S1-TREE03-01",
+-      "name": "灵识1阶",
+-      "name_en": "Insight Rank 1",
++      "name": "采灵1阶",
++      "name_en": "Gathering Rank 1",
+       "description": "永久拾取半径每级增加15。",
+       "description_en": "Permanently adds 15 pickup radius per rank.",
+       "unlock_after": 0,
+@@ -8413,38 +9208,38 @@
+     },
+     {
+       "id": "S1-TREE03-02",
+-      "name": "灵识2阶",
+-      "name_en": "Insight Rank 2",
++      "name": "采灵2阶",
++      "name_en": "Gathering Rank 2",
+       "description": "永久拾取半径每级增加15。",
+       "description_en": "Permanently adds 15 pickup radius per rank.",
+-      "unlock_after": 0,
++      "unlock_after": 8,
+       "planning_description": "继承三分支五级的功能基线；每级数值和末级消费须由owner复核，不重置现有玩家进度"
+     },
+     {
+       "id": "S1-TREE03-03",
+-      "name": "灵识3阶",
+-      "name_en": "Insight Rank 3",
++      "name": "采灵3阶",
++      "name_en": "Gathering Rank 3",
+       "description": "永久拾取半径每级增加15。",
+       "description_en": "Permanently adds 15 pickup radius per rank.",
+-      "unlock_after": 0,
++      "unlock_after": 24,
+       "planning_description": "继承三分支五级的功能基线；每级数值和末级消费须由owner复核，不重置现有玩家进度"
+     },
+     {
+       "id": "S1-TREE03-04",
+-      "name": "灵识4阶",
+-      "name_en": "Insight Rank 4",
++      "name": "采灵4阶",
++      "name_en": "Gathering Rank 4",
+       "description": "永久拾取半径每级增加15。",
+       "description_en": "Permanently adds 15 pickup radius per rank.",
+-      "unlock_after": 0,
++      "unlock_after": 40,
+       "planning_description": "继承三分支五级的功能基线；每级数值和末级消费须由owner复核，不重置现有玩家进度"
+     },
+     {
+       "id": "S1-TREE03-05",
+-      "name": "灵识5阶",
+-      "name_en": "Insight Rank 5",
++      "name": "采灵5阶",
++      "name_en": "Gathering Rank 5",
+       "description": "永久拾取半径每级增加15。",
+       "description_en": "Permanently adds 15 pickup radius per rank.",
+-      "unlock_after": 0,
++      "unlock_after": 56,
+       "planning_description": "继承三分支五级的功能基线；每级数值和末级消费须由owner复核，不重置现有玩家进度"
+     }
+   ],
+@@ -8623,6 +9418,13 @@
+     "elite_enemy_xp": 12.0,
+     "boss_xp": 24.0,
+     "target_xp": 6.0,
++    "progression_unlock_completed": [
++      0,
++      8,
++      24,
++      40,
++      56
++    ],
+     "profile_pill_cap": 99,
+     "profile_replay_reward": 2,
+     "profile_kills_per_page": 25,
+diff --git a/src/campaign/campaign_arena.gd b/src/campaign/campaign_arena.gd
+index 41b0b24..d94e9a6 100644
+--- a/src/campaign/campaign_arena.gd
++++ b/src/campaign/campaign_arena.gd
+@@ -6,6 +6,8 @@ const Mission = preload("res://src/campaign/campaign_mission.gd")
+ const Rendering = preload("res://src/campaign/campaign_arena_render.gd")
+ const Validation = preload("res://src/campaign/campaign_arena_validation.gd")
+ const Codec = preload("res://src/campaign/campaign_arena_codec.gd")
++const Chapter = preload("res://src/campaign/campaign_chapter_one.gd")
++const Encounter = preload("res://src/campaign/campaign_encounter.gd")
+ const FORMAT := "CAMPAIGN_GAMEPLAY_V1"
+ ## Presentation-only preference; never changes simulation or RNG.
+ var reduce_motion := false
+@@ -22,6 +24,7 @@ var ready_for_play := false
+ ## Initializes a fresh mission or atomically rejects an invalid saved run.
+ func configure(p_catalog: Dictionary, mission_definition: Dictionary, p_loadout: Dictionary, run_seed: int, saved: Dictionary = {}) -> bool:
+ 	ready_for_play = false
++	if not Encounter.valid_definition(p_catalog, mission_definition): return false
+ 	if p_catalog.get("skills", []).is_empty() or mission_definition.is_empty() or not Validation.valid_loadout(p_catalog, mission_definition, p_loadout):
+ 		return false
+ 	if not saved.is_empty() and (not validate_snapshot(p_catalog, mission_definition, saved) or not Validation.same_values(saved.get("loadout", {}), p_loadout) or str(saved.get("rng_seed", "")) != str(run_seed)):
+@@ -60,23 +63,24 @@ func configure(p_catalog: Dictionary, mission_definition: Dictionary, p_loadout:
+ 
+ ## Advances only when explicitly called; choice overlays freeze the entire simulation.
+ func advance(delta: float, movement: Vector2) -> void:
+-	if not ready_for_play or state.finished or not state.offered.is_empty() or state.event_id != "":
++	if not ready_for_play or state.finished or not state.offered.is_empty() or state.event_id != "" or (mission.get("chapter_c",false) and state.encounter.chapter.error != ""):
+ 		return
+ 	if not is_finite(delta) or delta <= 0.0 or delta > 0.25 or not movement.is_finite():
+ 		return
+-	_step(delta, movement.limit_length())
++	if mission.has("scene_layout_id") and absf(delta - 1.0 / 60.0) > 0.000001: return
++	_step(1.0 / 60.0 if mission.has("scene_layout_id") else delta, movement.limit_length())
+ 	queue_redraw()
+ 
+ ## Returns a detached JSON-safe snapshot, including pending work and RNG bit patterns.
+ func snapshot() -> Dictionary:
+ 	if not ready_for_play:
+ 		return {}
+-	return {"schema": FORMAT, "content_hash": str(catalog.get("content_hash", "")), "definition_hash": definition_hash(catalog, mission), "mission_id": mission.id,
++	return {"schema": Encounter.FORMAT if mission.has("scene_layout_id") else FORMAT, "content_hash": str(catalog.get("content_hash", "")), "definition_hash": definition_hash(catalog, mission), "mission_id": mission.id,
+ 		"loadout": Codec.normalize(loadout), "rng_seed": str(rng.seed), "rng_state": str(rng.state), "state": Codec.normalize(state), "numeric_bits": Codec.bits(state)}
+ 
+ ## Read-only preflight used by profile/root before constructing a battle.
+ static func validate_snapshot(p_catalog: Dictionary, p_mission: Dictionary, saved: Dictionary) -> bool:
+-	if saved.get("schema") != FORMAT or saved.get("mission_id") != p_mission.get("id"):
++	if saved.get("schema") != (Encounter.FORMAT if p_mission.has("scene_layout_id") else FORMAT) or saved.get("mission_id") != p_mission.get("id"):
+ 		return false
+ 	if saved.get("definition_hash") != definition_hash(p_catalog, p_mission):
+ 		return false
+@@ -103,7 +107,7 @@ func objective_text(locale: String) -> String:
+ 		"SURVIVE":
+ 			return ("Reach extraction" if en else "前往撤离符阵") if float(state.get("elapsed", 0)) >= float(mission.get("target_seconds", 60)) else ("Survive %.0f / %.0fs" if en else "存活 %.0f / %.0f秒") % [state.get("elapsed", 0), mission.get("target_seconds", 60)]
+ 		"ESCORT":
+-			return ("Escort %d/%d · HP %.0f" if en else "护送 %d/%d · 灵舟生命 %.0f") % [o.get("progress", 0), mission.get("target_positions", []).size(), o.get("escort_hp", 0)]
++			return ("Escort %d/%d · HP %.0f" if en else ("护送 %d/%d · 采药人生命 %.0f" if mission.has("scene_layout_id") else "护送 %d/%d · 灵舟生命 %.0f")) % [o.get("progress", 0), mission.get("target_positions", []).size(), o.get("escort_hp", 0)]
+ 		"BOSS": return "Defeat the boss" if en else "击败首领"
+ 		"CLEANSE": return ("Cleanse %d/%d · %.0f%%" if en else "净化 %d/%d · %.0f%%") % [o.get("progress", 0), mission.get("target_count", 1), 100.0 * float(o.get("hold", 0)) / maxf(1, float(mission.get("target_seconds", 12)))]
+ 		_: return ("Targets %d / %d" if en else "目标 %d / %d") % [o.get("progress", 0), mission.get("target_count", 1)]
+@@ -145,23 +149,27 @@ func _step(delta: float, movement: Vector2) -> void:
+ 	var p: Dictionary = state.player
+ 	p.invulnerable = maxf(0, float(p.invulnerable) - delta)
+ 	var speed := float(tuning.get("player_speed", 280)) * float(tables.characters[loadout.character_id].get("speed_multiplier", 1)) * (1.0 + modifier("move_speed"))
++	if mission.has("scene_layout_id"):
++		speed *= Encounter.wind_multiplier(self, movement)
++		if movement.length_squared() > 0.01: state.encounter.tutorial |= 1
+ 	var next := pos(p) + movement * speed * delta
+ 	if movement.length_squared() > 0.01:
+ 		p.facing = movement.angle()
+ 	set_pos(p, constrain(next, 16.0))
+-	state.spawn_clock -= delta
+-	if state.spawn_clock <= 0:
+-		state.spawn_clock += maxf(0.12, float(mission.get("spawn_interval", tuning.get("spawn_interval", 0.8))) / ((1.0 + state.elapsed / 180.0 + state.event_pressure + float(state.objective.pressure)) * state.enemy_multiplier))
+-		var ids: Array = mission.get("enemy_ids", tables.enemies.keys())
+-		if not ids.is_empty():
+-			for i in 1 + mini(3, int(state.elapsed / 90.0)):
+-				spawn_enemy(str(ids[rng.randi_range(0, ids.size() - 1)]), spawn_position())
+-	state.elite_clock += delta
+-	if state.elite_clock >= float(tuning.get("elite_interval", 40)):
+-		state.elite_clock = 0.0
+-		if not tables.elites.is_empty():
+-			var ids: Array = tables.elites.keys()
+-			spawn_enemy(ids[rng.randi_range(0, ids.size() - 1)], spawn_position(), "elite")
++	if not mission.has("encounter_stages"):
++		state.spawn_clock -= delta
++		if state.spawn_clock <= 0:
++			state.spawn_clock += maxf(0.12, float(mission.get("spawn_interval", tuning.get("spawn_interval", 0.8))) / ((1.0 + state.elapsed / 180.0 + state.event_pressure + float(state.objective.pressure)) * state.enemy_multiplier))
++			var ids: Array = mission.get("enemy_ids", tables.enemies.keys())
++			if not ids.is_empty():
++				for i in 1 + mini(3, int(state.elapsed / 90.0)):
++					spawn_enemy(str(ids[rng.randi_range(0, ids.size() - 1)]), spawn_position())
++		state.elite_clock += delta
++		if state.elite_clock >= float(tuning.get("elite_interval", 40)):
++			state.elite_clock = 0.0
++			if not tables.elites.is_empty():
++				var ids: Array = mission.get("elite_ids", tables.elites.keys())
++				if not ids.is_empty(): spawn_enemy(ids[rng.randi_range(0, ids.size() - 1)], spawn_position(), "elite")
+ 	Combat.advance_skills(self, delta)
+ 	Combat.advance_enemies(self, delta)
+ 	Combat.advance_projectiles(self, delta)
+@@ -169,6 +177,9 @@ func _step(delta: float, movement: Vector2) -> void:
+ 	_reap()
+ 	_pickups(delta)
+ 	_advance_objective(delta)
++	if mission.has("scene_layout_id"):
++		Encounter.advance(self)
++		if state.player.xp > 0 or state.player.level > 1: state.encounter.tutorial |= 2
+ 	for i in range(state.effects.size() - 1, -1, -1):
+ 		state.effects[i].ttl -= delta
+ 		if state.effects[i].ttl <= 0:
+@@ -178,7 +189,8 @@ func _step(delta: float, movement: Vector2) -> void:
+ 		_finish(state.objective.victory, state.objective.reason)
+ 	if not state.finished:
+ 		_check_levels()
+-		if state.offered.is_empty() and not state.event_done and state.elapsed >= float(tuning.get("event_interval", 35)) and not tables.events.is_empty():
++		if mission.get("chapter_c",false): Chapter.offer_event(self)
++		if not mission.has("clues") and state.offered.is_empty() and not state.event_done and state.elapsed >= float(tuning.get("event_interval", 35)) and not tables.events.is_empty():
+ 			var eligible: Array = []
+ 			for row in catalog.events:
+ 				if int(row.get("unlock_after", 0)) <= int(loadout.get("completed", 0)):
+@@ -193,17 +205,22 @@ func _make_map() -> void:
+ 	state.objective.y = 0.0
+ 	state.boss_spawned = false
+ 	var half := half_size()
+-	# Alternating inner/outer landmark arcs keep all target-to-target routes open.
+-	var scene := int(mission.get("ordinal", 1)) + int(mission.get("chapter", 1)) * 2
+-	for i in 8:
+-		var angle := TAU * float(i) / 8.0 + float(scene % 2) * 0.17
+-		var point := Vector2(cos(angle) * half.x * 0.62, sin(angle) * half.y * 0.65)
+-		var clear := point.length() > 150
+-		for target in mission.get("target_positions", []):
+-			if point.distance_to(Vector2(target[0], target[1])) < 180:
+-				clear = false
+-		if clear:
+-			state.obstacles.append({"x": point.x, "y": point.y, "radius": 28.0 + float((i + scene) % 3) * 8.0})
++	if mission.has("scene_layout_id"):
++		var layout := Encounter.layout(catalog, mission)
++		state.obstacles = layout.obstacles.duplicate(true)
++		set_pos(state.player, Vector2(layout.start[0],layout.start[1]))
++	else:
++		# Alternating inner/outer landmark arcs keep all target-to-target routes open.
++		var scene := int(mission.get("ordinal", 1)) + int(mission.get("chapter", 1)) * 2
++		for i in 8:
++			var angle := TAU * float(i) / 8.0 + float(scene % 2) * 0.17
++			var point := Vector2(cos(angle) * half.x * 0.62, sin(angle) * half.y * 0.65)
++			var clear := point.length() > 150
++			for target in mission.get("target_positions", []):
++				if point.distance_to(Vector2(target[0], target[1])) < 180:
++					clear = false
++			if clear:
++				state.obstacles.append({"x": point.x, "y": point.y, "radius": 28.0 + float((i + scene) % 3) * 8.0})
+ 	var kind := str(mission.kind).to_upper()
+ 	if kind == "BREAK":
+ 		for i in int(mission.get("target_count", 1)):
+@@ -214,7 +231,7 @@ func _make_map() -> void:
+ 				e.hp = float(mission.get("target_hp", 180))
+ 				e.max_hp = e.hp
+ 				e.ordinal = i
+-	elif kind == "HUNT":
++	elif kind == "HUNT" and not mission.has("clues"):
+ 		var ids: Array = tables.elites.keys()
+ 		var e := spawn_enemy(str(ids[0]) if not ids.is_empty() else str(mission.enemy_ids[0]), target_position(0), "elite")
+ 		if not e.is_empty():
+@@ -224,6 +241,11 @@ func _make_map() -> void:
+ 		state.boss_spawned = true
+ 	elif kind == "ESCORT":
+ 		set_pos(state.objective, Vector2(-half.x * 0.65, 0))
++		if mission.has("scene_layout_id"):
++			var start: Array = Encounter.layout(catalog,mission).start
++			set_pos(state.objective, Vector2(start[0],start[1]))
++	if mission.has("scene_layout_id"):
++		state.encounter = Encounter.create(self)
+ 
+ func _apply_starting_stats() -> void:
+ 	var c: Dictionary = tables.characters[loadout.character_id]
+@@ -299,6 +321,11 @@ func _offer() -> void:
+ 		if int(state.skills.get(row.skill_id, 0)) == 5 and int(state.passives.get(row.passive_id, 0)) >= int(row.get("required_passive_level", 5)) and not state.evolved.has(row.id):
+ 			options.append(row.id)
+ 	state.offered.clear()
++	if mission.get("tutorial", false) and state.player.level == 2:
++		for id in ["S1-A01", "S1-A02", "S1-A03"]:
++			if options.has(id): state.offered.append(id)
++		if state.offered.size() == 3: return
++		state.offered.clear()
+ 	# One build-continuation slot and one compatible ingredient slot make evolution
+ 	# attainable in a single mission while the remaining choice preserves diversity.
+ 	var evolution_options: Array[String] = []
+@@ -331,6 +358,7 @@ func _choose_upgrade(id: String) -> bool:
+ 			var rank := int(state[family].get(id, 0))
+ 			if rank >= 5 or (rank == 0 and state[family].size() >= (int(state.active_cap) if family == "skills" else 4)):
+ 				return false
++			if mission.has("scene_layout_id"): state.encounter.tutorial |= 4
+ 			state[family][id] = rank + 1
+ 			if family == "passives" and tables.passives[id].get("stat") == "max_hp":
+ 				var extra := float(tables.passives[id].get("amount", 0.1))
+@@ -338,15 +366,18 @@ func _choose_upgrade(id: String) -> bool:
+ 				state.player.hp += extra
+ 			state.offered.clear()
+ 			_check_levels()
++			if mission.get("chapter_c",false): Chapter.offer_event(self)
+ 			return true
+ 	if tables.evolutions.has(id):
+ 		var recipe: Dictionary = tables.evolutions[id]
+ 		if int(state.skills.get(recipe.skill_id, 0)) != 5 or int(state.passives.get(recipe.passive_id, 0)) < int(recipe.get("required_passive_level", 5)) or state.evolved.has(id):
+ 			return false
++		if mission.has("scene_layout_id"): state.encounter.tutorial |= 4
+ 		state.evolved.append(id)
+ 		state.statistics.evolutions += 1
+ 		state.offered.clear()
+ 		_check_levels()
++		if mission.get("chapter_c",false): Chapter.offer_event(self)
+ 		return true
+ 	return false
+ 
+@@ -378,6 +409,7 @@ func _advance_objective(delta: float) -> void:
+ 	for e in state.entities:
+ 		if e.hp > 0: enemy_positions.append(pos(e))
+ 	Mission.advance(o, mission, delta, player_world_position(), enemy_positions, state.target_deaths, pos(o))
++	if mission.has("scene_layout_id"): return
+ 	state.event_clock += delta
+ 	if state.event_clock >= float(tuning.get("hazard_interval", 7)):
+ 		state.event_clock = 0.0
+@@ -428,12 +460,15 @@ func spawn_position() -> Vector2:
+ 
+ ## Allocates a bounded entity; target IDs remain stable independently of runtime serials.
+ func spawn_enemy(id: String, point: Vector2, family: String = "enemy") -> Dictionary:
+-	if state.entities.size() >= mini(180, int(tuning.get("enemy_cap", 180))):
++	var cap := mini(180, int(tuning.get("enemy_cap", 180)))
++	if family == "enemy" and mission.has("clues") and state.has("encounter") and not state.encounter.chapter.hunt_spawned: cap -= 1
++	if state.entities.size() >= cap:
+ 		return {}
+ 	var row: Dictionary = tables.bosses.get(id, {}) if family == "boss" else tables.elites.get(id, tables.enemies.get(id, {}))
+ 	if row.is_empty() and family != "target":
+ 		return {}
+ 	var scale := float(tuning.get("difficulty_multipliers", [1.0, 1.3, 1.65])[int(loadout.get("difficulty", 0))]) * float(state.enemy_multiplier) * float(mission.get("enemy_scaling", 1.0 + int(mission.get("ordinal", 1)) * float(tuning.get("mission_enemy_scaling", 0.008))))
++	if mission.has("clues"): scale *= 1.0 + float(state.event_pressure)
+ 	var hp := float(row.get("hp", 40)) * scale
+ 	var e := {"uid": int(state.next_id), "id": id, "family": family, "target_id": id if family == "boss" else "", "ordinal": -1,
+ 		"x": point.x, "y": point.y, "hp": hp, "max_hp": hp, "radius": float(row.get("radius", 18)), "speed": float(row.get("speed", 75)),
+@@ -484,6 +519,7 @@ func damage_player(amount: float) -> void:
+ 	state.player.hp = maxf(0, state.player.hp - actual)
+ 	state.player.invulnerable = float(tuning.get("invulnerability_seconds", 0.65))
+ 	state.statistics.damage_taken += actual
++	if mission.has("boss_chapter"): state.encounter.chapter.hits[int(state.encounter.chapter.boss_phase)] += 1
+ 	sound("hit")
+ 
+ func _reap() -> void:
+@@ -544,3 +580,32 @@ func reroll_upgrades() -> bool:
+ 
+ func _draw() -> void:
+ 	if ready_for_play: Rendering.draw_arena(self)
++
++## Layout-owned root warning. Lifecycle and damage remain in the existing zone executor.
++func emit_layout_root(row: Dictionary, index: int = -1) -> void:
++	var zone: Dictionary = Combat.zone(self, Vector2(row.center[0],row.center[1]), float(row.radius), float(row.damage), float(row.active_ticks)/60.0, "#79b85c", "poison", true, float(row.warning_ticks)/60.0)
++	if mission.get("chapter_c",false) and not zone.is_empty(): zone.layout_root = index
++
++## Contextual non-blocking tutorial and objective feedback; no UI-owned gameplay state.
++func teaching_text(locale: String) -> String:
++	var en := locale.begins_with("en")
++	if not mission.has("scene_layout_id"): return ""
++	if mission.has("clues"):
++		return ("Follow clues: %d/3. Dodge the charge and counter during recovery." if en else "沿足迹追踪：%d/3。躲开冲锋，利用停顿反击。") % state.encounter.chapter.clues
++	if mission.get("close_roots",false):
++		return ("Roots closed: %d/3. Break the next bright anchor." if en else "已关闭根区：%d/3。继续拆除亮起的锚点。") % state.objective.progress
++	if mission.has("boss_chapter"):
++		return ("Beast phase %d/3: dodge impact warnings." if en else "古兽阶段%d/3：避开落点预警，寻找反击空隙。") % (state.encounter.chapter.boss_phase+1)
++	if mission.kind == "BREAK":
++		return "Attack the bright anchor; dim anchors are shielded." if en else "攻击亮起的锚点；暗色锚点尚未激活，无法受伤。"
++	if mission.kind == "ESCORT":
++		return "Stay near the herbalist to move; leave to intercept enemies, then return." if en else "靠近采药人才能前进；可离队拦截敌人，再返回继续护送。"
++	if not mission.get("tutorial",false): return ""
++	var bits := int(state.encounter.tutorial)
++	if state.objective.extraction_ready:
++		return "Exit is open. Step out and re-enter if already inside." if en else "撤离已开放。若已站在圈内，请走出后重新进入。"
++	if bits & 1 == 0: return "Move with WASD / left stick. Attacks are automatic." if en else "WASD / 左摇杆移动，攻击自动释放。"
++	if bits & 2 == 0: return "Approach green drops to gain insight." if en else "靠近绿色掉落，拾取悟性以升级。"
++	if bits & 4 == 0: return "Choose a skill when you gain a level." if en else "升级时选择一种技能，尝试新的攻击方式。"
++	if state.tick >= mission.wind_start_tick and bits & 8 == 0: return "Follow wind arrows to move faster; crossing is safe." if en else "沿风带箭头移动更快；也可以横向穿过。"
++	return "Keep moving. Watch the exit countdown." if en else "保持走位，留意撤离倒计时。"
+diff --git a/src/campaign/campaign_arena_render.gd b/src/campaign/campaign_arena_render.gd
+index fe5b982..92c28d5 100644
+--- a/src/campaign/campaign_arena_render.gd
++++ b/src/campaign/campaign_arena_render.gd
+@@ -1,4 +1,5 @@
+ extends RefCounted
++const Encounter = preload("res://src/campaign/campaign_encounter.gd")
+ ## World-space procedural campaign presentation. No font glyphs substitute for combat actors.
+ 
+ ## Draws themed terrain, objectives, tells, actors and hit effects under the root camera.
+@@ -7,6 +8,7 @@ static func draw_arena(a) -> void:
+ 	var theme := _theme(a)
+ 	var ground := theme.darkened(0.83)
+ 	a.draw_rect(Rect2(-half, half * 2), ground)
++	if a.mission.has("scene_layout_id"): _layout(a, theme)
+ 	for x in range(-int(half.x), int(half.x), 80):
+ 		a.draw_line(Vector2(x, -half.y), Vector2(x, half.y), Color(theme, 0.07), 1)
+ 	for y in range(-int(half.y), int(half.y), 80):
+@@ -35,6 +37,15 @@ static func draw_arena(a) -> void:
+ 		_zone(a, z)
+ 	for e in a.state.entities:
+ 		_enemy(a, e)
++		if e.family == "target" and a.mission.kind == "BREAK":
++			var q: Vector2 = a.pos(e)
++			var active: bool = a.mission.order_mode != "FIXED" or int(e.ordinal) == int(a.state.objective.progress)
++			var tint := Color("ffe1a1") if active else Color("586b76")
++			a.draw_arc(q,43,0,TAU,24,tint,3)
++			for n in int(e.ordinal)+1: a.draw_line(q+Vector2(-8+n*8,-58),q+Vector2(-8+n*8,-48),tint,3)
++			if not active:
++				a.draw_rect(Rect2(q+Vector2(-8,-8),Vector2(16,14)),tint,false,2)
++				a.draw_arc(q+Vector2(0,-8),6,PI,TAU,8,tint,2)
+ 	for p in a.state.projectiles:
+ 		var q: Vector2 = a.pos(p)
+ 		var v := Vector2(p.vx, p.vy).normalized()
+@@ -82,6 +93,18 @@ static func _objectives(a, theme: Color) -> void:
+ 	var kind := str(a.mission.kind)
+ 	var o: Dictionary = a.state.objective
+ 	var index := int(o.waypoint) if kind in ["CLEANSE", "ESCORT"] else int(o.progress)
++	if a.mission.has("clues"):
++		var previous := Vector2(-720,0)
++		for i in a.mission.clues.size():
++			var clue: Array = a.mission.clues[i]
++			var q := Vector2(clue[0],clue[1])
++			var tint := Color("b8f39a") if i <= a.state.encounter.chapter.clues else Color("57695d")
++			for j in 12:
++				var foot := previous.lerp(q,float(j)/12)
++				a.draw_circle(foot,3,tint)
++			a.draw_arc(q,32,0,TAU,24,tint,3)
++			for n in i+1: a.draw_line(q+Vector2(n*8-8,-12),q+Vector2(n*8-8,12),tint,3)
++			previous = q
+ 	var target: Vector2 = a.target_position(index)
+ 	if kind in ["SURVIVE", "CLEANSE", "ESCORT"]:
+ 		var radius := float(a.mission.get("target_radius", 90))
+@@ -99,7 +122,14 @@ static func _objectives(a, theme: Color) -> void:
+ 	if kind == "ESCORT":
+ 		var q: Vector2 = a.pos(o)
+ 		a.draw_line(q, target, Color(theme, 0.2), 2)
+-		a.draw_colored_polygon(PackedVector2Array([q+Vector2(-30, 0),q+Vector2(-18,-20),q+Vector2(28,0),q+Vector2(-18,20)]), theme.darkened(0.25))
++		if a.mission.has("scene_layout_id"):
++			a.draw_circle(q+Vector2(0,8),18,Color(0,0,0,0.3))
++			a.draw_colored_polygon(PackedVector2Array([q+Vector2(0,-12),q+Vector2(-15,16),q+Vector2(15,16)]), Color("c4a567"))
++			a.draw_circle(q+Vector2(0,-15),7,Color("efd7ac"))
++			a.draw_line(q+Vector2(18,-6),q+Vector2(21,20),Color("a1d4ae"),3)
++			a.draw_circle(q+Vector2(-12,3),8,theme.darkened(0.3))
++		else:
++			a.draw_colored_polygon(PackedVector2Array([q+Vector2(-30, 0),q+Vector2(-18,-20),q+Vector2(28,0),q+Vector2(-18,20)]), theme.darkened(0.25))
+ 		a.draw_arc(q, 35, 0, TAU, 24, Color(theme, 0.6), 2)
+ 		a.draw_rect(Rect2(q + Vector2(-30, -36), Vector2(60, 5)), Color("20232b"))
+ 		a.draw_rect(Rect2(q + Vector2(-30, -36), Vector2(60 * maxf(0, o.escort_hp) / maxf(1, a.mission.escort_hp), 5)), Color("82e5c0"))
+@@ -210,3 +240,30 @@ static func _player(a) -> void:
+ 	a.draw_circle(q,10,color)
+ 	a.draw_line(q+side*10,q+side*14+forward*26,Color("efffff"),3,true)
+ 	a.draw_circle(q+forward*4,4,Color("fff3d7"))
++
++static func _layout(a, theme: Color) -> void:
++	var l := Encounter.layout(a.catalog,a.mission)
++	var route: Array = l.route
++	for i in range(1,route.size()):
++		var from := Vector2(route[i-1][0],route[i-1][1])
++		var to := Vector2(route[i][0],route[i][1])
++		a.draw_line(from,to,Color("314039"),110,true)
++		a.draw_line(from,to,Color("455145"),3,true)
++	if not l.roots.is_empty():
++		for radius in [120,200,380]: a.draw_arc(Vector2.ZERO,radius,0,TAU,64,Color(theme,0.22),4,true)
++		for root_index in l.roots.size():
++			if a.mission.get("close_roots",false) and int(a.state.encounter.chapter.root_mask) & (1<<root_index): continue
++			var row: Dictionary = l.roots[root_index]
++			a.draw_arc(Vector2(row.center[0],row.center[1]),row.radius,0,TAU,24,Color("658464"),2,true)
++	for w in l.winds:
++		var center := Vector2(w.center[0],w.center[1])
++		var size := Vector2(w.size[0],w.size[1])
++		var active: bool = a.state.tick >= a.mission.wind_start_tick
++		a.draw_rect(Rect2(center-size/2,size),Color(0.38,0.8,0.66,0.17 if active else 0.04))
++		for i in 5:
++			var q := center+Vector2((i-2)*52,0)
++			var v := Vector2(float(w.direction),0)
++			var color := Color(0.65,0.94,0.8,0.8 if active else 0.15)
++			a.draw_line(q-v*16,q+v*16,color,2,true)
++			a.draw_line(q+v*16,q+Vector2(0,-12),color,2,true)
++			a.draw_line(q+v*16,q+Vector2(0,12),color,2,true)
+diff --git a/src/campaign/campaign_arena_validation.gd b/src/campaign/campaign_arena_validation.gd
+index 53f162b..dff3268 100644
+--- a/src/campaign/campaign_arena_validation.gd
++++ b/src/campaign/campaign_arena_validation.gd
+@@ -1,5 +1,6 @@
+ extends RefCounted
+ ## Strict JSON snapshot validator. Validation never mutates input or silently restarts RNG.
++const Encounter = preload("res://src/campaign/campaign_encounter.gd")
+ const Codec = preload("res://src/campaign/campaign_arena_codec.gd")
+ const BEHAVIORS := ["chase","spitter","flanker","trail","strafe","charger","crab","jet","burrow","reflector","fan_shooter","bouncer","slider","buffer","spike_line","exploder","rooter","decoy","diver","anchor","barrier","shield","channeler","absorber"]
+ 
+@@ -143,6 +144,8 @@ static func validate(c: Dictionary, m: Dictionary, saved: Dictionary) -> bool:
+ 	if bool(s.finished) != bool(o.finished) or bool(s.victory) != bool(o.victory) or s.reason != o.reason: return false
+ 	if bool(o.player_alive) != (p.hp > 0): return false
+ 	if not s.finished and (p.hp <= 0 or (m.kind == "ESCORT" and o.escort_hp <= 0)): return false
++	if m.has("scene_layout_id") and not Encounter.valid_state(c,m,s): return false
++	if not m.has("scene_layout_id") and s.has("encounter"): return false
+ 	var stats: Dictionary = s.statistics
+ 	for key in ["damage_taken","damage_dealt","elite_kills","boss_kills","evolutions","events_taken","safe_choices","risk_choices"]:
+ 		if not _number(stats.get(key), 0, 1000000000): return false
+diff --git a/src/campaign/campaign_catalog.gd b/src/campaign/campaign_catalog.gd
+index e8fb867..53f328d 100644
+--- a/src/campaign/campaign_catalog.gd
++++ b/src/campaign/campaign_catalog.gd
+@@ -2,6 +2,7 @@ class_name CampaignCatalog
+ extends RefCounted
+ ## Validated offline content for the independent CAMPAIGN_GAMEPLAY_V1 profile.
+ 
++const Encounter = preload("res://src/campaign/campaign_encounter.gd")
+ const PATH := "res://assets/config/campaign_game.json"
+ const COUNTS := {"chapters": 8, "missions": 64, "characters": 8, "skills": 24,
+ 	"passives": 24, "evolutions": 16, "enemies": 24, "elites": 8, "bosses": 9,
+@@ -213,11 +214,24 @@ static func validate(data: Dictionary) -> Array[String]:
+ 	if not data.get("tuning") is Dictionary:
+ 		errors.append("missing tuning")
+ 	else:
++		var gates: Variant = data.tuning.get("progression_unlock_completed")
++		if not gates is Array or gates.size() != 5:
++			errors.append("invalid progression gates")
++		else:
++			var previous := -1
++			for gate in gates:
++				if not _integer(gate, 0, 64) or int(gate) < previous:
++					errors.append("invalid progression gates")
++				else:
++					previous = int(gate)
+ 		for field in ["enemy_cap", "projectile_cap", "pickup_cap", "player_hp", "player_speed", "player_damage", "spawn_interval", "xp_base", "xp_step", "save_interval", "mission_enemy_scaling"]:
+ 			_positive(data.tuning, field, errors)
+ 		var size: Variant = data.tuning.get("arena_half_size")
+ 		if not size is Array or size.size() != 2 or size[0] != 960 or size[1] != 640:
+ 			errors.append("arena dimensions")
++	if errors.is_empty():
++		for m in data.missions:
++			if not Encounter.valid_definition(data,m): errors.append("invalid encounter/layout: " + str(m.id))
+ 	return errors
+ 
+ ## Finds a row by collection name and stable ID. Never resolves array positions.
+diff --git a/src/campaign/campaign_combat.gd b/src/campaign/campaign_combat.gd
+index a8e2766..5dcd7f2 100644
+--- a/src/campaign/campaign_combat.gd
++++ b/src/campaign/campaign_combat.gd
+@@ -333,7 +333,9 @@ static func advance_enemies(a, dt: float) -> void:
+ 		var velocity: Vector2 = direction * e.speed
+ 		var distance := offset.length()
+ 		var behavior := str(e.behavior)
+-		if e.family == "boss":
++		if a.mission.has("clues") and e.target_id != "":
++			velocity = a.Chapter.hunt_velocity(a,e,direction)
++		elif e.family == "boss":
+ 			_boss(a, e, target)
+ 			q = a.pos(e)
+ 			velocity *= 0.4
+@@ -485,6 +487,9 @@ static func _charge(a, e: Dictionary, direction: Vector2, multiplier: float, tel
+ 	return direction * e.speed * 0.7
+ 
+ static func _boss(a, e: Dictionary, target: Vector2) -> void:
++	if a.mission.has("boss_chapter"):
++		a.Chapter.boss(a,e,target)
++		return
+ 	if e.timer > 0: return
+ 	var row: Dictionary = a.tables.bosses.get(e.id, {})
+ 	var phase := mini(2, int((1.0 - maxf(0, e.hp) / e.max_hp) * 3.0))
+diff --git a/src/campaign/campaign_game_root.gd b/src/campaign/campaign_game_root.gd
+index b5ae0b4..329284f 100644
+--- a/src/campaign/campaign_game_root.gd
++++ b/src/campaign/campaign_game_root.gd
+@@ -244,6 +244,9 @@ func _physics_process(delta: float) -> void:
+ 	if not context.finish():
+ 		fail("输入关闭失败 / Input lease finish failed")
+ 		return
++	if arena.mission.get("chapter_c",false) and arena.state.encounter.chapter.error != "":
++		fail(arena.state.encounter.chapter.error)
++		return
+ 	camera.position = arena.player_world_position()
+ 	for event: String in arena.sound_events:
+ 		audio.effect(event)
+diff --git a/src/campaign/campaign_profile.gd b/src/campaign/campaign_profile.gd
+index 7fc576b..9d1bf98 100644
+--- a/src/campaign/campaign_profile.gd
++++ b/src/campaign/campaign_profile.gd
+@@ -4,6 +4,9 @@ extends RefCounted
+ ## The root injects already initialized storage using dedicated campaign paths.
+ 
+ const DOMAIN := "campaign_game"
++const LEGACY_CONTENT_HASH := "71d615925151600c8a1255808f20a03d5d44f5fa4efd9f047874e231f45949ca"
++const PACKAGE_B_CONTENT_HASH := "8acdcfa43bc2312b9c0fa7d5992c0e70a889f380fca52931f71c2acb9b6ee7c4"
++const PACKAGE_A_CONTENT_HASH := "6317cdd43003233238309a0ecadad895d4962cdf188dca3ff0802bba8f42125a"
+ const SAFE_INT := 9007199254740991
+ const MAX_DOCUMENT_BYTES := 4194304
+ const MAX_NODES := 150000
+@@ -48,6 +51,11 @@ func initialize(catalog: Dictionary, storage: Node) -> bool:
+ 		if not existing is Dictionary:
+ 			return _fail("INVALID_OR_INCOMPATIBLE_CAMPAIGN_DOMAIN")
+ 		var candidate: Dictionary = existing.duplicate(true)
++		# This read-only gate precedes even the six-setting migration. A known
++		# catalog identity is a routing hint, never permission to load its snapshot.
++		var active: Variant = candidate.get("current_run")
++		if active is Dictionary and active.get("content_hash") != _content_hash:
++			return _fail("LEGACY_ACTIVE_RUN_REQUIRES_PREVIOUS_VERSION" if active.get("content_hash") in [LEGACY_CONTENT_HASH, PACKAGE_A_CONTENT_HASH, PACKAGE_B_CONTENT_HASH] else "UNKNOWN_ACTIVE_RUN_CONTENT")
+ 		var migrate_fullscreen := _integer(candidate.get("schema"), 1, 1) and candidate.get("settings") is Dictionary and _keys(candidate.settings, ["locale", "master", "music", "sfx", "font_scale", "reduce_motion"])
+ 		if migrate_fullscreen:
+ 			candidate.settings["fullscreen"] = false
+@@ -124,6 +132,8 @@ func purchase_branch(index: int) -> bool:
+ 		return false
+ 	if index < 0 or index > 2 or int(_data.branches[index]) >= 5:
+ 		return _fail("INVALID_OR_MAX_BRANCH")
++	if int(_data.completed) < branch_requirement(index):
++		return _fail("BRANCH_CHAPTER_LOCKED")
+ 	var price := _tune("progression_cost_base") + int(_data.branches[index]) * _tune("progression_cost_step")
+ 	if int(_data.pages) < price:
+ 		return _fail("INSUFFICIENT_PAGES")
+@@ -135,6 +145,13 @@ func purchase_branch(index: int) -> bool:
+ 	_award(next)
+ 	return _publish(next)
+ 
++## Required completed-mission count for the next purchase; -1 means unavailable/max.
++## Existing ranks are not checked against this purchase-only restriction.
++func branch_requirement(index: int) -> int:
++	if not _ready or index < 0 or index > 2 or int(_data.branches[index]) >= 5:
++		return -1
++	return int(_catalog.tuning.progression_unlock_completed[int(_data.branches[index])])
++
+ ## Convert earned herbs into one unlocked pill, without wall-clock timers.
+ func cultivate(pill_id: String) -> bool:
+ 	if not _available():
+@@ -486,6 +503,14 @@ func _valid_catalog() -> bool:
+ 		return _fail("no initially unlocked character")
+ 	if not _catalog.get("tuning", {}) is Dictionary:
+ 		return _fail("missing tuning")
++	var gates: Variant = _catalog.tuning.get("progression_unlock_completed")
++	if not gates is Array or gates.size() != 5:
++		return _fail("invalid progression gates")
++	var previous := -1
++	for gate in gates:
++		if not _integer(gate, 0, 64) or int(gate) < previous:
++			return _fail("invalid progression gates")
++		previous = int(gate)
+ 	for key in ["profile_pill_cap", "profile_kills_per_page", "profile_kills_per_herb", "progression_cost_base"]:
+ 		if not _integer(_catalog.get("tuning", {}).get(key), 1, SAFE_INT):
+ 			return _fail("invalid positive profile tuning")
+diff --git a/src/campaign/campaign_ui.gd b/src/campaign/campaign_ui.gd
+index dca6abc..d84c61b 100644
+--- a/src/campaign/campaign_ui.gd
++++ b/src/campaign/campaign_ui.gd
+@@ -141,6 +141,8 @@ func overlay(kind: String) -> void:
+ 				_button(box, localized(row) + "\n" + localized(row, "description"), root.choose.bind(id))
+ 		"event":
+ 			var row := _lookup(root.arena.state.event_id)
++			if root.arena.mission.has("clues"):
++				_label(box,tr2("本关冒险压力会提高后续生成敌人的生命与伤害；已出现者不变。", "Risk pressure increases health and damage of enemies spawned later in this hunt."))
+ 			_label(box, localized(row), 30, GOLD)
+ 			_label(box, localized(row, "description"))
+ 			for key in ["safe", "risk"]:
+@@ -155,7 +157,13 @@ func overlay(kind: String) -> void:
+ 			_button(box, tr2("确认放弃本局", "Confirm abandon"), root.abandon_current_run)
+ 		"error":
+ 			_label(box, tr2("未能完成操作", "ACTION COULD NOT COMPLETE"), 30, GOLD)
+-			_label(box, root.error)
++			if root.error == "LEGACY_ACTIVE_RUN_REQUIRES_PREVIOUS_VERSION":
++				_label(box, tr2("本次任务属于旧版本，原存档已保留。请使用创建本局的保留版本结束本局，或在旧版主动放弃，再返回新版。", "This run belongs to a previous version. Your save is retained. Finish or explicitly abandon it in the preserved version that created this run, then return here."))
++				_label(box, tr2("存档目录：", "Save folder: ") + OS.get_user_data_dir(), 15)
++			elif root.error == "UNKNOWN_ACTIVE_RUN_CONTENT":
++				_label(box, tr2("无法识别本次任务的内容版本。原存档已保留，请使用创建它的版本继续。", "This run's content version is unrecognized. The original save is retained; continue with the version that created it."))
++			else:
++				_label(box, root.error)
+ 			if not root.profile_ready:
+ 				if not root.catalog.is_empty():
+ 					_button(box, tr2("重试加载", "Retry loading"), root.reload_profile)
+@@ -202,6 +210,8 @@ func update_hud() -> void:
+ 			names.append("—")
+ 		build.append("  ·  ".join(names))
+ 	hud.text = root.arena.objective_text(tr2("zh", "en")) + "\n" + (tr2("生命 %.0f/%.0f   境界 %d   击破 %d", "HP %.0f/%.0f   Level %d   Kills %d") % [p.hp, p.max_hp, p.level, p.kills]) + "\n" + "\n".join(build)
++	var guidance: String = root.arena.teaching_text(tr2("zh", "en"))
++	if not guidance.is_empty(): hud.text += "\n" + guidance
+ 
+ func _clear() -> void:
+ 	for child in get_children():
+@@ -315,7 +325,11 @@ func _characters() -> void:
+ 	var growth := _card(tr2("三脉修习 · 每脉五阶", "THREE BRANCHES · FIVE RANKS EACH"))
+ 	for i in 3:
+ 		var rank := int(data.branches[i])
+-		_button(growth, [tr2("体魄", "Vitality"), tr2("灵力", "Spirit"), tr2("身法", "Agility")][i] + "  " + "◆".repeat(rank) + "◇".repeat(5 - rank) + (tr2(" · %d 灵页", " · %d pages") % int(root.catalog.tuning.get("progression_cost_base", 4) + root.catalog.tuning.get("progression_cost_step", 4) * rank) if rank < 5 else ""), root.command.bind("purchase_branch", i), rank >= 5)
++		var requirement: int = root.profile.branch_requirement(i)
++		var locked := requirement >= 0 and int(data.completed) < requirement
++		var price := int(root.catalog.tuning.progression_cost_base + root.catalog.tuning.progression_cost_step * rank)
++		var suffix := tr2(" · 需完成%d程", " · Requires %d clears") % requirement if locked else (tr2(" · %d 灵页", " · %d pages") % price if rank < 5 else "")
++		_button(growth, [tr2("锋意（伤害）", "Edge (damage)"), tr2("体魄（生命）", "Vitality (health)"), tr2("采灵（拾取）", "Gathering (pickup)")][i] + "  " + "◆".repeat(rank) + "◇".repeat(5 - rank) + suffix, root.command.bind("purchase_branch", i), rank >= 5 or locked or int(data.pages) < price)
+ 	var supplies := _card(tr2("出战准备", "PREPARATION"))
+ 	for i in 3:
+ 		_button(supplies, [tr2("行旅 · 轻松", "Wanderer · Easy"), tr2("修行 · 标准", "Adept · Standard"), tr2("问道 · 困难", "Seeker · Hard")][i] + (" ✓" if int(data.difficulty) == i else ""), root.command.bind("set_difficulty", i))
+@@ -442,6 +456,10 @@ func _result() -> void:
+ 	if r.get("ending", false):
+ 		_button(box, tr2("走向终章 →", "Enter the epilogue →"), root.show_page.bind("ending"))
+ 	else:
++		if win and root.last_mission == 2:
++			_label(box, tr2("已开放培育与机缘。可先了解成长和丹药，也可不携药继续。", "Cultivation and encounters are now available. Review growth and pills, or continue without a pill."))
++			_button(box, tr2("了解备战 · 成长与丹药", "Prepare · Growth and pills"), root.show_page.bind("characters"))
++			_button(box, tr2("前往培育", "Visit cultivation"), root.show_page.bind("cultivation"))
+ 		_button(box, tr2("下一程", "Next journey") if win else tr2("重新挑战", "Retry"), root.start_mission.bind(mini(root.last_mission + 1, 63) if win else root.last_mission, ""))
+ 	_button(box, tr2("回到行馆", "Return home"), root.show_page.bind("home"))
+ 
+diff --git a/tests/integration/campaign_combat_test.gd b/tests/integration/campaign_combat_test.gd
+index 9f15946..692f2a6 100644
+--- a/tests/integration/campaign_combat_test.gd
++++ b/tests/integration/campaign_combat_test.gd
+@@ -40,6 +40,8 @@ func _roundtrip(value: Dictionary) -> Dictionary:
+ 	return JSON.parse_string(JSON.stringify(value, "", true, true))
+ 
+ func _quiet(a) -> void:
++	# Synthetic radial skill fixtures are centered at the origin, independent of map entrance.
++	a.set_pos(a.state.player, Vector2.ZERO)
+ 	a.state.entities.clear()
+ 	a.state.projectiles.clear()
+ 	a.state.zones.clear()
+@@ -169,7 +171,7 @@ func _test_objectives() -> void:
+ 	for kind in ["SURVIVE","BREAK","CLEANSE","HUNT","ESCORT","BOSS"]:
+ 		var m: Dictionary = {}
+ 		for row in catalog.missions:
+-			if row.kind == kind:
++			if row.kind == kind and not row.get("chapter_c",false): # Generic objective fixture; C requires clue/encounter execution.
+ 				m = row
+ 				break
+ 		var a = _arena(m)
+@@ -181,9 +183,9 @@ func _test_objectives() -> void:
+ 		if kind == "SURVIVE":
+ 			a.state.elapsed = m.target_seconds
+ 			a.state.objective.elapsed = m.target_seconds
+-			a.advance(0.01, Vector2.ZERO)
++			a.advance(1.0 / 60, Vector2.ZERO)
+ 			a.set_pos(a.state.player, a.target_position(0))
+-			a.advance(0.01, Vector2.ZERO)
++			a.advance(1.0 / 60, Vector2.ZERO)
+ 		elif kind == "CLEANSE":
+ 			for i in int(m.target_count):
+ 				a.set_pos(a.state.player, a.target_position(i))
+@@ -192,7 +194,7 @@ func _test_objectives() -> void:
+ 			for i in int(m.target_count):
+ 				a.set_pos(a.state.player, a.target_position(i))
+ 				a.set_pos(a.state.objective, a.target_position(i))
+-				a.advance(0.01, Vector2.ZERO)
++				a.advance(1.0 / 60, Vector2.ZERO)
+ 		else:
+ 			for i in int(m.target_count):
+ 				var target: Dictionary = {}
+diff --git a/tests/integration/campaign_profile_test.gd b/tests/integration/campaign_profile_test.gd
+index 56202f0..8d9fc01 100644
+--- a/tests/integration/campaign_profile_test.gd
++++ b/tests/integration/campaign_profile_test.gd
+@@ -23,7 +23,7 @@ func _initialize() -> void:
+ 	_run.call_deferred()
+ 
+ func _catalog() -> Dictionary:
+-	var c := {"content_hash": "a".repeat(64), "missions": [], "characters": [{"id": "hero", "unlock_after": 0}, {"id": "sage", "unlock_after": 1}], "skills": [], "passives": [], "evolutions": [], "events": [], "pills": [{"id": "heal", "unlock_after": 0, "cost": 2, "stat": "max_hp", "amount": 10}], "achievements": [], "challenges": [], "tuning": {"progression_cost_base": 4, "progression_cost_step": 4, "profile_pill_cap": 99, "profile_replay_reward": 2, "profile_kills_per_page": 25, "profile_battle_reward_cap": 4, "profile_first_herbs": 3, "profile_kills_per_herb": 20, "profile_battle_herb_cap": 3}}
++	var c := {"content_hash": "a".repeat(64), "missions": [], "characters": [{"id": "hero", "unlock_after": 0}, {"id": "sage", "unlock_after": 1}], "skills": [], "passives": [], "evolutions": [], "events": [], "pills": [{"id": "heal", "unlock_after": 0, "cost": 2, "stat": "max_hp", "amount": 10}], "achievements": [], "challenges": [], "tuning": {"progression_unlock_completed": [0, 8, 24, 40, 56], "progression_cost_base": 4, "progression_cost_step": 4, "profile_pill_cap": 99, "profile_replay_reward": 2, "profile_kills_per_page": 25, "profile_battle_reward_cap": 4, "profile_first_herbs": 3, "profile_kills_per_herb": 20, "profile_battle_herb_cap": 3}}
+ 	for i in 64:
+ 		c.missions.append({"id": "m%d" % i, "unlock_after": i, "reward": 8})
+ 	for i in 60:
+@@ -172,7 +172,7 @@ func _test_boundaries(c: Dictionary) -> void:
+ 	var result: Dictionary = p.finish_run(false, {"kills": 50, "elite_kills": 2, "boss_kills": 1, "evolutions": 2, "events_taken": 3, "damage_taken": 2.5, "elapsed": 12.5, "level": 7})
+ 	_expect(result.status == "OK" and result.reward == 2 and p.data.completed == 0 and p.data.herbs == 2, "failure rewards actual contribution only")
+ 	_expect(p.data.stats.total_kills == 50 and p.data.stats.max_level == 7 and p.data.stats.damage_taken == 2.5 and p.data.stats.events_taken == 3 and p.data.stats.total_runs == 1 and p.data.stats.victories == 0, "Arena stats aliases")
+-	for i in 10:
++	for i in 56:
+ 		p.begin_run(i)
+ 		p.finish_run(true, {"kills": 100})
+ 	for i in 5:
+diff --git a/tools/campaign/build_catalog.py b/tools/campaign/build_catalog.py
+index 9147452..8d7e0c7 100644
+--- a/tools/campaign/build_catalog.py
++++ b/tools/campaign/build_catalog.py
+@@ -161,7 +161,7 @@ def build():
+     for i,r in enumerate(data['objectives']):r.update(name_en=objective_en[i],description_en=objective_desc[i])
+     for i,r in enumerate(data['progression_nodes']):
+         branch=i//5;rank=i%5+1
+-        r.update(name_en=['Edge','Vitality','Insight'][branch]+f' Rank {rank}',description=['永久伤害每级增加8%。','永久生命上限每级增加10。','永久拾取半径每级增加15。'][branch],description_en=['Permanently adds 8% damage per rank.','Permanently adds 10 maximum health per rank.','Permanently adds 15 pickup radius per rank.'][branch])
++        r.update(name=['锋意','体魄','采灵'][branch]+f'{rank}阶',name_en=['Edge','Vitality','Gathering'][branch]+f' Rank {rank}',unlock_after=[0,8,24,40,56][rank-1],description=['永久伤害每级增加8%。','永久生命上限每级增加10。','永久拾取半径每级增加15。'][branch],description_en=['Permanently adds 8% damage per rank.','Permanently adds 10 maximum health per rank.','Permanently adds 15 pickup radius per rank.'][branch])
+     screens=['Main Menu','Character and Mission Selection','Pill Preparation','Permanent Growth','Codex and Achievements','Battle HUD','Pause and Save','Mission Results','Settings and Controls','Save Recovery','Chapter Story and Ending']
+     screen_desc=['Start a new journey, continue, change settings or exit.','Review chapters, prerequisites and character strengths.','Cultivate and select a pill before starting.','Purchase permanent growth with earned pages.','Read discovered enemies, recipes and achievements.','Track objectives, health, build and resources.','Resume, save and exit, or abandon the current run.','Review rewards, retry or choose the next mission.','Adjust language, display, sound and controls.','Review save errors and explicitly choose recovery.','Read chapter discoveries and the final resolution.']
+     for i,r in enumerate(data['screens']):r.update(name_en=screens[i],description_en=screen_desc[i])
+@@ -173,13 +173,85 @@ def build():
+     for m in data['missions']:
+         m['first_grants']=[r['id'] for k in ['characters','skills','passives','evolutions','pills','events','chapters'] for r in data[k] if r['unlock_after']==m['ordinal']]
+     data['tuning']={'arena_half_size':[960,640],'enemy_cap':180,'projectile_cap':400,'pickup_cap':300,'player_hp':160.0,'player_speed':280.0,'player_damage':12.0,'spawn_interval':.8,'xp_base':2,'xp_step':1,'save_interval':60.0,'mission_enemy_scaling':.008,'active_slots':4,'passive_slots':4,'max_skill_level':5,'enemy_spawn_radius':700.0,'pickup_radius':70.0,'invulnerability_seconds':.65,'critical_multiplier':1.75,'cooldown_floor':.2,'difficulty_multipliers':[1.0,1.3,1.65],'progression_cost_base':4,'progression_cost_step':4,'progression_max_level':5,'progression_damage_per_level':.08,'progression_hp_per_level':10.0,'progression_pickup_per_level':15.0,'event_interval':35.0,'hazard_interval':7.0,'hazard_warning':1.3,'hazard_radius':95.0,'hazard_damage':4.0,'environment_damage':4.0,'normal_enemy_xp':3.0,'elite_enemy_xp':12.0,'boss_xp':24.0,'target_xp':6.0}
+-    data['tuning'].update(profile_pill_cap=99, profile_replay_reward=2, profile_kills_per_page=25, profile_battle_reward_cap=4, profile_first_herbs=3, profile_kills_per_herb=20, profile_battle_herb_cap=3)
++    data['tuning'].update(progression_unlock_completed=[0,8,24,40,56], profile_pill_cap=99, profile_replay_reward=2, profile_kills_per_page=25, profile_battle_reward_cap=4, profile_first_herbs=3, profile_kills_per_herb=20, profile_battle_herb_cap=3)
++    apply_chapter_one_b(data)
++    apply_chapter_one_c(data)
+     validate(data)
+     return data
+ 
+ 
++def apply_chapter_one_b(data):
++    trail = dict(start=[-720,0],route=[[-720,0],[-200,-320],[180,300],[720,0]],
++        obstacles=[dict(x=-420,y=90,radius=52),dict(x=-170,y=40,radius=65),dict(x=330,y=-120,radius=60)],
++        winds=[dict(id='W01',center=[-240,-180],size=[320,120],direction=1,forward=1.15,backward=.9),dict(id='W02',center=[260,180],size=[320,120],direction=-1,forward=1.15,backward=.9)],roots=[])
++    well = dict(start=[-720,0],route=[[-720,0],[-440,220],[480,100],[0,-300],[-720,0]],
++        obstacles=[dict(x=0,y=0,radius=80),dict(x=-230,y=-170,radius=48),dict(x=380,y=380,radius=48)],winds=[],
++        roots=[dict(center=p,radius=65,warning_ticks=72,active_ticks=120,rest_ticks=240,offset_ticks=i*144,damage=4) for i,p in enumerate([[0,-160],[300,100],[-320,180]])])
++    data['scenes'][0]['layout']=trail
++    data['scenes'][1]['layout']=well
++    data['scenes'][1].update(description='绕行井心与根区，在预警间隙选择安全路径。',description_en='Circle the well and cross root fields during safe intervals.')
++    for m in data['missions'][:8]:
++        m.update(scene_layout_id=m['scene_id'],wind_start_tick=2700 if m['ordinal']==1 else 0,tutorial=m['ordinal']==1,
++                 elite_ids=[],spawn_safe_radius=620,spawn_attempts=16)
++    def row(ids,sector,offset=0):
++        return dict(enemy_ids=['S1-N%02d'%n for n in ids],sector=sector,count=8,interval=75,offset=offset)
++    def stage(id,trigger,value,rows):return dict(id=id,trigger=trigger,value=value,rows=rows)
++    data['missions'][0].update(enemy_ids=['S1-N01'],target_positions=[[720,0]],encounter_stages=[
++        stage('LEARN_MOVE','ACTIVE_TICK',0,[row([1],2,120)]),
++        stage('LEARN_SIDES','ACTIVE_TICK',1200,[row([1],0),row([1],1,150)]),
++        stage('LEARN_WIND','ACTIVE_TICK',2700,[row([1],0),row([1],1,150),row([1],2,300)])],
++        briefing='学习移动、自动攻击、拾取与升级；45秒后风带开放，72秒后进入东侧撤离圈。',
++        briefing_en='Learn movement, automatic attacks, pickups and upgrades. Wind lanes open at 45s; enter the eastern exit after 72s.')
++    data['missions'][1].update(enemy_ids=['S1-N01','S1-N02'],target_positions=[[-380,-280],[80,300],[600,-140]],encounter_stages=[
++        stage('NORTH_FANGS','ANCHOR_PROGRESS',0,[row([1],0)]),
++        stage('SOUTH_SPITTERS','ANCHOR_PROGRESS',1,[row([2],1)]),
++        stage('TWO_SIDES','ANCHOR_PROGRESS',2,[row([1,2],2),row([1,2],3,90)])])
++    data['missions'][2].update(target_positions=trail['route'],encounter_stages=[
++        stage('SET_OUT','WAYPOINT',0,[row([1],2)]),
++        stage('NORTH_RIDGE','WAYPOINT',1,[row([2],0)]),
++        stage('SOUTH_BEND','WAYPOINT',2,[row([3],1)]),
++        stage('HOME_STRETCH','WAYPOINT',3,[row([1,3],3)])],
++        briefing='陪采药人经过四个路标；靠近才前进，可离队拦截远程与侧袭敌人。',
++        briefing_en='Escort the herbalist through four waypoints. Stay nearby to move; intercept ranged and flanking enemies, then return.')
++
++
++def apply_chapter_one_c(data):
++    def row(ids,sector,count=6,offset=0):
++        return dict(enemy_ids=ids,sector=sector,count=count,interval=75,offset=offset)
++    def stage(id,trigger,value,rows):return dict(id=id,trigger=trigger,value=value,rows=rows)
++    n=lambda *ids:['S1-N%02d'%i for i in ids]
++    for m in data['missions'][3:8]:
++        m.update(chapter_c=True,enemy_ids=n(1,2,3),elite_ids=[],encounter_stages=[])
++    m=data['missions'][3]
++    m.update(clues=[[-200,-320],[180,300],[720,0]],clue_radius=65,hunt_enemy_id='S1-E01',target_positions=[[680,-320]],
++        hunt_retry_ticks=60,event_ids=[r['id'] for r in data['events'][:3]],
++        hunt_charge=dict(warning_ticks=54,rush_ticks=42,rest_ticks=72,speed=620),
++        encounter_stages=[stage('CLUE_AMBUSH','CLUE_PROGRESS',1,[row(n(1),0)]),stage('TRAIL_SIDES','CLUE_PROGRESS',2,[row(n(2,3),1)])],
++        briefing='沿足迹依次寻找三处线索；首处可选择机缘，末处发现断枝兽。躲开直线预警，利用冲锋后的停顿反击。',
++        briefing_en='Follow three ordered clues. Choose an encounter at the first; reveal the beast at the last. Dodge the warned charge and counter during its rest.')
++    data['missions'][4].update(target_positions=[[-440,220],[480,100]],hold_seconds=6.6,
++        encounter_stages=[stage('CLEANSE_%d'%i,'CLEANSE_HALF',i,[row(n(1 if i<2 else 3),2 if i%2==0 else 3),row(n(2 if i<2 else 1),0,4,90)]) for i in range(4)],
++        briefing='清空两个净化圈并各累计停留6.6秒；开始净化和半程时会有有限增援。离圈或敌人靠近只暂停进度。',
++        briefing_en='Clear each circle and hold for 6.6s. Limited reinforcements arrive at the start and halfway. Leaving or nearby enemies pauses progress.')
++    data['missions'][5].update(elite_ids=['S1-E01'],target_positions=[[-720,0]],
++        encounter_stages=[stage('HOLD_%d'%i,'ACTIVE_TICK',t,[row(n(1,2) if i==0 else n(1,3) if i==1 else n(1,2,3),sector,8,sector*120) for sector in [0,1,2]]) for i,t in enumerate([0,1800,3600])]+[stage('ONE_ELITE','ACTIVE_TICK',3600,[row(['S1-E01'],3,1)])],
++        briefing='应对远程与侧袭交替的敌潮；60秒后出现一只断枝兽精英，92秒后进入西侧撤离圈。',
++        briefing_en='Face alternating ranged and flanking waves. One elite arrives after 60s; enter the western exit after 92s.')
++    data['missions'][6].update(close_roots=True,target_positions=[[0,-300],[480,100],[-440,220]],
++        encounter_stages=[stage('LOCK_%d'%i,'ANCHOR_PROGRESS',i,[row(n(1,2,3),i)]) for i in range(3)],
++        briefing='依次拆除三锚：永久关闭北、东、西南根区，包括尚未生效的预警。安全空间随拆锚扩大。',
++        briefing_en='Break three ordered anchors to permanently shut down north, east and southwest roots, including pending warnings.')
++    data['missions'][7].update(boss_chapter=dict(warning_ticks=54,cooldown_ticks=150,impact_radius=90,second_delay_ticks=30,root_radius=65,root_duration_ticks=150,root_distance=160),
++        encounter_stages=[stage('BEAST_GUARD','ACTIVE_TICK',0,[row(n(1,3),1,8)])],
++        briefing='击败伏岚古兽：扑袭、双落点追击、扑袭与根区围堵。沿预警留出的空隙移动并反击。',
++        briefing_en='Defeat the beast through pounce, double impact, then pounce with root containment. Use gaps in the warnings to counterattack.')
++    data['bosses'][0].update(phase_patterns=['pounce','pounce','pounce'],description='扑袭、双落点追击、扑袭与根区围堵；无额外无敌阶段。',description_en='Pounce, double impact, then pounce with roots; no added invulnerability phase.')
++
++
+ def validate(data):
+     expected={'chapters':8,'missions':64,'characters':8,'skills':24,'passives':24,'evolutions':16,'enemies':24,'elites':8,'bosses':9,'pills':12,'events':24,'challenges':24,'achievements':60}
++    gates=data['tuning']['progression_unlock_completed']
++    assert len(gates)==5 and all(type(g) is int and 0<=g<=64 for g in gates) and gates==sorted(gates)
+     all_ids=set()
+     for kind,count in expected.items():
+         assert len(data[kind])==count,(kind,len(data[kind]))

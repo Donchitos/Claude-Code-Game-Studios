@@ -2,6 +2,7 @@ class_name CampaignCatalog
 extends RefCounted
 ## Validated offline content for the independent CAMPAIGN_GAMEPLAY_V1 profile.
 
+const Encounter = preload("res://src/campaign/campaign_encounter.gd")
 const PATH := "res://assets/config/campaign_game.json"
 const COUNTS := {"chapters": 8, "missions": 64, "characters": 8, "skills": 24,
 	"passives": 24, "evolutions": 16, "enemies": 24, "elites": 8, "bosses": 9,
@@ -213,11 +214,24 @@ static func validate(data: Dictionary) -> Array[String]:
 	if not data.get("tuning") is Dictionary:
 		errors.append("missing tuning")
 	else:
+		var gates: Variant = data.tuning.get("progression_unlock_completed")
+		if not gates is Array or gates.size() != 5:
+			errors.append("invalid progression gates")
+		else:
+			var previous := -1
+			for gate in gates:
+				if not _integer(gate, 0, 64) or int(gate) < previous:
+					errors.append("invalid progression gates")
+				else:
+					previous = int(gate)
 		for field in ["enemy_cap", "projectile_cap", "pickup_cap", "player_hp", "player_speed", "player_damage", "spawn_interval", "xp_base", "xp_step", "save_interval", "mission_enemy_scaling"]:
 			_positive(data.tuning, field, errors)
 		var size: Variant = data.tuning.get("arena_half_size")
 		if not size is Array or size.size() != 2 or size[0] != 960 or size[1] != 640:
 			errors.append("arena dimensions")
+	if errors.is_empty():
+		for m in data.missions:
+			if not Encounter.valid_definition(data,m): errors.append("invalid encounter/layout: " + str(m.id))
 	return errors
 
 ## Finds a row by collection name and stable ID. Never resolves array positions.

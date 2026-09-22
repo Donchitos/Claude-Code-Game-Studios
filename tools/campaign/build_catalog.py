@@ -161,7 +161,7 @@ def build():
     for i,r in enumerate(data['objectives']):r.update(name_en=objective_en[i],description_en=objective_desc[i])
     for i,r in enumerate(data['progression_nodes']):
         branch=i//5;rank=i%5+1
-        r.update(name_en=['Edge','Vitality','Insight'][branch]+f' Rank {rank}',description=['永久伤害每级增加8%。','永久生命上限每级增加10。','永久拾取半径每级增加15。'][branch],description_en=['Permanently adds 8% damage per rank.','Permanently adds 10 maximum health per rank.','Permanently adds 15 pickup radius per rank.'][branch])
+        r.update(name=['锋意','体魄','采灵'][branch]+f'{rank}阶',name_en=['Edge','Vitality','Gathering'][branch]+f' Rank {rank}',unlock_after=[0,8,24,40,56][rank-1],description=['永久伤害每级增加8%。','永久生命上限每级增加10。','永久拾取半径每级增加15。'][branch],description_en=['Permanently adds 8% damage per rank.','Permanently adds 10 maximum health per rank.','Permanently adds 15 pickup radius per rank.'][branch])
     screens=['Main Menu','Character and Mission Selection','Pill Preparation','Permanent Growth','Codex and Achievements','Battle HUD','Pause and Save','Mission Results','Settings and Controls','Save Recovery','Chapter Story and Ending']
     screen_desc=['Start a new journey, continue, change settings or exit.','Review chapters, prerequisites and character strengths.','Cultivate and select a pill before starting.','Purchase permanent growth with earned pages.','Read discovered enemies, recipes and achievements.','Track objectives, health, build and resources.','Resume, save and exit, or abandon the current run.','Review rewards, retry or choose the next mission.','Adjust language, display, sound and controls.','Review save errors and explicitly choose recovery.','Read chapter discoveries and the final resolution.']
     for i,r in enumerate(data['screens']):r.update(name_en=screens[i],description_en=screen_desc[i])
@@ -173,13 +173,202 @@ def build():
     for m in data['missions']:
         m['first_grants']=[r['id'] for k in ['characters','skills','passives','evolutions','pills','events','chapters'] for r in data[k] if r['unlock_after']==m['ordinal']]
     data['tuning']={'arena_half_size':[960,640],'enemy_cap':180,'projectile_cap':400,'pickup_cap':300,'player_hp':160.0,'player_speed':280.0,'player_damage':12.0,'spawn_interval':.8,'xp_base':2,'xp_step':1,'save_interval':60.0,'mission_enemy_scaling':.008,'active_slots':4,'passive_slots':4,'max_skill_level':5,'enemy_spawn_radius':700.0,'pickup_radius':70.0,'invulnerability_seconds':.65,'critical_multiplier':1.75,'cooldown_floor':.2,'difficulty_multipliers':[1.0,1.3,1.65],'progression_cost_base':4,'progression_cost_step':4,'progression_max_level':5,'progression_damage_per_level':.08,'progression_hp_per_level':10.0,'progression_pickup_per_level':15.0,'event_interval':35.0,'hazard_interval':7.0,'hazard_warning':1.3,'hazard_radius':95.0,'hazard_damage':4.0,'environment_damage':4.0,'normal_enemy_xp':3.0,'elite_enemy_xp':12.0,'boss_xp':24.0,'target_xp':6.0}
-    data['tuning'].update(profile_pill_cap=99, profile_replay_reward=2, profile_kills_per_page=25, profile_battle_reward_cap=4, profile_first_herbs=3, profile_kills_per_herb=20, profile_battle_herb_cap=3)
+    data['tuning'].update(progression_unlock_completed=[0,8,24,40,56], profile_pill_cap=99, profile_replay_reward=2, profile_kills_per_page=25, profile_battle_reward_cap=4, profile_first_herbs=3, profile_kills_per_herb=20, profile_battle_herb_cap=3)
+    apply_chapter_one_b(data)
+    apply_chapter_one_c(data)
+    for m in data['missions'][:8]:
+        m.update(xp_base=6,xp_step=4,upgrade_interval_ticks=180,spawn_view_size=[1280,720],spawn_visual_margin=80)
+        if m['ordinal'] != 6:
+            m.update(pickup_attract_radius=320,pickup_attract_speed=600)
+    data['missions'][3]['clue_xp']=8
+    data['missions'][3]['briefing']+=' 每条线索释放8点悟性；靠近绿色光点即可吸引拾取。'
+    data['missions'][3]['briefing_en']+=' Each clue releases 8 XP; approach green motes to collect them.'
+    data['missions'][7]['boss_phase_xp']=18
+    data['missions'][7]['briefing']+=' 每次突破首领阶段释放18点悟性，可在战斗中完善构筑。'
+    data['missions'][7]['briefing_en']+=' Each boss phase break releases 18 XP to develop your build during combat.'
+    apply_chapter_one_g1(data)
+    apply_chapter_one_g2(data)
+    data['missions'][7]['boss_phase_entry_warning']=True
+    apply_chapter_two(data)
+    apply_chapter_three(data)
+    from late_chapters import apply
+    apply(data)
     validate(data)
     return data
 
 
+def apply_chapter_one_b(data):
+    trail = dict(start=[-720,0],route=[[-720,0],[-200,-320],[180,300],[720,0]],
+        obstacles=[dict(x=-420,y=90,radius=52),dict(x=-170,y=40,radius=65),dict(x=330,y=-120,radius=60)],
+        winds=[dict(id='W01',center=[-240,-180],size=[320,120],direction=1,forward=1.15,backward=.9),dict(id='W02',center=[260,180],size=[320,120],direction=-1,forward=1.15,backward=.9)],roots=[])
+    well = dict(start=[-720,0],route=[[-720,0],[-440,220],[480,100],[0,-300],[-720,0]],
+        obstacles=[dict(x=0,y=0,radius=80),dict(x=-230,y=-170,radius=48),dict(x=380,y=380,radius=48)],winds=[],
+        roots=[dict(center=p,radius=65,warning_ticks=72,active_ticks=120,rest_ticks=240,offset_ticks=i*144,damage=4) for i,p in enumerate([[0,-160],[300,100],[-320,180]])])
+    data['scenes'][0]['layout']=trail
+    data['scenes'][1]['layout']=well
+    data['scenes'][1].update(description='绕行井心与根区，在预警间隙选择安全路径。',description_en='Circle the well and cross root fields during safe intervals.')
+    for m in data['missions'][:8]:
+        m.update(scene_layout_id=m['scene_id'],wind_start_tick=2700 if m['ordinal']==1 else 0,tutorial=m['ordinal']==1,
+                 elite_ids=[],spawn_safe_radius=620,spawn_attempts=16)
+    def row(ids,sector,offset=0):
+        return dict(enemy_ids=['S1-N%02d'%n for n in ids],sector=sector,count=8,interval=75,offset=offset)
+    def stage(id,trigger,value,rows):return dict(id=id,trigger=trigger,value=value,rows=rows)
+    data['missions'][0].update(enemy_ids=['S1-N01'],target_positions=[[720,0]],encounter_stages=[
+        stage('LEARN_MOVE','ACTIVE_TICK',0,[row([1],2,120)]),
+        stage('LEARN_SIDES','ACTIVE_TICK',1200,[row([1],0),row([1],1,150)]),
+        stage('LEARN_WIND','ACTIVE_TICK',2700,[row([1],0),row([1],1,150),row([1],2,300)])],
+        briefing='学习移动、自动攻击、拾取与升级；45秒后风带开放，72秒后进入东侧撤离圈。',
+        briefing_en='Learn movement, automatic attacks, pickups and upgrades. Wind lanes open at 45s; enter the eastern exit after 72s.')
+    data['missions'][1].update(enemy_ids=['S1-N01','S1-N02'],target_positions=[[-380,-280],[80,300],[600,-140]],encounter_stages=[
+        stage('NORTH_FANGS','ANCHOR_PROGRESS',0,[row([1],0)]),
+        stage('SOUTH_SPITTERS','ANCHOR_PROGRESS',1,[row([2],1)]),
+        stage('TWO_SIDES','ANCHOR_PROGRESS',2,[row([1,2],2),row([1,2],3,90)])])
+    data['missions'][2].update(target_positions=trail['route'],encounter_stages=[
+        stage('SET_OUT','WAYPOINT',0,[row([1],2)]),
+        stage('NORTH_RIDGE','WAYPOINT',1,[row([2],0)]),
+        stage('SOUTH_BEND','WAYPOINT',2,[row([3],1)]),
+        stage('HOME_STRETCH','WAYPOINT',3,[row([1,3],3)])],
+        briefing='陪采药人经过四个路标；靠近才前进，可离队拦截远程与侧袭敌人。',
+        briefing_en='Escort the herbalist through four waypoints. Stay nearby to move; intercept ranged and flanking enemies, then return.')
+
+
+def apply_chapter_one_c(data):
+    def row(ids,sector,count=6,offset=0):
+        return dict(enemy_ids=ids,sector=sector,count=count,interval=75,offset=offset)
+    def stage(id,trigger,value,rows):return dict(id=id,trigger=trigger,value=value,rows=rows)
+    n=lambda *ids:['S1-N%02d'%i for i in ids]
+    for m in data['missions'][3:8]:
+        m.update(chapter_c=True,enemy_ids=n(1,2,3),elite_ids=[],encounter_stages=[])
+    m=data['missions'][3]
+    m.update(clues=[[-200,-320],[180,300],[720,0]],clue_radius=65,hunt_enemy_id='S1-E01',target_positions=[[680,-320]],
+        hunt_retry_ticks=60,event_ids=[r['id'] for r in data['events'][:3]],
+        hunt_charge=dict(warning_ticks=54,rush_ticks=42,rest_ticks=72,speed=620),
+        encounter_stages=[stage('CLUE_AMBUSH','CLUE_PROGRESS',1,[row(n(1),0)]),stage('TRAIL_SIDES','CLUE_PROGRESS',2,[row(n(2,3),1)])],
+        briefing='沿足迹依次寻找三处线索；首处可选择机缘，末处发现断枝兽。躲开直线预警，利用冲锋后的停顿反击。',
+        briefing_en='Follow three ordered clues. Choose an encounter at the first; reveal the beast at the last. Dodge the warned charge and counter during its rest.')
+    data['missions'][4].update(target_positions=[[-440,220],[480,100]],hold_seconds=6.6,
+        encounter_stages=[stage('CLEANSE_%d'%i,'CLEANSE_HALF',i,[row(n(1 if i<2 else 3),2 if i%2==0 else 3),row(n(2 if i<2 else 1),0,4,90)]) for i in range(4)],
+        briefing='清空两个净化圈并各累计停留6.6秒；开始净化和半程时会有有限增援。离圈或敌人靠近只暂停进度。',
+        briefing_en='Clear each circle and hold for 6.6s. Limited reinforcements arrive at the start and halfway. Leaving or nearby enemies pauses progress.')
+    data['missions'][5].update(elite_ids=['S1-E01'],target_positions=[[-720,0]],
+        encounter_stages=[stage('HOLD_%d'%i,'ACTIVE_TICK',t,[row(n(1,2) if i==0 else n(1,3) if i==1 else n(1,2,3),sector,8,sector*120) for sector in [0,1,2]]) for i,t in enumerate([0,900,1800,2700,3600])]+[stage('ONE_ELITE','ACTIVE_TICK',3600,[row(['S1-E01'],3,1)])],
+        briefing='应对远程与侧袭交替的敌潮；60秒后出现一只断枝兽精英，92秒后进入西侧撤离圈。',
+        briefing_en='Face alternating ranged and flanking waves. One elite arrives after 60s; enter the western exit after 92s.')
+    data['missions'][6].update(close_roots=True,target_positions=[[0,-300],[480,100],[-440,220]],
+        encounter_stages=[stage('LOCK_%d'%i,'ANCHOR_PROGRESS',i,[row(n(1,2,3),i)]) for i in range(3)],
+        briefing='依次拆除三锚：永久关闭北、东、西南根区，包括尚未生效的预警。安全空间随拆锚扩大。',
+        briefing_en='Break three ordered anchors to permanently shut down north, east and southwest roots, including pending warnings.')
+    data['missions'][7].update(boss_chapter=dict(warning_ticks=54,cooldown_ticks=150,impact_radius=90,second_delay_ticks=30,root_radius=65,root_duration_ticks=150,root_distance=160),
+        encounter_stages=[stage('BEAST_GUARD','ACTIVE_TICK',0,[row(n(1,3),1,8)])],
+        briefing='击败伏岚古兽：扑袭、双落点追击、扑袭与根区围堵。沿预警留出的空隙移动并反击。',
+        briefing_en='Defeat the beast through pounce, double impact, then pounce with root containment. Use gaps in the warnings to counterattack.')
+    data['bosses'][0].update(phase_patterns=['pounce','pounce','pounce'],description='扑袭、双落点追击、扑袭与根区围堵；无额外无敌阶段。',description_en='Pounce, double impact, then pounce with roots; no added invulnerability phase.')
+
+
+def apply_chapter_one_g1(data):
+    # Dispatch the next approach while the previous anchor is still actionable.
+    for index in [1,6]:
+        m=data['missions'][index]
+        for i,stage in enumerate(m['encounter_stages']):
+            stage['value']=max(0,i-1)
+            for row in stage['rows']:
+                row['interval']=45
+                row['offset']+=90 if i==1 else 45 if i==2 else 0
+        m['briefing']+=' 前往下一锚点的敌人会提前从侧面接近，留意来路。'
+        m['briefing_en']+=' Enemies approach the next anchor early from the flanks; watch the route.'
+
+
+def apply_chapter_one_g2(data):
+    escort=data['missions'][2]
+    old=escort['encounter_stages']
+    escort['encounter_stages']=[old[0],old[1],old[3]]
+    for stage,value in zip(escort['encounter_stages'],[0,2,3]):
+        stage['value']=value
+        for row in stage['rows']: row['interval']=45
+    escort['encounter_stages'][1]['rows'].append(dict(enemy_ids=['S1-N02'],sector=1,count=4,interval=45,offset=45))
+    escort['encounter_stages'][2]['rows'].append(dict(enemy_ids=['S1-N03'],sector=0,count=4,interval=45,offset=30))
+    escort['briefing']='陪采药人经过四个路标；起步、北段转弯与南段归路分别出现敌人。靠近才前进，可离队拦截后返回。'
+    escort['briefing_en']='Escort the herbalist through four waypoints. Enemies arrive at departure, the north turn and the southern return. Stay nearby to move; intercept enemies and return.'
+    cleanse=data['missions'][4]
+    for i,stage in enumerate(cleanse['encounter_stages']):
+        stage['value']=(i//2)*2
+        for row in stage['rows']:
+            row['interval']=45
+            row['offset']+=30 if i%2 else 0
+    cleanse['briefing']='清空两个净化圈并各累计停留6.6秒；开始净化后两组有限增援会交错接近。离圈或敌人靠近只暂停进度。'
+    cleanse['briefing_en']='Clear each circle and hold for 6.6s. Two limited reinforcement groups approach in sequence after cleansing begins. Leaving or nearby enemies pauses progress.'
+
+
+def apply_chapter_two(data):
+    ridge=dict(start=[-720,0],route=[[-720,0],[-360,-240],[200,-240],[700,0]],
+        obstacles=[dict(x=-350,y=130,radius=70),dict(x=80,y=100,radius=80),dict(x=450,y=280,radius=60)],winds=[],
+        roots=[dict(center=p,radius=75,warning_ticks=78,active_ticks=90,rest_ticks=252,offset_ticks=i*140,damage=4) for i,p in enumerate([[-360,-240],[180,-240],[580,0]])])
+    shaft=dict(start=[-720,0],route=[[-720,0],[-400,240],[0,240],[380,240],[720,0]],
+        obstacles=[dict(x=-320,y=-140,radius=65),dict(x=100,y=-160,radius=80),dict(x=440,y=-160,radius=60)],winds=[],
+        roots=[dict(center=p,radius=75,warning_ticks=78,active_ticks=90,rest_ticks=252,offset_ticks=i*140,damage=4) for i,p in enumerate([[-400,240],[0,240],[380,240]])])
+    data['scenes'][2]['layout']=ridge
+    data['scenes'][3]['layout']=shaft
+    for scene in data['scenes'][2:4]:
+        scene.update(description='沿矿轨穿越错峰喷口；橙色圈先预警，再喷发。',description_en='Follow mine rails across staggered vents. Orange rings warn before eruption.')
+    def wave(label,trigger,value,ids,sector,count=8,offset=0):
+        return dict(id=label,trigger=trigger,value=value,rows=[dict(enemy_ids=['S1-N%02d'%n for n in ids],sector=sector,count=count,interval=45,offset=offset)])
+    for m in data['missions'][8:16]:
+        m.update(chapter_two=True,scene_layout_id=m['scene_id'],wind_start_tick=0,tutorial=False,elite_ids=[],
+            spawn_safe_radius=620,spawn_attempts=16,xp_base=6,xp_step=4,upgrade_interval_ticks=180,
+            spawn_view_size=[1280,720],spawn_visual_margin=80,pickup_attract_radius=320,pickup_attract_speed=600,
+            enemy_ids=['S1-N04','S1-N05','S1-N06'])
+    data['missions'][8].update(target_positions=[[720,0]],encounter_stages=[wave('ASH_%d'%i,'ACTIVE_TICK',t,[5] if i==0 else [4,5] if i==1 else [4,5,6],i%4) for i,t in enumerate([0,600,1200,1800,2400,3000,3600])],briefing='在灰翼与背炉群中坚持79秒，再进入东侧撤离圈。沿矿轨绕开橙色喷口预警。',briefing_en='Survive 79 seconds, then reach the east exit. Dodge orange vent warnings along the rails.')
+    for index,layout in [(9,ridge),(14,shaft)]:
+        data['missions'][index].update(thermal_anchors=True,target_positions=[r['center'] for r in layout['roots']],encounter_stages=[wave('PIPE_%d'%i,'ANCHOR_PROGRESS',max(0,i-1),[4,5,6],i,8,i*45) for i in range(3)])
+    data['missions'][9].update(briefing='依次拆除三座喷口控制器；每座永久关闭对应喷口，包括正在预警的喷发。',briefing_en='Break the three controls in order. Each permanently shuts its vent, including pending warnings.')
+    data['missions'][10].update(escort_label='冷却匣',escort_label_en='Cooling casket',target_positions=ridge['route'],encounter_stages=[wave('CASKET_%d'%i,'WAYPOINT',v,[4,5] if i<2 else [5,6],i,8) for i,v in enumerate([0,2,3])],briefing='护送冷却匣沿北侧矿轨通过四个路标。靠近才前进，喷口预警期间可离队清理侧袭。',briefing_en='Escort the cooling casket through four north-rail waypoints. Stay close to move; intercept flankers during vent warnings.')
+    data['missions'][11].update(hunt_enemy_id='S1-E02',hunt_phase_xp=8,target_positions=[[520,-220]],encounter_stages=[wave('WARDEN_ESCORT','ACTIVE_TICK',0,[4,6],2),wave('WARDEN_FLANK','ACTIVE_TICK',360,[5],0,6)],briefing='击败标记的熔脊行者。它沿途留下预警热迹，绕开热迹并在转向时反击；每次突破生命阶段获得8点悟性。',briefing_en='Defeat the marked Furnace Warden. Circle its warned heat trail and counter while it turns. Each health phase break grants 8 XP.')
+    data['elites'][1].update(behavior='trail',attack_cooldown=2.4,description='追击并留下预警热迹；不是第一章断枝兽。',description_en='Pursues and leaves warned thermal trails.')
+    data['missions'][12].update(target_positions=[[-520,0],[520,0]],encounter_stages=[wave('ASH_CLEANSE_%d'%i,'CLEANSE_HALF',i*2,[4,5,6],i,8) for i in range(2)],briefing='清空两个炉灰圈并各累计停留7.2秒。每圈开始时有有限增援；离圈或敌人靠近暂停进度。',briefing_en='Clear two ash circles and hold each for 7.2 seconds. Limited reinforcements arrive when cleansing starts; leaving or nearby enemies pauses progress.')
+    data['missions'][13].update(escort_label='炉工',escort_label_en='Furnace workers',rest_waypoint=3,target_positions=shaft['route'],encounter_stages=[wave('WORKERS_%d'%i,'WAYPOINT',v,[4,5] if i==0 else [5,6],i,8) for i,v in enumerate([0,2,3,4])],briefing='护送炉工通过五个路标。抵达中段后暂停整备，可选稳妥或冒险机缘，再继续撤离。',briefing_en='Escort workers through five waypoints. Pause at the midpoint for a safe or risky encounter, then continue evacuation.')
+    data['missions'][14].update(briefing='任意顺序切断三根燃芯管；对应喷口立即关闭，尚未关闭的喷口保持原有预警节拍。按危险区域选择先后。',briefing_en='Cut three fuel pipes in any order. Each shuts its matching vent immediately; remaining vents retain their warning cycle. Choose which danger to remove first.')
+    data['missions'][15].update(target_positions=[[480,0]],furnace_boss=dict(closed_ticks=180,open_ticks=150,closed_multiplier=.35,warning_ticks=78,cooldown_ticks=150,phase_xp=18),encounter_stages=[wave('FURNACE_GUARD','ACTIVE_TICK',0,[4,6],1)],briefing='炉心巨傀关门3秒减伤，开门2.5秒恢复全额伤害。三阶段依次使用单喷发、双喷发、三向封路；橙圈完整预警后才生效；每次突破阶段获得18点悟性。',briefing_en='The furnace closes for 3 seconds with reduced damage, then opens for 2.5 seconds at full damage. Three phases use one, two, then three warned eruptions. Each phase break grants 18 XP.')
+    data['bosses'][1].update(phase_patterns=['eruption','eruption','eruption'],description='开闭炉门形成输出窗口，生命降低时增加错位喷发。',description_en='Cycling furnace doors create damage windows; lower health adds offset eruptions.')
+
+
+def apply_chapter_three(data):
+    harbor=dict(start=[-720,0],route=[[-720,0],[-380,220],[140,60],[720,0]],
+        obstacles=[dict(x=-350,y=-140,radius=70),dict(x=-80,y=-80,radius=60),dict(x=340,y=240,radius=70)],winds=[],
+        roots=[dict(center=p,radius=80,warning_ticks=90,active_ticks=150,rest_ticks=210,offset_ticks=i*150,damage=4) for i,p in enumerate([[-380,340],[140,-60],[480,-40]])])
+    court=dict(start=[-720,0],route=[[-720,0],[-420,-220],[0,220],[420,-220],[720,0]],
+        obstacles=[dict(x=-200,y=-350,radius=60),dict(x=200,y=350,radius=60),dict(x=0,y=-80,radius=55)],winds=[],
+        roots=[dict(center=p,radius=80,warning_ticks=90,active_ticks=150,rest_ticks=210,offset_ticks=i*150,damage=4) for i,p in enumerate([[-420,-220],[0,220],[420,-220]])])
+    data['scenes'][4]['layout']=harbor
+    data['scenes'][5]['layout']=court
+    for scene in data['scenes'][4:6]:
+        scene.update(description='涨落潮显露不同安全通路；蓝色圈先预警，再涨水。',description_en='Tides shift the safe paths. Blue rings warn before the surge.')
+    def wave(label,trigger,value,ids,sector,count=8,offset=0):
+        return dict(id=label,trigger=trigger,value=value,rows=[dict(enemy_ids=['S1-N%02d'%n for n in ids],sector=sector,count=count,interval=45,offset=offset)])
+    for m in data['missions'][16:24]:
+        m.update(chapter_three=True,scene_layout_id=m['scene_id'],wind_start_tick=0,tutorial=False,elite_ids=[],
+            spawn_safe_radius=620,spawn_attempts=16,xp_base=6,xp_step=4,upgrade_interval_ticks=180,
+            spawn_view_size=[1280,720],spawn_visual_margin=80,pickup_attract_radius=320,pickup_attract_speed=600)
+    data['missions'][16].update(target_positions=[[720,0]],encounter_stages=[wave('TIDE_%d'%i,'ACTIVE_TICK',t,[8] if i==0 else [7,8] if i==1 else [7,8,9],i%4) for i,t in enumerate([0,600,1200,1800,2400,3000,3600])],briefing='在潮蟹与汲水灵群中坚持86秒；三片潮池错峰翻涌，随蓝色预警更换安全滩，再进入东侧撤离圈。',briefing_en='Survive 86 seconds; three staggered tide pools force you to move between shoals on the blue warnings, then reach the east exit.')
+    data['missions'][17].update(hunt_enemy_id='S1-E03',hunt_phase_xp=8,target_positions=[[520,-220]],encounter_stages=[wave('LEDGER_AHEAD','ACTIVE_TICK',0,[7,8],2),wave('LEDGER_FLANK','ACTIVE_TICK',360,[7],0,6)],briefing='击败携账册的覆潮祭卫；蟹甲护卫在前方与侧翼拦路。它潜地蓄水、出水爆发，出水窗口内输出；每次突破生命阶段获得8点悟性并打断其回潜。',briefing_en='Defeat the ledger-carrying Sunken Tide Warden while crab guards block the lanes ahead and to the flank. It dives to recharge and bursts on surfacing; strike while it is up. Each health phase break grants 8 XP and staggers its dive.')
+    data['missions'][18].update(escort_label='渡船',escort_label_en='Ferry',rest_waypoint=2,escort_hp=660.0,target_positions=harbor['route'],encounter_stages=[wave('FERRY_%d'%i,'WAYPOINT',v,[7] if i==0 else [7,8] if i==1 else [8,9],i,8 if i<2 else 6) for i,v in enumerate([0,2,3])],briefing='护送渡船沿旧港航路通过四个路标。靠近才前进；潮池涨水时先离队等待，中段停靠可选稳妥或冒险机缘，再继续开船。',briefing_en='Escort the ferry through four harbor waypoints. Stay close to move; wait out surging flats, choose a safe or risky encounter at the midpoint stop, then sail on.')
+    data['missions'][19].update(target_positions=[[-520,0],[440,60]],encounter_stages=[wave('HARBOR_CLEANSE_%d'%i,'CLEANSE_HALF',i*2,[7,8,9],i,8) for i in range(2)],briefing='清空两个净化圈并各累计停留7.8秒。南圈与潮池相叠：涨水时退到潮池远端的月牙区，月牙区可全程停留。',briefing_en='Clear two circles and hold each for 7.8 seconds. The south circle overlaps a tide pool: fall back to the far crescent during surges; the crescent is safe to hold throughout.')
+    data['missions'][20].update(tide_flats=True,target_positions=[r['center'] for r in court['roots']],encounter_stages=[wave('SLUICE_%d'%i,'ANCHOR_PROGRESS',max(0,i-1),[7,8,9],i,8,i*45) for i in range(3)],briefing='依次拆除三座水闸印；每拆一座，对应潮池立即失去休潮、永久翻涌。趁预警期离开池区再拆下一座；与关闭热喷口相反，本章安全空间随拆印逐步递减。',briefing_en='Break the three sluice seals in order. Each removes its flat\'s rest phase for good — leave the flat during the warning after each break. Unlike closing thermal vents, safe ground here shrinks as you progress.')
+    data['missions'][21].update(target_positions=[[-720,0]],encounter_stages=[wave('FIN_%d'%i,'ACTIVE_TICK',t,[8,9] if i==0 else [7,8,9],i%4) for i,t in enumerate([0,600,1200,1800,2400,3000,3600,4200,4800])],briefing='在潜鳍兽与汲水灵群中坚持106秒；地面跃出预警与直线喷流交替，再从西侧撤离。',briefing_en='Survive 106 seconds through burrowing fins and water jets, then reach the west exit.')
+    # M03-07 calibration (2026-09-17): alternate-route arrival died 5/8 seeds pre-fix
+    # (level-2 overwhelm before the first upgrade tick at 180). Rearguard fins drop
+    # 8->5 and start 450 ticks in, spaced 60 ticks apart; the warden itself stays
+    # stronger than M03-02's (enemy_scaling 1.176 vs 1.136).
+    data['missions'][22].update(hunt_enemy_id='S1-E03',hunt_phase_xp=8,target_positions=[[540,-160]],encounter_stages=[wave('WARDEN_REAR','ACTIVE_TICK',0,[9],3,5,450),wave('WARDEN_DUEL','ACTIVE_TICK',600,[7,8],1,6)],briefing='与覆潮祭卫决斗；后路伏击不断。出水窗口内输出，每次阶段突破打断回潜蓄水并获得8点悟性。',briefing_en='Duel the Sunken Tide Warden while rearguard ambushes cut off your retreat. Strike while it surfaces; each phase break staggers its dive and grants 8 XP.')
+    data['missions'][22]['encounter_stages'][0]['rows'][0]['interval']=60
+    data['missions'][23].update(target_positions=[[500,-80]],tide_boss=dict(warning_ticks=78,cooldown_ticks=150,phase_xp=18,tooth_radius=34,tooth_spacing=215,arm_length=1250),encounter_stages=[wave('TIDE_GUARD','ACTIVE_TICK',0,[8,9],1)],briefing='沉潮双鳍在两侧交替竖起潮墙，齿列之间留有穿越窗口；生命降低时加密齿列，末期双侧齐发并加池环与辐射弹幕。每次突破阶段获得18点悟性。',briefing_en='The Twin Fins raise tide walls on alternating sides with crossing gaps between the teeth; lower health adds teeth, then both sides at once with pool rings and a radial barrage. Each phase break grants 18 XP.')
+    data['elites'][2].update(description='潜地蓄水、出水爆发；出水期间可被伤害。阶段突破会打断回潜。',description_en='Dives to recharge and bursts on surfacing; vulnerable while up. Phase breaks stagger its dive.')
+    data['bosses'][2].update(description='两侧交替潮墙，齿间保留穿越窗口；生命降低时加密齿列，末期双侧齐发并加池环与辐射弹幕。',description_en='Alternating side tide walls with crossing gaps between teeth; lower health adds teeth, then both sides at once with pool rings and a radial barrage.')
+
+
 def validate(data):
     expected={'chapters':8,'missions':64,'characters':8,'skills':24,'passives':24,'evolutions':16,'enemies':24,'elites':8,'bosses':9,'pills':12,'events':24,'challenges':24,'achievements':60}
+    gates=data['tuning']['progression_unlock_completed']
+    assert len(gates)==5 and all(type(g) is int and 0<=g<=64 for g in gates) and gates==sorted(gates)
     all_ids=set()
     for kind,count in expected.items():
         assert len(data[kind])==count,(kind,len(data[kind]))

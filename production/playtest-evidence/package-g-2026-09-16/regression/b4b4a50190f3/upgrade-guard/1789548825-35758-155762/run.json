@@ -1,0 +1,10 @@
+{
+	"arguments": [
+		"--campaign-validation",
+		"--evidence-root=res://production/playtest-evidence/package-g-2026-09-16/regression"
+	],
+	"content_hash": "b4b4a50190f3bf99b182956bc79d0d98c31a3777077de800bd7f483c0a6c5cbc",
+	"engine": "4.7.1-stable (official)",
+	"scope": "automated test evidence, not human or release certification",
+	"suite": "upgrade-guard"
+}

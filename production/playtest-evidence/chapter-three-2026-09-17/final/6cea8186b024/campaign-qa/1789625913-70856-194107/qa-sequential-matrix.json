@@ -1,0 +1,356 @@
+{
+	"attempted": 4,
+	"catalog_hash": "6cea8186b024592bf3edb298df02400964c246eeab4cb6e475afdbfd3a8fe35a",
+	"matrix": [
+		{
+			"choices": [
+				"S1-A01",
+				"S1-A01",
+				"S1-A01",
+				"S1-A01",
+				"S1-P01",
+				"S1-P01"
+			],
+			"elapsed": 74.8333333333304,
+			"finished": true,
+			"kind": "SURVIVE",
+			"loadout": {
+				"branches": [
+					0,
+					0,
+					0
+				],
+				"challenge_id": "",
+				"character_id": "S1-C01",
+				"completed": 0,
+				"difficulty": 0,
+				"pill_id": ""
+			},
+			"mission": "S1-M01-01",
+			"objective": {
+				"completed_ids": [
+					"S1-M01-01:T1"
+				],
+				"completion_order": [
+					"S1-M01-01:T1"
+				],
+				"elapsed": 74.8333333333304,
+				"escort_hp": 490.0,
+				"extraction_ready": true,
+				"extraction_was_inside": true,
+				"finished": true,
+				"hold": 0.0,
+				"kind": "SURVIVE",
+				"player_alive": true,
+				"pressure": 0.0,
+				"progress": 1,
+				"reason": "extracted",
+				"victory": true,
+				"waypoint": 0,
+				"x": 0.0,
+				"y": 0.0
+			},
+			"passives": {
+				"S1-P01": 2
+			},
+			"persisted_completed": 1,
+			"player": {
+				"facing": 0.0,
+				"hp": 160.0,
+				"invulnerable": 0.0,
+				"kills": 34,
+				"level": 7,
+				"max_hp": 160.0,
+				"x": 631.977416992188,
+				"xp": 6.0,
+				"y": 18.0789222717285
+			},
+			"reason": "extracted",
+			"scope": "Unmodified production catalog, real new-profile sequential unlock and earned branch purchases",
+			"seed": 53510336,
+			"skills": {
+				"S1-A01": 5
+			},
+			"stats": {
+				"boss_kills": 0,
+				"damage_dealt": 1433.5488,
+				"damage_taken": 0.0,
+				"elapsed": 74.8333333333304,
+				"elite_kills": 0,
+				"event_reward": 0,
+				"events_taken": 0,
+				"evolution_ids": [],
+				"evolutions": 0,
+				"kills": 34,
+				"level": 7,
+				"risk_choices": 0,
+				"safe_choices": 0,
+				"skills_used": [
+					"S1-A01"
+				]
+			},
+			"victory": true,
+			"wall_ms": 596
+		},
+		{
+			"choices": [
+				"S1-A01",
+				"S1-A01",
+				"S1-A01",
+				"S1-A01"
+			],
+			"elapsed": 15.2333333333337,
+			"finished": true,
+			"kind": "BREAK",
+			"loadout": {
+				"branches": [
+					1,
+					1,
+					1
+				],
+				"challenge_id": "",
+				"character_id": "S1-C01",
+				"completed": 1,
+				"difficulty": 0,
+				"pill_id": ""
+			},
+			"mission": "S1-M01-02",
+			"objective": {
+				"completed_ids": [
+					"S1-M01-02:T1",
+					"S1-M01-02:T2",
+					"S1-M01-02:T3"
+				],
+				"completion_order": [
+					"S1-M01-02:T1",
+					"S1-M01-02:T2",
+					"S1-M01-02:T3"
+				],
+				"elapsed": 15.2333333333337,
+				"escort_hp": 490.0,
+				"extraction_ready": false,
+				"extraction_was_inside": false,
+				"finished": true,
+				"hold": 0.0,
+				"kind": "BREAK",
+				"player_alive": true,
+				"pressure": 0.0,
+				"progress": 3,
+				"reason": "anchors_destroyed",
+				"victory": true,
+				"waypoint": 0,
+				"x": 0.0,
+				"y": 0.0
+			},
+			"passives": {},
+			"persisted_completed": 2,
+			"player": {
+				"facing": -0.785398304462433,
+				"hp": 170.0,
+				"invulnerable": 0.0,
+				"kills": 18,
+				"level": 5,
+				"max_hp": 170.0,
+				"x": 558.051513671875,
+				"xp": 6.0,
+				"y": -364.887115478516
+			},
+			"reason": "anchors_destroyed",
+			"scope": "Unmodified production catalog, real new-profile sequential unlock and earned branch purchases",
+			"seed": 2101610336,
+			"skills": {
+				"S1-A01": 5
+			},
+			"stats": {
+				"boss_kills": 0,
+				"damage_dealt": 1062.72,
+				"damage_taken": 0.0,
+				"elapsed": 15.2333333333337,
+				"elite_kills": 0,
+				"event_reward": 0,
+				"events_taken": 0,
+				"evolution_ids": [],
+				"evolutions": 0,
+				"kills": 18,
+				"level": 5,
+				"risk_choices": 0,
+				"safe_choices": 0,
+				"skills_used": [
+					"S1-A01"
+				]
+			},
+			"victory": true,
+			"wall_ms": 486
+		},
+		{
+			"choices": [
+				"S1-A01",
+				"S1-A01",
+				"S1-A01",
+				"S1-A01"
+			],
+			"elapsed": 20.1833333333335,
+			"finished": true,
+			"kind": "ESCORT",
+			"loadout": {
+				"branches": [
+					1,
+					1,
+					1
+				],
+				"challenge_id": "",
+				"character_id": "S1-C01",
+				"completed": 2,
+				"difficulty": 0,
+				"pill_id": ""
+			},
+			"mission": "S1-M01-03",
+			"objective": {
+				"completed_ids": [
+					"S1-M01-03:T1",
+					"S1-M01-03:T2",
+					"S1-M01-03:T3",
+					"S1-M01-03:T4"
+				],
+				"completion_order": [
+					"S1-M01-03:T1",
+					"S1-M01-03:T2",
+					"S1-M01-03:T3",
+					"S1-M01-03:T4"
+				],
+				"elapsed": 20.1833333333335,
+				"escort_hp": 487.968,
+				"extraction_ready": false,
+				"extraction_was_inside": false,
+				"finished": true,
+				"hold": 0.0,
+				"kind": "ESCORT",
+				"player_alive": true,
+				"pressure": 0.0,
+				"progress": 4,
+				"reason": "escort_arrived",
+				"victory": true,
+				"waypoint": 4,
+				"x": 637.129577636719,
+				"y": 32.0158538818359
+			},
+			"passives": {},
+			"persisted_completed": 3,
+			"player": {
+				"facing": 0.0,
+				"hp": 170.0,
+				"invulnerable": 0.0,
+				"kills": 18,
+				"level": 5,
+				"max_hp": 170.0,
+				"x": 564.22021484375,
+				"xp": 6.0,
+				"y": 46.1219863891602
+			},
+			"reason": "escort_arrived",
+			"scope": "Unmodified production catalog, real new-profile sequential unlock and earned branch purchases",
+			"seed": 2167508213,
+			"skills": {
+				"S1-A01": 5
+			},
+			"stats": {
+				"boss_kills": 0,
+				"damage_dealt": 796.2624,
+				"damage_taken": 0.0,
+				"elapsed": 20.1833333333335,
+				"elite_kills": 0,
+				"event_reward": 0,
+				"events_taken": 0,
+				"evolution_ids": [],
+				"evolutions": 0,
+				"kills": 18,
+				"level": 5,
+				"risk_choices": 0,
+				"safe_choices": 0,
+				"skills_used": [
+					"S1-A01"
+				]
+			},
+			"victory": true,
+			"wall_ms": 457
+		},
+		{
+			"choices": [],
+			"elapsed": 395.016666666636,
+			"finished": true,
+			"kind": "HUNT",
+			"loadout": {
+				"branches": [
+					1,
+					1,
+					1
+				],
+				"challenge_id": "",
+				"character_id": "S1-C01",
+				"completed": 3,
+				"difficulty": 0,
+				"pill_id": ""
+			},
+			"mission": "S1-M01-04",
+			"objective": {
+				"completed_ids": [],
+				"completion_order": [],
+				"elapsed": 395.016666666636,
+				"escort_hp": 490.0,
+				"extraction_ready": false,
+				"extraction_was_inside": false,
+				"finished": true,
+				"hold": 0.0,
+				"kind": "HUNT",
+				"player_alive": true,
+				"pressure": 0.0,
+				"progress": 0,
+				"reason": "timeout",
+				"victory": false,
+				"waypoint": 0,
+				"x": 0.0,
+				"y": 0.0
+			},
+			"passives": {},
+			"persisted_completed": 3,
+			"player": {
+				"facing": 0.0,
+				"hp": 170.0,
+				"invulnerable": 0.0,
+				"kills": 0,
+				"level": 1,
+				"max_hp": 170.0,
+				"x": 454.786376953125,
+				"xp": 0.0,
+				"y": -274.615783691406
+			},
+			"reason": "timeout",
+			"scope": "Unmodified production catalog, real new-profile sequential unlock and earned branch purchases",
+			"seed": 3562126097,
+			"skills": {
+				"S1-A01": 1
+			},
+			"stats": {
+				"boss_kills": 0,
+				"damage_dealt": 0.0,
+				"damage_taken": 0.0,
+				"elapsed": 395.016666666636,
+				"elite_kills": 0,
+				"event_reward": 0,
+				"events_taken": 0,
+				"evolution_ids": [],
+				"evolutions": 0,
+				"kills": 0,
+				"level": 1,
+				"risk_choices": 0,
+				"safe_choices": 0,
+				"skills_used": [
+					"S1-A01"
+				]
+			},
+			"victory": false,
+			"wall_ms": 1746
+		}
+	],
+	"wins": 3
+}

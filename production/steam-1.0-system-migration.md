@@ -1,5 +1,29 @@
 # Steam 1.0 系统迁移与首批工作包
 
+> 2026-09-22 第四至八章本地交付：40关有限遭遇、区域精英、场地关闭、六种Boss与护送路标XP已实现。最终安全C01和逐章角色备战风险两路线各64/64、结局重启通过，共1235次磁盘恢复/213461tick对照；24套回归、实际PCK续玩/第三章旧包零写入兼容通过。C03固定成长压力99/120，不宣称全角色平衡或商业发行完成；新玩家SKIPPED_BY_USER，battle_ready=false。 见[交付证据](playtest-evidence/2026-09-22-final-chapters.md)与[ADR-0012](../docs/architecture/adr-0012-late-campaign-encounters.md)。仅Campaign增量，不改变下方legacy ABI或设计评审裁决。
+
+> 2026-09-16 G交付：按G1→G2→G3连续完成02/07提前来敌、03三路段、05增援错峰、08阶段预警；三专家限定APPROVED WITH SUGGESTIONS，无阻塞项。两路线8/8，151恢复、25850逐tick对比；Boss130/0，真实F→G PCK兼容与G图形双槽恢复通过。入口build/package-g-2026-09-16/开始G版试玩.command；证据production/playtest-evidence/2026-09-16-package-g.md。新玩家SKIPPED_BY_USER，D总OPEN / In Review，battle_ready=false。下方旧包状态为历史。
+
+> 2026-09-16 F后续：合法胜利/超时前态到终态双槽恢复、结算同步IO_ERROR后一次结算已补齐，独立QA关闭F遗留覆盖建议。新增节奏遥测定位02/07遭遇展开滞后、03阶段重叠、08晚预警；下一包方案design/chapter-one-content-expansion.md为AUTHOR_PLAN / NOT_IMPLEMENTED。运行源码/目录/F包未改；证据production/playtest-evidence/2026-09-16-package-f-followup.md，新玩家SKIPPED_BY_USER，battle_ready=false。
+
+> 2026-09-16 F完成：三项E建议整改及短关经验调整已实现；三专家复核后综合APPROVED WITH SUGGESTIONS（仅F增量），无阻塞项。两条首章自动路线8/8，152次磁盘恢复、26198次逐tick比较。入口build/package-f-2026-09-16/开始F版试玩.command，报告production/playtest-evidence/2026-09-16-package-f.md。新玩家SKIPPED_BY_USER，D总OPEN / In Review，battle_ready=false。下方旧包状态为历史。
+
+> 2026-09-16 E包实施：首章6/4经验曲线、180 active tick升级间隔/积压提示、CAMPAIGN_CHAPTER1_V3恢复、最大视野与动态屏外生成已完成本地验证；06五段敌潮支持一条合法自然进化路径。两套新档首章8/8、共126次磁盘恢复、21446tick分支对照通过；短关升级次数仍低于观察带。新玩家试玩按用户决定SKIPPED_BY_USER，独立复审PENDING，D总OPEN / In Review，battle_ready=false。当前入口build/package-e-2026-09-16/开始E版试玩.command；证据production/playtest-evidence/2026-09-16-package-e.md，合同docs/architecture/adr-0009-chapter-one-pacing-and-view.md。下方延期项/旧包状态为历史，本条优先。
+
+> 2026-09-16 用户范围决定：跳过至少3名新玩家探索性试玩，不再作为当前首章迭代的前置门槛；该项记为 SKIPPED_BY_USER，不记为通过。既有证据仍为P00本人自报1名、新玩家0，未新增理解/乐趣/时长验证。下一工程入口：首章XP实验、3 active秒升级间隔与积压提示、任意窗口视野外生成，随后补恢复矩阵及独立复审。D总仍OPEN / In Review，battle_ready=false；不改写历史独立裁决。
+
+> 2026-09-15 D整改独立复审：3名真实专家全部返回后fresh资深综合APPROVED WITH SUGGESTIONS，仅限D-S01～04；四项原缺陷限定关闭，隔离Campaign开发持久档可开展新玩家探索测试。P00本人自报完成1名，新玩家0；D总OPEN / In Review，battle_ready=false。剩余至少3新玩家、延期XP/3秒间隔/任意窗口视野外生成、完整恢复矩阵和平台/产品门槛。当前入口build/package-d-fix-2026-09-15/开始D修订版试玩.command；证据production/playtest-evidence/2026-09-15-package-d-fix.md与package-d-fix-2026-09-15/senior-report.md。以下旧D限制为历史，被本次限定放行取代。
+
+> 2026-09-15 D独立复审完成：3真实独立专家+fresh资深综合CHANGES REQUIRED，2 P1（故障快照写入口、HUD遮挡）+2 P2（死亡tick时间/恢复、线索箭头）。57冻结SHA无变化，未修复实现。C保档证据已勘误；Boss三个pending起点各200tick独立JSON恢复一致为限定新增证据。用户选择本人先玩；P00临时档包build/package-d-2026-09-15/开始P00临时档试玩.command已实际PCK图形检查，强制validation内存档、退出丢进度；正式新玩家持久档不放行。真人0，P00不计3名新玩家。证据production/playtest-evidence/2026-09-15-package-d.md，最终senior-report.md。下一入口P00反馈及D-S01..04整改/独立复测，再冻结新包/补至少3新玩家；D OPEN，battle_ready=false。
+
+> 2026-09-15 C包实现checkpoint：04线索/机缘/指定猎物、05净化半程增援、06分段守路+一次E01、07拆锚关闭根区、08三阶段扑袭Boss已实现；B包真实PCK已保留并验证新版拒读零写入升级路径。C专项237、A135/B132、Content1170/Profile581/Root44/Combat287/Snapshot299通过；26路径检查、Mac截图已查看。两套合法首章8/8胜，46/45次磁盘恢复，active279.57/274.92秒；06一条路线自然进化，两路均击败1精英，08三阶段均发出攻击。目录hash1e3c41e4223704a29050f28294bef4a38b9569186e6a6234a921c3685e92ab3e。证据production/playtest-evidence/2026-09-15-package-c.md，ADR-0008 C扩展，registry campaign-package-c-v1.json。下一入口D前节奏/生成可见性整改与真人验证/独立复审；XP与升级间隔未改，任意窗口视野外保证OPEN，无新64关平衡/真人/独立review/Windows/Steam/20h证据，battle_ready=false。
+
+> 2026-09-15 B包：首章2布局、01–03分段遭遇/教学/护送/备战及60Hz可恢复快照已实现。专项132、Profile581、Content1170、Root44、Combat287、Snapshot299、A135均0失败；20路线检查通过。新档三关72.27/13.93/22.08秒，10次阶段磁盘恢复；Mac图形已查看。A版真实PCK恢复升级路径通过，拒读双槽SHA不变；备份build/legacy-package-a-2026-09-15。证据production/playtest-evidence/2026-09-15-package-b.md，ADR-0008。下一入口C：04–08专属行为、XP与生成可见性迭代。任意视口外生成仍有缺口，无新独立review/真人/Windows/Steam/20h证据，battle_ready=false。
+
+> 2026-09-15实施更新：A包已实现并通过本地专项与回归，见[实施报告](playtest-evidence/2026-09-15-package-a.md)；下方A包未实施描述为先前设计状态，B/C/D仍未完成。没有新独立复审或发行verdict。
+
+> 2026-09-15首章整改路线：在2026-09-14 Campaign可玩入口之上，新增[首章整改作者基线](../design/chapter-one-playable-redesign.md)。下一实施顺序为A旧档兼容与成长基础→B场景及01–03→C任务04–08→D真人试玩/独立复审；原WP编号作为商业系统迁移追踪保留。四包均未实施，完整Save v2/Windows/Steam仍OPEN。
+
 日期：2026-09-11。状态：Working Baseline / Author Planning Only。关联[商业范围](../design/steam-1.0-product-scope.md)、[章节任务](../design/steam-1.0-campaign.md)、[内容矩阵](steam-1.0-content-matrix.csv)。
 
 本表记录T03设计影响与后续工作包状态；不把规划条目当生产ABI、数值或实现。`L01–L32`对应原系统索引1–32；`ST-S01–09`是新增商业工作域，不是已批准系统或运行participant。新域的拆分仍可在系统设计时合并，但责任不能遗漏。
@@ -99,3 +123,13 @@ WP00只完成P0的作者基线，不能宣称P0正式gate已通过。WP01本地�
 每个新增域正式设计时，需逐项完成：主owner GDD → 受影响owner GDD → `design/registry/entities.yaml`权威事实 → generated schema/manifest与golden → `systems-index.md`状态 → session state → 对应代码/验证。移动端仅保留future-port要求，Steam设计的变化不证明移动兼容。
 
 registry头部与steam-save-mission-contracts-v1.json记录新profile路由、操作/状态/域及OPEN门；该manifest为作者规划，非generated产物；没有注册364项为生产实体，没有修改容量/byte大小/已有ID。文档命名或状态更新不得重新计算并宣称先前独立review批准仍有效。
+
+
+## 2026-09-16 第二章实现增量
+
+第二章8关已实现固定矿轨与有限遭遇、喷口逐一关闭、冷却匣/炉工护送、中途机缘、指定熔脊行者及炉门弱点三阶段Boss。机制/验收见 `design/chapter-two-playable.md`、`docs/architecture/adr-0010-chapter-two-thermal-encounters.md`；交付证据见 `production/playtest-evidence/2026-09-16-chapter-two.md`。快照CAMPAIGN_CHAPTER2_V1，局外仍CAMPAIGN_GAMEPLAY_V1；第一章8关后开放二阶/第二角色。固定tick派生热场/门窗；Profile保留精确数值并在重写前重建数值镜像，避免多次JSON舍入。此增量不改变第三章以后2+1经验基线，也不声称全游戏经济、商业Save v2或发行验收完成。新玩家试玩SKIPPED_BY_USER，battle_ready=false。
+
+
+## 2026-09-17 第三章限定交付
+
+第三章8关潮汐内容已实现并完成两条新档1→24连续旅程；规则见 `design/chapter-three-playable.md`、ADR-0011，最终证据见 `production/playtest-evidence/2026-09-17-chapter-three.md`。CAMPAIGN_CHAPTER3_V1；章内经验6/4、180tick升级间隔，覆盖本文件先前“第三章以后不变”的历史表述（第四章以后仍旧基线）。Boss伤害边界同步阶段/悟性、末期整轮zone+projectile容量预检；永久淹池单区且恢复不重复。24关开放三阶，资源富余未全局重平衡。额外64关独立54/64，连续止M06-06，不能称全游戏验收。新玩家SKIPPED_BY_USER，battle_ready=false。

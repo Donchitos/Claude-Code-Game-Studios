@@ -1,5 +1,13 @@
 # Home UI（黄枫谷洞府首页）
 
+> 2026-09-15 C包实施：Campaign开发入口的04线索/一次机缘/延迟猎物、05净化增援、06分段守路、07关闭根区、08三阶段Boss已接入Arena/Encounter快照。见[C包证据](../../production/playtest-evidence/2026-09-15-package-c.md)与[ADR-0008扩展](../../docs/architecture/adr-0008-chapter-one-encounters.md)。专项237、两套8关旅程/91次磁盘恢复通过；保持独立review/真人/商业owner合同待办，battle_ready=false。
+
+
+> 2026-09-15 B包实施更新：首章两布局与01–03遭遇/教学/备战、CAMPAIGN_CHAPTER1_V2恢复及A版零写入升级保护已实现并本地验证。见[实施证据](../../production/playtest-evidence/2026-09-15-package-b.md)与[ADR-0008](../../docs/architecture/adr-0008-chapter-one-encounters.md)。04–08专属行为、XP实验及任意视口外生成仍待补齐；不改变既有独立verdict或商业owner合同，battle_ready=false。
+
+
+> 2026-09-15 Campaign A包：角色成长页按真实效果显示锋意（伤害）/体魄（生命）/采灵（拾取），复用Profile购买阈值显示锁定条件；启动错误层区分旧任务/未知内容版本，旧任务展示保留存档与旧版结束本局说明。见[实施证据](../../production/playtest-evidence/2026-09-15-package-a.md)。限定当前Campaign UI实现与Mac截图证据，不提升下方完整UI合同/设备verdict。
+
 > 2026-09-11 WP04b 适配路由：五域结构/联合校验与当前 `LEGACY_STAGE_PC_V1` capture/restore 见 [Steam域与快照适配](steam-save-domain-adapters.md)。Pool/Grid 原生引用不落盘；当前生成逻辑viewport冻结，RNG保存实际seed/state并绑定engine commit；全Scope tick结束才捕获。此实现不补齐本文件全部商业owner合同；真实v2迁移/事务、Mission/SkillDraft/Preparation/Settlement语义和商业最大预算仍OPEN，battle_ready=false。
 
 > 2026-09-11 Steam合同路由（作者传播，implementation gate OPEN）：Steam新档案/章节入口由campaign-flow.md、save-steam-pc.md定义：只在COMPLETE匹配COMMITTED后展示新解锁；RESULT_PENDING重试原结算，不开启新run；RUNNING/SUSPENDED提供最后checkpoint继续。当前UI尚未实现这些新profile流程。

@@ -1,5 +1,10 @@
 # RiskChoiceSystem（机缘抉择）
 
+> 2026-09-16 Campaign E：Campaign 04线索机缘在已有升级积压清空后发布；180tick间隔期间保持可战斗等待，等待态纳入联合恢复验证。安全/风险两路线已做磁盘恢复对照，非完整故障矩阵。 详见[ADR-0009](../../docs/architecture/adr-0009-chapter-one-pacing-and-view.md)与[E包证据](../../production/playtest-evidence/2026-09-16-package-e.md)。仅本地验证，独立复审待完成，battle_ready=false。
+
+> 2026-09-15 C包实施：Campaign开发入口的04线索/一次机缘/延迟猎物、05净化增援、06分段守路、07关闭根区、08三阶段Boss已接入Arena/Encounter快照。见[C包证据](../../production/playtest-evidence/2026-09-15-package-c.md)与[ADR-0008扩展](../../docs/architecture/adr-0008-chapter-one-encounters.md)。专项237、两套8关旅程/91次磁盘恢复通过；保持独立review/真人/商业owner合同待办，battle_ready=false。
+
+
 > **Status**: Designed / Full Review Pending
 > **Author**: User + Codex
 > **Created**: 2026-09-03

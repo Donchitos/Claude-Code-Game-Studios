@@ -1,4 +1,17 @@
+# Campaign final chapters 2026-09-22: manifests/campaign-final-chapters-v1.json; local delivery, two routes 64/64; C03 stress 99/120; battle_ready=false.
+# Campaign G 2026-09-16: manifests/campaign-package-g-v1.json; scoped APPROVED_WITH_SUGGESTIONS; battle_ready=false.
+# Campaign F 2026-09-16: see manifests/campaign-package-f-v1.json; scoped APPROVED_WITH_SUGGESTIONS; battle_ready=false.
+# Campaign E 2026-09-16: manifests/campaign-package-e-v1.json and ADR-0009 record
+# chapter-one XP, active-tick cooldown, bounded camera/spawn envelope and V3 snapshot.
+# Local evidence only; independent review pending; new-player testing skipped by user.
+# 2026-09-15 D整改独立复审：3名真实专家全部返回后fresh资深综合APPROVED WITH SUGGESTIONS，仅限D-S01～04；四项原缺陷限定关闭，隔离Campaign开发持久档可开展新玩家探索测试。P00本人自报完成1名，新玩家0；D总OPEN / In Review，battle_ready=false。剩余至少3新玩家、延期XP/3秒间隔/任意窗口视野外生成、完整恢复矩阵和平台/产品门槛。当前入口build/package-d-fix-2026-09-15/开始D修订版试玩.command；证据production/playtest-evidence/2026-09-15-package-d-fix.md与package-d-fix-2026-09-15/senior-report.md。以下旧D限制为历史，被本次限定放行取代。
+# Campaign C 2026-09-15: manifests/campaign-package-c-v1.json records chapter
+# state and content hash; Arena-owned helper, no legacy ABI/system-count promotion.
+# Campaign B 2026-09-15: manifests/campaign-package-b-v1.json and ADR-0008
+# index Arena-owned encounter state; no legacy ABI or system-count promotion.
 # Game World Entity Registry
+# Campaign A 2026-09-15: development-profile growth and compatibility facts are
+# indexed in manifests/campaign-package-a-v1.json; no legacy ABI/count change.
 #
 # Steam 1.0 planning (2026-09-11): product scope is
 # design/steam-1.0-product-scope.md; planned S1-* content IDs are tracked in
@@ -3343,3 +3356,10 @@ constants:
 # Responsibility inventory: design/registry/manifests/steam-recovery-responsibilities-v1.json
 # IDs in that inventory are responsibility labels, not installed runtime owner IDs.
 # All commercial bounds remain null/OPEN; no test ceiling promoted to registry value.
+
+# 2026-09-16 Chapter two playable increment: ADR-0010 / design/chapter-two-playable.md
+# S1-M02-01..08: CAMPAIGN_CHAPTER2_V1, thermal vents / escort / S1-E02 / furnace doors.
+# Scoped evidence: production/playtest-evidence/2026-09-16-chapter-two.md; battle_ready=false.
+
+# 2026-09-17 M03-01..08 local playable: ADR-0011 / CAMPAIGN_CHAPTER3_V1.
+# Report: production/playtest-evidence/2026-09-17-chapter-three.md; battle_ready=false; later chapter QA failures remain OPEN.

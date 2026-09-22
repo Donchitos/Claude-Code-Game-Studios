@@ -1,0 +1,6 @@
+{
+  "old_pck": "6fbaf4ce0571cba96f61b22f50657cb734ae0ef11ca47c91ee44abc0668733ba",
+  "new_pck": "444b64a6ea9fe91f319b886aeb120dc20788a8f34c6c7326522d0d3b371bc325",
+  "blocked_zero_write": true,
+  "old_resume_explicit_test_abandon_then_new_home": true
+}

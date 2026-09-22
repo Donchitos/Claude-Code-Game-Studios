@@ -1,0 +1,198 @@
+{
+	"checks": 167,
+	"failures": 0,
+	"rows": [
+		{
+			"locale": "zh-CN",
+			"player": "(0.0, 0.0)",
+			"queue": "待选升级 5 · 战斗间隔后开启",
+			"visible": "(1280.0, 720.0)",
+			"window": "(960, 540)",
+			"zoom": "(1.0, 1.0)"
+		},
+		{
+			"locale": "zh-CN",
+			"player": "(-720.0, 0.0)",
+			"queue": "待选升级 5 · 战斗间隔后开启",
+			"visible": "(1280.0, 720.0)",
+			"window": "(960, 540)",
+			"zoom": "(1.0, 1.0)"
+		},
+		{
+			"locale": "zh-CN",
+			"player": "(900.0, 580.0)",
+			"queue": "待选升级 5 · 战斗间隔后开启",
+			"visible": "(1280.0, 720.0)",
+			"window": "(960, 540)",
+			"zoom": "(1.0, 1.0)"
+		},
+		{
+			"locale": "en",
+			"player": "(0.0, 0.0)",
+			"queue": "5 upgrades queued · resume combat",
+			"visible": "(1280.0, 720.0)",
+			"window": "(960, 540)",
+			"zoom": "(1.0, 1.0)"
+		},
+		{
+			"locale": "en",
+			"player": "(-720.0, 0.0)",
+			"queue": "5 upgrades queued · resume combat",
+			"visible": "(1280.0, 720.0)",
+			"window": "(960, 540)",
+			"zoom": "(1.0, 1.0)"
+		},
+		{
+			"locale": "en",
+			"player": "(900.0, 580.0)",
+			"queue": "5 upgrades queued · resume combat",
+			"visible": "(1280.0, 720.0)",
+			"window": "(960, 540)",
+			"zoom": "(1.0, 1.0)"
+		},
+		{
+			"locale": "zh-CN",
+			"player": "(0.0, 0.0)",
+			"queue": "待选升级 5 · 战斗间隔后开启",
+			"visible": "(1280.0, 720.0)",
+			"window": "(1280, 720)",
+			"zoom": "(1.0, 1.0)"
+		},
+		{
+			"locale": "zh-CN",
+			"player": "(-720.0, 0.0)",
+			"queue": "待选升级 5 · 战斗间隔后开启",
+			"visible": "(1280.0, 720.0)",
+			"window": "(1280, 720)",
+			"zoom": "(1.0, 1.0)"
+		},
+		{
+			"locale": "zh-CN",
+			"player": "(900.0, 580.0)",
+			"queue": "待选升级 5 · 战斗间隔后开启",
+			"visible": "(1280.0, 720.0)",
+			"window": "(1280, 720)",
+			"zoom": "(1.0, 1.0)"
+		},
+		{
+			"locale": "en",
+			"player": "(0.0, 0.0)",
+			"queue": "5 upgrades queued · resume combat",
+			"visible": "(1280.0, 720.0)",
+			"window": "(1280, 720)",
+			"zoom": "(1.0, 1.0)"
+		},
+		{
+			"locale": "en",
+			"player": "(-720.0, 0.0)",
+			"queue": "5 upgrades queued · resume combat",
+			"visible": "(1280.0, 720.0)",
+			"window": "(1280, 720)",
+			"zoom": "(1.0, 1.0)"
+		},
+		{
+			"locale": "en",
+			"player": "(900.0, 580.0)",
+			"queue": "5 upgrades queued · resume combat",
+			"visible": "(1280.0, 720.0)",
+			"window": "(1280, 720)",
+			"zoom": "(1.0, 1.0)"
+		},
+		{
+			"locale": "zh-CN",
+			"player": "(0.0, 0.0)",
+			"queue": "待选升级 5 · 战斗间隔后开启",
+			"visible": "(1280.0, 480.0)",
+			"window": "(1600, 600)",
+			"zoom": "(1.5, 1.5)"
+		},
+		{
+			"locale": "zh-CN",
+			"player": "(-720.0, 0.0)",
+			"queue": "待选升级 5 · 战斗间隔后开启",
+			"visible": "(1280.0, 480.0)",
+			"window": "(1600, 600)",
+			"zoom": "(1.5, 1.5)"
+		},
+		{
+			"locale": "zh-CN",
+			"player": "(900.0, 580.0)",
+			"queue": "待选升级 5 · 战斗间隔后开启",
+			"visible": "(1280.0, 480.0)",
+			"window": "(1600, 600)",
+			"zoom": "(1.5, 1.5)"
+		},
+		{
+			"locale": "en",
+			"player": "(0.0, 0.0)",
+			"queue": "5 upgrades queued · resume combat",
+			"visible": "(1280.0, 480.0)",
+			"window": "(1600, 600)",
+			"zoom": "(1.5, 1.5)"
+		},
+		{
+			"locale": "en",
+			"player": "(-720.0, 0.0)",
+			"queue": "5 upgrades queued · resume combat",
+			"visible": "(1280.0, 480.0)",
+			"window": "(1600, 600)",
+			"zoom": "(1.5, 1.5)"
+		},
+		{
+			"locale": "en",
+			"player": "(900.0, 580.0)",
+			"queue": "5 upgrades queued · resume combat",
+			"visible": "(1280.0, 480.0)",
+			"window": "(1600, 600)",
+			"zoom": "(1.5, 1.5)"
+		},
+		{
+			"locale": "zh-CN",
+			"player": "(0.0, 0.0)",
+			"queue": "待选升级 5 · 战斗间隔后开启",
+			"visible": "(576.0, 720.0)",
+			"window": "(800, 1000)",
+			"zoom": "(2.222222, 2.222222)"
+		},
+		{
+			"locale": "zh-CN",
+			"player": "(-720.0, 0.0)",
+			"queue": "待选升级 5 · 战斗间隔后开启",
+			"visible": "(576.0, 720.0)",
+			"window": "(800, 1000)",
+			"zoom": "(2.222222, 2.222222)"
+		},
+		{
+			"locale": "zh-CN",
+			"player": "(900.0, 580.0)",
+			"queue": "待选升级 5 · 战斗间隔后开启",
+			"visible": "(575.9999, 720.0)",
+			"window": "(800, 1000)",
+			"zoom": "(2.222222, 2.222222)"
+		},
+		{
+			"locale": "en",
+			"player": "(0.0, 0.0)",
+			"queue": "5 upgrades queued · resume combat",
+			"visible": "(576.0, 720.0)",
+			"window": "(800, 1000)",
+			"zoom": "(2.222222, 2.222222)"
+		},
+		{
+			"locale": "en",
+			"player": "(-720.0, 0.0)",
+			"queue": "5 upgrades queued · resume combat",
+			"visible": "(576.0, 720.0)",
+			"window": "(800, 1000)",
+			"zoom": "(2.222222, 2.222222)"
+		},
+		{
+			"locale": "en",
+			"player": "(900.0, 580.0)",
+			"queue": "5 upgrades queued · resume combat",
+			"visible": "(575.9999, 720.0)",
+			"window": "(800, 1000)",
+			"zoom": "(2.222222, 2.222222)"
+		}
+	]
+}

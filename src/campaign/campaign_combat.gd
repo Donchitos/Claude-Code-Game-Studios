@@ -190,6 +190,10 @@ static func advance_projectiles(a, dt: float) -> void:
 		if p.ttl <= 0:
 			a.state.projectiles.remove_at(i)
 			continue
+		if p.get("delay",0.0) > 0.0:
+			p.delay = maxf(0.0,float(p.delay)-dt)
+			if p.delay == 0.0: p.erase("delay")
+			continue
 		var start: Vector2 = a.pos(p)
 		p.age += dt
 		p.ttl -= dt
@@ -268,7 +272,7 @@ static func advance_zones(a, dt: float) -> void:
 		if kind == "shield":
 			var reflected := 0
 			for p in a.state.projectiles:
-				if p.hostile and a.pos(p).distance_to(a.pos(z)) < z.radius:
+				if p.hostile and p.get("delay",0.0) <= 0.0 and a.pos(p).distance_to(a.pos(z)) < z.radius:
 					if reflected < 1 + int(a.modifier("reflect_count")):
 						p.hostile = false
 						p.vx *= -1
@@ -333,7 +337,9 @@ static func advance_enemies(a, dt: float) -> void:
 		var velocity: Vector2 = direction * e.speed
 		var distance := offset.length()
 		var behavior := str(e.behavior)
-		if e.family == "boss":
+		if a.mission.has("clues") and e.target_id != "":
+			velocity = a.Chapter.hunt_velocity(a,e,direction)
+		elif e.family == "boss":
 			_boss(a, e, target)
 			q = a.pos(e)
 			velocity *= 0.4
@@ -485,6 +491,18 @@ static func _charge(a, e: Dictionary, direction: Vector2, multiplier: float, tel
 	return direction * e.speed * 0.7
 
 static func _boss(a, e: Dictionary, target: Vector2) -> void:
+	if a.mission.has("late_boss"):
+		a.Encounter.Late.boss(a,e,target)
+		return
+	if a.mission.has("furnace_boss"):
+		a.Encounter.Thermal.boss(a,e,target)
+		return
+	if a.mission.has("tide_boss"):
+		a.Encounter.Tide.boss(a,e,target)
+		return
+	if a.mission.has("boss_chapter"):
+		a.Chapter.boss(a,e,target)
+		return
 	if e.timer > 0: return
 	var row: Dictionary = a.tables.bosses.get(e.id, {})
 	var phase := mini(2, int((1.0 - maxf(0, e.hp) / e.max_hp) * 3.0))

@@ -1,0 +1,39 @@
+{
+  "P00": {
+    "role": "project_participant",
+    "status": "COMPLETED_SELF_REPORTED",
+    "observations": [
+      {
+        "type": "help_request",
+        "quote": "玩到这里不会了",
+        "context": "用户附图显示前往撤离符阵；助手提示进入画面左侧绿色撤离圈。此后体验属于获得提示后的继续。"
+      },
+      {
+        "type": "positive_feedback",
+        "quote": "很好玩，随着关卡进度，越来越丰富。很喜欢"
+      },
+      {
+        "type": "completion",
+        "quote": "玩完了，进行下一步吧",
+        "scope": "用户自述结束试玩；未提供总时长、逐关统计或结束画面，不伪造8关数据。"
+      }
+    ]
+  },
+  "P01": {
+    "role": "new_player",
+    "status": "NOT_RECRUITED",
+    "observations": []
+  },
+  "P02": {
+    "role": "new_player",
+    "status": "NOT_RECRUITED",
+    "observations": []
+  },
+  "P03": {
+    "role": "new_player",
+    "status": "NOT_RECRUITED",
+    "observations": []
+  },
+  "actual_human_sessions": 1,
+  "actual_new_player_sessions": 0
+}

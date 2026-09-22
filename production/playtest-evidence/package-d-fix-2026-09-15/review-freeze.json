@@ -1,0 +1,22 @@
+{
+  "src/campaign/campaign_arena_render.gd": "250793f53c8467282924042d449b1035ff31089eae4cc135885a806cc486098a",
+  "src/campaign/campaign_arena_codec.gd": "289eeefbd6eec6adaf2e52e2173f1c0a6559d62202911d4539139586dab8d882",
+  "src/campaign/campaign_encounter.gd": "e513c296153ea99617ac4ca38397edcb6e536358e7c300562dc783e433a0855a",
+  "src/campaign/campaign_chapter_one.gd": "ef08f69a991790766db3b752fc599b586cea8b3a89ceb8cde4ca2296187facdf",
+  "src/campaign/campaign_mission.gd": "5d84baac2f8a9b4b5bfa26f8f640437944f68021328f80c0366b7e928489c5c1",
+  "src/campaign/campaign_ui.gd": "7e1fa10364a9922c854ff1b5a4e17642dcff69a9396f78e16adee6b3c5876e26",
+  "src/campaign/campaign_arena.gd": "cac2286ef2cf0c7923c2674e374096d38671313835b4550f4c567f48c80b0a57",
+  "src/campaign/campaign_profile.gd": "94abe42a7fc8fa3fbb320abc1d44089542595f6ab0158f266be0585325a36bad",
+  "src/campaign/campaign_audio.gd": "4ace09abaddadce84f30a890dec97a8b0f68a966c37fef6c94c3a632d1832fc2",
+  "src/campaign/campaign_arena_validation.gd": "259755342a805b1acf5ebdf19de7c7eaa7d450e7132fb1d7fdb5649605787e43",
+  "src/campaign/campaign_game_root.gd": "a65caaabb9f75f9f055a628f48c901e8815fc171645f064e2e7536bdf7de01b0",
+  "src/campaign/campaign_combat.gd": "8b5a428ec4aa8a972a6b972662e7edcb68d78985056b107165a32af97186ebff",
+  "src/campaign/campaign_catalog.gd": "c51c3a5c2511b0ff83fb7333c660c2df95d2ff9859059d6d58eb429c6cab0d89",
+  "src/campaign/campaign_ui_art.gd": "784ac1fb374c0feaecd5c0a88694c9e7f96606afd0cffc17f999d9eaec9b0791",
+  "assets/config/campaign_game.json": "1e3c41e4223704a29050f28294bef4a38b9569186e6a6234a921c3685e92ab3e",
+  "tests/integration/campaign_package_d_fix_test.gd": "88d40034d61ca4fd21d29ab43f9fa491738770697cfe2c8648b1ebcd7b3565b1",
+  "tests/integration/campaign_package_d_fix_journey.gd": "a3d1cad4ad33bb00e07b970292820f1ddaa458e4b43f48eb2e2e1ca8c20269c0",
+  "tests/integration/campaign_package_d_fix_root.gd": "b5346af1912b89810ede9aeceed1585ab1822af5902f5b12c1ae3bd3b72c2a29",
+  "tests/manual/campaign_package_d_fix_ui.gd": "7e351eb4bb161f3e54105fcc1669bb655b89ec61a6d47efe6e00a4206334a937",
+  "docs/architecture/adr-0008-chapter-one-encounters.md": "4181f180ca0d192206e400793eb22361a64f17b88251ca8e647df850fa6b53e4"
+}

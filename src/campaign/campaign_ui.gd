@@ -7,6 +7,7 @@ const TEXT := Color("eee9d9")
 var root: Control
 var buttons: Array[Button] = []
 var content: VBoxContainer
+var guidance: Label
 var hud: Label
 var hp: ProgressBar
 var xp: ProgressBar
@@ -132,6 +133,8 @@ func overlay(kind: String) -> void:
 			_label(box, tr2("世界已暂停。失焦后需手动继续。", "The world is paused. Return here to resume after focus loss."))
 			_button(box, tr2("继续行程", "Resume journey"), root.resume_battle)
 			_button(box, tr2("保存本局并回行馆", "Save run & return home"), root.save_and_home)
+			_label(box, _build_text(), 18)
+			_label(box, root.arena.teaching_text(tr2("zh", "en")), 18)
 		"upgrade":
 			_label(box, tr2("悟道 · 择一而进", "INSIGHT · CHOOSE YOUR PATH"), 32, GOLD)
 			if int(root.arena.state.get("rerolls", 0)) > 0:
@@ -141,6 +144,8 @@ func overlay(kind: String) -> void:
 				_button(box, localized(row) + "\n" + localized(row, "description"), root.choose.bind(id))
 		"event":
 			var row := _lookup(root.arena.state.event_id)
+			if root.arena.mission.has("clues"):
+				_label(box,tr2("本关冒险压力会提高后续生成敌人的生命与伤害；已出现者不变。", "Risk pressure increases health and damage of enemies spawned later in this hunt."))
 			_label(box, localized(row), 30, GOLD)
 			_label(box, localized(row, "description"))
 			for key in ["safe", "risk"]:
@@ -155,14 +160,21 @@ func overlay(kind: String) -> void:
 			_button(box, tr2("确认放弃本局", "Confirm abandon"), root.abandon_current_run)
 		"error":
 			_label(box, tr2("未能完成操作", "ACTION COULD NOT COMPLETE"), 30, GOLD)
-			_label(box, root.error)
+			if root.error == "LEGACY_ACTIVE_RUN_REQUIRES_PREVIOUS_VERSION":
+				_label(box, tr2("本次任务属于旧版本，原存档已保留。请使用创建本局的保留版本结束本局，或在旧版主动放弃，再返回新版。", "This run belongs to a previous version. Your save is retained. Finish or explicitly abandon it in the preserved version that created this run, then return here."))
+				_label(box, tr2("存档目录：", "Save folder: ") + OS.get_user_data_dir(), 15)
+			elif root.error == "UNKNOWN_ACTIVE_RUN_CONTENT":
+				_label(box, tr2("无法识别本次任务的内容版本。原存档已保留，请使用创建它的版本继续。", "This run's content version is unrecognized. The original save is retained; continue with the version that created it."))
+			else:
+				_label(box, root.error)
 			if not root.profile_ready:
 				if not root.catalog.is_empty():
 					_button(box, tr2("重试加载", "Retry loading"), root.reload_profile)
 				_button(box, tr2("退出", "Quit"), root.get_tree().quit)
 				_focus()
 				return
-			_button(box, tr2("重新加载已保存进度", "Reload saved progress") if root.persistence_blocked else tr2("返回安全状态", "Return to safety"), root.reload_profile if root.persistence_blocked else (root.get_tree().quit if root.profile == null else root.dismiss_error))
+			var reload_needed: bool = root.persistence_blocked or root.error in ["INVALID_BATTLE_CHECKPOINT", "HUNT_CAPACITY_RETRY_EXHAUSTED"]
+			_button(box, tr2("重新加载已保存进度", "Reload saved progress") if reload_needed else tr2("返回安全状态", "Return to safety"), root.reload_profile if reload_needed else (root.get_tree().quit if root.profile == null else root.dismiss_error))
 	_focus()
 
 ## Routes the explicit Meta actions within the current page or modal only.
@@ -191,17 +203,21 @@ func update_hud() -> void:
 	var p: Dictionary = s.player
 	hp.max_value = float(p.max_hp)
 	hp.value = float(p.hp)
-	xp.max_value = float(root.catalog.tuning.get("xp_base", 10)) + (int(p.level) - 1) * float(root.catalog.tuning.get("xp_step", 4))
+	xp.max_value = root.arena.xp_required()
 	xp.value = float(p.xp)
-	var build: Array[String] = []
+	hud.text = root.arena.objective_text(tr2("zh", "en")) + "\n" + (tr2("生命 %.0f/%.0f   境界 %d   击破 %d", "HP %.0f/%.0f   Level %d   Kills %d") % [p.hp, p.max_hp, p.level, p.kills])
+	guidance.text = root.arena.teaching_text(tr2("zh", "en"))
+	var queued: int = root.arena.queued_upgrades()
+	if queued > 0 and root.arena.mission.has("upgrade_interval_ticks"):
+		guidance.text = tr2("待选升级 %d · 战斗间隔后开启", "%d upgrades queued · resume combat") % queued
+
+## Full build remains available while the world is paused.
+func _build_text() -> String:
+	var lines: Array[String] = []
 	for key in ["skills", "passives"]:
-		var names: Array[String] = []
-		for id: String in s[key]:
-			names.append(localized(_lookup(id)) + " " + str(s[key][id]))
-		while names.size() < 4:
-			names.append("—")
-		build.append("  ·  ".join(names))
-	hud.text = root.arena.objective_text(tr2("zh", "en")) + "\n" + (tr2("生命 %.0f/%.0f   境界 %d   击破 %d", "HP %.0f/%.0f   Level %d   Kills %d") % [p.hp, p.max_hp, p.level, p.kills]) + "\n" + "\n".join(build)
+		for id: String in root.arena.state[key]:
+			lines.append(localized(_lookup(id)) + " " + str(root.arena.state[key][id]))
+	return " · ".join(lines)
 
 func _clear() -> void:
 	for child in get_children():
@@ -210,6 +226,7 @@ func _clear() -> void:
 	buttons.clear()
 	shade = null
 	hud = null
+	guidance = null
 
 func _label(parent: Node, text: String, font_size: int = 18, color: Color = TEXT) -> Label:
 	var label := Label.new()
@@ -315,7 +332,11 @@ func _characters() -> void:
 	var growth := _card(tr2("三脉修习 · 每脉五阶", "THREE BRANCHES · FIVE RANKS EACH"))
 	for i in 3:
 		var rank := int(data.branches[i])
-		_button(growth, [tr2("体魄", "Vitality"), tr2("灵力", "Spirit"), tr2("身法", "Agility")][i] + "  " + "◆".repeat(rank) + "◇".repeat(5 - rank) + (tr2(" · %d 灵页", " · %d pages") % int(root.catalog.tuning.get("progression_cost_base", 4) + root.catalog.tuning.get("progression_cost_step", 4) * rank) if rank < 5 else ""), root.command.bind("purchase_branch", i), rank >= 5)
+		var requirement: int = root.profile.branch_requirement(i)
+		var locked := requirement >= 0 and int(data.completed) < requirement
+		var price := int(root.catalog.tuning.progression_cost_base + root.catalog.tuning.progression_cost_step * rank)
+		var suffix := tr2(" · 需完成%d程", " · Requires %d clears") % requirement if locked else (tr2(" · %d 灵页", " · %d pages") % price if rank < 5 else "")
+		_button(growth, [tr2("锋意（伤害）", "Edge (damage)"), tr2("体魄（生命）", "Vitality (health)"), tr2("采灵（拾取）", "Gathering (pickup)")][i] + "  " + "◆".repeat(rank) + "◇".repeat(5 - rank) + suffix, root.command.bind("purchase_branch", i), rank >= 5 or locked or int(data.pages) < price)
 	var supplies := _card(tr2("出战准备", "PREPARATION"))
 	for i in 3:
 		_button(supplies, [tr2("行旅 · 轻松", "Wanderer · Easy"), tr2("修行 · 标准", "Adept · Standard"), tr2("问道 · 困难", "Seeker · Hard")][i] + (" ✓" if int(data.difficulty) == i else ""), root.command.bind("set_difficulty", i))
@@ -384,10 +405,13 @@ func _battle() -> void:
 	body.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	var backdrop := PanelContainer.new()
 	body.add_child(backdrop)
-	backdrop.position = Vector2(24, 16)
-	backdrop.size = Vector2(650, 160)
+	backdrop.set_anchors_and_offsets_preset(Control.PRESET_TOP_WIDE)
+	backdrop.offset_left = 16
+	backdrop.offset_right = -230
+	backdrop.offset_top = 12
+	backdrop.offset_bottom = 108
 	var background := StyleBoxFlat.new()
-	background.bg_color = Color(0.025, 0.07, 0.075, 0.91)
+	background.bg_color = Color(0.025, 0.07, 0.075, 0.45)
 	background.set_corner_radius_all(8)
 	background.content_margin_left = 14
 	background.content_margin_right = 14
@@ -399,12 +423,13 @@ func _battle() -> void:
 	panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	backdrop.add_child(panel)
 	hud = _label(panel, "", 16)
-	_label(panel, tr2("生命 HP", "HEALTH · HP"), 13, Color("7ac8a3"))
+	hud.max_lines_visible = 2
+	hud.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
 	hp = ProgressBar.new()
 	hp.custom_minimum_size.y = 10
 	hp.show_percentage = false
 	panel.add_child(hp)
-	_label(panel, tr2("悟性 XP", "INSIGHT · XP"), 13, GOLD)
+
 	xp = ProgressBar.new()
 	xp.custom_minimum_size.y = 6
 	xp.show_percentage = false
@@ -418,9 +443,9 @@ func _battle() -> void:
 		empty.bg_color = Color("29413e")
 		empty.set_corner_radius_all(4)
 		bar.add_theme_stylebox_override("background", empty)
-	var pause := _button(body, tr2("暂歇 Ⅱ", "Pause Ⅱ"), root.pause_battle)
+	var pause := _button(body, tr2("暂停 / 构筑", "Pause / Build"), root.pause_battle)
 	pause.set_anchors_and_offsets_preset(Control.PRESET_TOP_RIGHT)
-	pause.offset_left = -170
+	pause.offset_left = -214
 	pause.offset_right = -24
 	pause.offset_top = 20
 	pause.offset_bottom = 70
@@ -430,6 +455,16 @@ func _battle() -> void:
 	hint.offset_top = -38
 	hint.offset_bottom = -8
 	hint.offset_right = 800
+	guidance = _label(body, "", 16, GOLD)
+	guidance.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_WIDE)
+	guidance.offset_left = 24
+	guidance.offset_right = -24
+	guidance.offset_top = -104
+	guidance.offset_bottom = -44
+	guidance.max_lines_visible = 2
+	guidance.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
+	guidance.add_theme_color_override("font_outline_color", Color("071c19"))
+	guidance.add_theme_constant_override("outline_size", 5)
 	update_hud()
 
 func _result() -> void:
@@ -442,6 +477,10 @@ func _result() -> void:
 	if r.get("ending", false):
 		_button(box, tr2("走向终章 →", "Enter the epilogue →"), root.show_page.bind("ending"))
 	else:
+		if win and root.last_mission == 2:
+			_label(box, tr2("已开放培育与机缘。可先了解成长和丹药，也可不携药继续。", "Cultivation and encounters are now available. Review growth and pills, or continue without a pill."))
+			_button(box, tr2("了解备战 · 成长与丹药", "Prepare · Growth and pills"), root.show_page.bind("characters"))
+			_button(box, tr2("前往培育", "Visit cultivation"), root.show_page.bind("cultivation"))
 		_button(box, tr2("下一程", "Next journey") if win else tr2("重新挑战", "Retry"), root.start_mission.bind(mini(root.last_mission + 1, 63) if win else root.last_mission, ""))
 	_button(box, tr2("回到行馆", "Return home"), root.show_page.bind("home"))
 

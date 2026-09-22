@@ -4,6 +4,15 @@ extends RefCounted
 ## The root injects already initialized storage using dedicated campaign paths.
 
 const DOMAIN := "campaign_game"
+const LEGACY_CONTENT_HASH := "71d615925151600c8a1255808f20a03d5d44f5fa4efd9f047874e231f45949ca"
+const PACKAGE_B_CONTENT_HASH := "8acdcfa43bc2312b9c0fa7d5992c0e70a889f380fca52931f71c2acb9b6ee7c4"
+const CHAPTER_THREE_CONTENT_HASH := "6cea8186b024592bf3edb298df02400964c246eeab4cb6e475afdbfd3a8fe35a"
+const CHAPTER_TWO_CONTENT_HASH := "7a6edddb768b4bb813bc52bd0fd334269ebeee7a6228ac55ac0806704801420f"
+const PACKAGE_G_CONTENT_HASH := "b4b4a50190f3bf99b182956bc79d0d98c31a3777077de800bd7f483c0a6c5cbc"
+const PACKAGE_F_CONTENT_HASH := "31f5f97f71efde814a73ae6d9d91e6b8205b5b6dbd15e4dfd48bfbad1e65d569"
+const PACKAGE_E_CONTENT_HASH := "ddd28d9e4d121e06046305cba134bad25f39250690e9eadde1b95f0f0a89dfaa"
+const PACKAGE_D_CONTENT_HASH := "1e3c41e4223704a29050f28294bef4a38b9569186e6a6234a921c3685e92ab3e"
+const PACKAGE_A_CONTENT_HASH := "6317cdd43003233238309a0ecadad895d4962cdf188dca3ff0802bba8f42125a"
 const SAFE_INT := 9007199254740991
 const MAX_DOCUMENT_BYTES := 4194304
 const MAX_NODES := 150000
@@ -48,6 +57,11 @@ func initialize(catalog: Dictionary, storage: Node) -> bool:
 		if not existing is Dictionary:
 			return _fail("INVALID_OR_INCOMPATIBLE_CAMPAIGN_DOMAIN")
 		var candidate: Dictionary = existing.duplicate(true)
+		# This read-only gate precedes even the six-setting migration. A known
+		# catalog identity is a routing hint, never permission to load its snapshot.
+		var active: Variant = candidate.get("current_run")
+		if active is Dictionary and active.get("content_hash") != _content_hash:
+			return _fail("LEGACY_ACTIVE_RUN_REQUIRES_PREVIOUS_VERSION" if active.get("content_hash") in [LEGACY_CONTENT_HASH, PACKAGE_A_CONTENT_HASH, PACKAGE_B_CONTENT_HASH, PACKAGE_D_CONTENT_HASH, PACKAGE_E_CONTENT_HASH, PACKAGE_F_CONTENT_HASH, PACKAGE_G_CONTENT_HASH, CHAPTER_TWO_CONTENT_HASH, CHAPTER_THREE_CONTENT_HASH] else "UNKNOWN_ACTIVE_RUN_CONTENT")
 		var migrate_fullscreen := _integer(candidate.get("schema"), 1, 1) and candidate.get("settings") is Dictionary and _keys(candidate.settings, ["locale", "master", "music", "sfx", "font_scale", "reduce_motion"])
 		if migrate_fullscreen:
 			candidate.settings["fullscreen"] = false
@@ -64,7 +78,7 @@ func initialize(catalog: Dictionary, storage: Node) -> bool:
 			if not status is int or status != 0:
 				_blocked = true
 				return _fail("SETTINGS_MIGRATION_COMMIT_FAILED_RELOAD_REQUIRED")
-		_data = JSON.parse_string(JSON.stringify(candidate, "", true, true))
+		_data = candidate.duplicate(true)
 		_ready = true
 		_blocked = false
 		error = ""
@@ -124,6 +138,8 @@ func purchase_branch(index: int) -> bool:
 		return false
 	if index < 0 or index > 2 or int(_data.branches[index]) >= 5:
 		return _fail("INVALID_OR_MAX_BRANCH")
+	if int(_data.completed) < branch_requirement(index):
+		return _fail("BRANCH_CHAPTER_LOCKED")
 	var price := _tune("progression_cost_base") + int(_data.branches[index]) * _tune("progression_cost_step")
 	if int(_data.pages) < price:
 		return _fail("INSUFFICIENT_PAGES")
@@ -134,6 +150,13 @@ func purchase_branch(index: int) -> bool:
 	next.stats.total_branch_levels += 1
 	_award(next)
 	return _publish(next)
+
+## Required completed-mission count for the next purchase; -1 means unavailable/max.
+## Existing ranks are not checked against this purchase-only restriction.
+func branch_requirement(index: int) -> int:
+	if not _ready or index < 0 or index > 2 or int(_data.branches[index]) >= 5:
+		return -1
+	return int(_catalog.tuning.progression_unlock_completed[int(_data.branches[index])])
 
 ## Convert earned herbs into one unlocked pill, without wall-clock timers.
 func cultivate(pill_id: String) -> bool:
@@ -186,15 +209,24 @@ func begin_run(mission_index: int, pill_id: String = "", challenge_id: String = 
 	return {"status": "OK", "run": run.duplicate(true)}
 
 ## Persist a JSON-safe bounded checkpoint, preserving run identity and loadout.
-## Arena semantic validation is the caller's responsibility before this method.
+## Reject unrecoverable battle state before touching either durable slot.
 func save_run(snapshot: Dictionary) -> bool:
 	if not _available():
 		return false
 	if _data.current_run == null or not _json_document(snapshot):
 		return _fail("NO_RUN_OR_INVALID_SNAPSHOT")
+	if not _valid_checkpoint(snapshot):
+		return _fail("INVALID_BATTLE_CHECKPOINT")
 	var next := _data.duplicate(true)
 	next.current_run.snapshot = snapshot.duplicate(true)
 	return _publish(next)
+
+## Bind the checkpoint to the current run and the same Arena restore contract.
+func _valid_checkpoint(snapshot: Dictionary) -> bool:
+	var run: Dictionary = _data.current_run
+	if not preload("res://src/campaign/campaign_arena_validation.gd").same_values(snapshot.get("loadout", {}), run.loadout) or snapshot.get("rng_seed") != run.seed:
+		return false
+	return preload("res://src/campaign/campaign_arena.gd").validate_snapshot(_catalog, _catalog.missions[int(run.mission_index)], snapshot)
 
 ## Resolve one live run once, committing retirement, rewards and achievements together.
 ## Arena supplies per-run stats; numeric counters accumulate, level takes the maximum.
@@ -398,6 +430,13 @@ func _tune(key: String) -> int:
 	return int(_catalog.tuning[key])
 
 func _publish(next: Dictionary) -> bool:
+	# Re-emit exact authoritative bits on every write, including settings while paused.
+	# Repeated JSON load/save must never accumulate numeric mirror rounding.
+	if next.get("current_run") is Dictionary and not next.current_run.get("snapshot",{}).is_empty():
+		var snap: Dictionary = next.current_run.snapshot
+		var codec = preload("res://src/campaign/campaign_arena_codec.gd")
+		if not snap.get("state") is Dictionary or not snap.get("numeric_bits") is Dictionary or not codec.valid(snap.state,snap.numeric_bits): return _fail("INVALID_BATTLE_CHECKPOINT")
+		snap.state = codec.restore(snap.state,snap.numeric_bits)
 	if not _valid_data(next):
 		return _fail("INVALID_AFTERIMAGE")
 	if not is_instance_valid(_storage):
@@ -405,14 +444,14 @@ func _publish(next: Dictionary) -> bool:
 		return _fail("STORAGE_UNAVAILABLE")
 	# Detect another profile instance publishing into this domain before overwriting it.
 	var current: Dictionary = _storage.call("profile_snapshot")
-	if JSON.parse_string(JSON.stringify(current.get("domains", {}).get(DOMAIN, {}), "", true, true)) != _data:
+	if not preload("res://src/campaign/campaign_arena_validation.gd").same_values(current.get("domains", {}).get(DOMAIN, {}), _data):
 		_blocked = true
 		return _fail("STALE_PROFILE_RELOAD_REQUIRED")
 	var status: Variant = _storage.call("commit_domain_after_images", {DOMAIN: next.duplicate(true)})
 	if not status is int or status != 0:
 		_blocked = true
 		return _fail("STORAGE_COMMIT_FAILED_%s_RELOAD_REQUIRED" % str(status))
-	_data = JSON.parse_string(JSON.stringify(next, "", true, true))
+	_data = next.duplicate(true)
 	error = ""
 	return true
 
@@ -486,6 +525,14 @@ func _valid_catalog() -> bool:
 		return _fail("no initially unlocked character")
 	if not _catalog.get("tuning", {}) is Dictionary:
 		return _fail("missing tuning")
+	var gates: Variant = _catalog.tuning.get("progression_unlock_completed")
+	if not gates is Array or gates.size() != 5:
+		return _fail("invalid progression gates")
+	var previous := -1
+	for gate in gates:
+		if not _integer(gate, 0, 64) or int(gate) < previous:
+			return _fail("invalid progression gates")
+		previous = int(gate)
 	for key in ["profile_pill_cap", "profile_kills_per_page", "profile_kills_per_herb", "progression_cost_base"]:
 		if not _integer(_catalog.get("tuning", {}).get(key), 1, SAFE_INT):
 			return _fail("invalid positive profile tuning")

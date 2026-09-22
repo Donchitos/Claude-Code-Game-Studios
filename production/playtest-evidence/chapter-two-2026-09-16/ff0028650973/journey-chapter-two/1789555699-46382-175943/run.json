@@ -1,0 +1,11 @@
+{
+	"arguments": [
+		"--alternate-build",
+		"--risk-route",
+		"--evidence-root=res://production/playtest-evidence/chapter-two-2026-09-16"
+	],
+	"content_hash": "ff0028650973c33a96a1ccb24ecf7c09a3af8840525c52b476a86d5e90f22e02",
+	"engine": "4.7.1-stable (official)",
+	"scope": "automated test evidence, not human or release certification",
+	"suite": "journey-chapter-two"
+}

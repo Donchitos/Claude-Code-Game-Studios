@@ -1,5 +1,9 @@
 # Progression Tree（功法树）
 
+> 2026-09-22 第四至八章本地交付：40关有限遭遇、区域精英、场地关闭、六种Boss与护送路标XP已实现。最终安全C01和逐章角色备战风险两路线各64/64、结局重启通过，共1235次磁盘恢复/213461tick对照；24套回归、实际PCK续玩/第三章旧包零写入兼容通过。C03固定成长压力99/120，不宣称全角色平衡或商业发行完成；新玩家SKIPPED_BY_USER，battle_ready=false。 见[交付证据](../../production/playtest-evidence/2026-09-22-final-chapters.md)与[ADR-0012](../../docs/architecture/adr-0012-late-campaign-encounters.md)。仅Campaign增量，不改变下方legacy ABI或设计评审裁决。
+
+> 2026-09-15 Campaign开发入口A包：三脉索引0/1/2固定为锋意伤害/体魄生命/采灵拾取，新购买1–5阶要求完成0/8/24/40/56程，原4n价格及已购高阶保留。权威数据为campaign_game.json的progression_unlock_completed；Profile执行购买准入、UI显示同一条件。见[实施证据](../../production/playtest-evidence/2026-09-15-package-a.md)。仅CAMPAIGN_GAMEPLAY_V1实现，不覆盖下方旧profile规则或完整Steam owner合同；独立复审待执行。
+
 > 2026-09-11 WP04b 适配路由：五域结构/联合校验与当前 `LEGACY_STAGE_PC_V1` capture/restore 见 [Steam域与快照适配](steam-save-domain-adapters.md)。Pool/Grid 原生引用不落盘；当前生成逻辑viewport冻结，RNG保存实际seed/state并绑定engine commit；全Scope tick结束才捕获。此实现不补齐本文件全部商业owner合同；真实v2迁移/事务、Mission/SkillDraft/Preparation/Settlement语义和商业最大预算仍OPEN，battle_ready=false。
 
 > 2026-09-11 Steam合同路由（作者传播，implementation gate OPEN）：Steam v2保持旧3×5成长原值，章节/内容解锁另属Campaign；新迁移与完成after-image按save-steam-pc.md、campaign-flow.md。具体domain schema/migration/快照预算待本owner冻结，不能因路由声明视为生产接入。
@@ -476,3 +480,13 @@ Progression不依赖Leveling/XP：局内等级和局外功法等级是不同doma
 本文冻结三分支×五级、统一残页domain、购买after-image、下一局projection、九条公式、24类edge case与30项AC。`PROVISIONAL-ECONOMY-V1`给出可试玩的4/8/12/16/20成本和90秒里程碑，但不把理论局数当作平衡通过。
 
 Zhangtian、Settlement、Home与Prep作者GDD现已补齐并完成本轮静态传播。本文状态保持`In Review / Re-review Pending`；Save generic mutation、跨系统runtime/device/balance与clean-context full review未闭合前，不得称implementation-ready、runtime verified或battle_ready。
+
+
+## 2026-09-16 第二章实现增量
+
+第二章8关已实现固定矿轨与有限遭遇、喷口逐一关闭、冷却匣/炉工护送、中途机缘、指定熔脊行者及炉门弱点三阶段Boss。机制/验收见 `design/chapter-two-playable.md`、`docs/architecture/adr-0010-chapter-two-thermal-encounters.md`；交付证据见 `production/playtest-evidence/2026-09-16-chapter-two.md`。快照CAMPAIGN_CHAPTER2_V1，局外仍CAMPAIGN_GAMEPLAY_V1；第一章8关后开放二阶/第二角色。固定tick派生热场/门窗；Profile保留精确数值并在重写前重建数值镜像，避免多次JSON舍入。此增量不改变第三章以后2+1经验基线，也不声称全游戏经济、商业Save v2或发行验收完成。新玩家试玩SKIPPED_BY_USER，battle_ready=false。
+
+
+## 2026-09-17 第三章限定交付
+
+第三章8关潮汐内容已实现并完成两条新档1→24连续旅程；规则见 `design/chapter-three-playable.md`、ADR-0011，最终证据见 `production/playtest-evidence/2026-09-17-chapter-three.md`。CAMPAIGN_CHAPTER3_V1；章内经验6/4、180tick升级间隔，覆盖本文件先前“第三章以后不变”的历史表述（第四章以后仍旧基线）。Boss伤害边界同步阶段/悟性、末期整轮zone+projectile容量预检；永久淹池单区且恢复不重复。24关开放三阶，资源富余未全局重平衡。额外64关独立54/64，连续止M06-06，不能称全游戏验收。新玩家SKIPPED_BY_USER，battle_ready=false。

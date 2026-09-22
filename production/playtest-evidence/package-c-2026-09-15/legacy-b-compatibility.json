@@ -1,0 +1,19 @@
+{
+  "prepare": {
+    "a": "9bc46e2fa11e60f82b2cfc2cbd81a394abe99f576c03afe4e8ff76a5811ebd5b",
+    "b": "ea884457fdc52b07891144d6cd39cd7505d24674ced8402a10a1bab421551430"
+  },
+  "blocked": {
+    "a": "9bc46e2fa11e60f82b2cfc2cbd81a394abe99f576c03afe4e8ff76a5811ebd5b",
+    "b": "ea884457fdc52b07891144d6cd39cd7505d24674ced8402a10a1bab421551430"
+  },
+  "finish": {
+    "a": "9bc46e2fa11e60f82b2cfc2cbd81a394abe99f576c03afe4e8ff76a5811ebd5b",
+    "b": "d8cc51b5c297074e66b76bbd5fe9fb3f2e04a8d9385e263341a040251640ac26"
+  },
+  "home": {
+    "a": "9bc46e2fa11e60f82b2cfc2cbd81a394abe99f576c03afe4e8ff76a5811ebd5b",
+    "b": "d8cc51b5c297074e66b76bbd5fe9fb3f2e04a8d9385e263341a040251640ac26"
+  },
+  "blocked_zero_write": true
+}

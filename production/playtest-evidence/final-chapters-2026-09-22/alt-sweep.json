@@ -1,0 +1,1087 @@
+{
+	"hash": "abc5f36fd15ea1f7623b4fdf46edd035056ff18f413b97e2bac4410708f86b96",
+	"rows": [
+		{
+			"hp": 238.0,
+			"level": 4,
+			"mission": "S1-M04-01",
+			"reason": "anchors_destroyed",
+			"seconds": 77.1333333333302,
+			"seed": 2228242853,
+			"victory": true
+		},
+		{
+			"hp": 238.0,
+			"level": 4,
+			"mission": "S1-M04-01",
+			"reason": "anchors_destroyed",
+			"seconds": 87.2999999999963,
+			"seed": 197682660,
+			"victory": true
+		},
+		{
+			"hp": 238.0,
+			"level": 4,
+			"mission": "S1-M04-01",
+			"reason": "anchors_destroyed",
+			"seconds": 94.0166666666626,
+			"seed": 977,
+			"victory": true
+		},
+		{
+			"hp": 238.0,
+			"level": 4,
+			"mission": "S1-M04-02",
+			"reason": "escort_arrived",
+			"seconds": 16.5833333333337,
+			"seed": 2228242853,
+			"victory": true
+		},
+		{
+			"hp": 238.0,
+			"level": 4,
+			"mission": "S1-M04-02",
+			"reason": "escort_arrived",
+			"seconds": 16.5833333333337,
+			"seed": 197682660,
+			"victory": true
+		},
+		{
+			"hp": 235.0,
+			"level": 4,
+			"mission": "S1-M04-02",
+			"reason": "escort_arrived",
+			"seconds": 19.1833333333335,
+			"seed": 977,
+			"victory": true
+		},
+		{
+			"hp": 238.0,
+			"level": 4,
+			"mission": "S1-M04-03",
+			"reason": "targets_hunted",
+			"seconds": 156.58333333335,
+			"seed": 2228242853,
+			"victory": true
+		},
+		{
+			"hp": 238.0,
+			"level": 4,
+			"mission": "S1-M04-03",
+			"reason": "targets_hunted",
+			"seconds": 140.766666666671,
+			"seed": 197682660,
+			"victory": true
+		},
+		{
+			"hp": 238.0,
+			"level": 4,
+			"mission": "S1-M04-03",
+			"reason": "targets_hunted",
+			"seconds": 200.550000000052,
+			"seed": 977,
+			"victory": true
+		},
+		{
+			"hp": 226.915104,
+			"level": 4,
+			"mission": "S1-M04-04",
+			"reason": "zones_cleansed",
+			"seconds": 82.5333333333299,
+			"seed": 2228242853,
+			"victory": true
+		},
+		{
+			"hp": 230.670208,
+			"level": 4,
+			"mission": "S1-M04-04",
+			"reason": "zones_cleansed",
+			"seconds": 111.866666666662,
+			"seed": 197682660,
+			"victory": true
+		},
+		{
+			"hp": 237.0,
+			"level": 3,
+			"mission": "S1-M04-04",
+			"reason": "zones_cleansed",
+			"seconds": 92.1666666666627,
+			"seed": 977,
+			"victory": true
+		},
+		{
+			"hp": 238.0,
+			"level": 4,
+			"mission": "S1-M04-05",
+			"reason": "extracted",
+			"seconds": 111.616666666662,
+			"seed": 2228242853,
+			"victory": true
+		},
+		{
+			"hp": 238.0,
+			"level": 3,
+			"mission": "S1-M04-05",
+			"reason": "extracted",
+			"seconds": 114.233333333328,
+			"seed": 197682660,
+			"victory": true
+		},
+		{
+			"hp": 216.979904,
+			"level": 4,
+			"mission": "S1-M04-05",
+			"reason": "extracted",
+			"seconds": 109.349999999995,
+			"seed": 977,
+			"victory": true
+		},
+		{
+			"hp": 223.980256,
+			"level": 4,
+			"mission": "S1-M04-06",
+			"reason": "anchors_destroyed",
+			"seconds": 107.033333333329,
+			"seed": 2228242853,
+			"victory": true
+		},
+		{
+			"hp": 238.0,
+			"level": 4,
+			"mission": "S1-M04-06",
+			"reason": "anchors_destroyed",
+			"seconds": 131.716666666664,
+			"seed": 197682660,
+			"victory": true
+		},
+		{
+			"hp": 224.659552,
+			"level": 4,
+			"mission": "S1-M04-06",
+			"reason": "anchors_destroyed",
+			"seconds": 117.433333333328,
+			"seed": 977,
+			"victory": true
+		},
+		{
+			"hp": 238.0,
+			"level": 4,
+			"mission": "S1-M04-07",
+			"reason": "targets_hunted",
+			"seconds": 152.833333333347,
+			"seed": 2228242853,
+			"victory": true
+		},
+		{
+			"hp": 238.0,
+			"level": 4,
+			"mission": "S1-M04-07",
+			"reason": "targets_hunted",
+			"seconds": 148.433333333344,
+			"seed": 197682660,
+			"victory": true
+		},
+		{
+			"hp": 238.0,
+			"level": 4,
+			"mission": "S1-M04-07",
+			"reason": "targets_hunted",
+			"seconds": 177.5166666667,
+			"seed": 977,
+			"victory": true
+		},
+		{
+			"hp": 229.768,
+			"level": 5,
+			"mission": "S1-M04-08",
+			"reason": "boss_defeated",
+			"seconds": 63.5166666666643,
+			"seed": 2228242853,
+			"victory": true
+		},
+		{
+			"hp": 229.768,
+			"level": 5,
+			"mission": "S1-M04-08",
+			"reason": "boss_defeated",
+			"seconds": 141.983333333338,
+			"seed": 197682660,
+			"victory": true
+		},
+		{
+			"hp": 205.072,
+			"level": 5,
+			"mission": "S1-M04-08",
+			"reason": "boss_defeated",
+			"seconds": 148.466666666677,
+			"seed": 977,
+			"victory": true
+		},
+		{
+			"hp": 109.144,
+			"level": 4,
+			"mission": "S1-M05-01",
+			"reason": "zones_cleansed",
+			"seconds": 59.6499999999979,
+			"seed": 2228242853,
+			"victory": true
+		},
+		{
+			"hp": 131.824,
+			"level": 4,
+			"mission": "S1-M05-01",
+			"reason": "zones_cleansed",
+			"seconds": 72.5333333333305,
+			"seed": 197682660,
+			"victory": true
+		},
+		{
+			"hp": 109.144,
+			"level": 4,
+			"mission": "S1-M05-01",
+			"reason": "zones_cleansed",
+			"seconds": 61.2166666666645,
+			"seed": 977,
+			"victory": true
+		},
+		{
+			"hp": 233.416,
+			"level": 5,
+			"mission": "S1-M05-02",
+			"reason": "escort_arrived",
+			"seconds": 16.5833333333337,
+			"seed": 2228242853,
+			"victory": true
+		},
+		{
+			"hp": 224.248,
+			"level": 5,
+			"mission": "S1-M05-02",
+			"reason": "escort_arrived",
+			"seconds": 27.6999999999997,
+			"seed": 197682660,
+			"victory": true
+		},
+		{
+			"hp": 238.0,
+			"level": 6,
+			"mission": "S1-M05-02",
+			"reason": "escort_arrived",
+			"seconds": 23.1666666666666,
+			"seed": 977,
+			"victory": true
+		},
+		{
+			"hp": 126.728,
+			"level": 3,
+			"mission": "S1-M05-03",
+			"reason": "targets_hunted",
+			"seconds": 69.2833333333307,
+			"seed": 2228242853,
+			"victory": true
+		},
+		{
+			"hp": 147.44,
+			"level": 3,
+			"mission": "S1-M05-03",
+			"reason": "targets_hunted",
+			"seconds": 67.8833333333308,
+			"seed": 197682660,
+			"victory": true
+		},
+		{
+			"hp": 115.28,
+			"level": 3,
+			"mission": "S1-M05-03",
+			"reason": "targets_hunted",
+			"seconds": 73.0999999999971,
+			"seed": 977,
+			"victory": true
+		},
+		{
+			"hp": 111.48,
+			"level": 7,
+			"mission": "S1-M05-04",
+			"reason": "extracted",
+			"seconds": 116.666666666661,
+			"seed": 2228242853,
+			"victory": true
+		},
+		{
+			"hp": 23.9599999999997,
+			"level": 6,
+			"mission": "S1-M05-04",
+			"reason": "extracted",
+			"seconds": 115.116666666661,
+			"seed": 197682660,
+			"victory": true
+		},
+		{
+			"hp": 155.68,
+			"level": 6,
+			"mission": "S1-M05-04",
+			"reason": "extracted",
+			"seconds": 115.633333333328,
+			"seed": 977,
+			"victory": true
+		},
+		{
+			"hp": 30.4799999999999,
+			"level": 5,
+			"mission": "S1-M05-05",
+			"reason": "anchors_destroyed",
+			"seconds": 104.433333333329,
+			"seed": 2228242853,
+			"victory": true
+		},
+		{
+			"hp": 167.592,
+			"level": 5,
+			"mission": "S1-M05-05",
+			"reason": "anchors_destroyed",
+			"seconds": 91.4333333333294,
+			"seed": 197682660,
+			"victory": true
+		},
+		{
+			"hp": 177.048,
+			"level": 5,
+			"mission": "S1-M05-05",
+			"reason": "anchors_destroyed",
+			"seconds": 91.4333333333294,
+			"seed": 977,
+			"victory": true
+		},
+		{
+			"hp": 123.184,
+			"level": 4,
+			"mission": "S1-M05-06",
+			"reason": "zones_cleansed",
+			"seconds": 59.4499999999979,
+			"seed": 2228242853,
+			"victory": true
+		},
+		{
+			"hp": 84.9759999999998,
+			"level": 4,
+			"mission": "S1-M05-06",
+			"reason": "zones_cleansed",
+			"seconds": 68.5166666666641,
+			"seed": 197682660,
+			"victory": true
+		},
+		{
+			"hp": 238.0,
+			"level": 3,
+			"mission": "S1-M05-06",
+			"reason": "zones_cleansed",
+			"seconds": 41.9666666666656,
+			"seed": 977,
+			"victory": true
+		},
+		{
+			"hp": 238.0,
+			"level": 7,
+			"mission": "S1-M05-07",
+			"reason": "escort_arrived",
+			"seconds": 23.15,
+			"seed": 2228242853,
+			"victory": true
+		},
+		{
+			"hp": 233.176,
+			"level": 6,
+			"mission": "S1-M05-07",
+			"reason": "escort_arrived",
+			"seconds": 27.4499999999997,
+			"seed": 197682660,
+			"victory": true
+		},
+		{
+			"hp": 238.0,
+			"level": 7,
+			"mission": "S1-M05-07",
+			"reason": "escort_arrived",
+			"seconds": 26.9333333333331,
+			"seed": 977,
+			"victory": true
+		},
+		{
+			"hp": 0.0,
+			"level": 5,
+			"mission": "S1-M05-08",
+			"reason": "player_dead",
+			"seconds": 170.333333333361,
+			"seed": 2228242853,
+			"victory": false
+		},
+		{
+			"hp": 0.0,
+			"level": 2,
+			"mission": "S1-M05-08",
+			"reason": "player_dead",
+			"seconds": 97.0833333333291,
+			"seed": 197682660,
+			"victory": false
+		},
+		{
+			"hp": 0.0,
+			"level": 2,
+			"mission": "S1-M05-08",
+			"reason": "player_dead",
+			"seconds": 63.6999999999977,
+			"seed": 977,
+			"victory": false
+		},
+		{
+			"hp": 186.96,
+			"level": 3,
+			"mission": "S1-M06-01",
+			"reason": "zones_cleansed",
+			"seconds": 55.4999999999981,
+			"seed": 2228242853,
+			"victory": true
+		},
+		{
+			"hp": 248.0,
+			"level": 3,
+			"mission": "S1-M06-01",
+			"reason": "zones_cleansed",
+			"seconds": 47.2499999999986,
+			"seed": 197682660,
+			"victory": true
+		},
+		{
+			"hp": 248.0,
+			"level": 3,
+			"mission": "S1-M06-01",
+			"reason": "zones_cleansed",
+			"seconds": 48.3499999999985,
+			"seed": 977,
+			"victory": true
+		},
+		{
+			"hp": 212.128,
+			"level": 4,
+			"mission": "S1-M06-02",
+			"reason": "targets_hunted",
+			"seconds": 78.2999999999968,
+			"seed": 2228242853,
+			"victory": true
+		},
+		{
+			"hp": 238.608,
+			"level": 4,
+			"mission": "S1-M06-02",
+			"reason": "targets_hunted",
+			"seconds": 84.7999999999965,
+			"seed": 197682660,
+			"victory": true
+		},
+		{
+			"hp": 200.488,
+			"level": 4,
+			"mission": "S1-M06-02",
+			"reason": "targets_hunted",
+			"seconds": 79.5999999999968,
+			"seed": 977,
+			"victory": true
+		},
+		{
+			"hp": 248.0,
+			"level": 6,
+			"mission": "S1-M06-03",
+			"reason": "escort_arrived",
+			"seconds": 27.1499999999997,
+			"seed": 2228242853,
+			"victory": true
+		},
+		{
+			"hp": 248.0,
+			"level": 5,
+			"mission": "S1-M06-03",
+			"reason": "escort_arrived",
+			"seconds": 19.6166666666668,
+			"seed": 197682660,
+			"victory": true
+		},
+		{
+			"hp": 217.376,
+			"level": 5,
+			"mission": "S1-M06-03",
+			"reason": "escort_arrived",
+			"seconds": 26.7166666666664,
+			"seed": 977,
+			"victory": true
+		},
+		{
+			"hp": 157.544,
+			"level": 4,
+			"mission": "S1-M06-04",
+			"reason": "anchors_destroyed",
+			"seconds": 99.233333333329,
+			"seed": 2228242853,
+			"victory": true
+		},
+		{
+			"hp": 153.728,
+			"level": 4,
+			"mission": "S1-M06-04",
+			"reason": "anchors_destroyed",
+			"seconds": 97.9333333333291,
+			"seed": 197682660,
+			"victory": true
+		},
+		{
+			"hp": 153.728,
+			"level": 4,
+			"mission": "S1-M06-04",
+			"reason": "anchors_destroyed",
+			"seconds": 82.3333333333299,
+			"seed": 977,
+			"victory": true
+		},
+		{
+			"hp": 127.352,
+			"level": 6,
+			"mission": "S1-M06-05",
+			"reason": "extracted",
+			"seconds": 126.566666666661,
+			"seed": 2228242853,
+			"victory": true
+		},
+		{
+			"hp": 191.992,
+			"level": 6,
+			"mission": "S1-M06-05",
+			"reason": "extracted",
+			"seconds": 126.199999999994,
+			"seed": 197682660,
+			"victory": true
+		},
+		{
+			"hp": 170.616,
+			"level": 6,
+			"mission": "S1-M06-05",
+			"reason": "extracted",
+			"seconds": 126.183333333327,
+			"seed": 977,
+			"victory": true
+		},
+		{
+			"hp": 245.28,
+			"level": 3,
+			"mission": "S1-M06-06",
+			"reason": "zones_cleansed",
+			"seconds": 46.683333333332,
+			"seed": 2228242853,
+			"victory": true
+		},
+		{
+			"hp": 248.0,
+			"level": 3,
+			"mission": "S1-M06-06",
+			"reason": "zones_cleansed",
+			"seconds": 55.3499999999981,
+			"seed": 197682660,
+			"victory": true
+		},
+		{
+			"hp": 235.76,
+			"level": 3,
+			"mission": "S1-M06-06",
+			"reason": "zones_cleansed",
+			"seconds": 43.3833333333322,
+			"seed": 977,
+			"victory": true
+		},
+		{
+			"hp": 202.304,
+			"level": 4,
+			"mission": "S1-M06-07",
+			"reason": "targets_hunted",
+			"seconds": 74.4499999999971,
+			"seed": 2228242853,
+			"victory": true
+		},
+		{
+			"hp": 228.272,
+			"level": 3,
+			"mission": "S1-M06-07",
+			"reason": "targets_hunted",
+			"seconds": 74.4999999999971,
+			"seed": 197682660,
+			"victory": true
+		},
+		{
+			"hp": 136.544,
+			"level": 4,
+			"mission": "S1-M06-07",
+			"reason": "targets_hunted",
+			"seconds": 51.116666666665,
+			"seed": 977,
+			"victory": true
+		},
+		{
+			"hp": 201.488,
+			"level": 5,
+			"mission": "S1-M06-08",
+			"reason": "boss_defeated",
+			"seconds": 171.916666666696,
+			"seed": 2228242853,
+			"victory": true
+		},
+		{
+			"hp": 199.456,
+			"level": 5,
+			"mission": "S1-M06-08",
+			"reason": "boss_defeated",
+			"seconds": 173.20000000003,
+			"seed": 197682660,
+			"victory": true
+		},
+		{
+			"hp": 211.592,
+			"level": 5,
+			"mission": "S1-M06-08",
+			"reason": "boss_defeated",
+			"seconds": 169.28333333336,
+			"seed": 977,
+			"victory": true
+		},
+		{
+			"hp": 94.9679999999999,
+			"level": 6,
+			"mission": "S1-M07-01",
+			"reason": "extracted",
+			"seconds": 116.516666666661,
+			"seed": 2228242853,
+			"victory": true
+		},
+		{
+			"hp": 203.264,
+			"level": 5,
+			"mission": "S1-M07-01",
+			"reason": "extracted",
+			"seconds": 117.899999999995,
+			"seed": 197682660,
+			"victory": true
+		},
+		{
+			"hp": 237.568,
+			"level": 6,
+			"mission": "S1-M07-01",
+			"reason": "extracted",
+			"seconds": 116.333333333328,
+			"seed": 977,
+			"victory": true
+		},
+		{
+			"hp": 248.0,
+			"level": 4,
+			"mission": "S1-M07-02",
+			"reason": "escort_arrived",
+			"seconds": 18.2500000000002,
+			"seed": 2228242853,
+			"victory": true
+		},
+		{
+			"hp": 239.864,
+			"level": 5,
+			"mission": "S1-M07-02",
+			"reason": "escort_arrived",
+			"seconds": 30.3833333333329,
+			"seed": 197682660,
+			"victory": true
+		},
+		{
+			"hp": 248.0,
+			"level": 4,
+			"mission": "S1-M07-02",
+			"reason": "escort_arrived",
+			"seconds": 16.5833333333337,
+			"seed": 977,
+			"victory": true
+		},
+		{
+			"hp": 248.0,
+			"level": 4,
+			"mission": "S1-M07-03",
+			"reason": "targets_hunted",
+			"seconds": 87.416666666663,
+			"seed": 2228242853,
+			"victory": true
+		},
+		{
+			"hp": 181.08,
+			"level": 4,
+			"mission": "S1-M07-03",
+			"reason": "targets_hunted",
+			"seconds": 87.416666666663,
+			"seed": 197682660,
+			"victory": true
+		},
+		{
+			"hp": 248.0,
+			"level": 3,
+			"mission": "S1-M07-03",
+			"reason": "targets_hunted",
+			"seconds": 83.4999999999965,
+			"seed": 977,
+			"victory": true
+		},
+		{
+			"hp": 223.208,
+			"level": 2,
+			"mission": "S1-M07-04",
+			"reason": "zones_cleansed",
+			"seconds": 63.9999999999976,
+			"seed": 2228242853,
+			"victory": true
+		},
+		{
+			"hp": 119.088,
+			"level": 2,
+			"mission": "S1-M07-04",
+			"reason": "zones_cleansed",
+			"seconds": 59.5666666666646,
+			"seed": 197682660,
+			"victory": true
+		},
+		{
+			"hp": 147.192,
+			"level": 3,
+			"mission": "S1-M07-04",
+			"reason": "zones_cleansed",
+			"seconds": 59.3166666666646,
+			"seed": 977,
+			"victory": true
+		},
+		{
+			"hp": 99.3199999999999,
+			"level": 4,
+			"mission": "S1-M07-05",
+			"reason": "anchors_destroyed",
+			"seconds": 109.633333333328,
+			"seed": 2228242853,
+			"victory": true
+		},
+		{
+			"hp": 126.488,
+			"level": 5,
+			"mission": "S1-M07-05",
+			"reason": "anchors_destroyed",
+			"seconds": 99.233333333329,
+			"seed": 197682660,
+			"victory": true
+		},
+		{
+			"hp": 99.3199999999999,
+			"level": 4,
+			"mission": "S1-M07-05",
+			"reason": "anchors_destroyed",
+			"seconds": 107.016666666662,
+			"seed": 977,
+			"victory": true
+		},
+		{
+			"hp": 222.824,
+			"level": 5,
+			"mission": "S1-M07-06",
+			"reason": "escort_arrived",
+			"seconds": 21.4666666666667,
+			"seed": 2228242853,
+			"victory": true
+		},
+		{
+			"hp": 239.608,
+			"level": 5,
+			"mission": "S1-M07-06",
+			"reason": "escort_destroyed",
+			"seconds": 23.05,
+			"seed": 197682660,
+			"victory": false
+		},
+		{
+			"hp": 248.0,
+			"level": 4,
+			"mission": "S1-M07-06",
+			"reason": "escort_destroyed",
+			"seconds": 26.4166666666664,
+			"seed": 977,
+			"victory": false
+		},
+		{
+			"hp": 121.488,
+			"level": 4,
+			"mission": "S1-M07-07",
+			"reason": "anchors_destroyed",
+			"seconds": 103.133333333329,
+			"seed": 2228242853,
+			"victory": true
+		},
+		{
+			"hp": 38.8560000000001,
+			"level": 5,
+			"mission": "S1-M07-07",
+			"reason": "anchors_destroyed",
+			"seconds": 97.9333333333291,
+			"seed": 197682660,
+			"victory": true
+		},
+		{
+			"hp": 96.1200000000002,
+			"level": 4,
+			"mission": "S1-M07-07",
+			"reason": "anchors_destroyed",
+			"seconds": 107.016666666662,
+			"seed": 977,
+			"victory": true
+		},
+		{
+			"hp": 33.48,
+			"level": 5,
+			"mission": "S1-M07-08",
+			"reason": "boss_defeated",
+			"seconds": 221.266666666735,
+			"seed": 2228242853,
+			"victory": true
+		},
+		{
+			"hp": 0.0,
+			"level": 3,
+			"mission": "S1-M07-08",
+			"reason": "player_dead",
+			"seconds": 146.466666666675,
+			"seed": 197682660,
+			"victory": false
+		},
+		{
+			"hp": 63.96,
+			"level": 4,
+			"mission": "S1-M07-08",
+			"reason": "boss_defeated",
+			"seconds": 222.566666666736,
+			"seed": 977,
+			"victory": true
+		},
+		{
+			"hp": 0.0,
+			"level": 2,
+			"mission": "S1-M08-01",
+			"reason": "player_dead",
+			"seconds": 43.8166666666655,
+			"seed": 2228242853,
+			"victory": false
+		},
+		{
+			"hp": 0.0,
+			"level": 2,
+			"mission": "S1-M08-01",
+			"reason": "player_dead",
+			"seconds": 54.1999999999982,
+			"seed": 197682660,
+			"victory": false
+		},
+		{
+			"hp": 0.0,
+			"level": 2,
+			"mission": "S1-M08-01",
+			"reason": "player_dead",
+			"seconds": 41.4499999999989,
+			"seed": 977,
+			"victory": false
+		},
+		{
+			"hp": 114.288,
+			"level": 4,
+			"mission": "S1-M08-02",
+			"reason": "anchors_destroyed",
+			"seconds": 91.4333333333294,
+			"seed": 2228242853,
+			"victory": true
+		},
+		{
+			"hp": 114.288,
+			"level": 4,
+			"mission": "S1-M08-02",
+			"reason": "anchors_destroyed",
+			"seconds": 92.7166666666627,
+			"seed": 197682660,
+			"victory": true
+		},
+		{
+			"hp": 56.6640000000002,
+			"level": 4,
+			"mission": "S1-M08-02",
+			"reason": "anchors_destroyed",
+			"seconds": 91.4333333333294,
+			"seed": 977,
+			"victory": true
+		},
+		{
+			"hp": 250.824,
+			"level": 4,
+			"mission": "S1-M08-03",
+			"reason": "escort_arrived",
+			"seconds": 17.5833333333336,
+			"seed": 2228242853,
+			"victory": true
+		},
+		{
+			"hp": 258.0,
+			"level": 5,
+			"mission": "S1-M08-03",
+			"reason": "escort_arrived",
+			"seconds": 22.55,
+			"seed": 197682660,
+			"victory": true
+		},
+		{
+			"hp": 258.0,
+			"level": 5,
+			"mission": "S1-M08-03",
+			"reason": "escort_arrived",
+			"seconds": 31.9999999999995,
+			"seed": 977,
+			"victory": true
+		},
+		{
+			"hp": 258.0,
+			"level": 3,
+			"mission": "S1-M08-04",
+			"reason": "targets_hunted",
+			"seconds": 88.6999999999963,
+			"seed": 2228242853,
+			"victory": true
+		},
+		{
+			"hp": 0.0,
+			"level": 3,
+			"mission": "S1-M08-04",
+			"reason": "player_dead",
+			"seconds": 55.7166666666648,
+			"seed": 197682660,
+			"victory": false
+		},
+		{
+			"hp": 45.4320000000001,
+			"level": 3,
+			"mission": "S1-M08-04",
+			"reason": "targets_hunted",
+			"seconds": 87.3999999999963,
+			"seed": 977,
+			"victory": true
+		},
+		{
+			"hp": 0.0,
+			"level": 3,
+			"mission": "S1-M08-05",
+			"reason": "player_dead",
+			"seconds": 54.2333333333315,
+			"seed": 2228242853,
+			"victory": false
+		},
+		{
+			"hp": 0.0,
+			"level": 2,
+			"mission": "S1-M08-05",
+			"reason": "player_dead",
+			"seconds": 38.3999999999991,
+			"seed": 197682660,
+			"victory": false
+		},
+		{
+			"hp": 0.0,
+			"level": 3,
+			"mission": "S1-M08-05",
+			"reason": "player_dead",
+			"seconds": 50.6166666666651,
+			"seed": 977,
+			"victory": false
+		},
+		{
+			"hp": 0.0,
+			"level": 2,
+			"mission": "S1-M08-06",
+			"reason": "player_dead",
+			"seconds": 55.2166666666648,
+			"seed": 2228242853,
+			"victory": false
+		},
+		{
+			"hp": 0.0,
+			"level": 2,
+			"mission": "S1-M08-06",
+			"reason": "player_dead",
+			"seconds": 37.5833333333325,
+			"seed": 197682660,
+			"victory": false
+		},
+		{
+			"hp": 21.5520000000001,
+			"level": 4,
+			"mission": "S1-M08-06",
+			"reason": "anchors_destroyed",
+			"seconds": 101.833333333329,
+			"seed": 977,
+			"victory": true
+		},
+		{
+			"hp": 0.0,
+			"level": 5,
+			"mission": "S1-M08-07",
+			"reason": "player_dead",
+			"seconds": 198.333333333383,
+			"seed": 2228242853,
+			"victory": false
+		},
+		{
+			"hp": 0.0,
+			"level": 2,
+			"mission": "S1-M08-07",
+			"reason": "player_dead",
+			"seconds": 88.6999999999963,
+			"seed": 197682660,
+			"victory": false
+		},
+		{
+			"hp": 0.0,
+			"level": 2,
+			"mission": "S1-M08-07",
+			"reason": "player_dead",
+			"seconds": 83.7499999999965,
+			"seed": 977,
+			"victory": false
+		},
+		{
+			"hp": 0.0,
+			"level": 5,
+			"mission": "S1-M08-08",
+			"reason": "player_dead",
+			"seconds": 207.533333333391,
+			"seed": 2228242853,
+			"victory": false
+		},
+		{
+			"hp": 0.0,
+			"level": 4,
+			"mission": "S1-M08-08",
+			"reason": "player_dead",
+			"seconds": 265.483333333421,
+			"seed": 197682660,
+			"victory": false
+		},
+		{
+			"hp": 0.0,
+			"level": 4,
+			"mission": "S1-M08-08",
+			"reason": "player_dead",
+			"seconds": 262.933333333423,
+			"seed": 977,
+			"victory": false
+		}
+	],
+	"scope": "zero growth C01 bot fixtures, not human",
+	"wins": 99
+}

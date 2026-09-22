@@ -24,6 +24,8 @@ static func advance(state: Dictionary, definition: Dictionary, delta: float,
 		return
 	if not is_finite(delta) or delta < 0.0:
 		return
+	# Match Arena active time even on a fatal tick; death still wins timeout ties.
+	state.elapsed = float(state.elapsed) + delta
 	if not bool(state.get("player_alive", true)):
 		_finish(state, false, "player_dead")
 		return
@@ -34,7 +36,6 @@ static func advance(state: Dictionary, definition: Dictionary, delta: float,
 	if not kind in ["SURVIVE", "BREAK", "CLEANSE", "HUNT", "ESCORT", "BOSS"]:
 		_finish(state, false, "invalid_definition")
 		return
-	state.elapsed = float(state.elapsed) + delta
 	# Deadline is inclusive: no success can be introduced at/after timeout.
 	if float(state.elapsed) >= float(definition.timeout_seconds):
 		_finish(state, false, "timeout")

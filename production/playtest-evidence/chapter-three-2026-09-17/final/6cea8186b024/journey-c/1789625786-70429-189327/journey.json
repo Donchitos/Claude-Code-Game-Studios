@@ -1,0 +1,304 @@
+{
+	"catalog_hash": "6cea8186b024592bf3edb298df02400964c246eeab4cb6e475afdbfd3a8fe35a",
+	"completed": 8.0,
+	"missions": [
+		{
+			"chapter": {},
+			"choices": 6,
+			"elapsed": 74.8333333333304,
+			"elite_kills": 0,
+			"escort_hp": 490.0,
+			"evolved": [],
+			"hp": 160.0,
+			"level": 7,
+			"mission": "S1-M01-01",
+			"restores": 4,
+			"skills": {
+				"S1-A01": 5
+			},
+			"skipped": 14,
+			"stages": [
+				0,
+				1200,
+				2700
+			],
+			"victory": true
+		},
+		{
+			"chapter": {},
+			"choices": 4,
+			"elapsed": 15.2333333333337,
+			"elite_kills": 0,
+			"escort_hp": 490.0,
+			"evolved": [],
+			"hp": 170.0,
+			"level": 5,
+			"mission": "S1-M01-02",
+			"restores": 3,
+			"skills": {
+				"S1-A01": 5
+			},
+			"skipped": 5,
+			"stages": [
+				0,
+				0,
+				172
+			],
+			"victory": true
+		},
+		{
+			"chapter": {},
+			"choices": 4,
+			"elapsed": 20.1833333333335,
+			"elite_kills": 0,
+			"escort_hp": 487.968,
+			"evolved": [],
+			"hp": 170.0,
+			"level": 5,
+			"mission": "S1-M01-03",
+			"restores": 4,
+			"skills": {
+				"S1-A01": 5
+			},
+			"skipped": 2,
+			"stages": [
+				0,
+				369,
+				823
+			],
+			"victory": true
+		},
+		{
+			"chapter": {
+				"attacks": [
+					0,
+					0,
+					0
+				],
+				"boss_phase": 0,
+				"clues": 3,
+				"error": "",
+				"first_warning": [
+					-1,
+					-1,
+					-1
+				],
+				"hits": [
+					0,
+					0,
+					0
+				],
+				"hunt_spawned": true,
+				"kill_tick": -1,
+				"landings": [],
+				"retry": 0,
+				"root_mask": 0
+			},
+			"choices": 2,
+			"elapsed": 9.33333333333338,
+			"elite_kills": 1,
+			"escort_hp": 490.0,
+			"evolved": [],
+			"hp": 170.0,
+			"level": 3,
+			"mission": "S1-M01-04",
+			"restores": 6,
+			"skills": {
+				"S1-A01": 3
+			},
+			"skipped": 3,
+			"stages": [
+				111,
+				246
+			],
+			"victory": true
+		},
+		{
+			"chapter": {
+				"attacks": [
+					0,
+					0,
+					0
+				],
+				"boss_phase": 0,
+				"clues": 0,
+				"error": "",
+				"first_warning": [
+					-1,
+					-1,
+					-1
+				],
+				"hits": [
+					0,
+					0,
+					0
+				],
+				"hunt_spawned": false,
+				"kill_tick": -1,
+				"landings": [],
+				"retry": 0,
+				"root_mask": 0
+			},
+			"choices": 3,
+			"elapsed": 17.7833333333336,
+			"elite_kills": 0,
+			"escort_hp": 490.0,
+			"evolved": [],
+			"hp": 170.0,
+			"level": 4,
+			"mission": "S1-M01-05",
+			"restores": 4,
+			"skills": {
+				"S1-A01": 4
+			},
+			"skipped": 12,
+			"stages": [
+				56,
+				56,
+				671,
+				671
+			],
+			"victory": true
+		},
+		{
+			"chapter": {
+				"attacks": [
+					0,
+					0,
+					0
+				],
+				"boss_phase": 0,
+				"clues": 0,
+				"error": "",
+				"first_warning": [
+					-1,
+					-1,
+					-1
+				],
+				"hits": [
+					0,
+					0,
+					0
+				],
+				"hunt_spawned": false,
+				"kill_tick": -1,
+				"landings": [],
+				"retry": 0,
+				"root_mask": 0
+			},
+			"choices": 10,
+			"elapsed": 94.2666666666626,
+			"elite_kills": 1,
+			"escort_hp": 490.0,
+			"evolved": [],
+			"hp": 166.0,
+			"level": 11,
+			"mission": "S1-M01-06",
+			"restores": 8,
+			"skills": {
+				"S1-A01": 5
+			},
+			"skipped": 30,
+			"stages": [
+				0,
+				900,
+				1800,
+				2700,
+				3600,
+				3600
+			],
+			"victory": true
+		},
+		{
+			"chapter": {
+				"attacks": [
+					0,
+					0,
+					0
+				],
+				"boss_phase": 0,
+				"clues": 0,
+				"error": "",
+				"first_warning": [
+					-1,
+					-1,
+					-1
+				],
+				"hits": [
+					0,
+					0,
+					0
+				],
+				"hunt_spawned": false,
+				"kill_tick": -1,
+				"landings": [],
+				"retry": 0,
+				"root_mask": 7
+			},
+			"choices": 3,
+			"elapsed": 19.4666666666668,
+			"elite_kills": 0,
+			"escort_hp": 490.0,
+			"evolved": [],
+			"hp": 170.0,
+			"level": 4,
+			"mission": "S1-M01-07",
+			"restores": 4,
+			"skills": {
+				"S1-A01": 4
+			},
+			"skipped": 7,
+			"stages": [
+				0,
+				0,
+				368
+			],
+			"victory": true
+		},
+		{
+			"chapter": {
+				"attacks": [
+					4,
+					2,
+					1
+				],
+				"boss_phase": 2,
+				"clues": 0,
+				"error": "",
+				"first_warning": [
+					32,
+					597,
+					832
+				],
+				"hits": [
+					1,
+					2,
+					1
+				],
+				"hunt_spawned": false,
+				"kill_tick": 951,
+				"landings": [],
+				"retry": 0,
+				"root_mask": 0
+			},
+			"choices": 3,
+			"elapsed": 15.8500000000004,
+			"elite_kills": 0,
+			"escort_hp": 490.0,
+			"evolved": [],
+			"hp": 170.0,
+			"level": 4,
+			"mission": "S1-M01-08",
+			"restores": 9,
+			"skills": {
+				"S1-A01": 4
+			},
+			"skipped": 5,
+			"stages": [
+				0
+			],
+			"victory": true
+		}
+	],
+	"scope": "real new-profile sequential eight missions, bot not human"
+}

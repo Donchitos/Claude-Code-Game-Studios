@@ -1,0 +1,50 @@
+{
+  "profile": "CAMPAIGN_GAMEPLAY_V1",
+  "arena_schema": "CAMPAIGN_CHAPTER1_V2",
+  "content_sha256": "1e3c41e4223704a29050f28294bef4a38b9569186e6a6234a921c3685e92ab3e",
+  "status": "IMPLEMENTED_LOCAL_CHECKS_PASS_INDEPENDENT_REVIEW_PENDING",
+  "mission_scope": "S1-M01-04..08",
+  "new_triggers": [
+    "CLUE_PROGRESS",
+    "CLEANSE_HALF"
+  ],
+  "chapter_state": [
+    "clues",
+    "hunt_spawned",
+    "retry",
+    "root_mask",
+    "boss_phase",
+    "first_warning",
+    "attacks",
+    "hits",
+    "kill_tick",
+    "landings",
+    "error"
+  ],
+  "hunt": {
+    "enemy_id": "S1-E01",
+    "clue_count": 3,
+    "reserved_slots": 1,
+    "retry_ticks": 60,
+    "event_ids": [
+      "S1-RISK01",
+      "S1-RISK02",
+      "S1-RISK03"
+    ],
+    "pressure_applies_to": "future_spawn_hp_and_damage"
+  },
+  "root_close_order": [
+    "north",
+    "east",
+    "southwest"
+  ],
+  "boss_phases": [
+    "pounce",
+    "double_impact",
+    "pounce_and_roots"
+  ],
+  "preserved_b": "build/legacy-package-b-2026-09-15/manifest.json",
+  "adr": "docs/architecture/adr-0008-chapter-one-encounters.md",
+  "evidence": "production/playtest-evidence/2026-09-15-package-c.md",
+  "battle_ready": false
+}

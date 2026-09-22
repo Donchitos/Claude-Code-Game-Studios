@@ -1,5 +1,14 @@
 # BossStateMachine（守阵妖兽·碧鳞蟒）
 
+> 2026-09-22 第四至八章本地交付：40关有限遭遇、区域精英、场地关闭、六种Boss与护送路标XP已实现。最终安全C01和逐章角色备战风险两路线各64/64、结局重启通过，共1235次磁盘恢复/213461tick对照；24套回归、实际PCK续玩/第三章旧包零写入兼容通过。C03固定成长压力99/120，不宣称全角色平衡或商业发行完成；新玩家SKIPPED_BY_USER，battle_ready=false。 见[交付证据](../../production/playtest-evidence/2026-09-22-final-chapters.md)与[ADR-0012](../../docs/architecture/adr-0012-late-campaign-encounters.md)。仅Campaign增量，不改变下方legacy ABI或设计评审裁决。
+
+> 2026-09-16 Campaign G：08阶段上升清旧冷却，已发布落点排空后再发新阶段完整预警；容量不足不发布，致死立即结束。 见[G证据](../../production/playtest-evidence/2026-09-16-package-g.md)。仅Campaign增量，battle_ready=false。
+
+> 2026-09-16 Campaign F：08 boss_phase单调，每次跨阶段掉落18 XP，恢复与重复更新不重复发奖；阶段跳跃按跨越数掉落。 见[F证据](../../production/playtest-evidence/2026-09-16-package-f.md)及ADR-0009 F扩展。下方E记录为历史；battle_ready=false。
+
+> 2026-09-15 C包实施：Campaign开发入口的04线索/一次机缘/延迟猎物、05净化增援、06分段守路、07关闭根区、08三阶段Boss已接入Arena/Encounter快照。见[C包证据](../../production/playtest-evidence/2026-09-15-package-c.md)与[ADR-0008扩展](../../docs/architecture/adr-0008-chapter-one-encounters.md)。专项237、两套8关旅程/91次磁盘恢复通过；保持独立review/真人/商业owner合同待办，battle_ready=false。
+
+
 > 2026-09-14 WP04c：商业恢复责任与 pending/barrier 盘点见 `design/registry/manifests/steam-recovery-responsibilities-v1.json`；显式合同、绑定封装、全量预检及联合验证见 [Steam域与快照适配](steam-save-domain-adapters.md)。清单是责任盘点，商业 owner/schema/容量仍 OPEN，不改变本文件既有 verdict。
 
 > 2026-09-11 WP04b 适配路由：五域结构/联合校验与当前 `LEGACY_STAGE_PC_V1` capture/restore 见 [Steam域与快照适配](steam-save-domain-adapters.md)。Pool/Grid 原生引用不落盘；当前生成逻辑viewport冻结，RNG保存实际seed/state并绑定engine commit；全Scope tick结束才捕获。此实现不补齐本文件全部商业owner合同；真实v2迁移/事务、Mission/SkillDraft/Preparation/Settlement语义和商业最大预算仍OPEN，battle_ready=false。
@@ -431,3 +440,13 @@ The `projectile_pending_checked_sum` formula is defined as:
 11. **BLOCKED-WORKLOAD-REGEN**：GameRoot现有RuntimeWorkloadManifest仍与400 Projectile/300 Drop权威上限冲突；Boss Phase2 fixture必须随整表重生成。
 12. **BLOCKED-SELF-DESTRUCT-CONTRACT**：Elite/Boss召唤链可能同屏出现behavior5血傀儡，其接近/30%HP自爆、友伤和连锁容量仍待Normal Enemy/Damage owner裁决。
 13. **OPEN-ADR/PERF**：Boss长身视觉与圆形gameplay carrier边界、Enemy节点拓扑、tail无碰撞表达及固定fog renderer实现需ADR/asset spec；本GDD不以静态文字关闭。
+
+
+## 2026-09-16 第二章实现增量
+
+第二章8关已实现固定矿轨与有限遭遇、喷口逐一关闭、冷却匣/炉工护送、中途机缘、指定熔脊行者及炉门弱点三阶段Boss。机制/验收见 `design/chapter-two-playable.md`、`docs/architecture/adr-0010-chapter-two-thermal-encounters.md`；交付证据见 `production/playtest-evidence/2026-09-16-chapter-two.md`。快照CAMPAIGN_CHAPTER2_V1，局外仍CAMPAIGN_GAMEPLAY_V1；第一章8关后开放二阶/第二角色。固定tick派生热场/门窗；Profile保留精确数值并在重写前重建数值镜像，避免多次JSON舍入。此增量不改变第三章以后2+1经验基线，也不声称全游戏经济、商业Save v2或发行验收完成。新玩家试玩SKIPPED_BY_USER，battle_ready=false。
+
+
+## 2026-09-17 第三章限定交付
+
+第三章8关潮汐内容已实现并完成两条新档1→24连续旅程；规则见 `design/chapter-three-playable.md`、ADR-0011，最终证据见 `production/playtest-evidence/2026-09-17-chapter-three.md`。CAMPAIGN_CHAPTER3_V1；章内经验6/4、180tick升级间隔，覆盖本文件先前“第三章以后不变”的历史表述（第四章以后仍旧基线）。Boss伤害边界同步阶段/悟性、末期整轮zone+projectile容量预检；永久淹池单区且恢复不重复。24关开放三阶，资源富余未全局重平衡。额外64关独立54/64，连续止M06-06，不能称全游戏验收。新玩家SKIPPED_BY_USER，battle_ready=false。

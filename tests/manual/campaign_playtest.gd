@@ -1,6 +1,6 @@
 extends SceneTree
 ## Graphical viewport evidence, isolated memory profile. No production save changes.
-const OUT := "res://production/playtest-evidence/campaign-game-2026-09-14/"
+var OUT: String = preload("res://tests/fixtures/campaign_evidence.gd").create("campaign_playtest")
 var game: Control
 func _initialize() -> void:
 	_run.call_deferred()

@@ -1,4 +1,5 @@
 extends RefCounted
+const Encounter = preload("res://src/campaign/campaign_encounter.gd")
 ## World-space procedural campaign presentation. No font glyphs substitute for combat actors.
 
 ## Draws themed terrain, objectives, tells, actors and hit effects under the root camera.
@@ -7,6 +8,7 @@ static func draw_arena(a) -> void:
 	var theme := _theme(a)
 	var ground := theme.darkened(0.83)
 	a.draw_rect(Rect2(-half, half * 2), ground)
+	if a.mission.has("scene_layout_id"): _layout(a, theme)
 	for x in range(-int(half.x), int(half.x), 80):
 		a.draw_line(Vector2(x, -half.y), Vector2(x, half.y), Color(theme, 0.07), 1)
 	for y in range(-int(half.y), int(half.y), 80):
@@ -35,11 +37,23 @@ static func draw_arena(a) -> void:
 		_zone(a, z)
 	for e in a.state.entities:
 		_enemy(a, e)
+		if e.family == "target" and a.mission.kind == "BREAK":
+			var q: Vector2 = a.pos(e)
+			var active: bool = a.mission.order_mode != "FIXED" or int(e.ordinal) == int(a.state.objective.progress)
+			var tint := Color("ffe1a1") if active else Color("586b76")
+			a.draw_arc(q,43,0,TAU,24,tint,3)
+			for n in int(e.ordinal)+1: a.draw_line(q+Vector2(-8+n*8,-58),q+Vector2(-8+n*8,-48),tint,3)
+			if not active:
+				a.draw_rect(Rect2(q+Vector2(-8,-8),Vector2(16,14)),tint,false,2)
+				a.draw_arc(q+Vector2(0,-8),6,PI,TAU,8,tint,2)
 	for p in a.state.projectiles:
 		var q: Vector2 = a.pos(p)
 		var v := Vector2(p.vx, p.vy).normalized()
 		var c := Color(str(p.color))
 		if p.hostile: c = Color(1, 0.4, 0.32)
+		if p.get("delay",0.0)>0:
+			a.draw_line(q,q+v*180,Color(c,0.5),2,true)
+			continue
 		a.draw_line(q - v * 18, q, Color(c, 0.45), maxf(3, p.radius * 0.6), true)
 		if p.mode in ["disc", "return", "arc"]:
 			a.draw_arc(q, p.radius, (0.0 if a.reduce_motion else p.age * 10), (0.0 if a.reduce_motion else p.age * 10) + 4.8, 18, c, 3, true)
@@ -82,12 +96,25 @@ static func _objectives(a, theme: Color) -> void:
 	var kind := str(a.mission.kind)
 	var o: Dictionary = a.state.objective
 	var index := int(o.waypoint) if kind in ["CLEANSE", "ESCORT"] else int(o.progress)
+	if a.mission.has("clues"):
+		var previous := Vector2(-720,0)
+		for i in a.mission.clues.size():
+			var clue: Array = a.mission.clues[i]
+			var q := Vector2(clue[0],clue[1])
+			var tint := Color("b8f39a") if i <= a.state.encounter.chapter.clues else Color("57695d")
+			for j in 12:
+				var foot := previous.lerp(q,float(j)/12)
+				a.draw_circle(foot,3,tint)
+			a.draw_arc(q,32,0,TAU,24,tint,3)
+			for n in i+1: a.draw_line(q+Vector2(n*8-8,-12),q+Vector2(n*8-8,12),tint,3)
+			previous = q
 	var target: Vector2 = a.target_position(index)
 	if kind in ["SURVIVE", "CLEANSE", "ESCORT"]:
 		var radius := float(a.mission.get("target_radius", 90))
 		var active: bool = kind != "SURVIVE" or bool(o.extraction_ready)
-		var c := Color(theme, 0.8 if active else 0.25)
-		a.draw_circle(target, radius, Color(theme, 0.06))
+		var ring_theme := Color("ffcf62") if kind == "SURVIVE" and active else theme
+		var c := Color(ring_theme, 1.0 if active else 0.25)
+		a.draw_circle(target, radius, Color(ring_theme, 0.13))
 		a.draw_arc(target, radius, 0, TAU, 48, c, 3, true)
 		a.draw_arc(target, radius * 0.82, 0, TAU, 40, c, 1, true)
 		for i in 8:
@@ -99,28 +126,42 @@ static func _objectives(a, theme: Color) -> void:
 	if kind == "ESCORT":
 		var q: Vector2 = a.pos(o)
 		a.draw_line(q, target, Color(theme, 0.2), 2)
-		a.draw_colored_polygon(PackedVector2Array([q+Vector2(-30, 0),q+Vector2(-18,-20),q+Vector2(28,0),q+Vector2(-18,20)]), theme.darkened(0.25))
+		if a.mission.get("escort_label","") == "冷却匣":
+			a.draw_rect(Rect2(q-Vector2(24,16),Vector2(48,32)),Color("72bce5"))
+			a.draw_rect(Rect2(q-Vector2(17,9),Vector2(34,18)),Color("25495a"),false,3)
+		elif a.mission.get("chapter_three",false):
+			# The ch3 escort is a ferry: wooden hull with a rim line and a punt pole,
+			# not the ch1 herb-gatherer figure the shared branch draws.
+			a.draw_circle(q+Vector2(0,10),22,Color(0,0,0,0.3))
+			a.draw_colored_polygon(PackedVector2Array([q+Vector2(-30,0),q+Vector2(-16,-14),q+Vector2(32,0),q+Vector2(-16,14)]), Color("7a5a3a"))
+			a.draw_line(q+Vector2(-16,-10),q+Vector2(26,-4),Color("c4a567"),2)
+			a.draw_line(q+Vector2(24,-3),q+Vector2(30,-30),Color("a1d4ae"),3)
+		elif a.mission.has("scene_layout_id"):
+			a.draw_circle(q+Vector2(0,8),18,Color(0,0,0,0.3))
+			a.draw_colored_polygon(PackedVector2Array([q+Vector2(0,-12),q+Vector2(-15,16),q+Vector2(15,16)]), Color("c4a567"))
+			a.draw_circle(q+Vector2(0,-15),7,Color("efd7ac"))
+			a.draw_line(q+Vector2(18,-6),q+Vector2(21,20),Color("a1d4ae"),3)
+			a.draw_circle(q+Vector2(-12,3),8,theme.darkened(0.3))
+		else:
+			a.draw_colored_polygon(PackedVector2Array([q+Vector2(-30, 0),q+Vector2(-18,-20),q+Vector2(28,0),q+Vector2(-18,20)]), theme.darkened(0.25))
 		a.draw_arc(q, 35, 0, TAU, 24, Color(theme, 0.6), 2)
 		a.draw_rect(Rect2(q + Vector2(-30, -36), Vector2(60, 5)), Color("20232b"))
 		a.draw_rect(Rect2(q + Vector2(-30, -36), Vector2(60 * maxf(0, o.escort_hp) / maxf(1, a.mission.escort_hp), 5)), Color("82e5c0"))
-	if kind in ["HUNT", "BOSS", "BREAK"]:
-		for e in a.state.entities:
-			if e.target_id != "" and (kind != "BREAK" or a.mission.order_mode != "FIXED" or int(e.ordinal) == int(o.progress)):
-				target = a.pos(e)
-				break
+	target = a.navigation_target()
 	var offset: Vector2 = target - a.player_world_position()
 	if offset.length() > 110:
 		var q: Vector2 = a.player_world_position() + offset.normalized() * 70
 		var v := offset.normalized()
-		a.draw_colored_polygon(PackedVector2Array([q+v*11,q-v*7+v.orthogonal()*7,q-v*7-v.orthogonal()*7]), Color(theme, 0.9))
+		a.draw_colored_polygon(PackedVector2Array([q+v*11,q-v*7+v.orthogonal()*7,q-v*7-v.orthogonal()*7]), Color("ffcf62") if kind == "SURVIVE" and o.extraction_ready else Color(theme, 0.9))
 
 static func _zone(a, z: Dictionary) -> void:
 	var q: Vector2 = a.pos(z)
-	var hostile := bool(z.hostile)
 	var warning := float(z.delay) > 0
-	var c := Color("ff7157") if hostile else Color(str(z.color))
+	# Hazard colors are authored per chapter (green/orange/blue); the briefings teach
+	# them by name, so the render must honor the authored color instead of forcing red.
+	var c := Color(str(z.color))
 	var radius := float(z.radius)
-	var alpha := 0.08 if warning else 0.17
+	var alpha := 0.08 if warning else 0.26
 	if z.kind == "flame":
 		var points := PackedVector2Array([q])
 		for i in 15: points.append(q + Vector2.from_angle(z.angle - 0.65 + i * 1.3 / 14) * float(z.length))
@@ -129,14 +170,19 @@ static func _zone(a, z: Dictionary) -> void:
 	elif z.kind in ["line", "ink"]:
 		var end := q + Vector2.from_angle(z.angle) * float(z.length)
 		a.draw_line(q, end, Color(c, alpha), radius * 2)
-		a.draw_line(q, end, Color(c, 0.8), 2 if warning else 5, true)
+		# 4.7 removed line anti-aliasing feathering; keep the warning stroke readable.
+		a.draw_line(q, end, Color(c, 0.8), 3 if warning else 5, true)
 	elif z.kind in ["turret", "drone"]:
 		a.draw_circle(q, 17, Color(c, 0.1))
 		a.draw_colored_polygon(_polygon(q, 13, 3 if z.kind == "drone" else 6, z.angle), c.darkened(0.3))
 		a.draw_arc(q, 18, (0.0 if a.reduce_motion else z.age * 2), (0.0 if a.reduce_motion else z.age * 2) + PI, 14, c, 2)
 	else:
 		if z.kind != "ring": a.draw_circle(q, radius, Color(c, alpha))
-		a.draw_arc(q, radius, 0, TAU, 36, Color(c, 0.7), 2 if warning else 3, true)
+		else:
+			a.draw_arc(q,radius,0,TAU,64,Color(c,alpha),44,true)
+			a.draw_arc(q,radius-22,0,TAU,64,Color(c,0.6),2,true)
+			a.draw_arc(q,radius+22,0,TAU,64,Color(c,0.6),2,true)
+		a.draw_arc(q, radius, 0, TAU, 36, Color(c, 0.7), 2 if warning else 4, true)
 		if warning:
 			for i in 8:
 				var v := Vector2.from_angle(TAU * i / 8)
@@ -173,6 +219,10 @@ static func _enemy(a, e: Dictionary) -> void:
 			var v := Vector2.from_angle(TAU * i / 6 + (0.0 if a.reduce_motion else e.age * 0.2))
 			a.draw_line(q + v * radius * 0.7, q + v * radius * 1.45, color, 7, true)
 		a.draw_arc(q, radius * 1.3, 0, TAU, 40, color, 2)
+		if e.family == "boss" and a.mission.has("furnace_boss"):
+			var opened := Encounter.Thermal.door_open(a.mission,int(a.state.tick))
+			a.draw_rect(Rect2(a.pos(e)-Vector2(18,22),Vector2(36,44)),Color("ffe9a1" if opened else "5b626d"))
+			if not opened: a.draw_line(a.pos(e)+Vector2(0,-22),a.pos(e)+Vector2(0,22),Color("20232b"),4)
 	else:
 		var sides := 3 + index % 5
 		a.draw_colored_polygon(_polygon(q, radius, sides, angle), color.darkened(0.15))
@@ -210,3 +260,35 @@ static func _player(a) -> void:
 	a.draw_circle(q,10,color)
 	a.draw_line(q+side*10,q+side*14+forward*26,Color("efffff"),3,true)
 	a.draw_circle(q+forward*4,4,Color("fff3d7"))
+
+static func _layout(a, theme: Color) -> void:
+	var l := Encounter.layout(a.catalog,a.mission)
+	var route: Array = l.route
+	for i in range(1,route.size()):
+		var from := Vector2(route[i-1][0],route[i-1][1])
+		var to := Vector2(route[i][0],route[i][1])
+		a.draw_line(from,to,Color("314039"),110,true)
+		a.draw_line(from,to,Color("455145"),3,true)
+	if not l.roots.is_empty():
+		for radius in [120,200,380]: a.draw_arc(Vector2.ZERO,radius,0,TAU,64,Color(theme,0.22),4,true)
+		for root_index in l.roots.size():
+			if a.mission.get("close_roots",false) and int(a.state.encounter.chapter.root_mask) & (1<<root_index): continue
+			if a.mission.get("late_chapter",false) and Encounter.Late.field_closed(a.mission,a.state,root_index): continue
+			if a.mission.get("chapter_two",false) and Encounter.Thermal.vent_closed(a.mission,a.state,root_index): continue
+			var row: Dictionary = l.roots[root_index]
+			var flat_center := Vector2(row.center[0],row.center[1])
+			a.draw_arc(flat_center,row.radius,0,TAU,24,Color("5fa8d3" if a.mission.get("chapter_three",false) else ("db864a" if a.mission.get("chapter_two",false) else "658464")),2,true)
+			if a.mission.get("chapter_three",false) and Encounter.Tide.flat_flooded(a.mission,a.state,root_index):
+				a.draw_arc(flat_center,row.radius*0.55,0,TAU,24,Color("3f8fc4"),3,true)
+	for w in l.winds:
+		var center := Vector2(w.center[0],w.center[1])
+		var size := Vector2(w.size[0],w.size[1])
+		var active: bool = a.state.tick >= a.mission.wind_start_tick
+		a.draw_rect(Rect2(center-size/2,size),Color(0.38,0.8,0.66,0.17 if active else 0.04))
+		for i in 5:
+			var q := center+Vector2((i-2)*52,0)
+			var v := Vector2(float(w.direction),0)
+			var color := Color(0.65,0.94,0.8,0.8 if active else 0.15)
+			a.draw_line(q-v*16,q+v*16,color,2,true)
+			a.draw_line(q+v*16,q+Vector2(0,-12),color,2,true)
+			a.draw_line(q+v*16,q+Vector2(0,12),color,2,true)

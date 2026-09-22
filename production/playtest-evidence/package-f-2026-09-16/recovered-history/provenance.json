@@ -1,0 +1,10 @@
+{
+  "production/playtest-evidence/campaign-game-2026-09-14/qa-nonlexical-input.json": {
+    "relocated_sha256": "8ab33d044d35cee0144d3bced14a03d24943684a9505e3fb945c0cab5c8dcaf4",
+    "restored_head_sha256": "8bdc1f0aba79dd2f4a5ee4a643d799b3918a3af08e316ee796deb51ec8fcced8"
+  },
+  "production/playtest-evidence/campaign-game-2026-09-14/qa-snapshot-safety.json": {
+    "relocated_sha256": "5cf799cfa3ec6989b18479f5d07ea5b3e21c569d75facc27075c424d0a7d5228",
+    "restored_head_sha256": "20107e1b44f1d9efaddbd25e429daa6a7f47f6d40427e89423acbfcd0c3afac3"
+  }
+}

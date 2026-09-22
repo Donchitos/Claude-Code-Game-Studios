@@ -1,0 +1,13 @@
+{
+  "passed": true,
+  "before_sha256": {
+    "/Users/tal/CursorProjects/xiuxian/Claude-Code-Game-Studios/build/package-e-2026-09-16/SpiritNexus-E.pck": "8710ef83038178a695039b3df90886afea3fb5da18872b7d6398f304731db9b9",
+    "/Users/tal/CursorProjects/xiuxian/Claude-Code-Game-Studios/build/package-f-2026-09-16/SpiritNexus-F.pck": "1b1a457b80f573bcfcc3fedbfb8da9325baa0446ff4b8f1cb971fe0967952e7b",
+    "/var/folders/qw/b7tkljvj77zgmdcqq21384s00000gn/T/f-actual-pck-legacy-a_qjqhco/test-a.save": "fc83930eef5c0efaf501de6ac80e39b90848b44ac70febbdffb31b4a8a4f68e3",
+    "/var/folders/qw/b7tkljvj77zgmdcqq21384s00000gn/T/f-actual-pck-legacy-a_qjqhco/test-b.save": "787d47e40899cf7928f14a5a9a80da11eeb8dd72f04b286bd5ad8c8b535fb548"
+  },
+  "blocked_zero_write": true,
+  "old_package_resume_and_explicit_test_abandon": true,
+  "new_package_home": true,
+  "scope": "isolated real E to F PCK probe"
+}

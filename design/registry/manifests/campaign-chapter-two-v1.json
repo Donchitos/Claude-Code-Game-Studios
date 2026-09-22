@@ -1,0 +1,8 @@
+{
+  "scope": "M02-01..08 local playable",
+  "catalog_hash": "7a6edddb768b4bb813bc52bd0fd334269ebeee7a6228ac55ac0806704801420f",
+  "snapshot": "CAMPAIGN_CHAPTER2_V1",
+  "report": "production/playtest-evidence/2026-09-16-chapter-two.md",
+  "battle_ready": false,
+  "new_player_test": "SKIPPED_BY_USER"
+}

@@ -1,5 +1,17 @@
 # Stage & Map（感知无限战场与有限坐标域）
 
+> 2026-09-22 第四至八章本地交付：40关有限遭遇、区域精英、场地关闭、六种Boss与护送路标XP已实现。最终安全C01和逐章角色备战风险两路线各64/64、结局重启通过，共1235次磁盘恢复/213461tick对照；24套回归、实际PCK续玩/第三章旧包零写入兼容通过。C03固定成长压力99/120，不宣称全角色平衡或商业发行完成；新玩家SKIPPED_BY_USER，battle_ready=false。 见[交付证据](../../production/playtest-evidence/2026-09-22-final-chapters.md)与[ADR-0012](../../docs/architecture/adr-0012-late-campaign-encounters.md)。仅Campaign增量，不改变下方legacy ABI或设计评审裁决。
+
+> 2026-09-16 Campaign F：短关经验供给调整不修改场景、屏外生成或相机合同；真实窗口事件回归补齐。 见[F证据](../../production/playtest-evidence/2026-09-16-package-f.md)及ADR-0009 F扩展。下方E记录为历史；battle_ready=false。
+
+> 2026-09-16 Campaign E：Campaign首章相机采用max(1,viewport_width/1280,viewport_height/720)缩放；固定玩家中心、无平滑偏移，最大可见世界1280×720。开局Boss/任务锚点保持已存在目标。 详见[ADR-0009](../../docs/architecture/adr-0009-chapter-one-pacing-and-view.md)与[E包证据](../../production/playtest-evidence/2026-09-16-package-e.md)。仅本地验证，独立复审待完成，battle_ready=false。
+
+> 2026-09-15 C包实施：Campaign开发入口的04线索/一次机缘/延迟猎物、05净化增援、06分段守路、07关闭根区、08三阶段Boss已接入Arena/Encounter快照。见[C包证据](../../production/playtest-evidence/2026-09-15-package-c.md)与[ADR-0008扩展](../../docs/architecture/adr-0008-chapter-one-encounters.md)。专项237、两套8关旅程/91次磁盘恢复通过；保持独立review/真人/商业owner合同待办，battle_ready=false。
+
+
+> 2026-09-15 B包实施更新：首章两布局与01–03遭遇/教学/备战、CAMPAIGN_CHAPTER1_V2恢复及A版零写入升级保护已实现并本地验证。见[实施证据](../../production/playtest-evidence/2026-09-15-package-b.md)与[ADR-0008](../../docs/architecture/adr-0008-chapter-one-encounters.md)。04–08专属行为、XP实验及任意视口外生成仍待补齐；不改变既有独立verdict或商业owner合同，battle_ready=false。
+
+
 > 2026-09-14 WP04c：商业恢复责任与 pending/barrier 盘点见 `design/registry/manifests/steam-recovery-responsibilities-v1.json`；显式合同、绑定封装、全量预检及联合验证见 [Steam域与快照适配](steam-save-domain-adapters.md)。清单是责任盘点，商业 owner/schema/容量仍 OPEN，不改变本文件既有 verdict。
 
 > 2026-09-11 WP04b 适配路由：五域结构/联合校验与当前 `LEGACY_STAGE_PC_V1` capture/restore 见 [Steam域与快照适配](steam-save-domain-adapters.md)。Pool/Grid 原生引用不落盘；当前生成逻辑viewport冻结，RNG保存实际seed/state并绑定engine commit；全Scope tick结束才捕获。此实现不补齐本文件全部商业owner合同；真实v2迁移/事务、Mission/SkillDraft/Preparation/Settlement语义和商业最大预算仍OPEN，battle_ready=false。
@@ -210,3 +222,13 @@ camera center必须逐bit等于matching Player committed position；渲染插值
 3. **OPEN-ART**：ground tile/world-UV素材、抗重复处理与低端机shader路径未冻结。
 4. **BOSS-GDD-DESIGNED / INTEGRATION-BLOCKED**：Boss已冻结玩家相对入场、120t门、phase事件anchor与外圆毒域；仍待Spawn/Player/Damage V2集成、独立full review和runtime证据。
 5. **RE-REVIEW-PENDING**：本次为跨文档作者修订；未经clean-context full review，不得把Stage或关联系统标记Approved/implementation-ready/runtime verified。
+
+
+## 2026-09-16 第二章实现增量
+
+第二章8关已实现固定矿轨与有限遭遇、喷口逐一关闭、冷却匣/炉工护送、中途机缘、指定熔脊行者及炉门弱点三阶段Boss。机制/验收见 `design/chapter-two-playable.md`、`docs/architecture/adr-0010-chapter-two-thermal-encounters.md`；交付证据见 `production/playtest-evidence/2026-09-16-chapter-two.md`。快照CAMPAIGN_CHAPTER2_V1，局外仍CAMPAIGN_GAMEPLAY_V1；第一章8关后开放二阶/第二角色。固定tick派生热场/门窗；Profile保留精确数值并在重写前重建数值镜像，避免多次JSON舍入。此增量不改变第三章以后2+1经验基线，也不声称全游戏经济、商业Save v2或发行验收完成。新玩家试玩SKIPPED_BY_USER，battle_ready=false。
+
+
+## 2026-09-17 第三章限定交付
+
+第三章8关潮汐内容已实现并完成两条新档1→24连续旅程；规则见 `design/chapter-three-playable.md`、ADR-0011，最终证据见 `production/playtest-evidence/2026-09-17-chapter-three.md`。CAMPAIGN_CHAPTER3_V1；章内经验6/4、180tick升级间隔，覆盖本文件先前“第三章以后不变”的历史表述（第四章以后仍旧基线）。Boss伤害边界同步阶段/悟性、末期整轮zone+projectile容量预检；永久淹池单区且恢复不重复。24关开放三阶，资源富余未全局重平衡。额外64关独立54/64，连续止M06-06，不能称全游戏验收。新玩家SKIPPED_BY_USER，battle_ready=false。

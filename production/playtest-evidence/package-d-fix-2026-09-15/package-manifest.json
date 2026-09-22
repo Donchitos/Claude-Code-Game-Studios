@@ -1,0 +1,14 @@
+{
+  "content_sha256": "1e3c41e4223704a29050f28294bef4a38b9569186e6a6234a921c3685e92ab3e",
+  "files": {
+    "SpiritNexus-D-Fix.pck": "30c92b14fe0ba9df66fdbbda036e21fb869a1efe9841184ebdc989cc7cbab166",
+    "开始D修订版试玩.command": "9870c46cc1728ceb8b488663724e04eff34392c18ef7fe40dd2e9d8c043ba3f8"
+  },
+  "mode": "isolated persistent Campaign development profile",
+  "independent_review": "APPROVED_WITH_SUGGESTIONS_D_S01_TO_D_S04_ONLY",
+  "human_sessions": 1,
+  "new_player_sessions": 0,
+  "d_acceptance": "OPEN",
+  "battle_ready": false,
+  "new_player_persistent_test": "RELEASED_ISOLATED_CAMPAIGN_EXPLORATORY"
+}

@@ -1,0 +1,11 @@
+{
+	"arguments": [
+		"--campaign-validation",
+		"--evidence-root=res://production/playtest-evidence/chapter-three-2026-09-17/final",
+		"--qa-production-all"
+	],
+	"content_hash": "6cea8186b024592bf3edb298df02400964c246eeab4cb6e475afdbfd3a8fe35a",
+	"engine": "4.7.1-stable (official)",
+	"scope": "automated test evidence, not human or release certification",
+	"suite": "campaign-qa"
+}

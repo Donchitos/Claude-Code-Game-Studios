@@ -40,6 +40,7 @@ func _ready() -> void:
 	add_child(world)
 	camera = Camera2D.new()
 	world.add_child(camera)
+	get_viewport().size_changed.connect(_update_camera_view)
 	var layer := CanvasLayer.new()
 	add_child(layer)
 	ui = UI.new()
@@ -131,12 +132,24 @@ func continue_run() -> bool:
 	modal = ""
 	autosave_clock = 0
 	camera.position = arena.player_world_position()
+	_update_camera_view()
 	ui.render("battle")
 	audio.music("boss" if str(catalog.missions[last_mission].kind).to_upper() == "BOSS" else "battle")
 	_sync_battle()
 	if not focused:
 		pause_battle()
 	return true
+
+## Keep the visible world inside the deterministic spawn exclusion envelope.
+func _update_camera_view() -> void:
+	if camera == null: return
+	var factor := 1.0
+	if is_instance_valid(arena) and arena.mission.has("spawn_view_size"):
+		var extent: Array = arena.mission.spawn_view_size
+		var viewport_size := get_viewport_rect().size
+		factor = maxf(1.0,maxf(viewport_size.x/float(extent[0]),viewport_size.y/float(extent[1])))
+	camera.zoom = Vector2.ONE*factor
+	camera.force_update_scroll()
 
 ## Locks movement before exposing the pause overlay.
 func pause_battle() -> void:
@@ -244,7 +257,11 @@ func _physics_process(delta: float) -> void:
 	if not context.finish():
 		fail("输入关闭失败 / Input lease finish failed")
 		return
+	if arena.mission.get("chapter_c",false) and arena.state.encounter.chapter.error != "":
+		fail(arena.state.encounter.chapter.error)
+		return
 	camera.position = arena.player_world_position()
+	_update_camera_view()
 	for event: String in arena.sound_events:
 		audio.effect(event)
 	arena.sound_events.clear()

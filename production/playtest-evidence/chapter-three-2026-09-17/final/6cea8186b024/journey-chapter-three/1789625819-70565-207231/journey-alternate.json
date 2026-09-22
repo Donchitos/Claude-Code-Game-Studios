@@ -1,0 +1,964 @@
+{
+	"branches": [
+		3.0,
+		2.0,
+		2.0
+	],
+	"catalog_hash": "6cea8186b024592bf3edb298df02400964c246eeab4cb6e475afdbfd3a8fe35a",
+	"completed": 24.0,
+	"missions": [
+		{
+			"branches": [
+				0.0,
+				0.0,
+				0.0
+			],
+			"character": "S1-C01",
+			"choice_seconds": [
+				6.63333333333332,
+				23.4499999999999,
+				30.8499999999995,
+				37.0833333333325,
+				58.3333333333313
+			],
+			"choices": 5,
+			"collected_xp": 93.0,
+			"compared_ticks": 1600,
+			"elapsed": 74.8333333333304,
+			"elite_kills": 0,
+			"escort_hp": 490.0,
+			"event_done": false,
+			"evolved": [],
+			"hp": 160.0,
+			"kills": 31,
+			"level": 6,
+			"mission": "S1-M01-01",
+			"restores": 9,
+			"run_seed": "1508824226",
+			"skills": {
+				"S1-A01": 1,
+				"S1-A02": 5
+			},
+			"skipped": 17,
+			"stages": [
+				0,
+				1200,
+				2700
+			],
+			"uncollected_xp": 0.0,
+			"victory": true
+		},
+		{
+			"branches": [
+				1.0,
+				1.0,
+				1.0
+			],
+			"character": "S1-C01",
+			"choice_seconds": [
+				3.23333333333333,
+				9.01666666666669,
+				12.0166666666668
+			],
+			"choices": 3,
+			"collected_xp": 42.0,
+			"compared_ticks": 1105,
+			"elapsed": 13.7833333333336,
+			"elite_kills": 0,
+			"escort_hp": 490.0,
+			"event_done": false,
+			"evolved": [],
+			"hp": 170.0,
+			"kills": 13,
+			"level": 4,
+			"mission": "S1-M01-02",
+			"restores": 7,
+			"run_seed": "1974943448",
+			"skills": {
+				"S1-A01": 1,
+				"S1-A02": 2,
+				"S1-A03": 1
+			},
+			"skipped": 4,
+			"stages": [
+				0,
+				0,
+				172
+			],
+			"uncollected_xp": 6.0,
+			"victory": true
+		},
+		{
+			"branches": [
+				1.0,
+				1.0,
+				1.0
+			],
+			"character": "S1-C01",
+			"choice_seconds": [
+				6.89999999999998,
+				13.7166666666669,
+				16.816666666667
+			],
+			"choices": 3,
+			"collected_xp": 39.0,
+			"compared_ticks": 1200,
+			"elapsed": 20.1833333333335,
+			"elite_kills": 0,
+			"escort_hp": 490.0,
+			"event_done": false,
+			"evolved": [],
+			"hp": 170.0,
+			"kills": 16,
+			"level": 4,
+			"mission": "S1-M01-03",
+			"restores": 7,
+			"run_seed": "74115569",
+			"skills": {
+				"S1-A01": 2,
+				"S1-A03": 2
+			},
+			"skipped": 4,
+			"stages": [
+				0,
+				369,
+				823
+			],
+			"uncollected_xp": 9.0,
+			"victory": true
+		},
+		{
+			"branches": [
+				1.0,
+				1.0,
+				1.0
+			],
+			"character": "S1-C01",
+			"choice_seconds": [
+				1.93333333333333,
+				4.93333333333332
+			],
+			"choices": 2,
+			"collected_xp": 27.0,
+			"compared_ticks": 1200,
+			"elapsed": 10.4333333333334,
+			"elite_kills": 1,
+			"escort_hp": 490.0,
+			"event_done": true,
+			"evolved": [],
+			"hp": 170.0,
+			"kills": 2,
+			"level": 3,
+			"mission": "S1-M01-04",
+			"restores": 7,
+			"run_seed": "3098178734",
+			"skills": {
+				"S1-A01": 2,
+				"S1-A02": 1
+			},
+			"skipped": 3,
+			"stages": [
+				111,
+				246
+			],
+			"uncollected_xp": 12.0,
+			"victory": true
+		},
+		{
+			"branches": [
+				1.0,
+				1.0,
+				1.0
+			],
+			"character": "S1-C01",
+			"choice_seconds": [
+				9.40000000000005,
+				13.6000000000003,
+				16.6000000000003
+			],
+			"choices": 3,
+			"collected_xp": 30.0,
+			"compared_ticks": 1232,
+			"elapsed": 17.1500000000003,
+			"elite_kills": 0,
+			"escort_hp": 490.0,
+			"event_done": false,
+			"evolved": [],
+			"hp": 170.0,
+			"kills": 13,
+			"level": 4,
+			"mission": "S1-M01-05",
+			"restores": 8,
+			"run_seed": "972609846",
+			"skills": {
+				"S1-A01": 2,
+				"S1-A03": 2
+			},
+			"skipped": 12,
+			"stages": [
+				56,
+				56,
+				633,
+				633
+			],
+			"uncollected_xp": 9.0,
+			"victory": true
+		},
+		{
+			"branches": [
+				1.0,
+				1.0,
+				1.0
+			],
+			"character": "S1-C01",
+			"choice_seconds": [
+				6.96666666666665,
+				10.6500000000001,
+				14.5333333333336,
+				20.5666666666668,
+				29.3499999999996,
+				35.5833333333326,
+				45.4499999999987,
+				51.866666666665,
+				59.9833333333312,
+				70.8833333333306,
+				84.7166666666631
+			],
+			"choices": 11,
+			"collected_xp": 288.0,
+			"compared_ticks": 3400,
+			"elapsed": 94.2499999999959,
+			"elite_kills": 0,
+			"escort_hp": 490.0,
+			"event_done": true,
+			"evolved": [],
+			"hp": 170.0,
+			"kills": 96,
+			"level": 12,
+			"mission": "S1-M01-06",
+			"restores": 18,
+			"run_seed": "1922903699",
+			"skills": {
+				"S1-A01": 2,
+				"S1-A02": 5,
+				"S1-A03": 5
+			},
+			"skipped": 25,
+			"stages": [
+				0,
+				900,
+				1800,
+				2700,
+				3600,
+				3600
+			],
+			"uncollected_xp": 0.0,
+			"victory": true
+		},
+		{
+			"branches": [
+				1.0,
+				1.0,
+				1.0
+			],
+			"character": "S1-C01",
+			"choice_seconds": [
+				3.76666666666666,
+				11.3166666666668,
+				14.566666666667
+			],
+			"choices": 3,
+			"collected_xp": 36.0,
+			"compared_ticks": 1200,
+			"elapsed": 19.1333333333335,
+			"elite_kills": 0,
+			"escort_hp": 490.0,
+			"event_done": false,
+			"evolved": [],
+			"hp": 170.0,
+			"kills": 11,
+			"level": 4,
+			"mission": "S1-M01-07",
+			"restores": 7,
+			"run_seed": "537874685",
+			"skills": {
+				"S1-A01": 2,
+				"S1-A03": 2
+			},
+			"skipped": 8,
+			"stages": [
+				0,
+				0,
+				212
+			],
+			"uncollected_xp": 6.0,
+			"victory": true
+		},
+		{
+			"branches": [
+				1.0,
+				1.0,
+				1.0
+			],
+			"character": "S1-C01",
+			"choice_seconds": [
+				8.28333333333332,
+				11.2833333333335,
+				14.416666666667
+			],
+			"choices": 3,
+			"collected_xp": 42.0,
+			"compared_ticks": 800,
+			"elapsed": 17.8166666666669,
+			"elite_kills": 0,
+			"escort_hp": 490.0,
+			"event_done": false,
+			"evolved": [],
+			"hp": 166.832,
+			"kills": 3,
+			"level": 4,
+			"mission": "S1-M01-08",
+			"restores": 5,
+			"run_seed": "3877474526",
+			"skills": {
+				"S1-A01": 2,
+				"S1-A03": 2
+			},
+			"skipped": 6,
+			"stages": [
+				0
+			],
+			"uncollected_xp": 24.0,
+			"victory": true
+		},
+		{
+			"branches": [
+				2.0,
+				2.0,
+				2.0
+			],
+			"character": "S1-C01",
+			"choice_seconds": [
+				12.5666666666669,
+				16.8333333333337,
+				31.0499999999995,
+				54.4499999999982,
+				62.8999999999977
+			],
+			"choices": 5,
+			"collected_xp": 87.0,
+			"compared_ticks": 2800,
+			"elapsed": 83.2999999999966,
+			"elite_kills": 0,
+			"escort_hp": 530.0,
+			"event_done": true,
+			"evolved": [],
+			"hp": 176.808,
+			"kills": 29,
+			"level": 6,
+			"mission": "S1-M02-01",
+			"restores": 15,
+			"run_seed": "3524577321",
+			"skills": {
+				"S1-A01": 1,
+				"S1-A03": 5
+			},
+			"skipped": 26,
+			"stages": [
+				0,
+				600,
+				1200,
+				1800,
+				2400,
+				3000,
+				3600
+			],
+			"uncollected_xp": 0.0,
+			"victory": true
+		},
+		{
+			"branches": [
+				2.0,
+				2.0,
+				2.0
+			],
+			"character": "S1-C01",
+			"choice_seconds": [
+				3.14999999999999,
+				9.36666666666671
+			],
+			"choices": 2,
+			"collected_xp": 24.0,
+			"compared_ticks": 904,
+			"elapsed": 11.1166666666668,
+			"elite_kills": 0,
+			"escort_hp": 530.0,
+			"event_done": false,
+			"evolved": [],
+			"hp": 180.0,
+			"kills": 7,
+			"level": 3,
+			"mission": "S1-M02-02",
+			"restores": 6,
+			"run_seed": "2252504325",
+			"skills": {
+				"S1-A01": 3
+			},
+			"skipped": 6,
+			"stages": [
+				0,
+				0,
+				172
+			],
+			"uncollected_xp": 6.0,
+			"victory": true
+		},
+		{
+			"branches": [
+				2.0,
+				2.0,
+				2.0
+			],
+			"character": "S1-C01",
+			"choice_seconds": [
+				9.41666666666671,
+				14.0833333333336
+			],
+			"choices": 2,
+			"collected_xp": 27.0,
+			"compared_ticks": 967,
+			"elapsed": 16.8833333333337,
+			"elite_kills": 0,
+			"escort_hp": 490.56,
+			"event_done": false,
+			"evolved": [],
+			"hp": 180.0,
+			"kills": 10,
+			"level": 3,
+			"mission": "S1-M02-03",
+			"restores": 6,
+			"run_seed": "4165712552",
+			"skills": {
+				"S1-A01": 2,
+				"S1-A03": 1
+			},
+			"skipped": 3,
+			"stages": [
+				0,
+				243,
+				629
+			],
+			"uncollected_xp": 3.0,
+			"victory": true
+		},
+		{
+			"branches": [
+				2.0,
+				2.0,
+				2.0
+			],
+			"character": "S1-C01",
+			"choice_seconds": [
+				5.43333333333332
+			],
+			"choices": 1,
+			"collected_xp": 19.0,
+			"compared_ticks": 461,
+			"elapsed": 7.89999999999998,
+			"elite_kills": 1,
+			"escort_hp": 530.0,
+			"event_done": false,
+			"evolved": [],
+			"hp": 180.0,
+			"kills": 2,
+			"level": 2,
+			"mission": "S1-M02-04",
+			"restores": 4,
+			"run_seed": "2668939890",
+			"skills": {
+				"S1-A01": 1,
+				"S1-A02": 1
+			},
+			"skipped": 3,
+			"stages": [
+				0,
+				360
+			],
+			"uncollected_xp": 12.0,
+			"victory": true
+		},
+		{
+			"branches": [
+				2.0,
+				2.0,
+				2.0
+			],
+			"character": "S1-C01",
+			"choice_seconds": [
+				10.7166666666668
+			],
+			"choices": 1,
+			"collected_xp": 9.0,
+			"compared_ticks": 1000,
+			"elapsed": 19.8000000000002,
+			"elite_kills": 0,
+			"escort_hp": 530.0,
+			"event_done": false,
+			"evolved": [],
+			"hp": 180.0,
+			"kills": 6,
+			"level": 2,
+			"mission": "S1-M02-05",
+			"restores": 6,
+			"run_seed": "3313007541",
+			"skills": {
+				"S1-A01": 2
+			},
+			"skipped": 1,
+			"stages": [
+				23,
+				655
+			],
+			"uncollected_xp": 9.0,
+			"victory": true
+		},
+		{
+			"branches": [
+				2.0,
+				2.0,
+				2.0
+			],
+			"character": "S1-C01",
+			"choice_seconds": [
+				9.85000000000007,
+				16.366666666667
+			],
+			"choices": 2,
+			"collected_xp": 21.0,
+			"compared_ticks": 1261,
+			"elapsed": 17.4000000000003,
+			"elite_kills": 0,
+			"escort_hp": 473.2368,
+			"event_done": true,
+			"evolved": [],
+			"hp": 180.0,
+			"kills": 8,
+			"level": 3,
+			"mission": "S1-M02-06",
+			"restores": 8,
+			"run_seed": "1958903173",
+			"skills": {
+				"S1-A01": 2,
+				"S1-A03": 1
+			},
+			"skipped": 3,
+			"stages": [
+				0,
+				220,
+				492,
+				760
+			],
+			"uncollected_xp": 3.0,
+			"victory": true
+		},
+		{
+			"branches": [
+				2.0,
+				2.0,
+				2.0
+			],
+			"character": "S1-C01",
+			"choice_seconds": [
+				3.76666666666666,
+				10.3666666666668,
+				13.3666666666669
+			],
+			"choices": 3,
+			"collected_xp": 36.0,
+			"compared_ticks": 1071,
+			"elapsed": 14.566666666667,
+			"elite_kills": 0,
+			"escort_hp": 530.0,
+			"event_done": false,
+			"evolved": [],
+			"hp": 180.0,
+			"kills": 11,
+			"level": 4,
+			"mission": "S1-M02-07",
+			"restores": 7,
+			"run_seed": "3172856051",
+			"skills": {
+				"S1-A01": 4
+			},
+			"skipped": 0,
+			"stages": [
+				0,
+				0,
+				211
+			],
+			"uncollected_xp": 6.0,
+			"victory": true
+		},
+		{
+			"branches": [
+				2.0,
+				2.0,
+				2.0
+			],
+			"character": "S1-C01",
+			"choice_seconds": [
+				7.59999999999998,
+				16.1833333333337,
+				19.1833333333335,
+				22.1833333333334
+			],
+			"choices": 4,
+			"collected_xp": 60.0,
+			"compared_ticks": 922,
+			"elapsed": 24.2333333333332,
+			"elite_kills": 0,
+			"escort_hp": 530.0,
+			"event_done": false,
+			"evolved": [],
+			"hp": 176.16,
+			"kills": 9,
+			"level": 5,
+			"mission": "S1-M02-08",
+			"restores": 6,
+			"run_seed": "1889431911",
+			"skills": {
+				"S1-A01": 5
+			},
+			"skipped": 0,
+			"stages": [
+				0
+			],
+			"uncollected_xp": 24.0,
+			"victory": true
+		},
+		{
+			"branches": [
+				2.0,
+				2.0,
+				2.0
+			],
+			"character": "S1-C03",
+			"choice_seconds": [
+				23.9166666666666,
+				26.9166666666664,
+				34.8333333333326,
+				42.3833333333322,
+				55.9166666666648,
+				69.0499999999974
+			],
+			"choices": 6,
+			"collected_xp": 108.0,
+			"compared_ticks": 3000,
+			"elapsed": 89.8999999999962,
+			"elite_kills": 0,
+			"escort_hp": 570.0,
+			"event_done": true,
+			"evolved": [],
+			"hp": 228.0,
+			"kills": 36,
+			"level": 7,
+			"mission": "S1-M03-01",
+			"restores": 16,
+			"run_seed": "4223111721",
+			"skills": {
+				"S1-A03": 4,
+				"S1-A07": 3
+			},
+			"skipped": 20,
+			"stages": [
+				0,
+				600,
+				1200,
+				1800,
+				2400,
+				3000,
+				3600
+			],
+			"uncollected_xp": 0.0,
+			"victory": true
+		},
+		{
+			"branches": [
+				2.0,
+				2.0,
+				2.0
+			],
+			"character": "S1-C03",
+			"choice_seconds": [
+				41.8833333333322,
+				62.6166666666644
+			],
+			"choices": 2,
+			"collected_xp": 22.0,
+			"compared_ticks": 1200,
+			"elapsed": 80.88333333333,
+			"elite_kills": 1,
+			"escort_hp": 570.0,
+			"event_done": true,
+			"evolved": [],
+			"hp": 228.0,
+			"kills": 5,
+			"level": 3,
+			"mission": "S1-M03-02",
+			"restores": 7,
+			"run_seed": "4112112411",
+			"skills": {
+				"S1-A07": 3
+			},
+			"skipped": 0,
+			"stages": [
+				0,
+				360
+			],
+			"uncollected_xp": 18.0,
+			"victory": true
+		},
+		{
+			"branches": [
+				2.0,
+				2.0,
+				2.0
+			],
+			"character": "S1-C03",
+			"choice_seconds": [
+				32.4999999999994,
+				38.4166666666658,
+				41.4166666666656,
+				45.1166666666654
+			],
+			"choices": 4,
+			"collected_xp": 63.0,
+			"compared_ticks": 1600,
+			"elapsed": 53.2499999999983,
+			"elite_kills": 0,
+			"escort_hp": 49.4592000000254,
+			"event_done": true,
+			"evolved": [],
+			"hp": 223.272,
+			"kills": 21,
+			"level": 5,
+			"mission": "S1-M03-03",
+			"restores": 9,
+			"run_seed": "1106754740",
+			"skills": {
+				"S1-A03": 1,
+				"S1-A07": 4
+			},
+			"skipped": 1,
+			"stages": [
+				0,
+				224,
+				588
+			],
+			"uncollected_xp": 0.0,
+			"victory": true
+		},
+		{
+			"branches": [
+				2.0,
+				2.0,
+				2.0
+			],
+			"character": "S1-C03",
+			"choice_seconds": [
+				18.2166666666669,
+				29.9166666666662,
+				48.1166666666652
+			],
+			"choices": 3,
+			"collected_xp": 39.0,
+			"compared_ticks": 1800,
+			"elapsed": 52.9166666666649,
+			"elite_kills": 0,
+			"escort_hp": 570.0,
+			"event_done": true,
+			"evolved": [],
+			"hp": 221.568,
+			"kills": 13,
+			"level": 4,
+			"mission": "S1-M03-04",
+			"restores": 10,
+			"run_seed": "476454499",
+			"skills": {
+				"S1-A02": 1,
+				"S1-A07": 3
+			},
+			"skipped": 0,
+			"stages": [
+				27,
+				2218
+			],
+			"uncollected_xp": 0.0,
+			"victory": true
+		},
+		{
+			"branches": [
+				2.0,
+				2.0,
+				2.0
+			],
+			"character": "S1-C03",
+			"choice_seconds": [
+				19.5166666666668,
+				27.3166666666664,
+				32.9333333333327,
+				43.2499999999988,
+				65.6333333333309
+			],
+			"choices": 5,
+			"collected_xp": 84.0,
+			"compared_ticks": 6600,
+			"elapsed": 87.5333333333297,
+			"elite_kills": 0,
+			"escort_hp": 570.0,
+			"event_done": true,
+			"evolved": [],
+			"hp": 228.0,
+			"kills": 27,
+			"level": 6,
+			"mission": "S1-M03-05",
+			"restores": 34,
+			"run_seed": "1871776899",
+			"skills": {
+				"S1-A07": 5
+			},
+			"skipped": 0,
+			"stages": [
+				0,
+				0,
+				2756
+			],
+			"uncollected_xp": 6.0,
+			"victory": true
+		},
+		{
+			"branches": [
+				2.0,
+				2.0,
+				2.0
+			],
+			"character": "S1-C03",
+			"choice_seconds": [
+				13.4666666666669,
+				18.2166666666669,
+				31.4499999999995,
+				41.9833333333322,
+				61.3999999999978,
+				72.8166666666638,
+				85.9333333333297
+			],
+			"choices": 7,
+			"collected_xp": 153.0,
+			"compared_ticks": 3600,
+			"elapsed": 109.649999999995,
+			"elite_kills": 0,
+			"escort_hp": 570.0,
+			"event_done": true,
+			"evolved": [],
+			"hp": 223.0,
+			"kills": 51,
+			"level": 8,
+			"mission": "S1-M03-06",
+			"restores": 19,
+			"run_seed": "1307310720",
+			"skills": {
+				"S1-A07": 5
+			},
+			"skipped": 21,
+			"stages": [
+				0,
+				600,
+				1200,
+				1800,
+				2400,
+				3000,
+				3600,
+				4200,
+				4800
+			],
+			"uncollected_xp": 0.0,
+			"victory": true
+		},
+		{
+			"branches": [
+				2.0,
+				2.0,
+				2.0
+			],
+			"character": "S1-C03",
+			"choice_seconds": [
+				37.9833333333325,
+				58.7333333333313
+			],
+			"choices": 2,
+			"collected_xp": 16.0,
+			"compared_ticks": 1200,
+			"elapsed": 80.8999999999967,
+			"elite_kills": 1,
+			"escort_hp": 570.0,
+			"event_done": true,
+			"evolved": [],
+			"hp": 228.0,
+			"kills": 1,
+			"level": 3,
+			"mission": "S1-M03-07",
+			"restores": 7,
+			"run_seed": "1479748453",
+			"skills": {
+				"S1-A03": 1,
+				"S1-A07": 2
+			},
+			"skipped": 10,
+			"stages": [
+				0,
+				600
+			],
+			"uncollected_xp": 12.0,
+			"victory": true
+		},
+		{
+			"branches": [
+				2.0,
+				2.0,
+				2.0
+			],
+			"character": "S1-C03",
+			"choice_seconds": [
+				19.5166666666668,
+				23.4166666666666,
+				68.5833333333307,
+				84.0333333333298
+			],
+			"choices": 4,
+			"collected_xp": 60.0,
+			"compared_ticks": 10413,
+			"elapsed": 117.283333333328,
+			"elite_kills": 0,
+			"escort_hp": 570.0,
+			"event_done": true,
+			"evolved": [],
+			"hp": 149.7792,
+			"kills": 9,
+			"level": 5,
+			"mission": "S1-M03-08",
+			"restores": 54,
+			"run_seed": "1472191039",
+			"skills": {
+				"S1-A03": 2,
+				"S1-A07": 3
+			},
+			"skipped": 0,
+			"stages": [
+				0
+			],
+			"uncollected_xp": 24.0,
+			"victory": true
+		}
+	],
+	"scope": "real new-profile sequential twenty-four missions, bot not human"
+}

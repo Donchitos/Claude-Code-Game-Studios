@@ -1,8 +1,41 @@
 # Session State — 凡人修仙传·掌天试炼
 
+> 2026-09-22 第四至八章本地交付：40关有限遭遇、区域精英、场地关闭、六种Boss与护送路标XP已实现。最终安全C01和逐章角色备战风险两路线各64/64、结局重启通过，共1235次磁盘恢复/213461tick对照；24套回归、实际PCK续玩/第三章旧包零写入兼容通过。C03固定成长压力99/120，不宣称全角色平衡或商业发行完成；新玩家SKIPPED_BY_USER，battle_ready=false。入口build/full-campaign-2026-09-22/开始完整版试玩.command；报告production/playtest-evidence/2026-09-22-final-chapters.md。下方旧进行中状态为历史。
+
+> 2026-09-17 Codex接手第三章收口：catalog6cea8186，M03-07实际seed1479748453已复现并改为后路5只/450tick/60间隔，固定25种子25PASS；Boss伤害阶段快照、12弹整轮容量、重复潮池、旧第二章hash路由已修。两线24/24，503磁盘恢复/87110逐tick对照；专项1713、QA矩阵266/0，三专家限定批准。实际PCKGUI续玩和第二章旧包链PASS，启动build/chapter-three-2026-09-17/开始第三章版试玩.command，附真实前16关样例。额外64关独立54/64、连续45/46止M06-06；该例旧新PCK同结果，后续章节平衡仍OPEN，不称全游戏PASS。报告production/playtest-evidence/2026-09-17-chapter-three.md。新玩家SKIPPED_BY_USER、battle_ready=false；下方进行中/TBD仅历史。
+
+> 2026-09-17 第三章（涨潮）进行中：P0/P1 潮墙半场（锚点 y=-625）、P1 淹没双区（活区守卫+无活区即发，500-tick 逐tick探针）、P1 渲染尊重创作色（蓝/橙/绿，文案全真）、P2 表现强化、M03-03 校准（escort_hp 660+FERRY_2 8→6，8-seed 探针 8/8 全胜最差保留21.5%）已落码；catalog hash 44fab78cd781→c6510253203b。mechanics 1711/rewards/包E 466 全绿；pacing_rewards 过时前提已更新（18 checks 待复跑）。三专家：QA APPROVED WITH SUGGESTIONS（P2 待旅程证据闭合）、GDScript/UI 修复后短程复核进行中；UI P1-2 已反证为误报（世界半高640非320，相机跟随）。全量回归批（28套件，含两路线旅程+胜利矩阵）后台运行中。冻结包 build/chapter-three-2026-09-17/ 骨架就绪（.command/先读我已写，staging/PCK/样例档/manifest 待旅程与复核通过后落）。证据骨架 production/playtest-evidence/2026-09-17-chapter-three.md（数字TBD）。新玩家SKIPPED_BY_USER、battle_ready=false。
+
+> 2026-09-16 第二章整包交付：M02八关固定矿轨/喷口关闭/冷却匣与炉工中段机缘/指定E02/炉门弱点三阶段Boss；两条冻结新档1→16均通过，300磁盘恢复、51119逐tick对照。专项246、Profile581/0、三专家限定批准；实际PCK GUI保存重建与G兼容链通过。启动build/chapter-two-2026-09-16/开始第二章版试玩.command，首次附真实bot通关首章样例。报告production/playtest-evidence/2026-09-16-chapter-two.md。新玩家SKIPPED_BY_USER、battle_ready=false；短局资源富余/全游戏体量/Windows Steam Save v2仍独立待办。
+
+> 协作约定（用户2026-09-16明确）：无需要用户决定的事项就持续推进已授权实现、验证、独立复核和交付，不再逐小包等待“继续”。不扩充为自动发布或未授权外部消息。
+
+> 2026-09-16 G交付：按G1→G2→G3连续完成02/07提前来敌、03三路段、05增援错峰、08阶段预警；三专家限定APPROVED WITH SUGGESTIONS，无阻塞项。两路线8/8，151恢复、25850逐tick对比；Boss130/0，真实F→G PCK兼容与G图形双槽恢复通过。入口build/package-g-2026-09-16/开始G版试玩.command；证据production/playtest-evidence/2026-09-16-package-g.md。新玩家SKIPPED_BY_USER，D总OPEN / In Review，battle_ready=false。下方旧包状态为历史。
+
+> 2026-09-16 F后续：合法胜利/超时前态到终态双槽恢复、结算同步IO_ERROR后一次结算已补齐，独立QA关闭F遗留覆盖建议。新增节奏遥测定位02/07遭遇展开滞后、03阶段重叠、08晚预警；下一包方案design/chapter-one-content-expansion.md为AUTHOR_PLAN / NOT_IMPLEMENTED。运行源码/目录/F包未改；证据production/playtest-evidence/2026-09-16-package-f-followup.md，新玩家SKIPPED_BY_USER，battle_ready=false。
+
+> 2026-09-16 F完成：三项E建议整改及短关经验调整已实现；三专家复核后综合APPROVED WITH SUGGESTIONS（仅F增量），无阻塞项。两条首章自动路线8/8，152次磁盘恢复、26198次逐tick比较。入口build/package-f-2026-09-16/开始F版试玩.command，报告production/playtest-evidence/2026-09-16-package-f.md。新玩家SKIPPED_BY_USER，D总OPEN / In Review，battle_ready=false。下方旧包状态为历史。
+
+> 2026-09-16 E包实施：首章6/4经验曲线、180 active tick升级间隔/积压提示、CAMPAIGN_CHAPTER1_V3恢复、最大视野与动态屏外生成已完成本地验证；06五段敌潮支持一条合法自然进化路径。两套新档首章8/8、共126次磁盘恢复、21446tick分支对照通过；短关升级次数仍低于观察带。新玩家试玩按用户决定SKIPPED_BY_USER，独立复审PENDING，D总OPEN / In Review，battle_ready=false。当前入口build/package-e-2026-09-16/开始E版试玩.command；证据production/playtest-evidence/2026-09-16-package-e.md，合同docs/architecture/adr-0009-chapter-one-pacing-and-view.md。下方延期项/旧包状态为历史，本条优先。
+
+> 2026-09-16 用户范围决定：跳过至少3名新玩家探索性试玩，不再作为当前首章迭代的前置门槛；该项记为 SKIPPED_BY_USER，不记为通过。既有证据仍为P00本人自报1名、新玩家0，未新增理解/乐趣/时长验证。下一工程入口：首章XP实验、3 active秒升级间隔与积压提示、任意窗口视野外生成，随后补恢复矩阵及独立复审。D总仍OPEN / In Review，battle_ready=false；不改写历史独立裁决。
+
 > 会话崩溃或 `/clear` 后，先读本文件恢复上下文。
 
 <!-- STATUS -->
+2026-09-15 D整改独立复审：3名真实专家全部返回后fresh资深综合APPROVED WITH SUGGESTIONS，仅限D-S01～04；四项原缺陷限定关闭，隔离Campaign开发持久档可开展新玩家探索测试。P00本人自报完成1名，新玩家0；D总OPEN / In Review，battle_ready=false。剩余至少3新玩家、延期XP/3秒间隔/任意窗口视野外生成、完整恢复矩阵和平台/产品门槛。当前入口build/package-d-fix-2026-09-15/开始D修订版试玩.command；证据production/playtest-evidence/2026-09-15-package-d-fix.md与package-d-fix-2026-09-15/senior-report.md。以下旧D限制为历史，被本次限定放行取代。
+Latest package-D review checkpoint 2026-09-15 D独立复审完成：3真实独立专家+fresh资深综合CHANGES REQUIRED，2 P1（故障快照写入口、HUD遮挡）+2 P2（死亡tick时间/恢复、线索箭头）。57冻结SHA无变化，未修复实现。C保档证据已勘误；Boss三个pending起点各200tick独立JSON恢复一致为限定新增证据。用户选择本人先玩；P00临时档包build/package-d-2026-09-15/开始P00临时档试玩.command已实际PCK图形检查，强制validation内存档、退出丢进度；正式新玩家持久档不放行。真人0，P00不计3名新玩家。证据production/playtest-evidence/2026-09-15-package-d.md，最终senior-report.md。下一入口P00反馈及D-S01..04整改/独立复测，再冻结新包/补至少3新玩家；D OPEN，battle_ready=false。
+
+Latest package-C implementation checkpoint 2026-09-15 C包实现checkpoint：04线索/机缘/指定猎物、05净化半程增援、06分段守路+一次E01、07拆锚关闭根区、08三阶段扑袭Boss已实现；B包真实PCK已保留并验证新版拒读零写入升级路径。C专项237、A135/B132、Content1170/Profile581/Root44/Combat287/Snapshot299通过；26路径检查、Mac截图已查看。两套合法首章8/8胜，46/45次磁盘恢复，active279.57/274.92秒；06一条路线自然进化，两路均击败1精英，08三阶段均发出攻击。目录hash1e3c41e4223704a29050f28294bef4a38b9569186e6a6234a921c3685e92ab3e。证据production/playtest-evidence/2026-09-15-package-c.md，ADR-0008 C扩展，registry campaign-package-c-v1.json。下一入口D前节奏/生成可见性整改与真人验证/独立复审；XP与升级间隔未改，任意窗口视野外保证OPEN，无新64关平衡/真人/独立review/Windows/Steam/20h证据，battle_ready=false。
+
+Latest package-B implementation checkpoint 2026-09-15 B包：首章2布局、01–03分段遭遇/教学/护送/备战及60Hz可恢复快照已实现。专项132、Profile581、Content1170、Root44、Combat287、Snapshot299、A135均0失败；20路线检查通过。新档三关72.27/13.93/22.08秒，10次阶段磁盘恢复；Mac图形已查看。A版真实PCK恢复升级路径通过，拒读双槽SHA不变；备份build/legacy-package-a-2026-09-15。证据production/playtest-evidence/2026-09-15-package-b.md，ADR-0008。下一入口C：04–08专属行为、XP与生成可见性迭代。任意视口外生成仍有缺口，无新独立review/真人/Windows/Steam/20h证据，battle_ready=false。
+
+Latest package-A implementation checkpoint (2026-09-15): 用户明确授权A包后已完成旧hash/未知hash进行中任务的设置迁移前零写入保护、配置驱动0/8/24/40/56成长购买限制与既有高阶保留、三脉名称按伤害/生命/拾取索引纠偏。旧PCK/目录已备份至build/legacy-campaign-2026-09-14；真实旧PCK创建30tick快照→新源码拒读且双槽SHA不变→旧PCK恢复并主动放弃测试任务→新源码读首页通过。专项135、Profile581、Content1170、Root44、Combat287、Snapshot301全部0失败；三张Mac截图已查看。新目录hash6317cdd43003233238309a0ecadad895d4962cdf188dca3ff0802bba8f42125a，旧试玩包未覆盖。证据production/playtest-evidence/2026-09-15-package-a.md。无新独立review/Windows/Steam/64关平衡/20h证据；下一入口B场景与01–03，battle_ready=false。
+
+Latest chapter-one redesign checkpoint (2026-09-15): 用户“继续”后完成design/chapter-one-playable-redesign.md作者设计基线，两场景/八任务遭遇、首章XP实验、三脉按completed=0/8/24/40/56开放及已有高阶保留、实际branch索引与UI命名纠偏、旧档分类处理、A–D实施包已具体化。源码确认hash绑定current_run而非整个Profile；无进行中任务的合法旧档保留，已知旧版进行中任务拟受控零写入、回保留旧包完成本局后升级。方案未实施、未独立复审、未新增Godot/真人证据；下一工程入口A兼容与成长基础，先保护旧进行中档再改目录。battle_ready=false。
+
+Latest chapter-one audit checkpoint (2026-09-15): 用户认可“审查首章8任务，产出问题/改动/验收标准”后，主线程完成配置/源码与历史顺序旅程审查。报告见production/playtest-evidence/2026-09-15-chapter-one-audit.md。首章历史bot战斗约247.53秒；成长三脉可在第6关前满级，首章普通敌池同质、全表精英抽取、追猎/风带文案超前、事件和备战触达延后需整改。当前catalog SHA与旧记录一致，生成器--check通过；没有新Godot/图形/真人测试，没有独立full verdict，未修改运行代码/配置。下一步：冻结首章逐关体验/场景/遭遇/成长曲线及内容hash旧档处理，再实现01–03共用基础、04–08差异，最后真人试玩；battle_ready=false。下方交付checkpoint仍是最新可运行包状态。
+
 Latest full-campaign delivery checkpoint (2026-09-14): **Playable baseline delivered — 灵枢行纪 / Spirit Nexus**。
 普通入口为src/campaign/CampaignGame.tscn，legacy测试保留。最终Content1170 / Profile581 / Combat287 / RootFlow44 / Journey286 / Snapshot301均0失败；
 E独立Sequential275/0，真实新档合法成长顺序64/64胜、终局持久化、8次章节磁盘重载。自动玩家战斗active为2115.8秒=35.26分钟，**主线体量明显未达20小时**，不称完整商业游戏完成。

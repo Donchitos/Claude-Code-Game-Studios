@@ -1,0 +1,353 @@
+{
+  "source_catalog_sha256": "6cea8186b024592bf3edb298df02400964c246eeab4cb6e475afdbfd3a8fe35a",
+  "scope": "Preserved undecorated objective fixtures. Not current production mission definitions.",
+  "missions": [
+    {
+      "id": "S1-M04-01",
+      "name": "关闭折镜节点",
+      "name_en": "Close the Mirror Nodes",
+      "description": "先观察反射角度再切入",
+      "description_en": "Break objective in Bronze Hills; 3 marked target(s).",
+      "unlock_after": 24,
+      "planning_description": "先观察反射角度再切入",
+      "chapter": 4,
+      "ordinal": 25,
+      "kind": "BREAK",
+      "scene_id": "S1-S04-01",
+      "prerequisite_id": "S1-M03-08",
+      "briefing": "先观察反射角度再切入 击破3个锚点；依编号击破，未激活目标免伤。",
+      "briefing_en": "Bronze Hills: Close the Mirror Nodes. Destroy 3 marked anchors; inactive anchors cannot be damaged.",
+      "success_text": "关闭折镜节点完成。新的道路已经开放。",
+      "success_text_en": "Close the Mirror Nodes complete. The next route is open.",
+      "timeout_seconds": 440.0,
+      "target_seconds": 8.4,
+      "target_count": 3,
+      "order_mode": "FIXED",
+      "target_hp": 141.0,
+      "target_positions": [
+        [
+          164,
+          284
+        ],
+        [
+          -417,
+          -38
+        ],
+        [
+          253,
+          -246
+        ]
+      ],
+      "target_ids": [
+        "S1-M04-01:T1",
+        "S1-M04-01:T2",
+        "S1-M04-01:T3"
+      ],
+      "enemy_ids": [
+        "S1-N10",
+        "S1-N11",
+        "S1-N12"
+      ],
+      "boss_id": "",
+      "reward": 75,
+      "first_grants": [],
+      "theme": 3,
+      "target_radius": 90.0,
+      "cleanse_enemy_radius": 130.0,
+      "hold_seconds": 8.4,
+      "escort_radius": 180.0,
+      "escort_speed": 85.0,
+      "escort_hp": 610.0,
+      "order_pressure_max": 0.3,
+      "enemy_scaling": 1.192,
+      "spawn_interval": 0.95
+    },
+    {
+      "id": "S1-M04-02",
+      "name": "护送维修偶",
+      "name_en": "Escort the Repair Automaton",
+      "description": "把修复目标带过弹幕交叉点",
+      "description_en": "Escort objective in Bronze Hills; 4 marked target(s).",
+      "unlock_after": 25,
+      "planning_description": "把修复目标带过弹幕交叉点",
+      "chapter": 4,
+      "ordinal": 26,
+      "kind": "ESCORT",
+      "scene_id": "S1-S04-01",
+      "prerequisite_id": "S1-M04-01",
+      "briefing": "把修复目标带过弹幕交叉点 靠近护送物穿过4个路标并保护生命。",
+      "briefing_en": "Bronze Hills: Escort the Repair Automaton. Stay near the escort through 4 waypoints; protect its health.",
+      "success_text": "护送维修偶完成。新的道路已经开放。",
+      "success_text_en": "Escort the Repair Automaton complete. The next route is open.",
+      "timeout_seconds": 445.0,
+      "target_seconds": 8.4,
+      "target_count": 4,
+      "order_mode": "FIXED",
+      "target_hp": 146.0,
+      "target_positions": [
+        [
+          -600,
+          -182
+        ],
+        [
+          -200,
+          -112
+        ],
+        [
+          200,
+          232
+        ],
+        [
+          600,
+          6
+        ]
+      ],
+      "target_ids": [
+        "S1-M04-02:T1",
+        "S1-M04-02:T2",
+        "S1-M04-02:T3",
+        "S1-M04-02:T4"
+      ],
+      "enemy_ids": [
+        "S1-N10",
+        "S1-N11",
+        "S1-N12"
+      ],
+      "boss_id": "",
+      "reward": 78,
+      "first_grants": [],
+      "theme": 3,
+      "target_radius": 90.0,
+      "cleanse_enemy_radius": 130.0,
+      "hold_seconds": 8.4,
+      "escort_radius": 180.0,
+      "escort_speed": 85.0,
+      "escort_hp": 610.0,
+      "order_pressure_max": 0.3,
+      "enemy_scaling": 1.2,
+      "spawn_interval": 0.915
+    },
+    {
+      "id": "S1-M04-03",
+      "name": "截获巡检机",
+      "name_en": "Intercept the Inspector",
+      "description": "利用弱侧打断逃离",
+      "description_en": "Hunt objective in Bronze Hills; 1 marked target(s).",
+      "unlock_after": 26,
+      "planning_description": "利用弱侧打断逃离",
+      "chapter": 4,
+      "ordinal": 27,
+      "kind": "HUNT",
+      "scene_id": "S1-S04-01",
+      "prerequisite_id": "S1-M04-02",
+      "briefing": "利用弱侧打断逃离 击杀标记追猎目标。",
+      "briefing_en": "Bronze Hills: Intercept the Inspector. Defeat the marked hunt target, not its ordinary escorts.",
+      "success_text": "截获巡检机完成。新的道路已经开放。",
+      "success_text_en": "Intercept the Inspector complete. The next route is open.",
+      "timeout_seconds": 450.0,
+      "target_seconds": 8.4,
+      "target_count": 1,
+      "order_mode": "FIXED",
+      "target_hp": 151.0,
+      "target_positions": [
+        [
+          10,
+          308
+        ]
+      ],
+      "target_ids": [
+        "S1-M04-03:HUNT"
+      ],
+      "enemy_ids": [
+        "S1-N10",
+        "S1-N11",
+        "S1-N12"
+      ],
+      "boss_id": "",
+      "reward": 81,
+      "first_grants": [],
+      "theme": 3,
+      "target_radius": 90.0,
+      "cleanse_enemy_radius": 130.0,
+      "hold_seconds": 8.4,
+      "escort_radius": 180.0,
+      "escort_speed": 85.0,
+      "escort_hp": 610.0,
+      "order_pressure_max": 0.3,
+      "enemy_scaling": 1.208,
+      "spawn_interval": 0.88
+    },
+    {
+      "id": "S1-M04-04",
+      "name": "净化镜尘",
+      "name_en": "Cleanse Mirror Dust",
+      "description": "净化后减少局部反射干扰",
+      "description_en": "Cleanse objective in Bronze Hills; 2 marked target(s).",
+      "unlock_after": 27,
+      "planning_description": "净化后减少局部反射干扰",
+      "chapter": 4,
+      "ordinal": 28,
+      "kind": "CLEANSE",
+      "scene_id": "S1-S04-01",
+      "prerequisite_id": "S1-M04-03",
+      "briefing": "净化后减少局部反射干扰 在2个净化圈内分别保持8.4秒，附近有敌暂停累计。",
+      "briefing_en": "Bronze Hills: Cleanse Mirror Dust. Clear 2 circles, stay inside each for 8.4s with no enemies nearby.",
+      "success_text": "净化镜尘完成。新的道路已经开放。",
+      "success_text_en": "Cleanse Mirror Dust complete. The next route is open.",
+      "timeout_seconds": 455.0,
+      "target_seconds": 8.4,
+      "target_count": 2,
+      "order_mode": "FIXED",
+      "target_hp": 156.0,
+      "target_positions": [
+        [
+          -82,
+          304
+        ],
+        [
+          82,
+          -304
+        ]
+      ],
+      "target_ids": [
+        "S1-M04-04:T1",
+        "S1-M04-04:T2"
+      ],
+      "enemy_ids": [
+        "S1-N10",
+        "S1-N11",
+        "S1-N12"
+      ],
+      "boss_id": "",
+      "reward": 84,
+      "first_grants": [],
+      "theme": 3,
+      "target_radius": 90.0,
+      "cleanse_enemy_radius": 130.0,
+      "hold_seconds": 8.4,
+      "escort_radius": 180.0,
+      "escort_speed": 85.0,
+      "escort_hp": 610.0,
+      "order_pressure_max": 0.3,
+      "enemy_scaling": 1.216,
+      "spawn_interval": 0.845
+    },
+    {
+      "id": "S1-M04-05",
+      "name": "守住机核运台",
+      "name_en": "Hold the Core Platform",
+      "description": "镜盾与扇射机首次协同",
+      "description_en": "Survive objective in Bronze Hills; 1 marked target(s).",
+      "unlock_after": 28,
+      "planning_description": "镜盾与扇射机首次协同",
+      "chapter": 4,
+      "ordinal": 29,
+      "kind": "SURVIVE",
+      "scene_id": "S1-S04-02",
+      "prerequisite_id": "S1-M04-04",
+      "briefing": "镜盾与扇射机首次协同 存活109秒后进入撤离圈。",
+      "briefing_en": "Bronze Hills: Hold the Core Platform. Survive 109s, then enter the marked extraction circle.",
+      "success_text": "守住机核运台完成。新的道路已经开放。",
+      "success_text_en": "Hold the Core Platform complete. The next route is open.",
+      "timeout_seconds": 460.0,
+      "target_seconds": 109.0,
+      "target_count": 1,
+      "order_mode": "FIXED",
+      "target_hp": 161.0,
+      "target_positions": [
+        [
+          -180,
+          288
+        ]
+      ],
+      "target_ids": [
+        "S1-M04-05:T1"
+      ],
+      "enemy_ids": [
+        "S1-N10",
+        "S1-N11",
+        "S1-N12",
+        "S1-N08"
+      ],
+      "boss_id": "",
+      "reward": 87,
+      "first_grants": [],
+      "theme": 3,
+      "target_radius": 90.0,
+      "cleanse_enemy_radius": 130.0,
+      "hold_seconds": 109.0,
+      "escort_radius": 180.0,
+      "escort_speed": 85.0,
+      "escort_hp": 610.0,
+      "order_pressure_max": 0.3,
+      "enemy_scaling": 1.224,
+      "spawn_interval": 0.81
+    },
+    {
+      "id": "S1-M04-08",
+      "name": "千镜司枢",
+      "name_en": "Master of a Thousand Mirrors",
+      "description": "破解镜阵暴露本体，不对全反射面硬打",
+      "description_en": "Boss objective in Bronze Hills; 1 marked target(s).",
+      "unlock_after": 31,
+      "planning_description": "破解镜阵暴露本体，不对全反射面硬打",
+      "chapter": 4,
+      "ordinal": 32,
+      "kind": "BOSS",
+      "scene_id": "S1-S04-02",
+      "prerequisite_id": "S1-M04-07",
+      "briefing": "破解镜阵暴露本体，不对全反射面硬打 击杀本任务指定首领。",
+      "briefing_en": "Bronze Hills: Master of a Thousand Mirrors. Defeat this mission’s designated boss through all phases.",
+      "success_text": "千镜司枢完成。新的道路已经开放。",
+      "success_text_en": "Master of a Thousand Mirrors complete. The next route is open.",
+      "timeout_seconds": 475.0,
+      "target_seconds": 8.4,
+      "target_count": 1,
+      "order_mode": "FIXED",
+      "target_hp": 176.0,
+      "target_positions": [
+        [
+          -465,
+          184
+        ]
+      ],
+      "target_ids": [
+        "S1-B04"
+      ],
+      "enemy_ids": [
+        "S1-N10",
+        "S1-N11",
+        "S1-N12",
+        "S1-N08"
+      ],
+      "boss_id": "S1-B04",
+      "reward": 96,
+      "first_grants": [
+        "S1-C05",
+        "S1-A13",
+        "S1-A14",
+        "S1-A15",
+        "S1-P13",
+        "S1-P14",
+        "S1-P15",
+        "S1-V09",
+        "S1-V10",
+        "S1-PREP08",
+        "S1-RISK13",
+        "S1-RISK14",
+        "S1-RISK15",
+        "S1-CH05"
+      ],
+      "theme": 3,
+      "target_radius": 90.0,
+      "cleanse_enemy_radius": 130.0,
+      "hold_seconds": 8.4,
+      "escort_radius": 180.0,
+      "escort_speed": 85.0,
+      "escort_hp": 610.0,
+      "order_pressure_max": 0.3,
+      "enemy_scaling": 1.248,
+      "spawn_interval": 0.705
+    }
+  ]
+}

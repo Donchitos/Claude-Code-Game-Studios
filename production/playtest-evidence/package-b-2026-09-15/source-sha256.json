@@ -1,0 +1,21 @@
+{
+  "assets/config/campaign_game.json": "8acdcfa43bc2312b9c0fa7d5992c0e70a889f380fca52931f71c2acb9b6ee7c4",
+  "docs/architecture/adr-0008-chapter-one-encounters.md": "e4e05f732c20bd2d16272de2540c799f1945fa0677f7a98d3f9f4d5ac738f0a3",
+  "src/campaign/campaign_arena.gd": "006bde6c9aaf2ac6eaa7b481459936953a9c576b8e4e54987ceb17329cdd56c3",
+  "src/campaign/campaign_arena_codec.gd": "289eeefbd6eec6adaf2e52e2173f1c0a6559d62202911d4539139586dab8d882",
+  "src/campaign/campaign_arena_render.gd": "71c05e863296d5e64a2edc1e322a9d24b53956d4af4596aa3bd7f445d88ab6a9",
+  "src/campaign/campaign_arena_validation.gd": "259755342a805b1acf5ebdf19de7c7eaa7d450e7132fb1d7fdb5649605787e43",
+  "src/campaign/campaign_audio.gd": "4ace09abaddadce84f30a890dec97a8b0f68a966c37fef6c94c3a632d1832fc2",
+  "src/campaign/campaign_catalog.gd": "c51c3a5c2511b0ff83fb7333c660c2df95d2ff9859059d6d58eb429c6cab0d89",
+  "src/campaign/campaign_combat.gd": "27ba11f9839229da7e6de62f78f2c0449fb7662d4337cd77fcaaa9ce5d0cad1e",
+  "src/campaign/campaign_encounter.gd": "2f4508217c64c50ff48f5b7576ace86320ad1091afb82f41f18d96962c60ead4",
+  "src/campaign/campaign_game_root.gd": "74f800b6f4e1c6c326e01fdb6fd53cd81cfb230c7ed706beeba993295e722314",
+  "src/campaign/campaign_mission.gd": "61587719792731b89af1e3a98de7f6ace193756d1d94f53e498294c3a199009b",
+  "src/campaign/campaign_profile.gd": "d0af958be76b4d08568ec8dff5162b5a3c46149e5962be3b87ce4480f9e07b75",
+  "src/campaign/campaign_ui.gd": "2dcf194fc45fcc91ca339f2c7b1c3723682718f17e55fa0bcac7878541ec669f",
+  "src/campaign/campaign_ui_art.gd": "784ac1fb374c0feaecd5c0a88694c9e7f96606afd0cffc17f999d9eaec9b0791",
+  "tests/integration/campaign_package_b_journey.gd": "91eb93e1c7102cc7fc6bdbbe2fa7f3347c1d054fd8d32f182a0ee7bd489eaf5b",
+  "tests/integration/campaign_package_b_test.gd": "1264e0e6659874f11195881279dfa51543bc34dfe222b074305384b97388f7c2",
+  "tests/manual/campaign_package_b_ui.gd": "af578ad21d1b3872efe01e234c05d0c1d24c66b73f79039ff0d194c6669b74a6",
+  "tools/campaign/build_catalog.py": "ce59e6c1efca1f8b1461a82a460d4cd8b7eb2d6b910e7bafa031b7db3049a6d6"
+}

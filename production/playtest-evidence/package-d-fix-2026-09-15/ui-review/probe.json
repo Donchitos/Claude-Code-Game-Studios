@@ -1,0 +1,173 @@
+[
+	{
+		"boss_landings": 2,
+		"center": "(640.0, 360.0)",
+		"hud": "[P: (16.0, 12.0), S: (1034.0, 111.0)]",
+		"layout_root_warning": true,
+		"locale": "zh-CN",
+		"scale": 1.0,
+		"size": "(960, 540)"
+	},
+	{
+		"boss_landings": 2,
+		"center": "(640.0, 360.0)",
+		"hud": "[P: (16.0, 12.0), S: (1034.0, 117.0)]",
+		"layout_root_warning": true,
+		"locale": "zh-CN",
+		"scale": 1.15,
+		"size": "(960, 540)"
+	},
+	{
+		"boss_landings": 2,
+		"center": "(640.0, 360.0)",
+		"hud": "[P: (16.0, 12.0), S: (1034.0, 127.0)]",
+		"layout_root_warning": true,
+		"locale": "zh-CN",
+		"scale": 1.3,
+		"size": "(960, 540)"
+	},
+	{
+		"boss_landings": 2,
+		"center": "(640.0, 360.0)",
+		"hud": "[P: (16.0, 12.0), S: (1034.0, 111.0)]",
+		"layout_root_warning": true,
+		"locale": "en",
+		"scale": 1.0,
+		"size": "(960, 540)"
+	},
+	{
+		"boss_landings": 2,
+		"center": "(640.0, 360.0)",
+		"hud": "[P: (16.0, 12.0), S: (1034.0, 117.0)]",
+		"layout_root_warning": true,
+		"locale": "en",
+		"scale": 1.15,
+		"size": "(960, 540)"
+	},
+	{
+		"boss_landings": 2,
+		"center": "(640.0, 360.0)",
+		"hud": "[P: (16.0, 12.0), S: (1034.0, 127.0)]",
+		"layout_root_warning": true,
+		"locale": "en",
+		"scale": 1.3,
+		"size": "(960, 540)"
+	},
+	{
+		"boss_landings": 2,
+		"center": "(640.0, 360.0)",
+		"hud": "[P: (16.0, 12.0), S: (1034.0, 111.0)]",
+		"layout_root_warning": true,
+		"locale": "zh-CN",
+		"scale": 1.0,
+		"size": "(1280, 720)"
+	},
+	{
+		"boss_landings": 2,
+		"center": "(640.0, 360.0)",
+		"hud": "[P: (16.0, 12.0), S: (1034.0, 117.0)]",
+		"layout_root_warning": true,
+		"locale": "zh-CN",
+		"scale": 1.15,
+		"size": "(1280, 720)"
+	},
+	{
+		"boss_landings": 2,
+		"center": "(640.0, 360.0)",
+		"hud": "[P: (16.0, 12.0), S: (1034.0, 127.0)]",
+		"layout_root_warning": true,
+		"locale": "zh-CN",
+		"scale": 1.3,
+		"size": "(1280, 720)"
+	},
+	{
+		"boss_landings": 2,
+		"center": "(640.0, 360.0)",
+		"hud": "[P: (16.0, 12.0), S: (1034.0, 111.0)]",
+		"layout_root_warning": true,
+		"locale": "en",
+		"scale": 1.0,
+		"size": "(1280, 720)"
+	},
+	{
+		"boss_landings": 2,
+		"center": "(640.0, 360.0)",
+		"hud": "[P: (16.0, 12.0), S: (1034.0, 117.0)]",
+		"layout_root_warning": true,
+		"locale": "en",
+		"scale": 1.15,
+		"size": "(1280, 720)"
+	},
+	{
+		"boss_landings": 2,
+		"center": "(640.0, 360.0)",
+		"hud": "[P: (16.0, 12.0), S: (1034.0, 127.0)]",
+		"layout_root_warning": true,
+		"locale": "en",
+		"scale": 1.3,
+		"size": "(1280, 720)"
+	},
+	{
+		"boss_landings": 2,
+		"center": "(640.0, 583.0)",
+		"hud": "[P: (16.0, 12.0), S: (1034.0, 111.0)]",
+		"layout_root_warning": true,
+		"locale": "zh-CN",
+		"scale": 1.0,
+		"size": "(1216, 1108)"
+	},
+	{
+		"boss_landings": 2,
+		"center": "(640.0, 583.0)",
+		"hud": "[P: (16.0, 12.0), S: (1034.0, 117.0)]",
+		"layout_root_warning": true,
+		"locale": "zh-CN",
+		"scale": 1.15,
+		"size": "(1216, 1108)"
+	},
+	{
+		"boss_landings": 2,
+		"center": "(640.0, 583.0)",
+		"hud": "[P: (16.0, 12.0), S: (1034.0, 127.0)]",
+		"layout_root_warning": true,
+		"locale": "zh-CN",
+		"scale": 1.3,
+		"size": "(1216, 1108)"
+	},
+	{
+		"boss_landings": 2,
+		"center": "(640.0, 583.0)",
+		"hud": "[P: (16.0, 12.0), S: (1034.0, 111.0)]",
+		"layout_root_warning": true,
+		"locale": "en",
+		"scale": 1.0,
+		"size": "(1216, 1108)"
+	},
+	{
+		"boss_landings": 2,
+		"center": "(640.0, 583.0)",
+		"hud": "[P: (16.0, 12.0), S: (1034.0, 117.0)]",
+		"layout_root_warning": true,
+		"locale": "en",
+		"scale": 1.15,
+		"size": "(1216, 1108)"
+	},
+	{
+		"boss_landings": 2,
+		"center": "(640.0, 583.0)",
+		"hud": "[P: (16.0, 12.0), S: (1034.0, 127.0)]",
+		"layout_root_warning": true,
+		"locale": "en",
+		"scale": 1.3,
+		"size": "(1216, 1108)"
+	},
+	{
+		"continued_reliable_memory_run": true,
+		"error_reload_via_focused_ui": true
+	},
+	{
+		"found_teaching": "Target found. Dodge its charge and counter during recovery.",
+		"live_target_tracks_entity": true,
+		"next_clues_0_1_2": true
+	}
+]

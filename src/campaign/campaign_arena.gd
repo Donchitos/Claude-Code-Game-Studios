@@ -6,6 +6,8 @@ const Mission = preload("res://src/campaign/campaign_mission.gd")
 const Rendering = preload("res://src/campaign/campaign_arena_render.gd")
 const Validation = preload("res://src/campaign/campaign_arena_validation.gd")
 const Codec = preload("res://src/campaign/campaign_arena_codec.gd")
+const Chapter = preload("res://src/campaign/campaign_chapter_one.gd")
+const Encounter = preload("res://src/campaign/campaign_encounter.gd")
 const FORMAT := "CAMPAIGN_GAMEPLAY_V1"
 ## Presentation-only preference; never changes simulation or RNG.
 var reduce_motion := false
@@ -22,6 +24,7 @@ var ready_for_play := false
 ## Initializes a fresh mission or atomically rejects an invalid saved run.
 func configure(p_catalog: Dictionary, mission_definition: Dictionary, p_loadout: Dictionary, run_seed: int, saved: Dictionary = {}) -> bool:
 	ready_for_play = false
+	if not Encounter.valid_definition(p_catalog, mission_definition): return false
 	if p_catalog.get("skills", []).is_empty() or mission_definition.is_empty() or not Validation.valid_loadout(p_catalog, mission_definition, p_loadout):
 		return false
 	if not saved.is_empty() and (not validate_snapshot(p_catalog, mission_definition, saved) or not Validation.same_values(saved.get("loadout", {}), p_loadout) or str(saved.get("rng_seed", "")) != str(run_seed)):
@@ -60,23 +63,24 @@ func configure(p_catalog: Dictionary, mission_definition: Dictionary, p_loadout:
 
 ## Advances only when explicitly called; choice overlays freeze the entire simulation.
 func advance(delta: float, movement: Vector2) -> void:
-	if not ready_for_play or state.finished or not state.offered.is_empty() or state.event_id != "":
+	if not ready_for_play or state.finished or not state.offered.is_empty() or state.event_id != "" or (mission.get("chapter_c",false) and state.encounter.chapter.error != ""):
 		return
 	if not is_finite(delta) or delta <= 0.0 or delta > 0.25 or not movement.is_finite():
 		return
-	_step(delta, movement.limit_length())
+	if mission.has("scene_layout_id") and absf(delta - 1.0 / 60.0) > 0.000001: return
+	_step(1.0 / 60.0 if mission.has("scene_layout_id") else delta, movement.limit_length())
 	queue_redraw()
 
 ## Returns a detached JSON-safe snapshot, including pending work and RNG bit patterns.
 func snapshot() -> Dictionary:
 	if not ready_for_play:
 		return {}
-	return {"schema": FORMAT, "content_hash": str(catalog.get("content_hash", "")), "definition_hash": definition_hash(catalog, mission), "mission_id": mission.id,
+	return {"schema": Encounter.schema(mission) if mission.has("scene_layout_id") else FORMAT, "content_hash": str(catalog.get("content_hash", "")), "definition_hash": definition_hash(catalog, mission), "mission_id": mission.id,
 		"loadout": Codec.normalize(loadout), "rng_seed": str(rng.seed), "rng_state": str(rng.state), "state": Codec.normalize(state), "numeric_bits": Codec.bits(state)}
 
 ## Read-only preflight used by profile/root before constructing a battle.
 static func validate_snapshot(p_catalog: Dictionary, p_mission: Dictionary, saved: Dictionary) -> bool:
-	if saved.get("schema") != FORMAT or saved.get("mission_id") != p_mission.get("id"):
+	if saved.get("schema") != (Encounter.schema(p_mission) if p_mission.has("scene_layout_id") else FORMAT) or saved.get("mission_id") != p_mission.get("id"):
 		return false
 	if saved.get("definition_hash") != definition_hash(p_catalog, p_mission):
 		return false
@@ -94,6 +98,26 @@ func choose_upgrade(id: String) -> bool:
 func choose_event(risk: bool) -> bool:
 	return _choose_event(risk)
 
+## Current actionable destination, shared by the world arrow and HUD.
+func navigation_target() -> Vector2:
+	var o: Dictionary = state.objective
+	if mission.has("clues") and int(state.encounter.chapter.clues) < mission.clues.size():
+		var clue: Array = mission.clues[int(state.encounter.chapter.clues)]
+		return Vector2(clue[0], clue[1])
+	if mission.kind in ["HUNT", "BOSS", "BREAK"]:
+		for e in state.entities:
+			if e.target_id != "" and (mission.kind != "BREAK" or mission.order_mode != "FIXED" or int(e.ordinal) == int(o.progress)):
+				return pos(e)
+	return target_position(int(o.waypoint) if mission.kind in ["CLEANSE", "ESCORT"] else int(o.progress))
+
+func _exit_text(en: bool) -> String:
+	var offset := navigation_target() - player_world_position()
+	if offset.length() <= float(mission.target_radius):
+		return "EXIT: step out, then re-enter" if en else "撤离：走出金圈后重新进入"
+	var sector := posmod(roundi(offset.angle() / (PI / 4.0)), 8)
+	var directions := ["E", "SE", "S", "SW", "W", "NW", "N", "NE"] if en else ["右", "右下", "下", "左下", "左", "左上", "上", "右上"]
+	return ("EXIT: %s · %.0f" if en else "撤离：向%s · %.0f") % [directions[sector], offset.length()]
+
 ## Localized mission progress for the root HUD.
 func objective_text(locale: String) -> String:
 	var o: Dictionary = state.get("objective", {})
@@ -101,9 +125,9 @@ func objective_text(locale: String) -> String:
 	var kind := str(mission.get("kind", "SURVIVE")).to_upper()
 	match kind:
 		"SURVIVE":
-			return ("Reach extraction" if en else "前往撤离符阵") if float(state.get("elapsed", 0)) >= float(mission.get("target_seconds", 60)) else ("Survive %.0f / %.0fs" if en else "存活 %.0f / %.0f秒") % [state.get("elapsed", 0), mission.get("target_seconds", 60)]
+			return _exit_text(en) if bool(o.get("extraction_ready", false)) else ("Survive %.0f / %.0fs" if en else "存活 %.0f / %.0f秒") % [state.get("elapsed", 0), mission.get("target_seconds", 60)]
 		"ESCORT":
-			return ("Escort %d/%d · HP %.0f" if en else "护送 %d/%d · 灵舟生命 %.0f") % [o.get("progress", 0), mission.get("target_positions", []).size(), o.get("escort_hp", 0)]
+			return ("Escort %d/%d · HP %.0f" if en else ("护送 %d/%d · "+str(mission.get("escort_label","采药人"))+"生命 %.0f" if mission.has("scene_layout_id") else "护送 %d/%d · 灵舟生命 %.0f")) % [o.get("progress", 0), mission.get("target_positions", []).size(), o.get("escort_hp", 0)]
 		"BOSS": return "Defeat the boss" if en else "击败首领"
 		"CLEANSE": return ("Cleanse %d/%d · %.0f%%" if en else "净化 %d/%d · %.0f%%") % [o.get("progress", 0), mission.get("target_count", 1), 100.0 * float(o.get("hold", 0)) / maxf(1, float(mission.get("target_seconds", 12)))]
 		_: return ("Targets %d / %d" if en else "目标 %d / %d") % [o.get("progress", 0), mission.get("target_count", 1)]
@@ -145,23 +169,27 @@ func _step(delta: float, movement: Vector2) -> void:
 	var p: Dictionary = state.player
 	p.invulnerable = maxf(0, float(p.invulnerable) - delta)
 	var speed := float(tuning.get("player_speed", 280)) * float(tables.characters[loadout.character_id].get("speed_multiplier", 1)) * (1.0 + modifier("move_speed"))
+	if mission.has("scene_layout_id"):
+		speed *= Encounter.wind_multiplier(self, movement)
+		if movement.length_squared() > 0.01: state.encounter.tutorial |= 1
 	var next := pos(p) + movement * speed * delta
 	if movement.length_squared() > 0.01:
 		p.facing = movement.angle()
 	set_pos(p, constrain(next, 16.0))
-	state.spawn_clock -= delta
-	if state.spawn_clock <= 0:
-		state.spawn_clock += maxf(0.12, float(mission.get("spawn_interval", tuning.get("spawn_interval", 0.8))) / ((1.0 + state.elapsed / 180.0 + state.event_pressure + float(state.objective.pressure)) * state.enemy_multiplier))
-		var ids: Array = mission.get("enemy_ids", tables.enemies.keys())
-		if not ids.is_empty():
-			for i in 1 + mini(3, int(state.elapsed / 90.0)):
-				spawn_enemy(str(ids[rng.randi_range(0, ids.size() - 1)]), spawn_position())
-	state.elite_clock += delta
-	if state.elite_clock >= float(tuning.get("elite_interval", 40)):
-		state.elite_clock = 0.0
-		if not tables.elites.is_empty():
-			var ids: Array = tables.elites.keys()
-			spawn_enemy(ids[rng.randi_range(0, ids.size() - 1)], spawn_position(), "elite")
+	if not mission.has("encounter_stages"):
+		state.spawn_clock -= delta
+		if state.spawn_clock <= 0:
+			state.spawn_clock += maxf(0.12, float(mission.get("spawn_interval", tuning.get("spawn_interval", 0.8))) / ((1.0 + state.elapsed / 180.0 + state.event_pressure + float(state.objective.pressure)) * state.enemy_multiplier))
+			var ids: Array = mission.get("enemy_ids", tables.enemies.keys())
+			if not ids.is_empty():
+				for i in 1 + mini(3, int(state.elapsed / 90.0)):
+					spawn_enemy(str(ids[rng.randi_range(0, ids.size() - 1)]), spawn_position())
+		state.elite_clock += delta
+		if state.elite_clock >= float(tuning.get("elite_interval", 40)):
+			state.elite_clock = 0.0
+			if not tables.elites.is_empty():
+				var ids: Array = mission.get("elite_ids", tables.elites.keys())
+				if not ids.is_empty(): spawn_enemy(ids[rng.randi_range(0, ids.size() - 1)], spawn_position(), "elite")
 	Combat.advance_skills(self, delta)
 	Combat.advance_enemies(self, delta)
 	Combat.advance_projectiles(self, delta)
@@ -169,6 +197,9 @@ func _step(delta: float, movement: Vector2) -> void:
 	_reap()
 	_pickups(delta)
 	_advance_objective(delta)
+	if mission.has("scene_layout_id"):
+		Encounter.advance(self)
+		if state.player.xp > 0 or state.player.level > 1: state.encounter.tutorial |= 2
 	for i in range(state.effects.size() - 1, -1, -1):
 		state.effects[i].ttl -= delta
 		if state.effects[i].ttl <= 0:
@@ -178,7 +209,8 @@ func _step(delta: float, movement: Vector2) -> void:
 		_finish(state.objective.victory, state.objective.reason)
 	if not state.finished:
 		_check_levels()
-		if state.offered.is_empty() and not state.event_done and state.elapsed >= float(tuning.get("event_interval", 35)) and not tables.events.is_empty():
+		if mission.get("chapter_c",false): Chapter.offer_event(self)
+		if not mission.has("clues") and (not mission.has("upgrade_interval_ticks") or queued_upgrades() == 0) and state.offered.is_empty() and not state.event_done and ((state.objective.waypoint >= mission.rest_waypoint) if mission.has("rest_waypoint") else state.elapsed >= float(tuning.get("event_interval", 35))) and not tables.events.is_empty():
 			var eligible: Array = []
 			for row in catalog.events:
 				if int(row.get("unlock_after", 0)) <= int(loadout.get("completed", 0)):
@@ -193,17 +225,22 @@ func _make_map() -> void:
 	state.objective.y = 0.0
 	state.boss_spawned = false
 	var half := half_size()
-	# Alternating inner/outer landmark arcs keep all target-to-target routes open.
-	var scene := int(mission.get("ordinal", 1)) + int(mission.get("chapter", 1)) * 2
-	for i in 8:
-		var angle := TAU * float(i) / 8.0 + float(scene % 2) * 0.17
-		var point := Vector2(cos(angle) * half.x * 0.62, sin(angle) * half.y * 0.65)
-		var clear := point.length() > 150
-		for target in mission.get("target_positions", []):
-			if point.distance_to(Vector2(target[0], target[1])) < 180:
-				clear = false
-		if clear:
-			state.obstacles.append({"x": point.x, "y": point.y, "radius": 28.0 + float((i + scene) % 3) * 8.0})
+	if mission.has("scene_layout_id"):
+		var layout := Encounter.layout(catalog, mission)
+		state.obstacles = layout.obstacles.duplicate(true)
+		set_pos(state.player, Vector2(layout.start[0],layout.start[1]))
+	else:
+		# Alternating inner/outer landmark arcs keep all target-to-target routes open.
+		var scene := int(mission.get("ordinal", 1)) + int(mission.get("chapter", 1)) * 2
+		for i in 8:
+			var angle := TAU * float(i) / 8.0 + float(scene % 2) * 0.17
+			var point := Vector2(cos(angle) * half.x * 0.62, sin(angle) * half.y * 0.65)
+			var clear := point.length() > 150
+			for target in mission.get("target_positions", []):
+				if point.distance_to(Vector2(target[0], target[1])) < 180:
+					clear = false
+			if clear:
+				state.obstacles.append({"x": point.x, "y": point.y, "radius": 28.0 + float((i + scene) % 3) * 8.0})
 	var kind := str(mission.kind).to_upper()
 	if kind == "BREAK":
 		for i in int(mission.get("target_count", 1)):
@@ -214,9 +251,9 @@ func _make_map() -> void:
 				e.hp = float(mission.get("target_hp", 180))
 				e.max_hp = e.hp
 				e.ordinal = i
-	elif kind == "HUNT":
+	elif kind == "HUNT" and not mission.has("clues"):
 		var ids: Array = tables.elites.keys()
-		var e := spawn_enemy(str(ids[0]) if not ids.is_empty() else str(mission.enemy_ids[0]), target_position(0), "elite")
+		var e := spawn_enemy(str(mission.get("hunt_enemy_id",str(ids[0]) if not ids.is_empty() else str(mission.enemy_ids[0]))), target_position(0), "elite")
 		if not e.is_empty():
 			e.target_id = str(mission.id) + ":HUNT"
 	elif kind == "BOSS":
@@ -224,6 +261,11 @@ func _make_map() -> void:
 		state.boss_spawned = true
 	elif kind == "ESCORT":
 		set_pos(state.objective, Vector2(-half.x * 0.65, 0))
+		if mission.has("scene_layout_id"):
+			var start: Array = Encounter.layout(catalog,mission).start
+			set_pos(state.objective, Vector2(start[0],start[1]))
+	if mission.has("scene_layout_id"):
+		state.encounter = Encounter.create(self)
 
 func _apply_starting_stats() -> void:
 	var c: Dictionary = tables.characters[loadout.character_id]
@@ -279,8 +321,26 @@ func _apply_modifiers(row: Dictionary) -> void:
 	for key in mods:
 		state.modifiers[key] = float(state.modifiers.get(key, 0)) + float(mods[key])
 
+## Cost of the next level; mission overrides isolate the chapter-one experiment.
+func xp_required(level: int = -1) -> float:
+	var current := int(state.player.level) if level < 0 else level
+	return float(mission.get("xp_base",tuning.get("xp_base",6))) + float(mission.get("xp_step",tuning.get("xp_step",4))) * (current-1)
+
+## Unspent XP queue, excluding the currently offered level; bounded by level cap.
+func queued_upgrades() -> int:
+	var remaining := float(state.player.xp)
+	var count := 0
+	for level in range(int(state.player.level),100):
+		var cost := xp_required(level)
+		if remaining < cost: break
+		remaining -= cost
+		count += 1
+	return count
+
 func _check_levels() -> void:
-	var required := float(tuning.get("xp_base", 6)) + float(tuning.get("xp_step", 4)) * (int(state.player.level) - 1)
+	if state.finished or not state.offered.is_empty() or state.event_id != "": return
+	if mission.has("upgrade_interval_ticks") and state.encounter.last_upgrade_tick >= 0 and state.tick-state.encounter.last_upgrade_tick < mission.upgrade_interval_ticks: return
+	var required := xp_required()
 	if state.player.xp >= required and int(state.player.level) < 100:
 		state.player.xp -= required
 		state.player.level += 1
@@ -299,6 +359,11 @@ func _offer() -> void:
 		if int(state.skills.get(row.skill_id, 0)) == 5 and int(state.passives.get(row.passive_id, 0)) >= int(row.get("required_passive_level", 5)) and not state.evolved.has(row.id):
 			options.append(row.id)
 	state.offered.clear()
+	if mission.get("tutorial", false) and state.player.level == 2:
+		for id in ["S1-A01", "S1-A02", "S1-A03"]:
+			if options.has(id): state.offered.append(id)
+		if state.offered.size() == 3: return
+		state.offered.clear()
 	# One build-continuation slot and one compatible ingredient slot make evolution
 	# attainable in a single mission while the remaining choice preserves diversity.
 	var evolution_options: Array[String] = []
@@ -331,22 +396,28 @@ func _choose_upgrade(id: String) -> bool:
 			var rank := int(state[family].get(id, 0))
 			if rank >= 5 or (rank == 0 and state[family].size() >= (int(state.active_cap) if family == "skills" else 4)):
 				return false
+			if mission.has("scene_layout_id"): state.encounter.tutorial |= 4
 			state[family][id] = rank + 1
 			if family == "passives" and tables.passives[id].get("stat") == "max_hp":
 				var extra := float(tables.passives[id].get("amount", 0.1))
 				state.player.max_hp += extra
 				state.player.hp += extra
 			state.offered.clear()
+			if mission.has("upgrade_interval_ticks"): state.encounter.last_upgrade_tick = state.tick
 			_check_levels()
+			if mission.get("chapter_c",false): Chapter.offer_event(self)
 			return true
 	if tables.evolutions.has(id):
 		var recipe: Dictionary = tables.evolutions[id]
 		if int(state.skills.get(recipe.skill_id, 0)) != 5 or int(state.passives.get(recipe.passive_id, 0)) < int(recipe.get("required_passive_level", 5)) or state.evolved.has(id):
 			return false
+		if mission.has("scene_layout_id"): state.encounter.tutorial |= 4
 		state.evolved.append(id)
 		state.statistics.evolutions += 1
 		state.offered.clear()
+		if mission.has("upgrade_interval_ticks"): state.encounter.last_upgrade_tick = state.tick
 		_check_levels()
+		if mission.get("chapter_c",false): Chapter.offer_event(self)
 		return true
 	return false
 
@@ -377,7 +448,11 @@ func _advance_objective(delta: float) -> void:
 	var enemy_positions: Array = []
 	for e in state.entities:
 		if e.hp > 0: enemy_positions.append(pos(e))
+	var previous_waypoint := int(o.waypoint)
 	Mission.advance(o, mission, delta, player_world_position(), enemy_positions, state.target_deaths, pos(o))
+	if mission.has("late_waypoint_xp") and int(o.waypoint)>previous_waypoint and not o.finished:
+		drop_xp(player_world_position(),float(mission.late_waypoint_xp)*(int(o.waypoint)-previous_waypoint))
+	if mission.has("scene_layout_id"): return
 	state.event_clock += delta
 	if state.event_clock >= float(tuning.get("hazard_interval", 7)):
 		state.event_clock = 0.0
@@ -422,18 +497,36 @@ static func set_pos(entity: Dictionary, point: Vector2) -> void:
 
 ## Deterministic perimeter spawn, away from the player's immediate footprint.
 func spawn_position() -> Vector2:
+	if mission.has("spawn_view_size"):
+		for sector in 4:
+			var point := Encounter.spawn_point(self,sector)
+			if point.is_finite(): return point
+		return Vector2(INF,INF)
 	var angle := rng.randf() * TAU
 	var half := half_size()
 	return Vector2(cos(angle) * half.x * 0.92, sin(angle) * half.y * 0.92)
 
+## Conservative player-centered maximum view, independent of window size and RNG.
+func spawn_outside_view(point: Vector2) -> bool:
+	if not point.is_finite(): return false
+	if not mission.has("spawn_view_size"): return true
+	var size: Array = mission.spawn_view_size
+	var half := Vector2(size[0],size[1])*0.5 + Vector2.ONE*float(mission.spawn_visual_margin)
+	var offset := (point-player_world_position()).abs()
+	return offset.x > half.x or offset.y > half.y
+
 ## Allocates a bounded entity; target IDs remain stable independently of runtime serials.
 func spawn_enemy(id: String, point: Vector2, family: String = "enemy") -> Dictionary:
-	if state.entities.size() >= mini(180, int(tuning.get("enemy_cap", 180))):
+	if not point.is_finite(): return {}
+	var cap := mini(180, int(tuning.get("enemy_cap", 180)))
+	if family == "enemy" and mission.has("clues") and state.has("encounter") and not state.encounter.chapter.hunt_spawned: cap -= 1
+	if state.entities.size() >= cap:
 		return {}
 	var row: Dictionary = tables.bosses.get(id, {}) if family == "boss" else tables.elites.get(id, tables.enemies.get(id, {}))
 	if row.is_empty() and family != "target":
 		return {}
 	var scale := float(tuning.get("difficulty_multipliers", [1.0, 1.3, 1.65])[int(loadout.get("difficulty", 0))]) * float(state.enemy_multiplier) * float(mission.get("enemy_scaling", 1.0 + int(mission.get("ordinal", 1)) * float(tuning.get("mission_enemy_scaling", 0.008))))
+	if mission.has("clues"): scale *= 1.0 + float(state.event_pressure)
 	var hp := float(row.get("hp", 40)) * scale
 	var e := {"uid": int(state.next_id), "id": id, "family": family, "target_id": id if family == "boss" else "", "ordinal": -1,
 		"x": point.x, "y": point.y, "hp": hp, "max_hp": hp, "radius": float(row.get("radius", 18)), "speed": float(row.get("speed", 75)),
@@ -458,6 +551,8 @@ func damage_enemy(e: Dictionary, amount: float, control: String = "", strength: 
 		return
 	if e.behavior == "burrow" and int(e.phase) == 1:
 		return
+	if e.family == "boss" and mission.has("furnace_boss") and not Encounter.Thermal.door_open(mission,int(state.tick)):
+		amount *= float(mission.furnace_boss.closed_multiplier)
 	var damage := amount * (0.35 if float(e.shield) > 0 else 1.0)
 	if rng.randf() < clampf(modifier("critical_chance"), 0, 0.8):
 		damage *= 2.0
@@ -465,7 +560,13 @@ func damage_enemy(e: Dictionary, amount: float, control: String = "", strength: 
 		damage *= 1.0 + modifier("control_damage")
 	if int(e.mark) > 0:
 		damage *= 1.0 + 0.08 * int(e.mark)
+	var hp_before := float(e.hp)
 	e.hp -= damage
+	if mission.get("late_chapter",false): Encounter.Late.damage(self,e,hp_before)
+	if mission.get("chapter_two",false): Encounter.Thermal.hunt_damage(self,e)
+	if mission.get("chapter_three",false):
+		Encounter.Tide.hunt_damage(self,e,hp_before)
+		Encounter.Tide.boss_damage(self,e)
 	e.flash = 0.12
 	state.statistics.damage_dealt += damage
 	match control:
@@ -484,6 +585,7 @@ func damage_player(amount: float) -> void:
 	state.player.hp = maxf(0, state.player.hp - actual)
 	state.player.invulnerable = float(tuning.get("invulnerability_seconds", 0.65))
 	state.statistics.damage_taken += actual
+	if mission.has("boss_chapter"): state.encounter.chapter.hits[int(state.encounter.chapter.boss_phase)] += 1
 	sound("hit")
 
 func _reap() -> void:
@@ -504,20 +606,26 @@ func _reap() -> void:
 				for other in state.entities:
 					if other.hp > 0 and pos(other).distance_to(pos(e)) < 120 * (1 + modifier("mark_spread")):
 						other.mark = maxi(int(other.mark), 1)
-		if state.pickups.size() < mini(300, int(tuning.get("pickup_cap", 300))):
-			state.pickups.append({"x": e.x, "y": e.y, "xp": float(tuning.get({"boss": "boss_xp", "elite": "elite_enemy_xp", "target": "target_xp"}.get(e.family, "normal_enemy_xp"), 1.0)), "ttl": 120.0})
-		else:
-			state.pickups[0].xp += 1.0
+		drop_xp(pos(e),float(tuning.get({"boss": "boss_xp", "elite": "elite_enemy_xp", "target": "target_xp"}.get(e.family, "normal_enemy_xp"), 1.0)))
 		fx(pos(e), float(e.radius) * 1.6, str(e.color), "burst", 0.35)
 		state.entities.remove_at(i)
 		sound("kill")
+
+## Visible, persistent XP drops; full banks merge the complete reward without loss.
+func drop_xp(point: Vector2, amount: float) -> void:
+	if not point.is_finite() or not is_finite(amount) or amount <= 0: return
+	if state.pickups.size() < maxi(1,mini(300,int(tuning.get("pickup_cap",300)))):
+		state.pickups.append({"x":point.x,"y":point.y,"xp":amount,"ttl":120.0})
+	else:
+		state.pickups[0].xp += amount
+		state.pickups[0].ttl = 120.0
 
 func _pickups(delta: float) -> void:
 	for i in range(state.pickups.size() - 1, -1, -1):
 		var item: Dictionary = state.pickups[i]
 		item.ttl -= delta
-		if pos(item).distance_to(player_world_position()) < float(tuning.get("pickup_radius", 70)) + modifier("pickup_radius"):
-			set_pos(item, pos(item).move_toward(player_world_position(), 450 * delta))
+		if pos(item).distance_to(player_world_position()) < float(mission.get("pickup_attract_radius",tuning.get("pickup_radius",70))) + modifier("pickup_radius"):
+			set_pos(item, pos(item).move_toward(player_world_position(), float(mission.get("pickup_attract_speed",450))*delta))
 		if pos(item).distance_to(player_world_position()) < 22:
 			state.player.xp += item.xp
 			state.pickups.remove_at(i)
@@ -544,3 +652,44 @@ func reroll_upgrades() -> bool:
 
 func _draw() -> void:
 	if ready_for_play: Rendering.draw_arena(self)
+
+## Layout-owned root warning. Lifecycle and damage remain in the existing zone executor.
+func emit_layout_root(row: Dictionary, index: int = -1) -> void:
+	var zone: Dictionary = Combat.zone(self, Vector2(row.center[0],row.center[1]), float(row.radius), float(row.damage), float(row.active_ticks)/60.0, "#72cbe8" if mission.get("chapter_three",false) else ("#ff964f" if mission.get("chapter_two",false) else "#79b85c"), "poison", true, float(row.warning_ticks)/60.0)
+	if mission.get("chapter_c",false) and not zone.is_empty(): zone.layout_root = index
+	if mission.get("chapter_two",false) and not zone.is_empty(): zone.thermal_vent = index
+	if mission.get("chapter_three",false) and not zone.is_empty(): zone.tide_flat = index
+	if mission.get("late_chapter",false) and not zone.is_empty():
+		zone.late_field = index
+		zone.color = mission.late_hazard_color
+
+## Contextual non-blocking tutorial and objective feedback; no UI-owned gameplay state.
+func teaching_text(locale: String) -> String:
+	var en := locale.begins_with("en")
+	if not mission.has("scene_layout_id"): return ""
+	if mission.kind == "SURVIVE" and state.objective.extraction_ready:
+		return "Follow the gold arrow into the gold exit ring." if en else "沿金色箭头进入金色圆圈，即可完成本关。"
+	if mission.get("chapter_two",false): return Encounter.Thermal.teaching(self,en)
+	if mission.get("chapter_three",false): return Encounter.Tide.teaching(self,en)
+	if mission.get("late_chapter",false): return mission.late_hint_en if en else mission.late_hint
+	if mission.has("clues"):
+		if int(state.encounter.chapter.clues) >= 3:
+			return "Target found. Dodge its charge and counter during recovery." if en else "已发现猎物。躲开冲锋，利用停顿反击。"
+		return ("Follow clues: %d/3. Dodge the charge and counter during recovery." if en else "沿足迹追踪：%d/3。躲开冲锋，利用停顿反击。") % state.encounter.chapter.clues
+	if mission.get("close_roots",false):
+		return ("Roots closed: %d/3. Break the next bright anchor." if en else "已关闭根区：%d/3。继续拆除亮起的锚点。") % state.objective.progress
+	if mission.has("boss_chapter"):
+		return ("Beast phase %d/3: dodge impact warnings." if en else "古兽阶段%d/3：避开落点预警，寻找反击空隙。") % (state.encounter.chapter.boss_phase+1)
+	if mission.kind == "BREAK":
+		return "Attack the bright anchor; dim anchors are shielded." if en else "攻击亮起的锚点；暗色锚点尚未激活，无法受伤。"
+	if mission.kind == "ESCORT":
+		return "Stay near the herbalist to move; leave to intercept enemies, then return." if en else "靠近采药人才能前进；可离队拦截敌人，再返回继续护送。"
+	if not mission.get("tutorial",false): return ""
+	var bits := int(state.encounter.tutorial)
+	if state.objective.extraction_ready:
+		return "Exit is open. Step out and re-enter if already inside." if en else "撤离已开放。若已站在圈内，请走出后重新进入。"
+	if bits & 1 == 0: return "Move with WASD / left stick. Attacks are automatic." if en else "WASD / 左摇杆移动，攻击自动释放。"
+	if bits & 2 == 0: return "Approach green drops to gain insight." if en else "靠近绿色掉落，拾取悟性以升级。"
+	if bits & 4 == 0: return "Choose a skill when you gain a level." if en else "升级时选择一种技能，尝试新的攻击方式。"
+	if state.tick >= mission.wind_start_tick and bits & 8 == 0: return "Follow wind arrows to move faster; crossing is safe." if en else "沿风带箭头移动更快；也可以横向穿过。"
+	return "Keep moving. Watch the exit countdown." if en else "保持走位，留意撤离倒计时。"

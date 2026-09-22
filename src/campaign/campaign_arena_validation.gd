@@ -1,5 +1,6 @@
 extends RefCounted
 ## Strict JSON snapshot validator. Validation never mutates input or silently restarts RNG.
+const Encounter = preload("res://src/campaign/campaign_encounter.gd")
 const Codec = preload("res://src/campaign/campaign_arena_codec.gd")
 const BEHAVIORS := ["chase","spitter","flanker","trail","strafe","charger","crab","jet","burrow","reflector","fan_shooter","bouncer","slider","buffer","spike_line","exploder","rooter","decoy","diver","anchor","barrier","shield","channeler","absorber"]
 
@@ -99,6 +100,7 @@ static func validate(c: Dictionary, m: Dictionary, saved: Dictionary) -> bool:
 		if e.hp > e.max_hp or e.max_hp <= 0 or e.radius <= 0 or e.radius > 150: return false
 	for q in s.projectiles:
 		if not q is Dictionary or not _position(q, c, 100): return false
+		if q.has("delay") and (not m.get("late_chapter",false) or not q.get("hostile",false) or not _number(q.delay,0,1.5)): return false
 		for key in ["vx","vy"]:
 			if not _number(q.get(key), -100000, 100000): return false
 		for key in ["damage","radius","ttl","duration","explosion","age"]:
@@ -143,6 +145,8 @@ static func validate(c: Dictionary, m: Dictionary, saved: Dictionary) -> bool:
 	if bool(s.finished) != bool(o.finished) or bool(s.victory) != bool(o.victory) or s.reason != o.reason: return false
 	if bool(o.player_alive) != (p.hp > 0): return false
 	if not s.finished and (p.hp <= 0 or (m.kind == "ESCORT" and o.escort_hp <= 0)): return false
+	if m.has("scene_layout_id") and not Encounter.valid_state(c,m,s): return false
+	if not m.has("scene_layout_id") and s.has("encounter"): return false
 	var stats: Dictionary = s.statistics
 	for key in ["damage_taken","damage_dealt","elite_kills","boss_kills","evolutions","events_taken","safe_choices","risk_choices"]:
 		if not _number(stats.get(key), 0, 1000000000): return false

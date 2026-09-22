@@ -1,0 +1,34 @@
+{
+	"catalog_hash": "683d5040e5e7b6cecadae031d54b77530add19fc0ae1256ab93df9df3e6365d8",
+	"rows": [
+		{
+			"duplicate_settlement_zero_write": true,
+			"elapsed": 74.8333333333304,
+			"hp": 160.0,
+			"level": 7,
+			"mode": "victory",
+			"preterminal_replay_equal": true,
+			"reason": "extracted",
+			"reward_pages": 46.0,
+			"run_id": 1,
+			"runs": 1.0,
+			"settlement_failure_zero_write": true,
+			"tick": 4490
+		},
+		{
+			"duplicate_settlement_zero_write": true,
+			"elapsed": 380.01666666665,
+			"hp": 160.0,
+			"level": 7,
+			"mode": "timeout",
+			"preterminal_replay_equal": true,
+			"reason": "timeout",
+			"reward_pages": 1.0,
+			"run_id": 1,
+			"runs": 1.0,
+			"settlement_failure_zero_write": true,
+			"tick": 22801
+		}
+	],
+	"scope": "natural first mission victory and deliberate timeout, synchronous IO failure, no process kill"
+}

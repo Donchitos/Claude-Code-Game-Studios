@@ -1,0 +1,31 @@
+{
+  "profile": "CAMPAIGN_GAMEPLAY_V1",
+  "status": "IMPLEMENTED_LOCAL_CHECKS_PASS_INDEPENDENT_REVIEW_PENDING",
+  "content_sha256": "6317cdd43003233238309a0ecadad895d4962cdf188dca3ff0802bba8f42125a",
+  "known_legacy_content_sha256": "71d615925151600c8a1255808f20a03d5d44f5fa4efd9f047874e231f45949ca",
+  "growth": {
+    "purchase_completed_thresholds": [
+      0,
+      8,
+      24,
+      40,
+      56
+    ],
+    "prices": [
+      4,
+      8,
+      12,
+      16,
+      20
+    ],
+    "preserve_existing_ranks": true,
+    "branch_indices": {
+      "0": "damage",
+      "1": "max_hp",
+      "2": "pickup_radius"
+    }
+  },
+  "active_run_upgrade": "read_only_reject_finish_or_abandon_in_preserved_previous_version",
+  "evidence": "production/playtest-evidence/2026-09-15-package-a.md",
+  "battle_ready": false
+}

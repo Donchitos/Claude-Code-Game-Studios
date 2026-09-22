@@ -1,0 +1,66 @@
+[
+  {
+    "name": "campaign_boss_entry_test",
+    "exit": 0
+  },
+  {
+    "name": "campaign_pacing_rewards_test",
+    "exit": 0
+  },
+  {
+    "name": "campaign_upgrade_guard_test",
+    "exit": 0
+  },
+  {
+    "name": "campaign_package_e_test",
+    "exit": 0
+  },
+  {
+    "name": "campaign_package_a_test",
+    "exit": 0
+  },
+  {
+    "name": "campaign_package_b_test",
+    "exit": 0
+  },
+  {
+    "name": "campaign_package_c_test",
+    "exit": 0
+  },
+  {
+    "name": "campaign_package_d_fix_test",
+    "exit": 0
+  },
+  {
+    "name": "campaign_profile_test",
+    "exit": 0
+  },
+  {
+    "name": "campaign_content_test",
+    "exit": 0
+  },
+  {
+    "name": "campaign_combat_test",
+    "exit": 0
+  },
+  {
+    "name": "campaign_game_flow_test",
+    "exit": 0
+  },
+  {
+    "name": "campaign_snapshot_safety_test",
+    "exit": 0
+  },
+  {
+    "name": "campaign_package_d_fix_root_hunt_disk",
+    "exit": 0
+  },
+  {
+    "name": "campaign_package_d_fix_root_death_disk",
+    "exit": 0
+  },
+  {
+    "name": "campaign_terminal_disk_test",
+    "exit": 0
+  }
+]

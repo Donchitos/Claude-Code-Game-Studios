@@ -1,0 +1,11 @@
+{
+	"arguments": [
+		"--validation",
+		"--alternate-build",
+		"--risk-route"
+	],
+	"content_hash": "8557e89d1c6d8328645ece9ac74f601a763b4472aeb4eabbc27342cee245e59c",
+	"engine": "4.7.1-stable (official)",
+	"scope": "automated test evidence, not human or release certification",
+	"suite": "journey-full-campaign"
+}

@@ -1,0 +1,30 @@
+{
+  "implementation": "Campaign chapter one only",
+  "content_hash": "ddd28d9e4d121e06046305cba134bad25f39250690e9eadde1b95f0f0a89dfaa",
+  "snapshot_schema": "CAMPAIGN_CHAPTER1_V3",
+  "xp_base": 6,
+  "xp_step": 4,
+  "upgrade_interval_ticks": 180,
+  "snapshot_field": "encounter.last_upgrade_tick",
+  "spawn_view_size": [
+    1280,
+    720
+  ],
+  "spawn_visual_margin": 80,
+  "mission_06_wave_ticks": [
+    0,
+    900,
+    1800,
+    2700,
+    3600
+  ],
+  "independent_review": "APPROVED_WITH_SUGGESTIONS_E_SCOPE",
+  "new_player_playtest": "SKIPPED_BY_USER_2026_09_16",
+  "human_sessions": 1,
+  "new_player_sessions": 0,
+  "d_acceptance": "OPEN",
+  "battle_ready": false,
+  "evidence": "production/playtest-evidence/2026-09-16-package-e.md",
+  "pck_sha256": "8710ef83038178a695039b3df90886afea3fb5da18872b7d6398f304731db9b9",
+  "review_followup": "production/playtest-evidence/2026-09-16-package-f.md"
+}

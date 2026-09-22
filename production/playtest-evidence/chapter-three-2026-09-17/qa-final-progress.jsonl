@@ -1,0 +1,3 @@
+{"mode": "chapter", "exit": 0, "last": "QA_CAMPAIGN_PRODUCTION-CHAPTER_PASS checks=16 failures=0"}
+{"mode": "sequential", "exit": 1, "last": "QA_CAMPAIGN_PRODUCTION-SEQUENTIAL_FAIL checks=197 failures=2"}
+{"mode": "all", "exit": 1, "last": "QA_CAMPAIGN_PRODUCTION-CHAPTER_FAIL checks=128 failures=10"}

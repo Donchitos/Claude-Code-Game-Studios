@@ -1,0 +1,23 @@
+{
+  "assets/config/campaign_game.json": "1e3c41e4223704a29050f28294bef4a38b9569186e6a6234a921c3685e92ab3e",
+  "docs/architecture/adr-0008-chapter-one-encounters.md": "a29c565bc3419b62f795d28ddfd00865c78aa2b4b4450785593376290bb09f42",
+  "src/campaign/campaign_arena.gd": "a8dd23fa48674c81bd9f263bca6eeb039680ce8410f53ff95862302b62dafd88",
+  "src/campaign/campaign_arena_codec.gd": "289eeefbd6eec6adaf2e52e2173f1c0a6559d62202911d4539139586dab8d882",
+  "src/campaign/campaign_arena_render.gd": "482a0bba72cf8ac93731cc128712d2869194d8eb944aae1de748be558be7d91e",
+  "src/campaign/campaign_arena_validation.gd": "259755342a805b1acf5ebdf19de7c7eaa7d450e7132fb1d7fdb5649605787e43",
+  "src/campaign/campaign_audio.gd": "4ace09abaddadce84f30a890dec97a8b0f68a966c37fef6c94c3a632d1832fc2",
+  "src/campaign/campaign_catalog.gd": "c51c3a5c2511b0ff83fb7333c660c2df95d2ff9859059d6d58eb429c6cab0d89",
+  "src/campaign/campaign_chapter_one.gd": "ef08f69a991790766db3b752fc599b586cea8b3a89ceb8cde4ca2296187facdf",
+  "src/campaign/campaign_combat.gd": "8b5a428ec4aa8a972a6b972662e7edcb68d78985056b107165a32af97186ebff",
+  "src/campaign/campaign_encounter.gd": "e513c296153ea99617ac4ca38397edcb6e536358e7c300562dc783e433a0855a",
+  "src/campaign/campaign_game_root.gd": "a65caaabb9f75f9f055a628f48c901e8815fc171645f064e2e7536bdf7de01b0",
+  "src/campaign/campaign_mission.gd": "61587719792731b89af1e3a98de7f6ace193756d1d94f53e498294c3a199009b",
+  "src/campaign/campaign_profile.gd": "297af2b471ebe372a40023e4c9fd4fd9988f8e220f5c4251d3b44ca203ef580e",
+  "src/campaign/campaign_ui.gd": "54af11778cb2d955e7e44d696a1ce9518a1484c94a6e46c517989763abedf2fd",
+  "src/campaign/campaign_ui_art.gd": "784ac1fb374c0feaecd5c0a88694c9e7f96606afd0cffc17f999d9eaec9b0791",
+  "tests/fixtures/campaign_c_bot.gd": "a4fb6367b04ca178194977c8d67a023f79a0969c2cd42d8a18f0146b1c15392a",
+  "tests/integration/campaign_package_c_journey.gd": "16abe197a6a9efd7ee9484696570b9084e684a5813c7580eba95b2b8b6334cee",
+  "tests/integration/campaign_package_c_test.gd": "5ea9ea34e8bfbc2aa40c29207b2f9aeadc16f6d8f8549f60e3f4fee3598502f8",
+  "tests/manual/campaign_package_c_ui.gd": "a2d5e1ed5a897aec22259cf2f46b97cd89c0246a7a8a24012afab7b6ff480423",
+  "tools/campaign/build_catalog.py": "6785dbaa26f932ed7dd51c2d5407dd3f45904a3ba03225f88125ba1b7fc47f75"
+}

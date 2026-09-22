@@ -2,7 +2,7 @@ extends SceneTree
 ## Independent acceptance probe: synthetic short/low-HP configs, NOT production balance
 ## or a complete campaign playthrough. Never writes Arena state or settlement flags.
 const Arena = preload("res://src/campaign/campaign_arena.gd")
-const EVIDENCE := "res://production/playtest-evidence/campaign-game-2026-09-14/"
+var EVIDENCE: String = preload("res://tests/fixtures/campaign_evidence.gd").create("campaign-qa")
 var failures := 0
 var checks := 0
 var observations: Array = []
@@ -68,6 +68,14 @@ func short_mission(original: Dictionary) -> Dictionary:
 	m.target_positions = points
 	return m
 
+## All production chapters now have encounters. Keep the generic objective matrix
+## on explicitly preserved undecorated fixtures; full_journey tests real missions.
+func generic_mission(_c: Dictionary, kind: String = "") -> Dictionary:
+	var fixture: Dictionary = JSON.parse_string(FileAccess.get_file_as_string("res://tests/fixtures/campaign_generic_missions.json"))
+	for row in fixture.missions:
+		if kind == "" or row.kind == kind: return row.duplicate(true)
+	return {}
+
 func make_arena(c: Dictionary, m: Dictionary, seed_value: int = 711, saved: Dictionary = {}):
 	var a = Arena.new()
 	root.add_child(a)
@@ -125,11 +133,8 @@ func _run() -> void:
 		return
 	var short := short_catalog(c)
 	for kind in ["SURVIVE", "ESCORT", "HUNT", "CLEANSE", "BREAK", "BOSS"]:
-		var m: Dictionary = {}
-		for candidate in c.missions:
-			if candidate.kind == kind:
-				m = short_mission(candidate)
-				break
+		var base := generic_mission(c, kind)
+		var m: Dictionary = short_mission(base) if not base.is_empty() else {}
 		expect(not m.is_empty(), "objective fixture exists " + kind)
 		if m.is_empty():
 			continue
@@ -171,6 +176,10 @@ func growth_fixture(c: Dictionary) -> Dictionary:
 	d.tuning.xp_base = 0.01
 	d.tuning.xp_step = 0.0
 	d.tuning.pickup_radius = 3000.0
+	# This synthetic standing growth fixture owns attraction, independent of mission balance.
+	for mission in d.missions:
+		mission.erase("pickup_attract_radius")
+		mission.erase("pickup_attract_speed")
 	d.tuning.spawn_interval = 0.12
 	d.characters[0].passive_stat = "pickup_radius"
 	d.characters[0].passive_amount = 100.0
@@ -184,7 +193,10 @@ func growth_fixture(c: Dictionary) -> Dictionary:
 
 func _test_build_and_events(c: Dictionary) -> void:
 	var d := growth_fixture(c)
-	var m: Dictionary = d.missions[0].duplicate(true)
+	var m: Dictionary = generic_mission(d, "SURVIVE")
+	if m.is_empty():
+		expect(false, "generic SURVIVE fixture exists")
+		return
 	m.target_seconds = 900.0
 	m.timeout_seconds = 1000.0
 	install_mission(d, m)
@@ -404,11 +416,11 @@ func _test_active_effects(c: Dictionary) -> void:
 			elite.hp = 10000.0
 			elite.speed = 0.0
 			elite.behavior = "chase"
-		var m: Dictionary = {}
-		for row in d.missions:
-			if row.kind == "HUNT":
-				m = short_mission(row)
-				break
+		var hunt_base := generic_mission(c, "HUNT")
+		var m: Dictionary = short_mission(hunt_base) if not hunt_base.is_empty() else {}
+		if m.is_empty():
+			expect(false, "generic HUNT fixture exists")
+			return
 		m.target_positions = [[85.0, 0.0]]
 		install_mission(d, m)
 		var a = make_arena(d, m)
@@ -452,13 +464,18 @@ func _test_passive_consumption(c: Dictionary) -> void:
 			d.tuning.xp_step = 1000000.0
 			d.tuning.pickup_radius = 70.0
 			d.characters[0].passive_amount = 0.0
-			var m: Dictionary = d.missions[0].duplicate(true)
+			var m: Dictionary = generic_mission(d, "SURVIVE")
+			if m.is_empty():
+				expect(false, "generic SURVIVE fixture exists")
+				return
 			m.target_seconds = 900.0
 			m.timeout_seconds = 1000.0
 			install_mission(d, m)
 			var a = make_arena(d, m)
 			# Spawn a test enemy via public factory; never alter arena state/finished.
-			a.spawn_enemy(str(m.enemy_ids[0]), Vector2(65, 0))
+			# The dedicated weak spawn is the hp-2 first table row, not the fixture
+			# mission's enemy_ids[0] — generic missions may list a later 600hp row.
+			a.spawn_enemy(str(d.enemies[0].id), Vector2(65, 0))
 			for i in 1800:
 				if not a.state.offered.is_empty():
 					break
@@ -583,7 +600,7 @@ func _run_production_chapter(c: Dictionary) -> void:
 				storage = load("res://src/persistence/save_system.gd").new()
 				expect(storage.initialize(sequential_slots[0], sequential_slots[1]) == 0, "chapter checkpoint disk reload")
 				profile = load("res://src/campaign/campaign_profile.gd").new()
-				expect(profile.initialize(c, storage) and profile.data == before, "chapter checkpoint preserves real progression")
+				expect(profile.initialize(c, storage) and preload("res://src/campaign/campaign_arena_validation.gd").same_values(profile.data,JSON.parse_string(JSON.stringify(before,"",true,true))), "chapter checkpoint preserves real progression")
 	if sequential:
 		expect(profile.data.completed == 64 and profile.data.ending_seen, "real sequential 64 missions reach persistent ending", {"completed": profile.data.completed})
 		storage.free()
@@ -614,6 +631,8 @@ func _bot_choice(a, c: Dictionary) -> String:
 	return best
 
 func _bot_direction(a, m: Dictionary, tick_value: int) -> Vector2:
+	# Clue hunts need their executable navigation target before a prey exists.
+	if m.has("clues"): return preload("res://tests/fixtures/campaign_c_bot.gd").direction(a,m,tick_value)
 	var player: Vector2 = a.player_world_position()
 	var target := Vector2.ZERO
 	var kind := str(m.kind)

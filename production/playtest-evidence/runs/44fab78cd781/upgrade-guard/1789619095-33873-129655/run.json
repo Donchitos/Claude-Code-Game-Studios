@@ -1,0 +1,7 @@
+{
+	"arguments": [],
+	"content_hash": "44fab78cd78173fe37f99a54f8879ce9a29de7e115c4f8d3db592018a15bfea4",
+	"engine": "4.7.1-stable (official)",
+	"scope": "automated test evidence, not human or release certification",
+	"suite": "upgrade-guard"
+}

@@ -1,0 +1,27 @@
+{
+  "scope": "chapters-four-to-eight local playable delivery",
+  "catalog_hash": "abc5f36fd15ea1f7623b4fdf46edd035056ff18f413b97e2bac4410708f86b96",
+  "pck_sha256": "d8723f95e2fa1c591e3c7f73a766fc3a9f005c8d52f76f4aae2f1e06e966422a",
+  "snapshot": "CAMPAIGN_LATE_CHAPTERS_V1",
+  "report": "production/playtest-evidence/2026-09-22-final-chapters.md",
+  "source_freeze": "production/playtest-evidence/final-chapters-2026-09-22/source-freeze.json",
+  "battle_ready": false,
+  "new_player_test": "SKIPPED_BY_USER",
+  "new_player_sessions": 0,
+  "scoped_journeys": {
+    "safe_C01": 64,
+    "regional_prepared_risk": 64
+  },
+  "disk_restores": 1235,
+  "compared_ticks": 213461,
+  "regression_scripts": 24,
+  "C03_prescribed_growth_safe_stress": "99/120",
+  "open": [
+    "full-character balance",
+    "Windows/Steam",
+    "STEAM_SAVE_V2",
+    "human experience",
+    "20-hour content",
+    "device/performance"
+  ]
+}

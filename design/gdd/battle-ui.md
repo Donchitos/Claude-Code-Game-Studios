@@ -1,5 +1,16 @@
 # BattleUI（战斗界面）
 
+> 2026-09-22 第四至八章本地交付：40关有限遭遇、区域精英、场地关闭、六种Boss与护送路标XP已实现。最终安全C01和逐章角色备战风险两路线各64/64、结局重启通过，共1235次磁盘恢复/213461tick对照；24套回归、实际PCK续玩/第三章旧包零写入兼容通过。C03固定成长压力99/120，不宣称全角色平衡或商业发行完成；新玩家SKIPPED_BY_USER，battle_ready=false。 见[交付证据](../../production/playtest-evidence/2026-09-22-final-chapters.md)与[ADR-0012](../../docs/architecture/adr-0012-late-campaign-encounters.md)。仅Campaign增量，不改变下方legacy ABI或设计评审裁决。
+
+> 2026-09-16 Campaign G：02/03/05/07中英任务说明同步新投放安排；Boss沿用原预警呈现，新玩家试玩跳过。 见[G证据](../../production/playtest-evidence/2026-09-16-package-g.md)。仅Campaign增量，battle_ready=false。
+
+> 2026-09-16 Campaign F：可见经验球沿用原表现；04/08备战中英文提示里程碑经验。新增真实暂停/resize/继续/回家/恢复相机回归。 见[F证据](../../production/playtest-evidence/2026-09-16-package-f.md)及ADR-0009 F扩展。下方E记录为历史；battle_ready=false。
+
+> 2026-09-16 Campaign E：Campaign HUD经验门槛统一从Arena读取；中英积压提示置于原引导区，保持两行HUD及玩家中心空区。新玩家试玩按用户决定跳过，不能记为通过。 详见[ADR-0009](../../docs/architecture/adr-0009-chapter-one-pacing-and-view.md)与[E包证据](../../production/playtest-evidence/2026-09-16-package-e.md)。仅本地验证，独立复审待完成，battle_ready=false。
+
+> 2026-09-15 C包实施：Campaign开发入口的04线索/一次机缘/延迟猎物、05净化增援、06分段守路、07关闭根区、08三阶段Boss已接入Arena/Encounter快照。见[C包证据](../../production/playtest-evidence/2026-09-15-package-c.md)与[ADR-0008扩展](../../docs/architecture/adr-0008-chapter-one-encounters.md)。专项237、两套8关旅程/91次磁盘恢复通过；保持独立review/真人/商业owner合同待办，battle_ready=false。
+
+
 > Steam任务/续局路由：mission-objectives.md与save-steam-pc.md定义六目标、暂停恢复点与RESULT_PENDING状态；UI只显示owner事实，COMPLETE匹配COMMITTED后才显示已到账/下一任务，STAGE_RESULT成功不作完成反馈。新目标HUD/保存退出旅程尚未实现。
 
 > 2026-09-11 STEAM_PC R6：BattleUI只读InputSystem.neutral_required，在普通暂停/升级modal及恢复、active hotplug等待时显示回中说明，解除后移除；不额外poll输入、不改变门。Home/Active/Pause/Upgrade/Active-neutral/Settlement两尺寸均纳入R8表，Windows实测单列。
@@ -333,3 +344,24 @@ The `battle_ui_capacity` formula is defined as:
 | OQ-BUI11 | RUNTIME-BLOCKED | Godot/GDUnit4/设备验证未执行，`battle_ready=false`。 |
 
 Audio、Save、Settlement、Home与Prep作者GDD均已完成。本文足以作为UI接口协商基线；OQ-BUI01–09、跨页面runtime接线及独立full review未闭合前，不得称implementation-ready或runtime verified。
+
+## 2026-09-15 D整改待独立复测
+
+D-S01：CampaignProfile.save_run在任何写入前验证Arena恢复语义及当前run的seed/loadout；失败返回INVALID_BATTLE_CHECKPOINT，保持双槽不变。错误页提供重新加载已保存进度，不自动弃局。
+D-S03：Mission在有效active tick计时后处理死亡，保持死亡优先于超时，与Arena.elapsed一致。
+D-S02/D-S04：战斗HUD限制两行加生命/悟性条，构筑与完整提示移入暂停页；当前线索/活猎物共享navigation_target，撤离开放显示金色指引和方向/距离。没有新增持久字段或配置hash变化。
+自动/图形验证见production/playtest-evidence/package-d-fix-2026-09-15；P00仅本人自报玩完，新增真人1、新玩家0，不能代替至少3名新玩家。独立复测待返回，D OPEN，battle_ready=false。
+
+### D整改复审状态更新
+
+2026-09-15 D整改独立复审：3名真实专家全部返回后fresh资深综合APPROVED WITH SUGGESTIONS，仅限D-S01～04；四项原缺陷限定关闭，隔离Campaign开发持久档可开展新玩家探索测试。P00本人自报完成1名，新玩家0；D总OPEN / In Review，battle_ready=false。剩余至少3新玩家、延期XP/3秒间隔/任意窗口视野外生成、完整恢复矩阵和平台/产品门槛。当前入口build/package-d-fix-2026-09-15/开始D修订版试玩.command；证据production/playtest-evidence/2026-09-15-package-d-fix.md与package-d-fix-2026-09-15/senior-report.md。以下旧D限制为历史，被本次限定放行取代。
+
+
+## 2026-09-16 第二章实现增量
+
+第二章8关已实现固定矿轨与有限遭遇、喷口逐一关闭、冷却匣/炉工护送、中途机缘、指定熔脊行者及炉门弱点三阶段Boss。机制/验收见 `design/chapter-two-playable.md`、`docs/architecture/adr-0010-chapter-two-thermal-encounters.md`；交付证据见 `production/playtest-evidence/2026-09-16-chapter-two.md`。快照CAMPAIGN_CHAPTER2_V1，局外仍CAMPAIGN_GAMEPLAY_V1；第一章8关后开放二阶/第二角色。固定tick派生热场/门窗；Profile保留精确数值并在重写前重建数值镜像，避免多次JSON舍入。此增量不改变第三章以后2+1经验基线，也不声称全游戏经济、商业Save v2或发行验收完成。新玩家试玩SKIPPED_BY_USER，battle_ready=false。
+
+
+## 2026-09-17 第三章限定交付
+
+第三章8关潮汐内容已实现并完成两条新档1→24连续旅程；规则见 `design/chapter-three-playable.md`、ADR-0011，最终证据见 `production/playtest-evidence/2026-09-17-chapter-three.md`。CAMPAIGN_CHAPTER3_V1；章内经验6/4、180tick升级间隔，覆盖本文件先前“第三章以后不变”的历史表述（第四章以后仍旧基线）。Boss伤害边界同步阶段/悟性、末期整轮zone+projectile容量预检；永久淹池单区且恢复不重复。24关开放三阶，资源富余未全局重平衡。额外64关独立54/64，连续止M06-06，不能称全游戏验收。新玩家SKIPPED_BY_USER，battle_ready=false。
