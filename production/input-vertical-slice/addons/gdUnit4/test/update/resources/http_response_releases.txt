@@ -1,0 +1,164 @@
+Scan for GdUnit4 Update ...
+[color=#6495edff]<h1>GdUnit Release v4.4.3</h1>[/color]
+# Hotfix memory leaks on test execution
+
+## What's Changed
+
+* GD-598: Fixing memory leaks on test execution by @MikeSchulze in https://github.com/MikeSchulze/gdUnit4/pull/599
+
+
+**Full Changelog**: https://github.com/MikeSchulze/gdUnit4/compare/v4.4.2...v4.4.3
+
+
+[color=#6495edff]<h1>GdUnit Release v4.4.2</h1>[/color]
+<!-- Release notes generated using configuration in .github/release.yml at master -->
+
+## What's Changed
+### Bug Fixes
+* GD-592: Fixes, the detection of parameterized test data changes in `TestDiscoveryGuard` to notify the test explorer and update the structure. by @MikeSchulze in https://github.com/MikeSchulze/gdUnit4/pull/593
+* GD-594: Fixes, mock fails on class with parameter getter setter by @MikeSchulze in https://github.com/MikeSchulze/gdUnit4/pull/595
+* GD-596: Fixes, run test via CMD line is broken when use skipp command option by @MikeSchulze in https://github.com/MikeSchulze/gdUnit4/pull/597
+
+### Other Changes
+* GD-590: Fixes, HTML test report footer overlapping in Firefox by @Eggbertx in https://github.com/MikeSchulze/gdUnit4/pull/589
+
+
+**Full Changelog**: https://github.com/MikeSchulze/gdUnit4/compare/v4.4.1...v4.4.2
+
+
+[color=#6495edff]<h1>GdUnit Release v4.4.1</h1>[/color]
+<!-- Release notes generated using configuration in .github/release.yml at v4.4.1 -->
+
+## What's Changed
+### Improvements
+* GD-579: Minimize warnings of testsuite resource loading by @MikeSchulze in https://github.com/MikeSchulze/gdUnit4/pull/587
+* GD-579: `Part1:` Minimize `unsafe_call_argument` warnings by @MikeSchulze in https://github.com/MikeSchulze/gdUnit4/pull/580
+* GD-579: `Part2`: Minimize `return_value_discarded` warnings by @MikeSchulze in https://github.com/MikeSchulze/gdUnit4/pull/582
+* GD-579: `Part3:` Minimize `unsafe_property_access` warnings by @MikeSchulze in https://github.com/MikeSchulze/gdUnit4/pull/583
+* GD-579: `Part4:` Minimize `unsafe_method_access` warnings by @MikeSchulze in https://github.com/MikeSchulze/gdUnit4/pull/584
+* GD-579: `Part5:` Minimize `unsafe_cast` warnings by @MikeSchulze in https://github.com/MikeSchulze/gdUnit4/pull/586
+
+
+**Full Changelog**: https://github.com/MikeSchulze/gdUnit4/compare/v4.4.0...v4.4.1
+
+
+[color=#6495edff]<h1>GdUnit Release v4.4.0</h1>[/color]
+GdUnit4 v4.4.0
+
+<!-- Release notes generated using configuration in .github/release.yml at master -->
+
+## What's Changed
+* Introduction of flaky test detection, automatically executed again if flaky test detection is enabled.
+* Added touchscreen support to the SceneRunner.
+* HTML report look & feel redesign
+
+### Improvements
+* GD-220: Add support for flaky test handling and retrying their execution by @MikeSchulze in https://github.com/MikeSchulze/gdUnit4/pull/558
+![image](https://github.com/user-attachments/assets/fe90f750-e9c6-4ff9-b892-2885f00fd71c)
+* GD-554: Adding support for touch screen input event testing to `GdUnitSceneRunner` by @MikeSchulze in https://github.com/MikeSchulze/gdUnit4/pull/556
+```gd
+## Simulates a screen touch is pressed.[br]
+## [member index] : The touch index in the case of a multi-touch event.[br]
+## [member position] : The position to touch the screen.[br]
+## [member double_tap] : If true, the touch's state is a double tab.
+@warning_ignore("unused_parameter")
+func simulate_screen_touch_pressed(index :int, position :Vector2, double_tap := false) -> GdUnitSceneRunner:
+
+
+## Simulates a screen touch is press.[br]
+## [member index] : The touch index in the case of a multi-touch event.[br]
+## [member position] : The position to touch the screen.[br]
+## [member double_tap] : If true, the touch's state is a double tab.
+@warning_ignore("unused_parameter")
+func simulate_screen_touch_press(index :int, position :Vector2, double_tap := false) -> GdUnitSceneRunner:
+
+
+## Simulates a screen touch is released.[br]
+## [member index] : The touch index in the case of a multi-touch event.[br]
+## [member double_tap] : If true, the touch's state is a double tab.
+@warning_ignore("unused_parameter")
+func simulate_screen_touch_release(index :int, double_tap := false) -> GdUnitSceneRunner:
+
+
+## Simulates a touch screen drag&drop to the relative coordinates (offset).[br]
+## [color=yellow]You must use [b]await[/b] to wait until the simulated drag&drop is complete.[/color][br]
+## [br]
+## [member index] : The touch index in the case of a multi-touch event.[br]
+## [member relative] : The relative position, indicating the drag&drop position offset.[br]
+## [member time] : The time to move to the relative position in seconds (default is 1 second).[br]
+## [member trans_type] : Sets the type of transition used (default is TRANS_LINEAR).[br]
+## [codeblock]
+##    func test_touch_drag_drop():
+##       var runner = scene_runner("res://scenes/simple_scene.tscn")
+##       # start drag at position 50,50
+##       runner.simulate_screen_touch_drag_begin(1, Vector2(50, 50))
+##       # and drop it at final at 150,50  relative (50,50 + 100,0)
+##       await runner.simulate_screen_touch_drag_relative(1, Vector2(100,0))
+## [/codeblock]
+@warning_ignore("unused_parameter")
+func simulate_screen_touch_drag_relative(index :int, relative: Vector2, time: float = 1.0, trans_type: Tween.TransitionType = Tween.TRANS_LINEAR) -> GdUnitSceneRunner:
+
+
+## Simulates a touch screen drop to the absolute coordinates (offset).[br]
+## [color=yellow]You must use [b]await[/b] to wait until the simulated drop is complete.[/color][br]
+## [br]
+## [member index] : The touch index in the case of a multi-touch event.[br]
+## [member position] : The final position, indicating the drop position.[br]
+## [member time] : The time to move to the final position in seconds (default is 1 second).[br]
+## [member trans_type] : Sets the type of transition used (default is TRANS_LINEAR).[br]
+## [codeblock]
+##    func test_touch_drag_drop():
+##       var runner = scene_runner("res://scenes/simple_scene.tscn")
+##       # start drag at position 50,50
+##       runner.simulate_screen_touch_drag_begin(1, Vector2(50, 50))
+##       # and drop it at 100,50
+##       await runner.simulate_screen_touch_drag_absolute(1, Vector2(100,50))
+## [/codeblock]
+@warning_ignore("unused_parameter")
+func simulate_screen_touch_drag_absolute(index :int, position: Vector2, time: float = 1.0, trans_type: Tween.TransitionType = Tween.TRANS_LINEAR) -> GdUnitSceneRunner:
+
+
+## Simulates a touch screen drop&drop to the absolute coordinates (offset).[br]
+## [color=yellow]You must use [b]await[/b] to wait until the simulated drop is complete.[/color][br]
+## [br]
+## [member index] : The touch index in the case of a multi-touch event.[br]
+## [member position] : The drag start position, indicating the drag position.[br]
+## [member drop_position] : The drop position, indicating the drop position.[br]
+## [member time] : The time to move to the final position in seconds (default is 1 second).[br]
+## [member trans_type] : Sets the type of transition used (default is TRANS_LINEAR).[br]
+## [codeblock]
+##    func test_touch_drag_drop():
+##       var runner = scene_runner("res://scenes/simple_scene.tscn")
+##       # start drag at position 50,50 and drop it at 100,50
+##       await runner.simulate_screen_touch_drag_drop(1, Vector2(50, 50), Vector2(100,50))
+## [/codeblock]
+@warning_ignore("unused_parameter")
+func simulate_screen_touch_drag_drop(index :int, position: Vector2, drop_position: Vector2, time: float = 1.0, trans_type: Tween.TransitionType = Tween.TRANS_LINEAR) -> GdUnitSceneRunner:
+
+
+## Simulates a touch screen drag event to given position.[br]
+## [member index] : The touch index in the case of a multi-touch event.[br]
+## [member position] : The drag start position, indicating the drag position.[br]
+@warning_ignore("unused_parameter")
+func simulate_screen_touch_drag(index :int, position: Vector2) -> GdUnitSceneRunner:
+
+
+## Returns the actual position of the touch drag postion by given index
+## [member index] : The touch index in the case of a multi-touch event.[br]
+@warning_ignore("unused_parameter")
+func get_screen_touch_drag_position(index: int) -> Vector2:
+```
+* GD-566: Update HTML report page look & feel by @MikeSchulze in https://github.com/MikeSchulze/gdUnit4/pull/567
+![image](https://github.com/user-attachments/assets/141b5527-168a-4745-91ce-2c8d9112cda1)
+
+
+### Bug Fixes
+* GD-549: Fix, error if GdUnit4 inspector tab is floating by @MikeSchulze in https://github.com/MikeSchulze/gdUnit4/pull/552
+* GD-559: Fix, inspector directory collapse toggling by @poohcom1 in https://github.com/MikeSchulze/gdUnit4/pull/560
+* GD-563: Fix, parameterized test not executed when using typed arrays end ends with invalid success state by @MikeSchulze in https://github.com/MikeSchulze/gdUnit4/pull/572
+* GD-573: Fixed the inspector double-click, inherited tests to jump to the script where the test are located by @MikeSchulze in https://github.com/MikeSchulze/gdUnit4/pull/574
+
+## New Contributors
+* @poohcom1 made their first contribution in https://github.com/MikeSchulze/gdUnit4/pull/560
+
+**Full Changelog**: https://github.com/MikeSchulze/gdUnit4/compare/v4.3.4...v4.4.0

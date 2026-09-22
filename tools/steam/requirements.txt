@@ -1,0 +1,2 @@
+# Offline artifact validation only; the game does not depend on Python.
+jsonschema==4.25.1

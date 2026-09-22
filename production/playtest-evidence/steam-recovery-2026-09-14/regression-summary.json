@@ -1,0 +1,142 @@
+{
+  "scope": "local macOS headless regression; no Windows or commercial admission",
+  "tests": [
+    {
+      "test": "tests/unit/steam/steam_recovery_contract_test.gd",
+      "status": "PASS",
+      "exit_code": 0,
+      "seconds": 0.593,
+      "summaries": [
+        "STEAM_RECOVERY_UNIT_TEST checks=34 failures=0"
+      ]
+    },
+    {
+      "test": "tests/unit/steam/steam_codec_test.gd",
+      "status": "PASS",
+      "exit_code": 0,
+      "seconds": 0.157,
+      "summaries": [
+        "STEAM_CODEC_TEST checks=82 failures=0"
+      ]
+    },
+    {
+      "test": "tests/integration/steam_recovery_contract_test.gd",
+      "status": "PASS",
+      "exit_code": 0,
+      "summaries": [
+        "STEAM_RECOVERY_CONTRACT_TEST checks=156 failures=0"
+      ],
+      "note": "Final rerun after string-key metadata negative cases and explicit rejection paths; implementation unchanged from engine review"
+    },
+    {
+      "test": "tests/integration/steam_schema_test.gd",
+      "status": "PASS",
+      "exit_code": 0,
+      "seconds": 0.257,
+      "summaries": [
+        "STEAM_SCHEMA_TEST checks=104 failures=0"
+      ]
+    },
+    {
+      "test": "tests/integration/steam_domains_test.gd",
+      "status": "PASS",
+      "exit_code": 0,
+      "seconds": 0.257,
+      "summaries": [
+        "STEAM_DOMAINS_TEST checks=95 failures=0"
+      ]
+    },
+    {
+      "test": "tests/integration/steam_snapshot_test.gd",
+      "status": "PASS",
+      "exit_code": 0,
+      "seconds": 0.455,
+      "summaries": [
+        "STEAM_SNAPSHOT_TEST checks=764 failures=0"
+      ]
+    },
+    {
+      "test": "tests/integration/steam_snapshot_capacity_test.gd",
+      "status": "PASS",
+      "exit_code": 0,
+      "seconds": 2.765,
+      "summaries": [
+        "STEAM_SNAPSHOT_CAPACITY_TEST checks=1905 failures=0"
+      ]
+    },
+    {
+      "test": "tests/integration/save_system_test.gd",
+      "status": "PASS",
+      "exit_code": 0,
+      "seconds": 0.155,
+      "summaries": [
+        "SAVE_SYSTEM_PASS dual_slot=true sha256=true readback=true fallback=true"
+      ]
+    },
+    {
+      "test": "tests/integration/save_fault_surface_test.gd",
+      "status": "PASS",
+      "exit_code": 0,
+      "seconds": 0.346,
+      "summaries": [
+        "SAVE_FAULT_SURFACE_PASS expected_injected_error=true"
+      ]
+    },
+    {
+      "test": "tests/integration/save_crash_test.gd",
+      "status": "PASS",
+      "exit_code": 0,
+      "seconds": 0.845,
+      "summaries": [
+        "SAVE_CRASH_PASS cases=5 platform=macOS"
+      ]
+    },
+    {
+      "test": "tests/integration/progression_system_test.gd",
+      "status": "PASS",
+      "exit_code": 0,
+      "seconds": 0.253,
+      "summaries": [
+        "PROGRESSION_SYSTEM_PASS income=true purchase=true conservation=true persistence=true projection=true"
+      ]
+    },
+    {
+      "test": "tests/integration/home_progression_test.gd",
+      "status": "PASS",
+      "exit_code": 0,
+      "seconds": 0.353,
+      "summaries": [
+        "HOME_PROGRESSION_PASS confirm=true durable=true next_run=true"
+      ]
+    },
+    {
+      "test": "tests/integration/production_lifecycle_test.gd",
+      "status": "PASS",
+      "exit_code": 0,
+      "seconds": 0.474,
+      "summaries": [
+        "PRODUCTION_LIFECYCLE_PASS root_persistent=true viewport_persistent=true replacements=1"
+      ]
+    },
+    {
+      "test": "tests/integration/long_run_test.gd",
+      "status": "PASS",
+      "exit_code": 0,
+      "seconds": 0.848,
+      "summaries": [
+        "LONG_RUN_PASS reward_boundary=true boss_boundary=true pause=true projectile_kill=true settlement=true"
+      ]
+    },
+    {
+      "test": "tests/integration/pc_resume_reentry_test.gd",
+      "status": "PASS",
+      "exit_code": 0,
+      "seconds": 0.458,
+      "summaries": [
+        "PC_RESUME_REENTRY_PASS checks=71 synthetic_focus=true physical_device=false"
+      ]
+    }
+  ],
+  "passed": 15,
+  "failed": 0
+}

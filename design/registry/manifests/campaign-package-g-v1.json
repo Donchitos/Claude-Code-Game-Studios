@@ -1,0 +1,18 @@
+{
+  "implementation": "Campaign chapter one G1-G3",
+  "content_hash": "b4b4a50190f3bf99b182956bc79d0d98c31a3777077de800bd7f483c0a6c5cbc",
+  "pck_sha256": "6fbaf4ce0571cba96f61b22f50657cb734ae0ef11ca47c91ee44abc0668733ba",
+  "snapshot_schema": "CAMPAIGN_CHAPTER1_V3",
+  "source_freeze": "production/playtest-evidence/package-g-2026-09-16/source-freeze.json",
+  "independent_review": "APPROVED_WITH_SUGGESTIONS_G_SCOPE",
+  "new_player_playtest": "SKIPPED_BY_USER",
+  "battle_ready": false,
+  "d_acceptance": "OPEN",
+  "evidence": "production/playtest-evidence/2026-09-16-package-g.md",
+  "runtime_profile": "Spirit Nexus G 20260916",
+  "standalone_app": false,
+  "review_summary": "production/playtest-evidence/package-g-2026-09-16/review-summary.md",
+  "source_freeze_sha256": "61b564012cc1b57bce075c884b10a1be9f29f35f08dd69a0e9eedd9b7b74d7b3",
+  "mac_disk_smoke": "PASS_120_TICKS",
+  "actual_f_to_g_compatibility": "PASS_ZERO_WRITE"
+}

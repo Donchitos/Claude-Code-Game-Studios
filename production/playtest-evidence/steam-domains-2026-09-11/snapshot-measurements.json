@@ -1,0 +1,54 @@
+{
+	"cases": [
+		{
+			"bytes": 104984,
+			"capture_validate_us": 58342,
+			"case": "full",
+			"decode_reencode_us": 41788,
+			"encode_us": 27372,
+			"restore_validate_us": 49569
+		},
+		{
+			"bytes": 104050,
+			"capture_validate_us": 58161,
+			"case": "ring",
+			"decode_reencode_us": 42061,
+			"encode_us": 26000,
+			"restore_validate_us": 48225
+		},
+		{
+			"bytes": 104985,
+			"capture_validate_us": 58672,
+			"case": "summon",
+			"decode_reencode_us": 41941,
+			"encode_us": 26052,
+			"restore_validate_us": 48782
+		},
+		{
+			"bytes": 104984,
+			"capture_validate_us": 57902,
+			"case": "bite",
+			"decode_reencode_us": 42061,
+			"encode_us": 25545,
+			"restore_validate_us": 48837
+		},
+		{
+			"bytes": 104982,
+			"capture_validate_us": 58868,
+			"case": "phase_pending",
+			"decode_reencode_us": 42754,
+			"encode_us": 25724,
+			"restore_validate_us": 48836
+		}
+	],
+	"checks": 1905,
+	"commercial_budget_frozen": false,
+	"config_hash": "c3d9f44cd488daf8c989e34b789f2e39ae9e68600e66218592d97829c3d866d7",
+	"engine": "4.7.1-stable (official)",
+	"failures": 0,
+	"limits_are_test_ceiling": true,
+	"memory_static_peak_process_bytes": 114910814,
+	"natural_reachability_proven": false,
+	"platform": "macOS",
+	"profile": "LEGACY_STAGE_PC_V1"
+}

@@ -1,0 +1,127 @@
+{
+  "schema_version": 1,
+  "artifact_kind": "AUTHOR_CONTRACT_ROUTE_NOT_GENERATED",
+  "date": "2026-09-11",
+  "status": "DESIGN_BASELINE_APPROVED_IMPLEMENTATION_GATES_OPEN",
+  "active_runtime": {
+    "save_format": "JSON_V1",
+    "mission_profile": "LEGACY"
+  },
+  "planned_profiles": {
+    "STEAM_SAVE_V2": {
+      "owner": "design/gdd/save-steam-pc.md"
+    },
+    "STEAM_MISSION_V1": {
+      "owners": [
+        "design/gdd/campaign-flow.md",
+        "design/gdd/mission-objectives.md"
+      ]
+    }
+  },
+  "adr": "docs/architecture/adr-0006-steam-save-and-mission-contracts.md",
+  "required_domains": [
+    "records",
+    "progression",
+    "campaign",
+    "unlocks",
+    "preparation",
+    "current_run",
+    "user_settings"
+  ],
+  "save_operation_kinds": [
+    "MIGRATE",
+    "PREPARE",
+    "UPDATE_PREPARATION",
+    "CANCEL_PREPARE",
+    "START",
+    "SUSPEND",
+    "RESUME",
+    "STAGE_RESULT",
+    "COMPLETE",
+    "DOMAIN_UPDATE"
+  ],
+  "mission_kinds": [
+    "SURVIVE",
+    "BREAK",
+    "CLEANSE",
+    "HUNT",
+    "ESCORT",
+    "BOSS"
+  ],
+  "run_states": [
+    "PREPARED",
+    "RUNNING",
+    "SUSPENDED",
+    "RESULT_PENDING"
+  ],
+  "implementation_gates": {
+    "domain_schema_codec_migration": "PARTIAL_STRUCTURES_PRESENT_MIGRATION_OPEN",
+    "required_owner_snapshots": "PARTIAL_LEGACY_STAGE_ONLY",
+    "MISSION_phase_capacity": "OPEN",
+    "config_generated_golden": "OPEN",
+    "snapshot_budget": "OPEN_CURRENT_PRESSURE_ENVELOPES_MEASURED",
+    "ECON-MISSION-01": "OPEN",
+    "profile_adapters": "OPEN",
+    "windows_lock_crash_recovery": "OPEN",
+    "steam_cloud_conflicts": "OPEN"
+  },
+  "scope_time_risk": "SCOPE-TIME-01_OPEN",
+  "battle_ready": false,
+  "break_order_modes": [
+    "FIXED",
+    "PLAYER_CHOICE"
+  ],
+  "break_player_choice_missions": [
+    "S1-M02-07",
+    "S1-M07-07",
+    "S1-M08-02"
+  ],
+  "review": "design/gdd/reviews/steam-contracts-2026-09-11/review-director-followup.md",
+  "implementation_foundation": {
+    "work_package": "WP04a + WP04b + WP04c",
+    "report": "production/playtest-evidence/2026-09-11-steam-schema-foundation.md",
+    "codec": "src/persistence/steam_canonical_codec.gd",
+    "semantic_validator": "src/data/steam_campaign_schema.gd",
+    "structural_schemas": [
+      "assets/schemas/steam/campaign-definition-v1.schema.json",
+      "assets/schemas/steam/campaign-domain-v1.schema.json",
+      "assets/schemas/steam/unlock-domain-v1.schema.json",
+      "assets/schemas/steam/records-domain-v1.schema.json",
+      "assets/schemas/steam/progression-domain-v1.schema.json",
+      "assets/schemas/steam/preparation-domain-v1.schema.json",
+      "assets/schemas/steam/current_run-domain-v1.schema.json",
+      "assets/schemas/steam/user_settings-domain-v1.schema.json",
+      "assets/schemas/steam/legacy-battle-snapshot-v1.schema.json"
+    ],
+    "implemented_domain_validation": [
+      "records",
+      "progression",
+      "campaign",
+      "unlocks",
+      "preparation",
+      "current_run",
+      "user_settings"
+    ],
+    "missing_domain_validation": [],
+    "nul_adapter": "OPEN_UNSUPPORTED_STRING",
+    "fixture_kind": "SYNTHETIC_NOT_PRODUCTION",
+    "production_enabled": false,
+    "validation_boundary": "STRUCTURE_AND_SHARED_INVARIANTS; commercial Preparation/Settlement/mission owner semantics OPEN",
+    "domain_validator": "src/data/steam_save_domains.gd",
+    "snapshot_adapter": "src/persistence/steam_battle_snapshot.gd",
+    "snapshot_profile": "LEGACY_STAGE_PC_V1",
+    "snapshot_report": "production/playtest-evidence/steam-domains-2026-09-11/",
+    "missing_owner_semantics": [
+      "Preparation",
+      "SettlementComplete",
+      "Mission",
+      "SkillDraft/Loadout",
+      "Character/Codex/Narrative"
+    ],
+    "recovery_contract": "src/data/steam_recovery_contract.gd",
+    "recovery_inventory": "design/registry/manifests/steam-recovery-responsibilities-v1.json",
+    "recovery_contract_boundary": "TRUSTED_CONFIG_RELATIVE_TEST_OR_LEGACY_ADAPTER_ONLY; commercial providers and budgets OPEN",
+    "recovery_report": "production/playtest-evidence/2026-09-14-steam-recovery-contract.md",
+    "recovery_code_review": "APPROVED_LIMITED_TEST_LEGACY_CONTRACT"
+  }
+}

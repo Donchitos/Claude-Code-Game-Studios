@@ -1,0 +1,87 @@
+extends SceneTree
+
+var _failures: int = 0
+
+func _initialize() -> void:
+	_run.call_deferred()
+
+func _run() -> void:
+	var scene := load("res://src/core/GameRoot.tscn") as PackedScene
+	_expect(scene != null, "GameRoot scene must load")
+	if scene == null:
+		_finish()
+		return
+	var game_root := scene.instantiate() as ProductionGameRoot
+	root.add_child(game_root)
+	await game_root.boot_completed
+	var root_id := game_root.get_instance_id()
+	var viewport_id := game_root.get_viewport().get_instance_id()
+	_expect(game_root.state == ProductionGameRoot.State.HOME, "boot must activate HOME")
+	_expect(not game_root.viewport_gate_held, "boot must release the viewport gate")
+
+	(game_root.current_page as ProductionHomeScreen).start_requested.emit()
+	await process_frame
+	await process_frame
+	_expect(game_root.state == ProductionGameRoot.State.BATTLE_ACTIVE, "HOME start signal must activate battle")
+	_expect(game_root.state == ProductionGameRoot.State.BATTLE_ACTIVE, "battle must be active")
+	_expect(game_root.current_battle.input_system.state == ProductionInputSystem.State.ACTIVE, "input must be active")
+	_expect(game_root.current_battle.joystick_host.active_joystick_count() == 0, "STEAM_PC must not instantiate a mobile joystick")
+	for action: StringName in [&"move_left", &"move_right", &"move_up", &"move_down"]:
+		_expect(InputMap.has_action(action) and not InputMap.action_get_events(action).is_empty(), "PC movement action must be configured: %s" % action)
+	var start_position := game_root.current_battle.player.position
+	Input.action_press(&"move_right")
+	for _frame in 6:
+		await process_frame
+		if game_root.current_battle.player.position.x > start_position.x:
+			break
+	Input.action_release(&"move_right")
+	_expect(game_root.current_battle.player.position.x > start_position.x, "PC keyboard input must move the player")
+	var first_scope_ref: WeakRef = weakref(game_root.current_battle)
+
+	_expect(game_root.request_pause(false) == ProductionGameRoot.Status.OK, "pause must succeed")
+	_expect(paused, "SceneTree must be paused by GameRoot")
+	_expect(game_root.state == ProductionGameRoot.State.BATTLE_PAUSED, "battle must enter paused state")
+	_expect(game_root.request_resume() == ProductionGameRoot.Status.OK, "resume must succeed")
+	_expect(not paused, "SceneTree must resume")
+
+	var replace_status: int = await game_root.request_replace_battle(202, true)
+	_expect(replace_status == ProductionGameRoot.Status.OK, "battle replacement must succeed")
+	await process_frame
+	_expect(first_scope_ref.get_ref() == null, "replaced scope must be destroyed after frame barrier")
+	_expect(game_root.battle_generation == 2, "battle generation must advance")
+	_expect(game_root.get_instance_id() == root_id, "GameRoot identity must persist")
+	_expect(game_root.get_viewport().get_instance_id() == viewport_id, "root Viewport identity must persist")
+
+	var second_scope_ref: WeakRef = weakref(game_root.current_battle)
+	var end_status: int = await game_root.request_end_battle(true)
+	_expect(end_status == ProductionGameRoot.Status.OK, "battle end must succeed")
+	await process_frame
+	_expect(second_scope_ref.get_ref() == null, "ended scope must be destroyed after frame barrier")
+	_expect(game_root.state == ProductionGameRoot.State.SETTLEMENT, "settlement must be active")
+	_expect(game_root.current_battle == null, "settlement must not retain a battle scope")
+	_expect(not paused, "SceneTree must be running in settlement")
+	var saved_profile: Dictionary = game_root.save_system.call("profile_snapshot")
+	_expect(int(saved_profile["generation"]) == 1 and int(saved_profile["total_runs"]) == 1 and int(saved_profile["victories"]) == 1, "settlement must commit one in-memory battle record")
+	var progression_domain: Dictionary = saved_profile["domains"]["progression"]
+	_expect(int(progression_domain["unspent_pages"]) == 0 and int(progression_domain["earned_pages_total"]) == 0, "a sub-90-second run must grant zero cultivation pages")
+	_expect(game_root.last_result_pages_granted == 0, "settlement must present the zero-page result honestly")
+	_expect(not game_root.viewport_gate_held, "settlement activation must release the gate")
+	_expect(game_root.get_instance_id() == root_id, "GameRoot identity must survive settlement")
+	_expect(game_root.get_viewport().get_instance_id() == viewport_id, "Viewport identity must survive settlement")
+	game_root.queue_free()
+	await process_frame
+	_finish()
+
+func _expect(condition: bool, message: String) -> void:
+	if condition:
+		return
+	_failures += 1
+	push_error("PRODUCTION_LIFECYCLE_ASSERTION_FAILED %s" % message)
+
+func _finish() -> void:
+	if _failures == 0:
+		print("PRODUCTION_LIFECYCLE_PASS root_persistent=true viewport_persistent=true replacements=1")
+		quit(0)
+	else:
+		print("PRODUCTION_LIFECYCLE_FAIL failures=%d" % _failures)
+		quit(1)

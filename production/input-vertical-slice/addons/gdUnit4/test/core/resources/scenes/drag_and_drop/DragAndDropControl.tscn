@@ -1,0 +1,23 @@
+[gd_scene load_steps=3 format=3 uid="uid://ca2rr3dan4vvw"]
+
+[ext_resource type="Script" path="res://addons/gdUnit4/test/core/resources/scenes/drag_and_drop/DragAndDropControl.gd" id="1"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_s2qi1"]
+size = Vector2(110, 110)
+
+[node name="Panel" type="PanelContainer"]
+offset_left = 245.0
+offset_top = 232.0
+offset_right = 350.0
+offset_bottom = 337.0
+size_flags_horizontal = 3
+size_flags_vertical = 3
+script = ExtResource("1")
+
+[node name="TextureRect" type="TextureRect" parent="."]
+layout_mode = 2
+expand_mode = 1
+
+[node name="touch_area" type="TouchScreenButton" parent="TextureRect"]
+position = Vector2(52, 52)
+shape = SubResource("RectangleShape2D_s2qi1")

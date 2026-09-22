@@ -1,0 +1,8 @@
+{
+  "tools/campaign/late_chapters.py": "a803f58c160951ab31a11290ae6a12c3d07807b162be30a1329c69a9d5c7d149",
+  "src/campaign/campaign_late_chapters.gd": "10f422a98a665f4117a266418287b90285b0096da5a106df97a89dc3444376b0",
+  "src/campaign/campaign_arena_render.gd": "990216dc9aab1085e762cda82353f89afaf311b517109281f6e9cdb610e4d49c",
+  "src/campaign/campaign_arena.gd": "ebcabd65451e22d3af50f2257d4f673e0e9674a80cfb573009c3226acd62961a",
+  "src/campaign/campaign_combat.gd": "d46928825365e1f49616395c5e2f1c89cc655dd39cf22580e80e67c383f01295",
+  "assets/config/campaign_game.json": "683d5040e5e7b6cecadae031d54b77530add19fc0ae1256ab93df9df3e6365d8"
+}

@@ -1,0 +1,10 @@
+{
+	"arguments": [
+		"--campaign-validation",
+		"--evidence-root=/tmp/f-ui-review-20260916"
+	],
+	"content_hash": "31f5f97f71efde814a73ae6d9d91e6b8205b5b6dbd15e4dfd48bfbad1e65d569",
+	"engine": "4.7.1-stable (official)",
+	"scope": "automated test evidence, not human or release certification",
+	"suite": "camera-lifecycle"
+}

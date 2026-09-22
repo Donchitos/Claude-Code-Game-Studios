@@ -1,0 +1,51 @@
+[gd_scene load_steps=3 format=3 uid="uid://skueh3d5qn46"]
+
+[ext_resource type="Script" path="res://addons/gdUnit4/test/core/resources/scenes/drag_and_drop/DragAndDropTestScene.gd" id="1"]
+[ext_resource type="PackedScene" path="res://addons/gdUnit4/test/core/resources/scenes/drag_and_drop/DragAndDropControl.tscn" id="2_u5ccv"]
+
+[node name="DragAndDropScene" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+script = ExtResource("1")
+
+[node name="left" parent="." instance=ExtResource("2_u5ccv")]
+layout_mode = 0
+offset_left = 250.0
+offset_top = 240.0
+offset_right = 355.0
+offset_bottom = 345.0
+localize_numeral_system = false
+metadata/_edit_use_anchors_ = true
+
+[node name="right" parent="." instance=ExtResource("2_u5ccv")]
+layout_mode = 0
+offset_left = 370.0
+offset_top = 240.0
+offset_right = 475.0
+offset_bottom = 345.0
+
+[node name="Button" type="Button" parent="."]
+layout_mode = 0
+offset_left = 243.0
+offset_top = 40.0
+offset_right = 479.0
+offset_bottom = 200.0
+text = "BUTTON"
+metadata/_edit_use_anchors_ = true
+
+[node name="Button2" type="Button" parent="."]
+layout_mode = 0
+offset_left = 593.0
+offset_top = 201.0
+offset_right = 700.0
+offset_bottom = 239.0
+text = "QUIT"
+
+[connection signal="button_down" from="Button" to="." method="_on_Button_button_down"]
+[connection signal="pressed" from="Button2" to="." method="_on_quit_pressed"]

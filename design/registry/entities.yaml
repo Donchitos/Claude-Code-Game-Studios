@@ -1,4 +1,29 @@
+# Campaign final chapters 2026-09-22: manifests/campaign-final-chapters-v1.json; local delivery, two routes 64/64; C03 stress 99/120; battle_ready=false.
+# Campaign G 2026-09-16: manifests/campaign-package-g-v1.json; scoped APPROVED_WITH_SUGGESTIONS; battle_ready=false.
+# Campaign F 2026-09-16: see manifests/campaign-package-f-v1.json; scoped APPROVED_WITH_SUGGESTIONS; battle_ready=false.
+# Campaign E 2026-09-16: manifests/campaign-package-e-v1.json and ADR-0009 record
+# chapter-one XP, active-tick cooldown, bounded camera/spawn envelope and V3 snapshot.
+# Local evidence only; independent review pending; new-player testing skipped by user.
+# 2026-09-15 D整改独立复审：3名真实专家全部返回后fresh资深综合APPROVED WITH SUGGESTIONS，仅限D-S01～04；四项原缺陷限定关闭，隔离Campaign开发持久档可开展新玩家探索测试。P00本人自报完成1名，新玩家0；D总OPEN / In Review，battle_ready=false。剩余至少3新玩家、延期XP/3秒间隔/任意窗口视野外生成、完整恢复矩阵和平台/产品门槛。当前入口build/package-d-fix-2026-09-15/开始D修订版试玩.command；证据production/playtest-evidence/2026-09-15-package-d-fix.md与package-d-fix-2026-09-15/senior-report.md。以下旧D限制为历史，被本次限定放行取代。
+# Campaign C 2026-09-15: manifests/campaign-package-c-v1.json records chapter
+# state and content hash; Arena-owned helper, no legacy ABI/system-count promotion.
+# Campaign B 2026-09-15: manifests/campaign-package-b-v1.json and ADR-0008
+# index Arena-owned encounter state; no legacy ABI or system-count promotion.
 # Game World Entity Registry
+# Campaign A 2026-09-15: development-profile growth and compatibility facts are
+# indexed in manifests/campaign-package-a-v1.json; no legacy ABI/count change.
+#
+# Steam 1.0 planning (2026-09-11): product scope is
+# design/steam-1.0-product-scope.md; planned S1-* content IDs are tracked in
+# production/steam-1.0-content-matrix.csv. They are not runtime entity IDs,
+# approved numeric contracts, or replacements for entries below. Promotion
+# requires owner GDD review, explicit schema/ID mapping and consumer propagation.
+#
+# Steam contract route (planned, not generated/runtime):
+# design/registry/manifests/steam-save-mission-contracts-v1.json
+# STEAM_SAVE_V2 / STEAM_MISSION_V1 use ADR-0006 and their new owner GDDs.
+# Legacy binary sizes, Boss timing and starter facts below do not define the new profiles.
+# Domain codecs, entity/phase registration, budgets and economic adapters remain OPEN.
 #
 # PURPOSE: Single source of truth for all named game-world facts that appear
 # in more than one document. Skills check this before writing new content to
@@ -37,7 +62,7 @@
 #   Each entry: name, status, source, referenced_by[], attributes{}, added, revised
 
 version: 1
-last_updated: ""
+last_updated: "2026-09-08"
 
 # ─── ENTITIES ────────────────────────────────────────────────────────────────
 # Named game-world objects: enemies, NPCs, characters, factions, bosses.
@@ -48,7 +73,58 @@ last_updated: ""
 # Attribute fields: any key stats that could appear in another GDD
 #   (health, damage, drops, faction, etc.)
 
-entities: []
+entities:
+  - name: elite_centipede
+    status: active
+    source: design/gdd/elite-enemies.md
+    referenced_by:
+      - design/gdd/elite-enemies.md
+      - design/gdd/enemy-system.md
+      - design/gdd/spawn-director.md
+      - design/gdd/drop-leveling-system.md
+      - design/gdd/config-data-system.md
+    behavior_id: 6
+    class: elite
+    fixed_spawn_tick: 21600
+    added: 2026-09-03
+    revised: ""
+    notes: "巨甲蜈蚣；三段同轴冲刺后150 ticks破绽。base stats与XP仍PROVISIONAL-BALANCE。"
+
+  - name: elite_ghost_cultivator
+    status: active
+    source: design/gdd/elite-enemies.md
+    referenced_by:
+      - design/gdd/elite-enemies.md
+      - design/gdd/enemy-system.md
+      - design/gdd/spawn-director.md
+      - design/gdd/projectile-system.md
+      - design/gdd/drop-leveling-system.md
+      - design/gdd/config-data-system.md
+    behavior_id: 7
+    class: elite
+    fixed_spawn_tick: 36000
+    added: 2026-09-03
+    revised: ""
+    notes: "鬼雾修士；blink后30 ticks魂针预警、三针原子batch、每周期三血傀儡cluster。base stats与XP仍PROVISIONAL-BALANCE。"
+
+  - name: boss_bilin_python
+    status: active
+    source: design/gdd/boss-state-machine.md
+    referenced_by:
+      - design/gdd/boss-state-machine.md
+      - design/gdd/enemy-system.md
+      - design/gdd/spawn-director.md
+      - design/gdd/damage-system.md
+      - design/gdd/projectile-system.md
+      - design/gdd/drop-leveling-system.md
+      - design/gdd/config-data-system.md
+      - design/gdd/stage-map.md
+    behavior_id: 8
+    class: boss
+    fixed_spawn_tick: 43200
+    added: 2026-09-03
+    revised: ""
+    notes: "守阵妖兽·碧鳞蟒；P1固定三招轮转，50%后90t切P2，外圆毒域、双扑咬与0/2噬灵虫召唤。base stats仍PROVISIONAL-BALANCE。"
 
 # Example (remove when first real entry is added):
 #
@@ -77,7 +153,88 @@ entities: []
 # Attribute fields: value_gold, weight, stackable, category, and any stat
 #   modifiers that another system (e.g., economy, crafting) might reference.
 
-items: []
+items:
+  - name: CORE_HERB
+    status: active
+    source: design/gdd/drop-leveling-system.md
+    referenced_by:
+      - design/gdd/drop-leveling-system.md
+      - design/gdd/boss-state-machine.md
+      - design/gdd/game-root-scene-flow.md
+      - design/gdd/config-data-system.md
+      - design/gdd/settlement-system.md
+      - design/gdd/zhangtian-bottle.md
+    display_name: "核心灵药"
+    category: run_reward
+    amount_per_victory: 1
+    stackable: true
+    added: 2026-09-03
+    revised: ""
+    reward_id: 6
+    notes: "BATTLE_RULES只按matching precollected VICTORY在phase6提交一次，phase7同token seal后才对外暴露；非Drop pooled pickup，也不转换为种子或丹药。"
+
+  - name: NINGQI_GRASS
+    status: active
+    source: design/gdd/zhangtian-bottle.md
+    referenced_by: [design/gdd/zhangtian-bottle.md, design/gdd/prep-ui.md, design/gdd/settlement-system.md, design/gdd/config-data-system.md]
+    display_name: "凝气草"
+    category: zhangtian_seed
+    seed_kind_id: 1
+    settlement_reward_id: 3
+    added: 2026-09-03
+    revised: ""
+
+  - name: TIELING_FLOWER
+    status: active
+    source: design/gdd/zhangtian-bottle.md
+    referenced_by: [design/gdd/zhangtian-bottle.md, design/gdd/prep-ui.md, design/gdd/settlement-system.md, design/gdd/config-data-system.md]
+    display_name: "铁灵花"
+    category: zhangtian_seed
+    seed_kind_id: 2
+    settlement_reward_id: 4
+    added: 2026-09-03
+    revised: ""
+
+  - name: LEIYUAN_FRUIT
+    status: active
+    source: design/gdd/zhangtian-bottle.md
+    referenced_by: [design/gdd/zhangtian-bottle.md, design/gdd/prep-ui.md, design/gdd/settlement-system.md, design/gdd/config-data-system.md]
+    display_name: "雷元果"
+    category: zhangtian_seed
+    seed_kind_id: 3
+    settlement_reward_id: 5
+    added: 2026-09-03
+    revised: ""
+
+  - name: QI_GATHERING_PILL
+    status: active
+    source: design/gdd/zhangtian-bottle.md
+    referenced_by: [design/gdd/zhangtian-bottle.md, design/gdd/prep-ui.md, design/gdd/skill-draft-system.md, design/gdd/drop-leveling-system.md]
+    display_name: "聚气丹"
+    category: prebattle_pill
+    pill_id: 1
+    added: 2026-09-03
+    revised: ""
+
+  - name: IRON_BODY_PILL
+    status: active
+    source: design/gdd/zhangtian-bottle.md
+    referenced_by: [design/gdd/zhangtian-bottle.md, design/gdd/prep-ui.md, design/gdd/player-controller.md, design/gdd/config-data-system.md]
+    display_name: "锻体丹"
+    category: prebattle_pill
+    pill_id: 2
+    added: 2026-09-03
+    revised: ""
+
+  - name: CLEAR_MIND_PILL
+    status: active
+    source: design/gdd/zhangtian-bottle.md
+    referenced_by: [design/gdd/zhangtian-bottle.md, design/gdd/prep-ui.md, design/gdd/damage-system.md, design/gdd/config-data-system.md]
+    display_name: "明心丹"
+    category: prebattle_pill
+    pill_id: 3
+    added: 2026-09-03
+    revised: ""
 
 # Example:
 #
@@ -106,7 +263,707 @@ items: []
 #   output_range[min, max], added
 # Optional: expression (the actual formula), notes
 
-formulas: []
+formulas:
+  - name: projectile_swept_query_radius
+    status: active
+    source: design/gdd/spatial-grid.md
+    referenced_by:
+      - design/gdd/spatial-grid.md
+      - design/gdd/config-data-system.md
+      - design/gdd/projectile-system.md
+    variables:
+      - segment_length
+      - midpoint_cast_error
+      - projectile_bound
+      - max_enemy_bound
+      - target_motion_bound
+    output_range: [0, .inf]
+    expression: "checked_sum(checked_mul(0.5, segment_length), midpoint_cast_error, projectile_bound, max_enemy_bound, target_motion_bound)"
+    notes: "全部输入与每步加法必须 checked finite。segment_length 与
+      midpoint_cast_error 使用 spatial-grid.md 的 float64 scalar canonical
+      distance helper；中点先以四个 float64 分量计算，再 cast/readback Vector2。
+      MVP target sampling 固定为 tick-end discrete committed snapshot，故
+      target_motion_bound=0；这不构成 continuous relative-sweep 保证。"
+    added: 2026-08-19
+    revised: 2026-08-19
+
+  - name: max_query_radius
+    status: active
+    source: design/gdd/spatial-grid.md
+    referenced_by:
+      - design/gdd/spatial-grid.md
+      - design/gdd/config-data-system.md
+      - design/gdd/enemy-system.md
+      - design/gdd/projectile-system.md
+      - design/gdd/weapon-system.md
+      - design/gdd/drop-leveling-system.md
+      # 待回填：最终 SkillConfig
+    variables:
+      - pickup_radius_max
+      - target_range_max
+      - max_skill_effect_radius
+      - max_enemy_bound
+      - separation_radius
+      - max_separation_radius
+      - max_projectile_segment_length
+      - max_midpoint_cast_error
+      - max_projectile_bound
+      - max_target_motion_bound
+    output_range: [0, .inf]
+    expression: "checked_max(pickup_radius_max, target_range_max, checked_add(max_skill_effect_radius, max_enemy_bound), checked_sum(target_range_max, max_skill_effect_radius, max_enemy_bound), checked_add(separation_radius, max_separation_radius), checked_sum(checked_mul(0.5, max_projectile_segment_length), max_midpoint_cast_error, max_projectile_bound, max_enemy_bound, max_target_motion_bound), ...)"
+    notes: "所有依赖 SpatialGrid 查询接口的系统实际传入宽相半径的全集上界，
+      必须包含 target conservative bound 与 projectile swept segment expansion。
+      Projectile 项不得遗漏 max_midpoint_cast_error 或数值为 0 的
+      max_target_motion_bound 语义字段；MVP 分别固定为 sqrt(2)/32 与 0。
+      用于配置审计、CELL_SIZE benchmark 候选和 workload 规划，不是合法查询
+      半径上限；radius 大于 CELL_SIZE 仍须正确扫描，禁止 release clamp。
+      当前 pickup_radius_base=1.8、pickup_radius_max=1.98、
+      max_midpoint_cast_error=sqrt(2)/32、max_target_motion_bound=0 已冻结；
+      target range、skill radius、projectile segment/bound 待对应 GDD；
+      enemy/separation bound 由 EnemySystem GDD §4.6 定义上界（per-type 在
+      Config，数值待调参）。输入变化时重跑 F3 sweep，
+      不能未经 benchmark 直接令 CELL_SIZE=max_query_radius。"
+    added: 2026-08-14
+    revised: 2026-08-28
+
+  - name: index_margin_lower_bound
+    status: deprecated
+    source: design/gdd/stage-map.md
+    referenced_by:
+      - design/gdd/spatial-grid.md
+      - design/gdd/enemy-system.md
+      - design/gdd/player-controller.md
+    variables:
+      - player_overshoot
+      - enemy_overshoot_max
+      - elite_charge_overshoot
+      - knockback_max
+      - max_enemy_bound
+    output_range: [0, .inf]
+    expression: "checked_add(player_overshoot, max(enemy_overshoot_max, elite_charge_overshoot), knockback_max, max_enemy_bound)"
+    notes: "DEPRECATED 2026-09-02：Stage V2删除固定arena/index_margin；禁止production consumer使用。由world_reachability_budget替代。"
+    added: 2026-08-19
+    revised: 2026-09-02
+
+  - name: world_reachability_budget
+    status: active
+    source: design/gdd/stage-map.md
+    referenced_by:
+      - design/gdd/stage-map.md
+      - design/gdd/spatial-grid.md
+      - design/gdd/enemy-system.md
+      - design/gdd/player-controller.md
+    variables:
+      - max_battle_duration_seconds
+      - player_speed
+      - max_relative_runtime_extent
+      - world_precision_guard
+    output_range: [0, .inf]
+    expression: "checked_sum(player_speed*max_battle_duration_seconds, max_relative_runtime_extent, world_precision_guard)"
+    notes: "Stage V2 Loading期保守可达包络；必须小于等于world_safe_half_extent。
+      这是防止有限技术域在1800秒技术时限内可见的证明输入，不是运行时边界、
+      clamp预算或地图尺寸。更精确的运动积分证明可收紧该上界，但不得降低安全性。"
+    added: 2026-08-19
+    revised: 2026-09-02
+
+  - name: world_precision_guard
+    status: active
+    source: design/gdd/stage-map.md
+    referenced_by:
+      - design/gdd/config-data-system.md
+      - design/gdd/player-controller.md
+      - design/gdd/drop-leveling-system.md
+      - design/gdd/spatial-grid.md
+    variables:
+      - world_safe_half_extent
+      - max_full_footprint_radius
+      - max_single_tick_displacement
+    output_range: [0, .inf]
+    expression: "checked_sum(max_full_footprint_radius, max_single_tick_displacement, 4*ulp_real_t32(world_safe_half_extent))"
+    notes: "技术域边缘的足迹、单tick位移与binary32量化冗余；不是玩法margin。"
+    added: 2026-09-02
+    revised: ""
+
+  - name: required_pool_capacity
+    status: active
+    source: design/gdd/object-pooling.md
+    referenced_by:
+      - design/gdd/object-pooling.md
+      - design/gdd/config-data-system.md
+      - design/gdd/risk-choice-system.md
+    variables:
+      - max_concurrent_borrowed
+      - max_pause_replacement_overlap
+      - max_spawn_before_release_overlap
+      - safety_spare
+    output_range: [0, 512]
+    expression: "checked_sum(max_concurrent_borrowed, max_pause_replacement_overlap, max_spawn_before_release_overlap, safety_spare)"
+    notes: "Config schema v1的六key输出依次为320/6/1/448/320/96；
+      configured_capacity必须等于或高于required且不得超过per-key硬上限512。
+      RiskChoice裁决后的normal输入为298+0+12+10=320，elite为4+0+1+1=6；
+      两fixed+两risk Elite的4 active由max_concurrent真实覆盖，不再借safety spare。"
+    added: 2026-08-19
+    revised: 2026-09-03
+
+  - name: fixed_gameplay_dt
+    status: active
+    source: design/gdd/game-root-scene-flow.md
+    referenced_by:
+      - design/gdd/game-root-scene-flow.md
+      - design/gdd/config-data-system.md
+      - design/gdd/enemy-system.md
+      - design/gdd/player-controller.md
+    variables:
+      - physics_ticks_per_second
+    output_range: [0.016666666666666666, 0.016666666666666666]
+    expression: "1.0 / physics_ticks_per_second"
+    notes: "MVP physics_ticks_per_second 固定60；gameplay只消费1/60或PAUSE_PENDING技术drain的0.0，callback delta仅验证cadence。"
+    added: 2026-08-28
+    revised: 2026-08-28
+
+  - name: fixed_movement_step
+    status: active
+    source: design/gdd/player-controller.md
+    referenced_by:
+      - design/gdd/player-controller.md
+      - design/gdd/input-system.md
+      # DropSystem、Weapon/TargetingSystem GDD 创建后追加其路径
+    variables:
+      - physics_ticks_per_second
+      - player_speed
+      - movement_direction
+      - movement_active
+    output_range: [0.0, 0.075000075]
+    expression: "fixed_dt=1.0/physics_ticks_per_second; velocity_f64=movement_active?promote(direction_real_t32)*player_speed:(0,0); desired_displacement=readback_real_t32(Vector2(velocity_f64*fixed_dt))"
+    notes: "output_range为单tick期望位移模长；ZERO为0，非ZERO包含Input单位向量容差。运算顺序固定为float64 velocity→乘预计算dt→Vector2构造/readback；Player不得再次归一化；最终committed位置须经过full_footprint_domain_guard。"
+    added: 2026-09-01
+    revised: 2026-09-02
+
+  - name: full_footprint_clamp
+    status: deprecated
+    source: design/gdd/player-controller.md
+    referenced_by:
+      - design/gdd/stage-map.md
+    variables:
+      - arena_width
+      - arena_height
+      - player_collision_diameter
+      - previous_position
+      - desired_displacement
+    output_range: [-20.0, 20.0]
+    expression: "legacy arena clamp"
+    notes: "DEPRECATED 2026-09-02：固定arena clamp已删除；禁止production consumer调用。由full_footprint_domain_guard替代。"
+    added: 2026-09-01
+    revised: 2026-09-02
+
+  - name: full_footprint_domain_guard
+    status: active
+    source: design/gdd/player-controller.md
+    referenced_by:
+      - design/gdd/player-controller.md
+      - design/gdd/stage-map.md
+    variables:
+      - world_safe_half_extent
+      - player_collision_diameter
+      - previous_position
+      - desired_displacement
+    output_range: [-16384.0, 16384.0]
+    expression: "candidate=readback_real_t32(Vector2(promote(previous_position)+promote(desired_displacement))); require(abs(candidate.x)+player_radius<=world_safe_half_extent && abs(candidate.y)+player_radius<=world_safe_half_extent); candidate"
+    notes: "只验证完整碰撞足迹位于world safe domain并原样返回candidate，不做clamp、wrap或origin rebasing。Loading期reachability proof应令正常战斗永不触发；触发即ControlledGameplayFault。"
+    added: 2026-09-01
+    revised: 2026-09-02
+
+  - name: hp_application
+    status: active
+    source: design/gdd/player-controller.md
+    referenced_by:
+      - design/gdd/player-controller.md
+      - design/gdd/damage-system.md
+      - design/gdd/battle-ui.md
+    variables:
+      - current_hp
+      - max_hp
+      - final_damage
+    output_range: [0.0, 1000000.0]
+    expression: "final_damage >= current_hp ? 0.0 : current_hp - final_damage"
+    notes: "输出为hp_after_damage；applied_damage=min(final_damage,current_hp)，不记录overkill。正伤害若相减后HP逐bit不变则拒绝，不引入隐藏最小伤害。"
+    added: 2026-09-01
+    revised: ""
+
+  - name: player_resolved_starting_max_hp
+    status: active
+    source: design/gdd/player-controller.md
+    referenced_by:
+      - design/gdd/player-controller.md
+      - design/gdd/config-data-system.md
+      - design/gdd/damage-system.md
+      - design/gdd/battle-ui.md
+      # Progression、Preparation GDD 创建后追加其路径
+    variables:
+      - player_base_max_hp
+      - player_progression_max_hp_bonus_ratio
+      - player_preparation_max_hp_bonus_ratio
+    output_range: [1.0, 1000000.0]
+    expression: "player_base_max_hp * (1.0 + player_progression_max_hp_bonus_ratio + player_preparation_max_hp_bonus_ratio)"
+    notes: "Config在BATTLE_LOADING以float64 checked finite计算并冻结；Player初始化时同时赋给max_hp/current_hp，Active不重算或热改。"
+    added: 2026-09-02
+    revised: ""
+
+  - name: player_recovery_application
+    status: active
+    source: design/gdd/player-controller.md
+    referenced_by:
+      - design/gdd/player-controller.md
+      - design/gdd/game-root-scene-flow.md
+      - design/gdd/damage-system.md
+      - design/gdd/risk-choice-system.md
+      - design/gdd/battle-ui.md
+    variables:
+      - hp_after_damage
+      - max_hp
+      - final_recovery
+      - lethal
+    output_range: [0.0, 1000000.0]
+    expression: "lethal ? hp_after_damage : hp_after_damage + min(final_recovery, max_hp - hp_after_damage)"
+    notes: "固定damage后、lethal判定后执行；致命同tick恢复抑制且不结转，只有实际恢复量大于0才提交HEAL fact。"
+    added: 2026-09-02
+    revised: ""
+
+  - name: talisman_restore_hp
+    status: active
+    source: design/gdd/player-controller.md
+    referenced_by:
+      - design/gdd/player-controller.md
+      - design/gdd/damage-system.md
+      - design/gdd/battle-ui.md
+    variables:
+      - max_hp_at_source_revision
+      - revive_hp_ratio
+    output_range: [0.35, 350000.0]
+    expression: "max_hp_at_source_revision * revive_hp_ratio"
+    notes: "仅在合法致命batch、替身符AVAILABLE且无FATAL/VICTORY时进入inactive authority bank；matching publish才与SPENT及revive_generation+1同时可见。"
+    added: 2026-09-01
+    revised: ""
+
+  - name: revive_candidate_position
+    status: active
+    source: design/gdd/player-controller.md
+    referenced_by:
+      - design/gdd/player-controller.md
+      - design/gdd/enemy-system.md
+    variables:
+      - death_position
+      - revive_relocation_radius
+      - revive_outer_ring_multiplier
+      - fixed_candidate_direction
+      - player_collision_diameter
+      - world_safe_half_extent
+    output_range: [-16384.0, 16384.0]
+    expression: "candidate=readback_real_t32(Vector2(death_position + revive_relocation_radius * ring_multiplier(index) * fixed_candidate_direction(index))); require(full_footprint_domain_guard(candidate)); candidate"
+    notes: "固定17个ABI slot：中心倍率0、内圈八方向倍率1、外圈同八方向倍率2。候选不clamp、不去重；任一slot越world safe domain须在PONR前fail closed。"
+    added: 2026-09-01
+    revised: ""
+
+  - name: revive_clear_predicate
+    status: active
+    source: design/gdd/player-controller.md
+    referenced_by:
+      - design/gdd/player-controller.md
+      - design/gdd/enemy-system.md
+    variables:
+      - enemy_class
+      - enemy_center
+      - selected_revive_position
+      - player_radius
+      - enemy_shape_bound
+      - enemy_next_tick_swept_bound
+    output_range: [0, 1]
+    expression: "enemy_class == NORMAL && distance_sq(enemy_center, selected_revive_position) <= (player_radius + enemy_shape_bound)^2"
+    notes: "bool输出以0/1登记；闭集边界。MVP NORMAL shape_code固定CIRCLE，enemy_shape_bound就是实际玩法圆半径，因此只清除真实重叠或相切NORMAL；非圆NORMAL配置load失败。300是workspace容量压力，不是清场目标。"
+    added: 2026-09-01
+    revised: ""
+
+  - name: revive_threat_score
+    status: active
+    source: design/gdd/player-controller.md
+    referenced_by:
+      - design/gdd/player-controller.md
+      - design/gdd/enemy-system.md
+    variables:
+      - revive_candidate_position
+      - enemy_center
+      - enemy_shape_bound
+      - player_radius
+      - revive_clear_predicate
+      - revive_hazard_center
+      - revive_hazard_shape_bound
+      - revive_hazard_next_tick_active
+    output_range: [0, 16]
+    expression: "argmax_lex(candidate, safety_rank(SAFE_UNCONSTRAINED>SAFE>UNSAFE), min(current_enemy_clearance,next_tick_swept_enemy_clearance,next_tick_hazard_clearance), -prospective_clear_count, -candidate_index)"
+    notes: "output_range登记最终selected_index；score是世界距离单位的surface clearance。checked tick+1；17点全负时仍取最大值并标UNSAFE_FALLBACK，不授予无敌。clear_count只在安全级和score逐bit相等后少清优先；clear identity按完整四字段tuple总序。"
+    added: 2026-09-01
+    revised: 2026-09-02
+
+  - name: max_pending_reasons
+    status: active
+    source: design/gdd/game-root-scene-flow.md
+    referenced_by:
+      - design/gdd/game-root-scene-flow.md
+      - design/gdd/input-system.md
+      - design/gdd/config-data-system.md
+      - design/gdd/battle-ui.md
+    variables:
+      - max_pending_blocking_choices
+    output_range: [4, 19]
+    expression: "checked_add(3, max_pending_blocking_choices)"
+    notes: "3个singleton reason为MANUAL、APP_BACKGROUND、INPUT_GEOMETRY_CHANGED；blocking choice逐项占位且schema max=16，故reasons hard max=19。重复singleton coalesce，不静默丢reason。"
+    added: 2026-08-28
+    revised: 2026-08-28
+
+  - name: damage_normal_attack
+    status: active
+    source: design/gdd/damage-system.md
+    referenced_by:
+      - design/gdd/damage-system.md
+      - design/gdd/weapon-system.md
+    variables: [attack, skill_multiplier, skill_level_modifier, generic_damage_multiplier]
+    output_range: [0.0, .inf]
+    expression: "((attack * skill_multiplier) * skill_level_modifier) * generic_damage_multiplier"
+    notes: "float64 fixed-order; production multiplier bounds remain provisional until Weapon/SkillDraft/Config GDDs."
+    added: 2026-09-03
+    revised: ""
+
+  - name: damage_critical_hit
+    status: active
+    source: design/gdd/damage-system.md
+    referenced_by:
+      - design/gdd/damage-system.md
+    variables: [crit_eligible, normal_damage, crit_roll, crit_chance, crit_multiplier]
+    output_range: [0.0, .inf]
+    expression: "crit_eligible && crit_roll < crit_chance ? normal_damage * crit_multiplier : normal_damage"
+    notes: "Eligible hit per target consumes exactly one CRIT roll; MVP baseline chance=0.05 and multiplier=1.5."
+    added: 2026-09-03
+    revised: ""
+
+  - name: damage_target_mitigation
+    status: active
+    source: design/gdd/damage-system.md
+    referenced_by:
+      - design/gdd/damage-system.md
+    variables: [crit_damage, damage_reduction_ratio]
+    output_range: [0.0, .inf]
+    expression: "crit_damage * (1.0 - damage_reduction_ratio)"
+    notes: "damage_reduction_ratio domain [0,1]; stack-group resolution remains provisional."
+    added: 2026-09-03
+    revised: ""
+
+  - name: damage_shield_absorption
+    status: provisional
+    source: design/gdd/damage-system.md
+    referenced_by:
+      - design/gdd/damage-system.md
+    variables: [mitigated_damage, shield_remaining_before]
+    output_range: [0.0, .inf]
+    expression: "hp_damage=mitigated_damage-min(mitigated_damage,shield_remaining_before)"
+    notes: "Shield owner and commit ABI remain BLOCKED-DEFENSE-ABI; do not enable in production from this entry alone."
+    added: 2026-09-03
+    revised: ""
+
+  - name: damage_recovery_resolution
+    status: active
+    source: design/gdd/damage-system.md
+    referenced_by:
+      - design/gdd/damage-system.md
+      - design/gdd/player-controller.md
+    variables: [recovery_kind, flat_amount, max_hp_at_source_revision, max_hp_ratio, recovery_multiplier]
+    output_range: [0.0, .inf]
+    expression: "ordered_sum((kind==FLAT ? flat_amount : max_hp_at_source_revision*max_hp_ratio)*recovery_multiplier)"
+    notes: "DamageSystem is the unique PlayerRecoveryResolver; Player owns final lethal suppression and HP-room clamp."
+    added: 2026-09-03
+    revised: ""
+
+  - name: damage_knockback_resolution
+    status: provisional
+    source: design/gdd/damage-system.md
+    referenced_by:
+      - design/gdd/damage-system.md
+      - design/gdd/enemy-system.md
+    variables: [knockback_direction, base_knockback, knockback_multiplier, knockback_resistance, knockback_max]
+    output_range: [0.0, .inf]
+    expression: "clamp_magnitude(knockback_direction*(base_knockback*knockback_multiplier*(1.0-knockback_resistance)),knockback_max)"
+    notes: "knockback_max and deterministic normalize/readback algorithm remain BLOCKED-KNOCKBACK."
+    added: 2026-09-03
+    revised: ""
+
+  - name: damage_tick_aggregation
+    status: active
+    source: design/gdd/damage-system.md
+    referenced_by:
+      - design/gdd/damage-system.md
+    variables: [canonical_hp_damage_contributions, canonical_absorbed_contributions]
+    output_range: [0.0, .inf]
+    expression: "fixed_order_sum(canonical_contributions)"
+    notes: "One resolution per target per tick; exact contribution capacity remains BLOCKED-CAPACITY."
+    added: 2026-09-03
+    revised: ""
+
+  - name: damage_actual_attribution
+    status: active
+    source: design/gdd/damage-system.md
+    referenced_by:
+      - design/gdd/damage-system.md
+    variables: [applied_damage, canonical_hp_damage_contributions]
+    output_range: [0.0, .inf]
+    expression: "actual_i=min(hp_damage_i,remaining); remaining=remaining-actual_i"
+    notes: "Canonical prefix attribution; shield, theoretical damage and overkill do not enter actual-damage totals."
+    added: 2026-09-03
+    revised: ""
+
+  - name: weapon_effective_period_ticks
+    status: active
+    source: design/gdd/weapon-system.md
+    referenced_by:
+      - design/gdd/weapon-system.md
+      - design/gdd/config-data-system.md
+    variables: [base_period_ticks, resolved_cooldown_multiplier]
+    output_range: [1, .inf]
+    expression: "max(1, checked_ceil(checked_mul(base_period_ticks, resolved_cooldown_multiplier)))"
+    notes: "runtime仅消费整数tick；聚灵诀每层-6%，五层倍率0.70。其他modifier stack由Damage/Config解析，Weapon不重复叠层。"
+    added: 2026-09-03
+    revised: ""
+
+  - name: weapon_densest_query_radius
+    status: active
+    source: design/gdd/weapon-system.md
+    referenced_by:
+      - design/gdd/weapon-system.md
+      - design/gdd/spatial-grid.md
+      - design/gdd/config-data-system.md
+    variables: [target_range, effect_radius, max_enemy_bound]
+    output_range: [0, .inf]
+    expression: "checked_sum(target_range, effect_radius, max_enemy_bound)"
+    notes: "一次查询得到合法落点及爆炸邻域的完整superset；最终仍做射程过滤和真实shape closed narrowphase。"
+    added: 2026-09-03
+    revised: ""
+
+  - name: weapon_projectile_spawn_required_capacity
+    status: provisional
+    source: design/gdd/weapon-system.md
+    referenced_by:
+      - design/gdd/weapon-system.md
+      - design/gdd/projectile-system.md
+      - design/gdd/config-data-system.md
+    variables: [legal_loadout, per_skill_state_projectile_rows]
+    output_range: [0, 32]
+    expression: "max_over_legal_loadouts(checked_sum(per_skill_state_projectile_rows))"
+    notes: "production值待完整SkillConfig求解；还必须与Enemy/Boss producer checked sum<=32。32是schema安全上界，不是Weapon独占配额。"
+    added: 2026-09-03
+    revised: ""
+
+  - name: weapon_execution_plan_required_capacity
+    status: provisional
+    source: design/gdd/weapon-system.md
+    referenced_by:
+      - design/gdd/weapon-system.md
+      - design/gdd/config-data-system.md
+    variables: [weapon_projectile_rows, weapon_direct_damage_rows, weapon_area_damage_rows, weapon_modifier_rows, weapon_cancel_rows]
+    output_range: [0, 737]
+    expression: "checked_sum(W_P,W_D,W_A,W_M,W_C)"
+    notes: "schema硬界为32+303+1+1+400=737；production required必须由合法最多4-family构筑枚举求得，不能直接填737。"
+    added: 2026-09-03
+    revised: ""
+
+  - name: weapon_damage_contribution_required_capacity
+    status: provisional
+    source: design/gdd/weapon-system.md
+    referenced_by:
+      - design/gdd/weapon-system.md
+      - design/gdd/projectile-system.md
+      - design/gdd/damage-system.md
+      - design/gdd/config-data-system.md
+    variables: [weapon_direct_rows, weapon_area_rows, enemy_active_capacity, weapon_projectile_hit_rows]
+    output_range: [0, 121806]
+    expression: "checked_sum(W_D, checked_mul(W_A, enemy_active_capacity), W_HIT)"
+    notes: "安全硬界W_D<=303,W_A<=1,W_HIT<=400*303=121200；production值须按合法构筑精确收紧并与其他producer汇总。"
+    added: 2026-09-03
+    revised: ""
+
+  - name: skill_candidate_weight
+    status: provisional
+    source: design/gdd/skill-draft-system.md
+    referenced_by:
+      - design/gdd/skill-draft-system.md
+      - design/gdd/rng-system.md
+      - design/gdd/config-data-system.md
+    variables: [base_weight, owned_upgrade_bonus, evolution_pair_bonus]
+    output_range: [1, 2147483647]
+    expression: "checked_add(base_weight, owned_upgrade_bonus, evolution_pair_bonus)"
+    notes: "关系已冻结但具体定点值OPEN：owned upgrade最终权重高于new；0<pair bonus<对应base；eligible总和须满足RNG W_MAX_SAFE。"
+    added: 2026-09-03
+    revised: ""
+
+  - name: skill_offer_rng_calls
+    status: active
+    source: design/gdd/skill-draft-system.md
+    referenced_by:
+      - design/gdd/skill-draft-system.md
+      - design/gdd/rng-system.md
+      - design/gdd/config-data-system.md
+      - design/gdd/drop-leveling-system.md
+    variables: [offer_size]
+    output_range: [1, 5]
+    expression: "checked_add(offer_size, offer_size - 1)"
+    notes: "offer_size n域1..3；每个成功普通offer固定n次无放回weighted selection与n-1次Fisher-Yates display swap，故n=1/2/3对应1/3/5 calls；同一n不受保底或refresh影响。"
+    added: 2026-09-03
+    revised: ""
+
+  - name: skill_session_rng_calls
+    status: active
+    source: design/gdd/skill-draft-system.md
+    referenced_by:
+      - design/gdd/skill-draft-system.md
+      - design/gdd/rng-system.md
+      - design/gdd/config-data-system.md
+    variables: [page_offer_sizes]
+    output_range: [1, 20]
+    expression: "checked_sum(checked_add(n, n - 1) for n in page_offer_sizes)"
+    notes: "每页n域1..3，页数为初始页加refreshes_used 0..3；单页1/3/5 calls，最大4页×5=20；reopen/selection不消费SKILL_DRAFT RNG。"
+    added: 2026-09-03
+    revised: 2026-09-04
+
+  - name: skill_pending_choice_capacity
+    status: active
+    source: design/gdd/skill-draft-system.md
+    referenced_by:
+      - design/gdd/skill-draft-system.md
+      - design/gdd/game-root-scene-flow.md
+      - design/gdd/config-data-system.md
+      - design/gdd/drop-leveling-system.md
+      - design/gdd/risk-choice-system.md
+      - design/gdd/battle-ui.md
+    variables: [max_pending_level_up_requests, max_pending_treasure_requests]
+    output_range: [14, 14]
+    expression: "checked_add(max_pending_level_up_requests, max_pending_treasure_requests)"
+    notes: "精确为10个Leveling可见request窗口+4个Drop treasure窗口；其余升级保留在39-row debt。RiskChoice actual为2，global checked sum精确16。"
+    added: 2026-09-03
+    revised: 2026-09-03
+
+  - name: risk_choice_due_tick
+    status: active
+    source: design/gdd/risk-choice-system.md
+    referenced_by:
+      - design/gdd/risk-choice-system.md
+      - design/gdd/config-data-system.md
+      - design/gdd/game-root-scene-flow.md
+    variables: [due_seconds, physics_ticks_per_second]
+    output_range: [14400, 28800]
+    expression: "checked_mul(due_seconds, physics_ticks_per_second)"
+    notes: "MVP due_seconds封闭为240/480且physics=60；输出恰为14400/28800 completed gameplay ticks。"
+    added: 2026-09-03
+    revised: ""
+
+  - name: risk_ward_damage
+    status: active
+    source: design/gdd/risk-choice-system.md
+    referenced_by:
+      - design/gdd/risk-choice-system.md
+      - design/gdd/damage-system.md
+      - design/gdd/config-data-system.md
+    variables: [damage_after_existing_mitigation, risk_ward_multiplier]
+    output_range: [0.0, .inf]
+    expression: "damage_after_existing_mitigation * risk_ward_multiplier"
+    notes: "matching RISK_WARD时multiplier=0.80，否则1.0；位于existing mitigation后、shield absorption前，窗口600 Active ticks。"
+    added: 2026-09-03
+    revised: ""
+
+  - name: risk_elite_scaling
+    status: active
+    source: design/gdd/risk-choice-system.md
+    referenced_by:
+      - design/gdd/risk-choice-system.md
+      - design/gdd/enemy-system.md
+      - design/gdd/config-data-system.md
+      - design/gdd/elite-enemies.md
+    variables: [stage_elite_max_hp, stage_elite_base_damage, risk_multiplier]
+    output_range: [0.0, .inf]
+    expression: "{max_hp=stage_elite_max_hp*risk_multiplier,base_damage=stage_elite_base_damage*risk_multiplier}"
+    notes: "risk_multiplier=1.30且各乘一次；不影响移速、攻频、射程、防御、击退、尺寸、AI timer、XP或drop。"
+    added: 2026-09-03
+    revised: ""
+
+  - name: risk_challenge_deadline
+    status: active
+    source: design/gdd/risk-choice-system.md
+    referenced_by:
+      - design/gdd/risk-choice-system.md
+      - design/gdd/config-data-system.md
+      - design/gdd/drop-leveling-system.md
+    variables: [spawn_visible_tick, challenge_duration_ticks]
+    output_range: [2700, .inf]
+    expression: "checked_add(spawn_visible_tick, challenge_duration_ticks)"
+    notes: "duration=2700 Active ticks；death_tick严格小于deadline为及时，等于或大于为迟杀；超时不撤销奖励。"
+    added: 2026-09-03
+    revised: ""
+
+  - name: enemy_class_active_capacity
+    status: active
+    source: design/gdd/config-data-system.md
+    referenced_by:
+      - design/gdd/risk-choice-system.md
+      - design/gdd/config-data-system.md
+      - design/gdd/enemy-system.md
+      - design/gdd/spawn-director.md
+      - design/gdd/spatial-grid.md
+      - design/gdd/object-pooling.md
+    variables: [normal_cap, elite_cap, boss_cap]
+    output_range: [303, 303]
+    expression: "checked_add(normal_cap, elite_cap, boss_cap)"
+    notes: "MVP class caps恰为298/4/1，总ENEMY保持303；Pool配置仍为320/6/1。"
+    added: 2026-09-03
+    revised: ""
+
+  - name: leveling_xp_to_next
+    status: active
+    source: design/gdd/drop-leveling-system.md
+    referenced_by:
+      - design/gdd/drop-leveling-system.md
+      - design/gdd/config-data-system.md
+      - design/gdd/skill-draft-system.md
+    variables: [current_level]
+    output_range: [14, 1116]
+    expression: "checked_add(8, checked_mul(5, current_level), ceil_div(checked_mul(3, checked_mul(current_level, current_level)), 5))"
+    notes: "current_level域1..39；Config build与runtime均用checked int64，level40不再求阈值。"
+    added: 2026-09-03
+    revised: ""
+
+  - name: leveling_total_xp_to_level
+    status: active
+    source: design/gdd/drop-leveling-system.md
+    referenced_by:
+      - design/gdd/drop-leveling-system.md
+      - design/gdd/config-data-system.md
+      - design/gdd/skill-draft-system.md
+      - design/gdd/game-root-scene-flow.md
+    variables: [target_level]
+    output_range: [0, 16552]
+    expression: "checked_sum(leveling_xp_to_next(level) for level in 1..target_level-1)"
+    notes: "target_level域1..40；C(4)=64，C(40)=16552。Leveling total_applied_xp不得超过16552。"
+    added: 2026-09-03
+    revised: ""
+
+  - name: drop_utility_rng_calls
+    status: active
+    source: design/gdd/drop-leveling-system.md
+    referenced_by:
+      - design/gdd/drop-leveling-system.md
+      - design/gdd/config-data-system.md
+      - design/gdd/rng-system.md
+    variables: [reward_eligible_normal_death_count]
+    output_range: [0, 300]
+    expression: "reward_eligible_normal_death_count"
+    notes: "每个eligible Normal DEATH精确1次DROP roll；Elite/Boss/禁奖召唤/退役0次，资格拒绝不重抽。"
+    added: 2026-09-03
+    revised: ""
 
 # Example:
 #
@@ -139,7 +996,2329 @@ formulas: []
 #
 # Required fields: name, status, source, referenced_by, value, unit, added
 
-constants: []
+  - name: elite_spawn_workload_bound
+    status: active
+    source: design/gdd/elite-enemies.md
+    referenced_by:
+      - design/gdd/elite-enemies.md
+      - design/gdd/spawn-director.md
+      - design/gdd/config-data-system.md
+    variables: [wave_normal_rows, max_ghosts, summon_count, elite_rows, boss_rows]
+    output_range: [23, 23]
+    expression: "checked_add(wave_normal_rows, checked_mul(max_ghosts, summon_count), elite_rows, boss_rows)"
+    notes: "MVP恰为12+3*3+1+1=23；对应固定8 attempts、3 words/attempt得到552 words/tick。"
+    added: 2026-09-03
+    revised: ""
+
+  - name: elite_first_damage_tick
+    status: active
+    source: design/gdd/elite-enemies.md
+    referenced_by:
+      - design/gdd/elite-enemies.md
+      - design/gdd/risk-choice-system.md
+      - design/gdd/damage-system.md
+    variables: [arrival_visible_tick, arrival_lock_ticks, attack_telegraph_start_tick, attack_telegraph_ticks]
+    output_range: [60, .inf]
+    expression: "max(checked_add(arrival_visible_tick, arrival_lock_ticks), checked_add(attack_telegraph_start_tick, attack_telegraph_ticks))"
+    notes: "arrival_lock_ticks=60；Paused不推进；Risk确认tick不得冒充实际arrival visible tick。"
+    added: 2026-09-03
+    revised: ""
+
+  - name: boss_fog_safe_radius
+    status: active
+    source: design/gdd/boss-state-machine.md
+    referenced_by:
+      - design/gdd/boss-state-machine.md
+      - design/gdd/stage-map.md
+      - design/gdd/player-controller.md
+      - design/gdd/damage-system.md
+      - design/gdd/config-data-system.md
+    variables: [fog_elapsed_ticks, fog_shrink_ticks, start_radius, end_radius]
+    output_range: [4.5, 10.0]
+    expression: "start_radius+(end_radius-start_radius)*clamp(fog_elapsed_ticks/fog_shrink_ticks,0,1)"
+    notes: "EXTERIOR_CIRCLE安全半径；anchor在进入PHASE_SHIFT时冻结，break结束后10.0在3600 Active ticks内缩至4.5，Paused不推进。"
+    added: 2026-09-03
+    revised: ""
+
+  - name: boss_projectile_pending_sum
+    status: active
+    source: design/gdd/boss-state-machine.md
+    referenced_by:
+      - design/gdd/boss-state-machine.md
+      - design/gdd/projectile-system.md
+      - design/gdd/weapon-system.md
+      - design/gdd/enemy-system.md
+      - design/gdd/config-data-system.md
+    variables: [weapon_pending, normal_enemy_pending, elite_pending, boss_pending]
+    output_range: [17, 32]
+    expression: "checked_sum(weapon_pending,normal_enemy_pending,9,8)"
+    notes: "Boss=8、Elite=9已冻结；Weapon与behavior2/4 Normal未枚举，超过32时load失败，当前仍BLOCKED。"
+    added: 2026-09-03
+    revised: ""
+
+  - name: audio_critical_voice_capacity
+    status: active
+    source: design/gdd/audio-feedback.md
+    referenced_by:
+      - design/gdd/audio-feedback.md
+      - design/gdd/config-data-system.md
+      - design/gdd/game-root-scene-flow.md
+    variables: [boss_danger_identity_cap, elite_danger_identity_cap, player_life_or_terminal_cap]
+    output_range: [6, 6]
+    expression: "checked_add(1,4,1)"
+    notes: "terminal winner先使失效combat danger停止，故与Player/terminal共用1个center lane；若每identity需telegraph+release重叠须升级为11。"
+    added: 2026-09-03
+    revised: ""
+
+  - name: audio_voice_node_baseline
+    status: provisional
+    source: design/gdd/audio-feedback.md
+    referenced_by:
+      - design/gdd/audio-feedback.md
+      - design/gdd/config-data-system.md
+    variables: [critical_voices, combat_spatial_voices, ui_reward_voices, music_voices, ambience_voices]
+    output_range: [22, 22]
+    expression: "checked_add(6,8,4,2,2)"
+    notes: "PROVISIONAL-AUDIO-CAPACITY；clip overlap/min-spec未验证，不是audio event bank容量。"
+    added: 2026-09-03
+    revised: ""
+
+  - name: audio_event_bank_capacity
+    status: blocked
+    source: design/gdd/audio-feedback.md
+    referenced_by:
+      - design/gdd/audio-feedback.md
+      - design/gdd/config-data-system.md
+      - design/gdd/game-root-scene-flow.md
+    variables: [H_damage, H_enemy_action, H_projectile, H_drop, H_leveling, H_skill, H_risk, H_boss, H_elite, H_terminal]
+    output_range: [0, null]
+    expression: "checked_sum(owner_per_sealed_capture_audio_rows_after_inclusion_dedup)"
+    notes: "BLOCKED-AUDIO-EVENT-CAPACITY；owners尚未签发rows/maxima/包含关系，禁止以22、303、400或606代填。"
+    added: 2026-09-03
+    revised: ""
+
+  - name: audio_merged_gain_db
+    status: provisional
+    source: design/gdd/audio-feedback.md
+    referenced_by:
+      - design/gdd/audio-feedback.md
+      - design/gdd/config-data-system.md
+      - design/gdd/damage-system.md
+    variables: [base_gain_db, event_count]
+    output_range: [null, 6.0]
+    expression: "min(base_gain_db + 6.0, base_gain_db + 10.0 * log10(max(1,event_count)))"
+    notes: "输出相对base最多+6dB；最终mix/limiter/真机证据前为PROVISIONAL。"
+    added: 2026-09-03
+    revised: ""
+
+  - name: zhangtian_resolved_crit_chance
+    status: active
+    source: design/gdd/zhangtian-bottle.md
+    referenced_by: [design/gdd/zhangtian-bottle.md, design/gdd/damage-system.md, design/gdd/config-data-system.md]
+    variables: [base_crit_chance, dayan_level, clear_mind_pill]
+    output_range: [0.05, 0.18]
+    expression: "base_crit_chance + 0.01*dayan_level + (clear_mind_pill ? 0.08 : 0.0)"
+    notes: "MVP base=0.05且dayan_level=0..5；strict u<C。"
+    added: 2026-09-03
+    revised: ""
+
+  - name: settlement_spirit_stone_grant
+    status: provisional
+    source: design/gdd/settlement-system.md
+    referenced_by: [design/gdd/settlement-system.md, design/gdd/config-data-system.md, design/gdd/home-ui.md]
+    variables: [reward_xp, outcome_kind]
+    output_range: [0, .inf]
+    expression: "outcome_kind==ABANDONED ? 0 : ceil(reward_xp/4) + (outcome_kind==VICTORY ? 100 : 0)"
+    notes: "PROVISIONAL-ECONOMY-V1；Technical只计fault前committed reward_xp。"
+    added: 2026-09-03
+    revised: ""
+
+  - name: settings_volume_db
+    status: active
+    source: design/gdd/home-ui.md
+    referenced_by: [design/gdd/home-ui.md, design/gdd/audio-feedback.md, design/gdd/config-data-system.md]
+    variables: [volume_percent]
+    output_range: [-40.0, 0.0]
+    expression: "volume_percent==0 ? MUTE : max(-40.0,20*log10(volume_percent/100.0))"
+    notes: "数值range只适用于1..100；0走独立mute状态，不向引擎传负无穷。显示百分比不得直接作为dB。"
+    added: 2026-09-03
+    revised: ""
+
+constants:
+  - name: risk_choice_event_capacity
+    status: active
+    source: design/gdd/risk-choice-system.md
+    referenced_by:
+      - design/gdd/risk-choice-system.md
+      - design/gdd/config-data-system.md
+      - design/gdd/game-root-scene-flow.md
+    value: 2
+    unit: choice_rows
+    added: 2026-09-03
+    revised: ""
+
+  - name: risk_safe_recovery_ratio
+    status: active
+    source: design/gdd/risk-choice-system.md
+    referenced_by:
+      - design/gdd/risk-choice-system.md
+      - design/gdd/damage-system.md
+      - design/gdd/player-controller.md
+      - design/gdd/config-data-system.md
+    value: 0.25
+    unit: max_hp_ratio
+    added: 2026-09-03
+    revised: ""
+
+  - name: risk_ward_duration_ticks
+    status: active
+    source: design/gdd/risk-choice-system.md
+    referenced_by:
+      - design/gdd/risk-choice-system.md
+      - design/gdd/damage-system.md
+      - design/gdd/config-data-system.md
+    value: 600
+    unit: gameplay_ticks
+    added: 2026-09-03
+    revised: ""
+
+  - name: risk_ward_taken_multiplier
+    status: active
+    source: design/gdd/risk-choice-system.md
+    referenced_by:
+      - design/gdd/risk-choice-system.md
+      - design/gdd/damage-system.md
+      - design/gdd/config-data-system.md
+    value: 0.80
+    unit: incoming_damage_multiplier
+    added: 2026-09-03
+    revised: ""
+    notes: "PROVISIONAL-BALANCE；结构与时序locked，不表示无敌或shield余额。"
+
+  - name: risk_elite_attribute_multiplier
+    status: active
+    source: design/gdd/risk-choice-system.md
+    referenced_by:
+      - design/gdd/risk-choice-system.md
+      - design/gdd/enemy-system.md
+      - design/gdd/config-data-system.md
+      - design/gdd/elite-enemies.md
+    value: 1.30
+    unit: multiplier
+    added: 2026-09-03
+    revised: ""
+
+  - name: risk_challenge_duration_ticks
+    status: active
+    source: design/gdd/risk-choice-system.md
+    referenced_by:
+      - design/gdd/risk-choice-system.md
+      - design/gdd/drop-leveling-system.md
+      - design/gdd/config-data-system.md
+    value: 2700
+    unit: gameplay_ticks
+    added: 2026-09-03
+    revised: ""
+
+  - name: enemy_normal_active_cap
+    status: active
+    source: design/gdd/config-data-system.md
+    referenced_by:
+      - design/gdd/risk-choice-system.md
+      - design/gdd/config-data-system.md
+      - design/gdd/enemy-system.md
+      - design/gdd/spawn-director.md
+      - design/gdd/spatial-grid.md
+      - design/gdd/object-pooling.md
+    value: 298
+    unit: active_pending_enemies
+    added: 2026-09-03
+    revised: ""
+
+  - name: enemy_elite_active_cap
+    status: active
+    source: design/gdd/config-data-system.md
+    referenced_by:
+      - design/gdd/risk-choice-system.md
+      - design/gdd/config-data-system.md
+      - design/gdd/enemy-system.md
+      - design/gdd/spawn-director.md
+      - design/gdd/spatial-grid.md
+      - design/gdd/object-pooling.md
+      - design/gdd/elite-enemies.md
+    value: 4
+    unit: active_pending_enemies
+    added: 2026-09-03
+    revised: ""
+
+  - name: leveling_level_cap
+    status: active
+    source: design/gdd/drop-leveling-system.md
+    referenced_by:
+      - design/gdd/drop-leveling-system.md
+      - design/gdd/skill-draft-system.md
+      - design/gdd/config-data-system.md
+      - design/gdd/game-root-scene-flow.md
+    value: 40
+    unit: run_level
+    added: 2026-09-03
+    revised: ""
+
+  - name: leveling_debt_capacity
+    status: active
+    source: design/gdd/drop-leveling-system.md
+    referenced_by:
+      - design/gdd/drop-leveling-system.md
+      - design/gdd/skill-draft-system.md
+      - design/gdd/config-data-system.md
+    value: 39
+    unit: level_choice_debt_rows
+    added: 2026-09-03
+    revised: ""
+
+  - name: max_pending_level_up_requests
+    status: active
+    source: design/gdd/drop-leveling-system.md
+    referenced_by:
+      - design/gdd/drop-leveling-system.md
+      - design/gdd/skill-draft-system.md
+      - design/gdd/config-data-system.md
+      - design/gdd/game-root-scene-flow.md
+    value: 10
+    unit: visible_requests
+    added: 2026-09-03
+    revised: ""
+
+  - name: max_pending_treasure_requests
+    status: active
+    source: design/gdd/drop-leveling-system.md
+    referenced_by:
+      - design/gdd/drop-leveling-system.md
+      - design/gdd/skill-draft-system.md
+      - design/gdd/config-data-system.md
+      - design/gdd/game-root-scene-flow.md
+    value: 4
+    unit: visible_requests
+    added: 2026-09-03
+    revised: ""
+
+  - name: drop_active_capacity
+    status: active
+    source: design/gdd/config-data-system.md
+    referenced_by:
+      - design/gdd/config-data-system.md
+      - design/gdd/spatial-grid.md
+      - design/gdd/object-pooling.md
+      - design/gdd/drop-leveling-system.md
+      - design/gdd/game-root-scene-flow.md
+    value: 300
+    unit: active_drops
+    added: 2026-09-03
+    revised: ""
+
+  - name: drop_xp_row_capacity
+    status: active
+    source: design/gdd/drop-leveling-system.md
+    referenced_by:
+      - design/gdd/drop-leveling-system.md
+      - design/gdd/config-data-system.md
+    value: 290
+    unit: active_xp_rows
+    added: 2026-09-03
+    revised: ""
+
+  - name: drop_special_reserved_capacity
+    status: active
+    source: design/gdd/drop-leveling-system.md
+    referenced_by:
+      - design/gdd/drop-leveling-system.md
+      - design/gdd/config-data-system.md
+    value: 10
+    unit: active_special_rows
+    added: 2026-09-03
+    revised: ""
+    notes: "Recovery3+Magnet2+Blast1+Treasure4；unused reserve不得借给XP。"
+
+  - name: drop_award_plan_capacity
+    status: active
+    source: design/gdd/drop-leveling-system.md
+    referenced_by:
+      - design/gdd/drop-leveling-system.md
+      - design/gdd/config-data-system.md
+    value: 606
+    unit: award_plan_rows
+    added: 2026-09-03
+    revised: ""
+    notes: "同tick最多303个committed DEATH，每个最多XP加utility或treasure两条award。"
+
+  - name: drop_recovery_cooldown_ticks
+    status: provisional
+    source: design/gdd/drop-leveling-system.md
+    referenced_by:
+      - design/gdd/drop-leveling-system.md
+      - design/gdd/config-data-system.md
+    value: 5400
+    unit: gameplay_ticks
+    added: 2026-09-03
+    revised: ""
+
+  - name: drop_magnet_cooldown_ticks
+    status: provisional
+    source: design/gdd/drop-leveling-system.md
+    referenced_by:
+      - design/gdd/drop-leveling-system.md
+      - design/gdd/config-data-system.md
+    value: 7200
+    unit: gameplay_ticks
+    added: 2026-09-03
+    revised: ""
+
+  - name: drop_blast_cooldown_ticks
+    status: provisional
+    source: design/gdd/drop-leveling-system.md
+    referenced_by:
+      - design/gdd/drop-leveling-system.md
+      - design/gdd/config-data-system.md
+    value: 10800
+    unit: gameplay_ticks
+    added: 2026-09-03
+    revised: ""
+
+  - name: physics_ticks_per_second
+    status: active
+    source: design/gdd/game-root-scene-flow.md
+    referenced_by:
+      - design/gdd/game-root-scene-flow.md
+      - design/gdd/config-data-system.md
+      - design/gdd/stage-map.md
+      - design/gdd/enemy-system.md
+      - design/gdd/player-controller.md
+      - design/gdd/damage-system.md
+      - design/gdd/projectile-system.md
+      - design/gdd/weapon-system.md
+      - design/gdd/drop-leveling-system.md
+      - design/gdd/input-system.md
+    value: 60
+    unit: ticks_per_second
+    added: 2026-08-28
+    revised: 2026-08-28
+
+  - name: player_speed
+    status: active
+    source: design/gdd/player-controller.md
+    referenced_by:
+      - design/gdd/player-controller.md
+      - design/gdd/input-system.md
+      - design/gdd/stage-map.md
+      # DropSystem、Weapon/TargetingSystem GDD 创建后追加其路径
+    value: 4.5
+    unit: world_units_per_second
+    added: 2026-09-01
+    revised: ""
+
+  - name: player_base_max_hp
+    status: active
+    source: design/gdd/player-controller.md
+    referenced_by:
+      - design/gdd/player-controller.md
+      - design/gdd/damage-system.md
+      - design/gdd/battle-ui.md
+      - design/gdd/progression-tree.md
+      # Progression GDD 创建后追加其路径
+    value: 100.0
+    unit: hp
+    added: 2026-09-01
+    revised: ""
+    notes: "MVP base值；权威类型为float64，schema域[1,1000000]。Active中不热改，永久成长只随新Config snapshot进入下一局。"
+
+  - name: player_progression_max_hp_bonus_ratio
+    status: active
+    source: design/gdd/player-controller.md
+    referenced_by:
+      - design/gdd/player-controller.md
+      - design/gdd/config-data-system.md
+      - design/gdd/progression-tree.md
+      # Progression GDD 创建后追加其路径
+    value: "0.03 * long_chun_level"
+    unit: ratio
+    allowed_values: [0.0, 0.03, 0.06, 0.09, 0.12, 0.15]
+    added: 2026-09-02
+    revised: ""
+    notes: "long_chun_level必须为0..5整数；仅随新Config snapshot进入下一局。"
+
+  - name: player_preparation_max_hp_bonus_ratio
+    status: active
+    source: design/gdd/zhangtian-bottle.md
+    referenced_by:
+      - design/gdd/player-controller.md
+      - design/gdd/config-data-system.md
+      - design/gdd/zhangtian-bottle.md
+      - design/gdd/prep-ui.md
+    value: "iron_body_pill_consumed ? 0.15 : 0.0"
+    unit: ratio
+    allowed_values: [0.0, 0.15]
+    added: 2026-09-02
+    revised: 2026-09-03
+    notes: "锻体丹只影响下一局起始maxHP；Active不热改。"
+
+  - name: revive_hp_ratio
+    status: active
+    source: design/gdd/player-controller.md
+    referenced_by:
+      - design/gdd/player-controller.md
+      - design/gdd/damage-system.md
+      - design/gdd/battle-ui.md
+    value: 0.35
+    unit: ratio
+    added: 2026-09-01
+    revised: ""
+
+  - name: revive_candidate_count
+    status: active
+    source: design/gdd/player-controller.md
+    referenced_by:
+      - design/gdd/player-controller.md
+      - design/gdd/enemy-system.md
+    value: 17
+    unit: candidate_slots
+    added: 2026-09-01
+    revised: ""
+    notes: "固定ABI顺序为中心、内圈右起顺时针八方向、外圈相同八方向；clamp后位置重复也不得去重或改变index。"
+
+  - name: revive_outer_ring_multiplier
+    status: active
+    source: design/gdd/player-controller.md
+    referenced_by:
+      - design/gdd/player-controller.md
+      - design/gdd/config-data-system.md
+      - design/gdd/enemy-system.md
+    value: 2
+    unit: radius_multiplier
+    added: 2026-09-01
+    revised: 2026-09-01
+    notes: "17候选ABI的外圈固定倍率；不是运行时调谐旋钮。"
+
+  - name: player_talisman_count_per_run
+    status: active
+    source: design/gdd/player-controller.md
+    referenced_by:
+      - design/gdd/player-controller.md
+      - design/gdd/damage-system.md
+      - design/gdd/battle-ui.md
+    value: 1
+    unit: talismans_per_run
+    added: 2026-09-01
+    revised: ""
+    notes: "每局初始化AVAILABLE，首次合法复活matching publish后exact-once变为SPENT，本局无恢复边。"
+
+  - name: player_motion_bank_count
+    status: active
+    source: design/gdd/player-controller.md
+    referenced_by:
+      - design/gdd/player-controller.md
+      - design/gdd/game-root-scene-flow.md
+      - design/gdd/input-system.md
+    value: 2
+    unit: authority_banks
+    added: 2026-09-01
+    revised: ""
+    notes: "Loading预分配A/B bank，正常MOVEMENT_COMMIT成功时owner-local swap；Active不得替换backing。"
+
+  - name: player_fact_commit_capacity
+    status: active
+    source: design/gdd/player-controller.md
+    referenced_by:
+      - design/gdd/player-controller.md
+      - design/gdd/game-root-scene-flow.md
+      - design/gdd/config-data-system.md
+    value: 2
+    unit: fact_rows_per_tick
+    added: 2026-09-01
+    revised: ""
+    notes: "PLAYER OwnerOrchestrationCapacityContributionManifest的FACT_COMMIT贡献；精确覆盖最多一条聚合DAMAGE和一条DEATH，不允许DamageSystem重复贡献同一事实。"
+
+  - name: player_collision_diameter_spike_anchor
+    status: active
+    source: design/gdd/player-controller.md
+    referenced_by:
+      - design/gdd/player-controller.md
+      - design/gdd/input-system.md
+    value: 0.8
+    unit: world_units
+    added: 2026-09-01
+    revised: ""
+    notes: "Graybox tuning anchor only；允许测试范围[0.6,1.2]，不是production冻结值。AC-IS28 immutable fixture必须使用最终resolved numeric diameter并记录hash。"
+
+  - name: revive_relocation_radius_spike_anchor
+    status: active
+    source: design/gdd/player-controller.md
+    referenced_by:
+      - design/gdd/player-controller.md
+      - design/gdd/enemy-system.md
+    value: 2.0
+    unit: world_units
+    added: 2026-09-01
+    revised: ""
+    notes: "Graybox tuning anchor only；允许测试范围[1.5,3.0]，不是production验证结果。"
+
+  - name: engine_time_scale
+    status: active
+    source: design/gdd/game-root-scene-flow.md
+    referenced_by:
+      - design/gdd/game-root-scene-flow.md
+      - design/gdd/config-data-system.md
+      - design/gdd/input-system.md
+      - .claude/docs/technical-preferences.md
+    value: 1.0
+    unit: engine_time_scale
+    added: 2026-08-28
+    revised: 2026-08-28
+    notes: "GameRoot为唯一启动配置writer；BOOT/load/pre-tick/resume激活尾段readback，gameplay仍只消费固定1/60。"
+
+  - name: max_pending_blocking_choices_schema
+    status: active
+    source: design/gdd/config-data-system.md
+    referenced_by:
+      - design/gdd/config-data-system.md
+      - design/gdd/game-root-scene-flow.md
+      - design/gdd/input-system.md
+      - design/gdd/enemy-system.md
+      - design/gdd/risk-choice-system.md
+      - design/gdd/battle-ui.md
+    value: 16
+    unit: choice_rows
+    added: 2026-08-28
+    revised: 2026-08-31
+    notes: "16仅是schema hard max；当前SkillDraft14+RiskChoice2精确占满16。其余required role必须各有显式0 row，缺/重行或sum不等于16均battle_ready=false。"
+
+  - name: max_lifecycle_intents_per_tick_schema
+    status: active
+    source: design/gdd/config-data-system.md
+    referenced_by:
+      - design/gdd/config-data-system.md
+      - design/gdd/game-root-scene-flow.md
+      - design/gdd/object-pooling.md
+    value: 1536
+    unit: lifecycle_intents_per_tick
+    added: 2026-08-28
+    revised: 2026-08-31
+    notes: "复用max_total_pool_capacity；实际capacity下界精确等于OwnerOrchestrationCapacityContributionManifest中所有required role的LIFECYCLE_INTENT checked sum，缺/重行或overflow均在allocation前失败。"
+
+  - name: max_pause_drain_closures_schema
+    status: active
+    source: design/gdd/game-root-scene-flow.md
+    referenced_by:
+      - design/gdd/config-data-system.md
+      - design/gdd/game-root-scene-flow.md
+      - design/gdd/enemy-system.md
+      - design/gdd/object-pooling.md
+    value: 1538
+    unit: pause_closures_per_drain
+    added: 2026-08-31
+    revised: 2026-08-31
+    notes: "独立schema hard max=max_lifecycle_intents_per_tick_schema(1536)+GameRoot CANCEL(1)+SpatialGrid CLOSE_LEASE(1)。实际capacity精确等于required owner PAUSE_CLOSURE checked sum加FPCC01..02；一个lifecycle row只产生一个FINALIZE_POOL_RELEASE closure。"
+
+  - name: max_fact_commits_per_tick_schema
+    status: active
+    source: design/gdd/config-data-system.md
+    referenced_by:
+      - design/gdd/config-data-system.md
+      - design/gdd/game-root-scene-flow.md
+      - design/gdd/enemy-system.md
+      - design/gdd/player-controller.md
+    value: 24576
+    unit: fact_commits_per_tick
+    added: 2026-08-28
+    revised: 2026-08-31
+    notes: "max_total_pool_capacity(1536)×max_pool_keys(16)的结构安全上限；实际下界精确等于OwnerOrchestrationCapacityContributionManifest中FACT_COMMIT贡献的checked sum，owner覆盖未冻结时battle_ready=false。"
+
+  - name: max_outcome_rows_per_field_schema
+    status: active
+    source: design/gdd/config-data-system.md
+    referenced_by:
+      - design/gdd/config-data-system.md
+      - design/gdd/game-root-scene-flow.md
+    value: 1536
+    unit: outcome_rows_per_field
+    added: 2026-08-28
+    revised: 2026-08-31
+    notes: "GameRoot canonical 34-row RunOutcomeProducerManifest中每个SoA字段的schema hard max；实际capacity由OUTCOME_FIELD owner贡献checked sum与字段capacity_source共同派生。"
+
+  - name: max_pending_save_commits
+    status: active
+    source: design/gdd/game-root-scene-flow.md
+    referenced_by:
+      - design/gdd/game-root-scene-flow.md
+      - design/gdd/config-data-system.md
+    value: 1
+    unit: commits_per_application
+    added: 2026-08-28
+    revised: 2026-08-31
+    notes: "任一unresolved Save state阻止新run；SAVE_SUCCEEDED/DISCARDED只在合法RETURN_HOME/RETRY_RUN/START_RUN边完成ResolvedRunArchiveV1 archive→retire后释放carrier；reservation_id=battle_instance_id只映射一次outcome_commit_id。"
+
+  - name: max_suppressed_diagnostics_min
+    status: active
+    source: design/gdd/game-root-scene-flow.md
+    referenced_by:
+      - design/gdd/game-root-scene-flow.md
+      - design/gdd/config-data-system.md
+      - design/gdd/rng-system.md
+    value: 1
+    unit: diagnostic_slots
+    added: 2026-08-28
+    revised: 2026-08-28
+    notes: "FailureDiagnosticBank容量C下界；C上界复用max_pool_keys=16，超出只增saturating suppressed counter，不覆盖first failure。"
+
+  - name: max_suppressed_diagnostics_schema
+    status: active
+    source: design/gdd/config-data-system.md
+    referenced_by:
+      - design/gdd/config-data-system.md
+      - design/gdd/game-root-scene-flow.md
+      - design/gdd/rng-system.md
+    value: 16
+    unit: diagnostic_slots
+    added: 2026-08-28
+    revised: 2026-08-28
+    notes: "复用max_pool_keys的schema hard max；实际C在[1,16]内由required service/cleanup fanout审计选择。"
+
+  - name: max_midpoint_cast_error
+    status: active
+    source: design/gdd/spatial-grid.md
+    referenced_by:
+      - design/gdd/spatial-grid.md
+      - design/gdd/config-data-system.md
+      - design/gdd/projectile-system.md
+    value: 0.04419417382415922
+    unit: world_units
+    added: 2026-08-19
+    revised: 2026-08-19
+    notes: "sqrt(2)/32；MVP production export 固定 real_t32，且
+      abs(world_coordinate)<=1000000。运行时查询使用逐次实际 cast error，
+      此值只用于配置全集上界。"
+
+  - name: max_target_motion_bound
+    status: active
+    source: design/gdd/spatial-grid.md
+    referenced_by:
+      - design/gdd/spatial-grid.md
+      - design/gdd/config-data-system.md
+      - design/gdd/projectile-system.md
+    value: 0.0
+    unit: world_units_per_physics_tick
+    added: 2026-08-19
+    revised: 2026-08-19
+    notes: "MVP target sampling mode=tick_end_discrete；目标 shape 固定在本 tick
+      committed snapshot。升级 relative sweep 时必须修订本值、公式、narrowphase
+      与 golden tests，不能只改数值。"
+
+  - name: pickup_radius_base
+    status: active
+    source: design/凡人修仙掌天试炼-MVP设计方案.md
+    referenced_by:
+      - design/凡人修仙掌天试炼-MVP设计方案.md
+      - design/gdd/spatial-grid.md
+      - design/gdd/config-data-system.md
+      - design/gdd/player-controller.md
+      - design/gdd/drop-leveling-system.md
+      - design/gdd/progression-tree.md
+    value: 1.8
+    unit: world_units
+    added: 2026-08-18
+    revised: ""
+
+  - name: pickup_radius_max
+    status: active
+    source: design/凡人修仙掌天试炼-MVP设计方案.md
+    referenced_by:
+      - design/凡人修仙掌天试炼-MVP设计方案.md
+      - design/gdd/spatial-grid.md
+      - design/gdd/config-data-system.md
+      - design/gdd/player-controller.md
+      - design/gdd/progression-tree.md
+    value: 1.98
+    unit: world_units
+    added: 2026-08-18
+    revised: ""
+    notes: "1.8 * (1 + 5 * 0.02)；MVP pickup 使用 Drop center 距离语义。"
+
+  - name: pool_limits_max_pool_keys
+    status: active
+    source: design/gdd/config-data-system.md
+    referenced_by:
+      - design/gdd/config-data-system.md
+      - design/gdd/object-pooling.md
+    value: 16
+    unit: pool_keys
+    added: 2026-08-19
+    revised: 2026-08-19
+
+  - name: pool_limits_max_capacity_per_key
+    status: active
+    source: design/gdd/config-data-system.md
+    referenced_by:
+      - design/gdd/config-data-system.md
+      - design/gdd/object-pooling.md
+    value: 512
+    unit: slots
+    added: 2026-08-19
+    revised: 2026-08-19
+
+  - name: pool_limits_max_total_capacity
+    status: active
+    source: design/gdd/config-data-system.md
+    referenced_by:
+      - design/gdd/config-data-system.md
+      - design/gdd/object-pooling.md
+    value: 1536
+    unit: slots
+    added: 2026-08-19
+    revised: 2026-08-19
+
+  - name: pool_key_enemy_normal
+    status: active
+    source: design/gdd/config-data-system.md
+    referenced_by:
+      - design/gdd/config-data-system.md
+      - design/gdd/object-pooling.md
+    value: 1
+    unit: pool_key
+    added: 2026-08-19
+    revised: 2026-08-19
+
+  - name: pool_key_enemy_elite
+    status: active
+    source: design/gdd/config-data-system.md
+    referenced_by:
+      - design/gdd/config-data-system.md
+      - design/gdd/object-pooling.md
+    value: 2
+    unit: pool_key
+    added: 2026-08-19
+    revised: 2026-08-19
+
+  - name: pool_key_enemy_boss
+    status: active
+    source: design/gdd/config-data-system.md
+    referenced_by:
+      - design/gdd/config-data-system.md
+      - design/gdd/object-pooling.md
+    value: 3
+    unit: pool_key
+    added: 2026-08-19
+    revised: 2026-08-19
+
+  - name: pool_key_projectile_gameplay
+    status: active
+    source: design/gdd/config-data-system.md
+    referenced_by:
+      - design/gdd/config-data-system.md
+      - design/gdd/object-pooling.md
+      - design/gdd/projectile-system.md
+      - design/gdd/weapon-system.md
+    value: 4
+    unit: pool_key
+    added: 2026-08-19
+    revised: 2026-08-19
+
+  - name: pool_key_drop_gameplay
+    status: active
+    source: design/gdd/config-data-system.md
+    referenced_by:
+      - design/gdd/config-data-system.md
+      - design/gdd/object-pooling.md
+      - design/gdd/drop-leveling-system.md
+    value: 5
+    unit: pool_key
+    added: 2026-08-19
+    revised: 2026-08-19
+
+  - name: pool_key_damage_number
+    status: active
+    source: design/gdd/config-data-system.md
+    referenced_by:
+      - design/gdd/config-data-system.md
+      - design/gdd/object-pooling.md
+    value: 6
+    unit: pool_key
+    added: 2026-08-19
+    revised: 2026-08-19
+
+  - name: pool_capacity_enemy_normal
+    status: active
+    source: design/gdd/config-data-system.md
+    referenced_by:
+      - design/gdd/config-data-system.md
+      - design/gdd/object-pooling.md
+      - design/gdd/risk-choice-system.md
+    value: 320
+    unit: slots
+    added: 2026-08-19
+    revised: 2026-08-19
+
+  - name: pool_capacity_enemy_elite
+    status: active
+    source: design/gdd/config-data-system.md
+    referenced_by:
+      - design/gdd/config-data-system.md
+      - design/gdd/object-pooling.md
+      - design/gdd/risk-choice-system.md
+    value: 6  # was: 4 before 2026-08-24 — Object Pooling 三审 BL-5（冒险夺宝持久化精英并发）
+    unit: slots
+    added: 2026-08-19
+    revised: 2026-09-03
+
+  - name: pool_capacity_enemy_boss
+    status: active
+    source: design/gdd/config-data-system.md
+    referenced_by:
+      - design/gdd/config-data-system.md
+      - design/gdd/object-pooling.md
+    value: 1
+    unit: slots
+    added: 2026-08-19
+    revised: 2026-08-19
+
+  - name: pool_capacity_projectile_gameplay
+    status: active
+    source: design/gdd/config-data-system.md
+    referenced_by:
+      - design/gdd/config-data-system.md
+      - design/gdd/object-pooling.md
+      - design/gdd/projectile-system.md
+      - design/gdd/weapon-system.md
+    value: 448
+    unit: slots
+    added: 2026-08-19
+    revised: 2026-08-19
+
+  - name: pool_capacity_drop_gameplay
+    status: active
+    source: design/gdd/config-data-system.md
+    referenced_by:
+      - design/gdd/config-data-system.md
+      - design/gdd/object-pooling.md
+      - design/gdd/drop-leveling-system.md
+    value: 320
+    unit: slots
+    added: 2026-08-19
+    revised: 2026-08-19
+
+  - name: pool_capacity_damage_number
+    status: active
+    source: design/gdd/config-data-system.md
+    referenced_by:
+      - design/gdd/config-data-system.md
+      - design/gdd/object-pooling.md
+      - design/gdd/damage-system.md
+      - design/gdd/battle-ui.md
+    value: 96
+    unit: slots
+    added: 2026-08-19
+    revised: 2026-08-19
+
+  - name: player_base_attack
+    status: active
+    source: design/gdd/damage-system.md
+    referenced_by:
+      - design/gdd/damage-system.md
+      - design/gdd/weapon-system.md
+      - design/gdd/progression-tree.md
+    value: 10.0
+    unit: attack
+    added: 2026-09-03
+    revised: ""
+    notes: "MVP concept baseline; Active hot change forbidden."
+
+  - name: player_base_crit_chance
+    status: active
+    source: design/gdd/damage-system.md
+    referenced_by:
+      - design/gdd/damage-system.md
+      - design/gdd/weapon-system.md
+      - design/gdd/progression-tree.md
+      - design/gdd/zhangtian-bottle.md
+      - design/gdd/config-data-system.md
+    value: 0.05
+    unit: ratio
+    added: 2026-09-03
+    revised: ""
+    notes: "MVP concept baseline before progression/preparation modifiers."
+
+  - name: player_base_crit_multiplier
+    status: active
+    source: design/gdd/damage-system.md
+    referenced_by:
+      - design/gdd/damage-system.md
+      - design/gdd/weapon-system.md
+    value: 1.5
+    unit: multiplier
+    added: 2026-09-03
+    revised: ""
+    notes: "MVP concept baseline."
+
+  - name: weapon_active_skill_slot_capacity
+    status: active
+    source: design/凡人修仙掌天试炼-MVP设计方案.md
+    referenced_by:
+      - design/凡人修仙掌天试炼-MVP设计方案.md
+      - design/gdd/weapon-system.md
+      - design/gdd/config-data-system.md
+      - design/gdd/skill-draft-system.md
+      - design/gdd/battle-ui.md
+    value: 4
+    unit: active_skill_slots
+    added: 2026-09-03
+    revised: ""
+
+  - name: weapon_skill_level_count
+    status: active
+    source: design/凡人修仙掌天试炼-MVP设计方案.md
+    referenced_by:
+      - design/凡人修仙掌天试炼-MVP设计方案.md
+      - design/gdd/weapon-system.md
+      - design/gdd/config-data-system.md
+      - design/gdd/skill-draft-system.md
+    value: 5
+    unit: levels_per_skill
+    added: 2026-09-03
+    revised: ""
+
+  - name: weapon_active_skill_family_count
+    status: active
+    source: design/凡人修仙掌天试炼-MVP设计方案.md
+    referenced_by:
+      - design/凡人修仙掌天试炼-MVP设计方案.md
+      - design/gdd/weapon-system.md
+      - design/gdd/skill-draft-system.md
+    value: 6
+    unit: active_skill_families
+    added: 2026-09-03
+    revised: ""
+
+  - name: weapon_mvp_evolution_count
+    status: active
+    source: design/凡人修仙掌天试炼-MVP设计方案.md
+    referenced_by:
+      - design/凡人修仙掌天试炼-MVP设计方案.md
+      - design/gdd/weapon-system.md
+      - design/gdd/skill-draft-system.md
+    value: 4
+    unit: evolution_families
+    added: 2026-09-03
+    revised: ""
+
+  - name: skill_auxiliary_slot_capacity
+    status: active
+    source: design/凡人修仙掌天试炼-MVP设计方案.md
+    referenced_by:
+      - design/凡人修仙掌天试炼-MVP设计方案.md
+      - design/gdd/skill-draft-system.md
+      - design/gdd/config-data-system.md
+    value: 4
+    unit: auxiliary_skill_slots
+    added: 2026-09-03
+    revised: ""
+
+  - name: skill_auxiliary_family_count
+    status: active
+    source: design/凡人修仙掌天试炼-MVP设计方案.md
+    referenced_by:
+      - design/凡人修仙掌天试炼-MVP设计方案.md
+      - design/gdd/skill-draft-system.md
+    value: 6
+    unit: auxiliary_skill_families
+    added: 2026-09-03
+    revised: ""
+
+  - name: skill_offer_size
+    status: active
+    source: design/凡人修仙掌天试炼-MVP设计方案.md
+    referenced_by:
+      - design/凡人修仙掌天试炼-MVP设计方案.md
+      - design/gdd/skill-draft-system.md
+      - design/gdd/drop-leveling-system.md
+      - design/gdd/battle-ui.md
+    value: 3
+    unit: max_distinct_cards_per_offer
+    added: 2026-09-03
+    revised: ""
+    notes: "合法候选不足3时offer_size=min(3,legal_candidate_count)，诚实发布2/1项；0项+pending普通request为fault。"
+
+  - name: skill_free_refreshes_per_run
+    status: active
+    source: design/凡人修仙掌天试炼-MVP设计方案.md
+    referenced_by:
+      - design/凡人修仙掌天试炼-MVP设计方案.md
+      - design/gdd/skill-draft-system.md
+      - design/gdd/progression-tree.md
+    value: 2
+    unit: refreshes_per_run
+    added: 2026-09-03
+    revised: 2026-09-03
+    notes: "基础值2；大衍诀L5通过matching Progression projection额外+1，故新局actual为2或3。"
+
+  - name: skill_candidate_capacity
+    status: active
+    source: design/gdd/skill-draft-system.md
+    referenced_by:
+      - design/gdd/skill-draft-system.md
+      - design/gdd/rng-system.md
+      - design/gdd/config-data-system.md
+    value: 12
+    unit: candidates
+    added: 2026-09-03
+    revised: ""
+
+  - name: skill_treasure_evolution_capacity
+    status: active
+    source: design/gdd/skill-draft-system.md
+    referenced_by:
+      - design/gdd/skill-draft-system.md
+      - design/gdd/battle-ui.md
+    value: 4
+    unit: evolution_cards
+    added: 2026-09-03
+    revised: ""
+
+  - name: skill_treasure_fallback_capacity
+    status: active
+    source: design/gdd/skill-draft-system.md
+    referenced_by:
+      - design/gdd/skill-draft-system.md
+      - design/gdd/rng-system.md
+    value: 8
+    unit: equipped_skills
+    added: 2026-09-03
+    revised: ""
+
+  - name: weapon_enemy_candidate_capacity
+    status: active
+    source: design/gdd/weapon-system.md
+    referenced_by:
+      - design/gdd/weapon-system.md
+      - design/gdd/spatial-grid.md
+      - design/gdd/config-data-system.md
+    value: 303
+    unit: enemy_candidates
+    added: 2026-09-03
+    revised: ""
+
+  - name: weapon_source_pose_schema_hard_max
+    status: active
+    source: design/gdd/weapon-system.md
+    referenced_by:
+      - design/gdd/weapon-system.md
+      - design/gdd/projectile-system.md
+      - design/gdd/config-data-system.md
+    value: 400
+    unit: attack_object_sources
+    added: 2026-09-03
+    revised: ""
+    notes: "安全硬界来自Projectile active cap；production emitter capacity须由合法构筑精确收紧。"
+
+  - name: spatial_max_abs_world_coord
+    status: active
+    source: design/gdd/config-data-system.md
+    referenced_by:
+      - design/gdd/config-data-system.md
+      - design/gdd/spatial-grid.md
+      - design/gdd/stage-map.md
+    value: 1000000.0
+    unit: world_units
+    added: 2026-08-19
+    revised: 2026-08-19
+
+  - name: spatial_min_cell_size
+    status: active
+    source: design/gdd/config-data-system.md
+    referenced_by:
+      - design/gdd/config-data-system.md
+      - design/gdd/spatial-grid.md
+      - design/gdd/stage-map.md
+    value: 0.01
+    unit: world_units
+    added: 2026-08-19
+    revised: 2026-08-19
+
+  - name: spatial_max_grid_axis
+    status: deprecated
+    source: design/gdd/config-data-system.md
+    referenced_by:
+      - design/gdd/spatial-grid.md
+      - design/gdd/stage-map.md
+    value: 4096
+    unit: cells
+    added: 2026-08-19
+    revised: 2026-09-02
+    notes: "DEPRECATED：Stage V2 sparse grid不派生固定rows/cols。"
+
+  - name: max_battle_duration_seconds
+    status: active
+    source: design/gdd/config-data-system.md
+    referenced_by:
+      - design/gdd/config-data-system.md
+      - design/gdd/spatial-grid.md
+      - design/gdd/stage-map.md
+    value: 1800
+    unit: seconds
+    added: 2026-08-19
+    revised: 2026-09-02
+
+  - name: spatial_max_grid_cells
+    status: deprecated
+    source: design/gdd/config-data-system.md
+    referenced_by:
+      - design/gdd/spatial-grid.md
+      - design/gdd/stage-map.md
+    value: 262144
+    unit: cells
+    added: 2026-08-19
+    revised: 2026-09-02
+    notes: "DEPRECATED：不再限制或分配dense grid总格数；数值仅迁移为query局部枚举上限。"
+
+  - name: spatial_max_query_cells_enumerated
+    status: active
+    source: design/gdd/config-data-system.md
+    referenced_by:
+      - design/gdd/config-data-system.md
+      - design/gdd/spatial-grid.md
+      - design/gdd/stage-map.md
+    value: 262144
+    unit: cells_per_query
+    added: 2026-08-19
+    revised: 2026-09-02
+
+  - name: spatial_max_indexed_entries
+    status: active
+    source: design/gdd/config-data-system.md
+    referenced_by:
+      - design/gdd/config-data-system.md
+      - design/gdd/spatial-grid.md
+      - design/gdd/game-root-scene-flow.md
+    value: 1000
+    unit: entries
+    added: 2026-08-19
+    revised: 2026-08-19
+
+  - name: spatial_max_registered_enemy
+    status: active
+    source: design/gdd/config-data-system.md
+    referenced_by:
+      - design/gdd/config-data-system.md
+      - design/gdd/spatial-grid.md
+      - design/gdd/player-controller.md
+    value: 303
+    unit: entries
+    added: 2026-08-19
+    revised: 2026-08-19
+
+  - name: spatial_max_registered_projectile
+    status: active
+    source: design/gdd/config-data-system.md
+    referenced_by:
+      - design/gdd/config-data-system.md
+      - design/gdd/spatial-grid.md
+    value: 0
+    unit: entries
+    added: 2026-08-19
+    revised: 2026-08-19
+
+  - name: spatial_max_registered_drop
+    status: active
+    source: design/gdd/config-data-system.md
+    referenced_by:
+      - design/gdd/config-data-system.md
+      - design/gdd/spatial-grid.md
+      - design/gdd/drop-leveling-system.md
+    value: 300
+    unit: entries
+    added: 2026-08-19
+    revised: 2026-08-19
+
+  - name: spatial_cell_size_spike_anchor
+    status: active
+    source: design/gdd/config-data-system.md
+    referenced_by:
+      - design/gdd/config-data-system.md
+      - design/gdd/spatial-grid.md
+      - design/gdd/stage-map.md
+    value: 2.0
+    unit: world_units
+    added: 2026-08-19
+    revised: 2026-08-19
+    notes: "Isolated benchmark fixture only；不是production StageConfig值。Stage GDD
+      引用为 cell_size spike slot，生产值 deferred 到 SpatialGrid F3 ADR + J0。"
+
+  - name: arena_width
+    status: deprecated
+    source: design/gdd/stage-map.md
+    referenced_by:
+      - design/gdd/spatial-grid.md
+      - design/gdd/config-data-system.md
+      - design/gdd/player-controller.md
+    value: 22.0
+    unit: world_units
+    added: 2026-08-19
+    revised: 2026-09-02
+    notes: "DEPRECATED：旧固定arena宽度；Stage V2无固定玩法arena。"
+
+  - name: camera_visible_world_width
+    status: active
+    source: design/gdd/stage-map.md
+    referenced_by:
+      - design/gdd/stage-map.md
+      - design/gdd/spatial-grid.md
+      - design/gdd/config-data-system.md
+      - design/gdd/player-controller.md
+    value: 22.5
+    unit: world_units
+    added: 2026-08-19
+    revised: 2026-09-02
+    notes: "Camera2D锁定玩家时的世界可见宽度；只定义视口与生成内环，不是地图边界。"
+
+  - name: arena_height
+    status: deprecated
+    source: design/gdd/stage-map.md
+    referenced_by:
+      - design/gdd/spatial-grid.md
+      - design/gdd/config-data-system.md
+      - design/gdd/player-controller.md
+    value: 40.0
+    unit: world_units
+    added: 2026-08-19
+    revised: 2026-09-02
+    notes: "DEPRECATED：旧固定arena高度；40仅继续作为camera visible height。"
+
+  - name: camera_visible_world_height
+    status: active
+    source: design/gdd/stage-map.md
+    referenced_by:
+      - design/gdd/stage-map.md
+      - design/gdd/spatial-grid.md
+      - design/gdd/config-data-system.md
+      - design/gdd/player-controller.md
+    value: 40.0
+    unit: world_units
+    added: 2026-08-19
+    revised: 2026-09-02
+    notes: "Camera2D锁定玩家时的世界可见高度；只定义视口与生成内环，不是地图边界。"
+
+  - name: arena_walkable_area
+    status: deprecated
+    source: design/gdd/stage-map.md
+    referenced_by:
+      - design/gdd/spatial-grid.md
+    value: 880.0
+    unit: world_units_squared
+    added: 2026-08-19
+    revised: 2026-09-02
+    notes: "DEPRECATED：Stage V2不发布固定walkable polygon/area。"
+
+  - name: world_safe_half_extent
+    status: active
+    source: design/gdd/stage-map.md
+    referenced_by:
+      - design/gdd/stage-map.md
+      - design/gdd/spatial-grid.md
+      - design/gdd/config-data-system.md
+      - design/gdd/player-controller.md
+      - design/gdd/spawn-director.md
+    value: 16384.0
+    unit: world_units
+    added: 2026-08-19
+    revised: 2026-09-02
+    notes: "本局大型有限技术域H，合法中心/完整形状必须位于[-H,H]²；玩家不可见，
+      不构成玩法墙，不做clamp、wrap或runtime origin rebasing。"
+
+  - name: spawn_ring_depth
+    status: active
+    source: design/gdd/stage-map.md
+    referenced_by:
+      - design/gdd/stage-map.md
+      - design/gdd/spawn-director.md
+    value: 4.0
+    unit: world_units
+    added: 2026-08-19
+    revised: 2026-09-02
+    notes: "玩家相对视野外矩形环的径向深度。inner_half=(12.25,21)，
+      outer_half=(16.25,25)；由SpawnDirector固定四条strip采样。"
+
+  - name: boss_region_center_x
+    status: deprecated
+    source: design/gdd/stage-map.md
+    referenced_by: []
+    value: 0.0
+    unit: world_units
+    added: 2026-08-19
+    revised: 2026-09-02
+    notes: "DEPRECATED：Boss不再绑定世界原点region。"
+
+  - name: spawn_visibility_padding
+    status: active
+    source: design/gdd/stage-map.md
+    referenced_by:
+      - design/gdd/stage-map.md
+      - design/gdd/spawn-director.md
+    value: 1.0
+    unit: world_units
+    added: 2026-08-19
+    revised: 2026-09-02
+    notes: "镜头可见矩形到生成内环的额外padding；保证普通敌出生首帧不可见。"
+
+  - name: boss_region_center_y
+    status: deprecated
+    source: design/gdd/stage-map.md
+    referenced_by: []
+    value: 0.0
+    unit: world_units
+    added: 2026-08-19
+    revised: 2026-09-02
+    notes: "DEPRECATED：Boss不再绑定世界原点region。"
+
+  - name: despawn_margin
+    status: active
+    source: design/gdd/stage-map.md
+    referenced_by:
+      - design/gdd/stage-map.md
+      - design/gdd/spawn-director.md
+      - design/gdd/enemy-system.md
+    value: 12.0
+    unit: world_units
+    added: 2026-08-19
+    revised: 2026-09-02
+    notes: "普通敌中心超出spawn_outer_half+本边距时由SpawnDirector无奖励退役；elite/Boss豁免。"
+
+  - name: boss_region_half
+    status: deprecated
+    source: design/gdd/stage-map.md
+    referenced_by: []
+    value: 4.0
+    unit: world_units
+    added: 2026-08-19
+    revised: 2026-09-02
+    notes: "DEPRECATED：Boss入场改为玩家相对视野外规则。"
+
+  - name: ground_overscan
+    status: active
+    source: design/gdd/stage-map.md
+    referenced_by:
+      - design/gdd/stage-map.md
+    value: 2.0
+    unit: world_units
+    added: 2026-08-19
+    revised: 2026-09-02
+    notes: "镜头外地表tile/shader覆盖冗余；纯表现值，不可用于碰撞、生成或世界边界判定。"
+
+  - name: index_margin
+    status: deprecated
+    source: design/gdd/stage-map.md
+    referenced_by:
+      - design/gdd/spatial-grid.md
+      - design/gdd/config-data-system.md
+    value: 2.0
+    unit: world_units
+    added: 2026-08-19
+    revised: 2026-09-02
+    notes: "DEPRECATED：Stage V2禁止越界容忍带与arena clamp；world-domain violation直接fail closed。"
+
+  - name: ground_tile_world_size
+    status: active
+    source: design/gdd/stage-map.md
+    referenced_by:
+      - design/gdd/stage-map.md
+      - design/gdd/spatial-grid.md
+      - design/gdd/config-data-system.md
+    value: 8.0
+    unit: world_units
+    added: 2026-08-19
+    revised: 2026-09-02
+    notes: "MVP方形地表tile的单轴边长8.0，对应Stage Vector2(8,8)；固定池重定位或shader实现，纯表现且不得创建无界节点。"
+
+  - name: spawn_candidate_attempts
+    status: active
+    source: design/gdd/spawn-director.md
+    referenced_by:
+      - design/gdd/game-root-scene-flow.md
+      - design/gdd/config-data-system.md
+      - design/gdd/elite-enemies.md
+    value: 8
+    unit: attempts_per_intent
+    added: 2026-09-02
+    revised: ""
+    notes: "每次spawn intent固定尝试数；每次3个RNG words，成功早停仍discard推进至24 words。"
+
+  - name: max_spawn_intents_per_tick
+    status: active
+    source: design/gdd/spawn-director.md
+    referenced_by:
+      - design/gdd/config-data-system.md
+      - design/gdd/game-root-scene-flow.md
+      - design/gdd/elite-enemies.md
+      - design/gdd/boss-state-machine.md
+    value: 23
+    unit: intents_per_tick
+    added: 2026-09-02
+    revised: 2026-09-03
+    notes: "max(12 Wave+9 Elite summon+Elite1+Boss1,12 Wave+9 Elite summon+2 Boss summon)=23；两类由12:00 schedule互斥，word bound=552，不改变active/pool cap。"
+
+  - name: max_normal_retire_intents_per_tick
+    status: active
+    source: design/gdd/spawn-director.md
+    referenced_by:
+      - design/gdd/config-data-system.md
+      - design/gdd/game-root-scene-flow.md
+      - design/gdd/enemy-system.md
+    value: 300
+    unit: intents_per_tick
+    added: 2026-09-02
+    revised: ""
+    notes: "复活snap或anchor大位移时所有Normal可同tick越retention；journal row归ENEMY容量，不归SPAWN。"
+
+  - name: elite_arrival_lock_ticks
+    status: active
+    source: design/gdd/elite-enemies.md
+    referenced_by:
+      - design/gdd/elite-enemies.md
+      - design/gdd/enemy-system.md
+      - design/gdd/risk-choice-system.md
+      - design/gdd/config-data-system.md
+    value: 60
+    unit: active_gameplay_ticks
+    added: 2026-09-03
+    revised: ""
+    notes: "所有fixed/Risk Elite实际arrival cue可见后最短无伤窗口；不替代具体技能预警。"
+
+  - name: elite_hostile_projectile_pending_contribution
+    status: active
+    source: design/gdd/elite-enemies.md
+    referenced_by:
+      - design/gdd/elite-enemies.md
+      - design/gdd/projectile-system.md
+      - design/gdd/damage-system.md
+      - design/gdd/config-data-system.md
+    value: 9
+    unit: projectile_rows_per_tick
+    added: 2026-09-03
+    revised: ""
+    notes: "最多3只鬼雾修士同tick各3枚魂针；Boss=8已知，仍须与Weapon/Normal远程证明global pending sum<=32。"
+
+  - name: boss_arrival_lock_ticks
+    status: active
+    source: design/gdd/boss-state-machine.md
+    referenced_by:
+      - design/gdd/boss-state-machine.md
+      - design/gdd/enemy-system.md
+      - design/gdd/spawn-director.md
+      - design/gdd/config-data-system.md
+    value: 120
+    unit: active_gameplay_ticks
+    added: 2026-09-03
+    revised: ""
+    notes: "从Boss actual authority publish与P0 arrival cue可见tick起计；期间Boss damage/projectile/fog/summon均0。"
+
+  - name: boss_hostile_projectile_pending_contribution
+    status: active
+    source: design/gdd/boss-state-machine.md
+    referenced_by:
+      - design/gdd/boss-state-machine.md
+      - design/gdd/projectile-system.md
+      - design/gdd/damage-system.md
+      - design/gdd/config-data-system.md
+    value: 8
+    unit: projectile_rows_per_tick
+    added: 2026-09-03
+    revised: ""
+    notes: "环形毒弹8行原子batch；active contribution同为8，global pending/active仍等待Weapon与Normal远程枚举。"
+
+  - name: boss_nonprojectile_hazard_contribution
+    status: active
+    source: design/gdd/boss-state-machine.md
+    referenced_by:
+      - design/gdd/boss-state-machine.md
+      - design/gdd/damage-system.md
+      - design/gdd/player-controller.md
+      - design/gdd/config-data-system.md
+    value: 2
+    unit: revive_hazard_rows
+    added: 2026-09-03
+    revised: ""
+    notes: "持续EXTERIOR_CIRCLE毒域1 + 同tick至多1条bite/fan next-tick保守CIRCLE；projectile hazards另由Projectile400计入。"
+
+  - name: elite_weakened_damage_taken_multiplier
+    status: active
+    source: design/gdd/elite-enemies.md
+    referenced_by:
+      - design/gdd/elite-enemies.md
+      - design/gdd/enemy-system.md
+      - design/gdd/damage-system.md
+      - design/gdd/config-data-system.md
+    value: 1.25
+    unit: target_damage_taken_multiplier
+    added: 2026-09-03
+    revised: ""
+    notes: "PROVISIONAL-BALANCE；仅巨甲蜈蚣150 Active ticks WEAKENED窗口，在target mitigation内、RISK_WARD前应用一次。"
+
+  - name: enemy_death_staging_field_count
+    status: active
+    source: design/gdd/enemy-system.md
+    referenced_by:
+      - design/gdd/enemy-system.md
+      - design/gdd/elite-enemies.md
+      - design/gdd/drop-leveling-system.md
+      - design/gdd/risk-choice-system.md
+      - design/gdd/config-data-system.md
+    value: 8
+    unit: primitive_fields
+    added: 2026-09-03
+    revised: ""
+    notes: "EnemyDeathStagingV2增加source_choice_id；两次Risk抽同behavior时仍可唯一join，非Risk为0。"
+
+  - name: battle_ui_direction_identity_capacity
+    status: active
+    source: design/gdd/battle-ui.md
+    referenced_by:
+      - design/gdd/battle-ui.md
+      - design/gdd/config-data-system.md
+    value: 5
+    unit: tracked_identities
+    added: 2026-09-03
+    revised: ""
+    notes: "1 Boss + 4 Elite；先完整跟踪再聚合，reward-bearing Elite不得隐藏。"
+
+  - name: battle_ui_foreground_choice_row_capacity
+    status: active
+    source: design/gdd/battle-ui.md
+    referenced_by:
+      - design/gdd/battle-ui.md
+      - design/gdd/config-data-system.md
+      - design/gdd/input-system.md
+    value: 4
+    unit: choice_rows
+    added: 2026-09-03
+    revised: ""
+    notes: "max(normal skill3, treasure evolution4, risk2)=4；诚实支持1/2/3/4行。"
+
+  - name: battle_ui_damage_number_visible_capacity
+    status: active
+    source: design/gdd/config-data-system.md
+    referenced_by:
+      - design/gdd/config-data-system.md
+      - design/gdd/damage-system.md
+      - design/gdd/battle-ui.md
+    value: 64
+    unit: visible_labels
+    added: 2026-09-03
+    revised: ""
+    notes: "与pool96分开：64 visible + 16 spawn-before-release + 16 spare = 96。"
+
+  - name: battle_ui_choice_panel_height_fraction_max
+    status: active
+    source: design/gdd/input-system.md
+    referenced_by:
+      - design/gdd/input-system.md
+      - design/gdd/risk-choice-system.md
+      - design/gdd/battle-ui.md
+    value: 0.5
+    unit: interactive_safe_height_ratio
+    added: 2026-09-03
+    revised: ""
+    notes: "含header/footer/padding与1..4 rows；不得缩小触控下限来满足。"
+
+  - name: battle_ui_choice_touch_bank_capacity
+    status: blocked
+    source: design/gdd/input-system.md
+    referenced_by:
+      - design/gdd/input-system.md
+      - design/gdd/game-root-scene-flow.md
+      - design/gdd/battle-ui.md
+    value: null
+    unit: concurrent_touches
+    added: 2026-09-03
+    revised: ""
+    notes: "必须等于SupportedTouchEventOrderingManifest.max_concurrent_touches并与shield同源；平台manifest/真机trace未建立，禁止猜值。"
+
+  - name: audio_player_consumer_ack_bit
+    status: active
+    source: design/gdd/player-controller.md
+    referenced_by:
+      - design/gdd/player-controller.md
+      - design/gdd/game-root-scene-flow.md
+      - design/gdd/config-data-system.md
+      - design/gdd/audio-feedback.md
+    value: 4
+    unit: bitmask
+    added: 2026-09-03
+    revised: ""
+    notes: "PLAYER_AUDIO stable_order=3，故bit=1<<(3-1)=0b100；required aggregate mask仍0b111。"
+
+  - name: audio_bus_count
+    status: active
+    source: design/gdd/audio-feedback.md
+    referenced_by:
+      - design/gdd/audio-feedback.md
+      - design/gdd/config-data-system.md
+    value: 10
+    unit: buses
+    added: 2026-09-03
+    revised: ""
+    notes: "Master、Music、Ambience、SFX及SFX下Critical/Hostile/Player/Friendly/World/UI，共10个bus。"
+
+  - name: audio_priority_class_count
+    status: active
+    source: design/gdd/audio-feedback.md
+    referenced_by:
+      - design/gdd/audio-feedback.md
+      - design/gdd/config-data-system.md
+    value: 8
+    unit: priority_classes
+    added: 2026-09-03
+    revised: ""
+    notes: "priority 7..0 canonical total order；actual rows与protected/merge/duck flags进入AudioPriorityManifestV1。"
+
+  - name: save_slot_count
+    status: active
+    source: design/gdd/save-system.md
+    referenced_by:
+      - design/gdd/save-system.md
+      - design/gdd/config-data-system.md
+      - design/gdd/game-root-scene-flow.md
+    value: 2
+    unit: complete_slots
+    added: 2026-09-03
+    revised: ""
+    notes: "MVP固定A/B两个完整自校验槽且无current-pointer；旧VALID槽在新槽durable readback前不修改。"
+
+  - name: save_durable_writer_capacity
+    status: active
+    source: design/gdd/save-system.md
+    referenced_by:
+      - design/gdd/save-system.md
+      - design/gdd/config-data-system.md
+      - design/gdd/game-root-scene-flow.md
+    value: 1
+    unit: concurrent_writers
+    added: 2026-09-03
+    revised: ""
+    notes: "单singleton executor并要求平台排他SaveWriterLease；平台锁实现与真机竞争证据仍BLOCKED。"
+
+  - name: save_resolved_archive_capacity
+    status: provisional
+    source: design/gdd/save-system.md
+    referenced_by:
+      - design/gdd/save-system.md
+      - design/gdd/config-data-system.md
+      - design/gdd/game-root-scene-flow.md
+    value: 64
+    unit: archive_rows
+    added: 2026-09-03
+    revised: ""
+    notes: "MVP诊断/连续性滚动archive基线；第65行淘汰最旧row前链入prefix hash并推进resolved floors，不是玩家战绩容量。"
+
+  - name: progression_branch_count
+    status: active
+    source: design/凡人修仙掌天试炼-MVP设计方案.md
+    referenced_by:
+      - design/gdd/progression-tree.md
+      - design/gdd/config-data-system.md
+    value: 3
+    unit: branches
+    added: 2026-09-03
+    revised: ""
+    notes: "stable order QINGYUAN/LONGCHUN/DAYAN；分支互不锁定。"
+
+  - name: progression_levels_per_branch
+    status: active
+    source: design/凡人修仙掌天试炼-MVP设计方案.md
+    referenced_by:
+      - design/gdd/progression-tree.md
+      - design/gdd/config-data-system.md
+    value: 5
+    unit: levels
+    added: 2026-09-03
+    revised: ""
+
+  - name: progression_node_costs
+    status: provisional
+    source: design/gdd/progression-tree.md
+    referenced_by:
+      - design/gdd/progression-tree.md
+      - design/gdd/config-data-system.md
+    value: [4, 8, 12, 16, 20]
+    unit: cultivation_pages_by_target_level
+    added: 2026-09-03
+    revised: ""
+    notes: "PROVISIONAL-ECONOMY-V1；单支60、三支180，需30局成长试玩冻结。"
+
+  - name: progression_page_milestone_ticks
+    status: provisional
+    source: design/gdd/progression-tree.md
+    referenced_by:
+      - design/gdd/progression-tree.md
+      - design/gdd/game-root-scene-flow.md
+      - design/gdd/config-data-system.md
+    value: 5400
+    unit: committed_active_ticks_per_page
+    added: 2026-09-03
+    revised: ""
+    notes: "60Hz下90秒；每局cap8、无胜利bonus；actual BattleRules/Settlement owner尚BLOCKED。"
+
+  - name: progression_pages_per_run_cap
+    status: provisional
+    source: design/gdd/progression-tree.md
+    referenced_by:
+      - design/gdd/progression-tree.md
+      - design/gdd/game-root-scene-flow.md
+      - design/gdd/config-data-system.md
+    value: 8
+    unit: cultivation_pages
+    added: 2026-09-03
+    revised: ""
+
+  - name: progression_qingyuan_attack_bonus_per_level
+    status: active
+    source: design/凡人修仙掌天试炼-MVP设计方案.md
+    referenced_by:
+      - design/gdd/progression-tree.md
+      - design/gdd/damage-system.md
+      - design/gdd/config-data-system.md
+    value: 0.03
+    unit: ratio_per_level
+    added: 2026-09-03
+    revised: ""
+
+  - name: progression_dayan_crit_bonus_per_level
+    status: active
+    source: design/凡人修仙掌天试炼-MVP设计方案.md
+    referenced_by:
+      - design/gdd/progression-tree.md
+      - design/gdd/damage-system.md
+      - design/gdd/config-data-system.md
+    value: 0.01
+    unit: chance_points_per_level
+    added: 2026-09-03
+    revised: ""
+
+  - name: progression_dayan_pickup_bonus_per_level
+    status: active
+    source: design/凡人修仙掌天试炼-MVP设计方案.md
+    referenced_by:
+      - design/gdd/progression-tree.md
+      - design/gdd/drop-leveling-system.md
+      - design/gdd/config-data-system.md
+    value: 0.02
+    unit: base_radius_ratio_per_level
+    added: 2026-09-03
+    revised: ""
+
+  - name: progression_longchun_emergency_threshold
+    status: active
+    source: design/凡人修仙掌天试炼-MVP设计方案.md
+    referenced_by:
+      - design/gdd/progression-tree.md
+      - design/gdd/player-controller.md
+      - design/gdd/damage-system.md
+    value: 0.30
+    unit: max_hp_ratio
+    added: 2026-09-03
+    revised: ""
+    notes: "L5每局一次；仅非致命伤害从>=阈值严格跌到<阈值时触发。"
+
+  - name: progression_longchun_emergency_recovery
+    status: active
+    source: design/凡人修仙掌天试炼-MVP设计方案.md
+    referenced_by:
+      - design/gdd/progression-tree.md
+      - design/gdd/player-controller.md
+      - design/gdd/damage-system.md
+    value: 0.10
+    unit: max_hp_ratio
+    added: 2026-09-03
+    revised: ""
+
+  - name: progression_domain_payload_max_bytes
+    status: active
+    source: design/gdd/progression-tree.md
+    referenced_by:
+      - design/gdd/progression-tree.md
+      - design/gdd/save-system.md
+      - design/gdd/config-data-system.md
+    value: 176
+    unit: canonical_bytes
+    added: 2026-09-03
+    revised: ""
+    notes: "V1 no-padding domain payload最大值；含optional last purchase receipt。"
+
+  - name: zhangtian_seed_kind_count
+    status: active
+    source: design/gdd/zhangtian-bottle.md
+    referenced_by: [design/gdd/zhangtian-bottle.md, design/gdd/prep-ui.md, design/gdd/settlement-system.md, design/gdd/config-data-system.md]
+    value: 3
+    unit: seed_kinds
+    added: 2026-09-03
+    revised: ""
+
+  - name: zhangtian_seed_cost_per_pill
+    status: active
+    source: design/gdd/zhangtian-bottle.md
+    referenced_by: [design/gdd/zhangtian-bottle.md, design/gdd/prep-ui.md, design/gdd/config-data-system.md]
+    value: 1
+    unit: seeds
+    added: 2026-09-03
+    revised: ""
+
+  - name: zhangtian_seed_weights
+    status: provisional
+    source: design/gdd/zhangtian-bottle.md
+    referenced_by: [design/gdd/zhangtian-bottle.md, design/gdd/rng-system.md, design/gdd/settlement-system.md, design/gdd/config-data-system.md]
+    value: [1, 1, 1]
+    unit: integer_weights
+    added: 2026-09-03
+    revised: 2026-09-04
+    notes: "ZHANGTIAN_HERB以预分配PackedInt32Array([1,1,1])调用roll_weighted_pick；canonical index 0/1/2按NINGQI_GRASS/TIELING_FLOWER/LEIYUAN_FRUIT，成功logical call delta恰1；均匀无pity为PROVISIONAL-ECONOMY-V6，只承诺gross grant-rate。"
+
+  - name: zhangtian_seed_held_cap
+    status: active
+    source: design/gdd/zhangtian-bottle.md
+    referenced_by: [design/gdd/zhangtian-bottle.md, design/gdd/home-ui.md, design/gdd/settlement-system.md, design/gdd/save-system.md, design/gdd/config-data-system.md]
+    value: 999
+    unit: available_plus_reserved_seeds_per_kind
+    added: 2026-09-03
+    revised: 2026-09-04
+    notes: "V1只约束available+reserved；normal settlement先consume reservation再算held room，lifetime earned/consumed须为non-negative int64并满足守恒。held/lifetime触顶采用封闭FULL/PARTIAL_HELD/PARTIAL_LIFETIME/PARTIAL_BOTH/NO_ROOM/NOT_APPLICABLE disposition。"
+
+  - name: zhangtian_defeat_seed_eligible_ticks
+    status: provisional
+    source: design/gdd/zhangtian-bottle.md
+    referenced_by: [design/gdd/zhangtian-bottle.md, design/gdd/settlement-system.md, design/gdd/game-root-scene-flow.md, design/gdd/config-data-system.md]
+    value: 43200
+    unit: active_ticks
+    added: 2026-09-03
+    revised: 2026-09-04
+    notes: "60Hz下12分钟/Boss入场线；DEFEAT仅survival_ticks>=43200发冻结candidate一枚，VICTORY只在43200..108000合法并发三枚。starter不计入random gross seed/min比较；net flow另覆盖服丹/NONE、胜率、局长与饱和。PROVISIONAL-ECONOMY-V6。"
+
+  - name: zhangtian_victory_min_ticks
+    status: provisional
+    source: design/gdd/zhangtian-bottle.md
+    referenced_by: [design/gdd/zhangtian-bottle.md, design/gdd/settlement-system.md, design/gdd/game-root-scene-flow.md, design/gdd/config-data-system.md]
+    value: 43200
+    unit: active_ticks
+    added: 2026-09-04
+    revised: ""
+    notes: "VICTORY survival_ticks下界；与Boss mandatory arrival一致。43199及以下Victory整包拒绝，不以零奖励降级。"
+
+  - name: zhangtian_economy_max_active_ticks
+    status: active
+    source: design/gdd/zhangtian-bottle.md
+    referenced_by: [design/gdd/zhangtian-bottle.md, design/gdd/settlement-system.md, design/gdd/stage-map.md, design/gdd/config-data-system.md]
+    value: 108000
+    unit: active_ticks
+    added: 2026-09-03
+    revised: 2026-09-04
+    notes: "1800秒×60Hz的合法结算与经济比较上限；不得用43200 Boss入场tick截断normal record/input。"
+
+  - name: zhangtian_victory_seed_quantity
+    status: provisional
+    source: design/gdd/zhangtian-bottle.md
+    referenced_by: [design/gdd/zhangtian-bottle.md, design/gdd/settlement-system.md, design/gdd/config-data-system.md]
+    value: 3
+    unit: candidate_seeds
+    added: 2026-09-03
+    revised: 2026-09-03
+
+  - name: zhangtian_starter_seed_grant_per_kind
+    status: active
+    source: design/gdd/zhangtian-bottle.md
+    referenced_by: [design/gdd/zhangtian-bottle.md, design/gdd/settlement-system.md, design/gdd/config-data-system.md]
+    value: 1
+    unit: seeds_per_kind
+    added: 2026-09-03
+    revised: 2026-09-03
+    notes: "首次durable正常VICTORY或DEFEAT exact-once发放三类各1；不是首胜限定。"
+
+  - name: zhangtian_run_start_recovery_bytes
+    status: active
+    source: design/gdd/zhangtian-bottle.md
+    referenced_by: [design/gdd/zhangtian-bottle.md, design/gdd/save-system.md, design/gdd/game-root-scene-flow.md, design/gdd/prep-ui.md]
+    value: 360
+    unit: canonical_bytes
+    added: 2026-09-03
+    revised: 2026-09-04
+
+  - name: zhangtian_seed_candidate_bytes
+    status: active
+    source: design/gdd/zhangtian-bottle.md
+    referenced_by: [design/gdd/zhangtian-bottle.md, design/gdd/save-system.md, design/gdd/game-root-scene-flow.md, design/gdd/config-data-system.md]
+    value: 132
+    unit: canonical_bytes
+    added: 2026-09-03
+    revised: 2026-09-04
+
+  - name: zhangtian_reservation_payload_bytes
+    status: active
+    source: design/gdd/zhangtian-bottle.md
+    referenced_by: [design/gdd/zhangtian-bottle.md, design/gdd/save-system.md, design/gdd/config-data-system.md]
+    value: 724
+    unit: canonical_bytes
+    added: 2026-09-03
+    revised: 2026-09-04
+
+  - name: save_reservation_max_bytes
+    status: active
+    source: design/gdd/save-system.md
+    referenced_by: [design/gdd/save-system.md, design/gdd/config-data-system.md]
+    value: 1152
+    unit: canonical_bytes
+    added: 2026-09-03
+    revised: 2026-09-04
+
+  - name: save_slot_max_bytes
+    status: active
+    source: design/gdd/save-system.md
+    referenced_by: [design/gdd/save-system.md, design/gdd/config-data-system.md]
+    value: 65536
+    unit: canonical_bytes
+    added: 2026-09-03
+    revised: 2026-09-03
+
+  - name: save_slot_payload_max_bytes
+    status: active
+    source: design/gdd/save-system.md
+    referenced_by: [design/gdd/save-system.md, design/gdd/config-data-system.md]
+    value: 42244
+    unit: canonical_bytes
+    added: 2026-09-03
+    revised: 2026-09-07
+    notes: "SaveStorePayloadV1全部top-level字段与8个optional presence tag逐项和；加120-byte header与92-byte footer得42456。"
+
+  - name: save_slot_encoded_max_bytes
+    status: active
+    source: design/gdd/save-system.md
+    referenced_by: [design/gdd/save-system.md, design/gdd/config-data-system.md]
+    value: 42456
+    unit: canonical_bytes
+    added: 2026-09-07
+    revised: ""
+    notes: "42244-byte payload + 120-byte header + 92-byte footer；低于65536-byte slot硬上限。"
+
+  - name: save_latest_resolution_max_bytes
+    status: active
+    source: design/gdd/save-system.md
+    referenced_by: [design/gdd/save-system.md, design/gdd/config-data-system.md, design/gdd/zhangtian-bottle.md]
+    value: 264
+    unit: canonical_bytes
+    added: 2026-09-07
+    revised: ""
+    notes: "DurableRunResolutionV2含nonzero durable_receipt_id与receipt_hash。"
+
+  - name: direct_none_start_slice_bytes
+    status: active
+    source: design/gdd/prep-ui.md
+    referenced_by: [design/gdd/prep-ui.md, design/gdd/home-ui.md, design/gdd/settlement-system.md, design/gdd/game-root-scene-flow.md]
+    value: 128
+    unit: canonical_bytes
+    added: 2026-09-07
+    revised: ""
+    notes: "DirectNoneStartSliceV2同时携带zhangtian_unlocked与starter_seed_grant_claimed；只接受0/0或1/1。"
+
+  - name: reservation_receipt_bytes
+    status: active
+    source: design/gdd/save-system.md
+    referenced_by: [design/gdd/save-system.md, design/gdd/audio-feedback.md, design/gdd/zhangtian-bottle.md, design/gdd/game-root-scene-flow.md]
+    value: 120
+    unit: canonical_bytes
+    added: 2026-09-07
+    revised: 2026-09-08
+    notes: "ReservationReceiptV1 self-hash offset88；durable_receipt_id逐位等于matching request_id；result_code固定为durable SUCCEEDED，不复制public delivery/reconcile code。"
+
+  - name: accessibility_adapter_mailbox_bytes
+    status: active
+    source: docs/architecture/adr-0001-mobile-accessibility-bridge.md
+    referenced_by: [docs/architecture/adr-0001-mobile-accessibility-bridge.md, design/gdd/game-root-scene-flow.md, design/gdd/config-data-system.md]
+    value: 2476
+    unit: canonical_bytes
+    added: 2026-09-07
+    revised: ""
+    notes: "capacity32，76-byte rows，i64 read/write sequence；单一PLATFORM_SERIAL_INGRESS producer与主线程sole consumer。"
+
+  - name: accessible_screen_row_capacity_home
+    status: active
+    source: docs/architecture/adr-0001-mobile-accessibility-bridge.md
+    referenced_by: [docs/architecture/adr-0001-mobile-accessibility-bridge.md, design/gdd/home-ui.md, design/gdd/config-data-system.md]
+    value: 16
+    unit: accessible_rows
+    added: 2026-09-07
+    revised: ""
+
+  - name: accessible_screen_row_capacity_prep
+    status: active
+    source: docs/architecture/adr-0001-mobile-accessibility-bridge.md
+    referenced_by: [docs/architecture/adr-0001-mobile-accessibility-bridge.md, design/gdd/prep-ui.md, design/gdd/config-data-system.md]
+    value: 16
+    unit: accessible_rows
+    added: 2026-09-07
+    revised: ""
+
+  - name: accessible_screen_row_capacity_pre_active_choice
+    status: active
+    source: docs/architecture/adr-0001-mobile-accessibility-bridge.md
+    referenced_by: [docs/architecture/adr-0001-mobile-accessibility-bridge.md, design/gdd/skill-draft-system.md, design/gdd/config-data-system.md]
+    value: 12
+    unit: accessible_rows
+    added: 2026-09-07
+    revised: ""
+
+  - name: accessible_screen_row_capacity_battle_paused
+    status: active
+    source: docs/architecture/adr-0001-mobile-accessibility-bridge.md
+    referenced_by: [docs/architecture/adr-0001-mobile-accessibility-bridge.md, design/gdd/battle-ui.md, design/gdd/config-data-system.md]
+    value: 24
+    unit: accessible_rows
+    added: 2026-09-07
+    revised: ""
+
+  - name: accessible_screen_row_capacity_settlement
+    status: active
+    source: docs/architecture/adr-0001-mobile-accessibility-bridge.md
+    referenced_by: [docs/architecture/adr-0001-mobile-accessibility-bridge.md, design/gdd/settlement-system.md, design/gdd/config-data-system.md]
+    value: 24
+    unit: accessible_rows
+    added: 2026-09-07
+    revised: ""
+
+  - name: accessible_screen_row_capacity_controlled_fault
+    status: active
+    source: docs/architecture/adr-0001-mobile-accessibility-bridge.md
+    referenced_by: [docs/architecture/adr-0001-mobile-accessibility-bridge.md, design/gdd/battle-ui.md, design/gdd/game-root-scene-flow.md, design/gdd/config-data-system.md]
+    value: 12
+    unit: accessible_rows
+    added: 2026-09-07
+    revised: ""
+
+  - name: pre_active_offer_semantic_bytes
+    status: active
+    source: design/gdd/skill-draft-system.md
+    referenced_by: [design/gdd/skill-draft-system.md, design/gdd/zhangtian-bottle.md, design/gdd/save-system.md]
+    value: 252
+    unit: canonical_bytes
+    added: 2026-09-07
+    revised: ""
+    notes: "跨进程durable semantic carrier；pre_active_semantic_generation固定1，candidate_id由offer_revision和slot确定，排除snapshot/bank/generation/presentation等process-local identity。"
+
+  - name: pre_active_loadout_semantic_bytes
+    status: active
+    source: design/gdd/skill-draft-system.md
+    referenced_by: [design/gdd/skill-draft-system.md, design/gdd/zhangtian-bottle.md, design/gdd/save-system.md]
+    value: 296
+    unit: canonical_bytes
+    added: 2026-09-07
+    revised: ""
+    notes: "跨进程durable semantic carrier；当前进程从durable config content key重新绑定runtime carrier。"
+
+  - name: zhangtian_domain_payload_max_bytes
+    status: active
+    source: design/gdd/zhangtian-bottle.md
+    referenced_by: [design/gdd/zhangtian-bottle.md, design/gdd/save-system.md, design/gdd/config-data-system.md]
+    value: 132
+    unit: canonical_bytes
+    added: 2026-09-03
+    revised: ""
+
+  - name: pill_qi_starting_level_curve_credit
+    status: active
+    source: design/gdd/zhangtian-bottle.md
+    referenced_by: [design/gdd/zhangtian-bottle.md, design/gdd/prep-ui.md, design/gdd/drop-leveling-system.md, design/gdd/skill-draft-system.md]
+    value: 14
+    unit: xp_curve_credit
+    added: 2026-09-03
+    revised: ""
+    notes: "令初始Leveling为level2/xp0/total_applied_xp14并触发普通ordinal1 pre-active choice；到L40 remaining XP=16538，不伪造XP PICKUP fact。"
+
+  - name: pill_clear_mind_crit_bonus_points
+    status: active
+    source: design/gdd/zhangtian-bottle.md
+    referenced_by: [design/gdd/zhangtian-bottle.md, design/gdd/prep-ui.md, design/gdd/damage-system.md, design/gdd/config-data-system.md]
+    value: 0.08
+    unit: chance_points
+    added: 2026-09-03
+    revised: ""
+
+  - name: settlement_reward_row_capacity
+    status: active
+    source: design/gdd/settlement-system.md
+    referenced_by: [design/gdd/settlement-system.md, design/gdd/game-root-scene-flow.md, design/gdd/config-data-system.md]
+    value: 6
+    unit: reward_rows
+    added: 2026-09-03
+    revised: ""
+
+  - name: settlement_record_row_capacity
+    status: active
+    source: design/gdd/settlement-system.md
+    referenced_by: [design/gdd/settlement-system.md, design/gdd/game-root-scene-flow.md, design/gdd/config-data-system.md]
+    value: 3
+    unit: record_rows
+    added: 2026-09-03
+    revised: ""
+
+  - name: settlement_domain_payload_max_bytes
+    status: active
+    source: design/gdd/settlement-system.md
+    referenced_by: [design/gdd/settlement-system.md, design/gdd/save-system.md, design/gdd/config-data-system.md]
+    value: 136
+    unit: canonical_bytes
+    added: 2026-09-03
+    revised: ""
+
+  - name: settlement_spirit_stone_xp_divisor
+    status: provisional
+    source: design/gdd/settlement-system.md
+    referenced_by: [design/gdd/settlement-system.md, design/gdd/config-data-system.md]
+    value: 4
+    unit: xp_per_stone
+    added: 2026-09-03
+    revised: ""
+
+  - name: settlement_victory_stone_bonus
+    status: provisional
+    source: design/gdd/settlement-system.md
+    referenced_by: [design/gdd/settlement-system.md, design/gdd/config-data-system.md]
+    value: 100
+    unit: spirit_stones
+    added: 2026-09-03
+    revised: ""
+
+  - name: settings_domain_payload_max_bytes
+    status: active
+    source: design/gdd/home-ui.md
+    referenced_by: [design/gdd/home-ui.md, design/gdd/save-system.md, design/gdd/config-data-system.md]
+    value: 60
+    unit: canonical_bytes
+    added: 2026-09-03
+    revised: ""
+
+  - name: ui_min_touch_target_logical_px
+    status: active
+    source: design/gdd/home-ui.md
+    referenced_by: [design/gdd/home-ui.md, design/gdd/prep-ui.md, design/gdd/battle-ui.md]
+    value: 56
+    unit: logical_px
+    added: 2026-09-03
+    revised: ""
+
+  - name: ui_content_max_width
+    status: active
+    source: design/gdd/home-ui.md
+    referenced_by: [design/gdd/home-ui.md, design/gdd/prep-ui.md]
+    value: 600
+    unit: logical_px
+    added: 2026-09-03
+    revised: ""
+
+  - name: save_executor_result_mailbox_bytes
+    status: active
+    source: design/gdd/save-system.md
+    referenced_by: [design/gdd/save-system.md, design/gdd/game-root-scene-flow.md, .claude/docs/technical-preferences.md]
+    value: 484
+    unit: canonical_bytes
+    added: 2026-09-07
+    revised: 2026-09-08
+    notes: "SaveExecutorResultMailboxV3 header44 + capacity2×220-byte rows；每行内联最多204-byte canonical typed result。pre-V3 row layout已弃用。"
+
+  - name: reservation_create_result_bytes
+    status: active
+    source: design/gdd/save-system.md
+    referenced_by: [design/gdd/game-root-scene-flow.md, design/gdd/prep-ui.md, design/gdd/audio-feedback.md, design/gdd/zhangtian-bottle.md]
+    value: 204
+    unit: canonical_bytes
+    added: 2026-09-08
+    revised: ""
+    notes: "ReservationCreateResultV3；回显source correlation、operation/recovery identity与全部allocated identity。"
+
+  - name: save_executor_result_row_bytes
+    status: active
+    source: design/gdd/save-system.md
+    referenced_by: [design/gdd/game-root-scene-flow.md, .claude/docs/technical-preferences.md]
+    value: 220
+    unit: canonical_bytes
+    added: 2026-09-08
+    revised: ""
+    notes: "SaveExecutorResultRowV3固定16-byte control + 204-byte payload。"
+
+  - name: save_terminal_run_result_bytes
+    status: active
+    source: design/gdd/save-system.md
+    referenced_by: [design/gdd/save-system.md, design/gdd/game-root-scene-flow.md, design/gdd/audio-feedback.md]
+    value: 160
+    unit: canonical_bytes
+    added: 2026-09-07
+    revised: ""
+
+  - name: accessibility_native_ingress_capacity
+    status: active
+    source: docs/architecture/adr-0001-mobile-accessibility-bridge.md
+    referenced_by: [design/gdd/game-root-scene-flow.md, .claude/docs/technical-preferences.md]
+    value: 64
+    unit: native_callbacks
+    added: 2026-09-07
+    revised: ""
+
+  - name: accessibility_native_mpsc_ingress_bytes
+    status: active
+    source: docs/architecture/adr-0001-mobile-accessibility-bridge.md
+    referenced_by: [design/gdd/game-root-scene-flow.md, design/gdd/config-data-system.md, .claude/docs/technical-preferences.md, docs/registry/architecture.yaml]
+    value: 6208
+    unit: canonical_bytes
+    added: 2026-09-08
+    revised: ""
+    notes: "AccessibilityNativeMpscIngressV1固定64-byte header + 64×96-byte per-slot-sequence rows。"
+
+  - name: accessibility_native_action_payload_bytes
+    status: active
+    source: docs/architecture/adr-0001-mobile-accessibility-bridge.md
+    referenced_by: [docs/architecture/adr-0001-mobile-accessibility-bridge.md, design/gdd/game-root-scene-flow.md]
+    value: 68
+    unit: canonical_bytes
+    added: 2026-09-08
+    revised: ""
+    notes: "Native MPSC row payload excludes serially allocated native_event_sequence；serial ingress reconstructs 76-byte AccessibilityActionCommandV2."
+
+  - name: accessibility_node_contract_rows
+    status: active
+    source: docs/architecture/adr-0001-mobile-accessibility-bridge.md
+    referenced_by: [docs/architecture/adr-0001-mobile-accessibility-bridge.md, docs/registry/architecture.yaml]
+    value: 102
+    unit: manifest_rows
+    added: 2026-09-08
+    revised: ""
+    notes: "Includes mutually exclusive BATTLE_PAUSED choice rows; runtime simultaneous row count remains <=24."
+
+  - name: settlement_accessible_detail_window_rows
+    status: active
+    source: design/gdd/settlement-system.md
+    referenced_by: [docs/architecture/adr-0001-mobile-accessibility-bridge.md, design/gdd/config-data-system.md]
+    value: 6
+    unit: semantic_rows_per_page
+    added: 2026-09-07
+    revised: ""
+
+  - name: config_retained_artifact_max_count
+    status: active
+    source: design/gdd/config-data-system.md
+    referenced_by: [design/gdd/zhangtian-bottle.md, design/gdd/skill-draft-system.md]
+    value: 32
+    unit: artifacts_per_save_schema_lifetime
+    added: 2026-09-07
+    revised: ""
+
+  - name: config_retained_artifact_max_bytes
+    status: active
+    source: design/gdd/config-data-system.md
+    referenced_by: [design/gdd/zhangtian-bottle.md, design/gdd/skill-draft-system.md]
+    value: 16777216
+    unit: bytes
+    added: 2026-09-07
+    revised: ""
 
 # Example:
 #
@@ -166,3 +3345,21 @@ constants: []
 #     unit: slots
 #     added: 2026-03-26
 #     revised: ""
+
+# WP04b adapter registration (not new formal BATTLE_RULES owners or capacities):
+# SteamSaveDomains / LEGACY_STAGE_PC_V1: design/gdd/steam-save-domain-adapters.md
+# Machine route: design/registry/manifests/steam-save-mission-contracts-v1.json
+# Seven domain structures exist; complete commercial owner semantics/budget OPEN.
+
+# WP04c recovery-contract route (no new gameplay capacity constants):
+# SteamRecoveryContract: src/data/steam_recovery_contract.gd
+# Responsibility inventory: design/registry/manifests/steam-recovery-responsibilities-v1.json
+# IDs in that inventory are responsibility labels, not installed runtime owner IDs.
+# All commercial bounds remain null/OPEN; no test ceiling promoted to registry value.
+
+# 2026-09-16 Chapter two playable increment: ADR-0010 / design/chapter-two-playable.md
+# S1-M02-01..08: CAMPAIGN_CHAPTER2_V1, thermal vents / escort / S1-E02 / furnace doors.
+# Scoped evidence: production/playtest-evidence/2026-09-16-chapter-two.md; battle_ready=false.
+
+# 2026-09-17 M03-01..08 local playable: ADR-0011 / CAMPAIGN_CHAPTER3_V1.
+# Report: production/playtest-evidence/2026-09-17-chapter-three.md; battle_ready=false; later chapter QA failures remain OPEN.

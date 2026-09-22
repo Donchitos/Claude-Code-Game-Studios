@@ -1,0 +1,11 @@
+{
+	"arguments": [
+		"--alternate-build",
+		"--risk-route",
+		"--evidence-root=res://production/playtest-evidence/package-g-2026-09-16/g2-final"
+	],
+	"content_hash": "aaa6f439ff53eb5f8aba1da3cc77b96fef3e4acd70841a78ac1e9a86d136c196",
+	"engine": "4.7.1-stable (official)",
+	"scope": "automated test evidence, not human or release certification",
+	"suite": "g-pacing-audit"
+}

@@ -30,7 +30,7 @@
 #   Superseded entries:     Grep pattern="status: superseded"
 
 version: 1
-last_updated: ""
+last_updated: "2026-09-07"
 
 # ─── STATE OWNERSHIP ─────────────────────────────────────────────────────────
 # Who is the authoritative owner of each piece of shared game state.
@@ -71,7 +71,67 @@ state_ownership: []
 #
 # pattern options: signal | direct_call | event_bus | shared_resource | rpc | none
 
-interfaces: []
+interfaces:
+  - contract: mobile_accessibility_semantic_bridge
+    status: active
+    pattern: event_bus
+    producer: action-bearing-ui-presenters
+    consumers:
+      - mobile-accessibility-bridge
+      - android-accessibility-adapter
+      - ios-accessibility-adapter
+    adr: docs/architecture/adr-0001-mobile-accessibility-bridge.md
+    interface: "Main-thread immutable AccessibleScreenSnapshotV2 uses fixed row capacities HOME16/PREP16/PRE_ACTIVE_CHOICE12/BATTLE_ACTIVE1/BATTLE_PAUSED24/SETTLEMENT24/CONTROLLED_FAULT12, a 7-row hash manifest, 8 profile rows, 102 explicit per-node contract rows (including the one-node active pause gateway and mutually exclusive pause choice rows) and 35 state-variant rows; Settings uses ADJUSTABLE/SWITCH/COMBOBOX role profiles and Settlement details use a typed 6-row paged window. NATIVE_ANY callbacks first enter the 6208-byte MPSC64 using 68-byte native payload rows/per-slot sequence/CAS with no ticket holes, then one PLATFORM_SERIAL_INGRESS allocates native_event_sequence before the 2476-byte capacity32 SPSC; shutdown stops acceptance and drains MPSC batches into SPSC until both queues are empty. GameRoot is sole consumer and owns the CONTROLLED_FAULT presenter. Eight mapped keyboard/gamepad UI actions never write movement state; four focus actions remain presenter-local."
+    referenced_by:
+      - docs/architecture/adr-0001-mobile-accessibility-bridge.md
+      - design/gdd/home-ui.md
+      - design/gdd/prep-ui.md
+      - design/gdd/skill-draft-system.md
+      - design/gdd/battle-ui.md
+      - design/gdd/settlement-system.md
+      - design/gdd/game-root-scene-flow.md
+      - design/gdd/zhangtian-bottle.md
+    added: 2026-09-03
+    revised: 2026-09-08
+
+  - contract: terminal_run_single_slot_transaction
+    status: active
+    pattern: event_bus
+    producer: settlement-or-preoutcome-owner
+    consumers:
+      - save-system
+      - game-root
+      - audio-app
+    adr: design/gdd/save-system.md
+    interface: "Every MVP run, including NONE prep, terminates through exactly one ReservationUpdateRequestV2(RESOLVE) carrying 1112-byte ResolveReservationPayloadV3. The same slot transaction writes reward or tombstone, full next profile, 264-byte resolution, clears live reservation/marker, and returns 160-byte TerminalRunResultV2 through the 484-byte typed result mailbox. ReservationCreateResultV3 is 204 bytes and echoes five source-correlation fields including attempt generation plus operation identity; DurableReservationV2 is 1152 bytes and ZhangtianReservationPayloadV2 is 724 bytes. A second SaveCommitRequest is forbidden."
+    referenced_by:
+      - design/gdd/save-system.md
+      - design/gdd/game-root-scene-flow.md
+      - design/gdd/settlement-system.md
+      - design/gdd/zhangtian-bottle.md
+      - design/gdd/audio-feedback.md
+    added: 2026-09-07
+    revised: 2026-09-08
+
+  - contract: game_root_persistent_scene_lifetime
+    status: active
+    pattern: direct_call
+    producer: game-root
+    consumers:
+      - page-scopes
+      - battle-scope
+      - input-system
+      - battle-ui
+      - mobile-accessibility-bridge
+    adr: docs/architecture/adr-0002-game-root-persistent-scene.md
+    interface: "The project main scene owns exactly one persistent GameRoot from BOOT to application exit. Page and battle scopes are replaced children; the root Window/Viewport, SceneTree pause writer, gui_disable_input writer and app pumps remain owned by the same GameRoot identity. Battle children must detach before queue_free and may not instantiate a second GameRoot."
+    referenced_by:
+      - docs/architecture/adr-0002-game-root-persistent-scene.md
+      - design/gdd/game-root-scene-flow.md
+      - design/gdd/input-system.md
+      - design/gdd/battle-ui.md
+    added: 2026-09-09
+    revised: 2026-09-09
 
 # Example:
 #
@@ -157,7 +217,13 @@ api_decisions: []
 # Register a pattern when an ADR explicitly bans it AND other ADRs might
 # unknowingly use it (i.e., it's a tempting but wrong approach for this project).
 
-forbidden_patterns: []
+forbidden_patterns:
+  - pattern: native_accessibility_direct_business_write
+    status: active
+    description: "Android/iOS accessibility callbacks must return AccessibilityActionCommandV2 to the active presenter after screen/layout/hash validation; they may not call Save, inventory, TopState, or gameplay writers directly."
+    why: "Generation-bound typed commands prevent stale native callbacks from mutating a rebuilt screen or bypassing presenter ownership."
+    adr: docs/architecture/adr-0001-mobile-accessibility-bridge.md
+    added: 2026-09-03
 
 # Example:
 #

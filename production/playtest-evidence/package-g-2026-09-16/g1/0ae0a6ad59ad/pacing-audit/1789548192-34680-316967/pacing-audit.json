@@ -1,0 +1,749 @@
+{
+	"alternate": false,
+	"catalog_hash": "0ae0a6ad59ad1208df092ece6fcf509f55604013f4ac902e47f661fa63852533",
+	"rows": [
+		{
+			"attempted": 48,
+			"chapter": {},
+			"choices": [
+				7.18333333333331,
+				25.9166666666665,
+				31.1999999999995,
+				34.1999999999993,
+				54.2833333333315,
+				62.0666666666644
+			],
+			"damage_taken": 0.0,
+			"elapsed": 74.8333333333304,
+			"evolved": [],
+			"hostile_zone_seconds": 0.0,
+			"kills": 34,
+			"kind": "SURVIVE",
+			"max_live_non_target": 8,
+			"mission": "S1-M01-01",
+			"nearby_enemy_seconds": 3.3,
+			"objective_changes": [
+				{
+					"objective": [
+						0,
+						0,
+						0,
+						0
+					],
+					"seconds": 0
+				},
+				{
+					"objective": [
+						1,
+						0,
+						0,
+						0
+					],
+					"seconds": 74.8333333333304
+				}
+			],
+			"planned": 48,
+			"skipped": 14,
+			"stages": [
+				{
+					"attempted": 8,
+					"id": "LEARN_MOVE",
+					"planned": 8,
+					"trigger_seconds": 0.0
+				},
+				{
+					"attempted": 16,
+					"id": "LEARN_SIDES",
+					"planned": 16,
+					"trigger_seconds": 20.0
+				},
+				{
+					"attempted": 24,
+					"id": "LEARN_WIND",
+					"planned": 24,
+					"trigger_seconds": 45.0
+				}
+			]
+		},
+		{
+			"attempted": 32,
+			"chapter": {},
+			"choices": [
+				3.23333333333333,
+				8.36666666666666,
+				11.3666666666668,
+				14.366666666667
+			],
+			"damage_taken": 0.0,
+			"elapsed": 15.2333333333337,
+			"evolved": [],
+			"hostile_zone_seconds": 0.0,
+			"kills": 18,
+			"kind": "BREAK",
+			"max_live_non_target": 22,
+			"mission": "S1-M01-02",
+			"nearby_enemy_seconds": 11.0666666666667,
+			"objective_changes": [
+				{
+					"objective": [
+						0,
+						0,
+						0,
+						0
+					],
+					"seconds": 0
+				},
+				{
+					"objective": [
+						1,
+						0,
+						0,
+						0
+					],
+					"seconds": 2.86666666666666
+				},
+				{
+					"objective": [
+						2,
+						0,
+						0,
+						0
+					],
+					"seconds": 6.78333333333331
+				},
+				{
+					"objective": [
+						3,
+						0,
+						0,
+						0
+					],
+					"seconds": 15.2333333333337
+				}
+			],
+			"planned": 32,
+			"skipped": 5,
+			"stages": [
+				{
+					"attempted": 8,
+					"id": "NORTH_FANGS",
+					"planned": 8,
+					"trigger_seconds": 0.0
+				},
+				{
+					"attempted": 8,
+					"id": "SOUTH_SPITTERS",
+					"planned": 8,
+					"trigger_seconds": 0.0
+				},
+				{
+					"attempted": 16,
+					"id": "TWO_SIDES",
+					"planned": 16,
+					"trigger_seconds": 2.86666666666667
+				}
+			]
+		},
+		{
+			"attempted": 30,
+			"chapter": {},
+			"choices": [
+				6.71666666666665,
+				10.0500000000001,
+				13.0500000000002,
+				16.5833333333337
+			],
+			"damage_taken": 0.0,
+			"elapsed": 20.1833333333335,
+			"evolved": [],
+			"hostile_zone_seconds": 0.0,
+			"kills": 18,
+			"kind": "ESCORT",
+			"max_live_non_target": 12,
+			"mission": "S1-M01-03",
+			"nearby_enemy_seconds": 8.28333333333333,
+			"objective_changes": [
+				{
+					"objective": [
+						0,
+						0,
+						0,
+						0
+					],
+					"seconds": 0
+				},
+				{
+					"objective": [
+						1,
+						1,
+						0,
+						0
+					],
+					"seconds": 0.0166666666666667
+				},
+				{
+					"objective": [
+						2,
+						2,
+						0,
+						0
+					],
+					"seconds": 6.14999999999998
+				},
+				{
+					"objective": [
+						3,
+						3,
+						0,
+						0
+					],
+					"seconds": 13.7166666666669
+				},
+				{
+					"objective": [
+						4,
+						4,
+						0,
+						0
+					],
+					"seconds": 20.1833333333335
+				}
+			],
+			"planned": 32,
+			"skipped": 4,
+			"stages": [
+				{
+					"attempted": 8,
+					"id": "SET_OUT",
+					"planned": 8,
+					"trigger_seconds": 0.0
+				},
+				{
+					"attempted": 8,
+					"id": "NORTH_RIDGE",
+					"planned": 8,
+					"trigger_seconds": 0.0166666666666667
+				},
+				{
+					"attempted": 8,
+					"id": "SOUTH_BEND",
+					"planned": 8,
+					"trigger_seconds": 6.15
+				},
+				{
+					"attempted": 6,
+					"id": "HOME_STRETCH",
+					"planned": 8,
+					"trigger_seconds": 13.7166666666667
+				}
+			]
+		},
+		{
+			"attempted": 11,
+			"chapter": {
+				"attacks": [
+					0,
+					0,
+					0
+				],
+				"boss_phase": 0,
+				"clues": 3,
+				"error": "",
+				"first_warning": [
+					-1,
+					-1,
+					-1
+				],
+				"hits": [
+					0,
+					0,
+					0
+				],
+				"hunt_spawned": true,
+				"kill_tick": -1,
+				"landings": [],
+				"retry": 0,
+				"root_mask": 0
+			},
+			"choices": [
+				1.93333333333333,
+				4.93333333333332
+			],
+			"damage_taken": 0.0,
+			"elapsed": 9.33333333333338,
+			"evolved": [],
+			"hostile_zone_seconds": 1.4,
+			"kills": 3,
+			"kind": "HUNT",
+			"max_live_non_target": 7,
+			"mission": "S1-M01-04",
+			"nearby_enemy_seconds": 1.81666666666667,
+			"objective_changes": [
+				{
+					"objective": [
+						0,
+						0,
+						0,
+						0
+					],
+					"seconds": 0
+				},
+				{
+					"objective": [
+						0,
+						0,
+						1,
+						0
+					],
+					"seconds": 1.85
+				},
+				{
+					"objective": [
+						0,
+						0,
+						2,
+						0
+					],
+					"seconds": 4.09999999999999
+				},
+				{
+					"objective": [
+						0,
+						0,
+						3,
+						0
+					],
+					"seconds": 6.11666666666665
+				},
+				{
+					"objective": [
+						1,
+						0,
+						3,
+						0
+					],
+					"seconds": 9.33333333333338
+				}
+			],
+			"planned": 12,
+			"skipped": 3,
+			"stages": [
+				{
+					"attempted": 6,
+					"id": "CLUE_AMBUSH",
+					"planned": 6,
+					"trigger_seconds": 1.85
+				},
+				{
+					"attempted": 5,
+					"id": "TRAIL_SIDES",
+					"planned": 6,
+					"trigger_seconds": 4.1
+				}
+			]
+		},
+		{
+			"attempted": 35,
+			"chapter": {
+				"attacks": [
+					0,
+					0,
+					0
+				],
+				"boss_phase": 0,
+				"clues": 0,
+				"error": "",
+				"first_warning": [
+					-1,
+					-1,
+					-1
+				],
+				"hits": [
+					0,
+					0,
+					0
+				],
+				"hunt_spawned": false,
+				"kill_tick": -1,
+				"landings": [],
+				"retry": 0,
+				"root_mask": 0
+			},
+			"choices": [
+				10.2000000000001,
+				13.6833333333336,
+				16.6833333333337
+			],
+			"damage_taken": 0.0,
+			"elapsed": 20.1833333333335,
+			"evolved": [],
+			"hostile_zone_seconds": 20.1833333333333,
+			"kills": 15,
+			"kind": "CLEANSE",
+			"max_live_non_target": 13,
+			"mission": "S1-M01-05",
+			"nearby_enemy_seconds": 8.2,
+			"objective_changes": [
+				{
+					"objective": [
+						0,
+						0,
+						0,
+						0
+					],
+					"seconds": 0
+				},
+				{
+					"objective": [
+						1,
+						1,
+						0,
+						0
+					],
+					"seconds": 7.53333333333331
+				},
+				{
+					"objective": [
+						2,
+						2,
+						0,
+						0
+					],
+					"seconds": 20.1833333333335
+				}
+			],
+			"planned": 40,
+			"skipped": 9,
+			"stages": [
+				{
+					"attempted": 10,
+					"id": "CLEANSE_0",
+					"planned": 10,
+					"trigger_seconds": 0.933333333333333
+				},
+				{
+					"attempted": 10,
+					"id": "CLEANSE_1",
+					"planned": 10,
+					"trigger_seconds": 4.23333333333333
+				},
+				{
+					"attempted": 10,
+					"id": "CLEANSE_2",
+					"planned": 10,
+					"trigger_seconds": 13.5833333333333
+				},
+				{
+					"attempted": 5,
+					"id": "CLEANSE_3",
+					"planned": 10,
+					"trigger_seconds": 16.8833333333333
+				}
+			]
+		},
+		{
+			"attempted": 121,
+			"chapter": {
+				"attacks": [
+					0,
+					0,
+					0
+				],
+				"boss_phase": 0,
+				"clues": 0,
+				"error": "",
+				"first_warning": [
+					-1,
+					-1,
+					-1
+				],
+				"hits": [
+					0,
+					0,
+					0
+				],
+				"hunt_spawned": false,
+				"kill_tick": -1,
+				"landings": [],
+				"retry": 0,
+				"root_mask": 0
+			},
+			"choices": [
+				5.51666666666665,
+				12.7666666666669,
+				15.766666666667,
+				24.4666666666666,
+				31.6166666666662,
+				36.4999999999992,
+				41.6833333333322,
+				54.3166666666649,
+				62.6666666666644,
+				71.9499999999972
+			],
+			"damage_taken": 4.0,
+			"elapsed": 95.5666666666625,
+			"evolved": [
+				"S1-V01"
+			],
+			"hostile_zone_seconds": 95.5666666666667,
+			"kills": 96,
+			"kind": "SURVIVE",
+			"max_live_non_target": 14,
+			"mission": "S1-M01-06",
+			"nearby_enemy_seconds": 34.1166666666667,
+			"objective_changes": [
+				{
+					"objective": [
+						0,
+						0,
+						0,
+						0
+					],
+					"seconds": 0
+				},
+				{
+					"objective": [
+						1,
+						0,
+						0,
+						0
+					],
+					"seconds": 95.5666666666625
+				}
+			],
+			"planned": 121,
+			"skipped": 25,
+			"stages": [
+				{
+					"attempted": 24,
+					"id": "HOLD_0",
+					"planned": 24,
+					"trigger_seconds": 0.0
+				},
+				{
+					"attempted": 24,
+					"id": "HOLD_1",
+					"planned": 24,
+					"trigger_seconds": 15.0
+				},
+				{
+					"attempted": 24,
+					"id": "HOLD_2",
+					"planned": 24,
+					"trigger_seconds": 30.0
+				},
+				{
+					"attempted": 24,
+					"id": "HOLD_3",
+					"planned": 24,
+					"trigger_seconds": 45.0
+				},
+				{
+					"attempted": 24,
+					"id": "HOLD_4",
+					"planned": 24,
+					"trigger_seconds": 60.0
+				},
+				{
+					"attempted": 1,
+					"id": "ONE_ELITE",
+					"planned": 1,
+					"trigger_seconds": 60.0
+				}
+			]
+		},
+		{
+			"attempted": 18,
+			"chapter": {
+				"attacks": [
+					0,
+					0,
+					0
+				],
+				"boss_phase": 0,
+				"clues": 0,
+				"error": "",
+				"first_warning": [
+					-1,
+					-1,
+					-1
+				],
+				"hits": [
+					0,
+					0,
+					0
+				],
+				"hunt_spawned": false,
+				"kill_tick": -1,
+				"landings": [],
+				"retry": 0,
+				"root_mask": 7
+			},
+			"choices": [
+				5.56666666666665,
+				10.4833333333334,
+				14.5833333333336
+			],
+			"damage_taken": 0.0,
+			"elapsed": 19.4666666666668,
+			"evolved": [],
+			"hostile_zone_seconds": 14.25,
+			"kills": 14,
+			"kind": "BREAK",
+			"max_live_non_target": 9,
+			"mission": "S1-M01-07",
+			"nearby_enemy_seconds": 13.5333333333333,
+			"objective_changes": [
+				{
+					"objective": [
+						0,
+						0,
+						0,
+						0
+					],
+					"seconds": 0
+				},
+				{
+					"objective": [
+						1,
+						0,
+						0,
+						0
+					],
+					"seconds": 6.13333333333332
+				},
+				{
+					"objective": [
+						2,
+						0,
+						0,
+						0
+					],
+					"seconds": 17.1833333333336
+				},
+				{
+					"objective": [
+						3,
+						0,
+						0,
+						0
+					],
+					"seconds": 19.4666666666668
+				}
+			],
+			"planned": 18,
+			"skipped": 7,
+			"stages": [
+				{
+					"attempted": 6,
+					"id": "LOCK_0",
+					"planned": 6,
+					"trigger_seconds": 0.0
+				},
+				{
+					"attempted": 6,
+					"id": "LOCK_1",
+					"planned": 6,
+					"trigger_seconds": 0.0
+				},
+				{
+					"attempted": 6,
+					"id": "LOCK_2",
+					"planned": 6,
+					"trigger_seconds": 6.13333333333333
+				}
+			]
+		},
+		{
+			"attempted": 8,
+			"chapter": {
+				"attacks": [
+					4,
+					2,
+					1
+				],
+				"boss_phase": 2,
+				"clues": 0,
+				"error": "",
+				"first_warning": [
+					32,
+					636,
+					938
+				],
+				"hits": [
+					1,
+					1,
+					1
+				],
+				"hunt_spawned": false,
+				"kill_tick": 948,
+				"landings": [],
+				"retry": 0,
+				"root_mask": 0
+			},
+			"choices": [
+				9.41666666666671,
+				12.4166666666669,
+				15.416666666667
+			],
+			"damage_taken": 28.512,
+			"elapsed": 15.8000000000004,
+			"evolved": [],
+			"hostile_zone_seconds": 15.8,
+			"kills": 3,
+			"kind": "BOSS",
+			"max_live_non_target": 4,
+			"mission": "S1-M01-08",
+			"nearby_enemy_seconds": 14.3666666666667,
+			"objective_changes": [
+				{
+					"objective": [
+						0,
+						0,
+						0,
+						0
+					],
+					"seconds": 0
+				},
+				{
+					"objective": [
+						0,
+						0,
+						0,
+						1
+					],
+					"seconds": 9.95000000000007
+				},
+				{
+					"objective": [
+						0,
+						0,
+						0,
+						2
+					],
+					"seconds": 13.9166666666669
+				},
+				{
+					"objective": [
+						1,
+						0,
+						0,
+						2
+					],
+					"seconds": 15.8000000000004
+				}
+			],
+			"planned": 8,
+			"skipped": 5,
+			"stages": [
+				{
+					"attempted": 8,
+					"id": "BEAST_GUARD",
+					"planned": 8,
+					"trigger_seconds": 0.0
+				}
+			]
+		}
+	],
+	"scope": "natural bot telemetry; nearby means live non-target within 320 world units; hostile zones may be remote or warning; neither is human engagement"
+}

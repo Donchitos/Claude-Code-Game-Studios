@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<testsuites id="2026-05-16" name="report_1" tests="6" failures="5" skipped="1" flaky="0" time="0.000">
+	<testsuite id="0" name="TestSuiteAllStagesSuccess" package="addons/gdUnit4/test/reporters/resources/suites/folder with spaces" timestamp="2026-05-16T07:59:09" hostname="localhost" tests="2" failures="0" errors="0" skipped="0" flaky="0" time="0.010">
+		<testcase name="test_case1" classname="TestSuiteAllStagesSuccess" time="0.003">
+		</testcase>
+		<testcase name="test_case2" classname="TestSuiteAllStagesSuccess" time="0.002">
+		</testcase>
+	</testsuite>
+	<testsuite id="1" name="TestSuiteFailOnMultipeStages" package="addons/gdUnit4/test/reporters/resources/suites/folder with spaces" timestamp="2026-05-16T07:59:09" hostname="localhost" tests="2" failures="5" errors="0" skipped="0" flaky="0" time="0.010">
+		<testcase name="test_case1" classname="TestSuiteFailOnMultipeStages" time="0.003">
+			<failure message="FAILED: res://addons/gdUnit4/test/reporters/resources/suites/folder with spaces/TestSuiteFailOnMultipeStages.resource:11" type="FAILURE">
+<![CDATA[
+failed on before_test()
+	at 'before_test' in res://addons/gdUnit4/test/reporters/resources/suites/folder with spaces/TestSuiteFailOnMultipeStages.resource:11
+]]>
+			</failure>
+			<failure message="FAILED: res://addons/gdUnit4/test/reporters/resources/suites/folder with spaces/TestSuiteFailOnMultipeStages.resource:17" type="FAILURE">
+<![CDATA[
+failed 1 on test_case1()
+	at 'test_case1' in res://addons/gdUnit4/test/reporters/resources/suites/folder with spaces/TestSuiteFailOnMultipeStages.resource:17
+]]>
+			</failure>
+			<failure message="FAILED: res://addons/gdUnit4/test/reporters/resources/suites/folder with spaces/TestSuiteFailOnMultipeStages.resource:18" type="FAILURE">
+<![CDATA[
+failed 2 on test_case1()
+	at 'test_case1' in res://addons/gdUnit4/test/reporters/resources/suites/folder with spaces/TestSuiteFailOnMultipeStages.resource:18
+]]>
+			</failure>
+		</testcase>
+		<testcase name="test_case2" classname="TestSuiteFailOnMultipeStages" time="0.002">
+			<failure message="FAILED: res://addons/gdUnit4/test/reporters/resources/suites/folder with spaces/TestSuiteFailOnMultipeStages.resource:11" type="FAILURE">
+<![CDATA[
+failed on before_test()
+	at 'before_test' in res://addons/gdUnit4/test/reporters/resources/suites/folder with spaces/TestSuiteFailOnMultipeStages.resource:11
+]]>
+			</failure>
+		</testcase>
+	</testsuite>
+	<testsuite id="2" name="TestCaseSkipped" package="addons/gdUnit4/test/reporters/resources/suites/folder with spaces" timestamp="2026-05-16T07:59:09" hostname="localhost" tests="2" failures="0" errors="0" skipped="1" flaky="0" time="0.010">
+		<testcase name="test_case1" classname="TestCaseSkipped" time="0.000">
+			<skipped message="SKIPPED: res://addons/gdUnit4/test/reporters/resources/suites/folder with spaces/TestCaseSkipped.resource:5">
+<![CDATA[
+This test is skipped!
+  Reason: 'do not run this'
+]]>
+			</skipped>
+		</testcase>
+		<testcase name="test_case2" classname="TestCaseSkipped" time="0.003">
+		</testcase>
+	</testsuite>
+</testsuites>

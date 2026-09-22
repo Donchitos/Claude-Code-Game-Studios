@@ -1,0 +1,2402 @@
+[
+  {
+    "result": {
+      "elapsed": 46.683333333332,
+      "hp": 0.0,
+      "kills": 1,
+      "level": 2,
+      "max_hp": 228.0,
+      "victory": false
+    },
+    "seed": 1479748453,
+    "variant": {
+      "count": 5,
+      "interval": 45,
+      "offset": 300
+    }
+  },
+  {
+    "result": {
+      "elapsed": 84.7999999999965,
+      "hp": 228.0,
+      "kills": 2,
+      "level": 3,
+      "max_hp": 228.0,
+      "victory": true
+    },
+    "seed": 977,
+    "variant": {
+      "count": 5,
+      "interval": 45,
+      "offset": 300
+    }
+  },
+  {
+    "result": {
+      "elapsed": 71.7833333333305,
+      "hp": 228.0,
+      "kills": 1,
+      "level": 3,
+      "max_hp": 228.0,
+      "victory": true
+    },
+    "seed": 101,
+    "variant": {
+      "count": 5,
+      "interval": 45,
+      "offset": 300
+    }
+  },
+  {
+    "result": {
+      "elapsed": 46.8166666666653,
+      "hp": 9.78399999999993,
+      "kills": 3,
+      "level": 3,
+      "max_hp": 228.0,
+      "victory": true
+    },
+    "seed": 202,
+    "variant": {
+      "count": 5,
+      "interval": 45,
+      "offset": 300
+    }
+  },
+  {
+    "result": {
+      "elapsed": 84.7999999999965,
+      "hp": 228.0,
+      "kills": 1,
+      "level": 3,
+      "max_hp": 228.0,
+      "victory": true
+    },
+    "seed": 303,
+    "variant": {
+      "count": 5,
+      "interval": 45,
+      "offset": 300
+    }
+  },
+  {
+    "result": {
+      "elapsed": 83.4999999999965,
+      "hp": 228.0,
+      "kills": 3,
+      "level": 3,
+      "max_hp": 228.0,
+      "victory": true
+    },
+    "seed": 404,
+    "variant": {
+      "count": 5,
+      "interval": 45,
+      "offset": 300
+    }
+  },
+  {
+    "result": {
+      "elapsed": 74.3833333333304,
+      "hp": 228.0,
+      "kills": 2,
+      "level": 3,
+      "max_hp": 228.0,
+      "victory": true
+    },
+    "seed": 505,
+    "variant": {
+      "count": 5,
+      "interval": 45,
+      "offset": 300
+    }
+  },
+  {
+    "result": {
+      "elapsed": 58.6833333333313,
+      "hp": 228.0,
+      "kills": 2,
+      "level": 3,
+      "max_hp": 228.0,
+      "victory": true
+    },
+    "seed": 606,
+    "variant": {
+      "count": 5,
+      "interval": 45,
+      "offset": 300
+    }
+  },
+  {
+    "result": {
+      "elapsed": 87.3999999999963,
+      "hp": 228.0,
+      "kills": 3,
+      "level": 3,
+      "max_hp": 228.0,
+      "victory": true
+    },
+    "seed": 707,
+    "variant": {
+      "count": 5,
+      "interval": 45,
+      "offset": 300
+    }
+  },
+  {
+    "result": {
+      "elapsed": 44.0333333333321,
+      "hp": 26.3439999999999,
+      "kills": 3,
+      "level": 3,
+      "max_hp": 228.0,
+      "victory": true
+    },
+    "seed": 809,
+    "variant": {
+      "count": 5,
+      "interval": 45,
+      "offset": 300
+    }
+  },
+  {
+    "result": {
+      "elapsed": 82.1999999999966,
+      "hp": 228.0,
+      "kills": 3,
+      "level": 3,
+      "max_hp": 228.0,
+      "victory": true
+    },
+    "seed": 919,
+    "variant": {
+      "count": 5,
+      "interval": 45,
+      "offset": 300
+    }
+  },
+  {
+    "result": {
+      "elapsed": 62.5833333333311,
+      "hp": 228.0,
+      "kills": 2,
+      "level": 3,
+      "max_hp": 228.0,
+      "victory": true
+    },
+    "seed": 1031,
+    "variant": {
+      "count": 5,
+      "interval": 45,
+      "offset": 300
+    }
+  },
+  {
+    "result": {
+      "elapsed": 74.3999999999971,
+      "hp": 228.0,
+      "kills": 1,
+      "level": 3,
+      "max_hp": 228.0,
+      "victory": true
+    },
+    "seed": 1151,
+    "variant": {
+      "count": 5,
+      "interval": 45,
+      "offset": 300
+    }
+  },
+  {
+    "result": {
+      "elapsed": 31.7333333333328,
+      "hp": 0.0,
+      "kills": 2,
+      "level": 2,
+      "max_hp": 228.0,
+      "victory": false
+    },
+    "seed": 1277,
+    "variant": {
+      "count": 5,
+      "interval": 45,
+      "offset": 300
+    }
+  },
+  {
+    "result": {
+      "elapsed": 74.3999999999971,
+      "hp": 228.0,
+      "kills": 2,
+      "level": 3,
+      "max_hp": 228.0,
+      "victory": true
+    },
+    "seed": 1381,
+    "variant": {
+      "count": 5,
+      "interval": 45,
+      "offset": 300
+    }
+  },
+  {
+    "result": {
+      "elapsed": 71.7833333333305,
+      "hp": 228.0,
+      "kills": 1,
+      "level": 3,
+      "max_hp": 228.0,
+      "victory": true
+    },
+    "seed": 1493,
+    "variant": {
+      "count": 5,
+      "interval": 45,
+      "offset": 300
+    }
+  },
+  {
+    "result": {
+      "elapsed": 46.2166666666653,
+      "hp": 228.0,
+      "kills": 2,
+      "level": 3,
+      "max_hp": 228.0,
+      "victory": true
+    },
+    "seed": 1601,
+    "variant": {
+      "count": 5,
+      "interval": 45,
+      "offset": 300
+    }
+  },
+  {
+    "result": {
+      "elapsed": 47.3333333333319,
+      "hp": 0.0,
+      "kills": 2,
+      "level": 3,
+      "max_hp": 228.0,
+      "victory": false
+    },
+    "seed": 1723,
+    "variant": {
+      "count": 5,
+      "interval": 45,
+      "offset": 300
+    }
+  },
+  {
+    "result": {
+      "elapsed": 74.3999999999971,
+      "hp": 228.0,
+      "kills": 1,
+      "level": 3,
+      "max_hp": 228.0,
+      "victory": true
+    },
+    "seed": 1831,
+    "variant": {
+      "count": 5,
+      "interval": 45,
+      "offset": 300
+    }
+  },
+  {
+    "result": {
+      "elapsed": 69.066666666664,
+      "hp": 228.0,
+      "kills": 2,
+      "level": 3,
+      "max_hp": 228.0,
+      "victory": true
+    },
+    "seed": 1949,
+    "variant": {
+      "count": 5,
+      "interval": 45,
+      "offset": 300
+    }
+  },
+  {
+    "result": {
+      "elapsed": 78.2999999999968,
+      "hp": 228.0,
+      "kills": 2,
+      "level": 3,
+      "max_hp": 228.0,
+      "victory": true
+    },
+    "seed": 2063,
+    "variant": {
+      "count": 5,
+      "interval": 45,
+      "offset": 300
+    }
+  },
+  {
+    "result": {
+      "elapsed": 88.6833333333296,
+      "hp": 228.0,
+      "kills": 1,
+      "level": 3,
+      "max_hp": 228.0,
+      "victory": true
+    },
+    "seed": 2179,
+    "variant": {
+      "count": 5,
+      "interval": 45,
+      "offset": 300
+    }
+  },
+  {
+    "result": {
+      "elapsed": 83.4999999999965,
+      "hp": 228.0,
+      "kills": 3,
+      "level": 3,
+      "max_hp": 228.0,
+      "victory": true
+    },
+    "seed": 2287,
+    "variant": {
+      "count": 5,
+      "interval": 45,
+      "offset": 300
+    }
+  },
+  {
+    "result": {
+      "elapsed": 47.3333333333319,
+      "hp": 0.0,
+      "kills": 1,
+      "level": 3,
+      "max_hp": 228.0,
+      "victory": false
+    },
+    "seed": 2399,
+    "variant": {
+      "count": 5,
+      "interval": 45,
+      "offset": 300
+    }
+  },
+  {
+    "result": {
+      "elapsed": 73.0833333333305,
+      "hp": 228.0,
+      "kills": 3,
+      "level": 3,
+      "max_hp": 228.0,
+      "victory": true
+    },
+    "seed": 2503,
+    "variant": {
+      "count": 5,
+      "interval": 45,
+      "offset": 300
+    }
+  },
+  {
+    "result": {
+      "elapsed": 76.9999999999969,
+      "hp": 228.0,
+      "kills": 2,
+      "level": 3,
+      "max_hp": 228.0,
+      "victory": true
+    },
+    "seed": 1479748453,
+    "variant": {
+      "count": 5,
+      "interval": 45,
+      "offset": 450
+    }
+  },
+  {
+    "result": {
+      "elapsed": 84.7999999999965,
+      "hp": 228.0,
+      "kills": 1,
+      "level": 3,
+      "max_hp": 228.0,
+      "victory": true
+    },
+    "seed": 977,
+    "variant": {
+      "count": 5,
+      "interval": 45,
+      "offset": 450
+    }
+  },
+  {
+    "result": {
+      "elapsed": 74.3999999999971,
+      "hp": 228.0,
+      "kills": 2,
+      "level": 3,
+      "max_hp": 228.0,
+      "victory": true
+    },
+    "seed": 101,
+    "variant": {
+      "count": 5,
+      "interval": 45,
+      "offset": 450
+    }
+  },
+  {
+    "result": {
+      "elapsed": 84.7999999999965,
+      "hp": 228.0,
+      "kills": 1,
+      "level": 3,
+      "max_hp": 228.0,
+      "victory": true
+    },
+    "seed": 202,
+    "variant": {
+      "count": 5,
+      "interval": 45,
+      "offset": 450
+    }
+  },
+  {
+    "result": {
+      "elapsed": 84.7999999999965,
+      "hp": 228.0,
+      "kills": 1,
+      "level": 3,
+      "max_hp": 228.0,
+      "victory": true
+    },
+    "seed": 303,
+    "variant": {
+      "count": 5,
+      "interval": 45,
+      "offset": 450
+    }
+  },
+  {
+    "result": {
+      "elapsed": 84.7999999999965,
+      "hp": 228.0,
+      "kills": 1,
+      "level": 3,
+      "max_hp": 228.0,
+      "victory": true
+    },
+    "seed": 404,
+    "variant": {
+      "count": 5,
+      "interval": 45,
+      "offset": 450
+    }
+  },
+  {
+    "result": {
+      "elapsed": 74.3999999999971,
+      "hp": 228.0,
+      "kills": 1,
+      "level": 3,
+      "max_hp": 228.0,
+      "victory": true
+    },
+    "seed": 505,
+    "variant": {
+      "count": 5,
+      "interval": 45,
+      "offset": 450
+    }
+  },
+  {
+    "result": {
+      "elapsed": 56.0833333333314,
+      "hp": 228.0,
+      "kills": 1,
+      "level": 3,
+      "max_hp": 228.0,
+      "victory": true
+    },
+    "seed": 606,
+    "variant": {
+      "count": 5,
+      "interval": 45,
+      "offset": 450
+    }
+  },
+  {
+    "result": {
+      "elapsed": 84.7999999999965,
+      "hp": 228.0,
+      "kills": 1,
+      "level": 3,
+      "max_hp": 228.0,
+      "victory": true
+    },
+    "seed": 707,
+    "variant": {
+      "count": 5,
+      "interval": 45,
+      "offset": 450
+    }
+  },
+  {
+    "result": {
+      "elapsed": 84.7999999999965,
+      "hp": 228.0,
+      "kills": 1,
+      "level": 3,
+      "max_hp": 228.0,
+      "victory": true
+    },
+    "seed": 809,
+    "variant": {
+      "count": 5,
+      "interval": 45,
+      "offset": 450
+    }
+  },
+  {
+    "result": {
+      "elapsed": 46.6499999999986,
+      "hp": 0.0,
+      "kills": 1,
+      "level": 2,
+      "max_hp": 228.0,
+      "victory": false
+    },
+    "seed": 919,
+    "variant": {
+      "count": 5,
+      "interval": 45,
+      "offset": 450
+    }
+  },
+  {
+    "result": {
+      "elapsed": 78.2999999999968,
+      "hp": 228.0,
+      "kills": 1,
+      "level": 3,
+      "max_hp": 228.0,
+      "victory": true
+    },
+    "seed": 1031,
+    "variant": {
+      "count": 5,
+      "interval": 45,
+      "offset": 450
+    }
+  },
+  {
+    "result": {
+      "elapsed": 76.9999999999969,
+      "hp": 228.0,
+      "kills": 2,
+      "level": 3,
+      "max_hp": 228.0,
+      "victory": true
+    },
+    "seed": 1151,
+    "variant": {
+      "count": 5,
+      "interval": 45,
+      "offset": 450
+    }
+  },
+  {
+    "result": {
+      "elapsed": 84.7999999999965,
+      "hp": 228.0,
+      "kills": 1,
+      "level": 3,
+      "max_hp": 228.0,
+      "victory": true
+    },
+    "seed": 1277,
+    "variant": {
+      "count": 5,
+      "interval": 45,
+      "offset": 450
+    }
+  },
+  {
+    "result": {
+      "elapsed": 74.3999999999971,
+      "hp": 228.0,
+      "kills": 1,
+      "level": 3,
+      "max_hp": 228.0,
+      "victory": true
+    },
+    "seed": 1381,
+    "variant": {
+      "count": 5,
+      "interval": 45,
+      "offset": 450
+    }
+  },
+  {
+    "result": {
+      "elapsed": 71.7833333333305,
+      "hp": 228.0,
+      "kills": 1,
+      "level": 3,
+      "max_hp": 228.0,
+      "victory": true
+    },
+    "seed": 1493,
+    "variant": {
+      "count": 5,
+      "interval": 45,
+      "offset": 450
+    }
+  },
+  {
+    "result": {
+      "elapsed": 56.0833333333314,
+      "hp": 228.0,
+      "kills": 1,
+      "level": 3,
+      "max_hp": 228.0,
+      "victory": true
+    },
+    "seed": 1601,
+    "variant": {
+      "count": 5,
+      "interval": 45,
+      "offset": 450
+    }
+  },
+  {
+    "result": {
+      "elapsed": 50.9999999999984,
+      "hp": 228.0,
+      "kills": 1,
+      "level": 3,
+      "max_hp": 228.0,
+      "victory": true
+    },
+    "seed": 1723,
+    "variant": {
+      "count": 5,
+      "interval": 45,
+      "offset": 450
+    }
+  },
+  {
+    "result": {
+      "elapsed": 80.8999999999967,
+      "hp": 228.0,
+      "kills": 2,
+      "level": 3,
+      "max_hp": 228.0,
+      "victory": true
+    },
+    "seed": 1831,
+    "variant": {
+      "count": 5,
+      "interval": 45,
+      "offset": 450
+    }
+  },
+  {
+    "result": {
+      "elapsed": 80.8999999999967,
+      "hp": 228.0,
+      "kills": 1,
+      "level": 3,
+      "max_hp": 228.0,
+      "victory": true
+    },
+    "seed": 1949,
+    "variant": {
+      "count": 5,
+      "interval": 45,
+      "offset": 450
+    }
+  },
+  {
+    "result": {
+      "elapsed": 82.1999999999966,
+      "hp": 228.0,
+      "kills": 1,
+      "level": 3,
+      "max_hp": 228.0,
+      "victory": true
+    },
+    "seed": 2063,
+    "variant": {
+      "count": 5,
+      "interval": 45,
+      "offset": 450
+    }
+  },
+  {
+    "result": {
+      "elapsed": 88.6833333333296,
+      "hp": 228.0,
+      "kills": 1,
+      "level": 3,
+      "max_hp": 228.0,
+      "victory": true
+    },
+    "seed": 2179,
+    "variant": {
+      "count": 5,
+      "interval": 45,
+      "offset": 450
+    }
+  },
+  {
+    "result": {
+      "elapsed": 84.7999999999965,
+      "hp": 228.0,
+      "kills": 1,
+      "level": 3,
+      "max_hp": 228.0,
+      "victory": true
+    },
+    "seed": 2287,
+    "variant": {
+      "count": 5,
+      "interval": 45,
+      "offset": 450
+    }
+  },
+  {
+    "result": {
+      "elapsed": 84.7999999999965,
+      "hp": 228.0,
+      "kills": 1,
+      "level": 3,
+      "max_hp": 228.0,
+      "victory": true
+    },
+    "seed": 2399,
+    "variant": {
+      "count": 5,
+      "interval": 45,
+      "offset": 450
+    }
+  },
+  {
+    "result": {
+      "elapsed": 69.1999999999974,
+      "hp": 228.0,
+      "kills": 1,
+      "level": 3,
+      "max_hp": 228.0,
+      "victory": true
+    },
+    "seed": 2503,
+    "variant": {
+      "count": 5,
+      "interval": 45,
+      "offset": 450
+    }
+  },
+  {
+    "result": {
+      "elapsed": 46.683333333332,
+      "hp": 0.0,
+      "kills": 1,
+      "level": 2,
+      "max_hp": 228.0,
+      "victory": false
+    },
+    "seed": 1479748453,
+    "variant": {
+      "count": 5,
+      "interval": 60,
+      "offset": 300
+    }
+  },
+  {
+    "result": {
+      "elapsed": 84.7999999999965,
+      "hp": 228.0,
+      "kills": 2,
+      "level": 3,
+      "max_hp": 228.0,
+      "victory": true
+    },
+    "seed": 977,
+    "variant": {
+      "count": 5,
+      "interval": 60,
+      "offset": 300
+    }
+  },
+  {
+    "result": {
+      "elapsed": 71.7833333333305,
+      "hp": 228.0,
+      "kills": 1,
+      "level": 3,
+      "max_hp": 228.0,
+      "victory": true
+    },
+    "seed": 101,
+    "variant": {
+      "count": 5,
+      "interval": 60,
+      "offset": 300
+    }
+  },
+  {
+    "result": {
+      "elapsed": 46.8166666666653,
+      "hp": 9.78399999999993,
+      "kills": 3,
+      "level": 3,
+      "max_hp": 228.0,
+      "victory": true
+    },
+    "seed": 202,
+    "variant": {
+      "count": 5,
+      "interval": 60,
+      "offset": 300
+    }
+  },
+  {
+    "result": {
+      "elapsed": 84.7999999999965,
+      "hp": 228.0,
+      "kills": 1,
+      "level": 3,
+      "max_hp": 228.0,
+      "victory": true
+    },
+    "seed": 303,
+    "variant": {
+      "count": 5,
+      "interval": 60,
+      "offset": 300
+    }
+  },
+  {
+    "result": {
+      "elapsed": 84.7999999999965,
+      "hp": 228.0,
+      "kills": 2,
+      "level": 3,
+      "max_hp": 228.0,
+      "victory": true
+    },
+    "seed": 404,
+    "variant": {
+      "count": 5,
+      "interval": 60,
+      "offset": 300
+    }
+  },
+  {
+    "result": {
+      "elapsed": 74.3833333333304,
+      "hp": 228.0,
+      "kills": 2,
+      "level": 3,
+      "max_hp": 228.0,
+      "victory": true
+    },
+    "seed": 505,
+    "variant": {
+      "count": 5,
+      "interval": 60,
+      "offset": 300
+    }
+  },
+  {
+    "result": {
+      "elapsed": 58.6833333333313,
+      "hp": 228.0,
+      "kills": 2,
+      "level": 3,
+      "max_hp": 228.0,
+      "victory": true
+    },
+    "seed": 606,
+    "variant": {
+      "count": 5,
+      "interval": 60,
+      "offset": 300
+    }
+  },
+  {
+    "result": {
+      "elapsed": 87.3999999999963,
+      "hp": 228.0,
+      "kills": 3,
+      "level": 3,
+      "max_hp": 228.0,
+      "victory": true
+    },
+    "seed": 707,
+    "variant": {
+      "count": 5,
+      "interval": 60,
+      "offset": 300
+    }
+  },
+  {
+    "result": {
+      "elapsed": 84.7999999999965,
+      "hp": 228.0,
+      "kills": 2,
+      "level": 3,
+      "max_hp": 228.0,
+      "victory": true
+    },
+    "seed": 809,
+    "variant": {
+      "count": 5,
+      "interval": 60,
+      "offset": 300
+    }
+  },
+  {
+    "result": {
+      "elapsed": 82.1999999999966,
+      "hp": 228.0,
+      "kills": 3,
+      "level": 3,
+      "max_hp": 228.0,
+      "victory": true
+    },
+    "seed": 919,
+    "variant": {
+      "count": 5,
+      "interval": 60,
+      "offset": 300
+    }
+  },
+  {
+    "result": {
+      "elapsed": 62.5833333333311,
+      "hp": 228.0,
+      "kills": 2,
+      "level": 3,
+      "max_hp": 228.0,
+      "victory": true
+    },
+    "seed": 1031,
+    "variant": {
+      "count": 5,
+      "interval": 60,
+      "offset": 300
+    }
+  },
+  {
+    "result": {
+      "elapsed": 74.3999999999971,
+      "hp": 228.0,
+      "kills": 1,
+      "level": 3,
+      "max_hp": 228.0,
+      "victory": true
+    },
+    "seed": 1151,
+    "variant": {
+      "count": 5,
+      "interval": 60,
+      "offset": 300
+    }
+  },
+  {
+    "result": {
+      "elapsed": 31.7333333333328,
+      "hp": 0.0,
+      "kills": 1,
+      "level": 2,
+      "max_hp": 228.0,
+      "victory": false
+    },
+    "seed": 1277,
+    "variant": {
+      "count": 5,
+      "interval": 60,
+      "offset": 300
+    }
+  },
+  {
+    "result": {
+      "elapsed": 74.3999999999971,
+      "hp": 228.0,
+      "kills": 2,
+      "level": 3,
+      "max_hp": 228.0,
+      "victory": true
+    },
+    "seed": 1381,
+    "variant": {
+      "count": 5,
+      "interval": 60,
+      "offset": 300
+    }
+  },
+  {
+    "result": {
+      "elapsed": 71.7833333333305,
+      "hp": 228.0,
+      "kills": 1,
+      "level": 3,
+      "max_hp": 228.0,
+      "victory": true
+    },
+    "seed": 1493,
+    "variant": {
+      "count": 5,
+      "interval": 60,
+      "offset": 300
+    }
+  },
+  {
+    "result": {
+      "elapsed": 46.2166666666653,
+      "hp": 228.0,
+      "kills": 2,
+      "level": 3,
+      "max_hp": 228.0,
+      "victory": true
+    },
+    "seed": 1601,
+    "variant": {
+      "count": 5,
+      "interval": 60,
+      "offset": 300
+    }
+  },
+  {
+    "result": {
+      "elapsed": 88.6999999999963,
+      "hp": 228.0,
+      "kills": 2,
+      "level": 3,
+      "max_hp": 228.0,
+      "victory": true
+    },
+    "seed": 1723,
+    "variant": {
+      "count": 5,
+      "interval": 60,
+      "offset": 300
+    }
+  },
+  {
+    "result": {
+      "elapsed": 74.3999999999971,
+      "hp": 228.0,
+      "kills": 1,
+      "level": 3,
+      "max_hp": 228.0,
+      "victory": true
+    },
+    "seed": 1831,
+    "variant": {
+      "count": 5,
+      "interval": 60,
+      "offset": 300
+    }
+  },
+  {
+    "result": {
+      "elapsed": 69.066666666664,
+      "hp": 228.0,
+      "kills": 2,
+      "level": 3,
+      "max_hp": 228.0,
+      "victory": true
+    },
+    "seed": 1949,
+    "variant": {
+      "count": 5,
+      "interval": 60,
+      "offset": 300
+    }
+  },
+  {
+    "result": {
+      "elapsed": 78.2999999999968,
+      "hp": 228.0,
+      "kills": 2,
+      "level": 3,
+      "max_hp": 228.0,
+      "victory": true
+    },
+    "seed": 2063,
+    "variant": {
+      "count": 5,
+      "interval": 60,
+      "offset": 300
+    }
+  },
+  {
+    "result": {
+      "elapsed": 88.6833333333296,
+      "hp": 228.0,
+      "kills": 1,
+      "level": 3,
+      "max_hp": 228.0,
+      "victory": true
+    },
+    "seed": 2179,
+    "variant": {
+      "count": 5,
+      "interval": 60,
+      "offset": 300
+    }
+  },
+  {
+    "result": {
+      "elapsed": 84.7999999999965,
+      "hp": 228.0,
+      "kills": 2,
+      "level": 3,
+      "max_hp": 228.0,
+      "victory": true
+    },
+    "seed": 2287,
+    "variant": {
+      "count": 5,
+      "interval": 60,
+      "offset": 300
+    }
+  },
+  {
+    "result": {
+      "elapsed": 47.3333333333319,
+      "hp": 0.0,
+      "kills": 1,
+      "level": 3,
+      "max_hp": 228.0,
+      "victory": false
+    },
+    "seed": 2399,
+    "variant": {
+      "count": 5,
+      "interval": 60,
+      "offset": 300
+    }
+  },
+  {
+    "result": {
+      "elapsed": 69.1999999999974,
+      "hp": 228.0,
+      "kills": 2,
+      "level": 3,
+      "max_hp": 228.0,
+      "victory": true
+    },
+    "seed": 2503,
+    "variant": {
+      "count": 5,
+      "interval": 60,
+      "offset": 300
+    }
+  },
+  {
+    "result": {
+      "elapsed": 80.8999999999967,
+      "hp": 228.0,
+      "kills": 1,
+      "level": 3,
+      "max_hp": 228.0,
+      "victory": true
+    },
+    "seed": 1479748453,
+    "variant": {
+      "count": 5,
+      "interval": 60,
+      "offset": 450
+    }
+  },
+  {
+    "result": {
+      "elapsed": 84.7999999999965,
+      "hp": 228.0,
+      "kills": 1,
+      "level": 3,
+      "max_hp": 228.0,
+      "victory": true
+    },
+    "seed": 977,
+    "variant": {
+      "count": 5,
+      "interval": 60,
+      "offset": 450
+    }
+  },
+  {
+    "result": {
+      "elapsed": 71.7833333333305,
+      "hp": 228.0,
+      "kills": 1,
+      "level": 3,
+      "max_hp": 228.0,
+      "victory": true
+    },
+    "seed": 101,
+    "variant": {
+      "count": 5,
+      "interval": 60,
+      "offset": 450
+    }
+  },
+  {
+    "result": {
+      "elapsed": 84.7999999999965,
+      "hp": 228.0,
+      "kills": 1,
+      "level": 3,
+      "max_hp": 228.0,
+      "victory": true
+    },
+    "seed": 202,
+    "variant": {
+      "count": 5,
+      "interval": 60,
+      "offset": 450
+    }
+  },
+  {
+    "result": {
+      "elapsed": 84.7999999999965,
+      "hp": 228.0,
+      "kills": 1,
+      "level": 3,
+      "max_hp": 228.0,
+      "victory": true
+    },
+    "seed": 303,
+    "variant": {
+      "count": 5,
+      "interval": 60,
+      "offset": 450
+    }
+  },
+  {
+    "result": {
+      "elapsed": 84.7999999999965,
+      "hp": 228.0,
+      "kills": 1,
+      "level": 3,
+      "max_hp": 228.0,
+      "victory": true
+    },
+    "seed": 404,
+    "variant": {
+      "count": 5,
+      "interval": 60,
+      "offset": 450
+    }
+  },
+  {
+    "result": {
+      "elapsed": 74.3999999999971,
+      "hp": 228.0,
+      "kills": 1,
+      "level": 3,
+      "max_hp": 228.0,
+      "victory": true
+    },
+    "seed": 505,
+    "variant": {
+      "count": 5,
+      "interval": 60,
+      "offset": 450
+    }
+  },
+  {
+    "result": {
+      "elapsed": 56.0833333333314,
+      "hp": 228.0,
+      "kills": 1,
+      "level": 3,
+      "max_hp": 228.0,
+      "victory": true
+    },
+    "seed": 606,
+    "variant": {
+      "count": 5,
+      "interval": 60,
+      "offset": 450
+    }
+  },
+  {
+    "result": {
+      "elapsed": 84.7999999999965,
+      "hp": 228.0,
+      "kills": 1,
+      "level": 3,
+      "max_hp": 228.0,
+      "victory": true
+    },
+    "seed": 707,
+    "variant": {
+      "count": 5,
+      "interval": 60,
+      "offset": 450
+    }
+  },
+  {
+    "result": {
+      "elapsed": 84.7999999999965,
+      "hp": 228.0,
+      "kills": 1,
+      "level": 3,
+      "max_hp": 228.0,
+      "victory": true
+    },
+    "seed": 809,
+    "variant": {
+      "count": 5,
+      "interval": 60,
+      "offset": 450
+    }
+  },
+  {
+    "result": {
+      "elapsed": 78.2999999999968,
+      "hp": 228.0,
+      "kills": 1,
+      "level": 3,
+      "max_hp": 228.0,
+      "victory": true
+    },
+    "seed": 919,
+    "variant": {
+      "count": 5,
+      "interval": 60,
+      "offset": 450
+    }
+  },
+  {
+    "result": {
+      "elapsed": 78.2999999999968,
+      "hp": 228.0,
+      "kills": 1,
+      "level": 3,
+      "max_hp": 228.0,
+      "victory": true
+    },
+    "seed": 1031,
+    "variant": {
+      "count": 5,
+      "interval": 60,
+      "offset": 450
+    }
+  },
+  {
+    "result": {
+      "elapsed": 74.3999999999971,
+      "hp": 228.0,
+      "kills": 1,
+      "level": 3,
+      "max_hp": 228.0,
+      "victory": true
+    },
+    "seed": 1151,
+    "variant": {
+      "count": 5,
+      "interval": 60,
+      "offset": 450
+    }
+  },
+  {
+    "result": {
+      "elapsed": 84.7999999999965,
+      "hp": 228.0,
+      "kills": 1,
+      "level": 3,
+      "max_hp": 228.0,
+      "victory": true
+    },
+    "seed": 1277,
+    "variant": {
+      "count": 5,
+      "interval": 60,
+      "offset": 450
+    }
+  },
+  {
+    "result": {
+      "elapsed": 74.3999999999971,
+      "hp": 228.0,
+      "kills": 1,
+      "level": 3,
+      "max_hp": 228.0,
+      "victory": true
+    },
+    "seed": 1381,
+    "variant": {
+      "count": 5,
+      "interval": 60,
+      "offset": 450
+    }
+  },
+  {
+    "result": {
+      "elapsed": 74.3999999999971,
+      "hp": 228.0,
+      "kills": 1,
+      "level": 3,
+      "max_hp": 228.0,
+      "victory": true
+    },
+    "seed": 1493,
+    "variant": {
+      "count": 5,
+      "interval": 60,
+      "offset": 450
+    }
+  },
+  {
+    "result": {
+      "elapsed": 56.0833333333314,
+      "hp": 228.0,
+      "kills": 1,
+      "level": 3,
+      "max_hp": 228.0,
+      "victory": true
+    },
+    "seed": 1601,
+    "variant": {
+      "count": 5,
+      "interval": 60,
+      "offset": 450
+    }
+  },
+  {
+    "result": {
+      "elapsed": 50.9999999999984,
+      "hp": 228.0,
+      "kills": 1,
+      "level": 3,
+      "max_hp": 228.0,
+      "victory": true
+    },
+    "seed": 1723,
+    "variant": {
+      "count": 5,
+      "interval": 60,
+      "offset": 450
+    }
+  },
+  {
+    "result": {
+      "elapsed": 74.3999999999971,
+      "hp": 228.0,
+      "kills": 1,
+      "level": 3,
+      "max_hp": 228.0,
+      "victory": true
+    },
+    "seed": 1831,
+    "variant": {
+      "count": 5,
+      "interval": 60,
+      "offset": 450
+    }
+  },
+  {
+    "result": {
+      "elapsed": 80.8999999999967,
+      "hp": 228.0,
+      "kills": 1,
+      "level": 3,
+      "max_hp": 228.0,
+      "victory": true
+    },
+    "seed": 1949,
+    "variant": {
+      "count": 5,
+      "interval": 60,
+      "offset": 450
+    }
+  },
+  {
+    "result": {
+      "elapsed": 78.2999999999968,
+      "hp": 228.0,
+      "kills": 1,
+      "level": 3,
+      "max_hp": 228.0,
+      "victory": true
+    },
+    "seed": 2063,
+    "variant": {
+      "count": 5,
+      "interval": 60,
+      "offset": 450
+    }
+  },
+  {
+    "result": {
+      "elapsed": 88.6833333333296,
+      "hp": 228.0,
+      "kills": 1,
+      "level": 3,
+      "max_hp": 228.0,
+      "victory": true
+    },
+    "seed": 2179,
+    "variant": {
+      "count": 5,
+      "interval": 60,
+      "offset": 450
+    }
+  },
+  {
+    "result": {
+      "elapsed": 84.7999999999965,
+      "hp": 228.0,
+      "kills": 1,
+      "level": 3,
+      "max_hp": 228.0,
+      "victory": true
+    },
+    "seed": 2287,
+    "variant": {
+      "count": 5,
+      "interval": 60,
+      "offset": 450
+    }
+  },
+  {
+    "result": {
+      "elapsed": 84.7999999999965,
+      "hp": 228.0,
+      "kills": 1,
+      "level": 3,
+      "max_hp": 228.0,
+      "victory": true
+    },
+    "seed": 2399,
+    "variant": {
+      "count": 5,
+      "interval": 60,
+      "offset": 450
+    }
+  },
+  {
+    "result": {
+      "elapsed": 69.1999999999974,
+      "hp": 228.0,
+      "kills": 1,
+      "level": 3,
+      "max_hp": 228.0,
+      "victory": true
+    },
+    "seed": 2503,
+    "variant": {
+      "count": 5,
+      "interval": 60,
+      "offset": 450
+    }
+  },
+  {
+    "result": {
+      "elapsed": 55.9166666666648,
+      "hp": 32.296,
+      "kills": 4,
+      "level": 3,
+      "max_hp": 228.0,
+      "victory": true
+    },
+    "seed": 1479748453,
+    "variant": {
+      "count": 5,
+      "interval": 60,
+      "offset": 600
+    }
+  },
+  {
+    "result": {
+      "elapsed": 79.5999999999968,
+      "hp": 228.0,
+      "kills": 4,
+      "level": 3,
+      "max_hp": 228.0,
+      "victory": true
+    },
+    "seed": 977,
+    "variant": {
+      "count": 5,
+      "interval": 60,
+      "offset": 600
+    }
+  },
+  {
+    "result": {
+      "elapsed": 74.3999999999971,
+      "hp": 228.0,
+      "kills": 4,
+      "level": 3,
+      "max_hp": 228.0,
+      "victory": true
+    },
+    "seed": 101,
+    "variant": {
+      "count": 5,
+      "interval": 60,
+      "offset": 600
+    }
+  },
+  {
+    "result": {
+      "elapsed": 84.7999999999965,
+      "hp": 228.0,
+      "kills": 3,
+      "level": 3,
+      "max_hp": 228.0,
+      "victory": true
+    },
+    "seed": 202,
+    "variant": {
+      "count": 5,
+      "interval": 60,
+      "offset": 600
+    }
+  },
+  {
+    "result": {
+      "elapsed": 96.4999999999958,
+      "hp": 228.0,
+      "kills": 5,
+      "level": 3,
+      "max_hp": 228.0,
+      "victory": true
+    },
+    "seed": 303,
+    "variant": {
+      "count": 5,
+      "interval": 60,
+      "offset": 600
+    }
+  },
+  {
+    "result": {
+      "elapsed": 84.7999999999965,
+      "hp": 228.0,
+      "kills": 3,
+      "level": 3,
+      "max_hp": 228.0,
+      "victory": true
+    },
+    "seed": 404,
+    "variant": {
+      "count": 5,
+      "interval": 60,
+      "offset": 600
+    }
+  },
+  {
+    "result": {
+      "elapsed": 42.2666666666656,
+      "hp": 228.0,
+      "kills": 3,
+      "level": 3,
+      "max_hp": 228.0,
+      "victory": true
+    },
+    "seed": 505,
+    "variant": {
+      "count": 5,
+      "interval": 60,
+      "offset": 600
+    }
+  },
+  {
+    "result": {
+      "elapsed": 74.3999999999971,
+      "hp": 228.0,
+      "kills": 3,
+      "level": 3,
+      "max_hp": 228.0,
+      "victory": true
+    },
+    "seed": 606,
+    "variant": {
+      "count": 5,
+      "interval": 60,
+      "offset": 600
+    }
+  },
+  {
+    "result": {
+      "elapsed": 91.2999999999961,
+      "hp": 228.0,
+      "kills": 4,
+      "level": 3,
+      "max_hp": 228.0,
+      "victory": true
+    },
+    "seed": 707,
+    "variant": {
+      "count": 5,
+      "interval": 60,
+      "offset": 600
+    }
+  },
+  {
+    "result": {
+      "elapsed": 84.7999999999965,
+      "hp": 228.0,
+      "kills": 3,
+      "level": 3,
+      "max_hp": 228.0,
+      "victory": true
+    },
+    "seed": 809,
+    "variant": {
+      "count": 5,
+      "interval": 60,
+      "offset": 600
+    }
+  },
+  {
+    "result": {
+      "elapsed": 78.2999999999968,
+      "hp": 228.0,
+      "kills": 2,
+      "level": 3,
+      "max_hp": 228.0,
+      "victory": true
+    },
+    "seed": 919,
+    "variant": {
+      "count": 5,
+      "interval": 60,
+      "offset": 600
+    }
+  },
+  {
+    "result": {
+      "elapsed": 84.7999999999965,
+      "hp": 228.0,
+      "kills": 3,
+      "level": 3,
+      "max_hp": 228.0,
+      "victory": true
+    },
+    "seed": 1031,
+    "variant": {
+      "count": 5,
+      "interval": 60,
+      "offset": 600
+    }
+  },
+  {
+    "result": {
+      "elapsed": 74.3999999999971,
+      "hp": 228.0,
+      "kills": 4,
+      "level": 3,
+      "max_hp": 228.0,
+      "victory": true
+    },
+    "seed": 1151,
+    "variant": {
+      "count": 5,
+      "interval": 60,
+      "offset": 600
+    }
+  },
+  {
+    "result": {
+      "elapsed": 86.0999999999964,
+      "hp": 228.0,
+      "kills": 3,
+      "level": 3,
+      "max_hp": 228.0,
+      "victory": true
+    },
+    "seed": 1277,
+    "variant": {
+      "count": 5,
+      "interval": 60,
+      "offset": 600
+    }
+  },
+  {
+    "result": {
+      "elapsed": 74.3999999999971,
+      "hp": 228.0,
+      "kills": 2,
+      "level": 3,
+      "max_hp": 228.0,
+      "victory": true
+    },
+    "seed": 1381,
+    "variant": {
+      "count": 5,
+      "interval": 60,
+      "offset": 600
+    }
+  },
+  {
+    "result": {
+      "elapsed": 55.1499999999982,
+      "hp": 0.0,
+      "kills": 2,
+      "level": 3,
+      "max_hp": 228.0,
+      "victory": false
+    },
+    "seed": 1493,
+    "variant": {
+      "count": 5,
+      "interval": 60,
+      "offset": 600
+    }
+  },
+  {
+    "result": {
+      "elapsed": 58.5166666666646,
+      "hp": 141.984,
+      "kills": 3,
+      "level": 3,
+      "max_hp": 228.0,
+      "victory": true
+    },
+    "seed": 1601,
+    "variant": {
+      "count": 5,
+      "interval": 60,
+      "offset": 600
+    }
+  },
+  {
+    "result": {
+      "elapsed": 84.7999999999965,
+      "hp": 228.0,
+      "kills": 3,
+      "level": 3,
+      "max_hp": 228.0,
+      "victory": true
+    },
+    "seed": 1723,
+    "variant": {
+      "count": 5,
+      "interval": 60,
+      "offset": 600
+    }
+  },
+  {
+    "result": {
+      "elapsed": 76.9999999999969,
+      "hp": 228.0,
+      "kills": 3,
+      "level": 3,
+      "max_hp": 228.0,
+      "victory": true
+    },
+    "seed": 1831,
+    "variant": {
+      "count": 5,
+      "interval": 60,
+      "offset": 600
+    }
+  },
+  {
+    "result": {
+      "elapsed": 83.4999999999965,
+      "hp": 228.0,
+      "kills": 3,
+      "level": 3,
+      "max_hp": 228.0,
+      "victory": true
+    },
+    "seed": 1949,
+    "variant": {
+      "count": 5,
+      "interval": 60,
+      "offset": 600
+    }
+  },
+  {
+    "result": {
+      "elapsed": 62.4166666666644,
+      "hp": 30.5279999999999,
+      "kills": 3,
+      "level": 3,
+      "max_hp": 228.0,
+      "victory": true
+    },
+    "seed": 2063,
+    "variant": {
+      "count": 5,
+      "interval": 60,
+      "offset": 600
+    }
+  },
+  {
+    "result": {
+      "elapsed": 76.9999999999969,
+      "hp": 228.0,
+      "kills": 3,
+      "level": 3,
+      "max_hp": 228.0,
+      "victory": true
+    },
+    "seed": 2179,
+    "variant": {
+      "count": 5,
+      "interval": 60,
+      "offset": 600
+    }
+  },
+  {
+    "result": {
+      "elapsed": 86.0999999999964,
+      "hp": 228.0,
+      "kills": 3,
+      "level": 3,
+      "max_hp": 228.0,
+      "victory": true
+    },
+    "seed": 2287,
+    "variant": {
+      "count": 5,
+      "interval": 60,
+      "offset": 600
+    }
+  },
+  {
+    "result": {
+      "elapsed": 84.7999999999965,
+      "hp": 228.0,
+      "kills": 3,
+      "level": 3,
+      "max_hp": 228.0,
+      "victory": true
+    },
+    "seed": 2399,
+    "variant": {
+      "count": 5,
+      "interval": 60,
+      "offset": 600
+    }
+  },
+  {
+    "result": {
+      "elapsed": 69.1999999999974,
+      "hp": 228.0,
+      "kills": 3,
+      "level": 3,
+      "max_hp": 228.0,
+      "victory": true
+    },
+    "seed": 2503,
+    "variant": {
+      "count": 5,
+      "interval": 60,
+      "offset": 600
+    }
+  },
+  {
+    "result": {
+      "elapsed": 76.9999999999969,
+      "hp": 228.0,
+      "kills": 1,
+      "level": 3,
+      "max_hp": 228.0,
+      "victory": true
+    },
+    "seed": 1479748453,
+    "variant": {
+      "count": 4,
+      "interval": 60,
+      "offset": 450
+    }
+  },
+  {
+    "result": {
+      "elapsed": 84.7999999999965,
+      "hp": 228.0,
+      "kills": 1,
+      "level": 3,
+      "max_hp": 228.0,
+      "victory": true
+    },
+    "seed": 977,
+    "variant": {
+      "count": 4,
+      "interval": 60,
+      "offset": 450
+    }
+  },
+  {
+    "result": {
+      "elapsed": 71.7833333333305,
+      "hp": 228.0,
+      "kills": 1,
+      "level": 3,
+      "max_hp": 228.0,
+      "victory": true
+    },
+    "seed": 101,
+    "variant": {
+      "count": 4,
+      "interval": 60,
+      "offset": 450
+    }
+  },
+  {
+    "result": {
+      "elapsed": 69.066666666664,
+      "hp": 228.0,
+      "kills": 1,
+      "level": 3,
+      "max_hp": 228.0,
+      "victory": true
+    },
+    "seed": 202,
+    "variant": {
+      "count": 4,
+      "interval": 60,
+      "offset": 450
+    }
+  },
+  {
+    "result": {
+      "elapsed": 84.7999999999965,
+      "hp": 228.0,
+      "kills": 1,
+      "level": 3,
+      "max_hp": 228.0,
+      "victory": true
+    },
+    "seed": 303,
+    "variant": {
+      "count": 4,
+      "interval": 60,
+      "offset": 450
+    }
+  },
+  {
+    "result": {
+      "elapsed": 84.7999999999965,
+      "hp": 228.0,
+      "kills": 1,
+      "level": 3,
+      "max_hp": 228.0,
+      "victory": true
+    },
+    "seed": 404,
+    "variant": {
+      "count": 4,
+      "interval": 60,
+      "offset": 450
+    }
+  },
+  {
+    "result": {
+      "elapsed": 89.9499999999962,
+      "hp": 228.0,
+      "kills": 1,
+      "level": 3,
+      "max_hp": 228.0,
+      "victory": true
+    },
+    "seed": 505,
+    "variant": {
+      "count": 4,
+      "interval": 60,
+      "offset": 450
+    }
+  },
+  {
+    "result": {
+      "elapsed": 75.699999999997,
+      "hp": 228.0,
+      "kills": 1,
+      "level": 3,
+      "max_hp": 228.0,
+      "victory": true
+    },
+    "seed": 606,
+    "variant": {
+      "count": 4,
+      "interval": 60,
+      "offset": 450
+    }
+  },
+  {
+    "result": {
+      "elapsed": 84.7999999999965,
+      "hp": 228.0,
+      "kills": 1,
+      "level": 3,
+      "max_hp": 228.0,
+      "victory": true
+    },
+    "seed": 707,
+    "variant": {
+      "count": 4,
+      "interval": 60,
+      "offset": 450
+    }
+  },
+  {
+    "result": {
+      "elapsed": 84.7999999999965,
+      "hp": 228.0,
+      "kills": 1,
+      "level": 3,
+      "max_hp": 228.0,
+      "victory": true
+    },
+    "seed": 809,
+    "variant": {
+      "count": 4,
+      "interval": 60,
+      "offset": 450
+    }
+  },
+  {
+    "result": {
+      "elapsed": 78.2999999999968,
+      "hp": 228.0,
+      "kills": 1,
+      "level": 3,
+      "max_hp": 228.0,
+      "victory": true
+    },
+    "seed": 919,
+    "variant": {
+      "count": 4,
+      "interval": 60,
+      "offset": 450
+    }
+  },
+  {
+    "result": {
+      "elapsed": 78.2999999999968,
+      "hp": 228.0,
+      "kills": 1,
+      "level": 3,
+      "max_hp": 228.0,
+      "victory": true
+    },
+    "seed": 1031,
+    "variant": {
+      "count": 4,
+      "interval": 60,
+      "offset": 450
+    }
+  },
+  {
+    "result": {
+      "elapsed": 74.3999999999971,
+      "hp": 228.0,
+      "kills": 1,
+      "level": 3,
+      "max_hp": 228.0,
+      "victory": true
+    },
+    "seed": 1151,
+    "variant": {
+      "count": 4,
+      "interval": 60,
+      "offset": 450
+    }
+  },
+  {
+    "result": {
+      "elapsed": 84.7999999999965,
+      "hp": 228.0,
+      "kills": 1,
+      "level": 3,
+      "max_hp": 228.0,
+      "victory": true
+    },
+    "seed": 1277,
+    "variant": {
+      "count": 4,
+      "interval": 60,
+      "offset": 450
+    }
+  },
+  {
+    "result": {
+      "elapsed": 89.9499999999962,
+      "hp": 228.0,
+      "kills": 1,
+      "level": 3,
+      "max_hp": 228.0,
+      "victory": true
+    },
+    "seed": 1381,
+    "variant": {
+      "count": 4,
+      "interval": 60,
+      "offset": 450
+    }
+  },
+  {
+    "result": {
+      "elapsed": 74.3999999999971,
+      "hp": 228.0,
+      "kills": 1,
+      "level": 3,
+      "max_hp": 228.0,
+      "victory": true
+    },
+    "seed": 1493,
+    "variant": {
+      "count": 4,
+      "interval": 60,
+      "offset": 450
+    }
+  },
+  {
+    "result": {
+      "elapsed": 71.7833333333305,
+      "hp": 228.0,
+      "kills": 1,
+      "level": 3,
+      "max_hp": 228.0,
+      "victory": true
+    },
+    "seed": 1601,
+    "variant": {
+      "count": 4,
+      "interval": 60,
+      "offset": 450
+    }
+  },
+  {
+    "result": {
+      "elapsed": 84.7999999999965,
+      "hp": 228.0,
+      "kills": 1,
+      "level": 3,
+      "max_hp": 228.0,
+      "victory": true
+    },
+    "seed": 1723,
+    "variant": {
+      "count": 4,
+      "interval": 60,
+      "offset": 450
+    }
+  },
+  {
+    "result": {
+      "elapsed": 74.3999999999971,
+      "hp": 228.0,
+      "kills": 1,
+      "level": 3,
+      "max_hp": 228.0,
+      "victory": true
+    },
+    "seed": 1831,
+    "variant": {
+      "count": 4,
+      "interval": 60,
+      "offset": 450
+    }
+  },
+  {
+    "result": {
+      "elapsed": 80.8999999999967,
+      "hp": 228.0,
+      "kills": 1,
+      "level": 3,
+      "max_hp": 228.0,
+      "victory": true
+    },
+    "seed": 1949,
+    "variant": {
+      "count": 4,
+      "interval": 60,
+      "offset": 450
+    }
+  },
+  {
+    "result": {
+      "elapsed": 78.2999999999968,
+      "hp": 228.0,
+      "kills": 1,
+      "level": 3,
+      "max_hp": 228.0,
+      "victory": true
+    },
+    "seed": 2063,
+    "variant": {
+      "count": 4,
+      "interval": 60,
+      "offset": 450
+    }
+  },
+  {
+    "result": {
+      "elapsed": 75.699999999997,
+      "hp": 228.0,
+      "kills": 1,
+      "level": 3,
+      "max_hp": 228.0,
+      "victory": true
+    },
+    "seed": 2179,
+    "variant": {
+      "count": 4,
+      "interval": 60,
+      "offset": 450
+    }
+  },
+  {
+    "result": {
+      "elapsed": 87.3833333333297,
+      "hp": 228.0,
+      "kills": 1,
+      "level": 3,
+      "max_hp": 228.0,
+      "victory": true
+    },
+    "seed": 2287,
+    "variant": {
+      "count": 4,
+      "interval": 60,
+      "offset": 450
+    }
+  },
+  {
+    "result": {
+      "elapsed": 84.7999999999965,
+      "hp": 228.0,
+      "kills": 1,
+      "level": 3,
+      "max_hp": 228.0,
+      "victory": true
+    },
+    "seed": 2399,
+    "variant": {
+      "count": 4,
+      "interval": 60,
+      "offset": 450
+    }
+  },
+  {
+    "result": {
+      "elapsed": 69.1999999999974,
+      "hp": 228.0,
+      "kills": 1,
+      "level": 3,
+      "max_hp": 228.0,
+      "victory": true
+    },
+    "seed": 2503,
+    "variant": {
+      "count": 4,
+      "interval": 60,
+      "offset": 450
+    }
+  }
+]

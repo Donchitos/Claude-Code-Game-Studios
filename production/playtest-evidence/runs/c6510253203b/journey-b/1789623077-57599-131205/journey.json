@@ -1,0 +1,55 @@
+{
+	"catalog_hash": "c6510253203bb474cd098939bdb6a63628615c8845684dfd240533e31325d273",
+	"completed": 3.0,
+	"missions": [
+		{
+			"choices": 6,
+			"elapsed": 74.8333333333304,
+			"escort_hp": 490.0,
+			"hp": 160.0,
+			"level": 7,
+			"mission": "S1-M01-01",
+			"restores": 3,
+			"skipped": 14,
+			"stages": [
+				0,
+				1200,
+				2700
+			],
+			"victory": true
+		},
+		{
+			"choices": 4,
+			"elapsed": 15.2333333333337,
+			"escort_hp": 490.0,
+			"hp": 170.0,
+			"level": 5,
+			"mission": "S1-M01-02",
+			"restores": 2,
+			"skipped": 5,
+			"stages": [
+				0,
+				0,
+				172
+			],
+			"victory": true
+		},
+		{
+			"choices": 4,
+			"elapsed": 20.1833333333335,
+			"escort_hp": 487.968,
+			"hp": 170.0,
+			"level": 5,
+			"mission": "S1-M01-03",
+			"restores": 3,
+			"skipped": 2,
+			"stages": [
+				0,
+				369,
+				823
+			],
+			"victory": true
+		}
+	],
+	"scope": "real new-profile sequential three missions, bot not human"
+}

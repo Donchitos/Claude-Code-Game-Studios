@@ -1,0 +1,9 @@
+{
+	"arguments": [
+		"--campaign-validation"
+	],
+	"content_hash": "496acbc86acb8526c9b949ed3232d0596e2b2e992ac3056de0f64a16641a6c00",
+	"engine": "4.7.1-stable (official)",
+	"scope": "automated test evidence, not human or release certification",
+	"suite": "campaign-qa"
+}

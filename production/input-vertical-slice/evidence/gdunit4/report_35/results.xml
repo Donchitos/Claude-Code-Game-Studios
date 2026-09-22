@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<testsuites id="2026-09-10" name="report_35" tests="1" failures="0" skipped="0" flaky="0" time="0.000">
+	<testsuite id="0" name="input_touch_order_gdunit4_test" package="tests" timestamp="2026-09-10T05:40:42" hostname="localhost" tests="1" failures="0" errors="0" skipped="0" flaky="0" time="1.270">
+		<testcase name="test_screen_touch_drag_release_uses_real_scene_runner_path" classname="input_touch_order_gdunit4_test" time="1.262">
+		</testcase>
+	</testsuite>
+</testsuites>

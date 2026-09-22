@@ -1,0 +1,21 @@
+[font_size=22]Header 1 Text[/font_size][img=4000x2]res://addons/gdUnit4/src/update/assets/horizontal-line2.png[/img]
+[font_size=22][center]Header 1 Centered Text[/center][/font_size][img=4000x2]res://addons/gdUnit4/src/update/assets/horizontal-line2.png[/img]
+
+[font_size=20]Header 2 Text[/font_size][img=4000x2]res://addons/gdUnit4/src/update/assets/horizontal-line2.png[/img]
+[font_size=22][center]Header 2 Centered Text[/center][/font_size][img=4000x2]res://addons/gdUnit4/src/update/assets/horizontal-line2.png[/img]
+
+[font_size=22][center]Header 2 Centered Text
+Multiline Test
+Is here[/center][/font_size][img=4000x2]res://addons/gdUnit4/src/update/assets/horizontal-line2.png[/img]
+
+[font_size=18]Header 3 Text[/font_size]
+[font_size=18][center]Header 3 Centered Text[/center][/font_size]
+
+[font_size=16]Header 4 Text[/font_size]
+[font_size=16][center]Header 4 Centered Text[/center][/font_size]
+
+[font_size=14]Header 5 Text[/font_size]
+[font_size=14][center]Header 5 Centered Text[/center][/font_size]
+
+[font_size=12]Header 6 Text[/font_size]
+[font_size=12][center]Header 6 Centered Text[/center][/font_size]

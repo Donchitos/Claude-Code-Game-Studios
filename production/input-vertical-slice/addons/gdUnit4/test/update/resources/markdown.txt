@@ -1,0 +1,168 @@
+------ HTML Headers ---
+[font_size=24]Header 1 Text[/font_size]
+[font_size=24][center]Header 1Centered Text[/center][/font_size]
+
+[font_size=20]Header 2 Text[/font_size]
+[font_size=20][center]Header 2 Centered Text[/center][/font_size]
+
+[font_size=20][center]Header 2 Centered Text
+Multiline Test
+Is here[/center][/font_size]
+
+---
+
+------ Markdown -------------
+
+# Heading 1
+## Heading 2
+### Heading 3
+#### Heading 4
+##### Heading 5
+
+
+------ embeded ------
+>This is an **embedded section**.
+>The section continues here
+
+>This is another **embedded section**.
+>This section also continues in the second like
+>- aba
+>This line isn’t embedded any more.
+>- tets
+>    - aha
+>        - akaka
+
+
+
+
+------ lists ------
+* an asterisk starts an unordered list
+* and this is another item in the list
++ or you can also use the + character
+- or the - character
+
+To start an ordered list, write this:
+
+1. this starts a list *with* numbers
+*  this will show as number "2"
+*  this will show as number "3."
+9. any number, +, -, or * will keep the list going.
+  * just indent by 4 spaces (or tab) to make a sub-list
+	1. keep indenting for more sub lists
+  * here i'm back to the second level
+
+
+
+- Asserts:
+  - Added new `assert_vector2` to verify Vector2 values (#69 )
+  - Added new `assert_vector3` to verify Vector3 values (#69 )
+	- ahss
+	  - kaka
+	   - kaka
+		- kaka
+		 - lll
+		  -  kkk
+
+
+- Fuzzers:
+  - Added `rangev2` to generate random Vector2 values
+  - Added `rangev3` to generate random Vector3 values
+  - one or more fuzzers are now allowed for a test case (#71)
+- GitHub Action
+  - Added GitHub action to automatic trigger selftest on push events (tests against Godot 3.2.3, 3.3, 3.3.1, 3.3.2) (#74 )
+
+
+
+------ check lists ------
+[ ] A
+[x] B
+[ ] C
+
+------ code ------
+This is `code`.
+
+``This is all `code`.``
+
+```javascript
+var s = "JavaScript syntax highlighting";
+alert(s);
+```
+
+```python
+s = "Python syntax highlighting"
+print s
+```
+
+```
+No language indicated, so no syntax highlighting.
+But let's throw in a <b>tag</b>.
+```
+
+------ links ------
+Here is a [Link](https://example.com/ "Optional link title").
+
+------ image ------
+Inline-style:
+![alt text](res://addons/gdUnit4/test/update/resources/icon48.png "Logo Title Text 1")
+
+![alt text](https://upload.wikimedia.org/wikipedia/commons/4/47/PNG_transparency_demonstration_1.png)
+
+
+Reference-style:
+![alt text][logo]
+
+[logo]:res://addons/gdUnit4/test/update/resources/icon48.png "Logo Title Text 2"
+
+
+------ Horizontal Rules ------
+
+---
+Hyphens
+***
+Asterisks
+___
+Underscores
+
+
+
+------ table ------
+|Column 1|Column 2|
+|--------|--------|
+|    A    |    B    |
+|    C    |    D    |
+
+Column 1|Column 2
+--------|--------
+A    |    B
+C    |    D
+
+
+------ foodnodes ------
+You can easily place footnotes [^2] in the continuous text [^1].
+[^1]: Here you can find the text for the footnote.
+[^2]: **Footnotes** themselves can also be *formatted*.
+And these even include several lines.
+
+
+------ asterisk ------
+This *is* an \*example with an asterisk\**.
+This _is_ an \_example with an asterisk\_.
+
+------ bold ------
+<b>test</b>
+**test**
+__test__
+
+------ italic ------
+<i>test</i>
+*test*
+_test_
+
+------ italic + bold ------
+***Italic and Bold Text***
+___Italic and Bold Text___
+
+------ stroke ------
+<s>test</s>
+~test~
+~~test~~

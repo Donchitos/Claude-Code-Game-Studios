@@ -1,8 +1,18 @@
 # Godot Input — Quick Reference
 
-Last verified: 2026-02-12 | Engine: Godot 4.6
+Last verified: 2026-08-14 | Engine: Godot 4.7.1
 
 ## What Changed Since ~4.3 (LLM Cutoff)
+
+### 4.7 Changes
+- **内置 `VirtualJoystick` 节点**：Fixed / Dynamic / Following 三模式。移动端摇杆无需自造或第三方插件。
+  - 对本项目"虚拟摇杆移动"直接可用
+- **鼠标/键盘 device ID 变更**：从 `0` 改为 `InputEvent.DEVICE_ID_MOUSE` / `InputEvent.DEVICE_ID_KEYBOARD`（因某些手柄可能用 0 作 ID）
+  - 判断鼠标/键盘时用这些常量，**不要**用 `event.device == 0`
+- **"失焦忽略手柄"项目设置**：默认关。开启后窗口失焦时不接收手柄输入。
+- **键盘/鼠标带设备 ID**：为未来多设备区分铺路。
+- **iOS 陀螺仪/加速计**：控制器陀螺仪输入可读，可做陀螺仪瞄准。
+- **iOS SDL3 手柄驱动**：从旧驱动迁移到 SDL3。
 
 ### 4.6 Changes
 - **Dual-focus system**: Mouse/touch focus is now separate from keyboard/gamepad focus

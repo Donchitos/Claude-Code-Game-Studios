@@ -1,0 +1,13 @@
+{
+  "source": "A-C frozen worktree",
+  "packaging_only_override": {
+    "application/config/name": "Spirit Nexus D P00 20260915"
+  },
+  "reason": "Separate Godot user directory for participant P00; gameplay source and catalog bytes identical",
+  "human_results": 0,
+  "launcher_user_args": [
+    "--campaign-validation"
+  ],
+  "persistence_mode": "in_memory_only",
+  "reason_for_temporary_mode": "Independent review reproduced invalid snapshot persistence; keep exploratory gameplay separate from save testing"
+}

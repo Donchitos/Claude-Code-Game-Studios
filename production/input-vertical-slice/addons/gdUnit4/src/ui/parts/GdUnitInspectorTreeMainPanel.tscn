@@ -1,0 +1,133 @@
+[gd_scene format=3 uid="uid://bqfpidewtpeg0"]
+
+[ext_resource type="Script" path="res://addons/gdUnit4/src/ui/parts/GdUnitInspectorTreeMainPanel.gd" id="1"]
+[ext_resource type="PackedScene" path="res://addons/gdUnit4/src/ui/menu/GdUnitInspectorContextMenu.tscn" id="2_o6s0p"]
+[ext_resource type="PackedScene" path="res://addons/gdUnit4/src/ui/parts/GdUnitReportPanel.tscn" id="3_miuuy"]
+
+[sub_resource type="DPITexture" id="DPITexture_njcuo"]
+_source = "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"16\" height=\"16\"><path fill=\"#e0e0e0\" d=\"M4 12a1 1 0 0 0 1.555.832l6-4a1 1 0 0 0 0-1.664l-6-4A1 1 0 0 0 4 4z\"/></svg>
+"
+saturation = 2.0
+color_map = {
+Color(1, 0.37254903, 0.37254903, 1): Color(1, 0.47, 0.42, 1),
+Color(0.37254903, 1, 0.5921569, 1): Color(0.45, 0.95, 0.5, 1),
+Color(1, 0.8666667, 0.39607844, 1): Color(0.83, 0.78, 0.62, 1)
+}
+
+[sub_resource type="DPITexture" id="DPITexture_o05pk"]
+_source = "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"16\" height=\"16\"><path fill=\"#e0e0e0\" d=\"M3 3a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h1a1 1 0 0 0 1-1V4a1 1 0 0 0-1-1zm4.975 0A1 1 0 0 0 7 3.998v8a1 1 0 0 0 1.625.781l5-4a1 1 0 0 0 0-1.56l-5-4A1 1 0 0 0 7.975 3z\"/></svg>
+"
+saturation = 2.0
+color_map = {
+Color(1, 0.37254903, 0.37254903, 1): Color(1, 0.47, 0.42, 1),
+Color(0.37254903, 1, 0.5921569, 1): Color(0.45, 0.95, 0.5, 1),
+Color(1, 0.8666667, 0.39607844, 1): Color(0.83, 0.78, 0.62, 1)
+}
+
+[sub_resource type="DPITexture" id="DPITexture_njtpf"]
+_source = "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"16\" height=\"16\"><path fill=\"#e0e0e0\" d=\"m8 9.669-3.536 2.583H7v2.537h2v-2.537h2.536zm0-3.314L4.464 3.772H7V1.235h2v2.537h2.536zm-7.296.73h14.591v1.831H.704z\"/></svg>
+"
+saturation = 2.0
+color_map = {
+Color(1, 0.37254903, 0.37254903, 1): Color(1, 0.47, 0.42, 1),
+Color(0.37254903, 1, 0.5921569, 1): Color(0.45, 0.95, 0.5, 1),
+Color(1, 0.8666667, 0.39607844, 1): Color(0.83, 0.78, 0.62, 1)
+}
+
+[sub_resource type="DPITexture" id="DPITexture_eg3rq"]
+_source = "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"16\" height=\"16\"><path fill=\"#e0e0e0\" d=\"m8 16-3.5-2.5H7V11h2v2.5h2.5zM8 0 4.5 2.5H7V5h2V2.5h2.5zM1 7h14v2H1z\"/></svg>
+"
+saturation = 2.0
+color_map = {
+Color(1, 0.37254903, 0.37254903, 1): Color(1, 0.47, 0.42, 1),
+Color(0.37254903, 1, 0.5921569, 1): Color(0.45, 0.95, 0.5, 1),
+Color(1, 0.8666667, 0.39607844, 1): Color(0.83, 0.78, 0.62, 1)
+}
+
+[node name="MainPanel" type="Control" unique_id=944258025]
+custom_minimum_size = Vector2(120, 240)
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+script = ExtResource("1")
+
+[node name="contextMenu" parent="." unique_id=73764904 instance=ExtResource("2_o6s0p")]
+unique_name_in_owner = true
+visible = false
+item_0/icon = SubResource("DPITexture_njcuo")
+item_1/icon = SubResource("DPITexture_o05pk")
+item_2/icon = SubResource("DPITexture_njcuo")
+item_4/icon = SubResource("DPITexture_njtpf")
+item_5/icon = SubResource("DPITexture_eg3rq")
+
+[node name="split" type="VSplitContainer" parent="." unique_id=1044515559]
+clip_contents = true
+custom_minimum_size = Vector2(0, 160)
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_constants/autohide = 0
+split_offsets = PackedInt32Array(120)
+split_offset = 120
+
+[node name="Panel" type="Panel" parent="split" unique_id=290722553]
+custom_minimum_size = Vector2(0, 120)
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="Tree" type="Tree" parent="split/Panel" unique_id=741772884]
+unique_name_in_owner = true
+use_parent_material = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_constants/icon_max_width = 16
+columns = 2
+allow_reselect = true
+allow_rmb_select = true
+hide_root = true
+select_mode = 1
+
+[node name="discover_hint" type="HBoxContainer" parent="split/Panel" unique_id=555683311]
+unique_name_in_owner = true
+visible = false
+use_parent_material = true
+layout_mode = 0
+alignment = 1
+
+[node name="spinner" type="Button" parent="split/Panel/discover_hint" unique_id=200472082]
+unique_name_in_owner = true
+clip_contents = true
+custom_minimum_size = Vector2(64, 64)
+layout_mode = 2
+size_flags_stretch_ratio = 1.94
+disabled = true
+button_mask = 0
+text = "Discover Tests"
+flat = true
+alignment = 2
+
+[node name="report" parent="split" unique_id=1465857421 instance=ExtResource("3_miuuy")]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(120, 40)
+layout_mode = 2
+
+[connection signal="item_activated" from="split/Panel/Tree" to="." method="_on_Tree_item_activated"]
+[connection signal="item_mouse_selected" from="split/Panel/Tree" to="." method="_on_tree_item_mouse_selected"]
+[connection signal="item_selected" from="split/Panel/Tree" to="." method="_on_Tree_item_selected"]

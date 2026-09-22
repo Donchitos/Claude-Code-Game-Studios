@@ -1,0 +1,10 @@
+{
+	"arguments": [
+		"--alternate-build",
+		"--risk-route"
+	],
+	"content_hash": "f7f6c060b35956878815105f19dd7df9c791d142100ba973e45820e40899162f",
+	"engine": "4.7.1-stable (official)",
+	"scope": "automated test evidence, not human or release certification",
+	"suite": "journey-chapter-three"
+}

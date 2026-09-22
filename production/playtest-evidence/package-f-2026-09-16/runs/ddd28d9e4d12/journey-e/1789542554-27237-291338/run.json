@@ -1,0 +1,10 @@
+{
+	"arguments": [
+		"--qa-production-evolution",
+		"--evidence-root=res://production/playtest-evidence/package-f-2026-09-16/runs"
+	],
+	"content_hash": "ddd28d9e4d121e06046305cba134bad25f39250690e9eadde1b95f0f0a89dfaa",
+	"engine": "4.7.1-stable (official)",
+	"scope": "automated test evidence, not human or release certification",
+	"suite": "journey-e"
+}

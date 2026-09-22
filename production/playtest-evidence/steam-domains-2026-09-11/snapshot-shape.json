@@ -1,0 +1,127 @@
+{
+	"boss": {
+		"action": "u63",
+		"axis": "vec2",
+		"bite_hit": "bool",
+		"generation": "u63",
+		"segment": "u63",
+		"slot": "u63",
+		"ticks": "u63"
+	},
+	"config_hash": "string",
+	"enemies": {
+		"$array": {
+			"entity_id": "u63",
+			"hp": "f32",
+			"kind": "u63",
+			"position": "vec2"
+		},
+		"$max": 320
+	},
+	"engine": "string",
+	"fsm": {
+		"_last_damage_receipt_id": "u63",
+		"_resolved_max_hp": "f64",
+		"_schedule_claimed": "bool",
+		"active_age_ticks": "u63",
+		"fog_anchor": "vec2",
+		"fog_elapsed_ticks": "u63",
+		"fog_generation": "u63",
+		"phase_code": "u63",
+		"phase_transition_generation": "u63",
+		"phase_transition_pending": "bool",
+		"state": "u63",
+		"state_ticks": "u63"
+	},
+	"hostile": {
+		"$array": {
+			"life": "u63",
+			"position": "vec2",
+			"velocity": "vec2"
+		},
+		"$max": 8
+	},
+	"pickups": {
+		"$array": "vec2",
+		"$max": 300
+	},
+	"player": {
+		"_initial_longchun_charges": "u63",
+		"attack_interval": "f64",
+		"contact_cooldown": "f64",
+		"damage_event_count": "u63",
+		"hp": "f64",
+		"invulnerability_left": "f64",
+		"longchun_charge_count": "u63",
+		"longchun_recovery_ratio": "f64",
+		"longchun_threshold_ratio": "f64",
+		"longchun_trigger_count": "u63",
+		"max_hp": "f64",
+		"maximum_move_speed": "f64",
+		"minimum_attack_interval": "f64",
+		"move_speed": "f64",
+		"movement_consume_count": "u63",
+		"pickup_radius": "f64",
+		"position": "vec2",
+		"radius": "f64",
+		"sword_count": "u63",
+		"sword_damage": "f64"
+	},
+	"profile": "string",
+	"projectiles": {
+		"$array": {
+			"damage": "f32",
+			"position": "vec2",
+			"velocity": "vec2"
+		},
+		"$max": 392
+	},
+	"references": {
+		"boss": "u63",
+		"ring": "u63",
+		"summon": "u63"
+	},
+	"rng": {
+		"seed": "bits64",
+		"state": "bits64"
+	},
+	"scope": {
+		"_tick_accumulator": "f64",
+		"completed_active_ticks": "u63",
+		"first_upgrade_time": "f64",
+		"kills": "u63",
+		"level": "u63",
+		"pending_upgrade": "bool",
+		"smoke_mode": "bool",
+		"xp": "u63"
+	},
+	"stage": {
+		"_attack_left": "f64",
+		"_damage_receipt": "u63",
+		"_ring_generation": "u63",
+		"_ring_origin": "vec2",
+		"_ring_pending": "bool",
+		"_simulation_tick": "u63",
+		"_snapshot_next_entity_id": "u63",
+		"_spawn_left": "f64",
+		"_spawn_viewport_size": "vec2",
+		"_summon_generation": "u63",
+		"_summon_pending": "bool",
+		"boss_defeated": "bool",
+		"boss_spawn_count": "u63",
+		"dropped_enemy_spawns": "u63",
+		"dropped_pickups": "u63",
+		"dropped_projectiles": "u63"
+	},
+	"weapon": {
+		"due_tick": "u63",
+		"rows": {
+			"$array": {
+				"damage": "f32",
+				"position": "vec2",
+				"velocity": "vec2"
+			},
+			"$max": 32
+		}
+	}
+}

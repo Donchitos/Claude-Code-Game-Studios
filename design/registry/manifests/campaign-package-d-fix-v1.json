@@ -1,0 +1,11 @@
+{
+  "implementation": "Campaign development entry only",
+  "review": "APPROVED_WITH_SUGGESTIONS_D_S01_TO_D_S04_ONLY",
+  "d_acceptance": "OPEN",
+  "battle_ready": false,
+  "content_hash": "1e3c41e4223704a29050f28294bef4a38b9569186e6a6234a921c3685e92ab3e",
+  "review_report": "production/playtest-evidence/package-d-fix-2026-09-15/senior-report.md",
+  "artifact_manifest": "build/package-d-fix-2026-09-15/manifest.json",
+  "human_sessions": 1,
+  "new_player_sessions": 0
+}

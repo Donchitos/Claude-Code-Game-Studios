@@ -1,0 +1,8 @@
+{
+  "actual_f_to_g_pck": true,
+  "blocked_zero_write": true,
+  "previous_package_resumed_and_explicit_test_abandon": true,
+  "new_package_home": true,
+  "f_pck_sha256": "1b1a457b80f573bcfcc3fedbfb8da9325baa0446ff4b8f1cb971fe0967952e7b",
+  "g_pck_sha256": "6fbaf4ce0571cba96f61b22f50657cb734ae0ef11ca47c91ee44abc0668733ba"
+}

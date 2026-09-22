@@ -1,0 +1,9 @@
+{
+	"arguments": [
+		"--campaign-validation"
+	],
+	"content_hash": "683d5040e5e7b6cecadae031d54b77530add19fc0ae1256ab93df9df3e6365d8",
+	"engine": "4.7.1-stable (official)",
+	"scope": "automated test evidence, not human or release certification",
+	"suite": "terminal-disk"
+}

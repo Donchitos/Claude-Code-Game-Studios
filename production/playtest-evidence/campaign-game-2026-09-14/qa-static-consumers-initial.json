@@ -1,0 +1,125 @@
+{
+  "scope": "Static initial in-flight implementation scan, not runtime verification",
+  "passives": [
+    {
+      "id": "S1-P01",
+      "stat": "damage",
+      "explicit_modifier_consumer": true
+    },
+    {
+      "id": "S1-P02",
+      "stat": "cooldown_reduction",
+      "explicit_modifier_consumer": true
+    },
+    {
+      "id": "S1-P03",
+      "stat": "area",
+      "explicit_modifier_consumer": true
+    },
+    {
+      "id": "S1-P04",
+      "stat": "duration",
+      "explicit_modifier_consumer": true
+    },
+    {
+      "id": "S1-P05",
+      "stat": "move_speed",
+      "explicit_modifier_consumer": true
+    },
+    {
+      "id": "S1-P06",
+      "stat": "projectile_speed",
+      "explicit_modifier_consumer": true
+    },
+    {
+      "id": "S1-P07",
+      "stat": "armor",
+      "explicit_modifier_consumer": true
+    },
+    {
+      "id": "S1-P08",
+      "stat": "pickup_radius",
+      "explicit_modifier_consumer": true
+    },
+    {
+      "id": "S1-P09",
+      "stat": "max_hp",
+      "explicit_modifier_consumer": true
+    },
+    {
+      "id": "S1-P10",
+      "stat": "summon_damage",
+      "explicit_modifier_consumer": true
+    },
+    {
+      "id": "S1-P11",
+      "stat": "summon_range",
+      "explicit_modifier_consumer": true
+    },
+    {
+      "id": "S1-P12",
+      "stat": "summon_duration",
+      "explicit_modifier_consumer": true
+    },
+    {
+      "id": "S1-P13",
+      "stat": "chain_count",
+      "explicit_modifier_consumer": true
+    },
+    {
+      "id": "S1-P14",
+      "stat": "critical_chance",
+      "explicit_modifier_consumer": true
+    },
+    {
+      "id": "S1-P15",
+      "stat": "return_damage",
+      "explicit_modifier_consumer": true
+    },
+    {
+      "id": "S1-P16",
+      "stat": "slow_strength",
+      "explicit_modifier_consumer": true
+    },
+    {
+      "id": "S1-P17",
+      "stat": "explosion_radius",
+      "explicit_modifier_consumer": true
+    },
+    {
+      "id": "S1-P18",
+      "stat": "control_damage",
+      "explicit_modifier_consumer": true
+    },
+    {
+      "id": "S1-P19",
+      "stat": "charge_speed",
+      "explicit_modifier_consumer": false
+    },
+    {
+      "id": "S1-P20",
+      "stat": "reflect_count",
+      "explicit_modifier_consumer": true
+    },
+    {
+      "id": "S1-P21",
+      "stat": "trail_width",
+      "explicit_modifier_consumer": true
+    },
+    {
+      "id": "S1-P22",
+      "stat": "mark_capacity",
+      "explicit_modifier_consumer": true
+    },
+    {
+      "id": "S1-P23",
+      "stat": "mark_heal",
+      "explicit_modifier_consumer": true
+    },
+    {
+      "id": "S1-P24",
+      "stat": "mark_spread",
+      "explicit_modifier_consumer": true
+    }
+  ]
+}

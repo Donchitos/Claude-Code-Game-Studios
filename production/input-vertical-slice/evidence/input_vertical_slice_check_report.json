@@ -1,0 +1,169 @@
+{
+  "suite": "input_vertical_slice_checks",
+  "generated_at_utc": "2026-09-09T11:02:51.413286+00:00",
+  "godot_binary": "/Applications/Godot.app/Contents/MacOS/Godot",
+  "device_tooling_probe": {
+    "adb_available": false,
+    "adb_path": null,
+    "simctl_available": false,
+    "xcrun_path": "/usr/bin/xcrun",
+    "status": "BLOCKED"
+  },
+  "status": "PASS",
+  "checks": [
+    {
+      "name": "godot_editor_import",
+      "status": "PASS",
+      "exit_code": 0,
+      "command": [
+        "/Applications/Godot.app/Contents/MacOS/Godot",
+        "--headless",
+        "--path",
+        "/Users/tal/CursorProjects/xiuxian/Claude-Code-Game-Studios/production/input-vertical-slice",
+        "--editor",
+        "--quit"
+      ],
+      "output": "Godot Engine v4.7.1.stable.official.a13da4feb - https://godotengine.org\n\n[   0% ] \u001b[90m\u001b[1mfirst_scan_filesystem\u001b[22m | Started 项目初始化 (5 steps)\u001b[39m\u001b[0m\n[   0% ] \u001b[90m\u001b[1mfirst_scan_filesystem\u001b[22m | 正在扫描文件结构……\u001b[39m\u001b[0m\n[  16% ] \u001b[90m\u001b[1mfirst_scan_filesystem\u001b[22m | 正在加载全局类名……\u001b[39m\u001b[0m\n[  33% ] \u001b[90m\u001b[1mfirst_scan_filesystem\u001b[22m | 正在校验 GDExtension……\u001b[39m\u001b[0m\n[  50% ] \u001b[90m\u001b[1mfirst_scan_filesystem\u001b[22m | 正在创建自动加载脚本……\u001b[39m\u001b[0m\n[  66% ] \u001b[90m\u001b[1mfirst_scan_filesystem\u001b[22m | 正在初始化插件……\u001b[39m\u001b[0m\n\u001b[38;2;218;165;32mIt was recognized that GdUnit4 is running in a test environment, therefore the GdUnit4 plugin will not be executed!\u001b[0m\n[  83% ] \u001b[90m\u001b[1mfirst_scan_filesystem\u001b[22m | 正在启动文件扫描……\u001b[39m\u001b[0m\n\u001b[92m[ DONE ]\u001b[39m \u001b[1mfirst_scan_filesystem\u001b[22m\n\u001b[0m\n[   0% ] \u001b[90m\u001b[1m_update_scan_actions\u001b[22m | Started 正在扫描动作…… (4 steps)\u001b[39m\u001b[0m\n[   0% ] \u001b[90m\u001b[1m_update_scan_actions\u001b[22m | logo.png\u001b[39m\u001b[0m\n[  20% ] \u001b[90m\u001b[1m_update_scan_actions\u001b[22m | logo.png\u001b[39m\u001b[0m\n[  40% ] \u001b[90m\u001b[1m_update_scan_actions\u001b[22m | logo.png\u001b[39m\u001b[0m\n[  60% ] \u001b[90m\u001b[1m_update_scan_actions\u001b[22m | logo.png\u001b[39m\u001b[0m\n\u001b[92m[ DONE ]\u001b[39m \u001b[1m_update_scan_actions\u001b[22m\n\u001b[0m\n[   0% ] \u001b[90m\u001b[1mreimport\u001b[22m | Started 正在导入或重新导入资产 (4 steps)\u001b[39m\u001b[0m\n[   0% ] \u001b[90m\u001b[1mreimport\u001b[22m | 正在准备重新导入文件……\u001b[39m\u001b[0m\n[  20% ] \u001b[90m\u001b[1mreimport\u001b[22m | 正在准备重新导入文件……\u001b[39m\u001b[0m\n[  40% ] \u001b[90m\u001b[1mreimport\u001b[22m | 正在准备重新导入文件……\u001b[39m\u001b[0m\n[  60% ] \u001b[90m\u001b[1mreimport\u001b[22m | 正在准备重新导入文件……\u001b[39m\u001b[0m\n[   0% ] \u001b[90m\u001b[1mreimport\u001b[22m | 正在执行重新导入的前置操作……\u001b[39m\u001b[0m\n[   0% ] \u001b[90m\u001b[1mreimport\u001b[22m | logo.png\u001b[39m\u001b[0m\n[  20% ] \u001b[90m\u001b[1mreimport\u001b[22m | logo.png\u001b[39m\u001b[0m\n[  40% ] \u001b[90m\u001b[1mreimport\u001b[22m | logo.png\u001b[39m\u001b[0m\n[  60% ] \u001b[90m\u001b[1mreimport\u001b[22m | logo.png\u001b[39m\u001b[0m\n[  80% ] \u001b[90m\u001b[1mreimport\u001b[22m | 正在结束资产导入……\u001b[39m\u001b[0m\n\u001b[92m[ DONE ]\u001b[39m \u001b[1mreimport\u001b[22m\n\u001b[0m\n[   0% ] \u001b[90m\u001b[1mreimport\u001b[22m | Started 正在导入或重新导入资产 (4 steps)\u001b[39m\u001b[0m\n[   0% ] \u001b[90m\u001b[1mreimport\u001b[22m | 正在执行重新导入的后置操作……\u001b[39m\u001b[0m\n\u001b[92m[ DONE ]\u001b[39m \u001b[1mreimport\u001b[22m\n\u001b[0m\n[   0% ] \u001b[90m\u001b[1mloading_editor_layout\u001b[22m | Started 正在加载编辑器 (5 steps)\u001b[39m\u001b[0m\n[   0% ] \u001b[90m\u001b[1mloading_editor_layout\u001b[22m | 正在加载编辑器布局……\u001b[39m\u001b[0m\n[  16% ] \u001b[90m\u001b[1mloading_editor_layout\u001b[22m | 正在加载停靠面板……\u001b[39m\u001b[0m\n[  33% ] \u001b[90m\u001b[1mloading_editor_layout\u001b[22m | 正在重新打开场景……\u001b[39m\u001b[0m\n[  50% ] \u001b[90m\u001b[1mloading_editor_layout\u001b[22m | 正在加载中央编辑器布局……\u001b[39m\u001b[0m\n[  66% ] \u001b[90m\u001b[1mloading_editor_layout\u001b[22m | 正在加载插件窗口布局……\u001b[39m\u001b[0m\n[  83% ] \u001b[90m\u001b[1mloading_editor_layout\u001b[22m | 编辑器布局就绪。\u001b[39m\u001b[0m\n\u001b[92m[ DONE ]\u001b[39m \u001b[1mloading_editor_layout\u001b[22m\n\u001b[0m"
+    },
+    {
+      "name": "godot_contract",
+      "status": "PASS",
+      "exit_code": 0,
+      "command": [
+        "/Applications/Godot.app/Contents/MacOS/Godot",
+        "--headless",
+        "--path",
+        "/Users/tal/CursorProjects/xiuxian/Claude-Code-Game-Studios/production/input-vertical-slice",
+        "--script",
+        "res://tests/input_vertical_slice_contract.gd"
+      ],
+      "output": "Godot Engine v4.7.1.stable.official.a13da4feb - https://godotengine.org\n\nINPUT_VERTICAL_SLICE_CONTRACT_PASS tests=18"
+    },
+    {
+      "name": "godot_smoke",
+      "status": "PASS",
+      "exit_code": 0,
+      "command": [
+        "/Applications/Godot.app/Contents/MacOS/Godot",
+        "--headless",
+        "--path",
+        "/Users/tal/CursorProjects/xiuxian/Claude-Code-Game-Studios/production/input-vertical-slice",
+        "--script",
+        "res://tests/input_vertical_slice_smoke.gd"
+      ],
+      "output": "Godot Engine v4.7.1.stable.official.a13da4feb - https://godotengine.org\n\nINPUT_VERTICAL_SLICE_SMOKE_PASS"
+    },
+    {
+      "name": "godot_touch_order_fixture",
+      "status": "PASS",
+      "exit_code": 0,
+      "command": [
+        "/Applications/Godot.app/Contents/MacOS/Godot",
+        "--headless",
+        "--path",
+        "/Users/tal/CursorProjects/xiuxian/Claude-Code-Game-Studios/production/input-vertical-slice",
+        "--script",
+        "res://tests/input_touch_order_fixture.gd"
+      ],
+      "output": "Godot Engine v4.7.1.stable.official.a13da4feb - https://godotengine.org\n\nINPUT_TOUCH_ORDER_FIXTURE_PASS tests=10"
+    },
+    {
+      "name": "gdunit4_input_contract",
+      "status": "PASS",
+      "exit_code": 0,
+      "command": [
+        "/Applications/Godot.app/Contents/MacOS/Godot",
+        "--path",
+        "/Users/tal/CursorProjects/xiuxian/Claude-Code-Game-Studios/production/input-vertical-slice",
+        "-s",
+        "res://addons/gdUnit4/bin/GdUnitCmdTool.gd",
+        "-a",
+        "tests/input_system_gdunit4_test.gd",
+        "-rd",
+        "evidence/gdunit4",
+        "-rc",
+        "1000"
+      ],
+      "output": "Godot Engine v4.7.1.stable.official.a13da4feb - https://godotengine.org\nOpenGL API 4.1 Metal - 89.4 - Compatibility - Using Device: Apple - Apple M4\n\n\u001b[2J\u001b[H\u001b[38;2;233;150;122m\n--------------------------------------------------------------------------------------------------\nGdUnit4 Comandline Tool\n--------------------------------------------------------------------------------------------------\u001b[0m\n\u001b[38;2;0;191;255mSet write reports to evidence/gdunit4\u001b[0m\n\u001b[38;2;0;191;255mSet report history count to 1000\u001b[0m\n\u001b[38;2;100;149;237mInstalling GdUnit4 session system hooks.\u001b[0m\n\u001b[38;2;100;149;237mSession hook 'GdUnitHtmlTestReporter' installed.\u001b[0m\n\u001b[38;2;100;149;237mSession hook 'GdUnitXMLTestReporter' installed.\u001b[0m\n\u001b[38;2;0;206;209mRun Test Suite: \u001b[0m\u001b[38;2;250;235;215mres://tests/input_system_gdunit4_test.gd\u001b[0m\n  \u001b[38;2;250;235;215mres://tests/input_system_gdunit4_test.gd\u001b[0m\u001b[38;2;128;128;128m > \u001b[0m\u001b[38;2;250;235;215mtest_state_and_movement_contract\u001b[0m\u001b[38;2;34;139;34m STARTED\u001b[0m\u001b[38;2;128;128;128m\u001b[0m\n  \u001b[38;2;250;235;215mres://tests/input_system_gdunit4_test.gd\u001b[0m\u001b[38;2;128;128;128m > \u001b[0m\u001b[38;2;250;235;215mtest_state_and_movement_contract\u001b[0m\u001b[38;2;34;139;34m PASSED\u001b[0m\u001b[38;2;100;149;237m 2ms\u001b[0m\n\u001b[38;2;128;128;128m\u001b[0m\n  \u001b[38;2;250;235;215mres://tests/input_system_gdunit4_test.gd\u001b[0m\u001b[38;2;128;128;128m > \u001b[0m\u001b[38;2;250;235;215mtest_cancel_resume_and_teardown_contract\u001b[0m\u001b[38;2;34;139;34m STARTED\u001b[0m\u001b[38;2;128;128;128m\u001b[0m\n  \u001b[38;2;250;235;215mres://tests/input_system_gdunit4_test.gd\u001b[0m\u001b[38;2;128;128;128m > \u001b[0m\u001b[38;2;250;235;215mtest_cancel_resume_and_teardown_contract\u001b[0m\u001b[38;2;34;139;34m PASSED\u001b[0m\u001b[38;2;100;149;237m 2ms\u001b[0m\n\u001b[38;2;128;128;128m\u001b[0m\n  \u001b[38;2;250;235;215mres://tests/input_system_gdunit4_test.gd\u001b[0m\u001b[38;2;128;128;128m > \u001b[0m\u001b[38;2;250;235;215mtest_vj_claim_reset_and_rebuild_reentrancy_contract\u001b[0m\u001b[38;2;34;139;34m STARTED\u001b[0m\u001b[38;2;128;128;128m\u001b[0m\n  \u001b[38;2;250;235;215mres://tests/input_system_gdunit4_test.gd\u001b[0m\u001b[38;2;128;128;128m > \u001b[0m\u001b[38;2;250;235;215mtest_vj_claim_reset_and_rebuild_reentrancy_contract\u001b[0m\u001b[38;2;34;139;34m PASSED\u001b[0m\u001b[38;2;100;149;237m 3ms\u001b[0m\n\u001b[38;2;128;128;128m\u001b[0m\n\u001b[38;2;30;144;255mStatistics:\u001b[0m\u001b[38;2;128;128;128m 3 test cases | 0 errors | 0 failures | 0 flaky | 0 skipped | 0 orphans |\u001b[0m\u001b[38;2;34;139;34m PASSED\u001b[0m\u001b[38;2;100;149;237m 19ms\u001b[0m\n\u001b[38;2;128;128;128m\u001b[0m\n\u001b[38;2;128;128;128m\u001b[0m\n\u001b[38;2;30;144;255mOverall Summary:\u001b[0m\u001b[38;2;255;255;255m 3 test cases | 0 errors | 0 failures | 0 flaky | 0 skipped | 0 orphans |\u001b[0m\n\u001b[38;2;233;150;122mExecuted test suites: (1/1)\u001b[0m\n\u001b[38;2;233;150;122mExecuted test cases : (3/3)\u001b[0m\n\u001b[38;2;233;150;122mTotal execution time: 19ms\u001b[0m\n\u001b[38;2;255;255;255m \u001b[0m\u001b[38;2;100;149;237mOpen XML Report at: file://evidence/gdunit4/report_30/results.xml\u001b[0m\n\u001b[38;2;100;149;237mOpen HTML Report at: file://evidence/gdunit4/report_30/index.html\u001b[0m\n\u001b[38;2;233;150;122mExit code: 0\u001b[0m\nRun dispose test resources"
+    },
+    {
+      "name": "gdunit4_touch_scene_runner",
+      "status": "PASS",
+      "exit_code": 0,
+      "command": [
+        "/Applications/Godot.app/Contents/MacOS/Godot",
+        "--path",
+        "/Users/tal/CursorProjects/xiuxian/Claude-Code-Game-Studios/production/input-vertical-slice",
+        "-s",
+        "res://addons/gdUnit4/bin/GdUnitCmdTool.gd",
+        "-a",
+        "tests/input_touch_order_gdunit4_test.gd",
+        "-rd",
+        "evidence/gdunit4",
+        "-rc",
+        "1000"
+      ],
+      "output": "Godot Engine v4.7.1.stable.official.a13da4feb - https://godotengine.org\nOpenGL API 4.1 Metal - 89.4 - Compatibility - Using Device: Apple - Apple M4\n\n\u001b[2J\u001b[H\u001b[38;2;233;150;122m\n--------------------------------------------------------------------------------------------------\nGdUnit4 Comandline Tool\n--------------------------------------------------------------------------------------------------\u001b[0m\n\u001b[38;2;0;191;255mSet write reports to evidence/gdunit4\u001b[0m\n\u001b[38;2;0;191;255mSet report history count to 1000\u001b[0m\n\u001b[38;2;100;149;237mInstalling GdUnit4 session system hooks.\u001b[0m\n\u001b[38;2;100;149;237mSession hook 'GdUnitHtmlTestReporter' installed.\u001b[0m\n\u001b[38;2;100;149;237mSession hook 'GdUnitXMLTestReporter' installed.\u001b[0m\n\u001b[38;2;0;206;209mRun Test Suite: \u001b[0m\u001b[38;2;250;235;215mres://tests/input_touch_order_gdunit4_test.gd\u001b[0m\n  \u001b[38;2;250;235;215mres://tests/input_touch_order_gdunit4_test.gd\u001b[0m\u001b[38;2;128;128;128m > \u001b[0m\u001b[38;2;250;235;215mtest_screen_touch_drag_release_uses_real_scene_runner_path\u001b[0m\u001b[38;2;34;139;34m STARTED\u001b[0m\u001b[38;2;128;128;128m\u001b[0m\nINPUT_VERTICAL_SLICE_UI_OK meta_rows=8 direction_manifest_rows=8\nINPUT_VERTICAL_SLICE_RUNTIME_OK state=ACTIVE active_vj_count=1 carrier=(0.0, 0.0)\n  \u001b[38;2;250;235;215mres://tests/input_touch_order_gdunit4_test.gd\u001b[0m\u001b[38;2;128;128;128m > \u001b[0m\u001b[38;2;250;235;215mtest_screen_touch_drag_release_uses_real_scene_runner_path\u001b[0m\u001b[38;2;34;139;34m PASSED\u001b[0m\u001b[38;2;100;149;237m 1s 301ms\u001b[0m\n\u001b[38;2;128;128;128m\u001b[0m\n\u001b[38;2;30;144;255mStatistics:\u001b[0m\u001b[38;2;128;128;128m 1 test cases | 0 errors | 0 failures | 0 flaky | 0 skipped | 0 orphans |\u001b[0m\u001b[38;2;34;139;34m PASSED\u001b[0m\u001b[38;2;100;149;237m 1s 309ms\u001b[0m\n\u001b[38;2;128;128;128m\u001b[0m\n\u001b[38;2;128;128;128m\u001b[0m\n\u001b[38;2;30;144;255mOverall Summary:\u001b[0m\u001b[38;2;255;255;255m 1 test cases | 0 errors | 0 failures | 0 flaky | 0 skipped | 0 orphans |\u001b[0m\n\u001b[38;2;233;150;122mExecuted test suites: (1/1)\u001b[0m\n\u001b[38;2;233;150;122mExecuted test cases : (1/1)\u001b[0m\n\u001b[38;2;233;150;122mTotal execution time: 1s 309ms\u001b[0m\n\u001b[38;2;255;255;255m \u001b[0m\u001b[38;2;100;149;237mOpen XML Report at: file://evidence/gdunit4/report_31/results.xml\u001b[0m\n\u001b[38;2;100;149;237mOpen HTML Report at: file://evidence/gdunit4/report_31/index.html\u001b[0m\n\u001b[38;2;233;150;122mExit code: 0\u001b[0m\nRun dispose test resources"
+    },
+    {
+      "name": "gdunit4_battle_ui_slice",
+      "status": "PASS",
+      "exit_code": 0,
+      "command": [
+        "/Applications/Godot.app/Contents/MacOS/Godot",
+        "--path",
+        "/Users/tal/CursorProjects/xiuxian/Claude-Code-Game-Studios/production/input-vertical-slice",
+        "-s",
+        "res://addons/gdUnit4/bin/GdUnitCmdTool.gd",
+        "-a",
+        "tests/battle_ui_gdunit4_test.gd",
+        "-rd",
+        "evidence/gdunit4",
+        "-rc",
+        "1000"
+      ],
+      "output": "Godot Engine v4.7.1.stable.official.a13da4feb - https://godotengine.org\nOpenGL API 4.1 Metal - 89.4 - Compatibility - Using Device: Apple - Apple M4\n\n\u001b[2J\u001b[H\u001b[38;2;233;150;122m\n--------------------------------------------------------------------------------------------------\nGdUnit4 Comandline Tool\n--------------------------------------------------------------------------------------------------\u001b[0m\n\u001b[38;2;0;191;255mSet write reports to evidence/gdunit4\u001b[0m\n\u001b[38;2;0;191;255mSet report history count to 1000\u001b[0m\n\u001b[38;2;100;149;237mInstalling GdUnit4 session system hooks.\u001b[0m\n\u001b[38;2;100;149;237mSession hook 'GdUnitHtmlTestReporter' installed.\u001b[0m\n\u001b[38;2;100;149;237mSession hook 'GdUnitXMLTestReporter' installed.\u001b[0m\n\u001b[38;2;0;206;209mRun Test Suite: \u001b[0m\u001b[38;2;250;235;215mres://tests/battle_ui_gdunit4_test.gd\u001b[0m\n  \u001b[38;2;250;235;215mres://tests/battle_ui_gdunit4_test.gd\u001b[0m\u001b[38;2;128;128;128m > \u001b[0m\u001b[38;2;250;235;215mtest_battle_ui_exposes_eight_meta_rows_and_canonical_focus_manifest\u001b[0m\u001b[38;2;34;139;34m STARTED\u001b[0m\u001b[38;2;128;128;128m\u001b[0m\nINPUT_VERTICAL_SLICE_UI_OK meta_rows=8 direction_manifest_rows=8\nINPUT_VERTICAL_SLICE_RUNTIME_OK state=ACTIVE active_vj_count=1 carrier=(0.0, 0.0)\n  \u001b[38;2;250;235;215mres://tests/battle_ui_gdunit4_test.gd\u001b[0m\u001b[38;2;128;128;128m > \u001b[0m\u001b[38;2;250;235;215mtest_battle_ui_exposes_eight_meta_rows_and_canonical_focus_manifest\u001b[0m\u001b[38;2;34;139;34m PASSED\u001b[0m\u001b[38;2;100;149;237m 596ms\u001b[0m\n\u001b[38;2;128;128;128m\u001b[0m\n  \u001b[38;2;250;235;215mres://tests/battle_ui_gdunit4_test.gd\u001b[0m\u001b[38;2;128;128;128m > \u001b[0m\u001b[38;2;250;235;215mtest_focus_manifest_filters_ineligible_nodes\u001b[0m\u001b[38;2;34;139;34m STARTED\u001b[0m\u001b[38;2;128;128;128m\u001b[0m\n  \u001b[38;2;250;235;215mres://tests/battle_ui_gdunit4_test.gd\u001b[0m\u001b[38;2;128;128;128m > \u001b[0m\u001b[38;2;250;235;215mtest_focus_manifest_filters_ineligible_nodes\u001b[0m\u001b[38;2;34;139;34m PASSED\u001b[0m\u001b[38;2;100;149;237m 13ms\u001b[0m\n\u001b[38;2;128;128;128m\u001b[0m\n\u001b[38;2;30;144;255mStatistics:\u001b[0m\u001b[38;2;128;128;128m 2 test cases | 0 errors | 0 failures | 0 flaky | 0 skipped | 0 orphans |\u001b[0m\u001b[38;2;34;139;34m PASSED\u001b[0m\u001b[38;2;100;149;237m 621ms\u001b[0m\n\u001b[38;2;128;128;128m\u001b[0m\n\u001b[38;2;128;128;128m\u001b[0m\n\u001b[38;2;30;144;255mOverall Summary:\u001b[0m\u001b[38;2;255;255;255m 2 test cases | 0 errors | 0 failures | 0 flaky | 0 skipped | 0 orphans |\u001b[0m\n\u001b[38;2;233;150;122mExecuted test suites: (1/1)\u001b[0m\n\u001b[38;2;233;150;122mExecuted test cases : (2/2)\u001b[0m\n\u001b[38;2;233;150;122mTotal execution time: 621ms\u001b[0m\n\u001b[38;2;255;255;255m \u001b[0m\u001b[38;2;100;149;237mOpen XML Report at: file://evidence/gdunit4/report_32/results.xml\u001b[0m\n\u001b[38;2;100;149;237mOpen HTML Report at: file://evidence/gdunit4/report_32/index.html\u001b[0m\n\u001b[38;2;233;150;122mExit code: 0\u001b[0m\nRun dispose test resources"
+    },
+    {
+      "name": "gdunit4_game_root_viewport_route",
+      "status": "PASS",
+      "exit_code": 0,
+      "command": [
+        "/Applications/Godot.app/Contents/MacOS/Godot",
+        "--path",
+        "/Users/tal/CursorProjects/xiuxian/Claude-Code-Game-Studios/production/input-vertical-slice",
+        "-s",
+        "res://addons/gdUnit4/bin/GdUnitCmdTool.gd",
+        "-a",
+        "tests/game_root_viewport_gdunit4_test.gd",
+        "-rd",
+        "evidence/gdunit4",
+        "-rc",
+        "1000"
+      ],
+      "output": "-------------------------------------------------\u001b[0m\n\u001b[38;2;0;191;255mSet write reports to evidence/gdunit4\u001b[0m\n\u001b[38;2;0;191;255mSet report history count to 1000\u001b[0m\n\u001b[38;2;100;149;237mInstalling GdUnit4 session system hooks.\u001b[0m\n\u001b[38;2;100;149;237mSession hook 'GdUnitHtmlTestReporter' installed.\u001b[0m\n\u001b[38;2;100;149;237mSession hook 'GdUnitXMLTestReporter' installed.\u001b[0m\n\u001b[38;2;0;206;209mRun Test Suite: \u001b[0m\u001b[38;2;250;235;215mres://tests/game_root_viewport_gdunit4_test.gd\u001b[0m\n  \u001b[38;2;250;235;215mres://tests/game_root_viewport_gdunit4_test.gd\u001b[0m\u001b[38;2;128;128;128m > \u001b[0m\u001b[38;2;250;235;215mtest_game_root_owns_root_viewport_gate_and_battle_ui_canvas_route\u001b[0m\u001b[38;2;34;139;34m STARTED\u001b[0m\u001b[38;2;128;128;128m\u001b[0m\nINPUT_VERTICAL_SLICE_UI_OK meta_rows=8 direction_manifest_rows=8\nINPUT_VERTICAL_SLICE_RUNTIME_OK state=ACTIVE active_vj_count=1 carrier=(0.0, 0.0)\n  \u001b[38;2;250;235;215mres://tests/game_root_viewport_gdunit4_test.gd\u001b[0m\u001b[38;2;128;128;128m > \u001b[0m\u001b[38;2;250;235;215mtest_game_root_owns_root_viewport_gate_and_battle_ui_canvas_route\u001b[0m\u001b[38;2;34;139;34m PASSED\u001b[0m\u001b[38;2;100;149;237m 578ms\u001b[0m\n\u001b[38;2;128;128;128m\u001b[0m\n  \u001b[38;2;250;235;215mres://tests/game_root_viewport_gdunit4_test.gd\u001b[0m\u001b[38;2;128;128;128m > \u001b[0m\u001b[38;2;250;235;215mtest_gate_held_blocks_touch_until_activation_success_release\u001b[0m\u001b[38;2;34;139;34m STARTED\u001b[0m\u001b[38;2;128;128;128m\u001b[0m\nINPUT_VERTICAL_SLICE_UI_OK meta_rows=8 direction_manifest_rows=8\nINPUT_VERTICAL_SLICE_RUNTIME_OK state=ACTIVE active_vj_count=1 carrier=(0.0, 0.0)\n  \u001b[38;2;250;235;215mres://tests/game_root_viewport_gdunit4_test.gd\u001b[0m\u001b[38;2;128;128;128m > \u001b[0m\u001b[38;2;250;235;215mtest_gate_held_blocks_touch_until_activation_success_release\u001b[0m\u001b[38;2;34;139;34m PASSED\u001b[0m\u001b[38;2;100;149;237m 601ms\u001b[0m\n\u001b[38;2;128;128;128m\u001b[0m\n  \u001b[38;2;250;235;215mres://tests/game_root_viewport_gdunit4_test.gd\u001b[0m\u001b[38;2;128;128;128m > \u001b[0m\u001b[38;2;250;235;215mtest_battle_scope_replacement_preserves_game_root_and_viewport_identity\u001b[0m\u001b[38;2;34;139;34m STARTED\u001b[0m\u001b[38;2;128;128;128m\u001b[0m\nINPUT_VERTICAL_SLICE_UI_OK meta_rows=8 direction_manifest_rows=8\nINPUT_VERTICAL_SLICE_RUNTIME_OK state=ACTIVE active_vj_count=1 carrier=(0.0, 0.0)\nINPUT_VERTICAL_SLICE_UI_OK meta_rows=8 direction_manifest_rows=8\nINPUT_VERTICAL_SLICE_UI_OK meta_rows=8 direction_manifest_rows=8\n  \u001b[38;2;250;235;215mres://tests/game_root_viewport_gdunit4_test.gd\u001b[0m\u001b[38;2;128;128;128m > \u001b[0m\u001b[38;2;250;235;215mtest_battle_scope_replacement_preserves_game_root_and_viewport_identity\u001b[0m\u001b[38;2;34;139;34m PASSED\u001b[0m\u001b[38;2;100;149;237m 1s 177ms\u001b[0m\n\u001b[38;2;128;128;128m\u001b[0m\n  \u001b[38;2;250;235;215mres://tests/game_root_viewport_gdunit4_test.gd\u001b[0m\u001b[38;2;128;128;128m > \u001b[0m\u001b[38;2;250;235;215mtest_teardown_detaches_battle_scope_and_keeps_gate_held\u001b[0m\u001b[38;2;34;139;34m STARTED\u001b[0m\u001b[38;2;128;128;128m\u001b[0m\nINPUT_VERTICAL_SLICE_UI_OK meta_rows=8 direction_manifest_rows=8\nINPUT_VERTICAL_SLICE_RUNTIME_OK state=ACTIVE active_vj_count=1 carrier=(0.0, 0.0)\n  \u001b[38;2;250;235;215mres://tests/game_root_viewport_gdunit4_test.gd\u001b[0m\u001b[38;2;128;128;128m > \u001b[0m\u001b[38;2;250;235;215mtest_teardown_detaches_battle_scope_and_keeps_gate_held\u001b[0m\u001b[38;2;34;139;34m PASSED\u001b[0m\u001b[38;2;100;149;237m 1s 145ms\u001b[0m\n\u001b[38;2;128;128;128m\u001b[0m\n\u001b[38;2;30;144;255mStatistics:\u001b[0m\u001b[38;2;128;128;128m 4 test cases | 0 errors | 0 failures | 0 flaky | 0 skipped | 0 orphans |\u001b[0m\u001b[38;2;34;139;34m PASSED\u001b[0m\u001b[38;2;100;149;237m 3s 530ms\u001b[0m\n\u001b[38;2;128;128;128m\u001b[0m\n\u001b[38;2;128;128;128m\u001b[0m\n\u001b[38;2;30;144;255mOverall Summary:\u001b[0m\u001b[38;2;255;255;255m 4 test cases | 0 errors | 0 failures | 0 flaky | 0 skipped | 0 orphans |\u001b[0m\n\u001b[38;2;233;150;122mExecuted test suites: (1/1)\u001b[0m\n\u001b[38;2;233;150;122mExecuted test cases : (4/4)\u001b[0m\n\u001b[38;2;233;150;122mTotal execution time: 3s 530ms\u001b[0m\n\u001b[38;2;255;255;255m \u001b[0m\u001b[38;2;100;149;237mOpen XML Report at: file://evidence/gdunit4/report_33/results.xml\u001b[0m\n\u001b[38;2;100;149;237mOpen HTML Report at: file://evidence/gdunit4/report_33/index.html\u001b[0m\n\u001b[38;2;233;150;122mExit code: 0\u001b[0m\nRun dispose test resources"
+    },
+    {
+      "name": "static_guard",
+      "status": "PASS",
+      "exit_code": 0,
+      "command": [
+        "/Library/Developer/CommandLineTools/usr/bin/python3",
+        "/Users/tal/CursorProjects/xiuxian/Claude-Code-Game-Studios/production/input-vertical-slice/tools/ci/static_guard_check.py"
+      ],
+      "output": "{\n  \"guard\": \"input_vertical_slice_static_guard\",\n  \"project\": \"/Users/tal/CursorProjects/xiuxian/Claude-Code-Game-Studios/production/input-vertical-slice/project.godot\",\n  \"status\": \"PASS\",\n  \"errors\": []\n}"
+    }
+  ],
+  "evidence_boundary": {
+    "complete_game_root_battle_ui_integration": false,
+    "gdunit4_framework_and_slice_contract": true,
+    "real_touch_scene_runner": true,
+    "minimal_battle_ui_slice_integration": true,
+    "minimal_game_root_viewport_route": true,
+    "gdunit4_full_review_gate": false,
+    "android_ios_device": false,
+    "accessibility_runtime": false,
+    "performance_thermal": false,
+    "battle_ready": false
+  }
+}

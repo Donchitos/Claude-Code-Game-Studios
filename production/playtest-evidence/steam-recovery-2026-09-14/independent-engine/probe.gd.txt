@@ -1,0 +1,22 @@
+extends "res://tests/integration/steam_recovery_contract_test.gd"
+class Validator extends Node:
+	func accept(_o: Dictionary, _b: Dictionary) -> Dictionary:
+		return {"status": "OK"}
+func _run() -> void:
+	var f := fixture()
+	var c = initialized(f)
+	for field: String in ["schema", "owner_id", "revision", "payload"]:
+		for value: Variant in [null, true, [], {}, 1, 1.0]:
+			var cp: Dictionary = f.checkpoint.duplicate(true)
+			cp.owner_snapshots[0][field] = value
+			print("TYPE ", field, " ", typeof(value), " => ", c.validate(cp, f.binding))
+	for field: String in ["schema", "scope", "recovery_profile", "mission_id", "owners"]:
+		for value: Variant in [null, true, [], {}, 1, 1.0]:
+			var m: Dictionary = f.manifest.duplicate(true)
+			m[field] = value
+			print("CONFIG ", field, " ", typeof(value), " => ", Contract.new().initialize(m, {"TEST-A": semantic, "TEST-B": semantic}, LIMITS, joint))
+	var node := Validator.new()
+	var dying = initialized(f, {"TEST-A": node.accept, "TEST-B": semantic})
+	node.free()
+	print("FREED => ", dying.validate(f.checkpoint, f.binding))
+	quit()

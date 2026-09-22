@@ -1,0 +1,62 @@
+[
+  {
+    "run": 1,
+    "arm": "baseline",
+    "passed_execution": true,
+    "simulation_p95_ms": 6.842,
+    "frame_p95_ms": 16.123,
+    "frame_p99_ms": 16.72,
+    "vsync": 0,
+    "renderer": "gl_compatibility"
+  },
+  {
+    "run": 2,
+    "arm": "current",
+    "passed_execution": true,
+    "simulation_p95_ms": 6.96,
+    "frame_p95_ms": 16.096,
+    "frame_p99_ms": 16.913,
+    "vsync": 0,
+    "renderer": "gl_compatibility"
+  },
+  {
+    "run": 3,
+    "arm": "current",
+    "passed_execution": true,
+    "simulation_p95_ms": 6.911,
+    "frame_p95_ms": 15.991,
+    "frame_p99_ms": 16.633,
+    "vsync": 0,
+    "renderer": "gl_compatibility"
+  },
+  {
+    "run": 4,
+    "arm": "baseline",
+    "passed_execution": true,
+    "simulation_p95_ms": 6.982,
+    "frame_p95_ms": 15.666,
+    "frame_p99_ms": 16.771,
+    "vsync": 0,
+    "renderer": "gl_compatibility"
+  },
+  {
+    "run": 5,
+    "arm": "baseline",
+    "passed_execution": true,
+    "simulation_p95_ms": 7.002,
+    "frame_p95_ms": 15.708,
+    "frame_p99_ms": 16.838,
+    "vsync": 0,
+    "renderer": "gl_compatibility"
+  },
+  {
+    "run": 6,
+    "arm": "current",
+    "passed_execution": true,
+    "simulation_p95_ms": 6.946,
+    "frame_p95_ms": 14.852,
+    "frame_p99_ms": 16.332,
+    "vsync": 0,
+    "renderer": "gl_compatibility"
+  }
+]

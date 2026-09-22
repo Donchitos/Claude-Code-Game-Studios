@@ -1,0 +1,55 @@
+schema_version: 1
+manifest_id: SupportedTouchEventOrderingManifestV1
+status: BLOCKED_PENDING_DEVICE_TRACE
+owner: InputSystem
+source_gdd: design/gdd/input-system.md
+
+# This freezes the contract shape and fail-closed invariants only. Platform
+# measurements remain null until exported Android/iOS traces are available.
+platforms:
+  - platform_id: ANDROID
+    device_trace_status: BLOCKED
+    device_model: null
+    os_version: null
+    navigation_mode: null
+    max_concurrent_touches: null
+    residual_navigation_gesture_insets: null
+    terminal_rule: matching_release_or_cancel_before_same_index_reuse
+    lifecycle_rule: background_or_geometry_revision_retires_old_epoch
+    trace_hash: null
+  - platform_id: IOS
+    device_trace_status: BLOCKED
+    device_model: null
+    os_version: null
+    navigation_mode: null
+    max_concurrent_touches: null
+    residual_navigation_gesture_insets: null
+    terminal_rule: matching_release_or_cancel_before_same_index_reuse
+    lifecycle_rule: background_or_geometry_revision_retires_old_epoch
+    trace_hash: null
+
+derived_contract:
+  shield_bank_capacity: null
+  capacity_rule: max_concurrent_touches_across_supported_platforms
+  default_capacity_allowed: false
+  unsupported_platform_event_order_is_fault: true
+  synthetic_reversed_epoch_order_is_fault_injection_only: true
+
+required_trace_fields:
+  - artifact_id
+  - engine_version
+  - export_preset_hash
+  - platform_id
+  - device_model
+  - os_version
+  - navigation_mode
+  - display_safe_area
+  - residual_navigation_gesture_insets
+  - max_concurrent_touches
+  - lifecycle_or_edge_gesture_case
+  - event_sequence
+  - touch_index
+  - pressed
+  - canceled
+  - timestamp
+  - conclusion_hash

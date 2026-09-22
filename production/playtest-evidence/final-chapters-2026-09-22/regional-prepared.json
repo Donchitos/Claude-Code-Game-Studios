@@ -1,0 +1,79 @@
+{
+	"hash": "abc5f36fd15ea1f7623b4fdf46edd035056ff18f413b97e2bac4410708f86b96",
+	"rows": [
+		{
+			"hp": 117.992,
+			"level": 3,
+			"mission": "S1-M08-01",
+			"reason": "zones_cleansed",
+			"seconds": 56.3666666666647,
+			"seed": 1036383368,
+			"victory": true
+		},
+		{
+			"hp": 104.72,
+			"level": 3,
+			"mission": "S1-M08-02",
+			"reason": "anchors_destroyed",
+			"seconds": 34.4999999999993,
+			"seed": 3454402143,
+			"victory": true
+		},
+		{
+			"hp": 210.0,
+			"level": 5,
+			"mission": "S1-M08-03",
+			"reason": "escort_arrived",
+			"seconds": 21.7166666666667,
+			"seed": 3004464827,
+			"victory": true
+		},
+		{
+			"hp": 210.0,
+			"level": 3,
+			"mission": "S1-M08-04",
+			"reason": "targets_hunted",
+			"seconds": 20.0833333333335,
+			"seed": 264666245,
+			"victory": true
+		},
+		{
+			"hp": 62.0800000000002,
+			"level": 6,
+			"mission": "S1-M08-05",
+			"reason": "extracted",
+			"seconds": 140.450000000004,
+			"seed": 370993706,
+			"victory": true
+		},
+		{
+			"hp": 150.88,
+			"level": 3,
+			"mission": "S1-M08-06",
+			"reason": "anchors_destroyed",
+			"seconds": 42.1999999999989,
+			"seed": 3010489143,
+			"victory": true
+		},
+		{
+			"hp": 155.16,
+			"level": 4,
+			"mission": "S1-M08-07",
+			"reason": "boss_defeated",
+			"seconds": 44.2999999999988,
+			"seed": 233116698,
+			"victory": true
+		},
+		{
+			"hp": 146.832,
+			"level": 5,
+			"mission": "S1-M08-08",
+			"reason": "boss_defeated",
+			"seconds": 72.6833333333305,
+			"seed": 888486861,
+			"victory": true
+		}
+	],
+	"scope": "zero growth C01 bot fixtures, not human",
+	"wins": 8
+}

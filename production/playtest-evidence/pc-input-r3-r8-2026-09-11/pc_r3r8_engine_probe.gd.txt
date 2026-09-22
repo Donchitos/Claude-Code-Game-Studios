@@ -1,0 +1,41 @@
+extends "res://tests/integration/pc_input_profile_test.gd"
+
+func _run() -> void:
+	Input.set_use_accumulated_input(false)
+	config = JSON.parse_string(FileAccess.get_file_as_string("res://assets/config/production_defaults.json"))["input"]
+	input = ProductionInputSystem.new()
+	reader = FixtureSource.new()
+	movement = ProductionMovementIntentCarrier.new()
+	frame = PcMovementContext.new()
+	frame.battle_generation = 4
+	check(input.initialize(config, movement, frame, reader) == 0 and input.activate() == 0, "init")
+	reader.keyboard_held = true
+	reader.keyboard = Vector2.ZERO
+	tick()
+	check(input.generation == 0 and input.source == ProductionInputSystem.Source.NONE and movement.press_generation == -1, "NONE to cancelled keys does not publish generation zero")
+	reader.keyboard = Vector2.UP
+	tick()
+	check(input.generation == 1 and movement.press_generation == 1, "first nonzero allocates one")
+	reader.keyboard = Vector2.ZERO
+	tick()
+	check(input.source == ProductionInputSystem.Source.KEYBOARD and input.generation == 1 and movement.press_generation == -1, "keyboard zero retains epoch but zero carrier")
+	reader.keyboard_held = false
+	reader.stick = Vector2.RIGHT
+	tick()
+	check(input.generation == 2 and input.source == ProductionInputSystem.Source.GAMEPAD, "cancelled keyboard to pad is fresh source")
+	reader.keyboard_held = true
+	tick()
+	check(input.generation == 2 and input.source == ProductionInputSystem.Source.NONE and movement.press_generation == -1, "pad to cancelled keys retires pad without allocating")
+	reader.keyboard_held = false
+	tick()
+	check(input.generation == 3 and movement.press_generation == 3, "pad after cancelled keys receives fresh generation")
+	reader.stick = Vector2.ZERO
+	tick()
+	input.generation = 9223372036854775807
+	reader.keyboard_held = true
+	reader.keyboard = Vector2.UP
+	check(tick() == ProductionInputSystem.Status.GENERATION_EXHAUSTED and movement.press_generation == -1 and not movement.is_active, "generation exhaustion zero carrier")
+	input.teardown()
+	input.free()
+	print("ENGINE_ADVERSARIAL_SOURCE_%s checks=%d" % ["PASS" if failures == 0 else "FAIL", checks])
+	quit(0 if failures == 0 else 1)

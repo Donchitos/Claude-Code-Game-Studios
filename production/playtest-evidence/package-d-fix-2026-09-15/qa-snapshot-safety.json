@@ -1,0 +1,1526 @@
+{
+	"cases": [
+		{
+			"case": "configure S1-M01-01",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "accept complete JSON snapshot",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "configure S1-M01-01",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "restored next 200 ticks exact",
+			"detail": {
+				"first_divergence": -1,
+				"tick": 440
+			},
+			"pass": true
+		},
+		{
+			"case": "illegal choice has no effects",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "illegal deltas do not consume RNG or pending work",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "reject without fresh run: missing content_hash",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "reject preserves supplied bytes: missing content_hash",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "reject without fresh run: missing definition_hash",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "reject preserves supplied bytes: missing definition_hash",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "reject without fresh run: missing loadout",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "reject preserves supplied bytes: missing loadout",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "reject without fresh run: missing mission_id",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "reject preserves supplied bytes: missing mission_id",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "reject without fresh run: missing numeric_bits",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "reject preserves supplied bytes: missing numeric_bits",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "reject without fresh run: missing rng_seed",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "reject preserves supplied bytes: missing rng_seed",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "reject without fresh run: missing rng_state",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "reject preserves supplied bytes: missing rng_state",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "reject without fresh run: missing schema",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "reject preserves supplied bytes: missing schema",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "reject without fresh run: missing state",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "reject preserves supplied bytes: missing state",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "reject without fresh run: wrong definition_hash",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "reject preserves supplied bytes: wrong definition_hash",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "reject without fresh run: wrong content_hash",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "reject preserves supplied bytes: wrong content_hash",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "reject without fresh run: wrong mission_id",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "reject preserves supplied bytes: wrong mission_id",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "reject without fresh run: wrong rng_state",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "reject preserves supplied bytes: wrong rng_state",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "reject without fresh run: missing state.active_cap",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "reject preserves supplied bytes: missing state.active_cap",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "reject without fresh run: missing state.boss_spawned",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "reject preserves supplied bytes: missing state.boss_spawned",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "reject without fresh run: missing state.cooldowns",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "reject preserves supplied bytes: missing state.cooldowns",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "reject without fresh run: missing state.effects",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "reject preserves supplied bytes: missing state.effects",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "reject without fresh run: missing state.elapsed",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "reject preserves supplied bytes: missing state.elapsed",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "reject without fresh run: missing state.elite_clock",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "reject preserves supplied bytes: missing state.elite_clock",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "reject without fresh run: missing state.encounter",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "reject preserves supplied bytes: missing state.encounter",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "reject without fresh run: missing state.enemy_multiplier",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "reject preserves supplied bytes: missing state.enemy_multiplier",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "reject without fresh run: missing state.entities",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "reject preserves supplied bytes: missing state.entities",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "reject without fresh run: missing state.event_clock",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "reject preserves supplied bytes: missing state.event_clock",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "reject without fresh run: missing state.event_done",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "reject preserves supplied bytes: missing state.event_done",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "reject without fresh run: missing state.event_id",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "reject preserves supplied bytes: missing state.event_id",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "reject without fresh run: missing state.event_pressure",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "reject preserves supplied bytes: missing state.event_pressure",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "reject without fresh run: missing state.event_reward",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "reject preserves supplied bytes: missing state.event_reward",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "reject without fresh run: missing state.evolved",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "reject preserves supplied bytes: missing state.evolved",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "reject without fresh run: missing state.finished",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "reject preserves supplied bytes: missing state.finished",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "reject without fresh run: missing state.hazard_multiplier",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "reject preserves supplied bytes: missing state.hazard_multiplier",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "reject without fresh run: missing state.modifiers",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "reject preserves supplied bytes: missing state.modifiers",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "reject without fresh run: missing state.next_id",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "reject preserves supplied bytes: missing state.next_id",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "reject without fresh run: missing state.objective",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "reject preserves supplied bytes: missing state.objective",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "reject without fresh run: missing state.obstacles",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "reject preserves supplied bytes: missing state.obstacles",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "reject without fresh run: missing state.offered",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "reject preserves supplied bytes: missing state.offered",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "reject without fresh run: missing state.passives",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "reject preserves supplied bytes: missing state.passives",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "reject without fresh run: missing state.pending_levels",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "reject preserves supplied bytes: missing state.pending_levels",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "reject without fresh run: missing state.pickups",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "reject preserves supplied bytes: missing state.pickups",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "reject without fresh run: missing state.pill_amount",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "reject preserves supplied bytes: missing state.pill_amount",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "reject without fresh run: missing state.pill_remaining",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "reject preserves supplied bytes: missing state.pill_remaining",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "reject without fresh run: missing state.pill_stat",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "reject preserves supplied bytes: missing state.pill_stat",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "reject without fresh run: missing state.player",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "reject preserves supplied bytes: missing state.player",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "reject without fresh run: missing state.projectiles",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "reject preserves supplied bytes: missing state.projectiles",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "reject without fresh run: missing state.reason",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "reject preserves supplied bytes: missing state.reason",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "reject without fresh run: missing state.rerolls",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "reject preserves supplied bytes: missing state.rerolls",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "reject without fresh run: missing state.skills",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "reject preserves supplied bytes: missing state.skills",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "reject without fresh run: missing state.spawn_clock",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "reject preserves supplied bytes: missing state.spawn_clock",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "reject without fresh run: missing state.statistics",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "reject preserves supplied bytes: missing state.statistics",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "reject without fresh run: missing state.target_deaths",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "reject preserves supplied bytes: missing state.target_deaths",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "reject without fresh run: missing state.tick",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "reject preserves supplied bytes: missing state.tick",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "reject without fresh run: missing state.victory",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "reject preserves supplied bytes: missing state.victory",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "reject without fresh run: missing state.zones",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "reject preserves supplied bytes: missing state.zones",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "reject without fresh run: invalid hp -1",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "reject preserves supplied bytes: invalid hp -1",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "reject without fresh run: invalid hp nan",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "reject preserves supplied bytes: invalid hp nan",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "reject without fresh run: invalid hp inf",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "reject preserves supplied bytes: invalid hp inf",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "reject without fresh run: invalid hp not-a-number",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "reject preserves supplied bytes: invalid hp not-a-number",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "reject without fresh run: invalid player.level",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "reject preserves supplied bytes: invalid player.level",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "reject without fresh run: invalid player.xp",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "reject preserves supplied bytes: invalid player.xp",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "reject without fresh run: invalid player.x",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "reject preserves supplied bytes: invalid player.x",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "reject without fresh run: invalid player.kills",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "reject preserves supplied bytes: invalid player.kills",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "reject without fresh run: missing player.facing",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "reject preserves supplied bytes: missing player.facing",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "reject without fresh run: missing player.hp",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "reject preserves supplied bytes: missing player.hp",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "reject without fresh run: missing player.invulnerable",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "reject preserves supplied bytes: missing player.invulnerable",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "reject without fresh run: missing player.kills",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "reject preserves supplied bytes: missing player.kills",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "reject without fresh run: missing player.level",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "reject preserves supplied bytes: missing player.level",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "reject without fresh run: missing player.max_hp",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "reject preserves supplied bytes: missing player.max_hp",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "reject without fresh run: missing player.x",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "reject preserves supplied bytes: missing player.x",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "reject without fresh run: missing player.xp",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "reject preserves supplied bytes: missing player.xp",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "reject without fresh run: missing player.y",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "reject preserves supplied bytes: missing player.y",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "reject without fresh run: missing objective.completed_ids",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "reject preserves supplied bytes: missing objective.completed_ids",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "reject without fresh run: missing objective.completion_order",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "reject preserves supplied bytes: missing objective.completion_order",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "reject without fresh run: missing objective.elapsed",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "reject preserves supplied bytes: missing objective.elapsed",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "reject without fresh run: missing objective.escort_hp",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "reject preserves supplied bytes: missing objective.escort_hp",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "reject without fresh run: missing objective.extraction_ready",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "reject preserves supplied bytes: missing objective.extraction_ready",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "reject without fresh run: missing objective.extraction_was_inside",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "reject preserves supplied bytes: missing objective.extraction_was_inside",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "reject without fresh run: missing objective.finished",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "reject preserves supplied bytes: missing objective.finished",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "reject without fresh run: missing objective.hold",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "reject preserves supplied bytes: missing objective.hold",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "reject without fresh run: missing objective.kind",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "reject preserves supplied bytes: missing objective.kind",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "reject without fresh run: missing objective.player_alive",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "reject preserves supplied bytes: missing objective.player_alive",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "reject without fresh run: missing objective.pressure",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "reject preserves supplied bytes: missing objective.pressure",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "reject without fresh run: missing objective.progress",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "reject preserves supplied bytes: missing objective.progress",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "reject without fresh run: missing objective.reason",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "reject preserves supplied bytes: missing objective.reason",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "reject without fresh run: missing objective.victory",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "reject preserves supplied bytes: missing objective.victory",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "reject without fresh run: missing objective.waypoint",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "reject preserves supplied bytes: missing objective.waypoint",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "reject without fresh run: missing objective.x",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "reject preserves supplied bytes: missing objective.x",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "reject without fresh run: missing objective.y",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "reject preserves supplied bytes: missing objective.y",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "reject without fresh run: fractional skill rank",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "reject preserves supplied bytes: fractional skill rank",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "reject without fresh run: five active slots",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "reject preserves supplied bytes: five active slots",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "reject without fresh run: negative elapsed",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "reject preserves supplied bytes: negative elapsed",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "reject without fresh run: unknown pending choice",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "reject preserves supplied bytes: unknown pending choice",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "reject without fresh run: legal alternate character substitution",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "reject preserves supplied bytes: legal alternate character substitution",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "reject without fresh run: legal alternate branch substitution",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "reject preserves supplied bytes: legal alternate branch substitution",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "reject without fresh run: valid numeric initial seed substitution",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "reject preserves supplied bytes: valid numeric initial seed substitution",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "reject without fresh run: skill level overflow",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "reject preserves supplied bytes: skill level overflow",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "reject without fresh run: numeric bits missing node",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "reject preserves supplied bytes: numeric bits missing node",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "reject without fresh run: numeric bits extra node",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "reject preserves supplied bytes: numeric bits extra node",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "reject without fresh run: numeric bits nonfinite f:000000000000f87f",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "reject preserves supplied bytes: numeric bits nonfinite f:000000000000f87f",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "reject without fresh run: numeric bits nonfinite f:000000000000f07f",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "reject preserves supplied bytes: numeric bits nonfinite f:000000000000f07f",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "reject without fresh run: numeric mirror disagrees with bits",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "reject preserves supplied bytes: numeric mirror disagrees with bits",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "reject without fresh run: decoded negative ULP across hp zero boundary",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "reject preserves supplied bytes: decoded negative ULP across hp zero boundary",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "configure S1-M01-01",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "real pending upgrade checkpoint reached",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "configure S1-M01-01",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "restored pending choice freezes RNG/ticks",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "legal persisted choice",
+			"detail": "S1-A01",
+			"pass": true
+		},
+		{
+			"case": "legal persisted choice",
+			"detail": "S1-A01",
+			"pass": true
+		},
+		{
+			"case": "legal persisted choice",
+			"detail": "S1-A01",
+			"pass": true
+		},
+		{
+			"case": "legal persisted choice",
+			"detail": "S1-A01",
+			"pass": true
+		},
+		{
+			"case": "legal persisted choice",
+			"detail": "S1-P01",
+			"pass": true
+		},
+		{
+			"case": "legal persisted choice",
+			"detail": "S1-P01",
+			"pass": true
+		},
+		{
+			"case": "legal persisted choice",
+			"detail": "S1-P01",
+			"pass": true
+		},
+		{
+			"case": "legal persisted choice",
+			"detail": "S1-P01",
+			"pass": true
+		},
+		{
+			"case": "legal persisted choice",
+			"detail": "S1-P01",
+			"pass": true
+		},
+		{
+			"case": "legal persisted choice",
+			"detail": "S1-V01",
+			"pass": true
+		},
+		{
+			"case": "legal persisted choice",
+			"detail": "S1-P22",
+			"pass": true
+		},
+		{
+			"case": "legal persisted choice",
+			"detail": "S1-P22",
+			"pass": true
+		},
+		{
+			"case": "legal persisted choice",
+			"detail": "S1-P22",
+			"pass": true
+		},
+		{
+			"case": "legal persisted choice",
+			"detail": "S1-P22",
+			"pass": true
+		},
+		{
+			"case": "legal persisted choice",
+			"detail": "S1-P22",
+			"pass": true
+		},
+		{
+			"case": "legal persisted choice",
+			"detail": "S1-A18",
+			"pass": true
+		},
+		{
+			"case": "legal persisted choice",
+			"detail": "S1-A18",
+			"pass": true
+		},
+		{
+			"case": "legal persisted choice",
+			"detail": "S1-A18",
+			"pass": true
+		},
+		{
+			"case": "legal persisted choice",
+			"detail": "S1-A18",
+			"pass": true
+		},
+		{
+			"case": "legal persisted choice",
+			"detail": "S1-A18",
+			"pass": true
+		},
+		{
+			"case": "legal persisted choice",
+			"detail": "S1-P15",
+			"pass": true
+		},
+		{
+			"case": "legal persisted choice",
+			"detail": "S1-P15",
+			"pass": true
+		},
+		{
+			"case": "legal persisted choice",
+			"detail": "S1-P15",
+			"pass": true
+		},
+		{
+			"case": "legal persisted choice",
+			"detail": "S1-P15",
+			"pass": true
+		},
+		{
+			"case": "legal persisted choice",
+			"detail": "S1-P15",
+			"pass": true
+		},
+		{
+			"case": "legal persisted choice",
+			"detail": "S1-P13",
+			"pass": true
+		},
+		{
+			"case": "legal persisted choice",
+			"detail": "S1-P13",
+			"pass": true
+		},
+		{
+			"case": "legal persisted choice",
+			"detail": "S1-P13",
+			"pass": true
+		},
+		{
+			"case": "legal persisted choice",
+			"detail": "S1-P13",
+			"pass": true
+		},
+		{
+			"case": "legal persisted choice",
+			"detail": "S1-P13",
+			"pass": true
+		},
+		{
+			"case": "legal persisted choice",
+			"detail": "S1-A12",
+			"pass": true
+		},
+		{
+			"case": "legal persisted choice",
+			"detail": "S1-A12",
+			"pass": true
+		},
+		{
+			"case": "legal persisted choice",
+			"detail": "S1-A12",
+			"pass": true
+		},
+		{
+			"case": "legal persisted choice",
+			"detail": "S1-A12",
+			"pass": true
+		},
+		{
+			"case": "legal persisted choice",
+			"detail": "S1-A12",
+			"pass": true
+		},
+		{
+			"case": "legal persisted choice",
+			"detail": "S1-A03",
+			"pass": true
+		},
+		{
+			"case": "legal persisted choice",
+			"detail": "S1-A03",
+			"pass": true
+		},
+		{
+			"case": "legal persisted choice",
+			"detail": "S1-A03",
+			"pass": true
+		},
+		{
+			"case": "legal persisted choice",
+			"detail": "S1-A03",
+			"pass": true
+		},
+		{
+			"case": "legal persisted choice",
+			"detail": "S1-A03",
+			"pass": true
+		},
+		{
+			"case": "legal persisted choice",
+			"detail": "S1-A01",
+			"pass": true
+		},
+		{
+			"case": "legal persisted choice",
+			"detail": "S1-A01",
+			"pass": true
+		},
+		{
+			"case": "legal persisted choice",
+			"detail": "S1-A01",
+			"pass": true
+		},
+		{
+			"case": "legal persisted choice",
+			"detail": "S1-A01",
+			"pass": true
+		},
+		{
+			"case": "legal persisted choice",
+			"detail": "S1-P01",
+			"pass": true
+		},
+		{
+			"case": "legal persisted choice",
+			"detail": "S1-P01",
+			"pass": true
+		},
+		{
+			"case": "legal persisted choice",
+			"detail": "S1-P01",
+			"pass": true
+		},
+		{
+			"case": "legal persisted choice",
+			"detail": "S1-P01",
+			"pass": true
+		},
+		{
+			"case": "legal persisted choice",
+			"detail": "S1-P01",
+			"pass": true
+		},
+		{
+			"case": "legal persisted choice",
+			"detail": "S1-V01",
+			"pass": true
+		},
+		{
+			"case": "legal persisted choice",
+			"detail": "S1-P22",
+			"pass": true
+		},
+		{
+			"case": "legal persisted choice",
+			"detail": "S1-P22",
+			"pass": true
+		},
+		{
+			"case": "legal persisted choice",
+			"detail": "S1-P22",
+			"pass": true
+		},
+		{
+			"case": "legal persisted choice",
+			"detail": "S1-P22",
+			"pass": true
+		},
+		{
+			"case": "legal persisted choice",
+			"detail": "S1-P22",
+			"pass": true
+		},
+		{
+			"case": "legal persisted choice",
+			"detail": "S1-A18",
+			"pass": true
+		},
+		{
+			"case": "legal persisted choice",
+			"detail": "S1-A18",
+			"pass": true
+		},
+		{
+			"case": "legal persisted choice",
+			"detail": "S1-A18",
+			"pass": true
+		},
+		{
+			"case": "legal persisted choice",
+			"detail": "S1-A18",
+			"pass": true
+		},
+		{
+			"case": "legal persisted choice",
+			"detail": "S1-A18",
+			"pass": true
+		},
+		{
+			"case": "legal persisted choice",
+			"detail": "S1-P15",
+			"pass": true
+		},
+		{
+			"case": "legal persisted choice",
+			"detail": "S1-P15",
+			"pass": true
+		},
+		{
+			"case": "legal persisted choice",
+			"detail": "S1-P15",
+			"pass": true
+		},
+		{
+			"case": "legal persisted choice",
+			"detail": "S1-P15",
+			"pass": true
+		},
+		{
+			"case": "legal persisted choice",
+			"detail": "S1-P15",
+			"pass": true
+		},
+		{
+			"case": "legal persisted choice",
+			"detail": "S1-P13",
+			"pass": true
+		},
+		{
+			"case": "legal persisted choice",
+			"detail": "S1-P13",
+			"pass": true
+		},
+		{
+			"case": "legal persisted choice",
+			"detail": "S1-P13",
+			"pass": true
+		},
+		{
+			"case": "legal persisted choice",
+			"detail": "S1-P13",
+			"pass": true
+		},
+		{
+			"case": "legal persisted choice",
+			"detail": "S1-P13",
+			"pass": true
+		},
+		{
+			"case": "legal persisted choice",
+			"detail": "S1-A12",
+			"pass": true
+		},
+		{
+			"case": "legal persisted choice",
+			"detail": "S1-A12",
+			"pass": true
+		},
+		{
+			"case": "legal persisted choice",
+			"detail": "S1-A12",
+			"pass": true
+		},
+		{
+			"case": "legal persisted choice",
+			"detail": "S1-A12",
+			"pass": true
+		},
+		{
+			"case": "legal persisted choice",
+			"detail": "S1-A12",
+			"pass": true
+		},
+		{
+			"case": "legal persisted choice",
+			"detail": "S1-A03",
+			"pass": true
+		},
+		{
+			"case": "legal persisted choice",
+			"detail": "S1-A03",
+			"pass": true
+		},
+		{
+			"case": "legal persisted choice",
+			"detail": "S1-A03",
+			"pass": true
+		},
+		{
+			"case": "legal persisted choice",
+			"detail": "S1-A03",
+			"pass": true
+		},
+		{
+			"case": "legal persisted choice",
+			"detail": "S1-A03",
+			"pass": true
+		},
+		{
+			"case": "restored pending choice next200 same input/choice exact",
+			"detail": {
+				"first_divergence": -1,
+				"tick": 558
+			},
+			"pass": true
+		},
+		{
+			"case": "configure S1-M01-01",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "nonlexical A07 then A04 legally acquired",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "live skill insertion order is nonlexical",
+			"detail": [
+				"S1-A07",
+				"S1-A04"
+			],
+			"pass": true
+		},
+		{
+			"case": "both acquired skills naturally due on next tick",
+			"detail": {
+				"S1-A04": 0.153333333333333,
+				"S1-A07": 0.0133333333333334
+			},
+			"pass": true
+		},
+		{
+			"case": "nonlexical raw checkpoint valid",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "nonlexical numeric mirror roundtrip valid",
+			"detail": [],
+			"pass": true
+		},
+		{
+			"case": "configure S1-M01-01",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "nonlexical simultaneous cooldown JSON restore next200 exact",
+			"detail": {
+				"before_keys": [
+					"S1-A07",
+					"S1-A04"
+				],
+				"first_divergence": -1,
+				"json_keys": [
+					"S1-A04",
+					"S1-A07"
+				]
+			},
+			"pass": true
+		}
+	],
+	"checks": 299,
+	"engine": "4.7.1-stable (official)",
+	"failures": 0,
+	"scope": "Headless synthetic short/low-HP acceptance; not production balance, 64 mission completion, device or release evidence",
+	"suite": "snapshot-safety"
+}

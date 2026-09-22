@@ -1,0 +1,563 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:xiuxian:steam:legacy-battle-snapshot-v1",
+  "$comment": "Generated for exact current default config/build. Structure only; SteamBattleSnapshot validates finite real_t readback, causal state, references, build, barrier and owner admission.",
+  "$defs": {
+    "u63": {
+      "type": "string",
+      "pattern": "^(?:0|[1-9][0-9]{0,17}|9223372036854775807|[1-8][0-9]{18}|9[0-1][0-9]{17}|92[0-1][0-9]{16}|922[0-2][0-9]{15}|9223[0-2][0-9]{14}|92233[0-6][0-9]{13}|922337[0-1][0-9]{12}|92233720[0-2][0-9]{10}|922337203[0-5][0-9]{9}|9223372036[0-7][0-9]{8}|92233720368[0-4][0-9]{7}|922337203685[0-3][0-9]{6}|9223372036854[0-6][0-9]{5}|92233720368547[0-6][0-9]{4}|922337203685477[0-4][0-9]{3}|9223372036854775[0-7][0-9]{2}|922337203685477580[0-6][0-9]{0})$(?![\\s\\S])"
+    },
+    "f64": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{16}$(?![\\s\\S])",
+      "format": "steam-f64"
+    },
+    "bits64": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{16}$(?![\\s\\S])"
+    }
+  },
+  "type": "object",
+  "properties": {
+    "boss": {
+      "type": "object",
+      "properties": {
+        "action": {
+          "$ref": "#/$defs/u63"
+        },
+        "axis": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/f64"
+          },
+          "minItems": 2,
+          "maxItems": 2
+        },
+        "bite_hit": {
+          "type": "boolean"
+        },
+        "generation": {
+          "$ref": "#/$defs/u63"
+        },
+        "segment": {
+          "$ref": "#/$defs/u63"
+        },
+        "slot": {
+          "$ref": "#/$defs/u63"
+        },
+        "ticks": {
+          "$ref": "#/$defs/u63"
+        }
+      },
+      "required": [
+        "action",
+        "axis",
+        "bite_hit",
+        "generation",
+        "segment",
+        "slot",
+        "ticks"
+      ],
+      "additionalProperties": false
+    },
+    "config_hash": {
+      "const": "c3d9f44cd488daf8c989e34b789f2e39ae9e68600e66218592d97829c3d866d7"
+    },
+    "enemies": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "entity_id": {
+            "$ref": "#/$defs/u63"
+          },
+          "hp": {
+            "$ref": "#/$defs/f64"
+          },
+          "kind": {
+            "$ref": "#/$defs/u63"
+          },
+          "position": {
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/f64"
+            },
+            "minItems": 2,
+            "maxItems": 2
+          }
+        },
+        "required": [
+          "entity_id",
+          "hp",
+          "kind",
+          "position"
+        ],
+        "additionalProperties": false
+      },
+      "maxItems": 320
+    },
+    "engine": {
+      "const": "4.7.1-stable (official):a13da4feb8d8aefc283c3763d33a2f170a18d541"
+    },
+    "fsm": {
+      "type": "object",
+      "properties": {
+        "_last_damage_receipt_id": {
+          "$ref": "#/$defs/u63"
+        },
+        "_resolved_max_hp": {
+          "$ref": "#/$defs/f64"
+        },
+        "_schedule_claimed": {
+          "type": "boolean"
+        },
+        "active_age_ticks": {
+          "$ref": "#/$defs/u63"
+        },
+        "fog_anchor": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/f64"
+          },
+          "minItems": 2,
+          "maxItems": 2
+        },
+        "fog_elapsed_ticks": {
+          "$ref": "#/$defs/u63"
+        },
+        "fog_generation": {
+          "$ref": "#/$defs/u63"
+        },
+        "phase_code": {
+          "$ref": "#/$defs/u63"
+        },
+        "phase_transition_generation": {
+          "$ref": "#/$defs/u63"
+        },
+        "phase_transition_pending": {
+          "type": "boolean"
+        },
+        "state": {
+          "$ref": "#/$defs/u63"
+        },
+        "state_ticks": {
+          "$ref": "#/$defs/u63"
+        }
+      },
+      "required": [
+        "_last_damage_receipt_id",
+        "_resolved_max_hp",
+        "_schedule_claimed",
+        "active_age_ticks",
+        "fog_anchor",
+        "fog_elapsed_ticks",
+        "fog_generation",
+        "phase_code",
+        "phase_transition_generation",
+        "phase_transition_pending",
+        "state",
+        "state_ticks"
+      ],
+      "additionalProperties": false
+    },
+    "hostile": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "life": {
+            "$ref": "#/$defs/u63"
+          },
+          "position": {
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/f64"
+            },
+            "minItems": 2,
+            "maxItems": 2
+          },
+          "velocity": {
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/f64"
+            },
+            "minItems": 2,
+            "maxItems": 2
+          }
+        },
+        "required": [
+          "life",
+          "position",
+          "velocity"
+        ],
+        "additionalProperties": false
+      },
+      "maxItems": 8
+    },
+    "pickups": {
+      "type": "array",
+      "items": {
+        "type": "array",
+        "items": {
+          "$ref": "#/$defs/f64"
+        },
+        "minItems": 2,
+        "maxItems": 2
+      },
+      "maxItems": 300
+    },
+    "player": {
+      "type": "object",
+      "properties": {
+        "_initial_longchun_charges": {
+          "$ref": "#/$defs/u63"
+        },
+        "attack_interval": {
+          "$ref": "#/$defs/f64"
+        },
+        "contact_cooldown": {
+          "$ref": "#/$defs/f64"
+        },
+        "damage_event_count": {
+          "$ref": "#/$defs/u63"
+        },
+        "hp": {
+          "$ref": "#/$defs/f64"
+        },
+        "invulnerability_left": {
+          "$ref": "#/$defs/f64"
+        },
+        "longchun_charge_count": {
+          "$ref": "#/$defs/u63"
+        },
+        "longchun_recovery_ratio": {
+          "$ref": "#/$defs/f64"
+        },
+        "longchun_threshold_ratio": {
+          "$ref": "#/$defs/f64"
+        },
+        "longchun_trigger_count": {
+          "$ref": "#/$defs/u63"
+        },
+        "max_hp": {
+          "$ref": "#/$defs/f64"
+        },
+        "maximum_move_speed": {
+          "$ref": "#/$defs/f64"
+        },
+        "minimum_attack_interval": {
+          "$ref": "#/$defs/f64"
+        },
+        "move_speed": {
+          "$ref": "#/$defs/f64"
+        },
+        "movement_consume_count": {
+          "$ref": "#/$defs/u63"
+        },
+        "pickup_radius": {
+          "$ref": "#/$defs/f64"
+        },
+        "position": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/f64"
+          },
+          "minItems": 2,
+          "maxItems": 2
+        },
+        "radius": {
+          "$ref": "#/$defs/f64"
+        },
+        "sword_count": {
+          "$ref": "#/$defs/u63"
+        },
+        "sword_damage": {
+          "$ref": "#/$defs/f64"
+        }
+      },
+      "required": [
+        "_initial_longchun_charges",
+        "attack_interval",
+        "contact_cooldown",
+        "damage_event_count",
+        "hp",
+        "invulnerability_left",
+        "longchun_charge_count",
+        "longchun_recovery_ratio",
+        "longchun_threshold_ratio",
+        "longchun_trigger_count",
+        "max_hp",
+        "maximum_move_speed",
+        "minimum_attack_interval",
+        "move_speed",
+        "movement_consume_count",
+        "pickup_radius",
+        "position",
+        "radius",
+        "sword_count",
+        "sword_damage"
+      ],
+      "additionalProperties": false
+    },
+    "profile": {
+      "const": "LEGACY_STAGE_PC_V1"
+    },
+    "projectiles": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "damage": {
+            "$ref": "#/$defs/f64"
+          },
+          "position": {
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/f64"
+            },
+            "minItems": 2,
+            "maxItems": 2
+          },
+          "velocity": {
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/f64"
+            },
+            "minItems": 2,
+            "maxItems": 2
+          }
+        },
+        "required": [
+          "damage",
+          "position",
+          "velocity"
+        ],
+        "additionalProperties": false
+      },
+      "maxItems": 392
+    },
+    "references": {
+      "type": "object",
+      "properties": {
+        "boss": {
+          "$ref": "#/$defs/u63"
+        },
+        "ring": {
+          "$ref": "#/$defs/u63"
+        },
+        "summon": {
+          "$ref": "#/$defs/u63"
+        }
+      },
+      "required": [
+        "boss",
+        "ring",
+        "summon"
+      ],
+      "additionalProperties": false
+    },
+    "rng": {
+      "type": "object",
+      "properties": {
+        "seed": {
+          "$ref": "#/$defs/bits64"
+        },
+        "state": {
+          "$ref": "#/$defs/bits64"
+        }
+      },
+      "required": [
+        "seed",
+        "state"
+      ],
+      "additionalProperties": false
+    },
+    "scope": {
+      "type": "object",
+      "properties": {
+        "_tick_accumulator": {
+          "$ref": "#/$defs/f64"
+        },
+        "completed_active_ticks": {
+          "$ref": "#/$defs/u63"
+        },
+        "first_upgrade_time": {
+          "$ref": "#/$defs/f64"
+        },
+        "kills": {
+          "$ref": "#/$defs/u63"
+        },
+        "level": {
+          "$ref": "#/$defs/u63"
+        },
+        "pending_upgrade": {
+          "type": "boolean"
+        },
+        "smoke_mode": {
+          "type": "boolean"
+        },
+        "xp": {
+          "$ref": "#/$defs/u63"
+        }
+      },
+      "required": [
+        "_tick_accumulator",
+        "completed_active_ticks",
+        "first_upgrade_time",
+        "kills",
+        "level",
+        "pending_upgrade",
+        "smoke_mode",
+        "xp"
+      ],
+      "additionalProperties": false
+    },
+    "stage": {
+      "type": "object",
+      "properties": {
+        "_attack_left": {
+          "$ref": "#/$defs/f64"
+        },
+        "_damage_receipt": {
+          "$ref": "#/$defs/u63"
+        },
+        "_ring_generation": {
+          "$ref": "#/$defs/u63"
+        },
+        "_ring_origin": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/f64"
+          },
+          "minItems": 2,
+          "maxItems": 2
+        },
+        "_ring_pending": {
+          "type": "boolean"
+        },
+        "_simulation_tick": {
+          "$ref": "#/$defs/u63"
+        },
+        "_snapshot_next_entity_id": {
+          "$ref": "#/$defs/u63"
+        },
+        "_spawn_left": {
+          "$ref": "#/$defs/f64"
+        },
+        "_spawn_viewport_size": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/f64"
+          },
+          "minItems": 2,
+          "maxItems": 2
+        },
+        "_summon_generation": {
+          "$ref": "#/$defs/u63"
+        },
+        "_summon_pending": {
+          "type": "boolean"
+        },
+        "boss_defeated": {
+          "type": "boolean"
+        },
+        "boss_spawn_count": {
+          "$ref": "#/$defs/u63"
+        },
+        "dropped_enemy_spawns": {
+          "$ref": "#/$defs/u63"
+        },
+        "dropped_pickups": {
+          "$ref": "#/$defs/u63"
+        },
+        "dropped_projectiles": {
+          "$ref": "#/$defs/u63"
+        }
+      },
+      "required": [
+        "_attack_left",
+        "_damage_receipt",
+        "_ring_generation",
+        "_ring_origin",
+        "_ring_pending",
+        "_simulation_tick",
+        "_snapshot_next_entity_id",
+        "_spawn_left",
+        "_spawn_viewport_size",
+        "_summon_generation",
+        "_summon_pending",
+        "boss_defeated",
+        "boss_spawn_count",
+        "dropped_enemy_spawns",
+        "dropped_pickups",
+        "dropped_projectiles"
+      ],
+      "additionalProperties": false
+    },
+    "weapon": {
+      "type": "object",
+      "properties": {
+        "due_tick": {
+          "$ref": "#/$defs/u63"
+        },
+        "rows": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "damage": {
+                "$ref": "#/$defs/f64"
+              },
+              "position": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/$defs/f64"
+                },
+                "minItems": 2,
+                "maxItems": 2
+              },
+              "velocity": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/$defs/f64"
+                },
+                "minItems": 2,
+                "maxItems": 2
+              }
+            },
+            "required": [
+              "damage",
+              "position",
+              "velocity"
+            ],
+            "additionalProperties": false
+          },
+          "maxItems": 32
+        }
+      },
+      "required": [
+        "due_tick",
+        "rows"
+      ],
+      "additionalProperties": false
+    }
+  },
+  "required": [
+    "boss",
+    "config_hash",
+    "enemies",
+    "engine",
+    "fsm",
+    "hostile",
+    "pickups",
+    "player",
+    "profile",
+    "projectiles",
+    "references",
+    "rng",
+    "scope",
+    "stage",
+    "weapon"
+  ],
+  "additionalProperties": false
+}

@@ -1,0 +1,136 @@
+{
+  "catalog_sha256": "abc5f36fd15ea1f7623b4fdf46edd035056ff18f413b97e2bac4410708f86b96",
+  "pck_sha256": "d8723f95e2fa1c591e3c7f73a766fc3a9f005c8d52f76f4aae2f1e06e966422a",
+  "source_freeze_files": 202,
+  "safe": {
+    "log": "journey-safe-verified.log",
+    "victories": 64,
+    "restores": 580,
+    "compared_ticks": 98134,
+    "active_seconds": 2175.5333333332965,
+    "late_active_seconds": 1399.866666666646,
+    "pill_missions": [],
+    "characters": [
+      "S1-C01"
+    ],
+    "chapters": [
+      {
+        "chapter": 1,
+        "missions": 8,
+        "active_seconds": 266.9499999999944
+      },
+      {
+        "chapter": 2,
+        "missions": 8,
+        "active_seconds": 201.73333333333096
+      },
+      {
+        "chapter": 3,
+        "missions": 8,
+        "active_seconds": 306.9833333333249
+      },
+      {
+        "chapter": 4,
+        "missions": 8,
+        "active_seconds": 245.3666666666627
+      },
+      {
+        "chapter": 5,
+        "missions": 8,
+        "active_seconds": 276.3666666666605
+      },
+      {
+        "chapter": 6,
+        "missions": 8,
+        "active_seconds": 278.08333333332723
+      },
+      {
+        "chapter": 7,
+        "missions": 8,
+        "active_seconds": 267.6833333333281
+      },
+      {
+        "chapter": 8,
+        "missions": 8,
+        "active_seconds": 332.36666666666736
+      }
+    ],
+    "ending_disk_reload": true
+  },
+  "regional_prepared_risk": {
+    "log": "journey-regional-prepared.log",
+    "victories": 64,
+    "restores": 655,
+    "compared_ticks": 115327,
+    "active_seconds": 2767.1666666666,
+    "late_active_seconds": 1645.366666666633,
+    "pill_missions": [
+      "S1-M08-01",
+      "S1-M08-02",
+      "S1-M08-05",
+      "S1-M08-06"
+    ],
+    "characters": [
+      "S1-C01",
+      "S1-C02",
+      "S1-C03",
+      "S1-C04",
+      "S1-C05",
+      "S1-C06",
+      "S1-C07",
+      "S1-C08"
+    ],
+    "chapters": [
+      {
+        "chapter": 1,
+        "missions": 8,
+        "active_seconds": 267.56666666666115
+      },
+      {
+        "chapter": 2,
+        "missions": 8,
+        "active_seconds": 243.18333333332973
+      },
+      {
+        "chapter": 3,
+        "missions": 8,
+        "active_seconds": 611.0499999999757
+      },
+      {
+        "chapter": 4,
+        "missions": 8,
+        "active_seconds": 202.9666666666632
+      },
+      {
+        "chapter": 5,
+        "missions": 8,
+        "active_seconds": 366.833333333323
+      },
+      {
+        "chapter": 6,
+        "missions": 8,
+        "active_seconds": 327.2333333333251
+      },
+      {
+        "chapter": 7,
+        "missions": 8,
+        "active_seconds": 316.0333333333256
+      },
+      {
+        "chapter": 8,
+        "missions": 8,
+        "active_seconds": 432.2999999999964
+      }
+    ],
+    "ending_disk_reload": true
+  },
+  "regression_scripts": 24,
+  "production_independent_missions": "64/64",
+  "mechanics_checks": 179,
+  "boundary_checks": 309,
+  "route_checks": 122,
+  "C03_prescribed_growth_safe_stress": "99/120",
+  "new_player_sessions": 0,
+  "new_player_status": "SKIPPED_BY_USER",
+  "battle_ready": false
+}

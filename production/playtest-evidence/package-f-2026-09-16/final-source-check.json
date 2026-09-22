@@ -1,0 +1,11 @@
+{
+  "frozen_files": 63,
+  "changed": [],
+  "staging_src_assets_differences": [],
+  "historical_json_match_HEAD": {
+    "production/playtest-evidence/campaign-game-2026-09-14/qa-nonlexical-input.json": "8bdc1f0aba79dd2f4a5ee4a643d799b3918a3af08e316ee796deb51ec8fcced8",
+    "production/playtest-evidence/campaign-game-2026-09-14/qa-snapshot-safety.json": "20107e1b44f1d9efaddbd25e429daa6a7f47f6d40427e89423acbfcd0c3afac3"
+  },
+  "source_freeze_sha256": "3d425584fda5f1bc16988054b4a35bc8fb91b3c44582e59b999133bb693314ff",
+  "final_ui_assertion_recheck": "PASS"
+}

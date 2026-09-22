@@ -1,9 +1,29 @@
 # Godot — Deprecated APIs
 
-Last verified: 2026-02-12
+Last verified: 2026-08-14
 
 If an agent suggests any API in the "Deprecated" column, it MUST be replaced
 with the "Use Instead" column.
+
+## Removed in 4.7 (no replacement)
+
+| Removed | Since | Notes |
+|---------|-------|-------|
+| `AudioEffectSpectrumAnalyzer.tap_back_pos` | 4.7 | 属性完全移除，无替代（GH-114355） |
+
+## 4.7 重命名/重构（非弃用但 API 签名变了，见 breaking-changes.md）
+
+| Old | New | Since |
+|-----|-----|-------|
+| `RichTextLabel.ImageUpdateMask.UPDATE_WIDTH_IN_PERCENT` | `UPDATE_WIDTH_UNIT` | 4.7 |
+| `RichTextLabel.add_image/update_image` 的 `width_in_percent`/`height_in_percent`（bool） | `width_unit`/`height_unit`（`ImageUnit`） | 4.7 |
+| `RenderingServer.particles_request_process_time(time)` | `particles_request_process_time(process_time, process_time_residual)` | 4.7 |
+| `Object.is_class(class: String)` | `is_class(class: StringName)` | 4.7 |
+| `AnimationNodeBlendSpace1D/2D` 的 `sync`（bool） | `sync_mode`（`SyncMode` 枚举） | 4.7 |
+| `InputEvent.device == 0`（鼠标/键盘判断） | `InputEvent.DEVICE_ID_MOUSE` / `DEVICE_ID_KEYBOARD` | 4.7 |
+| `Animation.length`（float 元数据） | `Animation.length`（double 元数据） | 4.7 |
+
+
 
 ## Nodes & Classes
 

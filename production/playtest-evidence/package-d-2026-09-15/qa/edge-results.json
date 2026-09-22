@@ -1,0 +1,233 @@
+[
+	{
+		"case": "accumulated_xp",
+		"immediate_next_offer": [
+			"S1-A01",
+			"S1-P01",
+			"S1-A03"
+		],
+		"initial_offered": [
+			"S1-A01",
+			"S1-A02",
+			"S1-A03"
+		],
+		"tick_after": 1,
+		"tick_before": 1
+	},
+	{
+		"arena_elapsed": 380.01666666665,
+		"case": "idle_legal_steps",
+		"chapter": {},
+		"damage_taken": 0.0,
+		"finished": true,
+		"hp": 160.0,
+		"mission": "S1-M01-01",
+		"objective_elapsed": 380.01666666665,
+		"reason": "timeout",
+		"skills": {
+			"S1-A01": 1
+		},
+		"snapshot_valid": true,
+		"tick": 22801
+	},
+	{
+		"arena_elapsed": 395.016666666636,
+		"case": "idle_legal_steps",
+		"chapter": {
+			"attacks": [
+				0,
+				0,
+				0
+			],
+			"boss_phase": 0,
+			"clues": 0,
+			"error": "",
+			"first_warning": [
+				-1,
+				-1,
+				-1
+			],
+			"hits": [
+				0,
+				0,
+				0
+			],
+			"hunt_spawned": false,
+			"kill_tick": -1,
+			"landings": [],
+			"retry": 0,
+			"root_mask": 0
+		},
+		"damage_taken": 0.0,
+		"finished": true,
+		"hp": 160.0,
+		"mission": "S1-M01-04",
+		"objective_elapsed": 395.016666666636,
+		"reason": "timeout",
+		"skills": {
+			"S1-A01": 1
+		},
+		"snapshot_valid": true,
+		"tick": 23701
+	},
+	{
+		"arena_elapsed": 400.016666666632,
+		"case": "idle_legal_steps",
+		"chapter": {
+			"attacks": [
+				0,
+				0,
+				0
+			],
+			"boss_phase": 0,
+			"clues": 0,
+			"error": "",
+			"first_warning": [
+				-1,
+				-1,
+				-1
+			],
+			"hits": [
+				0,
+				0,
+				0
+			],
+			"hunt_spawned": false,
+			"kill_tick": -1,
+			"landings": [],
+			"retry": 0,
+			"root_mask": 0
+		},
+		"damage_taken": 0.0,
+		"finished": true,
+		"hp": 160.0,
+		"mission": "S1-M01-05",
+		"objective_elapsed": 400.016666666632,
+		"reason": "timeout",
+		"skills": {
+			"S1-A01": 1
+		},
+		"snapshot_valid": true,
+		"tick": 24001
+	},
+	{
+		"arena_elapsed": 405.016666666627,
+		"case": "idle_legal_steps",
+		"chapter": {
+			"attacks": [
+				0,
+				0,
+				0
+			],
+			"boss_phase": 0,
+			"clues": 0,
+			"error": "",
+			"first_warning": [
+				-1,
+				-1,
+				-1
+			],
+			"hits": [
+				0,
+				0,
+				0
+			],
+			"hunt_spawned": false,
+			"kill_tick": -1,
+			"landings": [],
+			"retry": 0,
+			"root_mask": 0
+		},
+		"damage_taken": 56.16,
+		"finished": true,
+		"hp": 142.24,
+		"mission": "S1-M01-06",
+		"objective_elapsed": 405.016666666627,
+		"reason": "timeout",
+		"skills": {
+			"S1-A01": 4
+		},
+		"snapshot_valid": true,
+		"tick": 24301
+	},
+	{
+		"arena_elapsed": 410.016666666622,
+		"case": "idle_legal_steps",
+		"chapter": {
+			"attacks": [
+				0,
+				0,
+				0
+			],
+			"boss_phase": 0,
+			"clues": 0,
+			"error": "",
+			"first_warning": [
+				-1,
+				-1,
+				-1
+			],
+			"hits": [
+				0,
+				0,
+				0
+			],
+			"hunt_spawned": false,
+			"kill_tick": -1,
+			"landings": [],
+			"retry": 0,
+			"root_mask": 0
+		},
+		"damage_taken": 10.48,
+		"finished": true,
+		"hp": 155.808,
+		"mission": "S1-M01-07",
+		"objective_elapsed": 410.016666666622,
+		"reason": "timeout",
+		"skills": {
+			"S1-A01": 3
+		},
+		"snapshot_valid": true,
+		"tick": 24601
+	},
+	{
+		"arena_elapsed": 18.3333333333336,
+		"case": "idle_legal_steps",
+		"chapter": {
+			"attacks": [
+				3,
+				4,
+				1
+			],
+			"boss_phase": 2,
+			"clues": 0,
+			"error": "",
+			"first_warning": [
+				38,
+				491,
+				1095
+			],
+			"hits": [
+				10,
+				9,
+				0
+			],
+			"hunt_spawned": false,
+			"kill_tick": 1100,
+			"landings": [],
+			"retry": 0,
+			"root_mask": 0
+		},
+		"damage_taken": 107.712,
+		"finished": true,
+		"hp": 90.688,
+		"mission": "S1-M01-08",
+		"objective_elapsed": 18.3333333333336,
+		"reason": "boss_defeated",
+		"skills": {
+			"S1-A01": 4
+		},
+		"snapshot_valid": true,
+		"tick": 1100
+	}
+]

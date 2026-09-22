@@ -1,0 +1,246 @@
+{
+  "scope": "LEGACY_STAGE_PC_V1 synthetic seven-domain envelopes",
+  "natural_reachability_proven": false,
+  "production_admission": false,
+  "commercial_maximum": "OPEN",
+  "missing_budget_owners": [
+    "Mission six objectives and fact queues",
+    "full SkillDraft/Loadout",
+    "Preparation RNG/offer owner",
+    "SettlementComplete exact after-images",
+    "Character/Codex/Narrative content catalogs"
+  ],
+  "test_allocation_ceiling_bytes": 8000000,
+  "capacities": {
+    "enemies": 320,
+    "projectiles": 400,
+    "pickups": 300
+  },
+  "cases": [
+    {
+      "case": "snapshot-full-running",
+      "payload_bytes": 111007,
+      "slot_bytes": 126089,
+      "domain_bytes": {
+        "campaign": 892,
+        "unlocks": 142,
+        "records": 609,
+        "progression": 693,
+        "preparation": 1200,
+        "user_settings": 315,
+        "current_run": 106412
+      },
+      "sha256": "f972db0fd8700f4a062d94fefe5cfcb7a4a7f8ab37be903fee5a48987c6eef5e"
+    },
+    {
+      "case": "snapshot-full-suspended",
+      "payload_bytes": 111009,
+      "slot_bytes": 126091,
+      "domain_bytes": {
+        "campaign": 892,
+        "unlocks": 142,
+        "records": 609,
+        "progression": 693,
+        "preparation": 1200,
+        "user_settings": 315,
+        "current_run": 106414
+      },
+      "sha256": "0c4093200745d27905a2fa4e08300ea8e678c8e318a8e23e51a9796729e09c50"
+    },
+    {
+      "case": "snapshot-full-result_pending",
+      "payload_bytes": 115349,
+      "slot_bytes": 131025,
+      "domain_bytes": {
+        "campaign": 892,
+        "unlocks": 142,
+        "records": 609,
+        "progression": 693,
+        "preparation": 1200,
+        "user_settings": 315,
+        "current_run": 110749
+      },
+      "sha256": "2d4386f3421d45aa39b55a0a6e763bfab5ba36ac750baa561ba4b3aabdab6e0b"
+    },
+    {
+      "case": "snapshot-ring-running",
+      "payload_bytes": 110073,
+      "slot_bytes": 125027,
+      "domain_bytes": {
+        "campaign": 892,
+        "unlocks": 142,
+        "records": 609,
+        "progression": 693,
+        "preparation": 1200,
+        "user_settings": 315,
+        "current_run": 105478
+      },
+      "sha256": "b8d648cc899b2b19885d8683102073089deb5e3a489dd9ae26ca516282ac620b"
+    },
+    {
+      "case": "snapshot-ring-suspended",
+      "payload_bytes": 110075,
+      "slot_bytes": 125029,
+      "domain_bytes": {
+        "campaign": 892,
+        "unlocks": 142,
+        "records": 609,
+        "progression": 693,
+        "preparation": 1200,
+        "user_settings": 315,
+        "current_run": 105480
+      },
+      "sha256": "1f828927c1c1baae0f7e27a2ccbad1c8dad34566ad4765c2de19d8476a21dcda"
+    },
+    {
+      "case": "snapshot-ring-result_pending",
+      "payload_bytes": 114415,
+      "slot_bytes": 129963,
+      "domain_bytes": {
+        "campaign": 892,
+        "unlocks": 142,
+        "records": 609,
+        "progression": 693,
+        "preparation": 1200,
+        "user_settings": 315,
+        "current_run": 109815
+      },
+      "sha256": "2c540650a7827bc3f93bcb384bf2d1766dbe904bbfa436c179e3328974e0d7a7"
+    },
+    {
+      "case": "snapshot-summon-running",
+      "payload_bytes": 111008,
+      "slot_bytes": 126090,
+      "domain_bytes": {
+        "campaign": 892,
+        "unlocks": 142,
+        "records": 609,
+        "progression": 693,
+        "preparation": 1200,
+        "user_settings": 315,
+        "current_run": 106413
+      },
+      "sha256": "8fa42ea7e390c3c2c2ec14ec063dfbd8d570960cc5f37a0e7f4c4ea2923aad61"
+    },
+    {
+      "case": "snapshot-summon-suspended",
+      "payload_bytes": 111010,
+      "slot_bytes": 126092,
+      "domain_bytes": {
+        "campaign": 892,
+        "unlocks": 142,
+        "records": 609,
+        "progression": 693,
+        "preparation": 1200,
+        "user_settings": 315,
+        "current_run": 106415
+      },
+      "sha256": "6add5922b6c0b5a59e85f4d91f32e4d9c832341cf940af976d0c97991f5637e3"
+    },
+    {
+      "case": "snapshot-summon-result_pending",
+      "payload_bytes": 115350,
+      "slot_bytes": 131026,
+      "domain_bytes": {
+        "campaign": 892,
+        "unlocks": 142,
+        "records": 609,
+        "progression": 693,
+        "preparation": 1200,
+        "user_settings": 315,
+        "current_run": 110750
+      },
+      "sha256": "4a4b6283b31b2dc18230c51b19bb01bd5059dc502ef94bc0a1128246dab561ea"
+    },
+    {
+      "case": "snapshot-bite-running",
+      "payload_bytes": 111007,
+      "slot_bytes": 126089,
+      "domain_bytes": {
+        "campaign": 892,
+        "unlocks": 142,
+        "records": 609,
+        "progression": 693,
+        "preparation": 1200,
+        "user_settings": 315,
+        "current_run": 106412
+      },
+      "sha256": "6589380de892518dac890d544beaa339af9bb385e56eaa7c1c78ea66a27dc322"
+    },
+    {
+      "case": "snapshot-bite-suspended",
+      "payload_bytes": 111009,
+      "slot_bytes": 126091,
+      "domain_bytes": {
+        "campaign": 892,
+        "unlocks": 142,
+        "records": 609,
+        "progression": 693,
+        "preparation": 1200,
+        "user_settings": 315,
+        "current_run": 106414
+      },
+      "sha256": "9bce9ecec3b2b5adf5df36c004fff8ef66ebd393c385d8ea61f9563037ce622d"
+    },
+    {
+      "case": "snapshot-bite-result_pending",
+      "payload_bytes": 115349,
+      "slot_bytes": 131025,
+      "domain_bytes": {
+        "campaign": 892,
+        "unlocks": 142,
+        "records": 609,
+        "progression": 693,
+        "preparation": 1200,
+        "user_settings": 315,
+        "current_run": 110749
+      },
+      "sha256": "1755194d46802bd65eb29299379fb4c29e3d1a54c14137e97c1a11607f6ff920"
+    },
+    {
+      "case": "snapshot-phase_pending-running",
+      "payload_bytes": 111005,
+      "slot_bytes": 126087,
+      "domain_bytes": {
+        "campaign": 892,
+        "unlocks": 142,
+        "records": 609,
+        "progression": 693,
+        "preparation": 1200,
+        "user_settings": 315,
+        "current_run": 106410
+      },
+      "sha256": "8b5bf965d2cf5ef7623a8b53d282c34f3151ad3d46e7d61b171a88b984349e3c"
+    },
+    {
+      "case": "snapshot-phase_pending-suspended",
+      "payload_bytes": 111007,
+      "slot_bytes": 126089,
+      "domain_bytes": {
+        "campaign": 892,
+        "unlocks": 142,
+        "records": 609,
+        "progression": 693,
+        "preparation": 1200,
+        "user_settings": 315,
+        "current_run": 106412
+      },
+      "sha256": "254d79ca45876647085d542e05f4e8c21e8f7c51c5a3ecb0c5862453c8347e0b"
+    },
+    {
+      "case": "snapshot-phase_pending-result_pending",
+      "payload_bytes": 115347,
+      "slot_bytes": 131023,
+      "domain_bytes": {
+        "campaign": 892,
+        "unlocks": 142,
+        "records": 609,
+        "progression": 693,
+        "preparation": 1200,
+        "user_settings": 315,
+        "current_run": 110747
+      },
+      "sha256": "14fb5c9d6ad5638e71e4b956c6a1a89c777521ea7063f5572ae38615dec61ac8"
+    }
+  ]
+}

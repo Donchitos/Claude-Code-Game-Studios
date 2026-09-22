@@ -1,0 +1,24 @@
+extends SceneTree
+func _initialize() -> void:
+ run.call_deferred()
+func run() -> void:
+ var game := load("res://src/core/GameRoot.tscn").instantiate() as ProductionGameRoot
+ game.transient_profile = true
+ root.add_child(game)
+ await game.boot_completed
+ game.set_physics_process(false)
+ await game.request_start_battle(34, false)
+ game.current_battle.pending_upgrade = true
+ game.request_pause(true)
+ var before := root.gui_get_focus_owner()
+ var ev := InputEventKey.new()
+ ev.keycode = KEY_TAB
+ ev.physical_keycode = KEY_TAB
+ ev.ctrl_pressed = true
+ ev.pressed = true
+ print("MODIFIER_BEFORE focus=", before.name, " action_for=", PcMetaInput.action_for(ev), " exact=", ev.is_action(&"ui_focus_next", true))
+ Input.parse_input_event(ev)
+ print("MODIFIER_AFTER focus=", root.gui_get_focus_owner().name, " changed=", root.gui_get_focus_owner() != before)
+ game.queue_free()
+ await process_frame
+ quit()

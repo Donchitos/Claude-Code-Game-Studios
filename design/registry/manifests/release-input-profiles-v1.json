@@ -1,0 +1,24 @@
+{
+  "schema_version": 1,
+  "active_profile": "STEAM_PC",
+  "profiles": {
+    "STEAM_PC": {
+      "revision": 1,
+      "spec": "design/gdd/input-steam-pc.md",
+      "source_policy": "KEYBOARD_HELD_PRIORITY_ELSE_LOWEST_KNOWN_DEVICE_ID",
+      "stick_deadzone": 0.20,
+      "stick_threshold": "REAL_T_INCLUSIVE_RADIAL",
+      "resume_policy": "ZERO_FIRST_TICK_THEN_ALL_SOURCES_NEUTRAL_BEFORE_FRESH",
+      "touch_runtime": false,
+      "local_acceptance": ["PC01", "PC02", "PC03", "PC04", "PC05", "PC06", "PC07", "PC08", "PC09"],
+      "device_acceptance": ["PC10"],
+      "windows_physical_status": "NOT_RUN"
+    },
+    "MOBILE_TOUCH": {
+      "spec": "design/gdd/input-system.md",
+      "status": "BLOCKED-FUTURE-PORT",
+      "enabled_in_production": false,
+      "requires": ["F2", "touch_ordering", "shield_capacity", "native_accessibility", "device_ux", "thermal"]
+    }
+  }
+}

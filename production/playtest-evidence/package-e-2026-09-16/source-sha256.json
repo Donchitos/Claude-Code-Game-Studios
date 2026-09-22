@@ -1,0 +1,21 @@
+{
+  "src/campaign/campaign_arena_render.gd": "250793f53c8467282924042d449b1035ff31089eae4cc135885a806cc486098a",
+  "src/campaign/campaign_arena_codec.gd": "289eeefbd6eec6adaf2e52e2173f1c0a6559d62202911d4539139586dab8d882",
+  "src/campaign/campaign_encounter.gd": "dc6fa76e668d28cbc9cf10856b7d9c24c9f9cdea1d01bfad8dbc2c2ff71fee64",
+  "src/campaign/campaign_chapter_one.gd": "2cfa5074be58e11123b1b53fd22b7d7fcc293ec8e6a65673c7c2aab2116659f6",
+  "src/campaign/campaign_mission.gd": "5d84baac2f8a9b4b5bfa26f8f640437944f68021328f80c0366b7e928489c5c1",
+  "src/campaign/campaign_ui.gd": "eb6bf11a28ea49194235b341154633e81420ddb0c6acce1ac20e46b9e3264b7b",
+  "src/campaign/campaign_arena.gd": "d26a8c300362e53ee360fa98bcf73c510943b4a94243a8f9f28cf7a45d5f3adb",
+  "src/campaign/campaign_profile.gd": "8899d6b1bfb9d4d428b705ab7579941155448ac3a8cdd39e6e5615345d09cb8a",
+  "src/campaign/campaign_audio.gd": "4ace09abaddadce84f30a890dec97a8b0f68a966c37fef6c94c3a632d1832fc2",
+  "src/campaign/campaign_arena_validation.gd": "259755342a805b1acf5ebdf19de7c7eaa7d450e7132fb1d7fdb5649605787e43",
+  "src/campaign/campaign_game_root.gd": "c9ef8a67ad230afcfb1ccfef5176d635762c2874d8782da31fa67e8764e26871",
+  "src/campaign/campaign_combat.gd": "8b5a428ec4aa8a972a6b972662e7edcb68d78985056b107165a32af97186ebff",
+  "src/campaign/campaign_catalog.gd": "c51c3a5c2511b0ff83fb7333c660c2df95d2ff9859059d6d58eb429c6cab0d89",
+  "src/campaign/campaign_ui_art.gd": "784ac1fb374c0feaecd5c0a88694c9e7f96606afd0cffc17f999d9eaec9b0791",
+  "tools/campaign/build_catalog.py": "2d81ff9ee3e4973a07c40f473e938c6bd2695e5d188adf9bcae83dec0297faf1",
+  "assets/config/campaign_game.json": "ddd28d9e4d121e06046305cba134bad25f39250690e9eadde1b95f0f0a89dfaa",
+  "tests/integration/campaign_package_e_test.gd": "499622a894f9ca69e2b6af2f3bd8b68a998f50245b80e3695851c1fd591e7001",
+  "tests/integration/campaign_package_e_journey.gd": "a9002af2fb14b328c4a654a54915574b012ecc250aabae667bf8555d0f3a53a9",
+  "tests/manual/campaign_package_e_ui.gd": "081db3711c673dd5591960fcc8840499f67a6809c9effdfb3b57281b0503e2b3"
+}

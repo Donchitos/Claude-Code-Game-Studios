@@ -1,0 +1,80 @@
+{
+  "scope": "Final incremental QA: string-key extra fields and two field-closure mutants only",
+  "verified": true,
+  "repository_unchanged": true,
+  "sha256": {
+    "src/data/steam_recovery_contract.gd": "64bced1cee8de06814caa2e55b43f5b031eccf042b7f7a62c09b08316ae54f78",
+    "src/data/steam_save_domains.gd": "cc5bfa5eba206411e22ba971586f9b9098cadafa942867646173b6f8bc934509",
+    "tests/integration/steam_recovery_contract_test.gd": "a139b59a4d62cc2236312650414d9951f43a798cd9a57402df5225422b894cad"
+  },
+  "results": [
+    {
+      "case": "baseline",
+      "exit_code": 0,
+      "checks": 156,
+      "failures": 0,
+      "errors": [],
+      "command": [
+        "/Applications/Godot.app/Contents/MacOS/Godot",
+        "--headless",
+        "--path",
+        "/tmp/recovery-qa-final-owy56ohi/project",
+        "--log-file",
+        "/tmp/recovery-qa-final-owy56ohi/baseline.engine.log",
+        "--script",
+        "tests/integration/steam_recovery_contract_test.gd"
+      ],
+      "mutation": null
+    },
+    {
+      "case": "checkpoint-fields-removed",
+      "exit_code": 1,
+      "checks": 156,
+      "failures": 3,
+      "errors": [
+        "ERROR: specific rejection extra",
+        "ERROR: string-key extra reaches closed checkpoint schema",
+        "ERROR: preflight extra"
+      ],
+      "command": [
+        "/Applications/Godot.app/Contents/MacOS/Godot",
+        "--headless",
+        "--path",
+        "/tmp/recovery-qa-final-owy56ohi/project",
+        "--log-file",
+        "/tmp/recovery-qa-final-owy56ohi/checkpoint-fields-removed.engine.log",
+        "--script",
+        "tests/integration/steam_recovery_contract_test.gd"
+      ],
+      "mutation": [
+        "Fields._fields(cp, [\"checkpoint_seq\", \"active_tick\", \"owner_snapshots\"])",
+        "(cp is Dictionary)"
+      ]
+    },
+    {
+      "case": "payload-fields-removed",
+      "exit_code": 1,
+      "checks": 156,
+      "failures": 3,
+      "errors": [
+        "ERROR: specific rejection payload_extra",
+        "ERROR: string-key extra reaches closed payload schema",
+        "ERROR: preflight payload_extra"
+      ],
+      "command": [
+        "/Applications/Godot.app/Contents/MacOS/Godot",
+        "--headless",
+        "--path",
+        "/tmp/recovery-qa-final-owy56ohi/project",
+        "--log-file",
+        "/tmp/recovery-qa-final-owy56ohi/payload-fields-removed.engine.log",
+        "--script",
+        "tests/integration/steam_recovery_contract_test.gd"
+      ],
+      "mutation": [
+        "Fields._fields(owner.payload, [\"binding\", \"state\"])",
+        "(owner.payload is Dictionary)"
+      ]
+    }
+  ]
+}

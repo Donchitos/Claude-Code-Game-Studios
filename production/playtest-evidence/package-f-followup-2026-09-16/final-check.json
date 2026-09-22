@@ -1,0 +1,15 @@
+{
+  "freezes": {
+    "production/playtest-evidence/package-f-2026-09-16/source-freeze.json": {
+      "count": 63,
+      "mismatches": []
+    },
+    "production/playtest-evidence/package-f-followup-2026-09-16/test-freeze.json": {
+      "count": 2,
+      "mismatches": []
+    }
+  },
+  "f_pck_unchanged": true,
+  "historical_json_unchanged": true,
+  "runtime_scope": "F unchanged; two new tests and author design only"
+}

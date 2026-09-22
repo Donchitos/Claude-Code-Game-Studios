@@ -1,0 +1,107 @@
+; Root production Godot project. Nested prototype and harness projects are isolated
+; with .gdignore files and are not part of this runtime.
+
+config_version=5
+
+[application]
+
+config/name="灵枢行纪 / Spirit Nexus"
+run/main_scene="res://src/campaign/CampaignGame.tscn"
+config/features=PackedStringArray("4.7")
+config/icon="res://assets/branding/campaign_icon.svg"
+boot_splash/fullsize=false
+
+[display]
+
+window/size/viewport_width=1280
+window/size/viewport_height=720
+window/size/window_width_override=1280
+window/size/window_height_override=720
+window/stretch/mode="canvas_items"
+window/stretch/aspect="expand"
+window/size/resizable=true
+
+[input]
+
+ui_focus_next={
+"deadzone": 0.0,
+"events": []
+}
+ui_focus_previous={
+"deadzone": 0.0,
+"events": []
+}
+ui_focus_left={
+"deadzone": 0.0,
+"events": []
+}
+ui_focus_right={
+"deadzone": 0.0,
+"events": []
+}
+ui_activate={
+"deadzone": 0.0,
+"events": []
+}
+ui_back={
+"deadzone": 0.0,
+"events": []
+}
+ui_increment={
+"deadzone": 0.0,
+"events": []
+}
+ui_decrement={
+"deadzone": 0.0,
+"events": []
+}
+
+touch_move_left={
+"deadzone": 0.0,
+"events": []
+}
+touch_move_right={
+"deadzone": 0.0,
+"events": []
+}
+touch_move_up={
+"deadzone": 0.0,
+"events": []
+}
+touch_move_down={
+"deadzone": 0.0,
+"events": []
+}
+
+move_left={
+"deadzone": 0.0,
+"events": [Object(InputEventKey,"resource_local_to_scene":false,"resource_name":"","device":-1,"window_id":0,"alt_pressed":false,"shift_pressed":false,"ctrl_pressed":false,"meta_pressed":false,"pressed":false,"keycode":0,"physical_keycode":65,"key_label":0,"unicode":97,"location":0,"echo":false,"script":null)]
+}
+move_right={
+"deadzone": 0.0,
+"events": [Object(InputEventKey,"resource_local_to_scene":false,"resource_name":"","device":-1,"window_id":0,"alt_pressed":false,"shift_pressed":false,"ctrl_pressed":false,"meta_pressed":false,"pressed":false,"keycode":0,"physical_keycode":68,"key_label":0,"unicode":100,"location":0,"echo":false,"script":null)]
+}
+move_up={
+"deadzone": 0.0,
+"events": [Object(InputEventKey,"resource_local_to_scene":false,"resource_name":"","device":-1,"window_id":0,"alt_pressed":false,"shift_pressed":false,"ctrl_pressed":false,"meta_pressed":false,"pressed":false,"keycode":0,"physical_keycode":87,"key_label":0,"unicode":119,"location":0,"echo":false,"script":null)]
+}
+move_down={
+"deadzone": 0.0,
+"events": [Object(InputEventKey,"resource_local_to_scene":false,"resource_name":"","device":-1,"window_id":0,"alt_pressed":false,"shift_pressed":false,"ctrl_pressed":false,"meta_pressed":false,"pressed":false,"keycode":0,"physical_keycode":83,"key_label":0,"unicode":115,"location":0,"echo":false,"script":null)]
+}
+
+[input_devices]
+
+pointing/emulate_touch_from_mouse=false
+buffering/agile_event_flushing=false
+
+[physics]
+
+common/physics_ticks_per_second=60
+
+[rendering]
+
+renderer/rendering_method="gl_compatibility"
+renderer/rendering_method.mobile="gl_compatibility"
+textures/vram_compression/import_etc2_astc=true
+environment/defaults/default_clear_color=Color(0.025, 0.045, 0.055, 1)

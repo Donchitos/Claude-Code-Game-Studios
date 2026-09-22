@@ -1,0 +1,716 @@
+{
+	"live": {
+		"content_hash": "53eae0e91e3cd3bd6eb1ec5a9e62e1b356f035de820e496ed4588c80c836b9f5",
+		"definition_hash": "a3b334ba5d971c2bb44e4bcce3b35ef1c8488127424e3350ca1822bd1a601f1f",
+		"loadout": {
+			"branches": [
+				0,
+				0,
+				0
+			],
+			"character_id": "S1-C01",
+			"completed": 64,
+			"difficulty": 0,
+			"pill_id": ""
+		},
+		"mission_id": "S1-M01-01",
+		"numeric_bits": {
+			"active_cap": "i:4",
+			"boss_spawned": null,
+			"cooldowns": {
+				"S1-A01": "f:343333333333c33f"
+			},
+			"effects": [
+				{
+					"angle": "f:0000000000000000",
+					"color": null,
+					"duration": "f:666666666666d63f",
+					"kind": null,
+					"radius": "f:cdcccccccccc3440",
+					"ttl": "f:111111111111d13f",
+					"x": "f:00000060cd078940",
+					"y": "f:00000040bcdb6840"
+				}
+			],
+			"elapsed": "f:deddddddddddf53f",
+			"elite_clock": "f:deddddddddddf53f",
+			"enemy_multiplier": "f:000000000000f03f",
+			"entities": [],
+			"event_clock": "f:deddddddddddf53f",
+			"event_done": null,
+			"event_id": null,
+			"event_pressure": "f:0000000000000000",
+			"event_reward": "i:0",
+			"evolved": [],
+			"finished": null,
+			"hazard_multiplier": "f:000000000000f03f",
+			"modifiers": {
+				"damage": "f:0000000000000000",
+				"pickup_radius": "f:0000000000005940"
+			},
+			"next_id": "i:3",
+			"objective": {
+				"completed_ids": [],
+				"completion_order": [],
+				"elapsed": "f:deddddddddddf53f",
+				"escort_hp": "f:0000000000a07e40",
+				"extraction_ready": null,
+				"extraction_was_inside": null,
+				"finished": null,
+				"hold": "f:0000000000000000",
+				"kind": null,
+				"player_alive": null,
+				"pressure": "f:0000000000000000",
+				"progress": "i:0",
+				"reason": null,
+				"victory": null,
+				"waypoint": "i:0",
+				"x": "f:0000000000000000",
+				"y": "f:0000000000000000"
+			},
+			"obstacles": [
+				{
+					"radius": "f:0000000000003c40",
+					"x": "f:000000e0f5548240",
+					"y": "f:000000a04f985140"
+				},
+				{
+					"radius": "f:0000000000004240",
+					"x": "f:0000008096797540",
+					"y": "f:00000020ea3a7540"
+				},
+				{
+					"radius": "f:0000000000004640",
+					"x": "f:00000020a12c59c0",
+					"y": "f:000000600da07940"
+				},
+				{
+					"radius": "f:0000000000003c40",
+					"x": "f:000000c01b607ec0",
+					"y": "f:000000e0cc046e40"
+				},
+				{
+					"radius": "f:0000000000004240",
+					"x": "f:000000e0f55482c0",
+					"y": "f:000000a04f9851c0"
+				},
+				{
+					"radius": "f:0000000000004640",
+					"x": "f:00000080967975c0",
+					"y": "f:00000020ea3a75c0"
+				},
+				{
+					"radius": "f:0000000000003c40",
+					"x": "f:00000020a12c5940",
+					"y": "f:000000600da079c0"
+				},
+				{
+					"radius": "f:0000000000004240",
+					"x": "f:000000c01b607e40",
+					"y": "f:000000e0cc046ec0"
+				}
+			],
+			"offered": [
+				null,
+				null,
+				null
+			],
+			"passives": {},
+			"pending_levels": "i:0",
+			"pickups": [
+				{
+					"ttl": "f:abaaaaaaaafa5d40",
+					"x": "f:00000080a4e48740",
+					"xp": "f:0000000000000840",
+					"y": "f:000000e093ba6740"
+				}
+			],
+			"pill_amount": "f:0000000000000000",
+			"pill_remaining": "f:0000000000000000",
+			"pill_stat": null,
+			"player": {
+				"facing": "f:0000000000000000",
+				"hp": "f:000000000088c340",
+				"invulnerable": "f:0000000000000000",
+				"kills": "i:2",
+				"level": "i:3",
+				"max_hp": "f:000000000088c340",
+				"x": "f:0000000000000000",
+				"xp": "f:d8a3703d0ad70740",
+				"y": "f:0000000000000000"
+			},
+			"projectiles": [
+				{
+					"age": "f:111111111111b13f",
+					"color": null,
+					"damage": "f:0000000000408f40",
+					"duration": "f:333333333333e33f",
+					"explosion": "f:0000000000000000",
+					"hits": [],
+					"hostile": null,
+					"mode": null,
+					"pierce": "i:3",
+					"radius": "f:0000000000001840",
+					"returning": null,
+					"ttl": "f:0f1111111111e13f",
+					"vx": "f:000000000040af40",
+					"vy": "f:0000000000000000",
+					"x": "f:000000c0aaaa7040",
+					"y": "f:0000000000000000"
+				}
+			],
+			"reason": null,
+			"rerolls": "i:0",
+			"skills": {
+				"S1-A01": "i:2"
+			},
+			"spawn_clock": "f:7dccc6ed7ce7e03f",
+			"statistics": {
+				"boss_kills": "i:0",
+				"damage_dealt": "f:0000000000409f40",
+				"damage_taken": "f:0000000000000000",
+				"elite_kills": "i:0",
+				"events_taken": "i:0",
+				"evolutions": "i:0",
+				"risk_choices": "i:0",
+				"safe_choices": "i:0",
+				"skills_used": [
+					null
+				]
+			},
+			"target_deaths": [],
+			"tick": "i:82",
+			"victory": null,
+			"zones": []
+		},
+		"rng_seed": "711",
+		"rng_state": "6384644611202771485",
+		"schema": "CAMPAIGN_GAMEPLAY_V1",
+		"state": {
+			"active_cap": 4,
+			"boss_spawned": false,
+			"cooldowns": {
+				"S1-A01": 0.15000000000000002
+			},
+			"effects": [
+				{
+					"angle": 0.0,
+					"color": "#85d6ac",
+					"duration": 0.35,
+					"kind": "burst",
+					"radius": 20.8,
+					"ttl": 0.26666666666666666,
+					"x": 800.9752807617188,
+					"y": 198.86672973632813
+				}
+			],
+			"elapsed": 1.3666666666666667,
+			"elite_clock": 1.3666666666666667,
+			"enemy_multiplier": 1.0,
+			"entities": [],
+			"event_clock": 1.3666666666666667,
+			"event_done": false,
+			"event_id": "",
+			"event_pressure": 0.0,
+			"event_reward": 0,
+			"evolved": [],
+			"finished": false,
+			"hazard_multiplier": 1.0,
+			"modifiers": {
+				"damage": 0.0,
+				"pickup_radius": 100.0
+			},
+			"next_id": 3,
+			"objective": {
+				"completed_ids": [],
+				"completion_order": [],
+				"elapsed": 1.3666666666666667,
+				"escort_hp": 490.0,
+				"extraction_ready": false,
+				"extraction_was_inside": false,
+				"finished": false,
+				"hold": 0.0,
+				"kind": "SURVIVE",
+				"player_alive": true,
+				"pressure": 0.0,
+				"progress": 0,
+				"reason": "",
+				"victory": false,
+				"waypoint": 0,
+				"x": 0.0,
+				"y": 0.0
+			},
+			"obstacles": [
+				{
+					"radius": 28.0,
+					"x": 586.6200561523438,
+					"y": 70.3798599243164
+				},
+				{
+					"radius": 36.0,
+					"x": 343.5992431640625,
+					"y": 339.6821594238281
+				},
+				{
+					"radius": 44.0,
+					"x": -100.69733428955078,
+					"y": 410.0032653808594
+				},
+				{
+					"radius": 28.0,
+					"x": -486.00677490234375,
+					"y": 240.15000915527344
+				},
+				{
+					"radius": 36.0,
+					"x": -586.6200561523438,
+					"y": -70.3798599243164
+				},
+				{
+					"radius": 44.0,
+					"x": -343.5992431640625,
+					"y": -339.6821594238281
+				},
+				{
+					"radius": 28.0,
+					"x": 100.69733428955078,
+					"y": -410.0032653808594
+				},
+				{
+					"radius": 36.0,
+					"x": 486.00677490234375,
+					"y": -240.15000915527344
+				}
+			],
+			"offered": [
+				"S1-A01",
+				"S1-P01",
+				"S1-P10"
+			],
+			"passives": {},
+			"pending_levels": 0,
+			"pickups": [
+				{
+					"ttl": 119.91666666666667,
+					"x": 764.580322265625,
+					"xp": 3.0,
+					"y": 189.83055114746094
+				}
+			],
+			"pill_amount": 0.0,
+			"pill_remaining": 0.0,
+			"pill_stat": "",
+			"player": {
+				"facing": 0.0,
+				"hp": 10000.0,
+				"invulnerable": 0.0,
+				"kills": 2,
+				"level": 3,
+				"max_hp": 10000.0,
+				"x": 0.0,
+				"xp": 2.9800000000000004,
+				"y": 0.0
+			},
+			"projectiles": [
+				{
+					"age": 0.06666666666666667,
+					"color": "#85d6ac",
+					"damage": 1000.0,
+					"duration": 0.6,
+					"explosion": 0.0,
+					"hits": [],
+					"hostile": false,
+					"mode": "pierce",
+					"pierce": 3,
+					"radius": 6.0,
+					"returning": false,
+					"ttl": 0.5333333333333331,
+					"vx": 4000.0,
+					"vy": 0.0,
+					"x": 266.66668701171875,
+					"y": 0.0
+				}
+			],
+			"reason": "",
+			"rerolls": 0,
+			"skills": {
+				"S1-A01": 2
+			},
+			"spawn_clock": 0.5282578128884691,
+			"statistics": {
+				"boss_kills": 0,
+				"damage_dealt": 2000.0,
+				"damage_taken": 0.0,
+				"elite_kills": 0,
+				"events_taken": 0,
+				"evolutions": 0,
+				"risk_choices": 0,
+				"safe_choices": 0,
+				"skills_used": [
+					"S1-A01"
+				]
+			},
+			"target_deaths": [],
+			"tick": 82,
+			"victory": false,
+			"zones": []
+		}
+	},
+	"restored": {
+		"content_hash": "53eae0e91e3cd3bd6eb1ec5a9e62e1b356f035de820e496ed4588c80c836b9f5",
+		"definition_hash": "a3b334ba5d971c2bb44e4bcce3b35ef1c8488127424e3350ca1822bd1a601f1f",
+		"loadout": {
+			"branches": [
+				0.0,
+				0.0,
+				0.0
+			],
+			"character_id": "S1-C01",
+			"completed": 64.0,
+			"difficulty": 0.0,
+			"pill_id": ""
+		},
+		"mission_id": "S1-M01-01",
+		"numeric_bits": {
+			"active_cap": "i:4",
+			"boss_spawned": null,
+			"cooldowns": {
+				"S1-A01": "f:343333333333c33f"
+			},
+			"effects": [
+				{
+					"angle": "f:0000000000000000",
+					"color": null,
+					"duration": "f:666666666666d63f",
+					"kind": null,
+					"radius": "f:cdcccccccccc3440",
+					"ttl": "f:111111111111d13f",
+					"x": "f:00000060cd078940",
+					"y": "f:00000040bcdb6840"
+				}
+			],
+			"elapsed": "f:deddddddddddf53f",
+			"elite_clock": "f:deddddddddddf53f",
+			"enemy_multiplier": "f:000000000000f03f",
+			"entities": [],
+			"event_clock": "f:deddddddddddf53f",
+			"event_done": null,
+			"event_id": null,
+			"event_pressure": "f:0000000000000000",
+			"event_reward": "i:0",
+			"evolved": [],
+			"finished": null,
+			"hazard_multiplier": "f:000000000000f03f",
+			"modifiers": {
+				"damage": "f:0000000000000000",
+				"pickup_radius": "f:0000000000005940"
+			},
+			"next_id": "i:3",
+			"objective": {
+				"completed_ids": [],
+				"completion_order": [],
+				"elapsed": "f:deddddddddddf53f",
+				"escort_hp": "f:0000000000a07e40",
+				"extraction_ready": null,
+				"extraction_was_inside": null,
+				"finished": null,
+				"hold": "f:0000000000000000",
+				"kind": null,
+				"player_alive": null,
+				"pressure": "f:0000000000000000",
+				"progress": "i:0",
+				"reason": null,
+				"victory": null,
+				"waypoint": "i:0",
+				"x": "f:0000000000000000",
+				"y": "f:0000000000000000"
+			},
+			"obstacles": [
+				{
+					"radius": "f:0000000000003c40",
+					"x": "f:000000e0f5548240",
+					"y": "f:000000a04f985140"
+				},
+				{
+					"radius": "f:0000000000004240",
+					"x": "f:0000008096797540",
+					"y": "f:00000020ea3a7540"
+				},
+				{
+					"radius": "f:0000000000004640",
+					"x": "f:00000020a12c59c0",
+					"y": "f:000000600da07940"
+				},
+				{
+					"radius": "f:0000000000003c40",
+					"x": "f:000000c01b607ec0",
+					"y": "f:000000e0cc046e40"
+				},
+				{
+					"radius": "f:0000000000004240",
+					"x": "f:000000e0f55482c0",
+					"y": "f:000000a04f9851c0"
+				},
+				{
+					"radius": "f:0000000000004640",
+					"x": "f:00000080967975c0",
+					"y": "f:00000020ea3a75c0"
+				},
+				{
+					"radius": "f:0000000000003c40",
+					"x": "f:00000020a12c5940",
+					"y": "f:000000600da079c0"
+				},
+				{
+					"radius": "f:0000000000004240",
+					"x": "f:000000c01b607e40",
+					"y": "f:000000e0cc046ec0"
+				}
+			],
+			"offered": [
+				null,
+				null,
+				null
+			],
+			"passives": {},
+			"pending_levels": "i:0",
+			"pickups": [
+				{
+					"ttl": "f:abaaaaaaaafa5d40",
+					"x": "f:00000080a4e48740",
+					"xp": "f:0000000000000840",
+					"y": "f:000000e093ba6740"
+				}
+			],
+			"pill_amount": "f:0000000000000000",
+			"pill_remaining": "f:0000000000000000",
+			"pill_stat": null,
+			"player": {
+				"facing": "f:0000000000000000",
+				"hp": "f:000000000088c340",
+				"invulnerable": "f:0000000000000000",
+				"kills": "i:2",
+				"level": "i:3",
+				"max_hp": "f:000000000088c340",
+				"x": "f:0000000000000000",
+				"xp": "f:d8a3703d0ad70740",
+				"y": "f:0000000000000000"
+			},
+			"projectiles": [
+				{
+					"age": "f:111111111111b13f",
+					"color": null,
+					"damage": "f:0000000000408f40",
+					"duration": "f:333333333333e33f",
+					"explosion": "f:0000000000000000",
+					"hits": [],
+					"hostile": null,
+					"mode": null,
+					"pierce": "i:3",
+					"radius": "f:0000000000001840",
+					"returning": null,
+					"ttl": "f:0f1111111111e13f",
+					"vx": "f:000000000040af40",
+					"vy": "f:0000000000000000",
+					"x": "f:000000c0aaaa7040",
+					"y": "f:0000000000000000"
+				}
+			],
+			"reason": null,
+			"rerolls": "i:0",
+			"skills": {
+				"S1-A01": "i:2"
+			},
+			"spawn_clock": "f:7dccc6ed7ce7e03f",
+			"statistics": {
+				"boss_kills": "i:0",
+				"damage_dealt": "f:0000000000409f40",
+				"damage_taken": "f:0000000000000000",
+				"elite_kills": "i:0",
+				"events_taken": "i:0",
+				"evolutions": "i:0",
+				"risk_choices": "i:0",
+				"safe_choices": "i:0",
+				"skills_used": [
+					null
+				]
+			},
+			"target_deaths": [],
+			"tick": "i:82",
+			"victory": null,
+			"zones": []
+		},
+		"rng_seed": "711",
+		"rng_state": "6384644611202771485",
+		"schema": "CAMPAIGN_GAMEPLAY_V1",
+		"state": {
+			"active_cap": 4,
+			"boss_spawned": false,
+			"cooldowns": {
+				"S1-A01": 0.15000000000000002
+			},
+			"effects": [
+				{
+					"angle": 0.0,
+					"color": "#85d6ac",
+					"duration": 0.35,
+					"kind": "burst",
+					"radius": 20.8,
+					"ttl": 0.26666666666666666,
+					"x": 800.9752807617188,
+					"y": 198.86672973632813
+				}
+			],
+			"elapsed": 1.3666666666666667,
+			"elite_clock": 1.3666666666666667,
+			"enemy_multiplier": 1.0,
+			"entities": [],
+			"event_clock": 1.3666666666666667,
+			"event_done": false,
+			"event_id": "",
+			"event_pressure": 0.0,
+			"event_reward": 0,
+			"evolved": [],
+			"finished": false,
+			"hazard_multiplier": 1.0,
+			"modifiers": {
+				"damage": 0.0,
+				"pickup_radius": 100.0
+			},
+			"next_id": 3,
+			"objective": {
+				"completed_ids": [],
+				"completion_order": [],
+				"elapsed": 1.3666666666666667,
+				"escort_hp": 490.0,
+				"extraction_ready": false,
+				"extraction_was_inside": false,
+				"finished": false,
+				"hold": 0.0,
+				"kind": "SURVIVE",
+				"player_alive": true,
+				"pressure": 0.0,
+				"progress": 0,
+				"reason": "",
+				"victory": false,
+				"waypoint": 0,
+				"x": 0.0,
+				"y": 0.0
+			},
+			"obstacles": [
+				{
+					"radius": 28.0,
+					"x": 586.6200561523438,
+					"y": 70.3798599243164
+				},
+				{
+					"radius": 36.0,
+					"x": 343.5992431640625,
+					"y": 339.6821594238281
+				},
+				{
+					"radius": 44.0,
+					"x": -100.69733428955078,
+					"y": 410.0032653808594
+				},
+				{
+					"radius": 28.0,
+					"x": -486.00677490234375,
+					"y": 240.15000915527344
+				},
+				{
+					"radius": 36.0,
+					"x": -586.6200561523438,
+					"y": -70.3798599243164
+				},
+				{
+					"radius": 44.0,
+					"x": -343.5992431640625,
+					"y": -339.6821594238281
+				},
+				{
+					"radius": 28.0,
+					"x": 100.69733428955078,
+					"y": -410.0032653808594
+				},
+				{
+					"radius": 36.0,
+					"x": 486.00677490234375,
+					"y": -240.15000915527344
+				}
+			],
+			"offered": [
+				"S1-A01",
+				"S1-P01",
+				"S1-P10"
+			],
+			"passives": {},
+			"pending_levels": 0,
+			"pickups": [
+				{
+					"ttl": 119.91666666666667,
+					"x": 764.580322265625,
+					"xp": 3.0,
+					"y": 189.83055114746094
+				}
+			],
+			"pill_amount": 0.0,
+			"pill_remaining": 0.0,
+			"pill_stat": "",
+			"player": {
+				"facing": 0.0,
+				"hp": 10000.0,
+				"invulnerable": 0.0,
+				"kills": 2,
+				"level": 3,
+				"max_hp": 10000.0,
+				"x": 0.0,
+				"xp": 2.9800000000000004,
+				"y": 0.0
+			},
+			"projectiles": [
+				{
+					"age": 0.06666666666666667,
+					"color": "#85d6ac",
+					"damage": 1000.0,
+					"duration": 0.6,
+					"explosion": 0.0,
+					"hits": [],
+					"hostile": false,
+					"mode": "pierce",
+					"pierce": 3,
+					"radius": 6.0,
+					"returning": false,
+					"ttl": 0.5333333333333331,
+					"vx": 4000.0,
+					"vy": 0.0,
+					"x": 266.66668701171875,
+					"y": 0.0
+				}
+			],
+			"reason": "",
+			"rerolls": 0,
+			"skills": {
+				"S1-A01": 2
+			},
+			"spawn_clock": 0.5282578128884691,
+			"statistics": {
+				"boss_kills": 0,
+				"damage_dealt": 2000.0,
+				"damage_taken": 0.0,
+				"elite_kills": 0,
+				"events_taken": 0,
+				"evolutions": 0,
+				"risk_choices": 0,
+				"safe_choices": 0,
+				"skills_used": [
+					"S1-A01"
+				]
+			},
+			"target_deaths": [],
+			"tick": 82,
+			"victory": false,
+			"zones": []
+		}
+	}
+}

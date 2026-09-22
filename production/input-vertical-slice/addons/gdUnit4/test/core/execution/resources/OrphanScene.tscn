@@ -1,0 +1,16 @@
+[gd_scene load_steps=2 format=3 uid="uid://c13on7kf6135b"]
+
+[sub_resource type="GDScript" id="GDScript_qdgw4"]
+script/source = "extends Node2D
+
+var x1 := Node2D.new()
+var t2 := T2.new()
+
+func _ready() -> void:
+	var _x2 := Node2D.new()
+	add_child(t2)
+	add_child(_x2)
+"
+
+[node name="OrphanScene" type="Node2D"]
+script = SubResource("GDScript_qdgw4")

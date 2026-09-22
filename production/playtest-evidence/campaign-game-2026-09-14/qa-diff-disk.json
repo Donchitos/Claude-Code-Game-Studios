@@ -1,0 +1,202 @@
+{
+	"disk": {
+		"content_hash": "e52027d104d6075041ce1ab02727e659495e8d43e4091dd9783c8cb5161e8471",
+		"definition_hash": "b0e82d7bb50793cd2eabb6693c069362bea907d23d7f33f76e1659beab9e82b0",
+		"loadout": {
+			"branches": [
+				0.0,
+				0.0,
+				0.0
+			],
+			"challenge_id": "",
+			"character_id": "S1-C01",
+			"completed": 0.0,
+			"difficulty": 0.0,
+			"pill_id": ""
+		},
+		"mission_id": "S1-M01-01",
+		"rng_seed": "1919949948",
+		"rng_state": "-3541181624066020887",
+		"schema": "CAMPAIGN_GAMEPLAY_V1",
+		"state": {
+			"active_cap": 4,
+			"boss_spawned": false,
+			"cooldowns": {
+				"S1-A01": 0.2
+			},
+			"effects": [],
+			"elapsed": 0.016666666666666666,
+			"elite_clock": 0.016666666666666666,
+			"enemy_multiplier": 1.0,
+			"entities": [
+				{
+					"age": 0.016666666666666666,
+					"aim": 0.0,
+					"behavior": "spitter",
+					"color": "#85d6ac",
+					"cooldown": 2.4,
+					"damage": 0.2,
+					"family": "enemy",
+					"flash": 0.0,
+					"hp": 4.0,
+					"id": "S1-N02",
+					"mark": 0,
+					"mark_timer": 0.0,
+					"max_hp": 4.0,
+					"ordinal": -1,
+					"pattern": "",
+					"phase": 0,
+					"radius": 16.0,
+					"range": 300.0,
+					"root": 0.0,
+					"shield": 0.0,
+					"slow": 0.0,
+					"speed": 97.0,
+					"target_id": "",
+					"timer": 0.7922421832879384,
+					"uid": 1,
+					"vx": 0.0,
+					"vy": 0.0,
+					"x": -370.1692810058594,
+					"y": 532.9768676757813
+				}
+			],
+			"event_clock": 0.016666666666666666,
+			"event_done": false,
+			"event_id": "",
+			"event_pressure": 0.0,
+			"event_reward": 0,
+			"evolved": [],
+			"finished": false,
+			"hazard_multiplier": 1.0,
+			"modifiers": {
+				"damage": 0.0,
+				"pickup_radius": 100.0
+			},
+			"next_id": 2,
+			"objective": {
+				"completed_ids": [],
+				"completion_order": [],
+				"elapsed": 0.016666666666666666,
+				"escort_hp": 10000.0,
+				"extraction_ready": false,
+				"extraction_was_inside": false,
+				"finished": false,
+				"hold": 0.0,
+				"kind": "SURVIVE",
+				"player_alive": true,
+				"pressure": 0.0,
+				"progress": 0,
+				"reason": "",
+				"victory": false,
+				"waypoint": 0,
+				"x": 0.0,
+				"y": 0.0
+			},
+			"obstacles": [
+				{
+					"radius": 28.0,
+					"x": 586.6200561523438,
+					"y": 70.3798599243164
+				},
+				{
+					"radius": 36.0,
+					"x": 343.5992431640625,
+					"y": 339.6821594238281
+				},
+				{
+					"radius": 44.0,
+					"x": -100.69733428955078,
+					"y": 410.0032653808594
+				},
+				{
+					"radius": 28.0,
+					"x": -486.00677490234375,
+					"y": 240.15000915527344
+				},
+				{
+					"radius": 36.0,
+					"x": -586.6200561523438,
+					"y": -70.3798599243164
+				},
+				{
+					"radius": 44.0,
+					"x": -343.5992431640625,
+					"y": -339.6821594238281
+				},
+				{
+					"radius": 28.0,
+					"x": 100.69733428955078,
+					"y": -410.0032653808594
+				},
+				{
+					"radius": 36.0,
+					"x": 486.00677490234375,
+					"y": -240.15000915527344
+				}
+			],
+			"offered": [],
+			"passives": {},
+			"pending_levels": 0,
+			"pickups": [],
+			"pill_amount": 0.0,
+			"pill_remaining": 0.0,
+			"pill_stat": "",
+			"player": {
+				"facing": 0.0,
+				"hp": 10000.0,
+				"invulnerable": 0.0,
+				"kills": 0,
+				"level": 1,
+				"max_hp": 10000.0,
+				"x": 0.0,
+				"xp": 0.0,
+				"y": 0.0
+			},
+			"projectiles": [
+				{
+					"age": 0.016666666666666666,
+					"color": "#85d6ac",
+					"damage": 1000.0,
+					"duration": 0.6,
+					"explosion": 0.0,
+					"hits": [],
+					"hostile": false,
+					"mode": "pierce",
+					"pierce": 3,
+					"radius": 6.0,
+					"returning": false,
+					"ttl": 0.5833333333333333,
+					"vx": -2281.7763671875,
+					"vy": 3285.345703125,
+					"x": -38.02960968017578,
+					"y": 54.75576400756836
+				}
+			],
+			"reason": "",
+			"rerolls": 0,
+			"skills": {
+				"S1-A01": 1
+			},
+			"spawn_clock": 9.982407493133351,
+			"statistics": {
+				"boss_kills": 0,
+				"damage_dealt": 0.0,
+				"damage_taken": 0.0,
+				"elite_kills": 0,
+				"events_taken": 0,
+				"evolutions": 0,
+				"risk_choices": 0,
+				"safe_choices": 0,
+				"skills_used": [
+					"S1-A01"
+				]
+			},
+			"target_deaths": [],
+			"tick": 1,
+			"victory": false,
+			"zones": []
+		}
+	},
+	"live": {}
+}

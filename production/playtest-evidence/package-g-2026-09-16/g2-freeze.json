@@ -1,0 +1,7 @@
+{
+  "tools/campaign/build_catalog.py": "09e5f1343fe283118a02aefcd08e4bac3e184fec14428e9dd339f1905fb30abf",
+  "assets/config/campaign_game.json": "aaa6f439ff53eb5f8aba1da3cc77b96fef3e4acd70841a78ac1e9a86d136c196",
+  "src/campaign/campaign_profile.gd": "e8bab485e5b77293e6ac1eaf2140eff88b1c38db322c9831d5980d62323cbad8",
+  "tests/integration/campaign_package_g_test.gd": "e7e029ca1928fcda5f14300f451f722a5f107b0346f26a919414e9c4a135ddbb",
+  "tests/integration/campaign_package_g_audit.gd": "d69e2e6791748f01a7f7eefa84836fc470c2cf058f8416a38591979131693191"
+}

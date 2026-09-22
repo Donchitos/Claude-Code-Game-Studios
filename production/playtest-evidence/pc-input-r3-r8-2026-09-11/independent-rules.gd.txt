@@ -1,0 +1,67 @@
+extends SceneTree
+class ProbeSource extends PcInputSource:
+    func refresh_devices() -> void:
+        pass
+    func poll(d: float) -> void:
+        valid = keyboard.is_finite() and stick.is_finite()
+        all_sticks_neutral = stick.is_finite() and stick.length() <= d
+var input: ProductionInputSystem
+var frame: PcMovementContext
+var carrier: ProductionMovementIntentCarrier
+var reader: ProbeSource
+var checks := 0
+var failures := 0
+func check(v: bool, label: String) -> void:
+    checks += 1
+    if not v:
+        failures += 1
+        print("FAIL ", label)
+func setup(d: float) -> int:
+    input = ProductionInputSystem.new()
+    frame = PcMovementContext.new()
+    frame.battle_generation = 77
+    carrier = ProductionMovementIntentCarrier.new()
+    reader = ProbeSource.new()
+    return input.initialize({"active_profile":"STEAM_PC", "profile_revision":1,"stick_deadzone":d}, carrier, frame, reader)
+func sample(k: Vector2, held: bool, j: Vector2) -> int:
+    reader.keyboard = k
+    reader.keyboard_held = held
+    reader.stick = j
+    frame.begin(frame.tick + 1)
+    var status := input.run_phase(&"MOVEMENT_COMMIT", frame, frame.lease_id)
+    frame.consumed = true
+    frame.finish()
+    print("SEQ tick=%d status=%d source=%d gen=%d carrier_gen=%d dir=%s" % [frame.tick,status,input.source,input.generation,carrier.press_generation,carrier.direction])
+    return status
+func _initialize() -> void:
+    Input.set_use_accumulated_input(false)
+    for d: float in [0.999999999,1e-50,0.0,1.0,NAN,INF]:
+        check(setup(d) == ProductionInputSystem.Status.INVALID_CONFIG,"reject rounded/bad domain")
+        check(input.carrier == null and not input.callbacks_armed,"invalid config zero publication")
+        input.free()
+    check(setup(0.2) == 0,"valid default")
+    input.activate()
+    sample(Vector2.UP,true,Vector2.RIGHT)
+    check(input.generation == 1,"first W generation 1")
+    sample(Vector2.ZERO,true,Vector2.RIGHT)
+    check(input.generation == 1 and input.source == 1 and carrier.press_generation == -1,"W+S retains epoch clears carrier")
+    sample(Vector2.UP,true,Vector2.RIGHT)
+    check(input.generation == 1,"W after W+S retains epoch")
+    sample(Vector2.ZERO,false,Vector2.RIGHT)
+    check(input.generation == 2 and input.source == 2,"direct keyboard to gamepad switch")
+    sample(Vector2.ZERO,true,Vector2.RIGHT)
+    check(input.generation == 2 and input.source == 0,"gamepad to cancelling keyboard retires only")
+    sample(Vector2.ZERO,false,Vector2.RIGHT)
+    check(input.generation == 3 and input.source == 2,"fresh gamepad after cancellation increments")
+    sample(Vector2.ZERO,false,Vector2.ZERO)
+    check(input.source == 0,"full neutral retires")
+    sample(Vector2.UP,true,Vector2.ZERO)
+    check(input.generation == 4,"full neutral to keyboard increments")
+    input.free()
+    var init := setup(1e-30)
+    input.activate()
+    sample(Vector2.ZERO,false,Vector2(1e-25,0))
+    print("TINY_BOUNDARY ", JSON.stringify({"init":init,"deadzone":input.stick_deadzone,"axis":reader.stick.x,"axis_length":reader.stick.length(),"axis_exceeds_d":reader.stick.x > input.stick_deadzone,"carrier_active":carrier.is_active}))
+    input.free()
+    print("PC_RULES_REVIEW checks=%d failures=%d" % [checks,failures])
+    quit(0 if failures == 0 else 1)

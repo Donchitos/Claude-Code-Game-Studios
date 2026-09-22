@@ -1,0 +1,98 @@
+{
+  "host_platform": "Darwin",
+  "host_machine": "arm64",
+  "windows_runtime_available": false,
+  "tools": {
+    "wine": null,
+    "wine64": null,
+    "pwsh": null
+  },
+  "physical_input_verified": false,
+  "status": "NOT_RUN",
+  "checks": [
+    {
+      "id": "W01",
+      "status": "NOT_RUN"
+    },
+    {
+      "id": "W02",
+      "status": "NOT_RUN"
+    },
+    {
+      "id": "W03",
+      "status": "NOT_RUN"
+    },
+    {
+      "id": "W04",
+      "status": "NOT_RUN"
+    },
+    {
+      "id": "W05",
+      "status": "NOT_RUN"
+    },
+    {
+      "id": "W06",
+      "status": "NOT_RUN"
+    },
+    {
+      "id": "W07",
+      "status": "NOT_RUN"
+    },
+    {
+      "id": "W08",
+      "status": "NOT_RUN"
+    },
+    {
+      "id": "W09",
+      "status": "NOT_RUN"
+    },
+    {
+      "id": "W10",
+      "status": "NOT_RUN"
+    },
+    {
+      "id": "W11",
+      "status": "NOT_RUN"
+    },
+    {
+      "id": "W12",
+      "status": "NOT_RUN"
+    },
+    {
+      "id": "W13",
+      "status": "NOT_RUN"
+    },
+    {
+      "id": "W14",
+      "status": "NOT_RUN"
+    }
+  ],
+  "artifacts": {
+    "TrialInternal.exe": {
+      "bytes": 109114368,
+      "sha256": "4e5e07b73a38be1452888ba41c0a7a8729abe601cbf47aca726857b524a79404"
+    },
+    "TrialInternal.pck": {
+      "bytes": 14639448,
+      "sha256": "eacc9a9204a87b69215b53f13d014e1a4ae24a8c930c0d475d21eda653233d94"
+    },
+    "windows-pc-input-validation.zip": {
+      "bytes": 52653649,
+      "sha256": "989c87773c18671cf1871a7b2179db878b3e590736c03d1779eefd62815a37e6"
+    }
+  },
+  "zip_crc_error": null,
+  "zip_entries": [
+    "TrialInternal.exe",
+    "TrialInternal.pck",
+    "windows-input-validation.ps1",
+    "windows-pc-input-checklist.md"
+  ],
+  "zip_matches": {
+    "TrialInternal.exe": true,
+    "TrialInternal.pck": true,
+    "windows-input-validation.ps1": true,
+    "windows-pc-input-checklist.md": true
+  },
+  "exe_format": "build/windows-pc-input/TrialInternal.exe: PE32+ executable (GUI) x86-64 (stripped to external PDB), for MS Windows"
+}

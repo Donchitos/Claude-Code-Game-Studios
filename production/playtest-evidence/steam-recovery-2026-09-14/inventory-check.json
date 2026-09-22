@@ -1,0 +1,26 @@
+{
+  "status": "PASS",
+  "errors": [],
+  "scope": "responsibility inventory only",
+  "snapshot_responsibilities": 13,
+  "persistent_features": 5,
+  "objective_kinds": 6,
+  "open_snapshot_owners": [
+    "Scope",
+    "Player",
+    "Stage",
+    "Enemy",
+    "Boss",
+    "Spawn",
+    "Weapon",
+    "Projectile",
+    "Damage",
+    "DropLeveling",
+    "SkillDraftLoadout",
+    "RNG",
+    "Mission"
+  ],
+  "commercial_budget": "OPEN",
+  "production_enabled": false,
+  "battle_ready": false
+}

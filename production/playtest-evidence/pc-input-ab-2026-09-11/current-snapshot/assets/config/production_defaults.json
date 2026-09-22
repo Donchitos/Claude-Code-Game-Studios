@@ -1,0 +1,82 @@
+{
+  "schema_version": 1,
+  "run": {
+    "duration_seconds": 900.0,
+    "boss_enabled": true,
+    "smoke_speed_multiplier": 5.0,
+    "hud_refresh_seconds": 0.1
+  },
+  "rendering": {
+    "geometry_batch_enabled": true
+  },
+  "player": {
+    "max_hp": 100.0,
+    "speed": 360.0,
+    "maximum_speed": 600.0,
+    "radius": 24.0,
+    "pickup_radius": 62.0,
+    "contact_cooldown": 0.55,
+    "attack_interval": 0.42,
+    "minimum_attack_interval": 0.16,
+    "sword_count": 1,
+    "sword_damage": 1
+  },
+  "combat": {
+    "projectile_speed": 680.0,
+    "projectile_radius": 9.0,
+    "projectile_despawn_radius": 980.0,
+    "xp_radius": 10.0,
+    "xp_magnet_speed": 520.0,
+    "grid_size": 72.0,
+    "world_half_extent": 1000000.0,
+    "max_query_cells": 262144
+  },
+  "enemies": {
+    "boss": {"radius": 40.0, "speed": 150.0, "contact_damage": 24.0, "hp": 320.0},
+    "beetle": {
+      "radius": 19.0,
+      "speed": 88.0,
+      "contact_damage": 12.0,
+      "hp": 1
+    },
+    "wolf": {
+      "radius": 15.0,
+      "speed": 152.0,
+      "contact_damage": 18.0,
+      "hp": 1
+    }
+  },
+  "waves": [
+    {"until_seconds": 90.0, "spawn_interval": 0.72, "wolf_probability": 0.0, "name": "初入秘境"},
+    {"until_seconds": 180.0, "spawn_interval": 0.55, "wolf_probability": 0.20, "name": "群狼试探"},
+    {"until_seconds": 240.0, "spawn_interval": 0.85, "wolf_probability": 0.10, "name": "林间喘息"},
+    {"until_seconds": 360.0, "spawn_interval": 0.40, "wolf_probability": 0.35, "name": "兽潮合围"},
+    {"until_seconds": 420.0, "spawn_interval": 0.70, "wolf_probability": 0.15, "name": "收集补给"},
+    {"until_seconds": 540.0, "spawn_interval": 0.33, "wolf_probability": 0.45, "name": "狼群追猎"},
+    {"until_seconds": 600.0, "spawn_interval": 0.60, "wolf_probability": 0.25, "name": "决战前夕"},
+    {"until_seconds": 720.0, "spawn_interval": 0.28, "wolf_probability": 0.50, "name": "最后兽潮"}
+  ],
+  "upgrades": {
+    "xp_base": 10,
+    "xp_per_level": 4,
+    "attack_interval_multiplier": 0.78,
+    "movement_speed_multiplier": 1.2,
+    "pickup_radius_multiplier": 1.12
+  },
+  "capacities": {
+    "enemies": 320,
+    "projectiles": 400,
+    "pickups": 300
+  },
+  "input": {
+    "active_profile": "STEAM_PC",
+    "profile_revision": 1,
+    "stick_deadzone": 0.20,
+    "joystick_size": 158.4,
+    "tip_size": 71.28,
+    "deadzone_ratio": 0.15,
+    "clampzone_ratio": 1.0,
+    "shield_bank_capacity": 4,
+    "initial_offset_ratio": [0.5, 0.5]
+  }
+}

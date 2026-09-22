@@ -1,0 +1,582 @@
+{
+	"allocator_peak_whole_process_bytes": 31063882,
+	"cases": [
+		{
+			"case": "snapshot-full-running",
+			"observed_live_allocation_delta_bytes": 3072008,
+			"payload_bytes": 111007,
+			"samples": [
+				{
+					"decode_reencode_us": 43739,
+					"encode_inner_outer_us": 50868,
+					"total_us": 136325,
+					"write_flush_readback_validate_us": 41718
+				},
+				{
+					"decode_reencode_us": 44342,
+					"encode_inner_outer_us": 52361,
+					"total_us": 137995,
+					"write_flush_readback_validate_us": 41292
+				},
+				{
+					"decode_reencode_us": 44069,
+					"encode_inner_outer_us": 49822,
+					"total_us": 135241,
+					"write_flush_readback_validate_us": 41350
+				},
+				{
+					"decode_reencode_us": 44124,
+					"encode_inner_outer_us": 52400,
+					"total_us": 137871,
+					"write_flush_readback_validate_us": 41347
+				},
+				{
+					"decode_reencode_us": 46428,
+					"encode_inner_outer_us": 54153,
+					"total_us": 143853,
+					"write_flush_readback_validate_us": 43272
+				}
+			],
+			"slot_bytes": 126089
+		},
+		{
+			"case": "snapshot-full-suspended",
+			"observed_live_allocation_delta_bytes": 2945043,
+			"payload_bytes": 111009,
+			"samples": [
+				{
+					"decode_reencode_us": 45024,
+					"encode_inner_outer_us": 52922,
+					"total_us": 141739,
+					"write_flush_readback_validate_us": 43793
+				},
+				{
+					"decode_reencode_us": 74726,
+					"encode_inner_outer_us": 52962,
+					"total_us": 169970,
+					"write_flush_readback_validate_us": 42282
+				},
+				{
+					"decode_reencode_us": 44107,
+					"encode_inner_outer_us": 50485,
+					"total_us": 135950,
+					"write_flush_readback_validate_us": 41358
+				},
+				{
+					"decode_reencode_us": 44414,
+					"encode_inner_outer_us": 50657,
+					"total_us": 136283,
+					"write_flush_readback_validate_us": 41212
+				},
+				{
+					"decode_reencode_us": 44678,
+					"encode_inner_outer_us": 50198,
+					"total_us": 136414,
+					"write_flush_readback_validate_us": 41538
+				}
+			],
+			"slot_bytes": 126091
+		},
+		{
+			"case": "snapshot-full-result_pending",
+			"observed_live_allocation_delta_bytes": 3038643,
+			"payload_bytes": 115349,
+			"samples": [
+				{
+					"decode_reencode_us": 45007,
+					"encode_inner_outer_us": 52444,
+					"total_us": 142857,
+					"write_flush_readback_validate_us": 45406
+				},
+				{
+					"decode_reencode_us": 45619,
+					"encode_inner_outer_us": 52635,
+					"total_us": 143789,
+					"write_flush_readback_validate_us": 45535
+				},
+				{
+					"decode_reencode_us": 48699,
+					"encode_inner_outer_us": 53427,
+					"total_us": 145294,
+					"write_flush_readback_validate_us": 43168
+				},
+				{
+					"decode_reencode_us": 45586,
+					"encode_inner_outer_us": 52425,
+					"total_us": 140528,
+					"write_flush_readback_validate_us": 42517
+				},
+				{
+					"decode_reencode_us": 45552,
+					"encode_inner_outer_us": 53061,
+					"total_us": 141121,
+					"write_flush_readback_validate_us": 42508
+				}
+			],
+			"slot_bytes": 131025
+		},
+		{
+			"case": "snapshot-ring-running",
+			"observed_live_allocation_delta_bytes": 2918015,
+			"payload_bytes": 110073,
+			"samples": [
+				{
+					"decode_reencode_us": 42893,
+					"encode_inner_outer_us": 49316,
+					"total_us": 133090,
+					"write_flush_readback_validate_us": 40881
+				},
+				{
+					"decode_reencode_us": 44185,
+					"encode_inner_outer_us": 49789,
+					"total_us": 134539,
+					"write_flush_readback_validate_us": 40565
+				},
+				{
+					"decode_reencode_us": 43779,
+					"encode_inner_outer_us": 49795,
+					"total_us": 134591,
+					"write_flush_readback_validate_us": 41017
+				},
+				{
+					"decode_reencode_us": 43772,
+					"encode_inner_outer_us": 50162,
+					"total_us": 135582,
+					"write_flush_readback_validate_us": 41648
+				},
+				{
+					"decode_reencode_us": 43756,
+					"encode_inner_outer_us": 50477,
+					"total_us": 135200,
+					"write_flush_readback_validate_us": 40967
+				}
+			],
+			"slot_bytes": 125027
+		},
+		{
+			"case": "snapshot-ring-suspended",
+			"observed_live_allocation_delta_bytes": 2924049,
+			"payload_bytes": 110075,
+			"samples": [
+				{
+					"decode_reencode_us": 43092,
+					"encode_inner_outer_us": 50327,
+					"total_us": 134547,
+					"write_flush_readback_validate_us": 41128
+				},
+				{
+					"decode_reencode_us": 43343,
+					"encode_inner_outer_us": 50128,
+					"total_us": 134520,
+					"write_flush_readback_validate_us": 41049
+				},
+				{
+					"decode_reencode_us": 43408,
+					"encode_inner_outer_us": 49774,
+					"total_us": 134311,
+					"write_flush_readback_validate_us": 41129
+				},
+				{
+					"decode_reencode_us": 43387,
+					"encode_inner_outer_us": 50238,
+					"total_us": 135031,
+					"write_flush_readback_validate_us": 41406
+				},
+				{
+					"decode_reencode_us": 43720,
+					"encode_inner_outer_us": 50126,
+					"total_us": 134763,
+					"write_flush_readback_validate_us": 40917
+				}
+			],
+			"slot_bytes": 125029
+		},
+		{
+			"case": "snapshot-ring-result_pending",
+			"observed_live_allocation_delta_bytes": 3017649,
+			"payload_bytes": 114415,
+			"samples": [
+				{
+					"decode_reencode_us": 44753,
+					"encode_inner_outer_us": 51928,
+					"total_us": 140508,
+					"write_flush_readback_validate_us": 43827
+				},
+				{
+					"decode_reencode_us": 45115,
+					"encode_inner_outer_us": 52240,
+					"total_us": 139645,
+					"write_flush_readback_validate_us": 42290
+				},
+				{
+					"decode_reencode_us": 45255,
+					"encode_inner_outer_us": 53257,
+					"total_us": 141108,
+					"write_flush_readback_validate_us": 42596
+				},
+				{
+					"decode_reencode_us": 44904,
+					"encode_inner_outer_us": 52339,
+					"total_us": 139714,
+					"write_flush_readback_validate_us": 42471
+				},
+				{
+					"decode_reencode_us": 45010,
+					"encode_inner_outer_us": 52109,
+					"total_us": 139624,
+					"write_flush_readback_validate_us": 42505
+				}
+			],
+			"slot_bytes": 129963
+		},
+		{
+			"case": "snapshot-summon-running",
+			"observed_live_allocation_delta_bytes": 2941155,
+			"payload_bytes": 111008,
+			"samples": [
+				{
+					"decode_reencode_us": 43548,
+					"encode_inner_outer_us": 50663,
+					"total_us": 135600,
+					"write_flush_readback_validate_us": 41389
+				},
+				{
+					"decode_reencode_us": 45483,
+					"encode_inner_outer_us": 50572,
+					"total_us": 137459,
+					"write_flush_readback_validate_us": 41404
+				},
+				{
+					"decode_reencode_us": 44881,
+					"encode_inner_outer_us": 50687,
+					"total_us": 137945,
+					"write_flush_readback_validate_us": 42377
+				},
+				{
+					"decode_reencode_us": 44492,
+					"encode_inner_outer_us": 50371,
+					"total_us": 136074,
+					"write_flush_readback_validate_us": 41211
+				},
+				{
+					"decode_reencode_us": 45345,
+					"encode_inner_outer_us": 50788,
+					"total_us": 137420,
+					"write_flush_readback_validate_us": 41287
+				}
+			],
+			"slot_bytes": 126090
+		},
+		{
+			"case": "snapshot-summon-suspended",
+			"observed_live_allocation_delta_bytes": 2945064,
+			"payload_bytes": 111010,
+			"samples": [
+				{
+					"decode_reencode_us": 43415,
+					"encode_inner_outer_us": 50618,
+					"total_us": 135682,
+					"write_flush_readback_validate_us": 41649
+				},
+				{
+					"decode_reencode_us": 45540,
+					"encode_inner_outer_us": 50405,
+					"total_us": 138229,
+					"write_flush_readback_validate_us": 42284
+				},
+				{
+					"decode_reencode_us": 44763,
+					"encode_inner_outer_us": 51918,
+					"total_us": 137842,
+					"write_flush_readback_validate_us": 41161
+				},
+				{
+					"decode_reencode_us": 43862,
+					"encode_inner_outer_us": 51213,
+					"total_us": 136134,
+					"write_flush_readback_validate_us": 41059
+				},
+				{
+					"decode_reencode_us": 44527,
+					"encode_inner_outer_us": 51063,
+					"total_us": 136714,
+					"write_flush_readback_validate_us": 41124
+				}
+			],
+			"slot_bytes": 126092
+		},
+		{
+			"case": "snapshot-summon-result_pending",
+			"observed_live_allocation_delta_bytes": 3038664,
+			"payload_bytes": 115350,
+			"samples": [
+				{
+					"decode_reencode_us": 44976,
+					"encode_inner_outer_us": 53228,
+					"total_us": 141221,
+					"write_flush_readback_validate_us": 43017
+				},
+				{
+					"decode_reencode_us": 45583,
+					"encode_inner_outer_us": 52243,
+					"total_us": 140802,
+					"write_flush_readback_validate_us": 42976
+				},
+				{
+					"decode_reencode_us": 45796,
+					"encode_inner_outer_us": 52014,
+					"total_us": 140849,
+					"write_flush_readback_validate_us": 43039
+				},
+				{
+					"decode_reencode_us": 45726,
+					"encode_inner_outer_us": 52571,
+					"total_us": 141240,
+					"write_flush_readback_validate_us": 42943
+				},
+				{
+					"decode_reencode_us": 45579,
+					"encode_inner_outer_us": 53242,
+					"total_us": 143715,
+					"write_flush_readback_validate_us": 44894
+				}
+			],
+			"slot_bytes": 131026
+		},
+		{
+			"case": "snapshot-bite-running",
+			"observed_live_allocation_delta_bytes": 2940074,
+			"payload_bytes": 111007,
+			"samples": [
+				{
+					"decode_reencode_us": 43683,
+					"encode_inner_outer_us": 50512,
+					"total_us": 135893,
+					"write_flush_readback_validate_us": 41698
+				},
+				{
+					"decode_reencode_us": 43781,
+					"encode_inner_outer_us": 50494,
+					"total_us": 135725,
+					"write_flush_readback_validate_us": 41450
+				},
+				{
+					"decode_reencode_us": 44054,
+					"encode_inner_outer_us": 50658,
+					"total_us": 136269,
+					"write_flush_readback_validate_us": 41557
+				},
+				{
+					"decode_reencode_us": 46975,
+					"encode_inner_outer_us": 52644,
+					"total_us": 141363,
+					"write_flush_readback_validate_us": 41744
+				},
+				{
+					"decode_reencode_us": 44029,
+					"encode_inner_outer_us": 50383,
+					"total_us": 135998,
+					"write_flush_readback_validate_us": 41586
+				}
+			],
+			"slot_bytes": 126089
+		},
+		{
+			"case": "snapshot-bite-suspended",
+			"observed_live_allocation_delta_bytes": 2945047,
+			"payload_bytes": 111009,
+			"samples": [
+				{
+					"decode_reencode_us": 44004,
+					"encode_inner_outer_us": 50386,
+					"total_us": 135769,
+					"write_flush_readback_validate_us": 41379
+				},
+				{
+					"decode_reencode_us": 43873,
+					"encode_inner_outer_us": 50161,
+					"total_us": 135528,
+					"write_flush_readback_validate_us": 41494
+				},
+				{
+					"decode_reencode_us": 44083,
+					"encode_inner_outer_us": 50452,
+					"total_us": 135927,
+					"write_flush_readback_validate_us": 41392
+				},
+				{
+					"decode_reencode_us": 44629,
+					"encode_inner_outer_us": 50524,
+					"total_us": 136710,
+					"write_flush_readback_validate_us": 41557
+				},
+				{
+					"decode_reencode_us": 44094,
+					"encode_inner_outer_us": 50711,
+					"total_us": 136015,
+					"write_flush_readback_validate_us": 41210
+				}
+			],
+			"slot_bytes": 126091
+		},
+		{
+			"case": "snapshot-bite-result_pending",
+			"observed_live_allocation_delta_bytes": 3038647,
+			"payload_bytes": 115349,
+			"samples": [
+				{
+					"decode_reencode_us": 45341,
+					"encode_inner_outer_us": 52628,
+					"total_us": 141200,
+					"write_flush_readback_validate_us": 43231
+				},
+				{
+					"decode_reencode_us": 45500,
+					"encode_inner_outer_us": 51945,
+					"total_us": 140291,
+					"write_flush_readback_validate_us": 42846
+				},
+				{
+					"decode_reencode_us": 45593,
+					"encode_inner_outer_us": 52718,
+					"total_us": 141965,
+					"write_flush_readback_validate_us": 43654
+				},
+				{
+					"decode_reencode_us": 45890,
+					"encode_inner_outer_us": 52289,
+					"total_us": 141338,
+					"write_flush_readback_validate_us": 43159
+				},
+				{
+					"decode_reencode_us": 45506,
+					"encode_inner_outer_us": 51962,
+					"total_us": 140475,
+					"write_flush_readback_validate_us": 43007
+				}
+			],
+			"slot_bytes": 131025
+		},
+		{
+			"case": "snapshot-phase_pending-running",
+			"observed_live_allocation_delta_bytes": 2940051,
+			"payload_bytes": 111005,
+			"samples": [
+				{
+					"decode_reencode_us": 43604,
+					"encode_inner_outer_us": 50324,
+					"total_us": 135424,
+					"write_flush_readback_validate_us": 41496
+				},
+				{
+					"decode_reencode_us": 43743,
+					"encode_inner_outer_us": 51103,
+					"total_us": 135744,
+					"write_flush_readback_validate_us": 40898
+				},
+				{
+					"decode_reencode_us": 43948,
+					"encode_inner_outer_us": 50332,
+					"total_us": 135570,
+					"write_flush_readback_validate_us": 41290
+				},
+				{
+					"decode_reencode_us": 43779,
+					"encode_inner_outer_us": 50294,
+					"total_us": 135357,
+					"write_flush_readback_validate_us": 41284
+				},
+				{
+					"decode_reencode_us": 43853,
+					"encode_inner_outer_us": 51212,
+					"total_us": 136201,
+					"write_flush_readback_validate_us": 41136
+				}
+			],
+			"slot_bytes": 126087
+		},
+		{
+			"case": "snapshot-phase_pending-suspended",
+			"observed_live_allocation_delta_bytes": 2945025,
+			"payload_bytes": 111007,
+			"samples": [
+				{
+					"decode_reencode_us": 43577,
+					"encode_inner_outer_us": 50151,
+					"total_us": 134904,
+					"write_flush_readback_validate_us": 41176
+				},
+				{
+					"decode_reencode_us": 43855,
+					"encode_inner_outer_us": 50698,
+					"total_us": 139145,
+					"write_flush_readback_validate_us": 44592
+				},
+				{
+					"decode_reencode_us": 43644,
+					"encode_inner_outer_us": 50613,
+					"total_us": 135751,
+					"write_flush_readback_validate_us": 41494
+				},
+				{
+					"decode_reencode_us": 43534,
+					"encode_inner_outer_us": 50512,
+					"total_us": 135179,
+					"write_flush_readback_validate_us": 41133
+				},
+				{
+					"decode_reencode_us": 43939,
+					"encode_inner_outer_us": 50066,
+					"total_us": 135250,
+					"write_flush_readback_validate_us": 41245
+				}
+			],
+			"slot_bytes": 126089
+		},
+		{
+			"case": "snapshot-phase_pending-result_pending",
+			"observed_live_allocation_delta_bytes": 3038625,
+			"payload_bytes": 115347,
+			"samples": [
+				{
+					"decode_reencode_us": 44829,
+					"encode_inner_outer_us": 52361,
+					"total_us": 140115,
+					"write_flush_readback_validate_us": 42925
+				},
+				{
+					"decode_reencode_us": 45252,
+					"encode_inner_outer_us": 52038,
+					"total_us": 140044,
+					"write_flush_readback_validate_us": 42754
+				},
+				{
+					"decode_reencode_us": 45748,
+					"encode_inner_outer_us": 51912,
+					"total_us": 140465,
+					"write_flush_readback_validate_us": 42805
+				},
+				{
+					"decode_reencode_us": 46663,
+					"encode_inner_outer_us": 53062,
+					"total_us": 143699,
+					"write_flush_readback_validate_us": 43974
+				},
+				{
+					"decode_reencode_us": 46414,
+					"encode_inner_outer_us": 53978,
+					"total_us": 144539,
+					"write_flush_readback_validate_us": 44147
+				}
+			],
+			"slot_bytes": 131023
+		}
+	],
+	"commercial_maximum_proven": false,
+	"durable_protocol_tested": false,
+	"engine": "4.7.1-stable (official)",
+	"failures": 0,
+	"note": "cache-directory FileAccess write/flush/readback probe; no OS lock, slot replacement, process kill, power loss or Windows evidence",
+	"platform": "macOS",
+	"samples_per_case": 5
+}

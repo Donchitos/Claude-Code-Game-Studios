@@ -1,0 +1,74 @@
+{
+  "results-default": {
+    "baseline": {
+      "simulation_p95_ms": {
+        "min": 6.905,
+        "median": 6.974,
+        "max": 7.025
+      },
+      "frame_p95_ms": {
+        "min": 19.817,
+        "median": 20.579,
+        "max": 29.767
+      },
+      "frame_p99_ms": {
+        "min": 31.099,
+        "median": 32.638,
+        "max": 33.305
+      }
+    },
+    "current": {
+      "simulation_p95_ms": {
+        "min": 6.979,
+        "median": 6.985,
+        "max": 6.989
+      },
+      "frame_p95_ms": {
+        "min": 19.776,
+        "median": 19.785,
+        "max": 20.61
+      },
+      "frame_p99_ms": {
+        "min": 29.701,
+        "median": 30.719,
+        "max": 32.652
+      }
+    }
+  },
+  "results-no-vsync": {
+    "baseline": {
+      "simulation_p95_ms": {
+        "min": 6.842,
+        "median": 6.982,
+        "max": 7.002
+      },
+      "frame_p95_ms": {
+        "min": 15.666,
+        "median": 15.708,
+        "max": 16.123
+      },
+      "frame_p99_ms": {
+        "min": 16.72,
+        "median": 16.771,
+        "max": 16.838
+      }
+    },
+    "current": {
+      "simulation_p95_ms": {
+        "min": 6.911,
+        "median": 6.946,
+        "max": 6.96
+      },
+      "frame_p95_ms": {
+        "min": 14.852,
+        "median": 15.991,
+        "max": 16.096
+      },
+      "frame_p99_ms": {
+        "min": 16.332,
+        "median": 16.633,
+        "max": 16.913
+      }
+    }
+  }
+}

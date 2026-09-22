@@ -1,0 +1,19 @@
+{
+  "post_review_comment_only": {
+    "tests/integration/campaign_package_d_fix_test.gd": {
+      "before_sha256": "88d40034d61ca4fd21d29ab43f9fa491738770697cfe2c8648b1ebcd7b3565b1",
+      "after_sha256": "f0665156580944b89be624f7efb02027e961b1c2ee39438e713d2bb32a25560f",
+      "reason": "Correct misleading roundtrip comment; executable statements unchanged."
+    }
+  },
+  "tests/integration/campaign_package_d_fix_root_hunt_disk.gd": {
+    "sha256": "a0f7abc87fb2124d4e4e10894a446e6a1204c2d9c466d158967e504330a15f2d",
+    "origin": "production/playtest-evidence/package-d-fix-2026-09-15/engine-review/root_hunt.gd",
+    "changes": "Portable unique temporary slots, headless-only guard, cleanup; assertions and production calls preserved."
+  },
+  "tests/integration/campaign_package_d_fix_root_death_disk.gd": {
+    "sha256": "22f9e0e123b59ce8e8687cb67f8ccf1be7fd698cb275492f85436f4819bb36bc",
+    "origin": "production/playtest-evidence/package-d-fix-2026-09-15/engine-review/root_death.gd",
+    "changes": "Portable unique temporary slots, headless-only guard, cleanup; assertions and production calls preserved."
+  }
+}

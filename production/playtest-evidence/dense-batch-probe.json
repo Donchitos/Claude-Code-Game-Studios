@@ -1,0 +1,103 @@
+{
+	"cases": [
+		{
+			"geometry": {
+				"frame": {
+					"mean_ms": 2.15023333333333,
+					"p95_ms": 3.74
+				},
+				"stage_draw_cpu": {
+					"mean_ms": 0.576427777777778,
+					"p95_ms": 0.625
+				}
+			},
+			"image_comparison": {
+				"changed_pixels": 7570,
+				"max_channel_delta": 1,
+				"pixel_identical": false,
+				"pixels_channel_delta_gt1": 0,
+				"pixels_channel_delta_gt8": 0
+			},
+			"layout": "spread",
+			"reference": {
+				"frame": {
+					"mean_ms": 18.4454166666667,
+					"p95_ms": 21.278
+				},
+				"stage_draw_cpu": {
+					"mean_ms": 3.67180555555556,
+					"p95_ms": 4.025
+				}
+			}
+		},
+		{
+			"geometry": {
+				"frame": {
+					"mean_ms": 2.38071666666667,
+					"p95_ms": 3.736
+				},
+				"stage_draw_cpu": {
+					"mean_ms": 0.6438,
+					"p95_ms": 0.704
+				}
+			},
+			"image_comparison": {
+				"changed_pixels": 28477,
+				"max_channel_delta": 1,
+				"pixel_identical": false,
+				"pixels_channel_delta_gt1": 0,
+				"pixels_channel_delta_gt8": 0
+			},
+			"layout": "overlap",
+			"reference": {
+				"frame": {
+					"mean_ms": 18.4790111111111,
+					"p95_ms": 21.173
+				},
+				"stage_draw_cpu": {
+					"mean_ms": 3.64502222222222,
+					"p95_ms": 3.971
+				}
+			}
+		},
+		{
+			"geometry": {
+				"frame": {
+					"mean_ms": 2.84615555555555,
+					"p95_ms": 4.274
+				},
+				"stage_draw_cpu": {
+					"mean_ms": 0.584644444444444,
+					"p95_ms": 0.616
+				}
+			},
+			"image_comparison": {
+				"changed_pixels": 1816,
+				"max_channel_delta": 1,
+				"pixel_identical": false,
+				"pixels_channel_delta_gt1": 0,
+				"pixels_channel_delta_gt8": 0
+			},
+			"layout": "mixed_types",
+			"reference": {
+				"frame": {
+					"mean_ms": 16.5532222222222,
+					"p95_ms": 17.691
+				},
+				"stage_draw_cpu": {
+					"mean_ms": 2.90688888888889,
+					"p95_ms": 3.074
+				}
+			}
+		}
+	],
+	"enemy_count": 319,
+	"platform": "macOS",
+	"production_enabled": true,
+	"renderer": "macOS",
+	"samples": 180,
+	"simulation_included": false,
+	"sword_count": 392,
+	"visual_pass": true,
+	"warmup": 30
+}

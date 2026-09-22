@@ -1,0 +1,12 @@
+{
+  "content_sha256": "1e3c41e4223704a29050f28294bef4a38b9569186e6a6234a921c3685e92ab3e",
+  "files": {
+    "SpiritNexus-D-P00.pck": "3eae87ef2486dba1a7a2561320f15d8fd680741bcfeb7f01c2aac413a472af00",
+    "开始P00临时档试玩.command": "9dc07dc20d034eb2d41e66cfc46ebaef0f26a636d3e1eeae4519657ce457974d"
+  },
+  "mode": "P00 exploratory temporary profile only",
+  "review_status": "CHANGES_REQUIRED",
+  "human_sessions": 0,
+  "p00_temporary_exploration": "ALLOWED_WITH_DISCLOSED_LIMITS",
+  "new_player_persistent_test": "NOT_RELEASED"
+}

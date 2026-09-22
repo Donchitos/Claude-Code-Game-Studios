@@ -1,0 +1,10 @@
+; PROTOTYPE - NOT FOR PRODUCTION
+; Question: 玩家能否在75秒三段敌潮中，通过走位、自动飞剑与升级撑到胜利结算？
+; Date: 2026-09-02
+
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://prototype.gd" id="1_prototype"]
+
+[node name="ZhangtianTrialPrototype" type="Node2D"]
+script = ExtResource("1_prototype")

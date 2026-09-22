@@ -1,0 +1,74 @@
+[
+  {
+    "chapter": 1,
+    "catalog_hash": "71d615925151600c8a1255808f20a03d5d44f5fa4efd9f047874e231f45949ca",
+    "catalog_binding": "single immutable loader result passed throughout this process",
+    "missions_won": 8,
+    "persisted_completed": 8.0,
+    "simulation_seconds": 247.53333333332765,
+    "checkpoint_disk_reload_verified": true
+  },
+  {
+    "chapter": 2,
+    "catalog_hash": "71d615925151600c8a1255808f20a03d5d44f5fa4efd9f047874e231f45949ca",
+    "catalog_binding": "single immutable loader result passed throughout this process",
+    "missions_won": 8,
+    "persisted_completed": 16.0,
+    "simulation_seconds": 192.76666666666392,
+    "checkpoint_disk_reload_verified": true
+  },
+  {
+    "chapter": 3,
+    "catalog_hash": "71d615925151600c8a1255808f20a03d5d44f5fa4efd9f047874e231f45949ca",
+    "catalog_binding": "single immutable loader result passed throughout this process",
+    "missions_won": 8,
+    "persisted_completed": 24.0,
+    "simulation_seconds": 295.3333333333255,
+    "checkpoint_disk_reload_verified": true
+  },
+  {
+    "chapter": 4,
+    "catalog_hash": "71d615925151600c8a1255808f20a03d5d44f5fa4efd9f047874e231f45949ca",
+    "catalog_binding": "single immutable loader result passed throughout this process",
+    "missions_won": 8,
+    "persisted_completed": 32.0,
+    "simulation_seconds": 215.28333333332932,
+    "checkpoint_disk_reload_verified": true
+  },
+  {
+    "chapter": 5,
+    "catalog_hash": "71d615925151600c8a1255808f20a03d5d44f5fa4efd9f047874e231f45949ca",
+    "catalog_binding": "single immutable loader result passed throughout this process",
+    "missions_won": 8,
+    "persisted_completed": 40.0,
+    "simulation_seconds": 276.94999999999317,
+    "checkpoint_disk_reload_verified": true
+  },
+  {
+    "chapter": 6,
+    "catalog_hash": "71d615925151600c8a1255808f20a03d5d44f5fa4efd9f047874e231f45949ca",
+    "catalog_binding": "single immutable loader result passed throughout this process",
+    "missions_won": 8,
+    "persisted_completed": 48.0,
+    "simulation_seconds": 290.86666666665883,
+    "checkpoint_disk_reload_verified": true
+  },
+  {
+    "chapter": 7,
+    "catalog_hash": "71d615925151600c8a1255808f20a03d5d44f5fa4efd9f047874e231f45949ca",
+    "catalog_binding": "single immutable loader result passed throughout this process",
+    "missions_won": 8,
+    "persisted_completed": 56.0,
+    "simulation_seconds": 259.46666666666135,
+    "checkpoint_disk_reload_verified": true
+  },
+  {
+    "chapter": 8,
+    "catalog_hash": "71d615925151600c8a1255808f20a03d5d44f5fa4efd9f047874e231f45949ca",
+    "catalog_binding": "single immutable loader result passed throughout this process",
+    "missions_won": 8,
+    "persisted_completed": 64.0,
+    "simulation_seconds": 337.60000000000076,
+    "checkpoint_disk_reload_verified": true
+  }
+]

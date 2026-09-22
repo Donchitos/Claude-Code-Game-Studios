@@ -1,0 +1,36 @@
+extends "res://tests/integration/steam_recovery_contract_test.gd"
+func _run() -> void:
+	var f := fixture()
+	var d: Dictionary = JSON.parse_string(FileAccess.get_file_as_string("res://tests/fixtures/steam/domains-fixture.json"))
+	var cf: Dictionary = JSON.parse_string(FileAccess.get_file_as_string("res://tests/fixtures/steam/campaign-fixture.json"))
+	var campaign := Campaign.new()
+	check(campaign.initialize(cf.definition, cf.catalog, LIMITS).status == "OK", "domain campaign")
+	for key: String in ["offer_max", "loadout_max", "refresh_max"]:
+		d.context[key] = int(d.context[key])
+	d.context.required_owner_ids = ["TEST-A", "TEST-B"]
+	d.context.owner_validators = {"TEST-A": semantic, "TEST-B": semantic}
+	d.context.preparation_validator = func(_run: Dictionary, _domains: Dictionary) -> Dictionary: return {"status": "OK"}
+	d.context.complete_validator = null
+	var run: Dictionary = d.prepared_run.duplicate(true)
+	run.run_status = "SUSPENDED"
+	for key: String in ["mission_id", "mission_definition_hash", "config_hash"]:
+		f.manifest[key] = run[key]
+		f.binding[key] = run[key]
+	for owner: Dictionary in f.checkpoint.owner_snapshots:
+		owner.payload.binding = f.binding.duplicate(true)
+	for i: int in range(f.manifest.owners.size()):
+		f.manifest.owners[i].max_snapshot_bytes = str(Codec.encode(f.checkpoint.owner_snapshots[i], LIMITS).bytes)
+	f.manifest.max_checkpoint_bytes = str(Codec.encode(f.checkpoint, LIMITS).bytes)
+	for i: int in range(f.manifest.owners.size()):
+		f.manifest.owners[i].schema = "2"
+		f.checkpoint.owner_snapshots[i].schema = "2"
+	var contract = initialized(f)
+	print("REGISTERED_SCHEMA_2_DIRECT => ", contract.validate(f.checkpoint, f.binding))
+	var schema := Domains.new()
+	check(schema.initialize(campaign, d.context, LIMITS, contract).status == "OK", "install bound checkpoint in seven-domain validator")
+	run.checkpoint = f.checkpoint.duplicate(true)
+	d.domains.current_run.payload.run = run
+	d.domains.preparation.payload.next_preparation_id = "2"
+	d.domains.preparation.payload.active_reservation = {"receipt": run.prep_receipt.duplicate(true), "state": "CONSUMED", "recovery_revision": "0"}
+	print("REGISTERED_SCHEMA_2_SAVE => ", schema.validate(d.domains, d.root))
+	quit()

@@ -1,0 +1,90 @@
+; Engine configuration file.
+; It's best edited using the editor UI and not directly,
+; since the parameters that go here are not all obvious.
+;
+; Format:
+;   [section] ; section goes between []
+;   param=value ; assign values to parameters
+
+config_version=5
+
+[application]
+
+config/name="掌天试炼 - Input Vertical Slice"
+run/main_scene="res://main.tscn"
+config/features=PackedStringArray("4.7")
+
+[display]
+
+window/size/viewport_width=720
+window/size/viewport_height=1280
+window/size/window_width_override=360
+window/size/window_height_override=640
+window/stretch/mode="canvas_items"
+window/stretch/aspect="expand"
+
+[editor_plugins]
+
+enabled=PackedStringArray("res://addons/gdUnit4/plugin.cfg")
+
+[input]
+
+ui_focus_next={
+"deadzone": 0.0,
+"events": []
+}
+touch_move_left={
+"deadzone": 0.0,
+"events": []
+}
+touch_move_right={
+"deadzone": 0.0,
+"events": []
+}
+touch_move_up={
+"deadzone": 0.0,
+"events": []
+}
+touch_move_down={
+"deadzone": 0.0,
+"events": []
+}
+ui_focus_previous={
+"deadzone": 0.0,
+"events": []
+}
+ui_focus_left={
+"deadzone": 0.0,
+"events": []
+}
+ui_focus_right={
+"deadzone": 0.0,
+"events": []
+}
+ui_activate={
+"deadzone": 0.0,
+"events": []
+}
+ui_back={
+"deadzone": 0.0,
+"events": []
+}
+ui_increment={
+"deadzone": 0.0,
+"events": []
+}
+ui_decrement={
+"deadzone": 0.0,
+"events": []
+}
+
+[input_devices]
+
+pointing/emulate_touch_from_mouse=false
+buffering/agile_event_flushing=false
+
+[rendering]
+
+renderer/rendering_method="gl_compatibility"
+renderer/rendering_method.mobile="gl_compatibility"
+environment/defaults/default_clear_color=Color(0.025, 0.045, 0.055, 1)

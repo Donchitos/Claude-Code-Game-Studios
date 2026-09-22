@@ -1,0 +1,276 @@
+{
+	"cases": [
+		{
+			"case": "root real double-slot storage initialize",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "root injected synthetic catalog profile",
+			"detail": "",
+			"pass": true
+		},
+		{
+			"case": "root begin real first mission",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "root observes real pending upgrade",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "unserialized reference branch before disk exit",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "root save exit preserves unresolved choice",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "fresh storage reads actual disk",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "fresh profile reads disk domain",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "fresh root continues saved run",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "exit/new root restores exact pending choice and RNG",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "legal persisted choice",
+			"detail": "S1-A01",
+			"pass": true
+		},
+		{
+			"case": "legal persisted choice",
+			"detail": "S1-A01",
+			"pass": true
+		},
+		{
+			"case": "legal persisted choice",
+			"detail": "S1-A01",
+			"pass": true
+		},
+		{
+			"case": "legal persisted choice",
+			"detail": "S1-A01",
+			"pass": true
+		},
+		{
+			"case": "legal persisted choice",
+			"detail": "S1-P01",
+			"pass": true
+		},
+		{
+			"case": "legal persisted choice",
+			"detail": "S1-P01",
+			"pass": true
+		},
+		{
+			"case": "legal persisted choice",
+			"detail": "S1-P01",
+			"pass": true
+		},
+		{
+			"case": "legal persisted choice",
+			"detail": "S1-P01",
+			"pass": true
+		},
+		{
+			"case": "legal persisted choice",
+			"detail": "S1-P01",
+			"pass": true
+		},
+		{
+			"case": "legal persisted choice",
+			"detail": "S1-V01",
+			"pass": true
+		},
+		{
+			"case": "legal persisted choice",
+			"detail": "S1-P03",
+			"pass": true
+		},
+		{
+			"case": "legal persisted choice",
+			"detail": "S1-P03",
+			"pass": true
+		},
+		{
+			"case": "legal persisted choice",
+			"detail": "S1-P03",
+			"pass": true
+		},
+		{
+			"case": "legal persisted choice",
+			"detail": "S1-P03",
+			"pass": true
+		},
+		{
+			"case": "legal persisted choice",
+			"detail": "S1-P03",
+			"pass": true
+		},
+		{
+			"case": "legal persisted choice",
+			"detail": "S1-A03",
+			"pass": true
+		},
+		{
+			"case": "legal persisted choice",
+			"detail": "S1-A03",
+			"pass": true
+		},
+		{
+			"case": "legal persisted choice",
+			"detail": "S1-A03",
+			"pass": true
+		},
+		{
+			"case": "legal persisted choice",
+			"detail": "S1-A03",
+			"pass": true
+		},
+		{
+			"case": "legal persisted choice",
+			"detail": "S1-A03",
+			"pass": true
+		},
+		{
+			"case": "legal persisted choice",
+			"detail": "S1-P02",
+			"pass": true
+		},
+		{
+			"case": "legal persisted choice",
+			"detail": "S1-P02",
+			"pass": true
+		},
+		{
+			"case": "legal persisted choice",
+			"detail": "S1-P02",
+			"pass": true
+		},
+		{
+			"case": "legal persisted choice",
+			"detail": "S1-P02",
+			"pass": true
+		},
+		{
+			"case": "legal persisted choice",
+			"detail": "S1-P02",
+			"pass": true
+		},
+		{
+			"case": "legal persisted choice",
+			"detail": "S1-A02",
+			"pass": true
+		},
+		{
+			"case": "legal persisted choice",
+			"detail": "S1-A02",
+			"pass": true
+		},
+		{
+			"case": "legal persisted choice",
+			"detail": "S1-A02",
+			"pass": true
+		},
+		{
+			"case": "legal persisted choice",
+			"detail": "S1-A02",
+			"pass": true
+		},
+		{
+			"case": "legal persisted choice",
+			"detail": "S1-A02",
+			"pass": true
+		},
+		{
+			"case": "legal persisted choice",
+			"detail": "S1-V02",
+			"pass": true
+		},
+		{
+			"case": "real disk root resume next200 exact",
+			"detail": {
+				"first_divergence": -1
+			},
+			"pass": true
+		},
+		{
+			"case": "real first objective settles through root",
+			"detail": {
+				"ending": false,
+				"event_reward": 0,
+				"first_clear": true,
+				"reward": 45,
+				"stats": {
+					"boss_kills": 0,
+					"damage_dealt": 1000.0,
+					"damage_taken": 4.0,
+					"elapsed": 8.66666666666668,
+					"elite_kills": 0,
+					"event_reward": 0,
+					"events_taken": 0,
+					"evolution_ids": [
+						"S1-V01",
+						"S1-V02"
+					],
+					"evolutions": 2,
+					"kills": 1,
+					"level": 100,
+					"risk_choices": 0,
+					"safe_choices": 0,
+					"skills_used": [
+						"S1-A01",
+						"S1-A02",
+						"S1-A03"
+					]
+				},
+				"status": "OK",
+				"unlocks": [
+					"S1-ACH09",
+					"S1-ACH17",
+					"S1-ACH18"
+				],
+				"victory": true
+			},
+			"pass": true
+		},
+		{
+			"case": "duplicate finish adds no rewards or unlocks",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "actual first settlement unlocks next mission",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "next mission clean save exit tears down input lifecycle",
+			"detail": {},
+			"pass": true
+		}
+	],
+	"checks": 46,
+	"engine": "4.7.1-stable (official)",
+	"failures": 0,
+	"scope": "Headless synthetic short/low-HP acceptance; not production balance, 64 mission completion, device or release evidence",
+	"suite": "root-only"
+}

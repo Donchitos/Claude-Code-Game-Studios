@@ -1,0 +1,21 @@
+<h1>Header 1 Text</h1>
+<h1 align="center">Header 1 Centered Text</h1>
+
+<h2>Header 2 Text</h2>
+<h2 align="center">Header 2 Centered Text</h2>
+
+<h2 align="center">Header 2 Centered Text
+Multiline Test
+Is here</h2>
+
+<h3>Header 3 Text</h3>
+<h3 align="center">Header 3 Centered Text</h3>
+
+<h4>Header 4 Text</h4>
+<h4 align="center">Header 4 Centered Text</h4>
+
+<h5>Header 5 Text</h5>
+<h5 align="center">Header 5 Centered Text</h5>
+
+<h6>Header 6 Text</h6>
+<h6 align="center">Header 6 Centered Text</h6>

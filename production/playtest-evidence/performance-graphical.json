@@ -1,0 +1,92 @@
+{
+	"cases": [
+		{
+			"engine_static_after_teardown_bytes": 131394632,
+			"engine_static_bytes_samples": [
+				131242594,
+				131245690,
+				131250998,
+				131255350,
+				131261282,
+				131261506,
+				131268766,
+				131270050,
+				131281030,
+				131281746
+			],
+			"frame_interval_p95_ms": 13.862,
+			"frame_interval_p99_ms": 14.581,
+			"mode": "ordinary",
+			"peak_enemies": 3,
+			"peak_friendly": 4,
+			"peak_hostile": 0,
+			"samples": 600,
+			"simulation_max_ms": 0.217,
+			"simulation_over_16_67ms": 0,
+			"simulation_p50_ms": 0.114,
+			"simulation_p95_ms": 0.166,
+			"simulation_p99_ms": 0.181
+		},
+		{
+			"engine_static_after_teardown_bytes": 131670120,
+			"engine_static_bytes_samples": [
+				132233825,
+				132236849,
+				132517529,
+				132520913,
+				132526265,
+				132526265,
+				132533657,
+				132533657,
+				132545033,
+				132545393
+			],
+			"frame_interval_p95_ms": 10.398,
+			"frame_interval_p99_ms": 11.52,
+			"mode": "capacity_stress",
+			"peak_enemies": 319,
+			"peak_friendly": 392,
+			"peak_hostile": 0,
+			"samples": 600,
+			"simulation_max_ms": 5.157,
+			"simulation_over_16_67ms": 0,
+			"simulation_p50_ms": 4.498,
+			"simulation_p95_ms": 4.572,
+			"simulation_p99_ms": 4.71
+		},
+		{
+			"engine_static_after_teardown_bytes": 131680336,
+			"engine_static_bytes_samples": [
+				132311165,
+				132314189,
+				132319853,
+				132332909,
+				132337089,
+				132339669,
+				132347253,
+				132353645,
+				132364525,
+				132361297
+			],
+			"frame_interval_p95_ms": 13.912,
+			"frame_interval_p99_ms": 14.46,
+			"mode": "boss_phase2",
+			"peak_enemies": 3,
+			"peak_friendly": 2,
+			"peak_hostile": 8,
+			"samples": 600,
+			"simulation_max_ms": 0.293,
+			"simulation_over_16_67ms": 0,
+			"simulation_p50_ms": 0.11,
+			"simulation_p95_ms": 0.17,
+			"simulation_p99_ms": 0.196
+		}
+	],
+	"cpu": "Apple M4",
+	"godot": "4.7.1-stable (official)",
+	"passed_execution": true,
+	"platform": "macOS",
+	"renderer": "macOS",
+	"temporary_profile": true,
+	"warmup_ticks": 120
+}

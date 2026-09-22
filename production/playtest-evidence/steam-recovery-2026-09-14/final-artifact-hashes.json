@@ -1,0 +1,14 @@
+{
+  "src/data/steam_recovery_contract.gd": "64bced1cee8de06814caa2e55b43f5b031eccf042b7f7a62c09b08316ae54f78",
+  "src/data/steam_save_domains.gd": "cc5bfa5eba206411e22ba971586f9b9098cadafa942867646173b6f8bc934509",
+  "tools/steam/build_domain_schemas.py": "b892e0378c5b3985cca2d9d03a1f49057f52a357e15eb278f225dee42129c0c5",
+  "tools/steam/check_recovery_inventory.py": "dacf3bba8d663d44f40e4334b2f5f6b9b4c023e92e69c3ef2dfb73ca818c5fd9",
+  "tests/integration/steam_recovery_contract_test.gd": "a139b59a4d62cc2236312650414d9951f43a798cd9a57402df5225422b894cad",
+  "tests/unit/steam/steam_recovery_contract_test.gd": "f70a81d78b7bd96a942d7e1be60ab8fa9fc1551e2f2aef5e0e8afcde95774f3a",
+  "design/registry/manifests/steam-recovery-responsibilities-v1.json": "3c48fbf06d9bb57d486ca8f96e2877f4fb8535226562abee8176e7f41a9a49b9",
+  "assets/schemas/steam/records-domain-v1.schema.json": "42bbccc40fb196ba3eb6de1aafc1ed6f1ebf416f19f88d55e3869ebbffa6eacd",
+  "assets/schemas/steam/progression-domain-v1.schema.json": "7952baf6231cfeb550c04ffdd2e7347a9f98c89d270ba246533f6a5709180ffd",
+  "assets/schemas/steam/preparation-domain-v1.schema.json": "d6e65f04870945bb3bd313da671b11f6bfc044ec8ae979d9966a469062284f60",
+  "assets/schemas/steam/current_run-domain-v1.schema.json": "6ddde4bff9d3f9f47a888ab99a336f7ea2568f372afce6717a14bb28d5da9d02",
+  "assets/schemas/steam/user_settings-domain-v1.schema.json": "f6802bd404e060d3db85703a537e59334471f06c8ded80e356bfc2805529816b"
+}

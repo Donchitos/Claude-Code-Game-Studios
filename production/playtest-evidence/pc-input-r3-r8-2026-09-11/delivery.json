@@ -1,0 +1,44 @@
+{
+  "date": "2026-09-11",
+  "export_exit_code": 0,
+  "local_macos_pck_boot_exit_code": 0,
+  "windows_physical_status": "NOT_RUN",
+  "zip_crc": "PASS",
+  "artifacts": {
+    "build/windows-pc-input-r3-r8/README.txt": {
+      "bytes": 376,
+      "sha256": "8a6ed40137c7cbaf52ae3e89aef04eb7b40c44102ebb3d719f297765cfedf8a8"
+    },
+    "build/windows-pc-input-r3-r8/TrialInternal.exe": {
+      "bytes": 109114368,
+      "sha256": "4e5e07b73a38be1452888ba41c0a7a8729abe601cbf47aca726857b524a79404"
+    },
+    "build/windows-pc-input-r3-r8/TrialInternal.pck": {
+      "bytes": 14641432,
+      "sha256": "d21ce17a010ff9cc9d52ed1847dd56c49ffbda1bd91d0f73fd4d3c8f2fa86bb9"
+    },
+    "build/windows-pc-input-r3-r8/windows-input-validation.ps1": {
+      "bytes": 2421,
+      "sha256": "529c8b1003603d2040d58bf452b0435be755af8625e43289ad403910f161a375"
+    },
+    "build/windows-pc-input-r3-r8/windows-pc-input-checklist.md": {
+      "bytes": 2728,
+      "sha256": "82b271318f499106a0b744e6aeb2dbdff355a85464918db61e85f99e0fde941a"
+    },
+    "build/windows-pc-input-r3-r8.zip": {
+      "bytes": 52647612,
+      "sha256": "fda53167c280fe6cd639e6153772e6bcb47229f4ee4f47e37ef88d84da00c806"
+    }
+  },
+  "sources": {
+    "src/input/input_system.gd": "fc5729c919a9ae93a3b8b256a33e1eb5945511b402775e22f1dc6f9f652c02a8",
+    "src/input/pc_input_source.gd": "6843035a28be0a53cb8e0f590b240b421c4931f73382693c34eac6210f2701cd",
+    "src/input/pc_meta_input.gd": "dbe543037ab43d81ad4b8b313c0681db4a9431d1c57fe475757ea1fe75c73d6e",
+    "src/core/game_root.gd": "048e466dc6cfb0d895333095349576d58c384f68c89876d95bf178b9be46e690",
+    "src/ui/battle_ui.gd": "074478c1a8b0af92fc015db74c71f7eec3550d6c24bf8e5a7f1e1c25bdfc4f7d",
+    "tests/integration/pc_input_profile_test.gd": "26e95a48582355ba83f7d200b10cb288595ef31493d8d8e980b358fbbd83f167",
+    "tests/integration/pc_meta_input_test.gd": "3a06d919918d671f2a58be2f81400cd7ffb94d0b58cdfc54756cf4808164f0ba",
+    "tests/integration/pc_resume_reentry_test.gd": "6115ffee902cea1fa4c92c899b61bd840408ba06cb47f7f60d602742b5532c57",
+    "tests/integration/pc_ui_surfaces_test.gd": "3ef00051c41ee5bdec92dfab5b37c6df92de223a78dc2e338f98b14f48119c1f"
+  }
+}

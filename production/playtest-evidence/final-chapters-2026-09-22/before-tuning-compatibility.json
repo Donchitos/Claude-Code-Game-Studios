@@ -1,0 +1,11 @@
+{
+  "old_pck_sha": "b9746276b48eda130e8531b02be54e18d749863314777149abd6cf1d9e4316b3",
+  "new_pck_sha": "c875bd3ed70662711d2189d8e882610fe0316c01173c0f4d2ad2868c14297eb1",
+  "before_and_after_blocked": {
+    "a": "fd68327d955a50b6050bca081c7746bf0e02a9c8474098c15bb4638d1a3e04f2",
+    "b": "d103387e6bff67ddfeafe45b84d810d68cdbe40f66b451812f1aa9a71e227ea3"
+  },
+  "zero_writes": true,
+  "home_upgrade": true,
+  "scope": "isolated old PCK battle; test abandonment only"
+}

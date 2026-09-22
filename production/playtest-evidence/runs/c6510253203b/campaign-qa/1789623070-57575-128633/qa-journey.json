@@ -1,0 +1,1457 @@
+{
+	"cases": [
+		{
+			"case": "objective fixture exists SURVIVE",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "configure S1-M01-01",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "configure S1-M01-01",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "SURVIVE cannot win by time alone away from objective",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "actual advance objective SURVIVE",
+			"detail": {
+				"objective": {
+					"completed_ids": [
+						"S1-M01-01:T1"
+					],
+					"completion_order": [
+						"S1-M01-01:T1"
+					],
+					"elapsed": 2.7,
+					"escort_hp": 10000.0,
+					"extraction_ready": true,
+					"extraction_was_inside": true,
+					"finished": true,
+					"hold": 0.0,
+					"kind": "SURVIVE",
+					"player_alive": true,
+					"pressure": 0.0,
+					"progress": 1,
+					"reason": "extracted",
+					"victory": true,
+					"waypoint": 0,
+					"x": 0.0,
+					"y": 0.0
+				},
+				"player": {
+					"facing": 0.143231093883514,
+					"hp": 10000.0,
+					"invulnerable": 0.0,
+					"kills": 0,
+					"level": 1,
+					"max_hp": 10000.0,
+					"x": 32.2177391052246,
+					"xp": 0.0,
+					"y": -12.6598405838013
+				},
+				"reason": "extracted",
+				"stats": {
+					"boss_kills": 0,
+					"damage_dealt": 0.0,
+					"damage_taken": 0.0,
+					"elapsed": 2.7,
+					"elite_kills": 0,
+					"event_reward": 0,
+					"events_taken": 0,
+					"evolution_ids": [],
+					"evolutions": 0,
+					"kills": 0,
+					"level": 1,
+					"risk_choices": 0,
+					"safe_choices": 0,
+					"skills_used": [
+						"S1-A01"
+					]
+				}
+			},
+			"pass": true
+		},
+		{
+			"case": "SURVIVE consumed simulation ticks",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "SURVIVE actual terminal snapshot validates",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "objective fixture exists ESCORT",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "configure S1-M01-03",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "configure S1-M01-03",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "ESCORT cannot win by time alone away from objective",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "legal persisted choice",
+			"detail": "S1-A01",
+			"pass": true
+		},
+		{
+			"case": "actual advance objective ESCORT",
+			"detail": {
+				"objective": {
+					"completed_ids": [
+						"S1-M01-03:T1",
+						"S1-M01-03:T2",
+						"S1-M01-03:T3",
+						"S1-M01-03:T4"
+					],
+					"completion_order": [
+						"S1-M01-03:T1",
+						"S1-M01-03:T2",
+						"S1-M01-03:T3",
+						"S1-M01-03:T4"
+					],
+					"elapsed": 7.88333333333331,
+					"escort_hp": 10000.0,
+					"extraction_ready": false,
+					"extraction_was_inside": false,
+					"finished": true,
+					"hold": 0.0,
+					"kind": "ESCORT",
+					"player_alive": true,
+					"pressure": 0.0,
+					"progress": 4,
+					"reason": "escort_arrived",
+					"victory": true,
+					"waypoint": 4,
+					"x": 226.0,
+					"y": 0.0
+				},
+				"player": {
+					"facing": 0.0000000000000339983642909554,
+					"hp": 10000.0,
+					"invulnerable": 0.0,
+					"kills": 5,
+					"level": 2,
+					"max_hp": 10000.0,
+					"x": 215.901412963867,
+					"xp": 0.0,
+					"y": -0.000000000000275338481398393
+				},
+				"reason": "escort_arrived",
+				"stats": {
+					"boss_kills": 0,
+					"damage_dealt": 120.0,
+					"damage_taken": 0.0,
+					"elapsed": 7.88333333333331,
+					"elite_kills": 0,
+					"event_reward": 0,
+					"events_taken": 0,
+					"evolution_ids": [],
+					"evolutions": 0,
+					"kills": 5,
+					"level": 2,
+					"risk_choices": 0,
+					"safe_choices": 0,
+					"skills_used": [
+						"S1-A01"
+					]
+				}
+			},
+			"pass": true
+		},
+		{
+			"case": "ESCORT consumed simulation ticks",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "ESCORT actual terminal snapshot validates",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "objective fixture exists HUNT",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "configure S1-M01-04",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "configure S1-M01-04",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "actual advance objective HUNT",
+			"detail": {
+				"objective": {
+					"completed_ids": [],
+					"completion_order": [],
+					"elapsed": 119.999999999994,
+					"escort_hp": 10000.0,
+					"extraction_ready": false,
+					"extraction_was_inside": false,
+					"finished": false,
+					"hold": 0.0,
+					"kind": "HUNT",
+					"player_alive": true,
+					"pressure": 0.0,
+					"progress": 0,
+					"reason": "",
+					"victory": false,
+					"waypoint": 0,
+					"x": 0.0,
+					"y": 0.0
+				},
+				"player": {
+					"facing": 0.14323103427887,
+					"hp": 10000.0,
+					"invulnerable": 0.0,
+					"kills": 0,
+					"level": 1,
+					"max_hp": 10000.0,
+					"x": 109.814910888672,
+					"xp": 0.0,
+					"y": -1.46887922286987
+				},
+				"reason": "",
+				"stats": {
+					"boss_kills": 0,
+					"damage_dealt": 0.0,
+					"damage_taken": 0.0,
+					"elapsed": 119.999999999994,
+					"elite_kills": 0,
+					"event_reward": 0,
+					"events_taken": 0,
+					"evolution_ids": [],
+					"evolutions": 0,
+					"kills": 0,
+					"level": 1,
+					"risk_choices": 0,
+					"safe_choices": 0,
+					"skills_used": [
+						"S1-A01"
+					]
+				}
+			},
+			"pass": false
+		},
+		{
+			"case": "HUNT consumed simulation ticks",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "HUNT actual terminal snapshot validates",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "objective fixture exists CLEANSE",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "configure S1-M01-05",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "configure S1-M01-05",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "CLEANSE cannot win by time alone away from objective",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "actual advance objective CLEANSE",
+			"detail": {
+				"objective": {
+					"completed_ids": [],
+					"completion_order": [],
+					"elapsed": 119.999999999994,
+					"escort_hp": 10000.0,
+					"extraction_ready": false,
+					"extraction_was_inside": false,
+					"finished": false,
+					"hold": 0.0,
+					"kind": "CLEANSE",
+					"player_alive": true,
+					"pressure": 0.0,
+					"progress": 0,
+					"reason": "",
+					"victory": false,
+					"waypoint": 0,
+					"x": 0.0,
+					"y": 0.0
+				},
+				"player": {
+					"facing": 0.0,
+					"hp": 10000.0,
+					"invulnerable": 0.0,
+					"kills": 0,
+					"level": 1,
+					"max_hp": 10000.0,
+					"x": -96.0,
+					"xp": 0.0,
+					"y": 0.0
+				},
+				"reason": "",
+				"stats": {
+					"boss_kills": 0,
+					"damage_dealt": 0.0,
+					"damage_taken": 0.0,
+					"elapsed": 119.999999999994,
+					"elite_kills": 0,
+					"event_reward": 0,
+					"events_taken": 0,
+					"evolution_ids": [],
+					"evolutions": 0,
+					"kills": 0,
+					"level": 1,
+					"risk_choices": 0,
+					"safe_choices": 0,
+					"skills_used": [
+						"S1-A01"
+					]
+				}
+			},
+			"pass": false
+		},
+		{
+			"case": "CLEANSE consumed simulation ticks",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "CLEANSE actual terminal snapshot validates",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "objective fixture exists BREAK",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "configure S1-M01-02",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "configure S1-M01-02",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "actual advance objective BREAK",
+			"detail": {
+				"objective": {
+					"completed_ids": [
+						"S1-M01-02:T1",
+						"S1-M01-02:T2",
+						"S1-M01-02:T3"
+					],
+					"completion_order": [
+						"S1-M01-02:T1",
+						"S1-M01-02:T2",
+						"S1-M01-02:T3"
+					],
+					"elapsed": 2.06666666666666,
+					"escort_hp": 10000.0,
+					"extraction_ready": false,
+					"extraction_was_inside": false,
+					"finished": true,
+					"hold": 0.0,
+					"kind": "BREAK",
+					"player_alive": true,
+					"pressure": 0.0,
+					"progress": 3,
+					"reason": "anchors_destroyed",
+					"victory": true,
+					"waypoint": 0,
+					"x": 0.0,
+					"y": 0.0
+				},
+				"player": {
+					"facing": 0.0982207879424095,
+					"hp": 10000.0,
+					"invulnerable": 0.0,
+					"kills": 3,
+					"level": 1,
+					"max_hp": 10000.0,
+					"x": -151.29475402832,
+					"xp": 0.0,
+					"y": -39.5427322387695
+				},
+				"reason": "anchors_destroyed",
+				"stats": {
+					"boss_kills": 0,
+					"damage_dealt": 72.0,
+					"damage_taken": 0.0,
+					"elapsed": 2.06666666666666,
+					"elite_kills": 0,
+					"event_reward": 0,
+					"events_taken": 0,
+					"evolution_ids": [],
+					"evolutions": 0,
+					"kills": 3,
+					"level": 1,
+					"risk_choices": 0,
+					"safe_choices": 0,
+					"skills_used": [
+						"S1-A01"
+					]
+				}
+			},
+			"pass": true
+		},
+		{
+			"case": "BREAK consumed simulation ticks",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "BREAK actual terminal snapshot validates",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "objective fixture exists BOSS",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "configure S1-M01-08",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "configure S1-M01-08",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "actual advance objective BOSS",
+			"detail": {
+				"objective": {
+					"completed_ids": [
+						"S1-B01"
+					],
+					"completion_order": [
+						"S1-B01"
+					],
+					"elapsed": 2.01666666666666,
+					"escort_hp": 10000.0,
+					"extraction_ready": false,
+					"extraction_was_inside": false,
+					"finished": true,
+					"hold": 0.0,
+					"kind": "BOSS",
+					"player_alive": true,
+					"pressure": 0.0,
+					"progress": 1,
+					"reason": "boss_defeated",
+					"victory": true,
+					"waypoint": 0,
+					"x": 0.0,
+					"y": 0.0
+				},
+				"player": {
+					"facing": 3.14159250259399,
+					"hp": 10000.0,
+					"invulnerable": 0.0,
+					"kills": 1,
+					"level": 1,
+					"max_hp": 10000.0,
+					"x": -479.899017333984,
+					"xp": 0.0,
+					"y": 0.0
+				},
+				"reason": "boss_defeated",
+				"stats": {
+					"boss_kills": 1,
+					"damage_dealt": 24.0,
+					"damage_taken": 0.0,
+					"elapsed": 2.01666666666666,
+					"elite_kills": 0,
+					"event_reward": 0,
+					"events_taken": 0,
+					"evolution_ids": [],
+					"evolutions": 0,
+					"kills": 1,
+					"level": 1,
+					"risk_choices": 0,
+					"safe_choices": 0,
+					"skills_used": [
+						"S1-A01"
+					]
+				}
+			},
+			"pass": true
+		},
+		{
+			"case": "BOSS consumed simulation ticks",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "BOSS actual terminal snapshot validates",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "configure S1-M01-04",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "active real damage S1-A01 sword",
+			"detail": {
+				"damage": 0.0,
+				"projectiles": 2,
+				"zones": 0
+			},
+			"pass": false
+		},
+		{
+			"case": "configure S1-M01-04",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "active real damage S1-A02 fan",
+			"detail": {
+				"damage": 0.0,
+				"projectiles": 5,
+				"zones": 0
+			},
+			"pass": false
+		},
+		{
+			"case": "configure S1-M01-04",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "active real damage S1-A03 orbit",
+			"detail": {
+				"damage": 0.0,
+				"projectiles": 0,
+				"zones": 12
+			},
+			"pass": false
+		},
+		{
+			"case": "configure S1-M01-04",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "active real damage S1-A04 fireball",
+			"detail": {
+				"damage": 0.0,
+				"projectiles": 1,
+				"zones": 0
+			},
+			"pass": false
+		},
+		{
+			"case": "configure S1-M01-04",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "active real damage S1-A05 flame",
+			"detail": {
+				"damage": 0.0,
+				"projectiles": 0,
+				"zones": 3
+			},
+			"pass": false
+		},
+		{
+			"case": "configure S1-M01-04",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "active real damage S1-A06 meteor",
+			"detail": {
+				"damage": 0.0,
+				"projectiles": 0,
+				"zones": 0
+			},
+			"pass": false
+		},
+		{
+			"case": "configure S1-M01-04",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "active real damage S1-A07 disc",
+			"detail": {
+				"damage": 0.0,
+				"projectiles": 1,
+				"zones": 0
+			},
+			"pass": false
+		},
+		{
+			"case": "configure S1-M01-04",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "active real damage S1-A08 boomerang",
+			"detail": {
+				"damage": 0.0,
+				"projectiles": 2,
+				"zones": 0
+			},
+			"pass": false
+		},
+		{
+			"case": "configure S1-M01-04",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "active real damage S1-A09 shield",
+			"detail": {
+				"damage": 0.0,
+				"projectiles": 0,
+				"zones": 2
+			},
+			"pass": false
+		},
+		{
+			"case": "configure S1-M01-04",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "active real damage S1-A10 turret",
+			"detail": {
+				"damage": 0.0,
+				"projectiles": 0,
+				"zones": 3
+			},
+			"pass": false
+		},
+		{
+			"case": "configure S1-M01-04",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "active real damage S1-A11 drone",
+			"detail": {
+				"damage": 0.0,
+				"projectiles": 0,
+				"zones": 12
+			},
+			"pass": false
+		},
+		{
+			"case": "configure S1-M01-04",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "active real damage S1-A12 stomp",
+			"detail": {
+				"damage": 0.0,
+				"projectiles": 0,
+				"zones": 0
+			},
+			"pass": false
+		},
+		{
+			"case": "configure S1-M01-04",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "active real damage S1-A13 chain",
+			"detail": {
+				"damage": 0.0,
+				"projectiles": 0,
+				"zones": 0
+			},
+			"pass": false
+		},
+		{
+			"case": "configure S1-M01-04",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "active real damage S1-A14 lightning",
+			"detail": {
+				"damage": 0.0,
+				"projectiles": 0,
+				"zones": 0
+			},
+			"pass": false
+		},
+		{
+			"case": "configure S1-M01-04",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "active real damage S1-A15 return_arc",
+			"detail": {
+				"damage": 0.0,
+				"projectiles": 3,
+				"zones": 0
+			},
+			"pass": false
+		},
+		{
+			"case": "configure S1-M01-04",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "active real damage S1-A16 roots",
+			"detail": {
+				"damage": 0.0,
+				"projectiles": 0,
+				"zones": 4
+			},
+			"pass": false
+		},
+		{
+			"case": "configure S1-M01-04",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "active real damage S1-A17 thorns",
+			"detail": {
+				"damage": 0.0,
+				"projectiles": 0,
+				"zones": 0
+			},
+			"pass": false
+		},
+		{
+			"case": "configure S1-M01-04",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "active real damage S1-A18 spores",
+			"detail": {
+				"damage": 0.0,
+				"projectiles": 0,
+				"zones": 3
+			},
+			"pass": false
+		},
+		{
+			"case": "configure S1-M01-04",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "active real damage S1-A19 ice_arrow",
+			"detail": {
+				"damage": 0.0,
+				"projectiles": 0,
+				"zones": 0
+			},
+			"pass": false
+		},
+		{
+			"case": "configure S1-M01-04",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "active real damage S1-A20 frost",
+			"detail": {
+				"damage": 0.0,
+				"projectiles": 0,
+				"zones": 0
+			},
+			"pass": false
+		},
+		{
+			"case": "configure S1-M01-04",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "active real damage S1-A21 winter",
+			"detail": {
+				"damage": 0.0,
+				"projectiles": 0,
+				"zones": 4
+			},
+			"pass": false
+		},
+		{
+			"case": "configure S1-M01-04",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "active real damage S1-A22 ink",
+			"detail": {
+				"damage": 0.0,
+				"projectiles": 3,
+				"zones": 0
+			},
+			"pass": false
+		},
+		{
+			"case": "configure S1-M01-04",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "active real damage S1-A23 seal",
+			"detail": {
+				"damage": 0.0,
+				"projectiles": 0,
+				"zones": 4
+			},
+			"pass": false
+		},
+		{
+			"case": "configure S1-M01-04",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "active real damage S1-A24 void",
+			"detail": {
+				"damage": 0.0,
+				"projectiles": 0,
+				"zones": 0
+			},
+			"pass": false
+		},
+		{
+			"case": "configure S1-M01-01",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "configure S1-M01-01",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "passive acquired through real XP/choice S1-P01",
+			"detail": {},
+			"pass": false
+		},
+		{
+			"case": "configure S1-M01-01",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "configure S1-M01-01",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "passive acquired through real XP/choice S1-P02",
+			"detail": {},
+			"pass": false
+		},
+		{
+			"case": "configure S1-M01-01",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "configure S1-M01-01",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "passive acquired through real XP/choice S1-P03",
+			"detail": {},
+			"pass": false
+		},
+		{
+			"case": "configure S1-M01-01",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "configure S1-M01-01",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "passive acquired through real XP/choice S1-P04",
+			"detail": {},
+			"pass": false
+		},
+		{
+			"case": "configure S1-M01-01",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "configure S1-M01-01",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "passive acquired through real XP/choice S1-P05",
+			"detail": {},
+			"pass": false
+		},
+		{
+			"case": "configure S1-M01-01",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "configure S1-M01-01",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "passive acquired through real XP/choice S1-P06",
+			"detail": {},
+			"pass": false
+		},
+		{
+			"case": "configure S1-M01-01",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "configure S1-M01-01",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "passive acquired through real XP/choice S1-P07",
+			"detail": {},
+			"pass": false
+		},
+		{
+			"case": "configure S1-M01-01",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "configure S1-M01-01",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "passive acquired through real XP/choice S1-P08",
+			"detail": {},
+			"pass": false
+		},
+		{
+			"case": "configure S1-M01-01",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "configure S1-M01-01",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "passive acquired through real XP/choice S1-P09",
+			"detail": {},
+			"pass": false
+		},
+		{
+			"case": "configure S1-M01-01",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "configure S1-M01-01",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "passive acquired through real XP/choice S1-P10",
+			"detail": {},
+			"pass": false
+		},
+		{
+			"case": "configure S1-M01-01",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "configure S1-M01-01",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "passive acquired through real XP/choice S1-P11",
+			"detail": {},
+			"pass": false
+		},
+		{
+			"case": "configure S1-M01-01",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "configure S1-M01-01",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "passive acquired through real XP/choice S1-P12",
+			"detail": {},
+			"pass": false
+		},
+		{
+			"case": "configure S1-M01-01",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "configure S1-M01-01",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "passive acquired through real XP/choice S1-P13",
+			"detail": {},
+			"pass": false
+		},
+		{
+			"case": "configure S1-M01-01",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "configure S1-M01-01",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "passive acquired through real XP/choice S1-P14",
+			"detail": {},
+			"pass": false
+		},
+		{
+			"case": "configure S1-M01-01",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "configure S1-M01-01",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "passive acquired through real XP/choice S1-P15",
+			"detail": {},
+			"pass": false
+		},
+		{
+			"case": "configure S1-M01-01",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "configure S1-M01-01",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "passive acquired through real XP/choice S1-P16",
+			"detail": {},
+			"pass": false
+		},
+		{
+			"case": "configure S1-M01-01",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "configure S1-M01-01",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "passive acquired through real XP/choice S1-P17",
+			"detail": {},
+			"pass": false
+		},
+		{
+			"case": "configure S1-M01-01",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "configure S1-M01-01",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "passive acquired through real XP/choice S1-P18",
+			"detail": {},
+			"pass": false
+		},
+		{
+			"case": "configure S1-M01-01",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "configure S1-M01-01",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "passive acquired through real XP/choice S1-P19",
+			"detail": {},
+			"pass": false
+		},
+		{
+			"case": "configure S1-M01-01",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "configure S1-M01-01",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "passive acquired through real XP/choice S1-P20",
+			"detail": {},
+			"pass": false
+		},
+		{
+			"case": "configure S1-M01-01",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "configure S1-M01-01",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "passive acquired through real XP/choice S1-P21",
+			"detail": {},
+			"pass": false
+		},
+		{
+			"case": "configure S1-M01-01",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "configure S1-M01-01",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "passive acquired through real XP/choice S1-P22",
+			"detail": {},
+			"pass": false
+		},
+		{
+			"case": "configure S1-M01-01",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "configure S1-M01-01",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "passive acquired through real XP/choice S1-P23",
+			"detail": {},
+			"pass": false
+		},
+		{
+			"case": "configure S1-M01-01",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "configure S1-M01-01",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "passive acquired through real XP/choice S1-P24",
+			"detail": {},
+			"pass": false
+		},
+		{
+			"case": "configure S1-M01-01",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "pending upgrade freezes RNG and all work",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "draft applies offered candidate S1-A01",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "draft applies offered candidate S1-P01",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "draft applies offered candidate S1-P01",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "draft applies offered candidate S1-P01",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "draft applies offered candidate S1-P01",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "draft applies offered candidate S1-P01",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "draft applies offered candidate S1-A01",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "real draft saturates without 4+4 or rank5 overflow",
+			"detail": {
+				"choices": 7,
+				"passives": {
+					"S1-P01": 5
+				},
+				"skills": {
+					"S1-A01": 3
+				}
+			},
+			"pass": false
+		},
+		{
+			"case": "actual upgrade trigger reached",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "actual evolution selected with rank5 active and auxiliary",
+			"detail": [],
+			"pass": false
+		},
+		{
+			"case": "configure S1-M01-01",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "configure S1-M01-01",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "same seeded event genuinely triggered",
+			"detail": {},
+			"pass": false
+		},
+		{
+			"case": "pending event freezes RNG and all work",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "safe and risk legal resolution",
+			"detail": {},
+			"pass": false
+		},
+		{
+			"case": "safe/risk cause actual different resource or pressure",
+			"detail": {
+				"risk": {
+					"damage": 0.0,
+					"pickup_radius": 0.0,
+					"projectile_speed": 0.15
+				},
+				"risk_hp": 10000.0,
+				"safe": {
+					"damage": 0.0,
+					"pickup_radius": 0.0,
+					"projectile_speed": 0.15
+				},
+				"safe_hp": 10000.0
+			},
+			"pass": false
+		},
+		{
+			"case": "event cannot be consumed twice",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "root real double-slot storage initialize",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "root injected synthetic catalog profile",
+			"detail": "",
+			"pass": true
+		},
+		{
+			"case": "root begin real first mission",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "root observes real pending upgrade",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "unserialized reference branch before disk exit",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "root save exit preserves unresolved choice",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "fresh storage reads actual disk",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "fresh profile reads disk domain",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "fresh root continues saved run",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "exit/new root restores exact pending choice and RNG",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "legal persisted choice",
+			"detail": "S1-A01",
+			"pass": true
+		},
+		{
+			"case": "real disk root resume next200 exact",
+			"detail": {
+				"first_divergence": -1
+			},
+			"pass": true
+		},
+		{
+			"case": "real first objective settles through root",
+			"detail": {
+				"ending": false,
+				"event_reward": 0,
+				"first_clear": true,
+				"reward": 45,
+				"stats": {
+					"boss_kills": 0,
+					"damage_dealt": 8960.0,
+					"damage_taken": 0.0,
+					"elapsed": 11.9500000000002,
+					"elite_kills": 0,
+					"event_reward": 0,
+					"events_taken": 0,
+					"evolution_ids": [],
+					"evolutions": 0,
+					"kills": 8,
+					"level": 3,
+					"risk_choices": 0,
+					"safe_choices": 0,
+					"skills_used": [
+						"S1-A01"
+					]
+				},
+				"status": "OK",
+				"unlocks": [
+					"S1-ACH09"
+				],
+				"victory": true
+			},
+			"pass": true
+		},
+		{
+			"case": "duplicate finish adds no rewards or unlocks",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "actual first settlement unlocks next mission",
+			"detail": {},
+			"pass": true
+		},
+		{
+			"case": "next mission clean save exit tears down input lifecycle",
+			"detail": {},
+			"pass": true
+		}
+	],
+	"checks": 195,
+	"engine": "4.7.1-stable (official)",
+	"failures": 55,
+	"scope": "Headless synthetic short/low-HP acceptance; not production balance, 64 mission completion, device or release evidence",
+	"suite": "journey"
+}
