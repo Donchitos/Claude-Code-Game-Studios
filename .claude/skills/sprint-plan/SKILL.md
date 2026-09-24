@@ -108,6 +108,65 @@ many stories to allocate per sprint, scaled by velocity: **2–4** at `coarse`,
 
 ---
 
+## Phase 1b: Sprint Goal Dependency Audit
+
+**Run this phase before generating any story list.** It prevents the sprint goal that requires
+prerequisites that were never scoped, making the goal structurally unachievable from day one.
+
+**Step 1 — State the sprint goal explicitly.**
+If the sprint goal comes from the milestone doc, quote it. If not defined yet,
+prompt the user with `AskUserQuestion` before continuing.
+
+**Step 2 — Identify what the sprint goal requires to be demonstrable.**
+For each sprint goal category, check the corresponding prerequisites:
+
+| Goal type | Prerequisites to verify |
+|-----------|------------------------|
+| Playable game loop / vertical slice | All entry-point scene/level files in the loop path must exist |
+| Feature "works end-to-end" | Scene/level hosting the feature must exist |
+| "Players can experience X" | UX flow for X must have a runnable entry point |
+| Logic / systems only (no player-visible demo) | No scene prerequisite — skip this audit |
+
+**Step 3 — Check prerequisites exist.**
+For any "playable" or "end-to-end" goal, `Glob` for the required scene/level files.
+Use the pattern matching the configured engine:
+
+| Engine | Scene file pattern |
+|--------|--------------------|
+| Godot | `src/**/*.tscn` |
+| Unity | `Assets/**/*.unity` |
+| Unreal | `Content/**/*.umap` |
+| Unknown | Check `CLAUDE.md` → Technology Stack for engine, then use matching pattern |
+
+Compare the found files against what the sprint goal requires.
+
+**Step 4 — Surface missing prerequisites.**
+If any prerequisite is missing AND is not already in the current draft story list as a must-have:
+
+> ⚠️ **Goal prerequisite missing: `[path/to/scene-or-level-file]`**
+> The sprint goal "[goal]" requires this scene/level to exist. It is not in the codebase
+> and is not scoped as a must-have story. Without it, the sprint goal is
+> structurally unachievable.
+
+Use `AskUserQuestion`:
+- Prompt: "Missing prerequisite: [file]. How do you want to handle this?"
+- Options:
+  - `[A] Add it as a must-have story (Recommended) — scope the scene/level creation into this sprint`
+  - `[B] Downgrade the sprint goal — remove the runnable-loop requirement`
+  - `[C] Accept the risk — I know the goal may not be fully demonstrable this sprint`
+
+If [A]: add a scene/level-creation story to the must-have list before Phase 2 begins.
+If [B]: rephrase the sprint goal to not promise a runnable demo (e.g., "Implement logic layer for X" instead of "Playable X loop").
+If [C]: add a KNOWN RISK block to the sprint plan:
+```markdown
+> ⚠️ **Known risk:** Sprint goal requires `[file]` which does not exist. Sprint may
+> not produce a runnable demo. Playtest sessions dependent on this scene/level are blocked.
+```
+
+**Step 5 — Proceed to Phase 2 with prerequisites resolved.**
+
+---
+
 ## Phase 2: Generate Output
 
 For `new`:
