@@ -703,7 +703,7 @@ Wait for confirmation, then apply based on the file's current state:
   schema_version: 1
 
   framework:
-    version: 1.1.0
+    version: 1.1.1
     last_upgraded: <today's date>
 
   engine:

@@ -163,7 +163,7 @@ In `project.yaml`, ensure a `project:` block exists with `stage: [value]`.
   schema_version: 1
 
   framework:
-    version: 1.1.0
+    version: 1.1.1
     last_upgraded: <YYYY-MM-DD>
 
   project:

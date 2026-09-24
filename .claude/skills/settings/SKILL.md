@@ -185,7 +185,7 @@ Schema validation: ok
 Effective config:
 
 framework:
-  version: 1.1.0            (project.yaml, locked)
+  version: 1.1.1            (project.yaml, locked)
 
 modes:
   review_mode: lean         (project.yaml)

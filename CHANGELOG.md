@@ -8,6 +8,34 @@ existing project on the older config files.
 
 ---
 
+## [1.1.1] — 2026-09-24
+
+**Skills and agents work again outside auto mode.** A fix release for
+[#128](https://github.com/Donchitos/Claude-Code-Game-Studios/issues/128).
+
+### Fixed
+
+- **Skills no longer abort before they start.** In 1.1.0, every skill that reads
+  your config began with a shell command Claude Code refuses to run unless it is
+  explicitly approved. In the permission mode CCGS ships with (`default`), 66 of
+  the 74 skills stopped before doing anything, from any subdirectory of your
+  project, and whenever Claude invoked a skill on its own — in auto mode too.
+  Each skill now runs the config lookup as one plain command and pre-approves
+  exactly that command in its own frontmatter. Nothing else is approved.
+- **`game-designer` and `creative-director` launch again.** Both preload skills,
+  so the aborting command stopped them at startup with `Shell command permission
+  check failed … Contains expansion`. They keep their preloaded skills and still
+  have no shell access.
+- **Config is found from any folder.** Starting Claude Code inside `src/` or
+  `design/` now reads the project's `project.yaml`, not nothing.
+- **`/changelog` works in a repository with no commits yet.**
+
+Checked on Claude Code 2.1.277 and 2.1.281, in every permission mode, from the
+project root and from subdirectories. See `.claude/docs/config-resolution.md`
+for the form every skill's config line must take, if you write your own.
+
+---
+
 ## [1.1.0] — 2026-09-23
 
 **One config file, and a process weight you choose — one you can see and adjust,

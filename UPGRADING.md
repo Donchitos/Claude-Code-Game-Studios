@@ -14,6 +14,7 @@ Or check `README.md` for the version badge.
 ## Table of Contents
 
 - [Upgrade Strategies](#upgrade-strategies)
+- [v1.1.0 → v1.1.1](#v110--v111)
 - [v1.0 → v1.1](#v10--v11)
 - [v1.0.0-beta → v1.0](#v100-beta--v10)
 - [v0.4.x → v1.0](#v04x--v10)
@@ -159,6 +160,58 @@ Best when: you didn't use git to set up the template (just downloaded a zip).
 2. Copy the files listed under **"Safe to overwrite"** directly.
 3. For files under **"Merge carefully"**, open both versions side-by-side
    and manually merge the structural changes while keeping your content.
+
+---
+
+## v1.1.0 → v1.1.1
+
+**Released:** 2026-09-24
+**Commit range:** `d056997..v1.1.1`
+**Key themes:** Fix for skills and agents failing to start outside auto mode ([#128](https://github.com/Donchitos/Claude-Code-Game-Studios/issues/128))
+
+### What Changed
+
+| Category | Changes |
+|----------|---------|
+| **Skill fix (66 skills)** | The config line at the top of each skill is now one plain `bash` command, pre-approved in that skill's own `allowed-tools`. The 1.1.0 line aborted the skill outside auto mode |
+| **Helper** | `.claude/hooks/yaml-helper.sh` can be run directly as `bash yaml-helper.sh resolve_config …`, and finds the project root from its own location |
+| **Docs** | `.claude/docs/config-resolution.md` documents the required form and why |
+
+No settings, config files or agents change. Your `project.yaml` and
+`project.local.yaml` are untouched apart from the version stamp.
+
+---
+
+### Files: Safe to Overwrite
+
+**Existing files to overwrite (no user content):**
+```
+.claude/skills/*/SKILL.md                 ← all skills with a config line (66)
+.claude/hooks/yaml-helper.sh              ← direct-execution entry point
+.claude/docs/config-resolution.md         ← corrected "why this command" section
+.claude/docs/director-gates.md            ← example line updated
+```
+
+---
+
+### Files: Merge Carefully
+
+**Skills you have edited yourself.** If you customised a skill, keep your
+version and change two lines in it — the config line and the `allowed-tools`
+entry — to this form, with your skill's folder name in place of `<name>`:
+
+```markdown
+allowed-tools: …, Bash(bash "*/.claude/skills/<name>/../../hooks/yaml-helper.sh" resolve_config *)
+```
+```markdown
+!`bash "${CLAUDE_SKILL_DIR}/../../hooks/yaml-helper.sh" resolve_config --keys <same keys as before>`
+```
+
+Both halves are needed: the line without the grant still aborts. The same
+applies to any skill you wrote yourself that copied the 1.1.0 line.
+
+**`project.yaml`** — optionally set `framework.version: 1.1.1`. Nothing reads it
+for this release.
 
 ---
 

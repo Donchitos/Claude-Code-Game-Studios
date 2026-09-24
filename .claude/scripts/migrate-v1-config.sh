@@ -569,7 +569,7 @@ fi
   echo "schema_version: 1"
   echo ""
   echo "framework:"
-  echo "  version: 1.1.0"
+  echo "  version: 1.1.1"
   echo ""
   # Emit `project:` only when there is a stage to put in it -- same rule as the
   # `modes:` block below. Writing `stage: null` produced a file that FAILED THIS

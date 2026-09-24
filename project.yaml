@@ -4,8 +4,8 @@
 schema_version: 1
 
 framework:
-  version: 1.1.0
-  last_upgraded: 2026-09-23
+  version: 1.1.1
+  last_upgraded: 2026-09-24
 
 # NOTE: this template ships with no `modes:` block, and the six knobs below must
 # never be added to one.
