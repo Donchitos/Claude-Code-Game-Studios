@@ -162,3 +162,6 @@ $RECYCLE.BIN/
 *.msm
 *.msp
 *.lnk
+
+# === tools/ — per-vendor API key configs (never commit) ===
+tools/*/config.json
