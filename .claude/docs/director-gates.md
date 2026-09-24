@@ -82,7 +82,8 @@ overriding the global config for that run only.
 **MANDATORY: apply the review mode before every gate spawn.**
 
 The value is already resolved — skills call
-`` !`source .claude/hooks/yaml-helper.sh && resolve_config --keys review_mode` ``
+`` !`bash "${CLAUDE_SKILL_DIR}/../../hooks/yaml-helper.sh" resolve_config --keys review_mode` ``
+(with the matching `allowed-tools` grant — see `config-resolution.md`)
 and read `review_mode` from the emitted block. Do **not** re-derive it here. The
 full chain (`project.local.yaml` → `project.yaml` → `production/review-mode.txt`
 → `modes.rigor` expansion, `standard`→`lean`), its defaults and its failure modes are specified in

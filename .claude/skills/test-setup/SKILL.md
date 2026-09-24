@@ -3,11 +3,11 @@ name: test-setup
 description: "Scaffold the test framework and CI — tests/ directory, engine test runner, GitHub Actions workflow. Once, before the first sprint."
 argument-hint: "[force]"
 user-invocable: true
-allowed-tools: Read, Glob, Grep, Bash, Write
+allowed-tools: Read, Glob, Grep, Bash, Write, Bash(bash "*/.claude/skills/test-setup/../../hooks/yaml-helper.sh" resolve_config *)
 model: sonnet
 ---
 
-!`source "${CLAUDE_PROJECT_DIR:-.}/.claude/hooks/yaml-helper.sh" 2>/dev/null && resolve_config --keys automation`
+!`bash "${CLAUDE_SKILL_DIR}/../../hooks/yaml-helper.sh" resolve_config --keys automation`
 
 **Automation mode**: Resolve `modes.automation` (`project.local.yaml` →
 `project.yaml` → default `collaborative`). Every `AskUserQuestion` call and

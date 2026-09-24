@@ -3,7 +3,7 @@ name: project-stage-detect
 description: "Analyze project state, detect stage, identify gaps, recommend next steps. 'Where are we in development?'"
 argument-hint: "[optional: role filter like 'programmer' or 'designer']"
 user-invocable: true
-allowed-tools: Read, Glob, Grep, Bash, Write
+allowed-tools: Read, Glob, Grep, Bash, Write, Bash(bash "*/.claude/skills/project-stage-detect/../../hooks/yaml-helper.sh" resolve_config *)
 model: haiku
 # Read-only diagnostic skill — no specialist agent delegation needed
 ---
@@ -21,7 +21,7 @@ of artifacts, and gaps that need attention. It's especially useful when:
 
 ## Workflow
 
-!`source "${CLAUDE_PROJECT_DIR:-.}/.claude/hooks/yaml-helper.sh" 2>/dev/null && resolve_config --keys workflow,automation`
+!`bash "${CLAUDE_SKILL_DIR}/../../hooks/yaml-helper.sh" resolve_config --keys workflow,automation`
 
 **Automation mode**: Resolve `modes.automation` (`project.local.yaml` →
 `project.yaml` → default `collaborative`). Every `AskUserQuestion` call and

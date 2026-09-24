@@ -1545,3 +1545,46 @@ EOF
   fi
   return 0
 }
+
+# --- Direct execution: the skill-bootstrap entry point -----------------------
+#
+#   bash "${CLAUDE_SKILL_DIR}/../../hooks/yaml-helper.sh" resolve_config --keys a,b
+#
+# Skills cannot `source` this file in their `` !`cmd` `` bootstrap line. Claude
+# Code permission-checks every injected command before the skill renders, and
+# outside auto mode anything short of "allow" ABORTS the whole invocation --
+# measured on 2.1.281, see .claude/docs/config-resolution.md. A `${VAR:-x}` or
+# `$( )` in the command fails that check as "Contains expansion" and no grant can
+# approve it; a `source … && resolve_config` compound needs every part approved.
+# `${CLAUDE_SKILL_DIR}` is substituted as text before the check, so one plain
+# `bash <path> resolve_config …` call is approvable by the matching grant in the
+# skill's own `allowed-tools`. That is also what lets a Bash-less agent preload
+# the skill (GitHub issue #128).
+#
+# Only resolve_config is dispatchable: the bootstrap is the one caller, and
+# every name added here widens what a skill grant can reach.
+#
+# ROOT. Run from a subdirectory, the skill shell's cwd has no project.yaml and
+# $CLAUDE_PROJECT_DIR is the launch directory, not the repo root (measured), so
+# rules 1-3 of _yaml_helper_set_root all miss. This file's own location is the
+# one anchor that cannot drift: hooks/ sits two levels below the root. It only
+# fills CLAUDE_PROJECT_DIR when that has no project.yaml, so rules 1-2 (cwd
+# first, for nested projects) keep their precedence.
+#
+# ALWAYS exits 0: a non-zero exit from an injected command aborts the skill.
+if [ "${BASH_SOURCE[0]}" = "$0" ]; then
+  case "${1:-}" in
+    resolve_config)
+      shift
+      if [ -z "${CLAUDE_PROJECT_DIR:-}" ] || [ ! -f "$CLAUDE_PROJECT_DIR/project.yaml" ]; then
+        _yh_self_root=$(cd "$(dirname "$0")/../.." 2>/dev/null && pwd)
+        [ -n "$_yh_self_root" ] && CLAUDE_PROJECT_DIR="$_yh_self_root"
+      fi
+      resolve_config "$@"
+      ;;
+    *)
+      echo "yaml-helper.sh: usage: bash yaml-helper.sh resolve_config [--keys k1,k2,...] [<system>]"
+      ;;
+  esac
+  exit 0
+fi

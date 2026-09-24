@@ -7,7 +7,14 @@ How a skill learns its effective settings. **One command, no prose chain.**
 A skill that needs config puts this near the top of its **body** (not frontmatter):
 
 ````markdown
-!`source .claude/hooks/yaml-helper.sh 2>/dev/null && resolve_config`
+!`bash "${CLAUDE_SKILL_DIR}/../../hooks/yaml-helper.sh" resolve_config --keys a,b`
+````
+
+**and** pre-approves exactly that command in its own frontmatter, with its own
+directory name in the path:
+
+````yaml
+allowed-tools: Read, …, Bash(bash "*/.claude/skills/<skill-name>/../../hooks/yaml-helper.sh" resolve_config *)
 ````
 
 The command runs as preprocessing *before the model sees the skill*, and its
@@ -23,13 +30,47 @@ Skills that resolve a per-system tier pass the system name: `resolve_config comb
 `context: |` block containing `!` commands **never executes**; put the command in
 the skill body instead.
 
-Two consequences:
+## Why exactly this command — the permission check
 
-- `allowed-tools` does **not** gate this. It governs tools the *model* calls
-  during the turn; preprocessing happens before that. A skill needs no `Bash`
-  grant to use `resolve_config`.
-- The repo-wide setting `disableSkillShellExecution: true` disables it. If a
-  skill sees no config block, it falls back to the defaults below.
+Claude Code permission-checks every injected command **before** the skill
+renders. Outside auto mode, anything that does not come back "allow" — including
+a command that would normally just prompt — **aborts the whole invocation**, and
+the model never sees the skill. A preloaded skill (`skills:` on an agent) is
+checked the same way at agent launch, so a failing bootstrap line stops the agent
+from starting (GitHub issue #128). Measured on Claude Code 2.1.281 in default
+mode:
+
+| Bootstrap form | Repo root | Subdirectory | Bash-less agent preloading it |
+|---|---|---|---|
+| `source "${CLAUDE_PROJECT_DIR:-.}/…" && resolve_config` (v1.1.0) | aborts | aborts | fails to launch |
+| same, with a bare `Bash` grant | aborts | — | — |
+| `bash "${CLAUDE_PROJECT_DIR}/…"` + grant | runs | aborts | — |
+| **`bash "${CLAUDE_SKILL_DIR}/../../hooks/…"` + per-skill grant** | **runs** | **runs** | **launches** |
+
+What that table rules out:
+
+- **No `${VAR:-x}` expansion.** It fails as "Contains expansion", and no grant
+  can approve it. `${CLAUDE_SKILL_DIR}` and `${CLAUDE_PROJECT_DIR}` are fine: Claude
+  Code substitutes them as text before the check.
+- **No `${CLAUDE_PROJECT_DIR}` for the path.** In a skill it is the directory
+  Claude Code was launched from, not the repo root, so it breaks from `src/`.
+  `${CLAUDE_SKILL_DIR}` always names the skill's own folder.
+- **No `source … && …` compound.** Each part must be approved; `bash <file>
+  resolve_config` is one command. `yaml-helper.sh` dispatches only
+  `resolve_config` when executed, and finds the repo root from its own location.
+- **The grant is required.** `allowed-tools` is what pre-approves an injected
+  command. The pattern must include the literal `"` after the path — a pattern
+  ending `…yaml-helper.sh *` does not match.
+- **Any non-zero exit aborts too.** The entry point always exits 0; other
+  injected commands that can fail end in `|| true`.
+
+Auto mode can approve the old form on its own, which is how v1.1.0 shipped with
+it. Test bootstrap changes in default mode, in a project without a
+`settings.local.json`.
+
+`disableSkillShellExecution: true` replaces every injected command with a
+placeholder message. If a skill sees no config block, it falls back to the
+defaults below.
 
 ## The block
 
@@ -203,7 +244,8 @@ condition below degrades to defaults and is named on `notes:`:
 | `project.local.yaml` without a base | `validate_local_yaml_base` message on `notes:` |
 | Locked key in `project.local.yaml` | ignored as always, but now **named** on `notes:` — `local: not locally overridable, ignored — modes.rigor (move to project.yaml or delete)` |
 | No Python interpreter | legacy files and defaults only; **explicitly noted** on `notes:` |
-| No block at all | shell preprocessing disabled — use the defaults table above |
+| No block at all | shell preprocessing disabled (`disableSkillShellExecution`) — use the defaults table above |
+| Bootstrap line not approved, or exits non-zero | **not a degraded state — the skill never renders at all.** See "Why exactly this command" above |
 
 A skill must never treat a missing block as "config is unset in an interesting
 way". It means the block did not render; the defaults apply.

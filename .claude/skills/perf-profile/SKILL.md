@@ -3,11 +3,11 @@ name: perf-profile
 description: "Performance profiling — find bottlenecks, measure against budgets, produce ranked optimization recommendations."
 argument-hint: "[system-name or 'full']"
 user-invocable: true
-allowed-tools: Read, Glob, Grep, Bash
+allowed-tools: Read, Glob, Grep, Bash, Bash(bash "*/.claude/skills/perf-profile/../../hooks/yaml-helper.sh" resolve_config *)
 model: sonnet
 ---
 
-!`source "${CLAUDE_PROJECT_DIR:-.}/.claude/hooks/yaml-helper.sh" 2>/dev/null && resolve_config --keys performance.enforce,automation`
+!`bash "${CLAUDE_SKILL_DIR}/../../hooks/yaml-helper.sh" resolve_config --keys performance.enforce,automation`
 
 Resolved above — use as-is. No block → defaults in
 `.claude/docs/config-resolution.md`.

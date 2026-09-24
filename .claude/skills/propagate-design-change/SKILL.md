@@ -3,11 +3,11 @@ name: propagate-design-change
 description: "A GDD changed — scan ADRs and the traceability index for now-stale architectural decisions. Impact report, guides resolution."
 argument-hint: "[path/to/changed-gdd.md]"
 user-invocable: true
-allowed-tools: Read, Glob, Grep, Write, Bash, Agent, AskUserQuestion
+allowed-tools: Read, Glob, Grep, Write, Bash, Agent, AskUserQuestion, Bash(bash "*/.claude/skills/propagate-design-change/../../hooks/yaml-helper.sh" resolve_config *)
 model: sonnet
 ---
 
-!`source "${CLAUDE_PROJECT_DIR:-.}/.claude/hooks/yaml-helper.sh" 2>/dev/null && resolve_config --keys automation,workflow,system_overrides`
+!`bash "${CLAUDE_SKILL_DIR}/../../hooks/yaml-helper.sh" resolve_config --keys automation,workflow,system_overrides`
 
 
 

@@ -3,7 +3,7 @@ name: reverse-document
 description: "Generate missing design or architecture docs from existing implementation — works backwards from code and prototypes."
 argument-hint: "<type> <path> (e.g., 'design src/gameplay/combat' or 'architecture src/core')"
 user-invocable: true
-allowed-tools: Read, Glob, Grep, Write, Edit, Bash
+allowed-tools: Read, Glob, Grep, Write, Edit, Bash, Bash(bash "*/.claude/skills/reverse-document/../../hooks/yaml-helper.sh" resolve_config *)
 model: sonnet
 # Read-only diagnostic skill — no specialist agent delegation needed
 ---
@@ -35,7 +35,7 @@ appropriate design or architecture documentation. Use this when:
 - `src/core/event-system.cpp` → Specific file
 - `prototypes/stealth-mech/` → Prototype directory
 
-!`source "${CLAUDE_PROJECT_DIR:-.}/.claude/hooks/yaml-helper.sh" 2>/dev/null && resolve_config --keys workflow,system_overrides,automation`
+!`bash "${CLAUDE_SKILL_DIR}/../../hooks/yaml-helper.sh" resolve_config --keys workflow,system_overrides,automation`
 
 **Automation mode**: Resolve `modes.automation` (`project.local.yaml` →
 `project.yaml` → default `collaborative`). Every `AskUserQuestion` call and

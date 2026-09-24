@@ -3,11 +3,11 @@ name: smoke-check
 description: "Critical-path smoke gate before QA hand-off — runs the automated suite. A failed check means the build is not QA-ready."
 argument-hint: "[sprint | quick | --platform pc|console|mobile|all]"
 user-invocable: true
-allowed-tools: Read, Glob, Grep, Bash, Write, AskUserQuestion
+allowed-tools: Read, Glob, Grep, Bash, Write, AskUserQuestion, Bash(bash "*/.claude/skills/smoke-check/../../hooks/yaml-helper.sh" resolve_config *)
 model: sonnet
 ---
 
-!`source "${CLAUDE_PROJECT_DIR:-.}/.claude/hooks/yaml-helper.sh" 2>/dev/null && resolve_config --keys automation,qa.level,testing.strict`
+!`bash "${CLAUDE_SKILL_DIR}/../../hooks/yaml-helper.sh" resolve_config --keys automation,qa.level,testing.strict`
 
 
 

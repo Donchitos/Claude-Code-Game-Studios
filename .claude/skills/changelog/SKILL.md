@@ -3,11 +3,11 @@ name: changelog
 description: "Auto-generate a changelog from git commits and sprint data. Internal and player-facing versions."
 argument-hint: "[version|sprint-number]"
 user-invocable: true
-allowed-tools: Read, Glob, Grep, Bash, Write
+allowed-tools: Read, Glob, Grep, Bash, Write, Bash(bash "*/.claude/skills/changelog/../../hooks/yaml-helper.sh" resolve_config *)
 model: sonnet
 ---
 
-!`source "${CLAUDE_PROJECT_DIR:-.}/.claude/hooks/yaml-helper.sh" 2>/dev/null && resolve_config --keys automation`
+!`bash "${CLAUDE_SKILL_DIR}/../../hooks/yaml-helper.sh" resolve_config --keys automation`
 
 **Automation mode**: Resolve `modes.automation` (`project.local.yaml` →
 `project.yaml` → default `collaborative`). Every `AskUserQuestion` call and
@@ -19,7 +19,7 @@ every file write follows `.claude/docs/automation-modes.md`
 
 Recent commits:
 
-!`git log --oneline -30 2>/dev/null`
+!`git log --oneline -30 2>/dev/null || true`
 
 Recent tags (newest first):
 
