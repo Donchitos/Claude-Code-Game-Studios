@@ -1,35 +1,120 @@
 ---
 name: milestone-review
-description: "Generates a comprehensive milestone progress review including feature completeness, quality metrics, risk assessment, and go/no-go recommendation. Use at milestone checkpoints or when evaluating readiness for a milestone deadline."
+description: "Milestone progress review — completeness, quality metrics, risk, go/no-go recommendation. At checkpoints or before a deadline."
 argument-hint: "[milestone-name|current] [--review full|lean|solo]"
 user-invocable: true
-allowed-tools: Read, Glob, Grep, Write, Task, AskUserQuestion
+allowed-tools: Read, Glob, Grep, Write, Agent, AskUserQuestion, Bash(bash "*/.claude/skills/milestone-review/../../hooks/yaml-helper.sh" resolve_config *)
 model: sonnet
+---
+
+!`bash "${CLAUDE_SKILL_DIR}/../../hooks/yaml-helper.sh" resolve_config --keys review_mode,automation,workflow`
+
+Resolved above — use as-is; `--review` overrides `review_mode` for this run. No
+block → defaults in `.claude/docs/config-resolution.md`.
+
+
+
+## Insufficient input — check this before producing any report
+
+**If the inputs this skill needs do not exist, the answer is "could not run" —
+not a filled-in report.** Check first, and stop if the check fails.
+
+1. List the inputs this skill reads (data files, prior reports, profiler output,
+   test results, registries, source code).
+2. For each, record `FOUND` or `ABSENT` — not "assumed present".
+3. If any input required for a section is ABSENT, that section is
+   **`NOT ASSESSED — NO DATA`**. Do not estimate it, do not infer it from an
+   adjacent artifact, and do not leave a mandated cell to be filled by whoever
+   reads the template next.
+4. If **every** required input is ABSENT, stop and report
+   **`NOT ASSESSED — NO DATA`** as the whole verdict, naming what was missing and
+   which skill produces it.
+
+**A verdict of `NOT ASSESSED` is a success.** It is the correct, useful answer to
+"what does the data say?" when there is no data. The failure mode this prevents is
+specific and has been observed in practice: report templates whose verdict
+enum had no "could not run" state produced **false clean passes** — an asset audit
+returning COMPLIANT on a project with no assets and no standards, and a
+performance profile reporting ">99% headroom against a 16.67ms budget" with zero
+profiler data and no budget ever set.
+
+**Absence of evidence is never evidence of absence.** A scan that finds no
+matches because there are no files to scan has not verified anything. Say which of
+the two happened — a reader cannot tell from a green result.
+
 ---
 
 ## Phase 0: Parse Arguments
 
-Extract the milestone name (`current` or a specific name) and resolve the review mode (once, store for all gate spawns this run):
-1. If `--review [full|lean|solo]` was passed → use that
-2. Else read `production/review-mode.txt` → use that value
-3. Else → default to `lean`
+Extract the milestone name (`current` or a specific name).
 
-See `.claude/docs/director-gates.md` for the full check pattern.
+See `.claude/docs/director-gates.md` for the full check pattern. Individual gate definitions live in `.claude/docs/director-gates/[gate-id].md` — the spawned agent reads its own gate file; do not read it in the parent session.
+
+
+Every `AskUserQuestion` call follows `.claude/docs/automation-modes.md`
+(collaborative asks always · guided major-only · autonomous logs and proceeds;
+`automation_always_ask` categories always prompt).
 
 ---
 
 ## Phase 1: Load Milestone Data
 
-Read the milestone definition from `production/milestones/`. If the argument is `current`, use the most recently modified milestone file.
+Read the milestone definition from `production/milestones/` if it exists. If the
+argument is `current`, use the most recently modified milestone file.
 
-Read all sprint reports for sprints within this milestone from `production/sprints/`.
+> **No skill writes `production/milestones/`** — definitions are authored by hand
+> from `.claude/docs/templates/milestone-definition.md`, so most projects have
+> none. When the directory is absent or empty, say so and review against the
+> sprint reports alone; do not fabricate a definition. Take care with `current`:
+> this skill writes its own output as `[milestone-name]-review.md`, so a
+> most-recently-modified match can be a previous *review* rather than a
+> definition. Skip files ending `-review.md` when selecting.
+
+Gather the sprint reports for sprints within this milestone from
+`production/sprints/`. Establish the denominator (glob them, count **N**), then
+scan the sections a milestone review actually aggregates rather than reading each
+report whole:
+
+```
+Grep pattern="^## (Sprint Goal|Capacity|Tasks|Carryover|Risks|Progress|Burndown Assessment|Emerging Risks|Definition of Done)" glob="production/sprints/sprint-*.md" output_mode="content" -A 12
+```
+
+> **These alternates are copied from `/sprint-plan`'s emitted headings — keep
+> them in sync with it, not with what a milestone review wishes existed.** The
+> previous pattern asked for `Summary|Goal|Velocity|Completed|Blockers|
+> Retrospective`, none of which `/sprint-plan` writes (it emits `## Sprint
+> Goal`, not `## Goal`). Only `Carryover` matched — and that was the trap: a
+> non-zero match count meant the zero-match escape hatch below could never
+> fire, so every milestone review silently aggregated carryover tables and
+> nothing else while reporting full coverage.
+
+Full-read a single sprint report when its scanned sections point outside
+themselves, or when it matched nothing — a zero-match report predates the
+template and must be read, never silently dropped from the milestone's history.
+Report any sprint that contributed nothing: a milestone summary that quietly
+omits a sprint understates the work and the slippage both.
+
+**Blocked stories** — the Blocked table and the blocked story count passed to
+PR-MILESTONE — are not in the sprint reports' scanned sections. Read them where
+they are recorded: the `status: blocked` stories in `production/sprint-status.yaml`
+(with their `blocker` field) and, for stories outside that sprint, one grep:
+
+```
+Grep pattern="^> \*\*Status\*\*: Blocked|BLOCKED:" glob="production/epics/**/story-*.md" output_mode="content"
+```
+
+Each blocked story goes in the Blocked table under the feature its epic folder
+implements, with its blocker (the yaml `blocker` field or the story's `BLOCKED:`
+note). With no story files and no `sprint-status.yaml`, the Blocked table and the
+blocked story count are `NOT ASSESSED — NO DATA`, not zero.
 
 ---
 
 ## Phase 2: Scan Codebase Health
 
 - Scan for `TODO`, `FIXME`, `HACK` markers that indicate incomplete work
-- Check the risk register at `production/risk-register/`
+- Count open bugs by severity for Quality Metrics from `production/qa/bugs/` (one grep of the `**Severity**` and `**Status**` lines, as `/bug-triage` does); with no bug files, the bug lines are `NOT ASSESSED — NO DATA`, not zero
+- Check the risk register at `production/risk-register/` if it exists (hand-authored from `.claude/docs/templates/risk-register-entry.md`; no skill writes it, so absence is normal — note it rather than skipping risk assessment silently)
 
 ---
 
@@ -47,12 +132,22 @@ Read all sprint reports for sprints within this milestone from `production/sprin
 ## Feature Completeness
 
 ### Fully Complete
+Only a feature whose Status is `Complete` goes here or counts toward the completion percentage; a Deferred feature stays in its denominator, named with the milestone it moved to.
+
 | Feature | Acceptance Criteria | Test Status |
 |---------|-------------------|-------------|
 
 ### Partially Complete
 | Feature | % Done | Remaining Work | Risk to Milestone |
 |---------|--------|---------------|------------------|
+
+### Blocked
+A started feature whose stories are Blocked goes here, not under Partially
+Complete — name the blocker, so the review says why it stalled, not only that
+the count moved.
+
+| Feature | Blocked Stories | Blocker | Next Action / Owner |
+|---------|----------------|---------|---------------------|
 
 ### Not Started
 | Feature | Priority | Can Cut? | Impact of Cutting |
@@ -92,7 +187,7 @@ Read all sprint reports for sprints within this milestone from `production/sprin
 
 ## Go/No-Go Assessment
 
-**Recommendation**: [GO / CONDITIONAL GO / NO-GO]
+**Recommendation**: [NOT ASSESSED / GO / CONDITIONAL GO / NO-GO]
 
 **Conditions** (if conditional):
 - [Condition 1 that must be met]
@@ -114,7 +209,7 @@ Read all sprint reports for sprints within this milestone from `production/sprin
 - `lean` → skip (not a PHASE-GATE). Note: "PR-MILESTONE skipped — Lean mode." Present the Go/No-Go section without a producer verdict.
 - `full` → spawn as normal.
 
-Before generating the Go/No-Go recommendation, spawn `producer` via Task using gate **PR-MILESTONE** (`.claude/docs/director-gates.md`).
+Before generating the Go/No-Go recommendation, spawn `producer` via `Agent` using gate **PR-MILESTONE** (`.claude/docs/director-gates/pr-milestone.md`).
 
 Pass: milestone name and target date, current completion percentage, blocked story count, velocity data from sprint reports (if available), list of cut candidates.
 
@@ -134,7 +229,9 @@ If AT RISK, use `AskUserQuestion`:
   - `[B] NO-GO — conditions cannot be met in time`
   - `[C] GO — I accept the risk and want to proceed`
 
-Do not issue a GO against an OFF TRACK verdict unless the user explicitly selects [B] above.
+If NOT ASSESSED: name the missing input — it is not ON TRACK, and never recommend GO on it. Supply the input and re-run PR-MILESTONE, or recommend NOT ASSESSED — or CONDITIONAL GO / NO-GO where the review's own findings call for one (the rank in `.claude/docs/director-gates.md`).
+
+Do not issue a GO against an OFF TRACK verdict; issue CONDITIONAL GO only if the user explicitly selects [B] above.
 
 ---
 
@@ -153,4 +250,4 @@ If no, stop here. Verdict: **BLOCKED** — user declined write.
 ## Phase 5: Next Steps
 
 - Run `/gate-check` for a formal phase gate verdict if this milestone marks a development phase boundary.
-- Run `/sprint-plan` to adjust the next sprint based on the scope recommendations above.
+- Run `/sprint-plan` to adjust the next sprint based on the scope recommendations above (at `workflow: minimal`, which has no sprints, adjust the brief's build order instead).

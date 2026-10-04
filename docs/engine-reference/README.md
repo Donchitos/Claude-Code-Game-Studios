@@ -42,7 +42,7 @@ Engine-specialist agents are instructed to:
 
 - After upgrading the engine version
 - When the LLM model is updated (new knowledge cutoff)
-- After running `/refresh-docs` (if available)
+- After running `/setup-engine refresh`
 - When you discover an API the model gets wrong
 
 ### How to Update

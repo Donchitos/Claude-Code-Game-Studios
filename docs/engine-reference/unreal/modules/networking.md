@@ -116,8 +116,8 @@ void OnRep_Health() {
 ### Server RPC (Client → Server)
 
 ```cpp
-// Client calls, server executes
-UFUNCTION(Server, Reliable)
+// Client calls, server executes. WithValidation declares Server_TakeDamage_Validate.
+UFUNCTION(Server, Reliable, WithValidation)
 void Server_TakeDamage(int32 Damage);
 
 void AMyCharacter::Server_TakeDamage_Implementation(int32 Damage) {

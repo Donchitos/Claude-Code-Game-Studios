@@ -3,7 +3,6 @@
 ## Agent Summary
 Domain: C# patterns in Godot 4, .NET idioms applied to Godot, [Export] attribute usage, signal delegates, and async/await patterns.
 Does NOT own: GDScript code (gdscript-specialist), GDExtension C/C++ bindings (gdextension-specialist).
-Model tier: Sonnet (default).
 No gate IDs assigned.
 
 ---
@@ -11,8 +10,8 @@ No gate IDs assigned.
 ## Static Assertions (Structural)
 
 - [ ] `description:` field is present and domain-specific (references C# in Godot 4 / .NET patterns / signal delegates)
-- [ ] `allowed-tools:` list includes Read, Write, Edit, Bash, Glob, Grep
-- [ ] Model tier is Sonnet (default for specialists)
+- [ ] `tools:` list includes Read, Write, Edit, Bash, Glob, Grep
+- [ ] Model tier is `sonnet` — frontmatter `model:` reads exactly `sonnet` (tiers: `.claude/docs/model-tiers.md`)
 - [ ] Agent definition does not claim authority over GDScript or GDExtension code
 
 ---
@@ -34,7 +33,7 @@ No gate IDs assigned.
 - Does NOT produce GDScript code
 - Explicitly states that GDScript authoring belongs to `godot-gdscript-specialist`
 - Redirects the request to `godot-gdscript-specialist`
-- May note that the C# interface can be described so the gdscript-specialist knows the expected API shape
+- Any hand-off it offers describes the existing C# system's API (its signals and public methods) for godot-gdscript-specialist to port — it contains no GDScript
 
 ### Case 3: Async signal awaiting
 **Input:** "Wait for an animation to finish before transitioning game state using C# async."
@@ -43,7 +42,8 @@ No gate IDs assigned.
 - Uses `await ToSignal(animationPlayer, AnimationPlayer.SignalName.AnimationFinished)`
 - Does NOT use `Thread.Sleep()` or `Task.Delay()` as a polling substitute
 - Notes that the calling method must be `async` and that fire-and-forget `async void` is only acceptable for event handlers
-- Handles cancellation or timeout if the animation could fail to fire
+- Checks `IsInstanceValid(this)` after the `await` before transitioning state — the node may have been freed while waiting
+- If the animation might never finish (interrupted, replaced), raises that as an unspecified edge case for the user to decide; any timeout it adds uses `GetTree().CreateTimer()`, never `Task.Delay()`
 
 ### Case 4: Threading model conflict
 **Input:** "This C# code accesses a Godot Node from a background Task thread to update its position."
@@ -51,7 +51,7 @@ No gate IDs assigned.
 - Flags this as a race condition risk: Godot nodes are not thread-safe and must only be accessed from the main thread
 - Does NOT approve or implement the multi-threaded node access pattern
 - Provides the correct pattern: use `CallDeferred()`, `Callable.From().CallDeferred()`, or marshal back to the main thread via a thread-safe queue
-- Explains the distinction between Godot's main thread requirement and .NET's thread-agnostic types
+- Explains why the code compiles yet is unsafe: the `Task` body runs on a .NET thread-pool thread and nothing in C# stops it touching a Node — the main-thread rule belongs to Godot's scene tree
 
 ### Case 5: Context pass — Godot 4.6 API correctness
 **Input:** Engine version context: Godot 4.6. Request: "Connect a signal using the new typed signal delegate pattern."
@@ -72,6 +72,7 @@ No gate IDs assigned.
 - [ ] Flags multi-threaded Godot node access as unsafe and provides the correct pattern
 - [ ] Uses typed signal delegates — not deprecated string-based Connect() calls
 - [ ] Checks engine version reference for API changes before producing code
+- [ ] Asks "May I write this to [filepath]?" naming the file before writing
 
 ---
 

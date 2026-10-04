@@ -2,9 +2,10 @@
   "$schema": "https://json.schemastore.org/claude-code-settings.json",
   "statusLine": {
     "type": "command",
-    "command": "bash .claude/statusline.sh"
+    "command": "bash \"$CLAUDE_PROJECT_DIR/.claude/statusline.sh\""
   },
   "permissions": {
+    "defaultMode": "default",
     "allow": [
       "Bash(git status*)",
       "Bash(git diff*)",
@@ -19,16 +20,135 @@
     ],
     "deny": [
       "Bash(rm -rf *)",
+      "Bash(rm -fr *)",
+      "Bash(rm -r -f *)",
+      "Bash(rm -f -r *)",
+      "Bash(rm -Rf *)",
+      "Bash(rm -fR *)",
+      "Bash(rm -rf*)",
+      "Bash(rm -fr*)",
+      "Bash(rm -Rf*)",
+      "Bash(rm -fR*)",
+      "Bash(rm -R -f *)",
+      "Bash(rm -f -R *)",
+      "Bash(rm --recursive --force*)",
+      "Bash(rm --force --recursive*)",
+      "Bash(rm -r --force*)",
+      "Bash(rm -R --force*)",
+      "Bash(rm --force -r*)",
+      "Bash(rm --force -R*)",
+      "Bash(rm --recursive -f*)",
+      "Bash(rm -f --recursive*)",
       "Bash(git push --force*)",
       "Bash(git push -f *)",
+      "Bash(git push *--force*)",
+      "Bash(git push * -f*)",
+      "Bash(git push * +*)",
+      "Bash(git * push *--force*)",
+      "Bash(git *push* -f*)",
+      "Bash(git *push* -uf*)",
+      "Bash(git *push* +*)",
       "Bash(git reset --hard*)",
-      "Bash(git clean -f*)",
+      "Bash(git *reset *--hard*)",
+      "Bash(git clean* -f*)",
+      "Bash(git clean* --force*)",
+      "Bash(git clean* -df*)",
+      "Bash(git clean* -dxf*)",
+      "Bash(git clean* -dXf*)",
+      "Bash(git clean* -xf*)",
+      "Bash(git clean* -xdf*)",
+      "Bash(git clean* -Xf*)",
+      "Bash(git clean* -Xdf*)",
+      "Bash(git clean* -qf*)",
+      "Bash(git clean* -qdf*)",
+      "Bash(git *clean* -f*)",
+      "Bash(git *clean* --force*)",
+      "Bash(git *clean* -df*)",
+      "Bash(git *clean* -qf*)",
+      "Bash(git *clean* -xf*)",
+      "Bash(git *clean* -Xf*)",
+      "Bash(git *clean* -dqf*)",
+      "Bash(git *clean* -qdf*)",
+      "Bash(git *clean* -dxf*)",
+      "Bash(git *clean* -xdf*)",
+      "Bash(git *clean* -dXf*)",
+      "Bash(git *clean* -Xdf*)",
+      "Bash(git *clean* -qxf*)",
+      "Bash(git *clean* -xqf*)",
+      "Bash(git *clean* -qXf*)",
+      "Bash(git *clean* -Xqf*)",
+      "Bash(git *clean* -dqxf*)",
+      "Bash(git *clean* -dxqf*)",
+      "Bash(git *clean* -qdxf*)",
+      "Bash(git *clean* -qxdf*)",
+      "Bash(git *clean* -xdqf*)",
+      "Bash(git *clean* -xqdf*)",
+      "Bash(git *clean* -dqXf*)",
+      "Bash(git *clean* -dXqf*)",
+      "Bash(git *clean* -qdXf*)",
+      "Bash(git *clean* -qXdf*)",
+      "Bash(git *clean* -Xdqf*)",
+      "Bash(git *clean* -Xqdf*)",
       "Bash(sudo *)",
       "Bash(chmod 777*)",
       "Bash(*>.env*)",
       "Bash(cat *.env*)",
       "Bash(type *.env*)",
-      "Read(**/.env*)"
+      "Read(**/.env*)",
+      "PowerShell(Remove-Item *-Recurse*)",
+      "PowerShell(Remove-Item * -r*)",
+      "PowerShell(Remove-Item -r*)",
+      "PowerShell(git push *--force*)",
+      "PowerShell(git push -f *)",
+      "PowerShell(git push * -f*)",
+      "PowerShell(git push * +*)",
+      "PowerShell(git * push *--force*)",
+      "PowerShell(git *push* -f*)",
+      "PowerShell(git *push* -uf*)",
+      "PowerShell(git *push* +*)",
+      "PowerShell(git reset --hard*)",
+      "PowerShell(git *reset *--hard*)",
+      "PowerShell(git clean* -f*)",
+      "PowerShell(git clean* --force*)",
+      "PowerShell(git clean* -df*)",
+      "PowerShell(git clean* -dxf*)",
+      "PowerShell(git clean* -dXf*)",
+      "PowerShell(git clean* -xf*)",
+      "PowerShell(git clean* -xdf*)",
+      "PowerShell(git clean* -Xf*)",
+      "PowerShell(git clean* -Xdf*)",
+      "PowerShell(git clean* -qf*)",
+      "PowerShell(git clean* -qdf*)",
+      "PowerShell(git *clean* -f*)",
+      "PowerShell(git *clean* --force*)",
+      "PowerShell(git *clean* -df*)",
+      "PowerShell(git *clean* -qf*)",
+      "PowerShell(git *clean* -xf*)",
+      "PowerShell(git *clean* -Xf*)",
+      "PowerShell(git *clean* -dqf*)",
+      "PowerShell(git *clean* -qdf*)",
+      "PowerShell(git *clean* -dxf*)",
+      "PowerShell(git *clean* -xdf*)",
+      "PowerShell(git *clean* -dXf*)",
+      "PowerShell(git *clean* -Xdf*)",
+      "PowerShell(git *clean* -qxf*)",
+      "PowerShell(git *clean* -xqf*)",
+      "PowerShell(git *clean* -qXf*)",
+      "PowerShell(git *clean* -Xqf*)",
+      "PowerShell(git *clean* -dqxf*)",
+      "PowerShell(git *clean* -dxqf*)",
+      "PowerShell(git *clean* -qdxf*)",
+      "PowerShell(git *clean* -qxdf*)",
+      "PowerShell(git *clean* -xdqf*)",
+      "PowerShell(git *clean* -xqdf*)",
+      "PowerShell(git *clean* -dqXf*)",
+      "PowerShell(git *clean* -dXqf*)",
+      "PowerShell(git *clean* -qdXf*)",
+      "PowerShell(git *clean* -qXdf*)",
+      "PowerShell(git *clean* -Xdqf*)",
+      "PowerShell(git *clean* -Xqdf*)",
+      "PowerShell(Get-Content *.env*)",
+      "PowerShell(*>.env*)"
     ]
   },
   "hooks": {
@@ -38,12 +158,12 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash .claude/hooks/session-start.sh",
+            "command": "bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/session-start.sh\"",
             "timeout": 10
           },
           {
             "type": "command",
-            "command": "bash .claude/hooks/detect-gaps.sh",
+            "command": "bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/detect-gaps.sh\"",
             "timeout": 10
           }
         ]
@@ -51,16 +171,16 @@
     ],
     "PreToolUse": [
       {
-        "matcher": "Bash",
+        "matcher": "Bash|PowerShell",
         "hooks": [
           {
             "type": "command",
-            "command": "bash .claude/hooks/validate-commit.sh",
+            "command": "bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/validate-commit.sh\"",
             "timeout": 15
           },
           {
             "type": "command",
-            "command": "bash .claude/hooks/validate-push.sh",
+            "command": "bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/validate-push.sh\"",
             "timeout": 10
           }
         ]
@@ -72,12 +192,12 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash .claude/hooks/validate-assets.sh",
+            "command": "bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/validate-assets.sh\"",
             "timeout": 10
           },
           {
             "type": "command",
-            "command": "bash .claude/hooks/validate-skill-change.sh",
+            "command": "bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/validate-skill-change.sh\"",
             "timeout": 5
           }
         ]
@@ -89,7 +209,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash .claude/hooks/notify.sh",
+            "command": "bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/notify.sh\"",
             "timeout": 10
           }
         ]
@@ -101,7 +221,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash .claude/hooks/pre-compact.sh",
+            "command": "bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/pre-compact.sh\"",
             "timeout": 10
           }
         ]
@@ -113,7 +233,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash .claude/hooks/post-compact.sh",
+            "command": "bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/post-compact.sh\"",
             "timeout": 10
           }
         ]
@@ -125,7 +245,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash .claude/hooks/session-stop.sh",
+            "command": "bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/session-stop.sh\"",
             "timeout": 10
           }
         ]
@@ -137,7 +257,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash .claude/hooks/log-agent.sh",
+            "command": "bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/log-agent.sh\"",
             "timeout": 5
           }
         ]
@@ -149,7 +269,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash .claude/hooks/log-agent-stop.sh",
+            "command": "bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/log-agent-stop.sh\"",
             "timeout": 5
           }
         ]

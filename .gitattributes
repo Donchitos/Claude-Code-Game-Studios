@@ -1,0 +1,21 @@
+# Shell scripts must use LF line endings. core.autocrlf=true would otherwise
+# convert them to CRLF on checkout, which breaks bash on Windows Git Bash
+# (stray \r corrupts commands and string comparisons). This applies to the
+# .claude/hooks/*.sh hooks and .claude/scripts/*.sh.
+*.sh text eol=lf
+
+# Tabular data is compared byte-for-byte by tooling that diffs it against
+# freshly-generated output (which is always LF). A CRLF checkout would make
+# every line differ, silently breaking any such comparison.
+*.tsv text eol=lf
+
+# Markdown under .claude/ is authored LF. Two concrete reasons, both hit during
+# v1.1 development:
+#   - tooling that flattens SKILL.md files and substring-matches sentences
+#     breaks on a stray \r mid-sentence: every multi-line match fails.
+#     Before this was found it produced 262 false "lost rule" reports.
+#   - a CRLF file produces a whole-file diff the first time anyone edits it,
+#     which buries real changes.
+# .gitattributes governs the INDEX. It does not retro-fix a working tree that
+# predates the rule -- run `git add --renormalize .` for that.
+.claude/**/*.md text eol=lf

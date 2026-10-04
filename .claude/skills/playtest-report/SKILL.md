@@ -1,25 +1,36 @@
 ---
 name: playtest-report
-description: "Generates a structured playtest report template or analyzes existing playtest notes into a structured format. Use this to standardize playtest feedback collection and analysis."
+description: "Structured playtest report template, or turn existing playtest notes into structured feedback."
 argument-hint: "[new|analyze path-to-notes] [--review full|lean|solo]"
 user-invocable: true
-allowed-tools: Read, Glob, Grep, Write, Task, AskUserQuestion
+allowed-tools: Read, Glob, Grep, Write, Agent, AskUserQuestion, Bash(bash "*/.claude/skills/playtest-report/../../hooks/yaml-helper.sh" resolve_config *)
 model: sonnet
 ---
 
+!`bash "${CLAUDE_SKILL_DIR}/../../hooks/yaml-helper.sh" resolve_config --keys review_mode,automation`
+
+Resolved above — use as-is; `--review` overrides `review_mode` for this run. No
+block → defaults in `.claude/docs/config-resolution.md`.
+
+
+
 ## Phase 1: Parse Arguments
 
-Resolve the review mode (once, store for all gate spawns this run):
-1. If `--review [full|lean|solo]` was passed → use that
-2. Else read `production/review-mode.txt` → use that value
-3. Else → default to `lean`
 
-See `.claude/docs/director-gates.md` for the full check pattern.
+See `.claude/docs/director-gates.md` for the full check pattern. Individual gate definitions live in `.claude/docs/director-gates/[gate-id].md` — the spawned agent reads its own gate file; do not read it in the parent session.
+
+
+Every `AskUserQuestion` call follows `.claude/docs/automation-modes.md`
+(collaborative asks always · guided major-only · autonomous logs and proceeds;
+`automation_always_ask` categories always prompt).
 
 Determine the mode:
 
-- `new` → generate a blank playtest report template
+- `new` → generate a blank playtest report template. This mode ends after
+  Phase 2A: a blank template has nothing to route, review or save.
 - `analyze [path]` → read raw notes and fill in the template with structured findings
+- No argument → ask via `AskUserQuestion`: `[A] New blank template` /
+  `[B] Analyze notes — I'll give you the path`
 
 ---
 
@@ -89,11 +100,18 @@ Generate this template and output it to the user:
 3. [Third priority]
 ```
 
+In `new` mode, stop here with: Verdict: **COMPLETE** — blank template output; nothing saved.
+
 ---
 
 ## Phase 2B: Analyze Mode
 
 Read the raw notes at the provided path. Cross-reference with existing design documents. Fill in the template above with structured findings. Flag any playtest observations that conflict with design intent.
+
+An observation that describes a defect — a crash, a framerate drop, a softlock,
+something that plainly breaks rather than plays badly — goes in the **Bugs
+Encountered** table, not under Gameplay Flow → Pain points, and is routed as a
+bug in Phase 3. Pain points are for how the game feels to play.
 
 ---
 
@@ -122,11 +140,18 @@ Present the categorized list, then route:
 - `lean` → skip (not a PHASE-GATE). Note: "CD-PLAYTEST skipped — Lean mode." Proceed to Phase 4 (save the report).
 - `full` → spawn as normal.
 
-After categorising findings, spawn `creative-director` via Task using gate **CD-PLAYTEST** (`.claude/docs/director-gates.md`).
+After categorising findings, spawn `creative-director` via `Agent` using gate **CD-PLAYTEST** (`.claude/docs/director-gates/cd-playtest.md`).
 
-Pass: the structured report content, game pillars and core fantasy (from `design/gdd/game-concept.md`), the specific hypothesis being tested.
+Pass: the structured report content, game pillars and core fantasy (from
+`design/gdd/game-concept.md`), the specific hypothesis being tested. **If
+`game-concept.md` does not exist** — expected at `minimal`, where
+`design/game-brief.md` replaces it — the brief has no pillars: pass its
+one-sentence pitch and its "Who it's for / what they feel" line instead, and say
+they stand in for pillars. If neither document exists, say so in the prompt:
+*"No pillars available — assess against the hypothesis alone."* A director gate
+handed silence about pillars will invent them.
 
-Present the creative director's assessment before saving the report. If CONCERNS or REJECT, add a `## Creative Director Assessment` section to the report capturing the verdict and feedback. If APPROVE, note the approval in the report.
+Present the creative director's assessment before saving the report. If CONCERNS or REJECT, add a `## Creative Director Assessment` section to the report capturing the verdict and feedback. If APPROVE, note the approval in the report. If NOT ASSESSED (the director lacked an input — `.claude/docs/director-gates.md`), add the same section naming what was missing; it is not an approval.
 
 ---
 

@@ -1,55 +1,123 @@
 ---
 name: team-polish
-description: "Orchestrate the polish team: coordinates performance-analyst, technical-artist, sound-designer, and qa-tester to optimize, polish, and harden a feature or area for release quality."
+description: "Orchestrate the polish team — performance-analyst, technical-artist, sound-designer, qa-tester — to optimize and harden a feature or area."
 argument-hint: "[feature or area to polish] [--review full|lean|solo]"
 user-invocable: true
-allowed-tools: Read, Glob, Grep, Write, Edit, Bash, Task, AskUserQuestion, TodoWrite
+allowed-tools: Read, Glob, Grep, Write, Edit, Bash, Agent, AskUserQuestion, TaskCreate, TaskGet, TaskList, TaskUpdate, Bash(bash "*/.claude/skills/team-polish/../../hooks/yaml-helper.sh" resolve_config *)
 model: sonnet
 ---
 If no argument is provided, output usage guidance and exit without spawning any agents:
-> Usage: `/team-polish [feature or area]` — specify the feature or area to polish (e.g., `combat`, `main menu`, `inventory system`, `level-1`). Do not use `AskUserQuestion` here; output the guidance directly.
+> Usage: `/team-polish [feature or area to polish] [--review full|lean|solo]` — specify the feature or area to polish (e.g., `combat`, `main menu`, `inventory system`, `level-1`). Do not use `AskUserQuestion` here; output the guidance directly.
 
 When this skill is invoked with an argument, orchestrate the polish team through a structured pipeline.
 
 **Decision Points:** At each phase transition, use `AskUserQuestion` to present
 the user with the subagent's proposals as selectable options. Write the agent's
 full analysis in conversation, then capture the decision with concise labels.
-The user must approve before moving to the next phase.
+In `collaborative` mode, the user must approve before moving to the next phase.
+In `guided` mode the pipeline advances automatically unless a phase is BLOCKED;
+in `autonomous` mode it runs end to end, recording each phase outcome via
+`log_decision`. Decisions in `automation_always_ask` categories
+(`is_always_ask_category` helper) always prompt regardless of mode. See
+`.claude/docs/automation-modes.md`.
 
-## Phase 0: Resolve Review Mode
+## Phase 0: Resolve Config
 
-1. If `--review [mode]` was passed as an argument, use that mode.
-2. Else read `production/review-mode.txt` — use whatever is written there.
-3. Else default to `lean`.
+!`bash "${CLAUDE_SKILL_DIR}/../../hooks/yaml-helper.sh" resolve_config --keys review_mode,automation,team.size`
 
-Modes:
-- `full` — spawn all director and lead gates as described
-- `lean` — skip director gates unless they are PHASE-GATE type (CD-PHASE-GATE, TD-PHASE-GATE, PR-PHASE-GATE, AD-PHASE-GATE)
-- `solo` — skip all director gate spawning entirely; run the skill without any agent gates
+Resolved above — use as-is; `--review` overrides `review_mode`. No block →
+defaults in `.claude/docs/config-resolution.md`.
 
-Store the resolved mode for use in all subsequent phases.
+`review_mode` sets director-gate depth, and this pipeline has no director gate:
+no phase below spawns CD-, TD-, PR- or AD-PHASE-GATE, at any `review_mode`. Its
+phase gates are the pipeline's own decision points (defined under `team.size`
+below), and the agents that work at them are team members, not director gates.
+
+`automation` drives the Decision Points note above. See the Decision Points note above and
+`.claude/docs/automation-modes.md` for how each mode changes pipeline behavior.
+
+**`team.size`**: which agents are active (orthogonal to review_mode gate-depth and workflow docs).
+- **`individual`** (default): `performance-analyst` + `technical-artist`. Other agents consulted via these two, not spawned separately. No programmer is active, so the optimisation list's programmer items are not implemented in this run — the report names the list as handed to `/dev-story` (Phase 2).
+- **`small`**: + `sound-designer` + `qa-tester` + `engine-programmer`, and `tools-programmer` when Phase 1 traces a cause to a content authoring tool (the full pipeline as documented).
+- **`studio`**: the `small` set, `engine-programmer` included, + an adversarial review pass: Phase 5's qa-tester is told "your job is not to confirm this holds — find how it breaks", and the report says the pass ran. This pipeline has no engine specialist to widen; engine-level work stays with `engine-programmer`.
+A non-core agent needed at `individual` routes through the nearest active core agent with an informational note. **"Phase gate" means any phase that ends in an `AskUserQuestion` decision point this pipeline itself lists** — a transition under Decision Points above, or a **Gate** step written into the pipeline below — **whatever the `automation` mode.** `guided` and `autonomous` change how a gate is passed (it auto-advances, or is recorded with `log_decision`), not whether it is one, so bounded-exception condition (3) below holds at it in every mode. An agent restricted to "phase gates only" is spawned at those points and no others. This active-set scoping applies throughout the pipeline below: any phase that names an agent outside the active set routes through the nearest core agent rather than spawning it.
+
+**Announce the active set before Phase 1 — never let the collapse be silent.**
+Before spawning anything, state in one line which agents this run will actually
+spawn, and which the pipeline below names but will **not** spawn at the resolved
+`team.size`. For example:
+
+> `Active set (team.size: <resolved>): <the agents listed for that size above>.`
+> `Not spawned this run: <every other agent this pipeline names> — consulted`
+> `through <nearest active core agent>. Raise team.size (or modes.rigor) to widen.`
+
+Fill it from the `team.size` list directly above and the agents this file's own
+pipeline names — not from an example. Both sets differ per orchestrator.
+
+The pipeline below reads as a multi-agent fan-out and at the shipped default it
+is one or two agents — `team-release` names ten and runs one, `team-narrative`
+names six across five phases and runs `writer` alone. **The collapse is correct**:
+`team.size` is rigor-fronted and the narrow default is the token lever.
+Without saying so, a reader cannot
+distinguish a correctly-collapsed run from a broken pipeline, and the per-agent
+"routes through the nearest core agent with an informational note" rule above
+fires at routing time and never states the shape of the run as a whole.
+
+This is the same rule as the skipped-check reporting elsewhere in this file: **a constraint that is enforced but never surfaced is
+indistinguishable, to the person reading the output, from one that was never
+enforced.**
 
 **Director gate skip rule**: Before spawning any Tier 1 director or lead for review (outside of PHASE-GATE triggers), apply the resolved mode: skip if solo mode; skip if lean mode and this is not a PHASE-GATE.
 
 ## Team Composition
-- **performance-analyst** — Profiling, optimization, memory analysis, frame budget
-- **engine-programmer** — Engine-level bottlenecks: rendering pipeline, memory, resource loading (invoke when performance-analyst identifies low-level root causes)
+- **performance-analyst** — Profiling, memory analysis, frame budget, and the optimisation list — it writes no game code
+- **engine-programmer** — Implements the optimisation list's engine-level items: rendering pipeline, memory, resource loading, hot paths (invoke when performance-analyst identifies low-level root causes)
 - **technical-artist** — VFX polish, shader optimization, visual quality
 - **sound-designer** — Audio polish, mixing, ambient layers, feedback sounds
-- **tools-programmer** — Content pipeline tool verification, editor tool stability, automation fixes (invoke when content authoring tools are involved in the polished area)
+- **tools-programmer** — Content pipeline tool verification, editor tool stability, automation fixes (Phase 2, when Phase 1 traces a cause to a content authoring tool)
 - **qa-tester** — Edge case testing, regression testing, soak testing
 
 ## How to Delegate
 
-Use the Task tool to spawn each team member as a subagent:
-- `subagent_type: performance-analyst` — Profiling, optimization, memory analysis
-- `subagent_type: engine-programmer` — Engine-level fixes for rendering, memory, resource loading
+Use the `Agent` tool to spawn each team member as a subagent:
+- `subagent_type: performance-analyst` — Profiling, memory analysis, the optimisation list
+- `subagent_type: engine-programmer` — Engine-level fixes from the optimisation list: rendering, memory, resource loading
 - `subagent_type: technical-artist` — VFX polish, shader optimization, visual quality
 - `subagent_type: sound-designer` — Audio polish, mixing, ambient layers
-- `subagent_type: tools-programmer` — Content pipeline and editor tool verification
+- `subagent_type: tools-programmer` — Content pipeline and editor tool fixes from the optimisation list
 - `subagent_type: qa-tester` — Edge case testing, regression testing, soak testing
 
-Always provide full context in each agent's prompt (target feature/area, performance budgets, known issues). Launch independent agents in parallel where the pipeline allows it (e.g., Phases 3 and 4 can run simultaneously).
+**Brief each agent — do not dump context.** Read the shared inputs **once** and pass a distilled brief inline: the lines each agent actually needs, never a file path for a document you have already read (an agent handed a path re-reads the whole file). Pass a path only for a document you have not read and only that agent needs.
+
+**End every agent prompt with a return contract:** "Write your full output to `[path]` — that named path is your write authorisation under the bounded exception below, so write it without a separate approval prompt. Return **only** (1) the path written, (2) a ≤5-bullet summary of decisions, (3) any BLOCKED/CONCERNS items, one line each. Do not restate the documents you read." Without it, an agent returns everything it read back into this session. **Implementation files are the exception:** an agent writing code or assets first returns the files it will create or change, and its return contract names them only after you have asked once for the set and the user said yes (File Write Protocol) — that answer, not the bounded exception, authorises those writes.
+
+**Substitute a real path for `[path]` — this skill's destination is
+`production/polish/`.** Name it per agent, one file each:
+
+| Agent | Writes to |
+|---|---|
+| performance-analyst | `production/polish/[area]-report-[date].md` |
+| technical-artist | `production/polish/[area]-render-notes-[date].md` |
+| engine-programmer | `production/polish/[area]-engine-fixes-[date].md` |
+| tools-programmer | `production/polish/[area]-tool-fixes-[date].md` |
+| sound-designer | `production/polish/[area]-audio-notes-[date].md` |
+| qa-tester | `production/polish/[area]-verification-[date].md` |
+
+> **Why `production/` and not `docs/`.** These are date-stamped measurements of
+> one run, the same shape as `production/qa/smoke-[date].md` — not durable
+> specifications like `docs/architecture/`. Keeping them beside the other
+> point-in-time process artifacts is what makes a later comparison possible.
+>
+> The `[path]` contract above has a precondition: the path is one *you* named, so
+> a concrete destination must be stated here or every run invents one. Unlike
+> `/team-qa` and `/team-narrative`, whose destinations are fixed by their
+> consumers, this location has no reader in the repo and was chosen deliberately.
+> **Nothing reads `production/polish/` yet** — say so when reporting, so the user
+> knows the report is a record rather than an input to a later gate.
+
+> **Why this does not violate the Collaboration Protocol.** `CLAUDE.md` requires an agent to ask "May I write this to [filepath]?" before Write/Edit. A subagent spawned here writes **without** asking, and that is a deliberate, bounded exception rather than an oversight — the same call already made for `consistency-check` appending to `active.md`. The exception holds only when all three are true: (1) the path is one **you** named in the prompt, so the user approved the destination when they approved the phase; (2) it is a new artifact under `production/`, `docs/` or `tests/`, never an edit to existing source or config; (3) the phase that produced it is itself gated by an `AskUserQuestion` before the pipeline advances. Outside those three, the agent must ask. **Do not "fix" this by asking per subagent** — a prompt per agent per phase makes an orchestrator unusable, which is why the exception exists.
+
+Launch independent agents in parallel where the pipeline allows it (e.g., Phases 3 and 4 can run simultaneously).
 
 ## Pipeline
 
@@ -59,20 +127,26 @@ Delegate to **performance-analyst**:
 - Identify performance bottlenecks and frame budget violations
 - Measure memory usage and check for leaks
 - Benchmark against target hardware specs
-- Output: performance report with prioritized optimization list
+- Output: performance report with the prioritized **optimisation list** — for each item, the change, its expected gain against the budget, and its owner (technical-artist for rendering-side changes, engine-programmer for engine systems and hot paths, tools-programmer for a content authoring tool, otherwise the programmer who owns the system)
 
 ### Phase 2: Optimization
-Delegate to **performance-analyst** (with relevant programmers as needed):
-- Fix performance hotspots identified in Phase 1
-- Optimize draw calls, reduce overdraw
-- Fix memory leaks and reduce allocation pressure
-- Verify optimizations don't change gameplay behavior
-- Output: optimized code with before/after metrics
+performance-analyst writes no game code ("recommend and assign", its agent file),
+so Phase 2 implements its Phase 1 list through the owners in the active set:
+- **engine-programmer** — spawned only when Phase 1 identified engine-level root causes (rendering pipeline, resource loading, memory allocator, hot paths in core loops): implement those items, fix allocation pressure, verify gameplay behavior is unchanged. Output: engine-level fixes with before/after metrics and profiler validation
+- **tools-programmer** — only when Phase 1 traced a cause to a content authoring tool: fix the tool. Output: tool fixes with before/after metrics
+- **technical-artist** — rendering-side items (draw calls, overdraw, particles, shaders, LOD) join its Phase 3 brief
 
-If Phase 1 identified engine-level root causes (rendering pipeline, resource loading, memory allocator), delegate those fixes to **engine-programmer** in parallel:
-- Optimize hot paths in engine systems
-- Fix allocation pressure in core loops
-- Output: engine-level fixes with profiler validation
+Every implementing agent in Phases 2–4 first returns the files it will create or
+change, and you ask once for the whole Phase 2–4 set before any is edited (File
+Write Protocol).
+
+**An item whose owner is not in the active set is not implemented in this run.**
+At `team.size: individual` that is every programmer item, since no programmer is
+active; at any size it includes an item owned by a programmer this pipeline does
+not name (e.g. gameplay-programmer for a gameplay-script hot spot). The report
+lists those items with their owners under
+"Optimisation list handed to `/dev-story`: `production/polish/[area]-report-[date].md`".
+A metric they target that is over budget stays a known problem at Phase 6.
 
 ### Phase 3: Visual Polish (parallel with Phase 2)
 Delegate to **technical-artist**:
@@ -95,46 +169,72 @@ Delegate to **qa-tester**:
 - Test all edge cases: boundary conditions, rapid inputs, unusual sequences
 - Soak test: run the feature for extended periods checking for degradation
 - Stress test: maximum entities, worst-case scenarios
-- Regression test: verify polish changes haven't broken existing functionality
+- Regression test: verify polish changes haven't broken existing functionality — each Phase 2–4 change by name, engine-level fixes included
 - Test on minimum spec hardware (if available)
 - Output: test results with any remaining issues
 
 ### Phase 6: Sign-off
 - Collect results from all team members
 - Compare performance metrics against budgets
-- Report: READY FOR RELEASE / NEEDS MORE WORK
-- List any remaining issues with severity and recommendations
+- Report: READY FOR RELEASE / NOT ASSESSED / NEEDS MORE WORK
+- List every remaining issue with its severity (S1–S4), the measured gap where there is one (e.g. "9 ms against a 6 ms budget — 3 ms over"), and a recommendation; a regression also names the broken behavior and the polish change that caused it
+
+**NOT ASSESSED ranks above READY FOR RELEASE and below NEEDS MORE WORK.** A known
+problem — a metric over budget, an unresolved regression — makes it NEEDS MORE
+WORK whatever else went unchecked. Otherwise, if any part of the scope could not
+be checked, the result is NOT ASSESSED, never READY FOR RELEASE, and the report
+names each gap:
+- A metric with no committed budget. `performance.target_framerate`,
+  `performance.frame_budget_ms`, `performance.draw_call_limit` and
+  `performance.memory_ceiling_mb` have no default, and `/perf-profile` reports an
+  unset one as NOT ASSESSED — nothing was compared, so no budget was met.
+- A phase that did not run: BLOCKED, skipped, or its agent outside the active set.
+  At `team.size: individual`, sound-designer's audio polish and qa-tester's
+  hardening are only consulted through the active agents, not run, and Phase 2's
+  programmer items are handed to `/dev-story` rather than implemented.
 
 ## Error Recovery Protocol
 
-If any spawned agent (via Task) returns BLOCKED, errors, or cannot complete:
+**First, verify the artifact.** If the return contract named a path, check the
+path exists before treating the phase as done — **a named artifact that is not
+on disk is a failed phase, however fluent the response reads.** An agent can
+burn a full phase and return a plausible preamble having written nothing, which
+is neither BLOCKED nor an error nor "cannot complete", so the trigger below
+never fires. Resume it naming the unmet contract; the context is
+usually still there.
 
-1. **Surface immediately**: Report "[AgentName]: BLOCKED — [reason]" to the user before continuing to dependent phases
-2. **Assess dependencies**: Check whether the blocked agent's output is required by subsequent phases. If yes, do not proceed past that dependency point without user input.
-3. **Offer options** via AskUserQuestion with choices:
-   - Skip this agent and note the gap in the final report
-   - Retry with narrower scope
-   - Stop here and resolve the blocker first
-4. **Always produce a partial report** — output whatever was completed. Never discard work because one agent blocked.
+If any spawned agent returns BLOCKED, errors, or cannot complete: **surface it
+immediately, don't proceed past a dependency it blocks, and always produce a
+partial report.** A skipped agent's section stays a named gap — never fill it with content of your own. Full procedure: `.claude/docs/error-recovery-protocol.md`.
 
 Common blockers:
 - Input file missing (story not found, GDD absent) → redirect to the skill that creates it
-- ADR status is Proposed → do not implement; run `/architecture-decision` first
+- ADR status is Proposed → do not implement; once it is decided, accept it with `/architecture-decision accept ADR-NNNN`
 - Scope too large → split into two stories via `/create-stories`
 - Conflicting instructions between ADR and story → surface the conflict, do not guess
 
 ## File Write Protocol
 
 All file writes (performance reports, test results, evidence docs) are delegated to
-sub-agents spawned via Task. Each sub-agent enforces the "May I write to [path]?"
-protocol. This orchestrator does not write files directly.
+sub-agents spawned via `Agent`. Those writes follow the **bounded exception**
+documented above under "Why this does not violate the Collaboration Protocol" —
+the path is one you named, the artifact is new under `production/`, `docs/` or
+`tests/`, and the phase is gated by an `AskUserQuestion`. A sub-agent does **not**
+prompt per write inside those bounds; outside them it must ask. The optimization
+and polish changes of Phases 2–4 edit existing code, shaders, audio or assets, so
+they are outside those bounds: each implementing agent returns the files it will
+create or change, you ask once for the whole Phase 2–4 set ("May I have [agents]
+change these [N] files?"), and each edits only after a yes — one ask for the set,
+not one per phase. This orchestrator does not write files directly.
 
 ## Output
 
-A summary report covering: performance before/after metrics, visual polish changes, audio polish changes, test results, and release readiness assessment.
+A summary report covering: performance before/after metrics, visual polish changes, audio polish changes, test results, any optimisation list handed to `/dev-story`, and release readiness assessment.
 
 ## Next Steps
 
 - If READY FOR RELEASE: run `/release-checklist` for the final pre-release validation.
 - If NEEDS MORE WORK: schedule remaining issues in `/sprint-plan update` and re-run `/team-polish` after fixes.
+- If NOT ASSESSED: supply what was missing — commit the unset `performance.*` budgets in `project.yaml` (`/settings`), or run the phases that did not run (raise `team.size`) — then re-run `/team-polish`. Do not treat the area as release-ready.
+- If the report handed an optimisation list to `/dev-story`: implement those items there, then re-run `/team-polish` to measure the gain.
 - Run `/gate-check` for a formal phase gate verdict before handing off to release.

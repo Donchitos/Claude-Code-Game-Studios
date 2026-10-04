@@ -1,22 +1,49 @@
 ---
 name: architecture-decision
-description: "Creates an Architecture Decision Record (ADR) documenting a significant technical decision, its context, alternatives considered, and consequences. Every major technical choice should have an ADR."
-argument-hint: "[title] [--review full|lean|solo]"
+description: "Create an ADR documenting a technical decision: context, alternatives considered, consequences."
+argument-hint: "[title | retrofit <path> | accept <ADR-id>] [--review full|lean|solo]"
 user-invocable: true
-allowed-tools: Read, Glob, Grep, Write, Edit, Task, AskUserQuestion
+allowed-tools: Read, Glob, Grep, Write, Edit, Agent, AskUserQuestion, Bash(wc -c *), Bash(bash "*/.claude/skills/architecture-decision/../../hooks/yaml-helper.sh" resolve_config *)
 model: sonnet
 ---
 
+!`bash "${CLAUDE_SKILL_DIR}/../../hooks/yaml-helper.sh" resolve_config --keys review_mode,automation,workflow,docs.density,team.size`
+
+Resolved above — use as-is; `--review` overrides `review_mode`. No block →
+defaults in `.claude/docs/config-resolution.md`.
+
+
 When this skill is invoked:
 
-## 0. Parse Arguments — Detect Retrofit Mode
+## 0. Parse Arguments — Detect Retrofit / Acceptance Mode
 
-Resolve the review mode (once, store for all gate spawns this run):
-1. If `--review [full|lean|solo]` was passed → use that
-2. Else read `production/review-mode.txt` → use that value
-3. Else → default to `lean`
 
-See `.claude/docs/director-gates.md` for the full check pattern.
+See `.claude/docs/director-gates.md` for the full check pattern. Individual gate definitions live in `.claude/docs/director-gates/[gate-id].md` — the spawned agent reads its own gate file; do not read it in the parent session.
+
+
+Every `AskUserQuestion` call follows `.claude/docs/automation-modes.md`
+(collaborative asks always · guided major-only · autonomous logs and proceeds;
+`automation_always_ask` categories always prompt).
+
+**`team.size`**: which agents validate this ADR (orthogonal to review_mode/workflow).
+- **`individual`** (default): `technical-director` (TD-ADR) + the engine-specialist.
+- **`small`** and **`studio`**: the same two. This skill spawns no engine
+  sub-specialist and no adversarial reviewer at any size.
+
+**`docs.density`** — it controls the *depth* of the ADR's prose sections, not
+which sections the skeleton emits (that is fixed). `modes.rigor` sets it
+alongside `workflow`; set `docs.density` explicitly to vary ADR verbosity alone:
+`terse` (the default, via `rigor: minimal`) = decision + alternatives as bullets, one line of rationale each;
+`balanced` = paragraph per section with light rationale (`rigor: standard`); `thorough` =
+full prose with trade-offs and worked rationale in Decision, Alternatives, and
+Consequences. Apply it to the prose sections; the Engine Compatibility, ADR
+Dependencies, and GDD Requirements tables are structural and stay whole at every
+density.
+
+**`workflow`** (see `.claude/docs/workflow-modes.md`):
+- `full` — all ADRs on the required ADR list must be completed.
+- `standard` — critical ADRs only (Foundation-layer systems).
+- `minimal` — not required. Can still be run voluntarily.
 
 **If the argument starts with `retrofit` followed by a file path**
 (e.g., `/architecture-decision retrofit docs/architecture/adr-0001-event-system.md`):
@@ -29,6 +56,9 @@ Enter **retrofit mode**:
    - `## ADR Dependencies` — HIGH if missing: dependency ordering breaks
    - `## Engine Compatibility` — HIGH if missing: post-cutoff risk unknown
    - `## GDD Requirements Addressed` — MEDIUM if missing: traceability lost
+   - `## Date` — MEDIUM if missing, and no `## Last Verified` either: `/create-stories`
+     stamps stories with it and `/dev-story` compares against it, so without it a
+     story can never tell whether the ADR changed
 3. Present to the user:
    ```
    ## Retrofit: [ADR title]
@@ -44,9 +74,14 @@ Enter **retrofit mode**:
    ✗ Engine Compatibility — HIGH
    ```
 4. Ask: "Shall I add the [N] missing sections? I will not modify any existing content."
+   If no: write nothing, and report the missing sections by name.
 5. If yes:
    - For **Status**: ask the user — "What is the current status of this decision?"
      Options: "Proposed", "Accepted", "Deprecated", "Superseded by ADR-XXXX"
+     An `Accepted` answer — a decision already in force — is not written as
+     given: write `Proposed`, add the other missing sections, then run
+     acceptance mode (below) on this ADR. Its dependency check, confirmation and
+     story unblocking apply here too; it stays the only path that sets `Accepted`.
    - For **ADR Dependencies**: ask — "Does this decision depend on any other ADR?
      Does it enable or block any other ADR or epic?" Accept "None" for each field.
    - For **Engine Compatibility**: read the engine reference docs (same as Step 1 below)
@@ -54,12 +89,94 @@ Enter **retrofit mode**:
    - For **GDD Requirements Addressed**: ask — "Which GDD systems motivated this decision?
      What specific requirement in each GDD does this ADR address?"
    - Append each missing section to the ADR file using the Edit tool.
+   - For **Date** (counted only when there is no `## Last Verified`): append
+     `## Date` with today's date — even when it is the only missing section, the
+     case `/dev-story` sends you here for — and say that it records the retrofit,
+     not when the decision was made.
    - **Never modify any existing section.** Only append or fill absent sections.
-6. After adding all missing sections, update the ADR's `## Date` field if it is absent.
-7. Suggest: "Run `/architecture-review` to re-validate coverage now that this ADR
+6. Suggest: "Run `/architecture-review` to re-validate coverage now that this ADR
    has its Status and Dependencies fields."
 
-If NOT in retrofit mode, proceed to Step 1 below (normal ADR authoring).
+**If the argument starts with `accept` followed by an ADR id**
+(e.g., `/architecture-decision accept ADR-0005`):
+
+Enter **acceptance mode**. This is the *only* path in the framework that moves an
+ADR from `Proposed` to `Accepted`. Authoring always produces `Proposed`
+(Step 5), while
+`/create-control-manifest`, `/create-epics`, `/create-stories` and `/gate-check`
+all require `Accepted` — so without this mode the pipeline had a state it could
+enter and never leave.
+
+1. **Resolve the id to a file, then read it.** Glob
+   `docs/architecture/adr-NNNN-*.md` for the given number. If **no** file matches,
+   or **more than one** does, stop and say which — do not pick one. If the file
+   has no `## Status` section, stop and say so; a missing Status is exactly what
+   retrofit mode is for.
+2. **Check the current status.** If it is already `Accepted`, say so and stop.
+   If it is `Deprecated` or `Superseded`, refuse: reviving a superseded decision
+   is a new ADR, not a status edit.
+3. **Check its dependencies first.** Read `## ADR Dependencies`.
+
+   **If that section is absent, empty, or reads `UNKNOWN`, do not read it as
+   "no dependencies" — refuse and say which:**
+   > "ADR-0005's dependency section is [absent / UNKNOWN], so I cannot tell what
+   > this decision rests on. An empty dependency list and an unexamined one look
+   > identical here, and only one of them is safe to accept. Run
+   > `/architecture-decision retrofit <path>` to establish it."
+
+   A dependency check reading a field that defaults to empty is the vacuous-pass
+   shape this gate exists to prevent — the check would examine nothing and report
+   clean.
+
+   If it depends on any ADR that is not itself `Accepted`, **refuse and name them**:
+   > "ADR-0005 depends on ADR-0002, which is still Proposed. Accept ADR-0002
+   > first — an accepted decision resting on an unaccepted one is not a decision,
+   > it is a deferral with a different label."
+   This is the same dependency rule `/architecture-review` already flags; here it
+   is enforced rather than reported.
+4. **Confirm with the user, always.** Per `CONTRACT.md`, acceptance authority is
+   **the user, or `technical-director` on the user's explicit confirmation — no
+   other agent, and never this skill on its own.** Use `AskUserQuestion`:
+   - Prompt: "Accept ADR-NNNN — [title]? This is what unblocks stories and epics
+     that depend on it."
+   - Options: `[A] Yes — accept it` / `[B] Not yet — leave it Proposed`
+   **This prompt fires regardless of `modes.automation`, including `autonomous`.**
+   Acceptance is the decision the whole architecture pipeline gates on; it is not
+   a step to be inferred.
+5. **Find the stories this will unblock, BEFORE the prompt in step 4.** Grep
+   every story for a Blocked Status line —
+   `Grep pattern="Status\**:\**\s*Blocked" path="production/epics" glob="**/story-*.md" output_mode="files_with_matches"`,
+   which matches `> **Status**: Blocked` (the form `/create-stories` writes),
+   `**Status:** Blocked` and `Status: Blocked` — and keep the files that name
+   this ADR's id as the reason they are blocked. That pairing is what "blocked
+   pending this ADR" means — a story blocked for an unrelated reason will not
+   name it. Leave out a story that names this ADR only as the successor to point
+   at (`point the story at ADR-NNNN`, the note for a `Deprecated` or
+   `Superseded` ADR): it is still governed by the old ADR, and accepting the
+   successor does not re-point it.
+   > **Stories live only under `production/epics/`.** A flat top-level stories
+   > directory does not exist and no skill creates one — never write or match a
+   > path outside `production/epics/`. `/dev-story` matches entries *by file
+   > path*, so a story recorded under any other path silently fails to match and
+   > never gets picked up.
+
+   Feed the count into step 4's prompt so it reads *"3 stories become Ready"*
+   rather than a generic claim: **the user is being asked to authorise an effect, and should be
+   shown the effect.** If none match, say "no stories are waiting on this" — that
+   is useful information, not an empty result to omit.
+6. On confirmation, `Edit` the `## Status` line to `Accepted`. Leave an existing
+   `## Date` as it is: it records when the ADR was written, and `/create-stories`
+   stamps stories with it (or `## Last Verified`), so rewriting it on acceptance
+   would make every story drafted against the Proposed ADR look out of date to
+   `/dev-story`. **If that section is absent, add it** with today's date — retrofit
+   mode already owns this shape, and acceptance must not fail on a template that
+   predates the field.
+7. Then set each story found in step 5 from `Blocked` to `Ready`. Unblocking is a
+   consequence of acceptance, never of authoring — see Step 6's note below.
+8. Report what moved: the ADR (and its `## Date`, if one was added), and every
+   story that became Ready.
+
+If NOT in retrofit or acceptance mode, proceed to Step 1 below (normal ADR authoring).
 
 **No-argument guard**: If no argument was provided (title is empty), ask before
 running Phase 0:
@@ -123,12 +240,13 @@ Scan `docs/architecture/` for existing ADRs to find the next number.
 
 ## 3. Gather context
 
-Read related code, existing ADRs, and relevant GDDs from `design/gdd/`.
-
-### 3a: Architecture Registry Check (BLOCKING gate)
+### 3a: Architecture Registry Check (BLOCKING gate) — do this FIRST
 
 Read `docs/registry/architecture.yaml`. Extract entries relevant to this ADR's
 domain and decision (grep by system name, domain keyword, or state being touched).
+Run this before reading any existing ADR — the registry exists specifically so a
+new ADR's author does not need to open prior ADRs to learn their binding facts
+(state ownership, interface contracts, forbidden patterns).
 
 Present any relevant stances to the user **before** the collaborative design
 begins, as locked constraints:
@@ -164,6 +282,34 @@ the conflict immediately:
 Do not proceed to Step 4 (collaborative design) until any conflict is resolved
 or explicitly accepted as an intentional exception.
 
+### 3b: Existing ADRs and Related GDDs — registry-scoped, never unbounded
+
+The registry (3a) covers *what* prior decisions bind — not always *why*. If the
+registry surfaced a directly relevant ADR and its reasoning matters here (not
+just its stated facts), read that specific ADR — never glob-and-read every
+ADR in `docs/architecture/` on the chance one is relevant:
+
+1. **Map its headings first** (cheap):
+   ```
+   Grep pattern="^## " path="docs/architecture/[adr-file].md" output_mode="content" -n
+   ```
+2. **Under ~50KB** (`Bash: wc -c "docs/architecture/[adr-file].md"`) — one full
+   `Read` is fine; per-call overhead exceeds the savings from bounded reads at
+   this size.
+3. **~50KB or larger** — bounded-read only `## Context`, `## Decision`, and
+   `## Consequences` (the sections that carry reasoning, not just facts) via
+   `Read(offset, limit)` from the heading map.
+
+Read GDDs the same way `/design-system` Step 2b does: only GDDs the registry
+or the ADR list names as directly relevant, and only their `## Dependencies`,
+`## Formulas`, and `## Edge Cases` sections
+(`Grep pattern="^## (Dependencies|Formulas|Edge Cases)" ... -A 40`) — never a
+speculative full read of `design/gdd/*.md` looking for anything that might
+relate.
+
+Skip 3b entirely if the registry already answers everything this decision
+needs — most ADRs will.
+
 ---
 
 ## 4. Guide the decision collaboratively
@@ -175,7 +321,16 @@ a **confirm/adjust** prompt using `AskUserQuestion` — not open-ended questions
 **Derive assumptions first:**
 - **Problem**: Infer from the title + GDD context what decision needs to be made
 - **Alternatives**: Propose 2-3 concrete options from engine reference + GDD requirements
-- **Dependencies**: Scan existing ADRs for upstream dependencies; assume None if unclear
+- **Dependencies**: Scan existing ADRs for upstream dependencies. **If the scan is
+  inconclusive, present `UNKNOWN — scan inconclusive, please confirm`, never
+  `None`.** The two are not interchangeable: `None` asserts that nothing upstream
+  constrains this decision, and a user confirming a prefilled list cannot tell an
+  assertion from a guess. This field is load-bearing — `/architecture-review`
+  flags unaccepted dependencies, `/dev-story` reads it, and the acceptance route
+  in Phase 0 **refuses to accept an ADR whose dependencies are not themselves
+  Accepted**. A dependency list that defaulted to empty makes that check pass
+  while examining nothing. `UNKNOWN` must be resolved during the confirm/adjust
+  prompt; it is a prompt state, never a value written to the file
 - **GDD linkage**: Extract which GDD systems the title directly relates to
 - **Status**: Always `Proposed` for new ADRs — never ask the user what the status is
 
@@ -239,6 +394,20 @@ Following this format:
 ## Date
 [Date of decision]
 
+## Last Verified
+[YYYY-MM-DD — when this ADR was last confirmed accurate against the current
+engine version and design. Update this date when you re-read and confirm it is
+still correct, even if nothing changed.]
+
+## Decision Makers
+[Who was involved in this decision]
+
+## Summary
+[2 sentences: what problem this ADR solves, and what was decided. Written for
+tiered context loading — a skill scanning 20 ADRs uses this to decide whether to
+read the full decision. Be specific: name the system, the problem, and the
+chosen approach.]
+
 ## Engine Compatibility
 
 | Field | Value |
@@ -286,6 +455,11 @@ to implement it.]
 ### Key Interfaces
 [API contracts or interface definitions this decision creates]
 
+### Implementation Guidelines
+[Specific guidance for the programmer implementing this decision — the rules a
+`/create-control-manifest` or `/dev-story` run should follow. State mandates as
+"must / must never" so they extract cleanly.]
+
 ## Alternatives Considered
 
 ### Alternative 1: [Name]
@@ -308,7 +482,7 @@ to implement it.]
 ### Negative
 - [Trade-offs and costs accepted]
 
-### Risks
+## Risks
 - [Things that could go wrong]
 - [Mitigation for each risk]
 
@@ -330,14 +504,14 @@ to implement it.]
 ## Validation Criteria
 [How will we know this decision was correct? What metrics or tests?]
 
-## Related Decisions
-- [Links to related ADRs]
+## Related
+- [Links to related ADRs — note if supersedes, contradicts, or depends on]
 - [Links to related design documents]
 ```
 
-5.5. **Engine Specialist Validation** — Before saving, spawn the **primary engine specialist** via Task to validate the drafted ADR:
-   - Read `.claude/docs/technical-preferences.md` `Engine Specialists` section to get the primary specialist
-   - If no engine is configured (`[TO BE CONFIGURED]`), skip this step
+5.5. **Engine Specialist Validation** — Before saving, spawn the **primary engine specialist** via `Agent` to validate the drafted ADR:
+   - Resolve the primary specialist: `<engine>-specialist` derived from `engine.name` in `project.yaml` (Godot→`godot-specialist`, Unity→`unity-specialist`, Unreal→`unreal-specialist`); if `engine.name` is absent or empty, read the Primary line of the `## Engine Specialists` section in `.claude/docs/technical-preferences.md`
+   - If no engine is configured (neither source yields an engine), skip this step **Record ``Engine validation: NOT ASSESSED — no engine configured (`engine.name` unset in `project.yaml`)`` in this run's output.** A skipped check that says nothing is indistinguishable from a check that passed; the reader cannot tell engine guidance was never sought.
    - Spawn `subagent_type: [primary specialist]` with: the ADR's Engine Compatibility section, Decision section, Key Interfaces, and the engine reference docs path. Ask them to:
      1. Confirm the proposed approach is idiomatic for the pinned engine version
      2. Flag any APIs or patterns that are deprecated or changed post-training-cutoff
@@ -350,10 +524,12 @@ to implement it.]
 - `lean` → skip (not a PHASE-GATE). Note: "TD-ADR skipped — Lean mode." Proceed to Step 5.7 (GDD sync check).
 - `full` → spawn as normal.
 
-5.6. **Technical Director Strategic Review** — After the engine specialist validation, spawn `technical-director` via Task using gate **TD-ADR** (`.claude/docs/director-gates.md`):
+5.6. **Technical Director Strategic Review** — After the engine specialist validation, spawn `technical-director` via `Agent` using gate **TD-ADR** (`.claude/docs/director-gates/td-adr.md`):
    - Pass: the ADR file path (or draft content), engine version, domain, any existing ADRs in the same domain
    - The TD validates architectural coherence (is this decision consistent with the whole system?) — distinct from the engine specialist's API-level check
-   - If CONCERNS or REJECT: revise the Decision or Alternatives sections accordingly before proceeding
+   - On CONCERNS: show them to the user verbatim and ask with the standard options from `director-gates.md` — `Revise flagged items` / `Accept and proceed` / `Discuss further`. Revise the flagged Decision or Alternatives sections only on `Revise flagged items`.
+   - On REJECT: show the blockers verbatim and revise the Decision or Alternatives sections before proceeding.
+   - A revised draft still reaches the user through the write approval below; nothing is written before it. A `NOT ASSESSED` answer is not an approval — name the missing input (`director-gates.md`).
 
 5.7. **GDD Sync Check** — Before presenting the write approval, scan all GDDs
 referenced in the "GDD Requirements Addressed" section for naming inconsistencies
@@ -370,7 +546,21 @@ The GDD must be updated before or alongside writing this ADR to prevent
 developers reading the GDD from implementing the wrong interface.
 ```
 
-If no inconsistencies: skip this block silently.
+**This check has three outcomes, not two.** The two above are "found" and "none
+found"; the third is **could not check**, and until now it fell through the
+silent branch and rendered exactly like a clean result.
+
+- **None found** — print one line, do not stay silent:
+  `GDD sync: checked [N] referenced GDD(s), no naming inconsistencies.`
+  A silent pass is indistinguishable from a check that never ran, and this one
+  guards against developers implementing the wrong interface from a stale GDD.
+- **Could not check** — the ADR has no `GDD Requirements Addressed` section, it
+  names no GDDs, or a named GDD does not exist on disk. Print:
+  `GDD sync: NOT ASSESSED — [which reason, and which files]`
+  Do **not** treat an ADR that references no GDDs as one whose GDDs are
+  consistent. Nothing was compared.
+
+Only the warning block itself is conditional; the check always reports.
 
 5. **Write approval** — Use `AskUserQuestion`:
 
@@ -453,4 +643,18 @@ If there are no remaining priority ADRs and no undesigned GDD systems, offer onl
 > The reviewing agent must be independent of the authoring context to give an unbiased
 > assessment. Running it here would invalidate the review.
 
-Update any stories that were `Status: Blocked` pending this ADR to `Status: Ready`.
+**Do NOT unblock stories here.** This ADR is `Proposed` — Step 5 guarantees it,
+and a story blocked *pending this decision* is still pending it. Unblocking on
+authoring is how the deadlock stayed invisible: it defeated the guard at the
+moment the guard became relevant, so the pipeline appeared to flow while running
+on decisions nobody had accepted.
+
+Instead, tell the user what is now waiting on acceptance:
+
+> "ADR-NNNN is written and `Proposed`. [N] stories remain `Blocked` pending it.
+> Run `/architecture-decision accept ADR-NNNN` when the decision is settled —
+> that is what moves them to `Ready`."
+
+List the blocked stories by path so the cost of leaving it Proposed is visible.
+(Acceptance has consequences enforced across many skills and an authority
+recorded in only a few, so the route between them must stay explicit.)

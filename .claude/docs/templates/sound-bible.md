@@ -1,5 +1,8 @@
 # Sound Bible: [Project Name]
 
+> **Location**: `design/audio/sound-bible.md` — not `design/gdd/`, where the GDD checks count every file as a system GDD
+> **Owned By**: audio-director
+
 ## Audio Vision
 
 ### Sonic Identity

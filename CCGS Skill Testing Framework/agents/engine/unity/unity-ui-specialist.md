@@ -3,7 +3,6 @@
 ## Agent Summary
 Domain: Unity UI Toolkit (UXML/USS), UGUI (Canvas), data binding, runtime UI performance, and UI input event handling.
 Does NOT own: UX flow design (ux-designer), visual art style (art-director).
-Model tier: Sonnet (default).
 No gate IDs assigned.
 
 ---
@@ -11,8 +10,8 @@ No gate IDs assigned.
 ## Static Assertions (Structural)
 
 - [ ] `description:` field is present and domain-specific (references UI Toolkit / UGUI / Canvas / data binding)
-- [ ] `allowed-tools:` list includes Read, Write, Edit, Bash, Glob, Grep
-- [ ] Model tier is Sonnet (default for specialists)
+- [ ] `tools:` list includes Read, Write, Edit, Bash, Glob, Grep
+- [ ] Model tier is `sonnet` — frontmatter `model:` reads exactly `sonnet` (tiers: `.claude/docs/model-tiers.md`)
 - [ ] Agent definition does not claim authority over UX flow design or visual art direction
 
 ---
@@ -24,7 +23,7 @@ No gate IDs assigned.
 **Expected behavior:**
 - Produces a UXML document defining the inventory panel structure (ListView, item templates, detail panel)
 - Produces USS styles for the inventory layout and item states (default, hover, selected)
-- Provides C# code binding the inventory data model to the UI via `INotifyValueChanged` or `IBindable`
+- Provides C# code binding the inventory data model to the UI through the runtime binding system: a ViewModel implementing `INotifyBindablePropertyChanged`, with the UI reading through bindings and never writing game state
 - Uses `ListView` with `makeItem` / `bindItem` callbacks for the scrollable item list
 - Does NOT produce the UX flow design — implements from a provided spec
 
@@ -39,28 +38,29 @@ No gate IDs assigned.
 ### Case 3: UI Toolkit data binding for dynamic list
 **Input:** "The inventory list needs to update in real time as items are added or removed from the player's bag."
 **Expected behavior:**
-- Produces the `ListView` pattern with a bound `ObservableList<T>` or event-driven refresh approach
-- Uses `ListView.Rebuild()` or `ListView.RefreshItems()` on the backing collection change event
-- Notes the performance considerations for large lists (virtualization via `makeItem`/`bindItem` pattern)
-- Does NOT use `QuerySelector` loops to update individual elements as a list refresh strategy — flags that as a performance antipattern
+- Produces the `ListView` pattern over the inventory's backing collection, virtualized with `makeItem` / `bindItem` so only visible rows exist
+- Drives the refresh from the inventory's change event (game state → ViewModel → binding), not from per-frame polling
+- Does NOT refresh the list by querying the visual tree for each element — flags per-frame visual-tree queries as an antipattern and caches references instead
+- Does NOT create and destroy row elements on each change — reuses rows through the virtualized list
 
 ### Case 4: Canvas performance — overdraw
 **Input:** "The main menu canvas is causing GPU overdraw warnings; there are many overlapping panels."
 **Expected behavior:**
-- Identifies overdraw causes: multiple stacked canvases, full-screen overlay panels not culled when inactive
-- Recommends:
-  - Separate canvases for world-space, screen-space-overlay, and screen-space-camera layers
-  - Disable/deactivate panels instead of setting alpha to 0 (invisible alpha-0 panels still draw)
-  - Canvas Group + alpha for fade effects, not individual Image alpha
-- Notes UI Toolkit alternative if the project is in a migration position
+- Confirms the hotspot with a profiler before changing structure (Frame Debugger, Profiler UI module)
+- Recommends its documented Canvas remediation:
+  - One Canvas per logical UI layer, with frequently changing and static content on separate Canvases
+  - Explicit `Canvas.sortingOrder` rather than hierarchy order
+  - Shared sprite atlases so panels batch, and Raycast Target disabled on non-interactive elements
+  - A `CanvasGroup` to fade or hide a group of elements, not per-Image alpha changes
+- Notes that screen-space menus are UI Toolkit territory under its own selection rules (the engine reference also marks UGUI Canvas as superseded for new projects), offered as an option rather than a unilateral rewrite
 
 ### Case 5: Context pass — Unity version
 **Input:** Project context: Unity 2022.3 LTS. Request: "Implement the settings panel with data binding."
 **Expected behavior:**
-- Uses UI Toolkit with the 2022.3 LTS version of the runtime binding system
-- Notes that Unity 2022.3 introduced runtime data binding (as opposed to editor-only binding in earlier versions)
-- Does NOT use the Unity 6 enhanced binding API features if they are not available in 2022.3
-- Produces code compatible with the stated Unity version, with version-specific API notes
+- Checks the stated version against `docs/engine-reference/unity/VERSION.md`, which pins Unity 6.3 LTS, and asks which editor is actually installed before choosing a binding API
+- Does NOT state from memory which Unity version introduced runtime data binding — the engine reference does not document it, so the claim is flagged as unverified
+- Does NOT emit the runtime binding system (`INotifyBindablePropertyChanged`) for a 2022.3 editor until that API is confirmed available there
+- Keeps the version-independent parts of its pattern regardless: UI reads state, user actions dispatch commands, the panel never writes game state directly
 
 ---
 
@@ -69,13 +69,14 @@ No gate IDs assigned.
 - [ ] Stays within declared domain (UI Toolkit, UGUI, data binding, UI performance)
 - [ ] Redirects UX flow design to ux-designer
 - [ ] Returns structured output (UXML, USS, C# binding code)
-- [ ] Uses the correct Unity UI framework version for the project's Unity version
-- [ ] Flags Canvas overdraw as a performance antipattern and provides specific remediation
-- [ ] Does not use alpha-0 as a hide/show pattern — uses SetActive() or VisualElement.style.display
+- [ ] Checks the project's Unity version against `docs/engine-reference/unity/VERSION.md` before using version-dependent UI APIs, and asks when the stated version and the pin disagree
+- [ ] Flags Canvas overdraw as a performance antipattern and provides specific remediation (Canvas split by layer and update rate, atlasing, Raycast Target off)
+- [ ] Hides elements with its documented mechanism — `VisualElement.visible = false` in UI Toolkit, a `CanvasGroup` in UGUI — never by setting each element's alpha to 0
+- [ ] Asks "May I write this to [filepath]?" naming the file before writing
 
 ---
 
 ## Coverage Notes
-- Inventory UI (Case 1) should have a manual walkthrough doc in `production/qa/evidence/`
+- Inventory UI (Case 1) should have a retained screenshot of each screen touched in `production/qa/evidence/`
 - Dynamic list binding (Case 3) should have an integration test or automated interaction test
 - Canvas overdraw (Case 4) verifies the agent knows the correct Unity UI performance patterns

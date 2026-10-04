@@ -1,12 +1,17 @@
 ---
 name: qa-plan
-description: "Generate a QA test plan for a sprint or feature. Reads GDDs and story files, classifies stories by test type (Logic/Integration/Visual/UI), and produces a structured test plan covering automated tests required, manual test cases, smoke test scope, and playtest sign-off requirements. Run before sprint begins or when starting a major feature."
+description: "QA test plan for a sprint — classifies stories by Logic/Integration/Visual/UI, covers automated tests, manual cases, smoke scope."
 argument-hint: "[sprint | feature: system-name | story: path]"
 user-invocable: true
-allowed-tools: Read, Glob, Grep, Write, AskUserQuestion
+allowed-tools: Read, Glob, Grep, Write, Edit, AskUserQuestion, Bash(bash "*/.claude/skills/qa-plan/../../hooks/yaml-helper.sh" resolve_config *)
 model: sonnet
-agent: qa-lead
 ---
+
+!`bash "${CLAUDE_SKILL_DIR}/../../hooks/yaml-helper.sh" resolve_config --keys automation,workflow,qa.level,system_overrides`
+
+Resolved above — use as-is. No block → defaults in
+`.claude/docs/config-resolution.md`.
+
 
 # QA Plan
 
@@ -23,6 +28,22 @@ plan.
 **Output:** `production/qa/qa-plan-[sprint-slug]-[date].md`
 
 ---
+
+Every `AskUserQuestion` call follows `.claude/docs/automation-modes.md`
+(collaborative asks always · guided major-only · autonomous logs and proceeds;
+`automation_always_ask` categories always prompt).
+
+**Workflow tier**: resolve per the GDD's system as each is read (per
+`.claude/docs/workflow-modes.md`): `workflow_overrides.system_overrides.<system>`
+if the block lists one, else the project value. It sets how many GDD sections
+the test plan is mined from — see Phase 2.
+
+**`qa.level`**: at `minimal`, produce only a minimal smoke
+plan — drop the automated-test-required rows and the test-file DoD; at `standard`,
+a full plan per story type; at `full`, also add per-system coverage targets.
+Distinct axis from `workflow` (which sets how many GDD sections are mined).
+No level drops the Visual/Feel and UI screenshot rows — tests are waived at
+`minimal`, the look is not (`.claude/docs/coding-standards.md`).
 
 ## Phase 1: Parse Scope
 
@@ -49,32 +70,75 @@ If a story file path is referenced but the file does not exist, note it as
 MISSING and continue with the remaining stories. Do not fail the entire plan
 for one missing file.
 
+> **If the resolved scope contains ZERO stories, stop — do not build a plan.**
+> Report `NOT ASSESSED — no stories in scope`, naming which scope was searched
+> and which path was empty, and route:
+> - no file in `production/sprints/` → "No sprint plan found. Run `/sprint-plan new`."
+>   At `workflow: minimal` there are no sprints by design — route instead to
+>   `/qa-plan feature: [epic-slug]` or `/qa-plan story: [path]`.
+> - a sprint plan exists but references no stories → "Sprint plan `[path]` lists no
+>   stories. Run `/create-stories [epic-slug]`."
+> - `feature:`/`story:` scope matched nothing → name the glob that came back empty.
+>
+> **The N=0 guard is mandatory.** Without it an empty scope reports "Building QA
+> plan for 0 stories" and continues into Phase 4, producing a plan document with
+> empty tables — and **a QA plan for zero stories looks exactly like a completed
+> QA plan.** This skill gates the hand-off to manual QA, so a false-clean here
+> sends a build to QA on the strength of a plan that tested nothing.
+>
+> Note the shape, because this skill already had the harder half of the rule.
+> Phase 2 states **"Never treat an absent section as an absent story"** — the
+> sophisticated inner case, correctly handled. The outer boundary, no stories at
+> all, had nothing. The same shape appears in `/story-readiness`, where `NOT ASSESSED`
+> existed for per-story failures and the empty scope could not reach it.
+>
+> The rule at the top of this block still stands: one missing file among several
+> is MISSING-and-continue. This is the different case where there is no *several*.
+
 ---
 
 ## Phase 2: Load Inputs
 
-For each in-scope story file, read the full file and extract:
+Establish the denominator first — glob the in-scope story files and count **N** —
+then collect the fields below with **targeted section greps, not a full read of
+each story**. A QA plan needs each story's type and acceptance criteria; it does
+not need its implementation notes, out-of-scope boundaries or ADR rationale, and
+reading N stories whole to reach two sections is where this phase's cost lives:
 
-- **Story title** and story ID (from filename or header)
-- **Story Type** field (if present in the file header — e.g., `Type: Logic`)
-- **Acceptance criteria** — the complete numbered/bulleted list
-- **Implementation files** — listed under "Files to Create / Modify" or similar
-- **Engine notes** — any engine API warnings or version-specific notes
-- **GDD reference** — the GDD path(s) cited
-- **ADR reference** — the ADR(s) cited
-- **Estimate** — hours or story points if present
-- **Dependencies** — other stories this one depends on
+```
+Grep pattern="^## Acceptance Criteria" glob="production/epics/**/story-*.md" output_mode="content" -A 15
+Grep pattern="^> \*\*(Type|Status|Estimate)\*\*" glob="production/epics/**/story-*.md" output_mode="content"
+Grep pattern="^## (Context|Dependencies)" glob="production/epics/**/story-*.md" output_mode="content" -A 8
+```
+
+(Scope the globs to the sprint plan's story paths in `sprint` mode.) From those:
+
+- **Story title** and story ID — from the file name and path; no read at all
+- **Story Type** field — from the header grep (e.g., `Type: Logic`)
+- **Acceptance criteria** — the complete numbered/bulleted list, from the first grep
+- **GDD / ADR reference** and **Dependencies** — from the `## Context` grep
+- **Estimate** — from the header grep if present
+- **Implementation files** and **Engine notes** — only needed for stories whose
+  test plan actually turns on them; full-read those individual stories
+
+**Never treat an absent section as an absent story.** If a story matched no
+`## Acceptance Criteria`, full-read that one and say so — a story with no
+testable criteria is a QA finding in its own right, not a story to skip.
 
 After reading stories, load supporting context once (not per story):
 
 - `design/gdd/systems-index.md` — to understand system priorities and which
   GDDs are approved
-- For each unique GDD referenced across all stories: read the
-  **Acceptance Criteria**, **Formulas**, and **Edge Cases** sections. Do not load
-  the full GDD text. These three sections contain the testable requirements, the math
-  to verify, and the boundary conditions that tests must cover. If an Edge Cases
-  section is absent from the GDD, note it per GDD: "No Edge Cases section found — edge
-  case coverage will be inferred from acceptance criteria only."
+- For each unique GDD referenced across all stories: mine test material per that
+  system's workflow tier (resolved above) — at `full`, mine all 8 sections; at
+  `standard`, mine the test-relevant subset of the required sections
+  (**Acceptance Criteria** and **Edge Cases** always, plus **Formulas** for any
+  system that defines numeric rules); at `minimal`, **Acceptance
+  Criteria only**. Do not load the full GDD
+  text. These sections contain the testable requirements, the math to verify, and
+  the boundary conditions tests must cover. If an Edge Cases section is absent (or
+  not expected at minimal), note per GDD: "No Edge Cases section found — edge case
+  coverage will be inferred from acceptance criteria only."
 - `docs/architecture/control-manifest.md` — scan for forbidden patterns that
   automated tests should guard against (if the file exists)
 
@@ -118,7 +182,7 @@ Assemble the full QA plan document. Use this structure:
 **Date**: [date]
 **Generated by**: /qa-plan
 **Scope**: [N stories across [N systems]]
-**Engine**: [engine name from .claude/docs/technical-preferences.md, or "Not configured"]
+**Engine**: [engine name — `engine.name` from project.yaml if present and non-empty, else the Engine field from .claude/docs/technical-preferences.md, else "Not configured"]
 **Sprint File**: [path to sprint plan if applicable]
 
 ---
@@ -130,12 +194,16 @@ Assemble the full QA plan document. Use this structure:
 | [story title] | Logic | Unit test — `tests/unit/[system]/` | None |
 | [story title] | Integration | Integration test — `tests/integration/[system]/` | Smoke check |
 | [story title] | Visual/Feel | None (not automatable) | Screenshot + lead sign-off |
-| [story title] | UI | Interaction walkthrough | Manual step-through |
+| [story title] | UI | None (verified by its screenshots) | Retained screenshot of each screen touched |
 | [story title] | Config/Data | Data validation test | Spot-check in-game values |
 
 ---
 
 ## Automated Tests Required
+
+*(At `qa.level: minimal`, omit this entire section and blank the Test Summary's
+"Automated Test Required" column — automated tests are not required there; list
+manual/smoke verification only.)*
 
 ### [Story Title] — [Type]
 **Test file path**: `tests/[unit|integration]/[system]/[story-slug]_test.[ext]`
@@ -163,7 +231,7 @@ criteria directly. Review the GDD Formulas section before writing tests.*
 ### [Story Title] — [Type]
 **Verification method**: [Screenshot + designer sign-off | Playtest session |
 Manual step-through | Comparison against reference footage]
-**Who must sign off**: [designer / lead-programmer / qa-lead / art-lead]
+**Who must sign off**: [designer / lead-programmer / qa-lead / art-director]
 **Evidence to capture**: [screenshot of X | video clip of Y | written playtest
 notes | side-by-side comparison]
 
@@ -210,13 +278,16 @@ this sprint.*
 
 ## Definition of Done — This Sprint
 
-A story is DONE when ALL of the following are true:
+A story is DONE when ALL of the following are true (at `qa.level: minimal`, drop
+the test-file and smoke rows below — tests are waived there; the screenshot and
+sign-off rows stay at every level, because the look is not):
 
 - [ ] All acceptance criteria verified — via automated test result OR documented
       manual evidence (screenshot, video, or playtest notes with sign-off)
-- [ ] Test file exists at the specified path for all Logic and Integration stories
-- [ ] Manual evidence document exists for all Visual/Feel and UI stories
-- [ ] Smoke check passes (run `/smoke-check sprint` before QA hand-off)
+- [ ] Test file exists at the specified path for all Logic and Integration stories *(qa.level standard/full)*
+- [ ] Retained screenshot of each screen touched, in `production/qa/evidence/`, for all Visual/Feel and UI stories *(every qa.level)*
+- [ ] Signed-off evidence doc at `production/qa/evidence/[story-slug]-evidence.md` for all Visual/Feel stories *(every qa.level)*
+- [ ] Smoke check passes (run `/smoke-check sprint` before QA hand-off) *(qa.level standard/full)*
 - [ ] No regressions introduced
 - [ ] Code reviewed (via `/code-review` or documented peer review)
 - [ ] Story file updated to `Status: Complete` (via `/story-done`)
@@ -261,9 +332,17 @@ Silently append to `production/session-state/active.md` (create the file if it d
 <!-- QA-PLAN: [date] | System: [system/sprint identifier] | Plan written: production/qa/qa-plan-[identifier]-[date].md -->
 ```
 
+Close with the verdict: **COMPLETE** — QA plan written (or **COMPLETE** — QA plan
+shown, not written, if the write was declined). The only other outcome is the
+`NOT ASSESSED — no stories in scope` path in Phase 1.
+
 ---
 
 ## Collaborative Protocol
+
+**Applies in `collaborative` mode (the default).** For `guided` and
+`autonomous` modes, see `.claude/docs/automation-modes.md` — the rules below
+describe what collaborative mode requires, not universal behavior.
 
 - **Never write the plan without asking** — Phase 5 requires explicit approval.
 - **Classify conservatively**: when a story is ambiguous between Logic and

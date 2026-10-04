@@ -366,9 +366,11 @@ async void CheckForUpdates() {
 // ❌ OLD: Resources.Load (synchronous, blocks frame)
 GameObject prefab = Resources.Load<GameObject>("Enemies/Goblin");
 
-// ✅ NEW: Addressables (async, non-blocking)
-var handle = await Addressables.LoadAssetAsync<GameObject>("Enemies/Goblin").Task;
-GameObject prefab = handle.Result;
+// ✅ NEW: Addressables (async, non-blocking) — keep the handle so it can be released
+AsyncOperationHandle<GameObject> handle = Addressables.LoadAssetAsync<GameObject>("Enemies/Goblin");
+GameObject prefab = await handle.Task;
+// ... when the asset is no longer needed:
+Addressables.Release(handle);
 ```
 
 ---

@@ -15,7 +15,7 @@
 | [story title] | Logic | Unit test — `tests/unit/[system]/` | None |
 | [story title] | Integration | Integration test — `tests/integration/[system]/` | Smoke check |
 | [story title] | Visual/Feel | None (not automatable) | Screenshot + lead sign-off |
-| [story title] | UI | None (not automatable) | Manual step-through |
+| [story title] | UI | None (verified by its screenshots) | Retained screenshot of each screen touched |
 | [story title] | Config/Data | Data validation (optional) | Spot-check in-game values |
 
 **Totals**: [N] Logic, [N] Integration, [N] Visual/Feel, [N] UI, [N] Config/Data
@@ -57,17 +57,17 @@
 
 ### [Story Title] — Visual/Feel
 
-**Verification method**: Screenshot + [designer / art-lead] sign-off
+**Verification method**: Screenshot + [designer / art-director] sign-off
 **Evidence file**: `production/qa/evidence/[story-slug]-evidence.md`
-**Who must sign off**: [designer / lead-programmer / art-lead]
+**Who must sign off**: [art-director / owning designer]
 
 - [ ] [Specific observable condition — e.g., "hit flash appears on frame of impact, not the frame after"]
 - [ ] [Another falsifiable condition]
 
 ### [Story Title] — UI
 
-**Verification method**: Manual step-through
-**Evidence file**: `production/qa/evidence/[story-slug]-evidence.md`
+**Verification method**: Retained screenshot of each screen touched
+**Evidence**: `production/qa/evidence/[story-slug]/[NN]-[what-it-shows].png`, one per screen
 
 - [ ] [Every acceptance criterion translated into a manual check item]
 
@@ -104,7 +104,8 @@ A story is DONE when ALL of the following are true:
 
 - [ ] All acceptance criteria verified — automated test result OR documented manual evidence
 - [ ] Test file exists for all Logic and Integration stories and passes
-- [ ] Manual evidence document exists for all Visual/Feel and UI stories
+- [ ] Retained screenshot of each screen touched, in `production/qa/evidence/`, for all Visual/Feel and UI stories
+- [ ] Signed-off evidence doc at `production/qa/evidence/[story-slug]-evidence.md` for all Visual/Feel stories
 - [ ] Smoke check passes (run `/smoke-check sprint` before QA hand-off)
 - [ ] No regressions introduced — previous sprint's features still pass
 - [ ] Code reviewed (via `/code-review` or documented peer review)

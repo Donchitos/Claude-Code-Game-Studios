@@ -6,6 +6,9 @@
 #   pattern: text pattern that must appear in the file (checked after glob)
 #   min_count: minimum matching files required (default: 1)
 #   note: human-readable fallback when completion can't be auto-detected
+#   any_of: list of alternative {glob, pattern} specs — the step is complete if
+#           ANY one of them matches. Use when a setting has migrated and may
+#           legitimately live in either the new or the legacy location.
 #
 # required: true → blocks progression to next phase (shown as REQUIRED)
 # required: false → optional enhancement (shown as OPTIONAL)
@@ -13,6 +16,64 @@
 #
 # Phase gates (/gate-check): verdicts are ADVISORY — they guide the decision
 # but never hard-block advancement. The user always decides whether to proceed.
+
+# Tier paths: a tier whose route is not the phase ladder. At `workflow: minimal`
+# nothing on the path runs /gate-check, so project.stage never leaves Concept —
+# and walking the Concept phase names the concept doc, art bible and systems map
+# (all REQUIRED there) as blockers on a project that already has stories.
+# /help reads paths.minimal instead of the ladder at that tier. Same step schema
+# as phases; artifact-check.sh reports a path only when asked with --path <id>.
+
+paths:
+
+  minimal:
+    label: "Minimal path"
+    description: "Engine, one-page brief, stories, then build — the brief's build order is the plan"
+    steps:
+      - id: engine-setup
+        name: "Engine Setup"
+        command: /setup-engine
+        required: true
+        # Same alternatives as concept.engine-setup — see the notes there.
+        artifact:
+          any_of:
+            - glob: "project.yaml"
+              pattern: 'name:[[:space:]]*"?(Godot|Unity|Unreal)'
+            - glob: ".claude/docs/technical-preferences.md"
+              pattern: '\*\*Engine\*\*: [^[]'
+        description: "Configure the engine and pin its version"
+
+      - id: game-brief
+        name: "Game Brief"
+        command: /brainstorm
+        required: true
+        artifact:
+          glob: "design/game-brief.md"
+        description: "One page: pitch, MVP features, build order. Replaces the concept doc, art bible, systems map and GDDs at this tier"
+
+      - id: create-stories
+        name: "Stories"
+        command: /create-stories
+        required: true
+        artifact:
+          glob: "production/epics/*/story-*.md"
+        description: "One story per MVP feature, in build order. No /create-epics or /sprint-plan at this tier"
+
+      - id: implement
+        name: "Build the Next Story"
+        command: /dev-story
+        required: true
+        repeatable: true
+        artifact:
+          note: "Each story's Status line (Ready / In Progress / Complete) is the record — story files are numbered in build order"
+        description: "Implement the next story in build order: /dev-story [story-path]"
+
+      - id: story-done
+        name: "Close the Story"
+        command: /story-done
+        required: true
+        repeatable: true
+        description: "Verify the acceptance criteria and mark the story Complete, then build the next one"
 
 phases:
 
@@ -31,9 +92,24 @@ phases:
         name: "Engine Setup"
         command: /setup-engine
         required: true
+        # v1.1: engine.name in project.yaml is the primary source; technical-
+        # preferences.md is the legacy fallback. Checking only the legacy file
+        # made a correctly-configured project fail this REQUIRED gate.
+        # /setup-engine writes the value quoted (`name: "Godot"`), so the quote
+        # is optional; without it only the legacy alternative ever matched.
+        # Single-quoted so the `"` needs no escape — artifact-check.sh strips
+        # the outer quotes and does not unescape.
         artifact:
-          glob: ".claude/docs/technical-preferences.md"
-          pattern: "Engine: [^[]"
+          any_of:
+            - glob: "project.yaml"
+              pattern: 'name:[[:space:]]*"?(Godot|Unity|Unreal)'
+            # technical-preferences.md writes "- **Engine**: Godot 4.6", so the
+            # pattern must clear the bold markers. The previous "Engine: [^[]"
+            # required a literal "Engine: " and therefore never matched any
+            # file /setup-engine produces. The [^[] guard rejects the
+            # "[TO BE CONFIGURED]" placeholder.
+            - glob: ".claude/docs/technical-preferences.md"
+              pattern: '\*\*Engine\*\*: [^[]'
         description: "Configure engine, pin version, set naming conventions and performance budgets"
 
       - id: game-concept
@@ -85,7 +161,7 @@ phases:
         command: /design-review
         required: true
         repeatable: true
-        description: "Validate each GDD (8 required sections, no MAJOR REVISION verdict). Run per system."
+        description: "Validate each GDD (required sections per workflow tier, no MAJOR REVISION verdict). Run per system."
 
       - id: review-all-gdds
         name: "Cross-GDD Review"
@@ -143,10 +219,32 @@ phases:
 
       - id: accessibility-doc
         name: "Accessibility Requirements"
+        # This step had no `command:` at all -- the only artifact entry in the
+        # catalog that named no producer. It was REQUIRED, so the Technical
+        # Setup -> Pre-Production gate could never pass, and the remediation
+        # every skill printed ("run /ux-design") wrote into design/ux/ where
+        # this glob does not look. /ux-design now has an `accessibility` mode.
+        command: /ux-design
         required: true
         artifact:
           glob: "design/accessibility-requirements.md"
-        description: "Commit accessibility tier (Basic/Standard/Comprehensive/Exemplary) and feature matrix. UX specs (Phase 4) reference this tier."
+        description: "Run `/ux-design accessibility`. Commit accessibility tier (Basic/Standard/Comprehensive/Exemplary) and feature matrix. UX specs (Phase 4) reference this tier."
+
+      - id: interaction-patterns
+        name: "Interaction Pattern Library"
+        command: /ux-design
+        required: true
+        artifact:
+          glob: "design/ux/interaction-patterns.md"
+        description: "Run `/ux-design patterns` to start the pattern library that UX specs reuse. The Technical Setup → Pre-Production gate requires it at `full` (recommended at `standard`)."
+
+      - id: test-setup
+        name: "Test Framework Setup"
+        command: /test-setup
+        required: true
+        artifact:
+          glob: ".github/workflows/tests.yml"
+        description: "Scaffold the test framework, the CI workflow and an example test. The Technical Setup → Pre-Production gate requires all three at `standard` and `full`. Leads to /test-helpers for fixture generation, /qa-plan per epic, and /smoke-check per sprint."
 
   pre-production:
     label: "Pre-Production"
@@ -191,7 +289,11 @@ phases:
         command: /prototype
         required: false
         artifact:
-          glob: "prototypes/*/README.md"
+          # /prototype writes prototypes/[name]-concept/REPORT.md -- it has never
+          # written a README. The `-concept` suffix is load-bearing: /vertical-slice
+          # writes the same REPORT.md basename under `-vertical-slice`, so a bare
+          # `prototypes/*/REPORT.md` here would let either step satisfy the other.
+          glob: "prototypes/*-concept/REPORT.md"
           min_count: 1
         description: "Build a throwaway prototype to validate the core mechanic is fun before committing to full production. Recommended for first-time mechanics or high-risk design decisions. Solo devs with proven concepts may skip."
 
@@ -215,14 +317,6 @@ phases:
           min_count: 2
         description: "Break each epic into implementable story files. Run per epic: /create-stories [epic-slug]"
 
-      - id: test-setup
-        name: "Test Framework Setup"
-        command: /test-setup
-        required: false
-        artifact:
-          note: "Check tests/ directory for engine-specific test framework scaffold"
-        description: "Scaffold the test framework and CI pipeline once before the first sprint. Leads to /test-helpers for fixture generation, /qa-plan per epic, and /smoke-check per sprint."
-
       - id: sprint-plan
         name: "First Sprint Plan"
         command: /sprint-plan
@@ -237,7 +331,11 @@ phases:
         command: /vertical-slice
         required: false
         artifact:
-          glob: "prototypes/*/REPORT.md"
+          # Must stay scoped to `-vertical-slice`: the untethered form matched
+          # /prototype's concept report, so running only /prototype silently
+          # marked the vertical slice complete and skipped the validation the
+          # Pre-Production → Production gate exists to require.
+          glob: "prototypes/*-vertical-slice/REPORT.md"
           min_count: 1
         description: "Build and playtest a vertical slice — a complete end-to-end pass through the core loop. Recommended before committing epics and stories to production. Skipping is a valid solo dev call but increases risk of late-stage design pivots. If built, must be played and documented before advancing."
 
@@ -267,7 +365,7 @@ phases:
         required: true
         repeatable: true
         artifact:
-          note: "Check src/ for active code and production/epics/**/*.md for In Progress stories"
+          note: "Check the code root (src/, Assets/ or Source/ by engine) for active code and production/epics/**/*.md for In Progress stories"
         description: "Pick the next ready story and implement it with /dev-story [story-path]. Routes to the correct programmer agent."
 
       - id: code-review
@@ -341,7 +439,7 @@ phases:
       - id: balance-check
         name: "Balance Check"
         command: /balance-check
-        required: false
+        required: true
         description: "Analyze game balance formulas and data for outliers and broken progressions"
 
       - id: asset-audit
@@ -355,7 +453,10 @@ phases:
         command: /playtest-report
         required: true
         artifact:
-          glob: "production/playtests/*.md"
+          # /playtest-report writes production/qa/playtests/, not production/playtests/.
+          # The old glob matched nothing on every project, so this REQUIRED step
+          # read as 0/3 forever no matter how many playtests were actually run.
+          glob: "production/qa/playtests/*.md"
           min_count: 3
         description: "Cover: new player experience, mid-game systems, difficulty curve"
 
@@ -365,31 +466,51 @@ phases:
         required: true
         description: "Coordinated polish pass across performance, audio, visual, and UX"
 
-  release:
-    label: "Release"
-    description: "Launch preparation, certification, and ship"
-    next_phase: null
-    steps:
+      - id: security-audit
+        name: "Security Audit"
+        command: /security-audit
+        required: true
+        artifact:
+          glob: "production/security/security-audit-*.md"
+        description: "The Polish -> Release gate reads the newest `full`-scope report (plus any later `quick` re-run) at standard and full: no open CRITICAL or HIGH finding"
+
+      - id: localize-qa
+        name: "Localization QA"
+        command: /localize
+        required: false
+        description: "Run `/localize qa` for every language you ship; at full the release gate needs PASS or PASS WITH CONDITIONS for each (recommended at standard, dropped at minimal)"
+
       - id: release-checklist
         name: "Release Checklist"
         command: /release-checklist
         required: true
-        description: "Pre-release validation across all departments: code, content, store, legal"
+        description: "Pre-release validation across all departments: code, content, store, legal. The Polish -> Release gate checks it, so it runs before /gate-check release"
+
+      - id: changelog
+        name: "Changelog"
+        command: /changelog
+        required: true
+        description: "Internal changelog from commits, sprints, and design docs. The release gate needs the changelog or the patch notes drafted"
 
       - id: patch-notes
         name: "Patch Notes"
         command: /patch-notes
         required: false
-        description: "Generate player-facing patch notes from git history and sprint data"
+        description: "Player-facing patch notes from git history and sprint data; /team-release finalizes them on a GO"
 
-      - id: changelog
-        name: "Changelog"
-        command: /changelog
-        required: false
-        description: "Auto-generate internal changelog from commits, sprints, and design docs"
-
+  release:
+    label: "Release"
+    description: "Launch preparation, certification, and ship"
+    next_phase: null
+    steps:
       - id: launch-checklist
         name: "Launch Checklist"
         command: /launch-checklist
         required: true
         description: "Final launch readiness — last gate before shipping to players"
+
+      - id: team-release
+        name: "Coordinated Release"
+        command: /team-release
+        required: false
+        description: "Release candidate, quality gate, go/no-go and deployment, coordinated across release, QA and DevOps"

@@ -2,170 +2,199 @@
 
 ## Skill Summary
 
-`/perf-profile` is a structured performance profiling workflow that identifies
-bottlenecks and recommends optimizations. If profiler data or performance logs
-are provided, it analyzes them directly. If not, it guides the user through a
-manual profiling checklist. No director gates are invoked. The skill asks
-"May I write to `production/qa/perf-[date].md`?" before persisting a report.
-Verdicts: WITHIN BUDGET, CONCERNS, or OVER BUDGET.
+`/perf-profile` is a static-analysis performance profiler. It takes a system
+name or `full` as its scope, records every input it needs as `FOUND` or
+`ABSENT` before producing anything, resolves `performance.enforce` from the
+config block injected at its top (Phase 0), and reads the committed budgets
+with `get_effective_yaml_key` for `performance.target_framerate`,
+`performance.frame_budget_ms`, `performance.draw_call_limit` and
+`performance.memory_ceiling_mb` before falling back to design docs or
+`CLAUDE.md` (Phase 2). It analyses source code for CPU, memory, rendering and
+I/O hotspot candidates (Phase 3) — it does not ingest runtime profiler exports.
+The report rates each budgeted row `OK` / `WARNING` / `OVER`; a metric with no
+committed budget is `NOT ASSESSED`, and the summary gives headroom only against a
+budget that is set (`no budget set — headroom not assessed` otherwise). The skill asks "May I write this profiling
+report to `production/polish/[scope]-report-[date].md`?" before writing (Phase
+4), offers implement / cut scope / defer / escalate choices for M- or L-effort
+hotspots (Phase 5), and hands off to `/architecture-decision`, `/scope-check`
+or `/sprint-plan update` (Phase 6). No director gates are invoked. Verdicts:
+COMPLETE, or NOT ASSESSED — NO DATA when every required input is absent.
 
 ---
 
 ## Static Assertions (Structural)
 
-Verified automatically by `/skill-test static` — no fixture needed.
+Checked against the SKILL.md by `/skill-test spec` — no fixture needed.
 
 - [ ] Has required frontmatter fields: `name`, `description`, `argument-hint`, `user-invocable`, `allowed-tools`
 - [ ] Has ≥2 phase headings
-- [ ] Contains verdict keywords: WITHIN BUDGET, CONCERNS, OVER BUDGET
-- [ ] Contains "May I write" language (skill writes perf report)
-- [ ] Has a next-step handoff (what to do after performance findings are reviewed)
+- [ ] Contains verdict keywords: COMPLETE, NOT ASSESSED — NO DATA, and the per-metric statuses OK / WARNING / OVER
+- [ ] Contains "May I write" language naming `production/polish/[scope]-report-[date].md`
+- [ ] Has a next-step handoff (Phase 6: `/architecture-decision`, `/scope-check`, `/sprint-plan update`)
 
 ---
 
 ## Director Gate Checks
 
-None. Performance profiling is an advisory analysis skill; no gates are invoked.
+None. Performance profiling is an advisory analysis skill; no gates are invoked
+in any review mode.
 
 ---
 
 ## Test Cases
 
-### Case 1: Happy Path — Frame data provided, draw call spike found
+### Case 1: Happy Path — Budgets committed, combat hotspots found
 
 **Fixture:**
-- User provides `production/qa/profiler-export-2026-03-15.json` with frame time data
-- Data shows: average frame time 14ms (within 16.6ms budget), but frames 42–48 spike to 28ms
-- Spike correlates with a scene with 450 draw calls (budget: 200)
+- `project.yaml`: `engine.name: godot`, `performance.target_framerate: 60`,
+  `performance.frame_budget_ms: 16.6`, `performance.draw_call_limit: 200`,
+  `performance.memory_ceiling_mb: 2048`; `performance.enforce` unset (resolves
+  to `warn`); `modes.automation` unset (collaborative)
+- No config key, design doc or `CLAUDE.md` section states a load-time target
+- `src/gameplay/combat/enemy_manager.gd` has a `_process()` that loops over every
+  enemy and, inside that loop, over every active projectile, and casts a ray per
+  enemy every frame
+- Reworking the nested loop into a spatial partition is a multi-day change
 
-**Input:** `/perf-profile production/qa/profiler-export-2026-03-15.json`
+**Input:** `/perf-profile combat`
 
 **Expected behavior:**
-1. Skill reads profiler data
-2. Skill identifies average frame time is within budget
-3. Skill identifies draw call spike on frames 42–48 (450 calls vs 200 budget)
-4. Verdict is CONCERNS (average OK, but spikes indicate an issue)
-5. Skill recommends batching or culling for the identified scene
-6. Skill asks "May I write to `production/qa/perf-2026-04-06.md`?"
+1. Skill records its inputs: source code FOUND, committed budgets FOUND
+2. Phase 0: `performance.enforce` resolves to `warn` — violations are findings, not blockers
+3. Phase 2: the four `performance.*` keys are read with `get_effective_yaml_key` before any fallback
+4. Phase 3: the combat `_process()` functions are listed; the nested loop and the per-frame raycast are identified
+5. Phase 4: the report's Performance Budgets table uses 16.6 ms, 2048 MB and 200 draw calls as budgets, each of those three rows with an OK / WARNING / OVER status; the Load time row has no committed budget and is `NOT ASSESSED`; hotspots and recommendations cite `enemy_manager.gd` with a line number
+6. Summary gives the top 3 hotspots, estimated headroom against the three set budgets, `no budget set — headroom not assessed` for load time, and a recommended next action
+7. Skill asks "May I write this profiling report to `production/polish/combat-report-[date].md`?"
+8. The nested-loop hotspot is rated Fix Effort M or L, so Phase 5 offers: implement, reduce scope via `/scope-check`, defer to Polish, or escalate via `/architecture-decision`
+9. Verdict: COMPLETE
 
 **Assertions:**
-- [ ] Spike frames are identified by frame number
-- [ ] Draw call count and budget are compared explicitly
-- [ ] Verdict is CONCERNS when spikes exceed budget even if average is OK
-- [ ] At least one specific optimization recommendation is given
-- [ ] "May I write" prompt appears before writing report
+- [ ] Budgets come from the four `performance.*` keys read with `get_effective_yaml_key`, not from design docs or a hardcoded 16.67 ms
+- [ ] The nested loop and the per-frame raycast are reported as hotspots with a `file:line` location
+- [ ] Each optimization recommendation states location, expected gain, risk and approach
+- [ ] The frame time, memory and draw call rows carry an OK / WARNING / OVER status; the Load time row is `NOT ASSESSED`, not OK
+- [ ] No headroom is claimed for load time; the summary says `no budget set — headroom not assessed`
+- [ ] "May I write" names `production/polish/combat-report-[date].md` and precedes any write
+- [ ] The M/L-effort hotspot triggers the Phase 5 choice (implement / `/scope-check` / defer to Polish / `/architecture-decision`)
+- [ ] Verdict is COMPLETE
 
 ---
 
-### Case 2: No Profiler Data — Manual checklist output
+### Case 2: No Committed Budget — Budget rows are NOT ASSESSED
 
 **Fixture:**
-- User runs `/perf-profile` with no arguments
-- No profiler data files exist in `production/qa/`
+- `project.yaml` has `engine.name: godot` and no `performance` block
+- No design doc and no `CLAUDE.md` section states a frame-rate, memory, load-time or draw-call target
+- `src/` contains gameplay scripts with `_process()` functions
 
-**Input:** `/perf-profile`
+**Input:** `/perf-profile full`
 
 **Expected behavior:**
-1. Skill finds no profiler data
-2. Skill outputs a manual profiling checklist for the user to work through:
-   - Enable Godot profiler or target engine's profiler
-   - Record a 60-second play session
-   - Export frame time data
-   - Note any dropped frames or hitches
-3. Skill asks user to provide data once collected before running analysis
+1. `get_effective_yaml_key` returns nothing for the four budget keys; the design-doc and `CLAUDE.md` fallback finds no target either
+2. Source code is FOUND, so Phase 3 analysis still runs and hotspots are reported
+3. Every row of the Performance Budgets table is `NOT ASSESSED` — none is measured against the template's `[16.67ms]` placeholder
+4. The summary does not claim headroom against a budget nobody set: it says `no budget set — headroom not assessed`
+5. Skill asks "May I write this profiling report to `production/polish/full-report-[date].md`?"; the `NOT ASSESSED` rows stay in the file offered for writing
 
 **Assertions:**
-- [ ] Skill does not crash or emit a verdict when no data is provided
-- [ ] Manual profiling checklist is output (actionable steps, not just an error)
-- [ ] No verdict is emitted (there is nothing to assess yet)
-- [ ] No files are written
+- [ ] No budget row shows OK, WARNING or OVER; each is `NOT ASSESSED`
+- [ ] The `[16.67ms]` placeholder is never used as a budget, and no headroom figure is claimed
+- [ ] Hotspot analysis still runs and is reported
+- [ ] The `NOT ASSESSED` rows are kept in the report offered for writing, not edited out
 
 ---
 
-### Case 3: Over Budget — Frame budget exceeded for target platform
+### Case 3: Nothing to Profile — Whole verdict NOT ASSESSED — NO DATA
 
 **Fixture:**
-- Profiler data shows consistent 22ms frame times (target: 16.6ms for 60fps)
-- All frames exceed budget; no single spike — systemic issue
-- `technical-preferences.md` specifies target platform: PC, 60fps
+- Fresh project: `project.yaml` has `engine.name: godot` and no `performance` block, and the code root `src/` is absent
+- No design docs exist
+- No profiler output exists anywhere
 
-**Input:** `/perf-profile production/qa/profiler-export-2026-03-20.json`
+**Input:** `/perf-profile full`
 
 **Expected behavior:**
-1. Skill reads profiler data and technical preferences for performance budget
-2. All frames are over the 16.6ms budget
-3. Verdict is OVER BUDGET
-4. Skill outputs a prioritized optimization list (e.g., LOD system, shader complexity, physics tick rate)
-5. Skill asks "May I write" before writing report
+1. Skill lists its inputs and records each: source code ABSENT, budgets ABSENT, profiler output ABSENT
+2. Every required input is ABSENT, so the skill stops before Phase 3
+3. Skill reports `NOT ASSESSED — NO DATA` as the whole verdict, naming what was missing and which skill produces it
+4. No report template is filled in and nothing is offered for writing
 
 **Assertions:**
-- [ ] Verdict is OVER BUDGET when all or most frames exceed budget
-- [ ] Target frame budget is read from `technical-preferences.md` (not hardcoded)
-- [ ] Optimization priority list is provided, not just the raw verdict
-- [ ] "May I write" prompt appears before report write
+- [ ] Each input is recorded as FOUND or ABSENT, not assumed present
+- [ ] The whole verdict is `NOT ASSESSED — NO DATA`, not COMPLETE
+- [ ] Output names each missing input and which skill produces it
+- [ ] No filled-in report, no headroom figure, and no "May I write" prompt
 
 ---
 
-### Case 4: Previous Perf Report Exists — Delta comparison
+### Case 4: Local Enforcement Override `block` — Violations are blockers
 
 **Fixture:**
-- `production/qa/perf-2026-03-28.md` exists with prior results (avg 15ms, max 19ms)
-- New profiler export shows: avg 13ms, max 17ms
-- Both reports are for the same scene
+- `project.yaml`: `engine.name: godot`, `performance.enforce: warn`, `performance.draw_call_limit: 200`, the other three budgets set
+- `project.local.yaml`: `performance.enforce: block`, so the resolved block at the top of the skill shows `block`
+- `src/levels/forest/forest_builder.gd` instantiates 600 individual foliage `MeshInstance3D` nodes, each with its own material and no instancing
+- `modes.automation` unset (collaborative)
 
-**Input:** `/perf-profile production/qa/profiler-export-2026-04-05.json`
+**Input:** `/perf-profile forest`
 
 **Expected behavior:**
-1. Skill reads new profiler data
-2. Skill detects prior report for the same scene
-3. Skill computes deltas: avg improved 2ms, max improved 2ms
-4. Skill presents regression check: no regressions detected
-5. Verdict is WITHIN BUDGET; report notes improvement since last profile
+1. Phase 0 uses `block` from the resolved config block at the top of the skill, not the `warn` a fresh read of `project.yaml` would give
+2. The draw-call estimate for the forest scope exceeds 200; the Draw calls row is OVER
+3. The report states explicitly that the violation is a blocker — release-stopping — and that `/gate-check` will FAIL the Polish gate on it
+4. A recommendation (e.g., batching or instancing the foliage) is given with its expected gain
+5. Skill asks "May I write" before writing `production/polish/forest-report-[date].md`
 
 **Assertions:**
-- [ ] Skill checks `production/qa/` for prior perf reports before writing
-- [ ] Delta comparison is shown (prior vs. current for key metrics)
-- [ ] Verdict is WITHIN BUDGET when current metrics are within budget
-- [ ] Improvement trend is noted positively in the report
+- [ ] The local `block` applies, not the committed `warn` — `performance.enforce` comes from the resolved block
+- [ ] The Draw calls row is OVER against the 200 budget
+- [ ] The report states the violation is a blocker and that `/gate-check` will FAIL the Polish gate on it
+- [ ] "May I write" precedes any write
 
 ---
 
-### Case 5: Gate Compliance — No gate; performance-analyst separate
+### Case 5: Enforcement Level `off` in Full Review Mode — Informational only, no gates
 
 **Fixture:**
-- Profiler data shows CONCERNS-level findings (some spikes)
-- `review-mode.txt` contains `full`
+- `project.yaml`: `engine.name: godot`, `modes.review_mode: full`, `performance.enforce: off`, all four budgets set
+- `src/` contains a `_process()` whose estimated frame cost exceeds `performance.frame_budget_ms`
 
-**Input:** `/perf-profile production/qa/profiler-export-2026-04-01.json`
+**Input:** `/perf-profile full`
 
 **Expected behavior:**
-1. Skill analyzes profiler data; verdict is CONCERNS
-2. No director gate is invoked regardless of review mode
-3. Output notes: "For in-depth analysis, consider running `/perf-profile` with the performance-analyst agent"
-4. Skill asks "May I write" and writes report on user approval
+1. No director gate is invoked, whatever the review mode
+2. The estimated frame time is still reported in the Performance Budgets table
+3. Because budgets are informational under `off`, the over-budget frame time is not raised as a violation finding or as a recommendation to fix
+4. Skill asks "May I write" before writing the report
+5. Output ends with the Phase 6 next steps: `/architecture-decision`, `/scope-check [feature]`, `/sprint-plan update`
 
 **Assertions:**
 - [ ] No director gate is invoked in any review mode
-- [ ] Performance-analyst consultation is suggested (not mandated)
-- [ ] "May I write" prompt appears before report write
-- [ ] Verdict is CONCERNS for spike-based findings
+- [ ] The estimated frame time still appears in the budget table
+- [ ] The over-budget metric is not raised as a violation finding or a fix recommendation
+- [ ] "May I write" precedes any write
+- [ ] Next steps name `/architecture-decision`, `/scope-check` and `/sprint-plan update`
 
 ---
 
 ## Protocol Compliance
 
-- [ ] Reads profiler data when provided; outputs checklist when not
-- [ ] Reads `technical-preferences.md` for target platform frame budget
-- [ ] Checks for prior perf reports to enable delta comparison
-- [ ] Always asks "May I write" before writing report
+- [ ] Records each input as FOUND or ABSENT before producing any report
+- [ ] Reads the four `performance.*` budget keys with `get_effective_yaml_key` before falling back to design docs or `CLAUDE.md`
+- [ ] A metric with no committed budget is `NOT ASSESSED` — never measured against the `[16.67ms]` placeholder — and the summary claims headroom only against a budget that is set
+- [ ] Applies `performance.enforce` from the resolved block: `warn` → findings, `block` → blockers, `off` → informational
+- [ ] Asks "May I write" naming `production/polish/[scope]-report-[date].md` before writing, and keeps `NOT ASSESSED` sections in the written file
 - [ ] No director gates are invoked
-- [ ] Verdict is one of: WITHIN BUDGET, CONCERNS, OVER BUDGET
+- [ ] Ends with the Phase 6 next-step handoff
 
 ---
 
 ## Coverage Notes
 
-- Platform-specific profiling workflows (console, mobile) are not tested here;
-  the checklist output in Case 2 would be platform-specific in practice.
-- The delta comparison in Case 4 assumes reports cover the same scene; cross-scene
-  comparisons are not explicitly handled.
+- An unrecognized `performance.enforce` value (surfaced to the user, then
+  treated as `warn`) is not tested here.
+- The skill is static analysis only; confirming a hotspot with runtime
+  profiling is listed under the report's "Requires Investigation" section and is
+  not exercised by these cases.
+- Deferring M/L hotspots under Phase 5 choice C records them under
+  `### Deferred to Polish`; that recording is not asserted separately.

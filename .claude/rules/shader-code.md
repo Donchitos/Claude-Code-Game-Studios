@@ -1,11 +1,15 @@
 ---
 paths:
   - "assets/shaders/**"
+  - "**/*.gdshader"
+  - "Assets/**/*.{shader,hlsl,cginc,compute,shadergraph}"
+  - "Shaders/**"
+  - "**/*.{usf,ush}"
 ---
 
 # Shader Code Standards
 
-All shader files in `assets/shaders/` must follow these standards to maintain
+All shader files, in every engine, must follow these standards to maintain
 visual quality, performance, and cross-platform compatibility.
 
 ## Naming Conventions
@@ -14,7 +18,8 @@ visual quality, performance, and cross-platform compatibility.
   - `SG_Env_Water` (Unity Shader Graph)
   - `M_Env_Water` (Unreal Material)
 - Use descriptive names that indicate the material purpose
-- Prefix with shader type: `spatial_`, `canvas_`, `particles_`, `post_`
+- Prefix with the engine's shader type — Godot `spatial_`, `canvas_`, `particles_`,
+  `post_`; Unity `SG_` (Shader Graph); Unreal `M_`, `MI_` (instance), `MF_` (function)
 
 ## Code Quality
 - All uniforms/parameters must have descriptive names and appropriate hints
@@ -27,7 +32,8 @@ visual quality, performance, and cross-platform compatibility.
 - Document the target platform and complexity budget for each shader
 - Use appropriate precision: `half`/`mediump` on mobile where full precision isn't needed
 - Minimize texture samples in fragment shaders
-- Avoid dynamic branching in fragment shaders — use `step()`, `mix()`, `smoothstep()`
+- Avoid dynamic branching in fragment shaders — use `step()`, `smoothstep()` and
+  `mix()` (Godot, GLSL) or `lerp()` (HLSL: Unity, Unreal)
 - No texture reads inside loops
 - Two-pass approach for blur effects (horizontal then vertical)
 

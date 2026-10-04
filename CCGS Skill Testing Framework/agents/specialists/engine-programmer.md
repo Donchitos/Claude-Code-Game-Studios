@@ -2,8 +2,7 @@
 
 ## Agent Summary
 Domain: Rendering pipeline, physics integration, memory management, resource loading, and core engine framework.
-Does NOT own: gameplay mechanics (gameplay-programmer), editor/debug tool UI (tools-programmer).
-Model tier: Sonnet (default).
+Does NOT own: gameplay mechanics (gameplay-programmer), build infrastructure (devops-engineer), editor/debug tool UI (tools-programmer).
 No gate IDs assigned.
 
 ---
@@ -11,8 +10,8 @@ No gate IDs assigned.
 ## Static Assertions (Structural)
 
 - [ ] `description:` field is present and domain-specific (references rendering / memory / engine core)
-- [ ] `allowed-tools:` list includes Read, Write, Edit, Bash, Glob, Grep
-- [ ] Model tier is Sonnet (default for specialists)
+- [ ] `tools:` list includes Read, Write, Edit, Bash, Glob, Grep
+- [ ] Model tier is `inherit` — frontmatter `model:` reads exactly `inherit` (tiers: `.claude/docs/model-tiers.md`)
 - [ ] Agent definition does not claim authority over gameplay mechanics or tool UI
 
 ---
@@ -29,18 +28,18 @@ No gate IDs assigned.
 - Output is compatible with the project's configured engine and language
 
 ### Case 2: Out-of-domain request — redirects correctly
-**Input:** "Add a pause menu screen with volume sliders and a 'back to main menu' button."
+**Input:** "Add a wall-jump ability to the player controller."
 **Expected behavior:**
-- Does NOT produce UI screen code
-- Explicitly states that menu screens belong to `ui-programmer`
-- Redirects the request to `ui-programmer`
-- May note it can provide engine-level audio volume API endpoints for the ui-programmer to call
+- Does NOT produce the wall-jump gameplay code
+- Explicitly states that gameplay features belong to `gameplay-programmer`
+- Redirects the request to `gameplay-programmer`
+- If it offers an engine-level query the ability can call (e.g., wall contact and surface normal), that API does not depend on gameplay code (strict dependency direction)
 
 ### Case 3: Memory leak diagnosis
 **Input:** "Memory usage grows by ~50MB per level load and never releases. We suspect the resource loading system."
 **Expected behavior:**
-- Produces a systematic diagnosis approach: reference counting audit, resource handle lifecycle check, cache invalidation review
-- Identifies likely causes (orphaned resource handles, circular references, cache that never evicts)
+- Diagnoses by measurement before changing code: memory baseline, repeated load/unload cycles, numbers documented (profile before and after)
+- Audits the resource loading/caching and object lifecycle code it owns for references that are never released, naming likely causes (orphaned resource handles, circular references, a cache that never evicts)
 - Produces a concrete fix for the identified leak pattern
 - Provides a test to verify the fix (memory baseline before load, measure after unload, confirm return to baseline)
 
@@ -57,7 +56,7 @@ No gate IDs assigned.
 **Expected behavior:**
 - Reads the engine version reference and notes Godot 4.6 change: Jolt physics is now the default
 - Produces configuration guidance that accounts for the Jolt-as-default change (4.6 migration note)
-- Flags any API differences between GodotPhysics and Jolt that could affect existing code
+- Flags the GodotPhysics3D→Jolt differences `docs/engine-reference/godot/modules/physics.md` documents — HingeJoint3D `damp` is unsupported under Jolt, collision margins may behave differently, Jolt warns at runtime about unsupported properties — and that existing projects keep their current engine setting; says the reference lists no other API differences rather than inventing any
 - Does NOT suggest deprecated or pre-4.6 physics setup steps without noting they apply to older versions
 
 ---
@@ -65,11 +64,12 @@ No gate IDs assigned.
 ## Protocol Compliance
 
 - [ ] Stays within declared domain (rendering, physics, memory, resource loading, core framework)
-- [ ] Redirects UI/menu requests to ui-programmer
+- [ ] Redirects gameplay feature requests to gameplay-programmer and build infrastructure changes to devops-engineer
 - [ ] Returns structured findings (implementation code, diagnosis steps, migration plans)
 - [ ] Coordinates with lead-programmer before changing shared API surfaces
 - [ ] Checks engine version reference before suggesting engine-specific APIs
 - [ ] Provides test evidence for fixes (memory before/after, performance measurements)
+- [ ] Asks "May I write this to [filepath]?" naming the file before writing
 
 ---
 

@@ -1,12 +1,16 @@
 ---
 name: ux-review
-description: "Validates a UX spec, HUD design, or interaction pattern library for completeness, accessibility compliance, GDD alignment, and implementation readiness. Produces APPROVED / NEEDS REVISION / MAJOR REVISION NEEDED verdict with specific gaps."
+description: "Validate a UX spec, HUD design or pattern library — accessibility, GDD alignment, readiness. APPROVED / NOT ASSESSED / NEEDS REVISION / MAJOR REVISION NEEDED."
 argument-hint: "[file-path or 'all' or 'hud' or 'patterns']"
 user-invocable: true
-allowed-tools: Read, Glob, Grep
+allowed-tools: Read, Glob, Grep, Bash(bash "*/.claude/skills/ux-review/../../hooks/yaml-helper.sh" resolve_config *)
 model: sonnet
-agent: ux-designer
 ---
+
+!`bash "${CLAUDE_SKILL_DIR}/../../hooks/yaml-helper.sh" resolve_config --keys workflow`
+
+Resolved above — use as-is. No block → defaults in
+`.claude/docs/config-resolution.md`.
 
 ## Overview
 
@@ -23,9 +27,18 @@ the `/team-ui` pipeline.
 
 **Verdict levels:**
 - **APPROVED** — spec is complete, consistent, and implementation-ready
+- **NOT ASSESSED** — one or more review dimensions had no criterion to check
+  against, or the spec could not be read; name which
 - **NEEDS REVISION** — specific gaps found; fix before handoff but not a full redesign
 - **MAJOR REVISION NEEDED** — fundamental issues with scope, player need, or
   completeness; needs significant rework
+
+**`NOT ASSESSED` ranks above APPROVED and below the two revision verdicts.** A
+review that could not evaluate a dimension has not shown the spec is
+implementation-ready; but a gap somebody found is more actionable than one nobody
+could look for, so it must not displace them. Emit it when the spec file cannot
+be read, when a checklist dimension has no source of truth to compare against, or
+when the accessibility tier is uncommitted (below).
 
 ---
 
@@ -41,16 +54,30 @@ the `/team-ui` pipeline.
 For `all`, output a summary table first (file | verdict | primary issue) then
 full detail for each.
 
+**Which checklist a file gets** (a file path, or each file under `all`): its
+`> **Template**:` header line, which `/ux-design` writes — `UX Spec` → Phase 3A,
+`HUD Design` → 3B, `Interaction Pattern Library` → 3C. A file without that line
+is classified by name — `hud.md` → 3B, `interaction-patterns.md` → 3C, anything
+else → 3A — and the report says which checklist it assumed, and why.
+
 ---
 
 ## Phase 2: Load Cross-Reference Context
 
 Before validating any spec, load:
 
-1. **Input & Platform config**: Read `.claude/docs/technical-preferences.md` and
-   extract `## Input & Platform`. This is the authoritative source for which input
-   methods the game supports — use it to drive the Input Method Coverage checks in
-   Phase 3A, not the spec's own header. If unconfigured, fall back to the spec header.
+1. **Input & Platform config**: Read the `platform` block from `project.yaml`
+   (`platform.targets`, `platform.primary_input`, `platform.gamepad_support`,
+   `platform.touch_support`); if `project.yaml` has no `platform` block, fall
+   back to the `## Input & Platform` section of
+   `.claude/docs/technical-preferences.md`. For the set of supported input
+   methods: when reading from `project.yaml`, derive it — keyboard/mouse if
+   `PC` or `Web` is in `targets`; gamepad if `gamepad_support` is Full or
+   Partial; touch if `touch_support` is Full or Partial; plus `primary_input`.
+   When falling back to `technical-preferences.md`, use its explicit Input
+   Methods field instead. This is the authoritative source for the Input Method
+   Coverage checks in Phase 3A — not the spec's own header. If neither source is
+   configured, fall back to the spec header.
 2. The accessibility tier committed to in `design/accessibility-requirements.md`
    (if it exists)
 3. The interaction pattern library at `design/ux/interaction-patterns.md` (if
@@ -82,6 +109,8 @@ Run all checks against a `ux-spec.md`-based document.
 - [ ] Events Fired — every player action has a corresponding event or null
   explanation
 - [ ] Transitions & Animations — at least enter/exit transitions specified
+- [ ] Input Method Completeness Checklist — a block for each input method in
+  the Platform Target line; any unticked item is listed under Open Questions
 - [ ] Accessibility Requirements — screen-level requirements present
 - [ ] Localization Considerations — max character counts for text elements
 - [ ] Acceptance Criteria — at least 5 specific testable criteria
@@ -161,9 +190,12 @@ Run all checks against a `hud-design.md`-based document.
   source, priority)
 - [ ] HUD States by Gameplay Context covers at minimum: exploration, combat,
   dialogue/cutscene, paused
+- [ ] Information Hierarchy gives every HUD element a priority tier (MUST KEEP /
+  SHOULD KEEP / CAN HIDE / ALWAYS HIDE)
 - [ ] Visual Budget defined (max simultaneous elements, max screen %)
 - [ ] Platform Adaptation covers all target platforms
 - [ ] Tuning Knobs present for player-adjustable elements
+- [ ] Acceptance Criteria — at least 5 specific testable criteria
 
 ### Quality Checks
 
@@ -206,6 +238,7 @@ Run all checks against a `hud-design.md`-based document.
 **Date**: [date]
 **Reviewer**: ux-review skill
 **Document**: [file path]
+**Checklist**: [3A / 3B / 3C — from its Template line, or assumed from the file name]
 **Platform Target**: [from header]
 **Accessibility Tier**: [from header or accessibility-requirements.md]
 
@@ -223,19 +256,48 @@ Run all checks against a `hud-design.md`-based document.
 - GDD [name] UI Requirements — [X/Y requirements covered]
 - Missing: [list any uncovered GDD requirements]
 
-### Accessibility: [COMPLIANT / GAPS / NON-COMPLIANT]
+### Accessibility: [COMPLIANT / GAPS / NON-COMPLIANT / NOT ASSESSED]
 - Target tier: [tier]
 - [list specific accessibility findings]
 
-### Pattern Library: [CONSISTENT / INCONSISTENCIES FOUND]
+> **If `design/accessibility-requirements.md` is absent there is no committed
+> tier, so this dimension has no criterion.** Report
+> `Accessibility: NOT ASSESSED — no committed tier (design/accessibility-requirements.md absent)`
+> and do NOT report it as COMPLIANT — a gate compared against an absent standard
+> passes the way an assertion that can never fail passes. The same rule lives in
+> `/team-ui` Phase 4 and is mirrored here so the two cannot drift. If the spec's own
+> header states a tier, carry it forward as an **assumption** and say plainly that
+> it was assumed rather than committed. Recommend `/ux-design accessibility` to
+> establish the tier.
+
+### Pattern Library: [CONSISTENT / INCONSISTENCIES FOUND / N/A]
 - [findings]
 
-### Verdict: APPROVED / NEEDS REVISION / MAJOR REVISION NEEDED
+> **For a HUD design there is no Pattern Library checklist to run it against (Phase 3B has none), so Pattern Library is N/A, excluded from the dimension count.**
+> Report `Pattern Library: N/A — no pattern library checklist for this document
+> type`.
+>
+> For a UX spec, this dimension does have a checklist — it is checked against
+> `design/ux/interaction-patterns.md`. If that file is absent: N/A only where
+> the workflow tier does not require the library (`minimal`) — report
+> `Pattern Library: N/A — interaction pattern library not required at this
+> tier`. At any tier that requires or recommends it (`standard`, `full`), report
+> `Pattern Library: NOT ASSESSED — design/ux/interaction-patterns.md not found`
+> instead: the library is missing, not out of scope, and NOT ASSESSED counts it
+> against the verdict as the unresolved item it is.
+
+### Verdict: APPROVED / NOT ASSESSED / NEEDS REVISION / MAJOR REVISION NEEDED
 **Blocking issues**: [N] — must be resolved before implementation
 **Advisory issues**: [N] — recommended but not blocking
+**Dimensions not assessed**: [N] — [name each, and what would make it checkable]
 
 [For APPROVED]: This spec is ready for handoff to `/team-ui` Phase 2
 (Visual Design).
+
+[For NOT ASSESSED]: [N] of the four review dimensions could not be evaluated:
+[name them]. The spec may well be sound — this review cannot say either way for
+those dimensions. [For each: the one input that would make it checkable.]
+Handoff to `/team-ui` is not recommended on this result.
 
 [For NEEDS REVISION]: Address the [N] blocking issues above, then re-run
 `/ux-review`.
@@ -252,6 +314,10 @@ This skill is READ-ONLY — it never edits or writes files. It reports findings 
 
 After delivering the verdict:
 - For **APPROVED**: suggest running `/team-ui` to begin implementation coordination
+- For **NOT ASSESSED**: name the missing input per dimension and offer to help
+  produce it (`/ux-design accessibility` for an uncommitted tier, the GDD path
+  for absent UI requirements). Do not re-run the review against the same missing
+  inputs and report a different verdict — only new inputs change this one
 - For **NEEDS REVISION**: offer to help fix specific gaps ("Would you like me to
   help draft the missing error state?") — but do not auto-fix; wait for user
   instruction

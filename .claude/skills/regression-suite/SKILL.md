@@ -1,11 +1,17 @@
 ---
 name: regression-suite
-description: "Map test coverage to GDD critical paths, identify fixed bugs without regression tests, flag coverage drift from new features, and maintain tests/regression-suite.md. Run after implementing a bug fix or before a release gate."
+description: "Map test coverage to GDD critical paths, find fixed bugs lacking regression tests, flag drift from new features."
 argument-hint: "[update | audit | report]"
 user-invocable: true
-allowed-tools: Read, Glob, Grep, Write, Edit, AskUserQuestion
+allowed-tools: Read, Glob, Grep, Write, Edit, AskUserQuestion, Bash(bash "*/.claude/skills/regression-suite/../../hooks/yaml-helper.sh" resolve_config *)
 model: sonnet
 ---
+
+!`bash "${CLAUDE_SKILL_DIR}/../../hooks/yaml-helper.sh" resolve_config --keys automation,workflow,qa.level,system_overrides`
+
+Resolved above — use as-is. No block → defaults in
+`.claude/docs/config-resolution.md`.
+
 
 # Regression Suite
 
@@ -22,12 +28,36 @@ and known failure points. This skill maintains that list.
 
 **When to run:**
 - After fixing a bug (confirm a regression test was written or identify gap)
-- Before a release gate (`/gate-check polish` requires regression suite exists)
+- Before a phase gate — at `qa.level: full`, `/gate-check` requires a regression suite
 - As part of sprint close to detect coverage drift
 
 ---
 
+Every `AskUserQuestion` call follows `.claude/docs/automation-modes.md`
+(collaborative asks always · guided major-only · autonomous logs and proceeds;
+`automation_always_ask` categories always prompt).
+
+**Workflow tier**: `modes.workflow` as resolved above — supplied by `modes.rigor`
+unless set explicitly — per `.claude/docs/workflow-modes.md`; in `audit` mode consider
+`workflow_overrides.system_overrides.<system>` per system as each GDD is read. It
+sets whether GDD critical paths are mapped or coverage is smoke-only — see Step 2c.
+
+**`qa.level`**: controls whether the suite is generated at
+all. At `minimal`, the regression suite is **not generated** (report that and
+stop); at `standard`, generate it at Polish-stage entry; at `full`, at
+Production-stage entry. Distinct axis from `workflow`.
+
 ## 1. Parse Arguments
+
+**Early `qa.level` guard (resolved above):** if `qa.level: minimal`, the
+regression suite is **not generated** — report "Regression suite not generated at
+qa.level minimal" and **STOP here, before any scan**, in every mode
+(`update` / `audit` / `report`). This is the `qa.level` axis; it is distinct from
+the `workflow`-tier `minimal` branch in Step 2c (which only changes the
+critical-path *source*, not *whether* the suite runs). Do not enter Step 2c's
+`minimal` branch on account of `qa.level`. This stop's verdict is
+**NOT ASSESSED** (Section 7) — tests are not required at this level, and nothing
+was scanned.
 
 **Modes:**
 - `/regression-suite update` — scan new bug fixes this sprint and check
@@ -70,8 +100,22 @@ Do not read test file contents unless needed for name-to-test mapping.
 
 ### Step 2c — Load GDD critical paths
 
-For `audit` mode: read `design/gdd/systems-index.md` to get all systems.
-For each MVP-tier system, read its GDD and extract:
+For `audit` mode: read `design/gdd/systems-index.md` to get all systems, then
+scope the scan by each system's workflow tier (resolved above):
+- **`full`** — read the GDD and map critical paths from all sections.
+- **`standard`** — same, from the required sections (Acceptance Criteria, Edge
+  Cases, and Formulas where the system defines numeric rules).
+  A system pinned higher via `system_overrides` is mapped at its higher tier.
+- **`minimal`** — **skip the GDD critical-path scan**. Instead read the latest
+  smoke-check report in `production/qa/smoke-*.md` and take the critical paths it
+  exercises as the regression scope (Step 3 maps coverage against those, not GDD
+  acceptance criteria). If no smoke report exists, stop with Verdict: **NOT
+  ASSESSED — no smoke report to take critical paths from** — there is no
+  critical-path source at minimal without one; run `/smoke-check` first.
+
+(Tier affects `audit` mode only; `update` and `report` modes are tier-independent.)
+
+For each in-scope MVP-tier system's GDD, extract:
 - Acceptance Criteria (these define the critical paths)
 - Formulas section (formulas must have regression tests)
 - Edge Cases section (known edge cases should have regression tests)
@@ -90,7 +134,9 @@ or `Status: Fixed` field. Note:
 
 ## 3. Map Coverage — Critical Paths
 
-For `audit` mode only:
+For `audit` mode only. (At `minimal` the critical paths come from the smoke-check
+report identified in Step 2c, not from GDD acceptance criteria — map coverage
+against those smoke paths and skip the GDD-criterion loop below.)
 
 For each GDD acceptance criterion, determine whether a test exists:
 
@@ -163,7 +209,7 @@ Check for drift indicators:
 ### Bug Regression Coverage
 | Bug ID | System | Severity | Has Regression Test? |
 |--------|--------|----------|----------------------|
-| BUG-NNN | [system] | S[N] | YES / NO ⚠ |
+| BUG-NNNN | [system] | S[N] | YES / NO ⚠ |
 
 **Bugs without regression tests**: [N]
 
@@ -173,11 +219,29 @@ Check for drift indicators:
 ### Recommended New Regression Tests
 | Priority | System | Suggested Test File | Covers |
 |----------|--------|---------------------|--------|
-| HIGH | [system] | `tests/unit/[system]/[slug]_regression_test.[ext]` | BUG-NNN / AC-[N] |
+| HIGH | [system] | `tests/unit/[system]/[slug]_regression_test.[ext]` | BUG-NNNN / AC-[N] |
 | MEDIUM | [system] | `tests/unit/[system]/[slug]_test.[ext]` | [criterion] |
 ```
 
 ### Suite manifest format (`tests/regression-suite.md`)
+
+> **Before computing coverage, check the denominator.** If the GDD
+> glob returns **zero critical paths**, or the test globs return **zero test
+> files**, do not emit a percentage — report
+> `Coverage: NOT ASSESSED — [no GDDs found | no test files found]` and name which
+> side was empty and the skill that produces it (`/map-systems` and
+> `/design-system` for GDDs, `/test-setup` for the test scaffold).
+>
+> A percentage computed from an empty denominator is not a low score; it is not a
+> number. `0%` reads as "measured and terrible" and `100%` as "measured and
+> perfect" — both are claims about a comparison that never happened. This is the
+> same defect `/scope-check` carries a Phase 4 guard against, in the same words:
+> *"a percentage computed from no baseline items is not a small number; it is not
+> a number."*
+>
+> **A hand-written list of skills required to carry `NOT ASSESSED` pins what was
+> known when it was written**, so a skill added later inherits no obligation and
+> nothing notices. Derive that set rather than enumerating it.
 
 The manifest is a curated index — not the tests themselves, but a registry
 of which tests should always pass before a release:
@@ -199,7 +263,7 @@ of which tests should always pass before a release:
 
 | Test File | Test Function (if known) | Covers | Added |
 |-----------|--------------------------|--------|-------|
-| `tests/unit/[system]/[file]_test.[ext]` | `test_[scenario]` | AC-N / BUG-NNN | [date] |
+| `tests/unit/[system]/[file]_test.[ext]` | `test_[scenario]` | AC-N / BUG-NNNN | [date] |
 
 ## Known Gaps
 
@@ -207,7 +271,7 @@ Tests that should exist but don't yet:
 
 | Priority | System | Suggested Path | Covers | Reason Not Yet Written |
 |----------|--------|----------------|--------|------------------------|
-| HIGH | [system] | `tests/unit/[system]/[path]` | BUG-NNN | Bug fixed without test |
+| HIGH | [system] | `tests/unit/[system]/[path]` | BUG-NNNN | Bug fixed without test |
 
 ## Quarantined Tests
 
@@ -222,7 +286,7 @@ Tests that are flaky or disabled (do not run in CI):
 
 ## 7. Write Output
 
-Ask: "May I write/update `tests/regression-suite.md` with the current
+In `update` or `audit` mode, ask: "May I write/update `tests/regression-suite.md` with the current
 regression suite manifest?"
 
 For `update` mode: append new entries; never remove existing entries
@@ -239,17 +303,32 @@ After writing (if approved):
 - If coverage drift detected: "Regression suite may be drifting. Consider
   running `/regression-suite audit` at the next sprint boundary."
 
-Verdict: **COMPLETE** — regression suite updated. (If user declined write: Verdict: **BLOCKED**.)
+Verdict, first match wins:
+- **NOT ASSESSED** — the Section 1 stop at `qa.level: minimal`: "Regression
+  suite not generated at qa.level minimal". Tests are not required at this
+  level; nothing was scanned or written.
+- **NOT ASSESSED** — the `minimal` stop above: no smoke report to take critical
+  paths from; name `/smoke-check` as the fix.
+- **NOT ASSESSED** — coverage came back `Coverage: NOT ASSESSED — [reason]` (no GDDs or
+  no test files); name the reason. Never report COMPLETE over a coverage figure
+  that was not computed.
+- **BLOCKED** — `update` or `audit` mode and the user declined the write.
+- **COMPLETE** — `update` / `audit`: regression suite updated; `report`: coverage
+  report shown (report mode writes nothing).
 
 ---
 
 ## Collaborative Protocol
 
+**Applies in `collaborative` mode (the default).** For `guided` and
+`autonomous` modes, see `.claude/docs/automation-modes.md` — the rules below
+describe what collaborative mode requires, not universal behavior.
+
 - **Never remove existing regression tests from the manifest** without
   explicit user approval — removing a test that was deliberately written is a
   regression risk itself
 - **Gaps are advisory, not blocking** — surface them clearly but do not prevent
-  other work from proceeding (except at release gate where regression suite is required)
+  other work from proceeding (except at `qa.level: full`, where phase gates require the regression suite)
 - **Quarantine is not deletion** — tests with intermittent failures should be
   quarantined (noted in manifest) but not removed; they should be fixed by
   `/test-flakiness`

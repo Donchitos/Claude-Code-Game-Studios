@@ -22,7 +22,12 @@
 
 ### Critical Bugs
 - [ ] Zero S1 (Critical) bugs open
-- [ ] Zero S2 (Major) bugs -- or documented exceptions below:
+- [ ] Zero S2 (High) bugs -- or documented exceptions below (no exceptions at `workflow: full`):
+- [ ] Zero S3 (Medium) bugs open -- required at `workflow: full`
+
+> The release gate (`/gate-check release`) blocks any open S1–S3 bug at `workflow: full`,
+> with no exceptions; at `standard` and `minimal` it blocks open S1 only, and an open
+> S2 or S3 is a risk to record here.
 
 | Bug ID | Description | Exception Rationale | Approved By |
 | ---- | ---- | ---- | ---- |

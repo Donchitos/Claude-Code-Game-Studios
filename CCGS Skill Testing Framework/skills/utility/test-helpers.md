@@ -2,27 +2,37 @@
 
 ## Skill Summary
 
-`/test-helpers` generates engine-specific test helper utilities for the project's
-test suite. Helpers include factory functions (for creating test entities with
-known state), fixture loaders, assertion helpers, and mock stubs for external
-dependencies. Generated helpers follow the naming and structure conventions in
-`coding-standards.md` and are written to `tests/helpers/`.
+`/test-helpers [system-name | all | scaffold]` generates test helper files in
+the engine's **helper root** — the only place its test runner compiles them:
+`tests/helpers/` on Godot, `Assets/Tests/EditMode/Helpers/` on Unity (inside the
+`EditModeTests` assembly), `Source/<Module>/Private/Tests/Helpers/` on Unreal. It
+writes base assertion and factory helpers (`scaffold`), and a
+`[helper root]/[system]_factory.[ext]` per system built from that system's GDD
+(`[system-name]` or `all`). No argument runs `scaffold` when no helpers exist,
+else `all`. It reads `engine.name`, `engine.language` and `testing.framework`
+from `project.yaml` (falling back to `technical-preferences.md`), samples up to
+5 existing test files for house style, and section-greps the GDD (Formulas,
+Edge Cases, Detailed Rules/Design) rather than reading it whole.
 
-Each helper file is gated behind a "May I write" ask. If a helper file already
-exists, the skill offers to extend it rather than replace. No director gates
-apply. The verdict is COMPLETE when helper files are written.
+Helpers must assert through the configured framework's API — never bare
+`assert()` — and must not extend the framework's test-suite base class. If the
+framework's assertion API cannot be confirmed, the skill says so and generates
+no helper. It never overwrites an existing helper: it skips it with a message.
+After presenting the file list it asks "May I write these helper files to
+`[helper root]`?". No director gates apply. Verdict: COMPLETE when helper files
+are created.
 
 ---
 
 ## Static Assertions (Structural)
 
-Verified automatically by `/skill-test static` — no fixture needed.
+Checked against the SKILL.md by `/skill-test spec` — no fixture needed.
 
 - [ ] Has required frontmatter fields: `name`, `description`, `argument-hint`, `user-invocable`, `allowed-tools`
 - [ ] Has ≥2 phase headings
 - [ ] Contains verdict keyword: COMPLETE
 - [ ] Contains "May I write" collaborative protocol language before writing helpers
-- [ ] Has a next-step handoff (e.g., write a test using the generated helper)
+- [ ] Has a next-step handoff (Next Steps: `/test-setup`, `/dev-story`, `/skill-test`)
 
 ---
 
@@ -34,113 +44,119 @@ None. `/test-helpers` is a scaffolding utility. No director gates apply.
 
 ## Test Cases
 
-### Case 1: Happy Path — Player factory helper generated for Godot/GDScript
+### Case 1: Happy Path — Player helper generated for Godot/GDScript
 
 **Fixture:**
-- `technical-preferences.md` has engine Godot 4, language GDScript
-- `tests/` directory exists (test-setup has been run)
-- `design/gdd/player.md` exists with defined player properties
-- No existing helpers in `tests/helpers/`
+- `project.yaml` has `engine.name: Godot`, `engine.language: GDScript`,
+  `testing.framework: gdUnit4`; `addons/gdUnit4/` is installed, so its
+  assertion API can be confirmed from the project
+- `tests/unit/player/player_movement_test.gd` exists
+- `design/gdd/player.md` has a Formulas section bounding health to 0–100
+- No existing files in `tests/helpers/`; the user approves the write
 
-**Input:** `/test-helpers player-factory`
+**Input:** `/test-helpers player`
 
 **Expected behavior:**
-1. Skill reads engine (Godot 4 / GDScript) and player GDD for property context
-2. Skill generates a deterministic `PlayerFactory` helper in GDScript:
-   - `create_player(health: int = 100, speed: float = 200.0)` function
-   - Returns a player node pre-configured to a known state
-   - Uses dependency injection (no singletons)
-3. Skill asks "May I write to `tests/helpers/player_factory.gd`?"
-4. File is written on approval; verdict is COMPLETE
+1. Skill reads engine, language and framework; samples the existing test file
+2. Skill greps `design/gdd/player.md` for the Formulas / Edge Cases / Detailed
+   Rules headings instead of reading it whole
+3. Skill drafts `tests/helpers/player_factory.gd`: a `class_name` helper that
+   `extends RefCounted`, static `make_*` factories with default parameters,
+   bound constants commented as coming from the GDD, and a header line
+   "Based on: design/gdd/player.md"
+4. Every assertion goes through gdUnit4's confirmed API — no bare `assert()`,
+   no `FAIL_IF` placeholder
+5. Skill presents the file list and asks "May I write these helper files to `tests/helpers/`?"
+6. Files written on approval; verdict COMPLETE, followed by the per-engine usage note
 
 **Assertions:**
-- [ ] Generated helper is in GDScript (not C# or Blueprint)
-- [ ] Factory function parameters use defaults matching GDD values
-- [ ] Helper uses dependency injection (no Autoload/singleton references)
-- [ ] Filename follows snake_case convention for GDScript
+- [ ] Generated helper is GDScript at `tests/helpers/player_factory.gd`
+- [ ] Bound constants trace to the GDD's Formulas section (not invented values)
+- [ ] Helper extends `RefCounted`, not the test-suite base class, and uses no Autoload/singleton
+- [ ] No bare `assert()` and no unresolved `FAIL_IF` reaches the file
 - [ ] Verdict is COMPLETE
 
 ---
 
-### Case 2: No Test Setup Exists — Redirects to /test-setup
+### Case 2: Engine Not Configured — Stops with /setup-engine
 
 **Fixture:**
-- `tests/` directory does not exist
+- `project.yaml` has no `engine` block; `technical-preferences.md` shows
+  `[TO BE CONFIGURED]` for Engine
 
-**Input:** `/test-helpers player-factory`
+**Input:** `/test-helpers player`
 
 **Expected behavior:**
-1. Skill checks for `tests/` directory — not found
-2. Skill reports: "Test directory not found — test framework must be set up first"
-3. Skill suggests running `/test-setup` before generating helpers
-4. No helper file is created
+1. Skill checks `project.yaml`, then `technical-preferences.md` — no engine in either
+2. Skill outputs: "Engine not configured. Run `/setup-engine` first."
+3. Skill stops — no test scan, no draft, no write
 
 **Assertions:**
-- [ ] Error message identifies the missing tests/ directory
-- [ ] `/test-setup` is suggested as the prerequisite step
+- [ ] The message states the engine is not configured
+- [ ] `/setup-engine` is named as the prerequisite
 - [ ] No write tool is called
-- [ ] Verdict is not COMPLETE (blocked state)
+- [ ] Verdict is not COMPLETE (nothing was created)
 
 ---
 
-### Case 3: Helper Already Exists — Offers to extend rather than replace
+### Case 3: Helper Already Exists — Skipped, never overwritten
 
 **Fixture:**
-- `tests/helpers/player_factory.gd` already exists with a `create_player()` function
-- User requests a new `create_enemy()` function be added to the factory
+- Godot/GDScript/gdUnit4 configured as in Case 1
+- `tests/helpers/game_assertions.gd` already exists with hand-written additions
+- `tests/helpers/game_factory.gd` and `tests/helpers/scene_runner_helper.gd` do
+  not exist; the user approves the write
 
-**Input:** `/test-helpers enemy-factory`
+**Input:** `/test-helpers scaffold`
 
 **Expected behavior:**
-1. Skill finds an existing `player_factory.gd` and checks if it's the right file
-   to extend (or if a separate `enemy_factory.gd` should be created)
-2. Skill presents options: add `create_enemy()` to existing factory or create
-   `tests/helpers/enemy_factory.gd`
-3. User selects extend; skill drafts the `create_enemy()` function
-4. Skill asks "May I extend `tests/helpers/player_factory.gd`?"
-5. Function is added on approval; verdict is COMPLETE
+1. Skill drafts the Godot base helpers only — `game_assertions.gd`,
+   `game_factory.gd` and `scene_runner_helper.gd`; no system-specific helpers in
+   `scaffold` mode
+2. Skill asks "May I write these helper files to `tests/helpers/`?"
+3. The two missing files, `tests/helpers/game_factory.gd` and
+   `tests/helpers/scene_runner_helper.gd`, are created
+4. For the existing file, skill reports: "Skipping `tests/helpers/game_assertions.gd`
+   — already exists. Remove the file manually if you want it regenerated."
+5. Verdict COMPLETE
 
 **Assertions:**
-- [ ] Existing helper is detected and surfaced
-- [ ] User is given extend vs. new file choice
-- [ ] "May I extend" language is used (not "May I write" for replacement)
-- [ ] Existing `create_player()` is preserved in the extended file
-- [ ] Verdict is COMPLETE
+- [ ] `scaffold` mode generates no `[system]_factory` helper
+- [ ] The existing `game_assertions.gd` is left byte-for-byte unchanged
+- [ ] The skip message names the existing file and how to regenerate it
+- [ ] Only the two missing files are written; Verdict is COMPLETE
 
 ---
 
-### Case 4: System Has No GDD — Notes missing design context in helper
+### Case 4: Framework Assertion API Unconfirmed — No helper generated
 
 **Fixture:**
-- `technical-preferences.md` has Godot 4 / GDScript
-- `tests/` exists
-- User requests a helper for the "inventory system" but no `design/gdd/inventory.md` exists
+- `project.yaml` has `engine.name: Godot`, `engine.language: GDScript`;
+  `testing.framework` is absent and `technical-preferences.md` shows no Framework
+- No `addons/gdUnit4/` and no existing test files to learn the API from
 
-**Input:** `/test-helpers inventory-factory`
+**Input:** `/test-helpers scaffold`
 
 **Expected behavior:**
-1. Skill looks for `design/gdd/inventory.md` — not found
-2. Skill notes: "No GDD found for inventory — generating helper with placeholder defaults"
-3. Skill generates an `inventory_factory.gd` with generic placeholder values
-   (item_count = 0, max_capacity = 20) and a comment: "# TODO: align defaults
-   with inventory GDD when written"
-4. Skill asks "May I write to `tests/helpers/inventory_factory.gd`?"
-5. File is written; verdict is COMPLETE with advisory note
+1. Skill cannot confirm which assertion call registers a failure with the runner
+2. Skill says so, and generates no helper rather than guessing a form such as
+   `assert_that`, `assert_eq`, `assert_true` or a bare `assert()`
+3. No "May I write" is asked and nothing is written
 
 **Assertions:**
-- [ ] Skill proceeds without GDD (does not block)
-- [ ] Generated helper has placeholder defaults with TODO comment
-- [ ] Missing GDD is noted in the output (advisory warning)
-- [ ] Verdict is COMPLETE
+- [ ] The skill states it cannot confirm the framework's assertion API
+- [ ] No helper file is written
+- [ ] No guessed assertion form (and no `FAIL_IF` placeholder) is presented as ready to write
+- [ ] Verdict is not COMPLETE
 
 ---
 
 ### Case 5: Director Gate Check — No gate; test-helpers is a scaffolding utility
 
 **Fixture:**
-- Engine configured, tests/ exists
+- Engine and framework configured as in Case 1, no existing helpers
 
-**Input:** `/test-helpers player-factory`
+**Input:** `/test-helpers player`
 
 **Expected behavior:**
 1. Skill generates and writes the helper file
@@ -154,22 +170,55 @@ None. `/test-helpers` is a scaffolding utility. No director gates apply.
 
 ---
 
+### Case 6: Unity — Helpers under the engine's test root
+
+**Fixture:**
+- `project.yaml` has `engine.name: Unity`, `engine.language: C#`,
+  `testing.framework: NUnit`; `com.unity.test-framework` is in
+  `Packages/manifest.json`, so NUnit's assertion API can be confirmed from the
+  installed package
+- `/test-setup` has created `Assets/Tests/EditMode/EditModeTests.asmdef`
+- No helpers exist yet; the user approves the write
+
+**Input:** `/test-helpers scaffold`
+
+**Expected behavior:**
+1. The helper root is `Assets/Tests/EditMode/Helpers/` — inside the
+   `EditModeTests` assembly, where Unity compiles it
+2. Skill drafts `GameAssertions.cs` and `GameFactory.cs` for that folder,
+   asserting through NUnit's `Assert`
+3. Skill asks "May I write these helper files to `Assets/Tests/EditMode/Helpers/`?"
+4. Files written on approval; the usage note says to reference the test assembly;
+   verdict COMPLETE
+
+**Assertions:**
+- [ ] Helpers are written under `Assets/Tests/EditMode/Helpers/`
+- [ ] Nothing is written under `tests/helpers/` — outside `Assets/`, Unity never compiles it
+- [ ] The "May I write" ask names the Unity helper root
+- [ ] Verdict is COMPLETE
+
+---
+
 ## Protocol Compliance
 
-- [ ] Reads engine before generating any helper (helpers are engine-specific)
-- [ ] Reads GDD for default values when available
-- [ ] Notes missing GDD context rather than blocking
-- [ ] Detects existing helper files and offers extend rather than replace
-- [ ] Asks "May I write" (or "May I extend") before any file operation
-- [ ] Verdict is COMPLETE when helper is written
+- [ ] Reads engine, language and test framework before generating any helper
+- [ ] Writes helpers only to the engine's helper root (`tests/helpers/`, `Assets/Tests/EditMode/Helpers/` or `Source/<Module>/Private/Tests/Helpers/`)
+- [ ] Section-greps the GDD for system helpers (numbered headings such as `## 4. Formulas` included); constants trace to its Formulas section
+- [ ] Godot signal asserts keep their flag in a Dictionary the lambda mutates and connect a variadic lambda (`func(...args)`) — a captured `bool` never changes in the caller, and a one-argument lambda fails on any other signal
+- [ ] Asserts only through the configured framework — never bare `assert()` — and generates nothing when that API cannot be confirmed
+- [ ] Helpers never extend the framework's test-suite base class
+- [ ] Never overwrites an existing helper; reports the skip instead
+- [ ] Asks "May I write" before any file is created
+- [ ] Verdict is COMPLETE when helper files are written
 
 ---
 
 ## Coverage Notes
 
-- Mock/stub helper generation (for dependencies like save systems or audio buses)
-  follows the same pattern as factory helpers and is not separately tested.
-- Unity C# helper generation (using NSubstitute or custom mocks) follows the
-  same logic as Case 1 with language-appropriate output.
-- The case where the requested helper type is not recognized is not tested;
-  the skill would ask the user to clarify the helper type.
+- `all` mode (one factory per system with test files) follows Case 1 per system;
+  not separately tested.
+- Unreal helper generation (`Source/<Module>/Private/Tests/Helpers/`) follows
+  Case 6's pattern for its own helper root; not separately tested. Nor is a
+  Unity project whose PlayMode tests need the helpers too (the skill asks before
+  creating a shared `TestHelpers.asmdef`).
+- A requested system with no GDD is not tested; the skill does not define that path.

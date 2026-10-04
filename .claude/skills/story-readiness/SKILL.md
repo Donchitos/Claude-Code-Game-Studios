@@ -1,11 +1,17 @@
 ---
 name: story-readiness
-description: "Validate that a story file is implementation-ready. Checks for embedded GDD requirements, ADR references, engine notes, clear acceptance criteria, and no open design questions. Produces READY / NEEDS WORK / BLOCKED verdict with specific gaps. Use when user says 'is this story ready', 'can I start on this story', 'is story X ready to implement'."
-argument-hint: "[story-file-path or 'all' or 'sprint']"
+description: "Is a story implementation-ready? Checks clear acceptance criteria, open questions, ADR refs. READY/NEEDS WORK/BLOCKED/NOT ASSESSED."
+argument-hint: "[story-file-path or 'all' or 'sprint'] [--review full|lean|solo]"
 user-invocable: true
-allowed-tools: Read, Glob, Grep, AskUserQuestion, Task
+allowed-tools: Read, Glob, Grep, AskUserQuestion, Agent, Bash(bash "*/.claude/skills/story-readiness/../../hooks/yaml-helper.sh" resolve_config *)
 model: sonnet
 ---
+
+!`bash "${CLAUDE_SKILL_DIR}/../../hooks/yaml-helper.sh" resolve_config --keys review_mode,automation,workflow,qa.level,testing.strict,system_overrides`
+
+Resolved above — use as-is; `--review` overrides `review_mode`. No block →
+defaults in `.claude/docs/config-resolution.md`.
+
 
 # Story Readiness
 
@@ -16,26 +22,64 @@ no ambiguous acceptance criteria. Run it before assigning a story.
 **This skill is read-only.** It never edits story files. It reports findings
 and asks whether the user wants help filling gaps.
 
-**Output:** Verdict per story (READY / NEEDS WORK / BLOCKED) with a specific
+**Output:** Verdict per story (READY / NEEDS WORK / BLOCKED / NOT ASSESSED) with a specific
+
+> **`NOT ASSESSED` is not a synonym for `BLOCKED`.** `BLOCKED` is a
+> finding about the story — a Proposed ADR, an ADR file it names that does not
+> exist, an unresolved dependency — and it tells the reader exactly what to clear.
+> Use `NOT ASSESSED` when the story could not be evaluated at all: the file is
+> unreadable or unparseable, a referenced ADR exists but has no readable
+> `## Status` (malformed), or a referenced design document cannot be located, so
+> the checks below cannot run. Collapsing that into `BLOCKED` reports a blocker
+> that does not exist and hides the one that does — the reader chases a phantom
+> blocker instead of the unreadable file.
+> `READY` must never be reachable for a story that was not actually evaluated.
+>
+> **Precedence — first matching rule wins**, in this order: **BLOCKED**, then
+> **NEEDS WORK**, then **NOT ASSESSED**, then **READY**. `NOT ASSESSED` outranks
+> `READY` (a story that could not be evaluated has not been shown ready) and
+> ranks **below** both failure verdicts (a known blocker is more actionable than
+> an unknown, and demoting it behind an access problem buries it). A story with
+> both a real blocker and an unevaluable check is `BLOCKED` — the blocker is the
+> actionable finding. This half of the rank has to be stated: the rule above
+> establishes only that `READY` is unreachable, which would leave the ordering
+> against `BLOCKED` to inference.
 gap list for each non-ready story.
 
 ---
 
 ## Phase 0: Resolve Review Mode
 
-Resolve the review mode once at startup (store for all gate spawns this run):
 
-1. If skill was called with `--review [full|lean|solo]` → use that value
-2. Else read `production/review-mode.txt` → use that value
-3. Else → default to `lean`
+See `.claude/docs/director-gates.md` for the full check pattern and mode definitions. Individual gate definitions live in `.claude/docs/director-gates/[gate-id].md` — the spawned agent reads its own gate file; do not read it in the parent session.
 
-See `.claude/docs/director-gates.md` for the full check pattern and mode definitions.
+
+Every `AskUserQuestion` call follows `.claude/docs/automation-modes.md`
+(collaborative asks always · guided major-only · autonomous logs and proceeds;
+`automation_always_ask` categories always prompt).
+
+**Resolve the workflow tier per story** (per `.claude/docs/workflow-modes.md`):
+for the system a story belongs to (**the GDD filename stem** of its `GDD:` path;
+the `[system]` segment of a `TR-[system]-NNN` ID is a fallback alias only), use the
+`system_overrides` row for that system if the block lists one, else the
+project value. When validating multiple stories (`all` / `sprint` scope),
+resolve **per story** — different systems may sit at different tiers. The tier
+sets which checklist sections block — see the note in Section 3.
+
+**`qa.level`**: controls whether a test requirement is
+validated. At `minimal`, the "Test evidence requirement is clear" item
+auto-passes (no requirement validated); at `standard`, validate the per-type test
+requirement (strictness from `testing.strict`); at `full`, also validate a
+coverage target. Distinct axis from `workflow`. **UI and Visual/Feel stories are
+the exception at `minimal`:** their retained screenshot is required at every
+`qa.level`, so for them the item is still validated — the tests are waived, the
+look is not.
 
 ---
 
 ## 1. Parse Arguments
 
-**Scope:** `$ARGUMENTS[0]` (blank = ask user via AskUserQuestion)
+**Scope:** `$ARGUMENTS` with any `--review <mode>` pair removed (blank = ask user via AskUserQuestion). What remains is one value — a path may contain spaces.
 
 - **Specific path** (e.g., `/story-readiness production/epics/combat/story-001-basic-attack.md`):
   validate that single story file.
@@ -52,6 +96,31 @@ If no argument is given, use `AskUserQuestion`:
 
 Report the scope before proceeding: "Validating [N] story files."
 
+> **If the scope resolves to ZERO story files, stop and report
+> `NOT ASSESSED — no stories in scope`.** Name which scope was searched and
+> which path was empty (`production/epics/**/*.md`, the sprint file's story
+> list, or the specific path given), and route: `/create-epics [layer]` then
+> `/create-stories [epic-slug]`.
+>
+> **The zero-scope path is mandatory.** Without it an empty glob falls through
+> to the Section 5 aggregate template and renders `Ready: 0 /
+> Needs Work: 0 / Blocked: 0` above an empty list — **indistinguishable from
+> "I checked every story and none needed work"**. It is the core failure of this
+> framework exactly: a scan that finds nothing because there was nothing to
+> scan, reported the same way as a clean result. Three zeros read as a healthy
+> sprint.
+>
+> Note what made this survive: `NOT ASSESSED` was already in this skill's
+> vocabulary, but the body scoped it to **per-story** evaluation failures (an
+> unreadable or unparseable file, an ADR with no readable Status). The verdict existed;
+> the case that most needs it had no route to it. It is a recurring shape — a
+> correct fix that did not reach one surface.
+>
+> **A zero-story sprint scope is not the same as an absent sprint file.** If
+> `production/sprints/` has no file at all, say that instead — "no sprint plan
+> found" and "the sprint plan lists no stories" send the reader to different
+> fixes, and Section 7 already draws that distinction for the handoff block.
+
 ---
 
 ## 2. Load Supporting Context
@@ -59,16 +128,27 @@ Report the scope before proceeding: "Validating [N] story files."
 Before checking any stories, load reference documents once (not per-story):
 
 - `design/gdd/systems-index.md` — to know which systems have approved GDDs
-- `docs/architecture/control-manifest.md` — to know which manifest rules exist
-  (if the file does not exist, note it as missing once; do not re-flag per story)
-  Also extract the `Manifest Version:` date from the header block if the file exists.
+- `docs/architecture/control-manifest.md` — story-readiness needs only the header
+  `Manifest Version:` date (its manifest check is existence + version, not the rule
+  bodies), so grep it (`Grep pattern="Manifest Version" path="docs/architecture/control-manifest.md"`)
+  rather than a full read. If the file does not exist, note it as missing once; do not
+  re-flag per story.
 - `docs/architecture/tr-registry.yaml` — index all entries by `id`. Used to
   validate TR-IDs in stories. If the file does not exist, note it once; TR-ID
   checks will auto-pass for all stories (registry predates stories, so missing
   registry means stories are from before TR tracking was introduced).
-- All ADR status fields — for each unique ADR referenced across the stories being
-  checked, read the ADR file and note its `Status:` field. Cache these so you
-  don't re-read the same ADR for every story.
+- All ADR status fields — resolve these with **one scan, not one read per ADR**.
+  A `Status:` value is a single line; reading whole ADR files to find it costs the
+  entire architecture corpus, and in `all` scope that multiplies across every
+  story in the repo:
+  ```
+  Grep pattern="^## Status" glob="docs/architecture/adr-*.md" output_mode="content" -A 3
+  ```
+  Establish the denominator first (glob `docs/architecture/adr-*.md`, count **N**)
+  and interpret against it: **0 matches with N > 0 means malformed ADRs, not
+  "no Accepted ADRs"** — report "run `/architecture-decision retrofit [file]`"
+  rather than failing every story's ADR check. Never treat an unreadable status as
+  a failed one. Cache the resulting map; do not re-scan per story.
 - The current sprint file (if scope is `sprint`) — to identify Must Have /
   Should Have priority for escalation decisions
 
@@ -79,12 +159,29 @@ Before checking any stories, load reference documents once (not per-story):
 For each story file, evaluate every item below. A story is READY only if all
 items pass or are explicitly marked N/A with a stated reason.
 
+> **Workflow tier adjustment** (resolved in Phase 0, per the story's system). The
+> full checklist below is the `full` baseline:
+> - **`full`** — every item is blocking (TR registry + ADR + control manifest
+>   fully validated).
+> - **`standard`** — **Design Completeness** and **Scope Clarity** stay blocking.
+>   In **Architecture Completeness**, an ADR the story references that is missing,
+>   `Proposed`, `Deprecated` or `Superseded` BLOCKS at every tier (see that section's note). Beyond that, only
+>   a **critical (Foundation-layer) ADR** that is missing or `Proposed` BLOCKS; an
+>   absent "ADR referenced" note is **advisory** (NEEDS WORK note, not BLOCKED).
+>   The TR-ID and manifest items are advisory.
+> - **`minimal`** — **acceptance-criteria check only**: evaluate Design
+>   Completeness and Scope Clarity. Treat the rest of **Architecture
+>   Completeness** as N/A — except that a referenced ADR that is missing,
+>   `Proposed`, `Deprecated` or `Superseded` still BLOCKS. Do not flag a missing ADR, TR-ID or manifest reference.
+
 ### Design Completeness
 
 - [ ] **GDD requirement referenced**: The story includes a `design/gdd/` path
   and quotes or links a specific requirement, acceptance criterion, or rule from
   that GDD — not just the GDD filename. A link to the document without tracing
-  to a specific requirement does not pass.
+  to a specific requirement does not pass. At `minimal`,
+  `design/game-brief.md` — the MVP feature and the Player goal & fail state the
+  story traces to — stands in for the GDD.
 - [ ] **Requirement is self-contained**: The acceptance criteria in the story
   are understandable without opening the GDD. A developer should not need to
   read a separate document to understand what DONE means.
@@ -103,6 +200,23 @@ items pass or are explicitly marked N/A with a stated reason.
 
 ### Architecture Completeness
 
+> The `BLOCKED` / fail outcomes in this section are the `full` baseline, with one
+> rule that holds at every tier: **an ADR the story references that is missing,
+> `Proposed`, `Deprecated` or `Superseded` BLOCKS**. `/dev-story` stops on it at `full`, `standard` and
+> `minimal` alike, so a READY here would send the story straight into a stop.
+> Beyond that, apply the tier note above: at `standard` the other items are
+> advisory unless they concern a **critical** ADR; at `minimal` the rest of this
+> section is N/A.
+>
+> At `standard`, an advisory item — a stale manifest version, missing engine notes
+> or manifest rules for a non-critical ADR — is written up like a NEEDS WORK item,
+> under Gaps with its `Fix:` line, but it never BLOCKS and does not by itself
+> downgrade READY. An ADR is critical
+> when the `**Layer**` row of its `## Engine Compatibility` table says
+> Foundation, or when that row is missing — when in doubt, treat it as critical
+> (`.claude/docs/workflow-modes.md`). Read the rows once, alongside the Section 2
+> status scan: `Grep pattern="\*\*Layer\*\*" glob="docs/architecture/adr-*.md" output_mode="content"`.
+
 - [ ] **ADR referenced or N/A stated**: The story references at least one ADR,
   OR explicitly states "No ADR applies" with a brief reason.
   A story with no ADR reference and no explicit N/A note fails this check.
@@ -113,6 +227,12 @@ items pass or are explicitly marked N/A with a stated reason.
     and the story's implementation guidance could be wrong.
     Fix: `BLOCKED: ADR-NNNN is Proposed — wait for acceptance before implementing.`
   - If the ADR file does not exist → **BLOCKED**: referenced ADR is missing.
+  - If `Status:` is `Deprecated` or `Superseded by ADR-XXXX` → **BLOCKED**: the
+    decision no longer stands.
+    Fix: `BLOCKED: ADR-NNNN is [status] — point the story at [successor] (edit its ADR field — /create-stories never rewrites an existing story).`
+  - If the ADR file exists but has no readable `## Status` (the Section 2 scan
+    found none in it) → **NOT ASSESSED** for this check: its status is unknown,
+    not failed. Name the file and route to `/architecture-decision retrofit [file]`.
   - Auto-pass if story has an explicit "No ADR applies" N/A note.
 - [ ] **TR-ID is valid and active**: If the story contains a `TR-[system]-NNN`
   reference, look it up in the TR registry loaded in Section 2.
@@ -192,27 +312,57 @@ items pass or are explicitly marked N/A with a stated reason.
   identifying the test category (Logic / Integration / Visual/Feel / UI / Config/Data).
   Without this, test evidence requirements cannot be enforced at story close.
   Fix: Add `Type: [Logic|Integration|Visual/Feel|UI|Config/Data]` to the story header.
-- [ ] **Test evidence requirement is clear**: If the Story Type is set, the story
-  includes a `## Test Evidence` section stating where evidence will be stored
-  (test file path for Logic/Integration, or evidence doc path for Visual/Feel/UI).
+- [ ] **Test evidence requirement is clear** *(auto-pass at `qa.level: minimal` for
+  Logic, Integration and Config/Data stories — no test evidence is required for
+  them; never for UI or Visual/Feel, whose retained screenshot is required at every
+  `qa.level`)*: If the Story Type is set, the story includes a `## Test Evidence`
+  section stating where evidence will be stored (test file path for
+  Logic/Integration; for UI, where the retained screenshot of each screen touched
+  goes under `production/qa/evidence/`; for Visual/Feel, that plus the sign-off doc
+  `production/qa/evidence/[story-slug]-evidence.md`).
+  Resolve this item's gate level from the `testing.strict` block **resolved in
+  Phase 0** — not by reading `project.yaml`, which would ignore a developer's
+  locally-overridden value. Map the Story Type to a key (Logic→`logic`,
+  Integration→`integration`, Visual/Feel→`visual`, UI→`ui`,
+  Config/Data→`config`) and take
+  `testing.strict.<key>`; use it only if its value is `true` or `false`
+  (case-insensitive). If the key is absent, empty, or holds any other value, read
+  `testing.strict` as a plain boolean (legacy single-value form); if that too is
+  absent or invalid, default to strict for Logic, Integration, Visual/Feel and UI,
+  and advisory for Config/Data. Surface any unrecognized value to the user.
+  - At a **strict** gate level, a missing `## Test Evidence` section marks the
+    story **NEEDS WORK**.
+  - At an **advisory** gate level, a missing section is listed as a gap but does
+    not by itself downgrade the verdict from READY.
   Fix: Add `## Test Evidence` with the expected evidence location for the story's type.
 
 ---
 
 ## 4. Verdict Assignment
 
-Assign one of three verdicts per story:
+Assign one of four verdicts per story, first match wins in the order BLOCKED,
+NEEDS WORK, NOT ASSESSED, READY (the precedence stated at the top):
 
-**READY** — All checklist items pass or have explicit N/A justifications.
+**READY** — All checklist items pass, have explicit N/A justifications, or are
+advisory-level gaps (a checklist item whose gate level resolved to advisory via
+`testing.strict`, or one the Section 3 workflow tier note makes advisory).
+Advisory gaps are still listed under Gaps in the output.
 The story can be assigned immediately.
 
 **NEEDS WORK** — One or more checklist items fail, but all dependency stories
 exist and are not DRAFT. The story can be fixed before assignment.
 
 **BLOCKED** — One or more dependency stories are missing or in DRAFT state,
+OR a governing ADR is `Proposed`, `Deprecated` or `Superseded`, or its file is missing (Section 3's ADR check),
 OR a critical design question (flagged UNRESOLVED in a criterion or rule) has
 no owner. The story cannot be assigned until the blocker is resolved. Note:
 a story that is BLOCKED may also have NEEDS WORK items — list both.
+
+**NOT ASSESSED** — the story could not be evaluated at all (unreadable or
+unparseable file, a referenced ADR with no readable `## Status`, or a referenced
+design document that cannot be located, so the checks cannot run — a referenced
+ADR file that does not exist is BLOCKED instead). Name what could not be read.
+Never READY.
 
 ---
 
@@ -223,10 +373,15 @@ a story that is BLOCKED may also have NEEDS WORK items — list both.
 ```
 ## Story Readiness: [story title]
 File: [path]
-Verdict: [READY / NEEDS WORK / BLOCKED]
+Verdict: [READY / NEEDS WORK / BLOCKED / NOT ASSESSED]
 
 ### Passing Checks (N/[total])
-[list passing items briefly]
+Design Completeness: [passing items, briefly]
+Architecture Completeness: [passing items — or "N/A — [reason]", e.g. "N/A at `minimal` (referenced-ADR check applied)"]
+Scope Clarity: [passing items]
+Open Questions: [passing items]
+Asset References: [passing items — or "no asset references"]
+Definition of Done: [passing items]
 
 ### Gaps
 - [Checklist item]: [exact description of what is missing or wrong]
@@ -236,14 +391,19 @@ Verdict: [READY / NEEDS WORK / BLOCKED]
 - [What is blocking]: [story ID or design question that must resolve first]
 ```
 
+Name all six check groups under Passing Checks every time. A group with nothing
+passing says so ("none — see Gaps"), so a reader can see that each group was
+evaluated rather than skipped.
+
 ### Multiple story aggregate output
 
 ```
 ## Story Readiness Summary — [scope] — [date]
 
-Ready:      [N] stories
-Needs Work: [N] stories
-Blocked:    [N] stories
+Ready:        [N] stories
+Needs Work:   [N] stories
+Blocked:      [N] stories
+Not Assessed: [N] stories
 
 ### Ready Stories
 - [story title] ([path])
@@ -261,8 +421,8 @@ Blocked:    [N] stories
 
 ### Sprint escalation
 
-If the scope is `sprint` and any Must Have stories are NEEDS WORK or BLOCKED,
-add a prominent warning at the top of the output:
+If the scope is `sprint` and any Must Have stories are NEEDS WORK, BLOCKED or
+NOT ASSESSED, add a prominent warning at the top of the output:
 
 ```
 WARNING: [N] Must Have stories are not implementation-ready.
@@ -289,7 +449,7 @@ in conversation. Do not use Write or Edit tools — the user (or
 - If a story file does not exist at all: "This story file is missing entirely.
   Run `/create-epics [layer]` then `/create-stories [epic-slug]` to generate stories from the GDD and ADR."
 - If a story has no GDD reference and the work appears small: "This story has
-  no GDD reference. If the change is small (under ~4 hours), run
+  no GDD reference. If the change is small (under about one week of implementation), run
   `/quick-design [description]` to create a Quick Design Spec, then reference
   that spec in the story."
 - If a story's scope has grown beyond its original sizing: "This story appears
@@ -320,7 +480,7 @@ If any are found, surface up to 3:
 Run `/story-readiness [path]` to validate before starting.
 ```
 
-If no sprint file exists or no other ready stories are found, skip this section silently.
+If no sprint file exists, or no other ready stories are found, say which — `Next ready stories: no sprint file found` or `Next ready stories: none ready in [sprint]` — rather than omitting the section. The two mean different things (nothing to read versus nothing ready) and an omitted section reads as neither.
 
 ---
 
@@ -332,19 +492,22 @@ Apply the review mode resolved in Phase 0 before spawning QL-STORY-READY:
 - `lean` → skip. Note: "QL-STORY-READY skipped — Lean mode." Proceed to close.
 - `full` → spawn as normal.
 
-Spawn `qa-lead` via Task using gate **QL-STORY-READY** (`.claude/docs/director-gates.md`).
+Spawn `qa-lead` via `Agent` using gate **QL-STORY-READY** (`.claude/docs/director-gates/ql-story-ready.md`).
 
-Pass the following context:
-- Story title
-- Acceptance criteria list (all items from the story's acceptance criteria section)
+Pass the context that gate lists, plus this skill's findings:
+- Story file path
+- Story type (Logic / Integration / Visual/Feel / UI / Config/Data) — the gate's prompt branches on it
+- Acceptance criteria list (verbatim, all items)
+- The GDD requirement the story covers (TR-ID and text)
 - Dependency status (all dependencies listed and their current state: exist / DRAFT / missing)
-- Overall verdict (READY / NEEDS WORK / BLOCKED) from Phase 4
+- Overall verdict (READY / NEEDS WORK / BLOCKED / NOT ASSESSED) from Phase 4
 
 Handle the verdict per standard rules in `director-gates.md`:
 - **ADEQUATE** → story is cleared. Proceed to close.
 - **GAPS [list]** → surface the specific gaps to the user via `AskUserQuestion`:
   options: `Update story with suggested gaps` / `Accept and proceed anyway` / `Discuss further`.
-- **INADEQUATE** → surface the specific gaps; ask user whether to update the story or proceed anyway.
+- **INADEQUATE** → the gate says the story must be revised before sprint inclusion, so it is not READY: the verdict becomes at least NEEDS WORK (a BLOCKED one stays BLOCKED). List the gaps and restate the final verdict line, then ask whether to update the story or proceed anyway. If the user proceeds anyway, the verdict stays NEEDS WORK (BLOCKED if it was BLOCKED) and the output states the override — "proceeding despite QL-STORY-READY: INADEQUATE (user override)" — never a silent READY.
+- **NOT ASSESSED [missing input]** → the gate made no judgement; never read it as ADEQUATE. Name the missing input and offer to supply it and re-run the gate; otherwise a READY verdict becomes NOT ASSESSED (BLOCKED and NEEDS WORK stand).
 
 ---
 

@@ -2,8 +2,7 @@
 
 ## Agent Summary
 Domain: NPC behavior, state machines, pathfinding, perception systems, and AI decision-making.
-Does NOT own: player mechanics (gameplay-programmer), rendering or engine internals (engine-programmer).
-Model tier: Sonnet (default).
+Does NOT own: player mechanics (gameplay-programmer), rendering or engine internals (engine-programmer), enemy behavior design (game-designer), navmesh authoring tools (tools-programmer).
 No gate IDs assigned.
 
 ---
@@ -11,8 +10,8 @@ No gate IDs assigned.
 ## Static Assertions (Structural)
 
 - [ ] `description:` field is present and domain-specific (references NPC behavior / AI systems)
-- [ ] `allowed-tools:` list includes Read, Write, Edit, Bash, Glob, Grep
-- [ ] Model tier is Sonnet (default for specialists)
+- [ ] `tools:` list includes Read, Write, Edit, Bash, Glob, Grep
+- [ ] Model tier is `inherit` — frontmatter `model:` reads exactly `inherit` (tiers: `.claude/docs/model-tiers.md`)
 - [ ] Agent definition does not claim authority over player mechanics or engine rendering
 
 ---
@@ -29,12 +28,12 @@ No gate IDs assigned.
 - Output includes doc comments on public API
 
 ### Case 2: Out-of-domain request — redirects correctly
-**Input:** "Implement player input handling for the WASD movement and dash ability."
+**Input:** "Build an editor tool that lets level designers paint navmesh regions and bake them."
 **Expected behavior:**
-- Does NOT produce player input or movement code
-- Explicitly states this is outside its domain (player mechanics belong to gameplay-programmer)
-- Redirects the request to `gameplay-programmer`
-- May note that once player position is available via API, AI perception can reference it
+- Does NOT build the navmesh authoring tool
+- Explicitly states this is outside its domain (navigation mesh authoring tools belong to tools-programmer)
+- Redirects the request to `tools-programmer`
+- Any input it gives the tool's owner is what its pathfinding needs from the baked navmesh (agent radius, area costs, dynamic-obstacle support) — not the tool itself
 
 ### Case 3: Cross-domain coordination — level constraints
 **Input:** "Design pathfinding for the warehouse level, but the level has narrow corridors that confuse the navmesh."
@@ -44,36 +43,37 @@ No gate IDs assigned.
 - Proposes a pathfinding approach (e.g., navmesh with agent radius tuning, flow fields) conditional on level geometry
 - Documents assumptions and flags blockers clearly
 
-### Case 4: Performance escalation — custom data structures
+### Case 4: Performance work in its own domain — custom data structures
 **Input:** "The pathfinding priority queue is the bottleneck; I need a custom binary heap implementation for performance."
 **Expected behavior:**
-- Recognizes that a low-level, engine-integrated data structure is within engine-programmer's domain
-- Escalates to `engine-programmer` with a clear description of the bottleneck and required interface
-- May provide the algorithmic spec (binary heap interface, expected operations) to guide the engine-programmer
-- Does NOT implement the low-level structure unilaterally if it requires engine memory management
+- Treats the heap as its own work: "Implement and optimize pathfinding" is its Key Responsibility, and the priority queue is part of the pathfinding code — it does not hand the heap to engine-programmer
+- Proposes the heap (interface, expected operations and their cost) and asks before writing it
+- Keeps the pathfinding update inside its 2ms-per-frame AI budget
+- Involves `engine-programmer` only if the fix needs a change to a core engine system (its "must not" line), not for the heap itself
 
-### Case 5: Context pass — uses level layout for pathfinding design
-**Input:** Level layout document provided in context showing two choke points: a doorway at (12, 0) and a bridge at (40, 5). Request: "Design the patrol route and threat response for enemies in this level."
+### Case 5: Context pass — implements from the level layout and encounter spec
+**Input:** Provided in context: a level layout document (from level-designer) marking patrol waypoints A–D and two choke points — a doorway at (12, 0) and a bridge at (40, 5) — and an encounter spec (from game-designer) stating "When alerted, guards fall back to the nearest choke point and hold it." Request: "Implement the patrol and alert response for this level's guards."
 **Expected behavior:**
-- References the specific choke point coordinates from the provided context
-- Designs patrol routes that leverage the choke points as tactical positions
-- Specifies alert state transitions that funnel NPCs toward identified choke points during pursuit
-- Does not invent geometry not present in the provided layout document
+- References the specific waypoints and choke point coordinates from the provided layout
+- Implements the alert transition exactly as the encounter spec states (fall back to the nearest choke point and hold) — does NOT design its own threat response
+- Keeps waypoints and choke points in data, not hardcoded positions
+- Does not invent geometry or behavior the documents do not give; where they leave a case open (e.g., both choke points equally near), asks the spec owner instead of deciding
 
 ---
 
 ## Protocol Compliance
 
 - [ ] Stays within declared domain (NPC behavior, pathfinding, perception, state machines)
-- [ ] Redirects out-of-domain requests to correct agent (gameplay-programmer, engine-programmer, level-designer)
+- [ ] Redirects out-of-domain requests to correct agent (tools-programmer for navmesh authoring tools, engine-programmer for core engine systems, game-designer for enemy behavior design)
 - [ ] Returns structured findings (behavior tree specs, state machine diagrams, code scaffolds)
 - [ ] Does not modify player mechanics files without explicit delegation
-- [ ] Escalates performance-critical low-level structures to engine-programmer
+- [ ] Does its own pathfinding performance work, data structures included, and involves engine-programmer only for changes to core engine systems
 - [ ] Uses data-driven NPC configuration (waypoints, detection radii) not hardcoded values
+- [ ] Asks "May I write this to [filepath]?" naming the file before writing
 
 ---
 
 ## Coverage Notes
 - Behavior tree output (Case 1) should be validated by a unit test in `tests/unit/ai/`
-- Level-layout context (Case 5) verifies the agent reads and applies provided documents rather than inventing
-- Performance escalation (Case 4) confirms the agent recognizes the engine-programmer boundary
+- Level-layout context (Case 5) verifies the agent implements the provided documents rather than inventing geometry or designing enemy behavior itself
+- Pathfinding performance (Case 4) confirms the agent keeps work its Key Responsibilities assign it, and involves engine-programmer only for core engine changes

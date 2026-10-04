@@ -49,7 +49,7 @@ these are met.]
 | Frame rate | > [X] FPS on min spec | Performance profiling |
 | Load time | < [X] seconds | Automated timing |
 | Critical bugs | 0 open S1 | Bug tracker |
-| Major bugs | < [X] open S2 | Bug tracker |
+| High-severity bugs | < [X] open S2 High | Bug tracker |
 | Test coverage | > [X]% | Test framework report |
 
 ## Risk Register

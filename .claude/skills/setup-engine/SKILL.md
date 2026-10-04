@@ -1,13 +1,26 @@
 ---
 name: setup-engine
-description: "Configure the project's game engine and version. Pins the engine in CLAUDE.md, detects knowledge gaps, and populates engine reference docs via WebSearch when the version is beyond the LLM's training data."
+description: "Configure engine and version. Pins it in CLAUDE.md; WebSearch fills reference docs when the version is beyond LLM training data."
 argument-hint: "[engine] | [engine version] | refresh | upgrade [old-version] [new-version] | no args for guided selection"
 user-invocable: true
-allowed-tools: Read, Glob, Grep, Write, Edit, WebSearch, WebFetch, Task, AskUserQuestion
+allowed-tools: Read, Glob, Grep, Write, Edit, Bash, WebSearch, WebFetch, Agent, AskUserQuestion, Bash(bash "*/.claude/skills/setup-engine/../../hooks/yaml-helper.sh" resolve_config *)
 model: sonnet
 ---
 
 When this skill is invoked:
+
+!`bash "${CLAUDE_SKILL_DIR}/../../hooks/yaml-helper.sh" resolve_config --keys workflow`
+
+**Tier awareness.** The `workflow` tier resolved above governs which design
+artifact this skill expects and the finish path it recommends in §12:
+- **`minimal`** — the design artifact is the one-page `design/game-brief.md`
+  (no GDDs, systems decomposition, or per-system design at this tier).
+  `/setup-engine` runs *first* in the minimal path, so a missing brief here is
+  normal, not a gap. The finish path is the 4-step floor.
+- **`standard` / `full`** — the design artifact is `design/gdd/game-concept.md`
+  and the finish path is the full pipeline.
+
+If the block did not render (shell preprocessing disabled), assume `minimal` (the default).
 
 ## 1. Parse Arguments
 
@@ -26,12 +39,21 @@ Four modes:
 If no engine is specified, run an interactive engine selection process:
 
 ### Check for existing game concept
-- Read `design/gdd/game-concept.md` if it exists — extract genre, scope, platform
-  targets, art style, team size, and any engine recommendation from `/brainstorm`
-- If no concept exists, inform the user:
+Read the design artifact for the resolved tier (see **Tier awareness** above):
+- **`standard` / `full`**: read `design/gdd/game-concept.md` if it exists —
+  extract genre, scope, platform targets, art style, team size, and any engine
+  recommendation from `/brainstorm`.
+- **`minimal`**: read `design/game-brief.md` if it exists — extract genre,
+  scope, platform, and art direction from its fields. Its absence is **expected**
+  at `minimal` (the brief is authored *after* engine setup in the minimal path), so
+  do not treat a missing brief as a gap — proceed straight to guided selection.
+- If no concept **or** brief exists, inform the user:
   > "No game concept found. Consider running `/brainstorm` first to discover what
   > you want to build — it will also recommend an engine. Or tell me about your
   > game and I can help you pick."
+
+  (At `minimal` this is optional, not a prerequisite — you can pick an engine now
+  and write the brief next.)
 
 ### If the user wants to pick without a concept, ask in this order:
 
@@ -123,6 +145,37 @@ Once the engine is chosen:
   - Search: `"[engine] latest stable version [current year]"`
   - Confirm with the user: "The latest stable [engine] is [version]. Use this?"
 
+### Check the chosen version against what is actually installed
+
+A version found by web search is what exists, not what the developer has. Pinning
+one they cannot run means every later instruction — build, test, smoke, the
+engine reference docs — targets an engine that is not on the machine.
+
+Probe for the binary (Bash), and treat failure as unknown, never as absent:
+
+| Engine | Probe |
+|--------|-------|
+| Godot | `godot --version`, else look for `godot`/`Godot_v*` on PATH or in the platform's usual install location (macOS: the binary inside the bundle, `Godot.app/Contents/MacOS/Godot`) |
+| Unity | The Hub's editor directory, then that editor's `-version` — `C:/Program Files/Unity/Hub/Editor/<version>/Editor/Unity.exe` on Windows, `/Applications/Unity/Hub/Editor/<version>/Unity.app/Contents/MacOS/Unity` on macOS, `/home/<user>/Unity/Hub/Editor/<version>/Editor/Unity` on Linux. Not bare `Unity`: on `PATH` it may be Unity's separate CLI, which rejects `-version` |
+| Unreal | The launcher's install directory (`UE_<version>` folders under `C:/Program Files/Epic Games/` on Windows); elsewhere, ask where the engine was built or installed. The editor is not on `PATH` by default |
+
+Keep the executable the probe found (for Godot, whether bare `godot --version`
+ran — that is, `godot` is on `PATH`): Section 5.5.1 writes it into `commands.*`
+and `engine.path`.
+
+Then:
+- **Match** — say so in one line and continue.
+- **Mismatch** — state both versions and ask, offering three options: pin the
+  installed version, pin the newer one and upgrade later, or pin the newer one
+  deliberately. Record the answer; do not pick silently.
+- **Not found / probe failed** — report `installed version NOT DETERMINED` and
+  continue with the chosen version. Do **not** report this as "no engine
+  installed": a probe that could not run has not established absence.
+
+Whatever the outcome, write it into Section 7's `VERSION.md` as an
+`Installed at pin time` row, so a later reader can tell a deliberate
+version-ahead pin from an accident.
+
 ---
 
 ## 4. Update CLAUDE.md Technology Stack
@@ -141,6 +194,13 @@ If Godot was chosen, ask the user which language to use **before** showing the p
 
 Record the choice. It determines the CLAUDE.md template, naming conventions, specialist routing, and which agent is spawned for code files throughout the project.
 
+### Primary Language (Unreal)
+
+If Unreal was chosen, ask via `AskUserQuestion`: "Will most gameplay logic live in
+C++ or in Blueprints?" — `[A] C++ (Blueprints for tuning and prototyping)` /
+`[B] Blueprint-primary (C++ only where needed)`. Default to C++ if the user has no
+preference. The answer sets `engine.language` (`"C++"` or `"Blueprint"`).
+
 ---
 
 Read `CLAUDE.md` and show the user the proposed Technology Stack changes.
@@ -150,7 +210,7 @@ Wait for confirmation before making any edits.
 
 Update the Technology Stack section, replacing the `[CHOOSE]` placeholders with the actual values:
 
-**For Godot** — use the template matching the language chosen above. See **Appendix A** at the bottom of this skill for all three variants (GDScript, C#, Both).
+**For Godot** — use the template matching the language chosen above. See `.claude/skills/setup-engine/references/godot-language-config.md` (**A1**) for all three variants (GDScript, C#, Both).
 
 **For Unity:**
 ```markdown
@@ -163,10 +223,27 @@ Update the Technology Stack section, replacing the `[CHOOSE]` placeholders with 
 **For Unreal:**
 ```markdown
 - **Engine**: Unreal Engine [version]
-- **Language**: C++ (primary), Blueprint (gameplay prototyping)
+- **Language**: [C++ (primary), Blueprint (gameplay prototyping) | Blueprint (primary), C++ where needed]
 - **Build System**: Unreal Build Tool (UBT)
 - **Asset Pipeline**: Unreal Content Pipeline
 ```
+The Language line follows the primary-language answer above: the first form for
+`[A]` (`engine.language: "C++"`), the second for `[B]` (`"Blueprint"`).
+
+### Engine reference import
+
+In the same CLAUDE.md write, set the **Engine Version Reference** import to the
+chosen engine. Find the line marked `ENGINE-REFERENCE-IMPORT` (an
+`@docs/engine-reference/<engine>/VERSION.md` line under its comment) and Edit it
+to point at the configured engine:
+- Godot → `@docs/engine-reference/godot/VERSION.md`
+- Unity → `@docs/engine-reference/unity/VERSION.md`
+- Unreal → `@docs/engine-reference/unreal/VERSION.md`
+
+This is why a fresh Unity or Unreal project no longer loads the Godot reference in
+every session. It is idempotent — re-running `/setup-engine` for a different
+engine rewrites the same line. (The target `docs/engine-reference/<engine>/`
+directory is created in Section 8 below if it does not yet exist.)
 
 ---
 
@@ -180,7 +257,7 @@ engine-appropriate defaults. Read the existing template first, then fill in:
 
 ### Naming Conventions (engine defaults)
 
-**For Godot** — see **Appendix A** for GDScript, C#, and Both variants.
+**For Godot** — see `.claude/skills/setup-engine/references/godot-language-config.md` (**A2**) for GDScript, C#, and Both variants.
 
 **For Unity (C#):**
 - Classes: PascalCase (e.g., `PlayerController`)
@@ -217,6 +294,22 @@ For **Primary Input**, use the dominant input for the game genre:
 - Mobile game → Touch
 - Cross-platform → ask the user
 
+> **Genre may not exist yet — check before deriving from it.** At `minimal` the
+> design artifact is `design/game-brief.md`, and it is authored *after* this
+> skill runs (Section 2 says so explicitly). There is no genre to map. The same
+> is true at any tier when `/setup-engine` is run before the concept exists.
+>
+> When genre is unavailable, **ask** — do not infer one from the platform, and do
+> not leave the field silently blank:
+> - Prompt: "Primary input for a [2D/3D] [platform] game? Genre isn't established
+>   yet — the brief comes next — so this can't be derived."
+> - Options: the plausible inputs for that platform, plus
+>   `Leave as [TO BE CONFIGURED]` — a legitimate answer here, revisited via
+>   `/settings` once the brief exists.
+>
+> Gamepad Support and Touch Support still come from the platform table above;
+> only Primary Input depends on genre.
+
 Present the derived values and ask the user to confirm or adjust before writing.
 
 Example filled section:
@@ -235,7 +328,13 @@ Example filled section:
   - Prompt: "Should I set default performance budgets now, or leave them for later?"
   - Options: `[A] Set defaults now (60fps, 16.6ms frame budget, engine-appropriate draw call limit)` / `[B] Leave as [TO BE CONFIGURED] — I'll set these when I know my target hardware`
   - If [A]: populate with the suggested defaults. If [B]: leave as placeholder.
-- **Testing**: Suggest engine-appropriate framework (GUT for Godot, NUnit for Unity, etc.) — ask before adding.
+- **Testing**: Suggest the engine-appropriate framework — **gdUnit4** for Godot,
+  NUnit for Unity, Automation Spec for Unreal — and ask before adding.
+  > **Must match `commands.test` in Section 5.5.1, which writes gdUnit4's own
+  > runner (`res://addons/gdUnit4/bin/GdUnitCmdTool.gd`), and
+  > `.claude/docs/coding-standards.md`, which names the same runner.** Naming GUT
+  > here would have the skill recommend one framework and configure another in the
+  > same run.
 - **Forbidden Patterns**: Leave as placeholder — do NOT pre-populate.
 - **Allowed Libraries**: Leave as placeholder — do NOT pre-populate dependencies the project does not currently need. Only add a library here when it is actively being integrated, not speculatively.
 
@@ -245,7 +344,7 @@ Example filled section:
 
 Also populate the `## Engine Specialists` section in `technical-preferences.md` with the correct routing for the chosen engine:
 
-**For Godot** — see **Appendix A** for the routing table matching the language chosen.
+**For Godot** — see `.claude/skills/setup-engine/references/godot-language-config.md` (**A3**) for the routing table matching the language chosen.
 
 **For Unity:**
 ```markdown
@@ -294,7 +393,7 @@ Also populate the `## Engine Specialists` section in `technical-preferences.md` 
 
 ### Collaborative Step
 Present the filled-in preferences to the user. For Godot, include the chosen language and note where the full naming conventions and routing tables live:
-> "Here are the default technical preferences for [engine] ([language if Godot]). The naming conventions and specialist routing are in Appendix A of this skill — I'll apply the [GDScript/C#/Both] variant. Want to customize any of these, or shall I save the defaults?"
+> "Here are the default technical preferences for [engine] ([language if Godot]). The naming conventions and specialist routing are in this skill's references directory — I'll apply the [GDScript/C#/Both] variant. Want to customize any of these, or may I save them to `.claude/docs/technical-preferences.md`?"
 
 For all other engines, present the defaults directly without referencing the appendix.
 
@@ -302,15 +401,539 @@ Wait for approval before writing the file.
 
 ---
 
+## 5.5 Populate `project.yaml` (Primary Config Store)
+
+> **v1.1:** `project.yaml` at the repo root is the **primary** store for project
+> configuration. The `.claude/docs/technical-preferences.md` file written in
+> Section 5 is kept as a **legacy mirror** for backward compatibility. This step
+> is a **dual-write** — the same engine facts go into both files, and
+> `project.yaml` wins when a skill reads a key present in both.
+
+After `technical-preferences.md` is written and approved, dual-write the
+structured config into `project.yaml`. Four blocks are written: `engine`,
+`specialists`, `naming`, and `commands`.
+
+### 5.5.1 Build the four blocks
+
+Derive every value from the engine and language already chosen in Sections 3–4.
+Do NOT re-ask for the **engine, version or language** — reuse those decisions.
+
+> **That is not a blanket "never ask".** `rendering` and `physics` below depend on
+> two further inputs — target platform and 2D-vs-3D — which **Section 2 collects on
+> only one of the four entry paths**. When they were never collected, ask; the
+> unavailable-branch under the project-shape table says how.
+
+**`engine` block:**
+
+```yaml
+engine:
+  name: "<Godot|Unity|Unreal>"
+  version: "<version from Section 3>"
+  language: "<GDScript|C#|C++|Blueprint>"
+  rendering: "<engine default — see table>"
+  physics: "<engine default — see table>"
+```
+
+**On Godot these two values depend on the answers Section 2 already collected —
+the target platform and 2D-vs-3D — so do not pick them from the engine name
+alone.** On Unity and Unreal the table has a single `any` row and the engine name
+*is* sufficient; take those rows directly.
+
+| Engine | Project shape | `rendering` default | `physics` default |
+|--------|---------------|---------------------|-------------------|
+| Godot 4.x | 2D · web target | Compatibility | Godot Physics 2D |
+| Godot 4.x | 2D · non-web | Forward+ | Godot Physics 2D |
+| Godot 4.x | 3D · web target | Compatibility | Jolt |
+| Godot 4.x | 3D · non-web | Forward+ | Jolt |
+| Unity | any | URP | PhysX |
+| Unreal | any | Lumen + Nanite (deferred) | Chaos |
+
+> **Why this table has a shape column and the others do not.** Both Godot
+> defaults were wrong for a 2D browser game, and both were wrong from data this
+> skill had already collected and then discarded.
+> - **Jolt is Godot's default *3D* engine.** `docs/engine-reference/godot/modules/physics.md`:
+>   "Jolt Physics is the DEFAULT 3D engine" and "2D physics UNCHANGED (still
+>   Godot Physics 2D)". Writing `Jolt` on a 2D project sends the implementer to
+>   tune a backend their game does not use.
+> - **Forward+ is desktop-focused.** `docs/engine-reference/godot/modules/rendering.md`:
+>   Forward+ is "Full featured, desktop-focused"; Compatibility is
+>   "OpenGL 3.3 / WebGL 2, broadest hardware support" — the browser path.
+>
+> If Section 2's platform answer was `Multiple platforms` **including** web, use
+> the web row: the renderer must work everywhere the game ships.
+
+> **Godot only — Unity and Unreal have one row each, keyed `any`.** Shape cannot
+> change `rendering` or `physics` for those two, so do **not** run the resolution
+> below for them: asking an operator a question whose answer you will discard is
+> exactly what §5.5.1 opens by forbidding. On Unity write `URP`/`PhysX` and on
+> Unreal write `Lumen + Nanite (deferred)`/`Chaos` straight from the table.
+>
+> **Section 2 did not necessarily run — check before reading its answers.**
+> Target platform and 2D-vs-3D are collected under *Questions 2–6, only if no
+> prior engine experience*. **Three of the four entry paths never reach them:**
+> `/setup-engine <engine> <version>` and `/setup-engine <engine>` skip Section 2
+> outright, and guided mode skips the matrix as soon as the user names an engine
+> they have worked in before. Only guided mode answered `None` or `Multiple`
+> collects both.
+>
+> Resolve each input in this order and stop at the first that answers:
+> 1. **Section 2's answers**, if that path ran.
+> 2. **The design artifact** — `design/gdd/game-concept.md` at `standard`/`full`,
+>    `design/game-brief.md` at `minimal`. Section 2 already extracts platform
+>    targets from these; extract 2D-vs-3D the same way when it is stated.
+> 3. **Ask.** Do not infer the shape from the engine name, and do not write a row
+>    you could not justify:
+>    - Prompt: "`rendering` and `physics` depend on the project's shape, which
+>      hasn't been established yet. Is this 2D or 3D, and does it ship to web?"
+>    - Options: `2D · non-web` / `2D · web` / `3D · non-web` / `3D · web`, plus
+>      `Leave as [TO BE CONFIGURED]` — a legitimate answer here, revisited via
+>      `/settings` once the concept exists.
+>
+> `[TO BE CONFIGURED]` is a valid value for both keys. A wrong `Jolt` on a 2D
+> project is worse than an unset one, because nothing downstream questions it.
+
+- `rendering` and `physics` are engine-typical defaults — tell the user they can
+  be changed later via `/settings` if the project uses a different setup.
+- For Godot **Both**, write `language: "GDScript"` (the primary gameplay
+  language); the C# usage is recorded in `technical-preferences.md`.
+- For Unreal, write `language: "C++"` — or `"Blueprint"` only if the project is
+  Blueprint-primary. Blueprint as a secondary tool does not change this value.
+
+**`specialists` block** — copy directly from the routing table chosen in
+Section 5 (**A3** in `.claude/skills/setup-engine/references/godot-language-config.md` for Godot):
+
+| Engine / language | `code` | `shader` | `ui` | `additional` |
+|-------------------|--------|----------|------|--------------|
+| Godot — GDScript | godot-gdscript-specialist | godot-shader-specialist | godot-specialist | [godot-gdextension-specialist] |
+| Godot — C# | godot-csharp-specialist | godot-shader-specialist | godot-specialist | [godot-gdextension-specialist] |
+| Godot — Both | godot-gdscript-specialist | godot-shader-specialist | godot-specialist | [godot-csharp-specialist, godot-gdextension-specialist] |
+| Unity | unity-specialist | unity-shader-specialist | unity-ui-specialist | [unity-dots-specialist, unity-addressables-specialist] |
+| Unreal | unreal-specialist | unreal-specialist | ue-umg-specialist | [ue-gas-specialist, ue-blueprint-specialist, ue-replication-specialist] |
+
+```yaml
+specialists:
+  code: "<code specialist>"
+  shader: "<shader specialist>"
+  ui: "<ui specialist>"
+  additional: ["<...>"]
+```
+
+**`naming` block** — enum values (NOT the prose form used in
+`technical-preferences.md`). Use the column matching the engine and, for Godot,
+the language:
+
+| Field | Godot GDScript | Godot C# | Unity | Unreal |
+|-------|----------------|----------|-------|--------|
+| `classes` | PascalCase | PascalCase | PascalCase | PascalCase |
+| `variables` | snake_case | camelCase | camelCase | **PascalCase** |
+| `constants` | SCREAMING_SNAKE | PascalCase | SCREAMING_SNAKE | SCREAMING_SNAKE |
+| `signals` | past_tense | on_event_name | **PascalCase `On<Event>`** | **PascalCase `On<Event>`** |
+| `files` | snake_case | PascalCase | PascalCase | PascalCase |
+| `scenes` | snake_case | PascalCase | PascalCase | PascalCase |
+
+> **The Unreal column is sourced, not inherited from the table's generic shape.**
+> `variables: camelCase` and `signals: on_event_name` are the two rows that shape
+> would produce, and both are wrong for Unreal. Checked against this repo's
+> pinned reference: `docs/engine-reference/unreal/` contains **zero** camelCase
+> variable declarations and uses PascalCase throughout (`int32 Health;`,
+> `FVector ServerPosition;`), and the word "signal" **never appears in it at all** —
+> it is Godot vocabulary. Unreal has delegates and events, and the reference's
+> handlers are PascalCase `On<Event>`.
+>
+> Two caveats kept rather than smoothed over. (1) `classes: PascalCase` is
+> **incomplete** for Unreal, not wrong: UE requires a mandatory type prefix
+> (`U`/`A`/`F`/`E`/`I`/`T`) that this enum cannot express, so an Unreal project's
+> coding standards must state it separately. (2) `scenes` is a **category
+> mismatch** — Unreal has Levels and Maps under World Partition, not scenes — left
+> in place because the key is shared across engines and renaming it is a schema
+> change, not a value fix.
+>
+> The blast radius is limited: `naming.*` is currently a
+> **documented-but-unread** setting, so wrong values misinform a human reading
+> `project.yaml` rather than driving any automated check — today. That is a
+> reason to get them right now, while it is cheap.
+
+> **Three further rules for this table.**
+>
+> **The Unity `build` row must not hardcode `-buildTarget StandaloneLinux64`.**
+> A hardcoded target gives every Unity project a **Linux** build command, whatever
+> platform it actually ships on. The row reads `<TARGET>`: **ask the operator for
+> the build target and write the value they give.** The correct `-buildTarget` identifiers
+> are not sourceable from `docs/engine-reference/unity/`, so this skill must not
+> emit one from recall — the same call made for `/security-audit`'s save
+> patterns and for Unity's release dates. A wrong-but-plausible default is worse
+> than an explicit question: it produces a `commands.build` that runs, succeeds,
+> and builds the wrong artifact.
+>
+> **`-buildTarget` alone builds nothing.** It switches the active platform and
+> exits 0 (verified on 6000.3.23f1). The row also needs a player-build flag,
+> `-build<PLATFORM>Player <output path>` — for Windows 64-bit,
+> `-buildWindows64Player Builds/Win64/<Game>.exe` (verified: exit 0 and an
+> `.exe`; exit 1 on a compile error or when no scene is in the build settings).
+> Ask which platform, and confirm any other platform's flag against Unity's
+> command-line documentation rather than recalling one.
+>
+> **The Godot `build` row must not hardcode `'Linux/X11'` either — same defect,
+> same remedy.** A Godot export preset name is **project-defined**: it is whatever
+> string the operator typed into `export_presets.cfg`, and the shipped defaults are
+> per-platform (`Windows Desktop`, `macOS`, `Web`, `Linux/X11`). Writing
+> `'Linux/X11'` gives a Windows-targeting project a build command that fails with
+> `Unknown export preset`, and gives a project that *does* have a Linux preset a
+> command that silently builds the wrong platform. The row reads `<PRESET>`:
+> **ask the operator which export preset to build and write the value they give**,
+> exactly as the Unity row does. If no presets exist yet — common, since
+> `/setup-engine` usually runs before the Godot project has any — write
+> `[TO BE CONFIGURED]` and say so, rather than guessing a name that does not exist.
+>
+> **The `constants` row must not contradict this skill's own prose.** The table says
+> `SCREAMING_SNAKE` for Unity; the Unity section of this same file says
+> "Constants: PascalCase or UPPER_SNAKE_CASE". Both cannot be authoritative, and
+> an agent following one produces config the other rejects. The row is **left
+> unchanged pending sourcing** rather than picked by preference — neither
+> `docs/engine-reference/unity/` nor `unreal/` contains a SCREAMING_SNAKE constant
+> to confirm or refute it, and the Unreal run flagged the same row as wrong for
+> Unreal on the same grounds. Resolve by adding a naming section to the engine
+> references, then correct table and prose together. Until then, treat
+> `naming.constants` as unverified for Unity and Unreal.
+>
+> **Write that caveat into `project.yaml`, do not leave it here.** On Unity and
+> Unreal, emit the `constants` line with a trailing comment:
+> ```yaml
+> naming:
+>   constants: SCREAMING_SNAKE   # UNVERIFIED — not sourceable from
+>                                # docs/engine-reference/<engine>/; confirm before relying on it
+> ```
+> Without it, a value the skill *knows* is unsourced is recorded as flatly as
+> `classes: PascalCase`, which is sourced, and the reader of the primary config
+> store cannot tell them apart. The `commands` block nine lines below already does
+> exactly this with its `# TODO: confirm these` line — this is the same pattern,
+> applied to the value that needs it just as much.
+
+For Godot **Both**, use the GDScript column — `.gd` files dominate gameplay
+scripting; `.cs` files follow C# conventions per-file (see **A2** in `.claude/skills/setup-engine/references/godot-language-config.md`).
+
+```yaml
+naming:
+  classes: <value>
+  variables: <value>
+  constants: <value>
+  signals: <value>
+  files: <value>
+  scenes: <value>
+```
+
+**`commands` block** — engine-default shell commands, simple-string form:
+
+| Engine | `build` | `test` | `run` | `smoke` |
+|--------|---------|--------|-------|---------|
+| Godot | `godot --headless --export-debug '<PRESET>'` **(ASK — do not default)** | `godot --headless -s -d --remote-debug tcp://127.0.0.1:0 res://addons/gdUnit4/bin/GdUnitCmdTool.gd -a res://tests --ignoreHeadlessMode` | `godot --path . --windowed --resolution 1280x720` | `godot --headless --quit-after 5` |
+| Unity | `"<Unity editor>" -batchmode -quit -projectPath . -buildTarget <TARGET> -build<PLATFORM>Player Builds/<Target>/<Game>.exe` **(ASK — do not default)** | `"<Unity editor>" -batchmode -runTests -projectPath . -testPlatform EditMode -testResults test-results/editmode.xml` | `Builds/<Target>/<Game>.exe -screen-width 1280 -screen-height 720 -screen-fullscreen 0` | `"<Unity editor>" -batchmode -quit -projectPath . -logFile -` |
+
+> **What each exit code proves — every row verified on the pinned engines.**
+> Godot `test` exits 0 when all pass, 100 on a failure, 101 when all pass but
+> nodes leaked (a warning, not a failure), 105 when a test script does not
+> parse, and 103 / 104 when gdUnit4 cannot run at all (headless refused, Godot
+> older than 4.3). Keep `--remote-debug tcp://127.0.0.1:0`: without it a script
+> error opens Godot's interactive debugger and the run waits at a `debug>`
+> prompt forever instead of exiting. Run `godot --headless --path . --import`
+> before it on a fresh clone: with no `.godot/` class cache,
+> `GdUnitCmdTool.gd` did not load and the run exits 1 having run nothing. Unity `test`
+> exits 0 / 2, and a results file with `testcasecount="0"` means no test was
+> compiled — not a pass. It runs Edit Mode only: Play Mode tests under
+> `Assets/Tests/PlayMode/` need a second run into their own results file
+> (`-testPlatform PlayMode -testResults test-results/playmode.xml`), which
+> `/smoke-check` makes whenever that folder holds tests and CI runs as its own
+> step. Unity `smoke` exits 1 on a compile error, 0 when clean.
+> **Godot `smoke` exits 0 even on a parse error** — it is a boot check: read its
+> output for `SCRIPT ERROR`. It also needs `run/main_scene` set: without one it
+> prints `Can't run project: no main scene defined` and never exits, so run it
+> under a timeout. Unity `smoke` compiles only the editor-side assemblies; an
+> error that exists only in a player build (an `Editor/` script without its own
+> assembly) shows up in `build`, not here. The real Godot parse check is
+> `godot --headless --path . --import`, then
+> `godot --headless --path . -s res://.claude/scripts/godot-parse-check.gd -- res://<file>.gd …`
+> (exit 1 when a script does not load). `--check-only` is not one: it fails
+> valid code that names an autoload. `<Unity editor>` is the **editor**
+> executable's full path, quoted. Never write bare `Unity`: on `PATH` that name
+> may be Unity's separate CLI, which rejects `-batchmode` with exit 2 — the same
+> code as a failed test.
+
+> **`commands.run` is the one the run-and-observe step depends on.** It must
+> launch the **game**, windowed, at a fixed resolution — never the editor, and
+> never with a headless / batch / null-RHI flag, which exist to skip rendering.
+> `/dev-story` Phase 6 step 4 appends the per-engine capture flags to it
+> (`.claude/docs/run-and-observe.md`). `smoke` is Unity's parse check, `test`
+> feeds `/smoke-check`; `build` is the one row you must ask for.
+
+> **YAML quoting rule — applies to EVERY command value.** `yaml-helper.sh` — the
+> parser every config read in this framework goes through — decodes **no**
+> escape sequences: neither `\"` inside a double-quoted scalar nor `''` inside a
+> single-quoted scalar. It takes the first matching quote character as the end of
+> the value and discards the rest, so `"he said \"hi\" now"` parses as
+> `he said \`. Verified against the parser, not inferred. The rule is
+> load-bearing: `/smoke-check` and `/dev-story` run these values, `/settings`
+> reads and writes them through this parser, and the same holds for every other
+> quoted value in `project.yaml`.
+> Pick the quote style that needs **no escaping**:
+> - value contains a single quote `'` (e.g. the Godot `build` above) → wrap it in
+>   a **double-quoted** YAML scalar: `"... 'Linux/X11' ..."`
+> - value contains a double quote `"` (e.g. the Unreal `test`/`smoke` below) →
+>   wrap it in a **single-quoted** YAML scalar: `'... "Quit" ...'`
+> - value contains neither → use a double-quoted scalar for consistency.
+> Never use a quote style that forces an escape (`\"` or `''`) — the parser
+> truncates the value at the escape. A value containing BOTH quote types cannot
+> be represented for this parser; rewrite the command to drop one.
+
+**Godot / Unity** — write the table values directly, substituting the operator's
+answer for `<PRESET>` / `<TARGET>` / `<PLATFORM>`, and the editor's full path for
+`<Unity editor>`. Godot's `build` contains a single quote, so it
+takes a double-quoted scalar (`Windows Desktop` below is the *example* answer, not
+a default — write what the operator said):
+
+```yaml
+commands:
+  build: "godot --headless --export-debug 'Windows Desktop'"
+  test: "godot --headless -s -d --remote-debug tcp://127.0.0.1:0 res://addons/gdUnit4/bin/GdUnitCmdTool.gd -a res://tests --ignoreHeadlessMode"
+  run: "godot --path . --windowed --resolution 1280x720"
+  smoke: "godot --headless --quit-after 5"
+```
+
+**Write bare `godot` only when Section 3's `godot --version` ran** — that is,
+`godot` is on `PATH`. Otherwise (the usual case on Windows and macOS)
+substitute the executable the probe found or the user gave — a Windows
+`Godot_v<version>-stable_win64.exe`, macOS `/Applications/Godot.app/Contents/MacOS/Godot`
+— as its full path, in double quotes, for the leading `godot` in all four
+values, exactly as `<Unity editor>` is. The value then holds double quotes, so it
+takes a single-quoted scalar, and `build` quotes its preset with double quotes
+too, so no value holds both quote types. Godot not on PATH, installed under
+`C:/Program Files/Godot/`:
+
+```yaml
+commands:
+  build: '"C:/Program Files/Godot/Godot_v4.6.1-stable_win64.exe" --headless --export-debug "Windows Desktop"'
+  test: '"C:/Program Files/Godot/Godot_v4.6.1-stable_win64.exe" --headless -s -d --remote-debug tcp://127.0.0.1:0 res://addons/gdUnit4/bin/GdUnitCmdTool.gd -a res://tests --ignoreHeadlessMode'
+  run: '"C:/Program Files/Godot/Godot_v4.6.1-stable_win64.exe" --path . --windowed --resolution 1280x720'
+  smoke: '"C:/Program Files/Godot/Godot_v4.6.1-stable_win64.exe" --headless --quit-after 5'
+```
+
+If the probe found no executable and the user does not know where it is, keep
+bare `godot`, put `# TODO: godot is not on PATH here — set the editor's full
+path via /settings` above the block, and say so: those commands will not run
+until one of the two is fixed.
+
+For Unity, probe the Hub install (`C:/Program Files/Unity/Hub/Editor/<version>/Editor/Unity.exe`
+on Windows, `/Applications/Unity/Hub/Editor/<version>/Unity.app/Contents/MacOS/Unity`
+on macOS, `/home/<user>/Unity/Hub/Editor/<version>/Editor/Unity` on Linux) or ask.
+Write the expanded absolute path — a `~` inside quotes is not expanded, and the
+command then exits 127. The
+quoted path puts double quotes in the command, so the value takes a
+single-quoted scalar:
+
+```yaml
+commands:
+  test: '"C:/Program Files/Unity/Hub/Editor/6000.3.23f1/Editor/Unity.exe" -batchmode -runTests -projectPath . -testPlatform EditMode -testResults test-results/editmode.xml'
+  smoke: '"C:/Program Files/Unity/Hub/Editor/6000.3.23f1/Editor/Unity.exe" -batchmode -quit -projectPath . -logFile -'
+```
+
+> **Also write `engine.path` if the editor is not on `PATH`.** Agents and
+> `/smoke-check` read it to find the editor, but a command is run as written —
+> `engine.path` is never spliced into `commands.*` at run time, which is why the
+> full path goes into the commands above — and on Windows and macOS none of
+> the three engines installs onto `PATH` by default (on macOS the editor is inside an app
+> bundle, e.g. `/Applications/Godot.app/Contents/MacOS/Godot`). Ask for or probe the
+> install location and record it — the editor executable for Godot and Unity,
+> the engine folder (`<UE root>`) for Unreal:
+>
+> ```yaml
+> engine:
+>   path: "C:/Program Files/Epic Games/UE_5.8"   # omit if the editor is on PATH
+> ```
+>
+> **This is not cosmetic.** Without it, an agent reports *"no editor on this
+> machine"* and ships C++ it never compiled — on a machine where that engine WAS
+> installed. Nothing in the project told it where to look, so absence of a path read
+> as absence of an engine.
+
+For **Unreal**, UE build/test commands vary by version and project setup. Write
+best-effort values and add a `# TODO` comment so the user knows to confirm them.
+Substitute the engine's install folder for `<UE root>` (the value you record as
+`engine.path`) — none of the editor binaries is on `PATH`. The commands embed
+double quotes, so they take single-quoted scalars. Write the block for the
+machine the project is developed on (`uname -s`: `Linux`, `Darwin` = macOS,
+anything else = Windows). The Windows block was run on UE 5.7 (not re-checked on 5.8); the Linux and
+macOS lines come from Epic's documentation, recorded with their sources in
+`docs/engine-reference/unreal/current-best-practices.md` ("Command Line").
+
+Windows:
+
+```yaml
+commands:
+  # TODO: confirm these for your UE version and project — adjust via /settings
+  build: '"<UE root>/Engine/Binaries/DotNET/AutomationTool/AutomationTool.exe" BuildCookRun -project="$(pwd -W 2>/dev/null || pwd)/<project>.uproject" -platform=Win64 -build -cook'
+  test: '"<UE root>/Engine/Binaries/Win64/UnrealEditor-Cmd.exe" "$(pwd -W 2>/dev/null || pwd)/<project>.uproject" -ExecCmds="Automation RunTests <project>.; Quit" -unattended -nullrhi -stdout -FullStdOutLogOutput'
+  run: '"<UE root>/Engine/Binaries/Win64/UnrealEditor.exe" "$(pwd -W 2>/dev/null || pwd)/<project>.uproject" -game -windowed -ResX=1280 -ResY=720'
+  smoke: '"<UE root>/Engine/Binaries/Win64/UnrealEditor-Cmd.exe" "$(pwd -W 2>/dev/null || pwd)/<project>.uproject" -game -nullrhi -unattended -stdout -ExecCmds="Quit"'
+```
+
+Linux — the editor binary is `Engine/Binaries/Linux/UnrealEditor`, the build
+scripts are shell scripts:
+
+```yaml
+commands:
+  # TODO: confirm these for your UE version and project — adjust via /settings
+  build: '"<UE root>/Engine/Build/BatchFiles/RunUAT.sh" BuildCookRun -project="$(pwd -W 2>/dev/null || pwd)/<project>.uproject" -platform=Linux -build -cook'
+  test: '"<UE root>/Engine/Binaries/Linux/UnrealEditor" "$(pwd -W 2>/dev/null || pwd)/<project>.uproject" -ExecCmds="Automation RunTests <project>.; Quit" -unattended -nullrhi -stdout -FullStdOutLogOutput'
+  run: '"<UE root>/Engine/Binaries/Linux/UnrealEditor" "$(pwd -W 2>/dev/null || pwd)/<project>.uproject" -game -windowed -ResX=1280 -ResY=720'
+  smoke: '"<UE root>/Engine/Binaries/Linux/UnrealEditor" "$(pwd -W 2>/dev/null || pwd)/<project>.uproject" -game -nullrhi -unattended -stdout -ExecCmds="Quit"'
+```
+
+macOS — only the build is sourced. Epic documents the `UnrealEditor.app`
+bundle but no command-line editor inside it, so write `build` and leave the
+other three as TODO lines rather than a guessed path; `/smoke-check` reports
+NOT ASSESSED for tests until the user sets `commands.test`:
+
+```yaml
+commands:
+  # TODO: confirm this for your UE version and project — adjust via /settings
+  build: '"<UE root>/Engine/Build/BatchFiles/RunUAT.sh" BuildCookRun -project="$(pwd -W 2>/dev/null || pwd)/<project>.uproject" -platform=Mac -build -cook'
+  # TODO: test, run and smoke — no documented command-line editor on macOS.
+  # Set them via /settings to the editor command you run for this project.
+```
+
+On Windows, `build` calls AutomationTool directly: from Git Bash, `RunUAT.bat` fails
+(`'C:\Program' is not recognized`) whenever the project path has a space.
+AutomationTool.exe runs on the machine's .NET 8 runtime; `RunUAT.bat` brings
+its own SDK, so with no space in the path and no .NET 8 installed, use it.
+`-build` builds the editor target too (verified on 5.7; not re-checked on 5.8).
+
+**Three details are load-bearing.** The project path is absolute: UE 5.7 (not re-checked on 5.8)
+does not find a relative `<project>.uproject` and exits 1 (`Project file not
+found`) before anything runs. `$(pwd -W 2>/dev/null || pwd)` gives the `C:/…`
+form in Git Bash and the plain path elsewhere, run from the project root;
+`$PWD` alone fails when `MSYS_NO_PATHCONV` is set. `smoke` needs `-game`: without it
+`UnrealEditor-Cmd` boots the *editor*, where a bare `Quit` console command only
+ends a play-in-editor session — the process stays resident and the command
+never returns; with `-game` the same line boots headless and exits in seconds.
+`test` needs the `; Quit` inside the `Automation` string: the automation
+runner handles that trailing `Quit` itself and exits the editor once the tests
+finish, and without it the run also never returns. Its filter runs every test
+whose full name *contains* `<project>.` — a substring match, not a prefix — so
+name tests `<project>.[System].[Scenario]` as `qa-tester` does. If the
+project's name is also an engine area — `Audio`, `Core`, `Input`, `Test`,
+`System`, `Engine`, `Editor`, `AI`, `Math` — `<project>.` also runs hundreds
+to thousands of the engine's own tests; give the tests a distinct root (say
+`<project>Game.`) and put the same root in the filter. This form exits 255 on
+a failing test AND on a filter that matches nothing (`No automation tests
+matched`, verified on 5.7; not re-checked on 5.8), so `/smoke-check` reads the output, not the exit
+code. `smoke` carries `-stdout` for the same reason: without it a failed boot
+prints nothing. Do not swap in
+`-TestExit="Automation Test Queue Empty"`: that form exits **0** on a failing
+test unless its report JSON is parsed.
+
+### 5.5.2 Write the blocks to `project.yaml`
+
+Show the user the full set of four blocks and ask:
+
+> "May I write the `engine`, `specialists`, `naming`, and `commands` blocks to `project.yaml`?"
+
+Wait for confirmation, then apply based on the file's current state:
+
+- **`project.yaml` does not exist** — create it with the Write tool using this
+  v1.1 template (the four blocks appended after `framework`; replace `<...>` and
+  the date):
+
+  ```yaml
+  # CCGS project configuration — single source of truth for project settings.
+  # Schema: grep the `## <key>` section of .claude/docs/effects-map.md —
+  # it is ~31k tokens whole, ~900 per section. Do not open it entire.
+
+  schema_version: 1
+
+  framework:
+    version: 1.1.2
+    last_upgraded: <today's date>
+
+  engine:
+    name: "<...>"
+    version: "<...>"
+    language: "<...>"
+    rendering: "<...>"
+    physics: "<...>"
+
+  specialists:
+    code: "<...>"
+    shader: "<...>"
+    ui: "<...>"
+    additional: ["<...>"]
+
+  naming:
+    classes: <...>
+    variables: <...>
+    constants: <...>
+    signals: <...>
+    files: <...>
+    scenes: <...>
+
+  commands:
+    build: "<...>"
+    test: "<...>"
+    run: "<...>"
+    smoke: "<...>"
+  ```
+
+  Do not seed `modes.review_mode` here. It is a rigor-fronted knob — `modes.rigor`
+  supplies its value, so an explicit value would shadow the rigor expansion and pin
+  the review mode regardless of the project's rigor.
+
+- **`project.yaml` exists** — Read it first (the Edit tool requires the file to
+  have been read this session), then, processing the blocks in the order
+  `engine` → `specialists` → `naming` → `commands`, for each block:
+  - **Block absent** — insert the whole block, appended after the last existing
+    top-level block.
+  - **Block already present** (a re-run of `/setup-engine`) — Edit the existing
+    keys in place, and add any keys the block is missing (a partial block must
+    end up with its full key set). Do NOT add a second copy of the block.
+
+**Unreal on macOS is the exception in both cases:** `commands.test`, `run` and
+`smoke` are written as the TODO comment lines from the macOS block — never as
+`<...>` placeholders or a guessed path — and a re-run leaves them unset until the
+user sets them.
+
+Preserve all other content in `project.yaml` (`schema_version`, `framework`,
+`modes`, `project`, etc.) — only the four blocks are touched.
+
+### 5.5.3 Verify the dual-write
+
+Read `project.yaml` back and confirm the four blocks are present and that
+`engine.name`, `engine.language`, and the naming values match what was written
+to `technical-preferences.md`. If they diverge, report the discrepancy to the
+user and stop — a split config corrupts skill and hook reads.
+
+---
+
 ## 6. Determine Knowledge Gap
 
 Check whether the engine version is likely beyond the LLM's training data.
 
-**Known approximate coverage** (update this as models change):
+**Known approximate coverage** — the same figures the shipped
+`docs/engine-reference/*/VERSION.md` files record:
 - LLM knowledge cutoff: **May 2025**
 - Godot: training data likely covers up to ~4.3
-- Unity: training data likely covers up to ~2023.x / early 6000.x
-- Unreal: training data likely covers up to ~5.3 / early 5.4
+- Unity: training data likely covers up to ~2022 LTS (2022.3)
+- Unreal: training data likely covers up to ~5.3
+
+> **This table goes stale silently, and a stale table fails in the dangerous
+> direction only if it is too *new*.** A cutoff left unchanged for a year after
+> it stopped being true over-classifies risk — safe, but every project then pays
+> for full reference docs it may not have needed.
+> The opposite error is the harmful one: a cutoff claimed *later* than the model's
+> actual one marks post-cutoff versions LOW RISK and suppresses the reference
+> docs that exist to stop invented APIs.
+>
+> **If the model running this skill states an earlier training cutoff than the
+> one above, do not trust the table.** Say so, and treat the engine version as
+> `HIGH RISK` regardless of the comparison — a cutoff the model does not have is
+> not a cutoff that was met.
 
 Compare the user's chosen version against these baselines:
 
@@ -324,9 +947,61 @@ Inform the user which category they're in and why.
 
 ## 7. Populate Engine Reference Docs
 
+### First: does a reference set already exist for this engine?
+
+**Check before doing anything else.** The template ships
+`docs/engine-reference/godot/`, `unity/` and `unreal/` **already populated**, so
+"the directory exists and pins a version" is the state of *every* fresh project,
+not an edge case. Both branches below say "create", and following either one
+literally on a pre-populated directory either overwrites curated content or
+leaves `project.yaml` and the CLAUDE.md-imported reference disagreeing.
+
+Read `docs/engine-reference/<engine>/VERSION.md` and compare its
+**Engine Version** to the version chosen in Section 3:
+
+- **No directory, or no `VERSION.md`** → create, using the risk branch below.
+- **Same version** → nothing to regenerate. Refresh `Last Docs Verified` only if you
+  actually re-verified against the docs this run. Do not restamp a date you did
+  not check. The one row still written is `Installed at pin time`, from
+  Section 3 — its probe result is recorded whatever the outcome, after asking
+  "May I record `Installed at pin time: [result]` in
+  `docs/engine-reference/<engine>/VERSION.md`?" (it is a tracked file).
+- **Directory pins an OLDER version than the one chosen** → **update, do not
+  replace.** This is the common case. Show the changes below, then ask "May I
+  update the `docs/engine-reference/<engine>/` files for [version]?" before editing.
+  1. Edit `VERSION.md` in place: new **Engine Version**, new **Project Pinned**
+     and **Last Docs Verified**, the `Installed at pin time` row from Section 3,
+     and a new row in the post-cutoff timeline for each version added.
+  2. **Append** to `breaking-changes.md`, `deprecated-apis.md` and
+     `current-best-practices.md` under a heading naming the version span
+     (`## 4.6 → 4.7`). Never truncate the older spans — a project migrating
+     across two versions still needs the earlier one.
+  3. Re-grade the older timeline rows if the cutoff moved past them.
+- **Directory pins a NEWER version than the one chosen** → stop and ask. Someone
+  pinned forward deliberately, or the version choice is wrong. Do not silently
+  downgrade a curated reference.
+
+### Sourcing rule for everything written in this section
+
+**Never fill a gap from training data. Write the gap down instead.**
+
+The whole purpose of these files is to be the thing agents consult *instead of*
+their training data. A confidently wrong entry here is worse than no entry: it
+produces work that looks verified and is not.
+
+- Every claim must come from a page you fetched this run. Record the URL.
+- If the official docs do not state something the template asks for — a release
+  date, a subsystem's behaviour, web-export specifics — write
+  **`NOT SOURCEABLE — <what>, not stated at <url>`** and move on.
+- A `NOT SOURCEABLE` line is a successful outcome, not a failure to finish.
+- Do not infer one fact from an adjacent one. "The migration guide lists no
+  physics change" is not "the physics default is unchanged"; if you record the
+  inference, label it as an inference and name what it rests on.
+
 ### If WITHIN training data (LOW RISK):
 
-Create a minimal `docs/engine-reference/<engine>/VERSION.md`:
+Ask: "May I create `docs/engine-reference/<engine>/VERSION.md`?" Wait for
+confirmation, then create this minimal file:
 
 ```markdown
 # [Engine] — Version Reference
@@ -335,7 +1010,8 @@ Create a minimal `docs/engine-reference/<engine>/VERSION.md`:
 |-------|-------|
 | **Engine Version** | [version] |
 | **Project Pinned** | [today's date] |
-| **LLM Knowledge Cutoff** | May 2025 |
+| **Installed at pin time** | [Section 3 result — the installed version, or NOT DETERMINED] |
+| **LLM Knowledge Cutoff** | [the cutoff from the Section 6 coverage table] |
 | **Risk Level** | LOW — version is within LLM training data |
 
 ## Note
@@ -387,21 +1063,142 @@ Wait for confirmation before writing any files.
 
 ---
 
-## 8. Update CLAUDE.md Import
+## 7.5 Scaffold the Engine Project
 
-Ask: "May I update the `@` import in `CLAUDE.md` to point to the new engine reference?"
+**Without this step the framework produces source files no engine can open.**
+`/dev-story` writes `.gd`/`.cs`/`.cpp` under the resolved code root, and the `minimal` path
+advertises "four steps to running code" — but nothing anywhere created a project
+for the engine to load. Verified by grep across every skill: no `project.godot`,
+no Unity project, no `.uproject` was ever written. The files were real and
+orphaned.
 
-Wait for confirmation, then update the `@` import under "Engine Version Reference" to point to the
-correct engine:
+### Godot — write `project.godot` if one is absent
+
+**Never overwrite an existing `project.godot`.** If the file is already there,
+say so and skip to Section 8 — the developer has a project and its settings are
+theirs.
+
+Show the proposed file, then ask: *"May I create `project.godot` at the repo
+root?"* On approval, write:
+
+```ini
+config_version=5
+
+[application]
+
+config/name="<project name>"
+config/features=PackedStringArray("<major.minor>", "<renderer feature>")
+
+[rendering]
+
+renderer/rendering_method="<rendering method>"
+```
+
+Fill it from decisions already made — do not ask again:
+
+| Field | Source |
+|-------|--------|
+| `config/name` | the brief's working title, else the repo directory name |
+| `<major.minor>` | `engine.version` from Section 3, major and minor only (`4.7.2` → `4.7`) |
+| `<renderer feature>` / `<rendering method>` | the `rendering` value chosen in Section 5.5.1 — Compatibility → `"GL Compatibility"` / `gl_compatibility`; Forward+ → `"Forward Plus"` / `forward_plus`; Mobile → `"Mobile"` / `mobile` |
+
+**Leave `run/main_scene` unset.** There is no scene yet at engine-setup time.
+Add a comment saying `/dev-story` or the developer sets it once a scene exists;
+an empty project with no main scene opens fine in the editor.
+
+**Then verify, and report what the verification actually was.** If the engine
+binary was found in Section 3, run its headless import
+(`godot --headless --path . --import`) and report the result — read the output
+for `ERROR`, because the import exits 0 even when something in the project
+fails to load. If the binary was
+not found, or its version differs from the pinned one, write
+**`project.godot NOT VERIFIED — <reason>`**. The `config_version` and feature
+strings are stable across Godot 4.x, but "stable in the versions I know" is not
+the same as "checked against the version you pinned", and only the run
+establishes the latter.
+
+### Unity and Unreal — instruct, do not fabricate
+
+A Unity project and an `.uproject` are editor-generated and span many files,
+several of them binary or machine-specific. This repo cannot source their
+correct contents, and a hand-written scaffold would be the exact failure
+Section 7's sourcing rule forbids — something that looks finished and is quietly
+wrong.
+
+Tell the user, in one short block, that CCGS does not create the project for
+these engines and they should create it first:
+
+- **Unity** — create the project in Unity Hub at the repo root, choosing the
+  template matching the 2D/3D answer from Section 2, then re-run `/setup-engine`.
+- **Unreal** — create the project in the Epic launcher or via `UnrealEditor`,
+  then re-run.
+
+Report the outcome in the Section 12 summary either way — created, already
+present, or "not created, engine requires the editor" — so the user leaves this
+skill knowing whether a runnable project exists.
+
+> **Deliberately not a `project.yaml` key.** An `engine.project_scaffolded` flag
+> would be written here and read by nothing, which is a dead setting — the same
+> writer-without-reader defect the config gates exist to catch. The filesystem is
+> the source of truth: any skill that needs to know globs for `project.godot`,
+> `*.uproject`, or `ProjectSettings/ProjectVersion.txt`.
+
+---
+
+## 8. Verify the CLAUDE.md Import
+
+**This import was already written in Section 4 — do not edit it again and do not
+ask again.** Section 4 sets it as part of the same CLAUDE.md write, anchored to
+the `ENGINE-REFERENCE-IMPORT` marker. This step only confirms the result.
+
+Read `CLAUDE.md` and confirm the line under the marker reads:
 
 ```markdown
-## Engine Version Reference
-
 @docs/engine-reference/<engine>/VERSION.md
 ```
 
-If the previous import pointed to a different engine (e.g., switching from
-Godot to Unity), update it.
+with `<engine>` the engine just configured. If it still points at a different
+engine, Section 4 did not complete — go back and finish it rather than patching
+the line here.
+
+> **Why this is a check and not a second write.** Repeating the edit here with
+> its own approval prompt would ask the user twice for one change, and the second
+> ask would be for work already done. Locate the line by its marker, never by the
+> `## Engine Version Reference` heading — the marker exists precisely so the line
+> can still be found when the heading moves or is reworded.
+
+---
+
+## 8.5 Read Back What You Just Wrote
+
+This section exists because prose did not hold. Section 5.5.1's rendering/physics
+table already carries an emphatic, source-cited warning naming the two mistakes
+most often made here -- and it is still entirely possible to make **both** of
+them anyway, writing `Forward+` and `Jolt` for a 2D browser game. Section 3's
+`Installed at pin time` row is just as easy to drop silently, because a missing
+row leaves no trace.
+
+Neither is fixed by adding more instructions. They are fixed by verifying the
+files after writing them:
+
+```bash
+bash .claude/scripts/project-coherence.sh
+```
+
+It compares `project.yaml` against `docs/engine-reference/<engine>/VERSION.md`,
+against `project.godot`, and against the engine binary actually on PATH, and it
+checks that the files `commands.build` and `commands.test` name exist.
+
+**Report every `[DIFFERS]` line to the user and resolve it before finishing.**
+Each one means two files this skill just wrote disagree, or describe something
+that is not there.
+
+**`[NOT CHECKED]` is not a pass.** Each such line names why a comparison could
+not be made -- an absent binary, a missing `project.godot`. Say which ones
+applied. A comparison that could not run has not established agreement.
+
+The script emits observations and never a verdict, per the convention in
+CLAUDE.md. The judgement is yours and the user's.
 
 ---
 
@@ -463,7 +1260,7 @@ any "must migrate" items.
 
 ### Step 3 — Pre-Upgrade Audit
 
-Scan `src/` for code that uses APIs known to be deprecated or changed in the
+Scan the **code root** (resolve per `.claude/docs/code-root-resolution.md`) for code that uses APIs known to be deprecated or changed in the
 target version:
 
 - Use Grep to search for deprecated API names extracted from the migration
@@ -492,8 +1289,8 @@ Recommended migration order (dependency-sorted):
   ...
 ```
 
-If no deprecated APIs are found in `src/`, report: "No deprecated API usage
-found in src/ — upgrade may be low-risk."
+If no deprecated APIs are found in the code root, report: "No deprecated API usage
+found in the code root — upgrade may be low-risk."
 
 ### Step 4 — Confirm Before Updating
 
@@ -523,6 +1320,10 @@ After confirmation:
 2. If `breaking-changes.md` or `deprecated-apis.md` exist in the engine
    reference directory, append the new version's changes to those files.
 
+3. If `project.yaml` exists at the repo root and has an `engine` block, Read it
+   first, then update `engine.version` to `[new-version]` so the primary config
+   store stays in sync with VERSION.md.
+
 ### Step 6 — Post-Upgrade Reminder
 
 After updating VERSION.md, output:
@@ -550,15 +1351,31 @@ After setup is complete, output:
 Engine Setup Complete
 =====================
 Engine:          [name] [version]
-Language:        [GDScript | C# | GDScript + C# | C# | C++ + Blueprint]
+Language:        [GDScript | C# | GDScript + C# | C# | C++ + Blueprint | Blueprint + C++]
 Knowledge Risk:  [LOW/MEDIUM/HIGH]
 Reference Docs:  [created/skipped]
 CLAUDE.md:       [updated]
 Tech Prefs:      [created/updated]
+project.yaml:    [created/updated]
 Agent Config:    [verified]
 
 Next Steps:
 1. Review docs/engine-reference/<engine>/VERSION.md
+```
+
+Then print **one** Next-Steps list, matching the resolved `workflow` tier:
+
+**`minimal` — the lean 4-step floor (you are on step 1):**
+```
+2. Run /brainstorm to produce your one-page design/game-brief.md (the lean-tier design artifact)
+3. Run /create-stories to turn the brief's MVP list into stories
+4. Run /dev-story — first line of game code
+```
+(No `/map-systems`, `/design-system`, `/prototype`, or `/sprint-plan` at
+`minimal` — the brief replaces the GDDs and its build order is the plan.)
+
+**`standard` / `full` — the full pipeline:**
+```
 2. [If from /brainstorm] Run /map-systems to decompose your concept into individual systems
 3. [If from /brainstorm] Run /design-system to author per-system GDDs (guided, section-by-section)
 4. [If from /brainstorm] Run /prototype [core-mechanic] to validate the core idea before writing GDDs
@@ -573,144 +1390,27 @@ Verdict: **COMPLETE** — engine configured and reference docs populated.
 ## Guardrails
 
 - NEVER guess an engine version — always verify via WebSearch or user confirmation
+- `project.yaml` is the primary config store (v1.1). Always dual-write engine
+  config to BOTH `project.yaml` (primary) and `technical-preferences.md` (legacy
+  mirror). If the two ever diverge, `project.yaml` is authoritative.
 - NEVER overwrite existing reference docs without asking — append or update
 - If reference docs already exist for a different engine, ask before replacing
 - Always show the user what you're about to change before making CLAUDE.md edits
 - If WebSearch returns ambiguous results, show the user and let them decide
-- When the user chose **GDScript**: copy the GDScript CLAUDE.md template from Appendix A1 exactly. NEVER add "C++ via GDExtension" to the Language field. GDScript projects may use GDExtension, but it is not a primary project language. The `godot-gdextension-specialist` in the routing table is available for when native extensions are needed — it does not make C++ a project language.
+- When the user chose **GDScript**: copy the GDScript CLAUDE.md template from **A1** in `.claude/skills/setup-engine/references/godot-language-config.md` exactly. NEVER add "C++ via GDExtension" to the Language field. GDScript projects may use GDExtension, but it is not a primary project language. The `godot-gdextension-specialist` in the routing table is available for when native extensions are needed — it does not make C++ a project language.
 
 ---
 
 ## Appendix A — Godot Language Configuration
 
-All Godot-specific variants for language-dependent configuration. Referenced from Sections 4 and 5 — only relevant when Godot is the chosen engine. Use the subsection matching the language chosen in Section 4.
+Moved out of this file so it costs nothing on non-Godot runs.
 
----
+**When the chosen engine is Godot, read**
+`.claude/skills/setup-engine/references/godot-language-config.md`
+and use the subsection for the chosen language:
 
-### A1. CLAUDE.md Technology Stack Templates
+- **A1** — CLAUDE.md Technology Stack templates (GDScript / C# / Both)
+- **A2** — naming conventions
+- **A3** — engine specialist routing and file-extension tables
 
-**GDScript:**
-```markdown
-- **Engine**: Godot [version]
-- **Language**: GDScript
-- **Build System**: SCons (engine), Godot Export Templates
-- **Asset Pipeline**: Godot Import System + custom resource pipeline
-```
-
-> **Guardrail**: When using this GDScript template, write the Language field as exactly "`GDScript`" — no additions. Do NOT append "C++ via GDExtension" or any other language. The C# template below includes GDExtension because C# projects commonly wrap native code; GDScript projects do not.
-
-**C#:**
-```markdown
-- **Engine**: Godot [version]
-- **Language**: C# (.NET 8+, primary), C++ via GDExtension (native plugins only)
-- **Build System**: .NET SDK + Godot Export Templates
-- **Asset Pipeline**: Godot Import System + custom resource pipeline
-```
-
-**Both — GDScript + C#:**
-```markdown
-- **Engine**: Godot [version]
-- **Language**: GDScript (gameplay/UI scripting), C# (performance-critical systems), C++ via GDExtension (native only)
-- **Build System**: .NET SDK + Godot Export Templates
-- **Asset Pipeline**: Godot Import System + custom resource pipeline
-```
-
----
-
-### A2. Naming Conventions
-
-**GDScript:**
-- Classes: PascalCase (e.g., `PlayerController`)
-- Variables/functions: snake_case (e.g., `move_speed`)
-- Signals: snake_case past tense (e.g., `health_changed`)
-- Files: snake_case matching class (e.g., `player_controller.gd`)
-- Scenes: PascalCase matching root node (e.g., `PlayerController.tscn`)
-- Constants: UPPER_SNAKE_CASE (e.g., `MAX_HEALTH`)
-
-**C#:**
-- Classes: PascalCase (`PlayerController`) — must also be `partial`
-- Public properties/fields: PascalCase (`MoveSpeed`, `JumpVelocity`)
-- Private fields: `_camelCase` (`_currentHealth`, `_isGrounded`)
-- Methods: PascalCase (`TakeDamage()`, `GetCurrentHealth()`)
-- Signal delegates: PascalCase + `EventHandler` suffix (`HealthChangedEventHandler`)
-- Files: PascalCase matching class (`PlayerController.cs`)
-- Scenes: PascalCase matching root node (`PlayerController.tscn`)
-- Constants: PascalCase (`MaxHealth`, `DefaultMoveSpeed`)
-
-**Both — GDScript + C#:**
-Use GDScript conventions for `.gd` files and C# conventions for `.cs` files. Mixed-language files do not exist — the boundary is per-file. When in doubt about which language a new system should use, ask the user and record the decision in `technical-preferences.md`.
-
----
-
-### A3. Engine Specialists Routing
-
-**GDScript:**
-```markdown
-## Engine Specialists
-- **Primary**: godot-specialist
-- **Language/Code Specialist**: godot-gdscript-specialist (all .gd files)
-- **Shader Specialist**: godot-shader-specialist (.gdshader files, VisualShader resources)
-- **UI Specialist**: godot-specialist (no dedicated UI specialist — primary covers all UI)
-- **Additional Specialists**: godot-gdextension-specialist (GDExtension / native C++ bindings only)
-- **Routing Notes**: Invoke primary for architecture decisions, ADR validation, and cross-cutting code review. Invoke GDScript specialist for code quality, signal architecture, static typing enforcement, and GDScript idioms. Invoke shader specialist for material design and shader code. Invoke GDExtension specialist only when native extensions are involved.
-
-### File Extension Routing
-
-| File Extension / Type | Specialist to Spawn |
-|-----------------------|---------------------|
-| Game code (.gd files) | godot-gdscript-specialist |
-| Shader / material files (.gdshader, VisualShader) | godot-shader-specialist |
-| UI / screen files (Control nodes, CanvasLayer) | godot-specialist |
-| Scene / prefab / level files (.tscn, .tres) | godot-specialist |
-| Native extension / plugin files (.gdextension, C++) | godot-gdextension-specialist |
-| General architecture review | godot-specialist |
-```
-
-**C#:**
-```markdown
-## Engine Specialists
-- **Primary**: godot-specialist
-- **Language/Code Specialist**: godot-csharp-specialist (all .cs files)
-- **Shader Specialist**: godot-shader-specialist (.gdshader files, VisualShader resources)
-- **UI Specialist**: godot-specialist (no dedicated UI specialist — primary covers all UI)
-- **Additional Specialists**: godot-gdextension-specialist (GDExtension / native C++ bindings only)
-- **Routing Notes**: Invoke primary for architecture decisions, ADR validation, and cross-cutting code review. Invoke C# specialist for code quality, [Signal] delegate patterns, [Export] attributes, .csproj management, and C#-specific Godot idioms. Invoke shader specialist for material design and shader code. Invoke GDExtension specialist only when native C++ plugins are involved.
-
-### File Extension Routing
-
-| File Extension / Type | Specialist to Spawn |
-|-----------------------|---------------------|
-| Game code (.cs files) | godot-csharp-specialist |
-| Shader / material files (.gdshader, VisualShader) | godot-shader-specialist |
-| UI / screen files (Control nodes, CanvasLayer) | godot-specialist |
-| Scene / prefab / level files (.tscn, .tres) | godot-specialist |
-| Project config (.csproj, NuGet) | godot-csharp-specialist |
-| Native extension / plugin files (.gdextension, C++) | godot-gdextension-specialist |
-| General architecture review | godot-specialist |
-```
-
-**Both — GDScript + C#:**
-```markdown
-## Engine Specialists
-- **Primary**: godot-specialist
-- **GDScript Specialist**: godot-gdscript-specialist (.gd files — gameplay/UI scripts)
-- **C# Specialist**: godot-csharp-specialist (.cs files — performance-critical systems)
-- **Shader Specialist**: godot-shader-specialist (.gdshader files, VisualShader resources)
-- **UI Specialist**: godot-specialist (no dedicated UI specialist — primary covers all UI)
-- **Additional Specialists**: godot-gdextension-specialist (GDExtension / native C++ bindings only)
-- **Routing Notes**: Invoke primary for cross-language architecture decisions and which systems belong in which language. Invoke GDScript specialist for .gd files. Invoke C# specialist for .cs files and .csproj management. Prefer signals over direct cross-language method calls at the boundary.
-
-### File Extension Routing
-
-| File Extension / Type | Specialist to Spawn |
-|-----------------------|---------------------|
-| Game code (.gd files) | godot-gdscript-specialist |
-| Game code (.cs files) | godot-csharp-specialist |
-| Cross-language boundary decisions | godot-specialist |
-| Shader / material files (.gdshader, VisualShader) | godot-shader-specialist |
-| UI / screen files (Control nodes, CanvasLayer) | godot-specialist |
-| Scene / prefab / level files (.tscn, .tres) | godot-specialist |
-| Project config (.csproj, NuGet) | godot-csharp-specialist |
-| Native extension / plugin files (.gdextension, C++) | godot-gdextension-specialist |
-| General architecture review | godot-specialist |
-```
+**Load discipline.** On any engine other than Godot, **never load it** — nothing in Sections 4, 5 or 5.5 needs it, and reading it anyway spends the tokens the split exists to save. On Godot, read it once when you first reach Section 4 and keep using it for Sections 5 and 5.5; do not re-read it at each reference.

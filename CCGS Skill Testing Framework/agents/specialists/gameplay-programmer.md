@@ -3,7 +3,6 @@
 ## Agent Summary
 Domain: Game mechanics code, player systems, combat implementation, and interactive features.
 Does NOT own: UI implementation (ui-programmer), AI behavior trees (ai-programmer), engine/rendering systems (engine-programmer).
-Model tier: Sonnet (default).
 No gate IDs assigned.
 
 ---
@@ -11,8 +10,8 @@ No gate IDs assigned.
 ## Static Assertions (Structural)
 
 - [ ] `description:` field is present and domain-specific (references game mechanics / player systems)
-- [ ] `allowed-tools:` list includes Read, Write, Edit, Bash, Glob, Grep — excludes tools only needed by orchestration agents
-- [ ] Model tier is Sonnet (default for specialists)
+- [ ] `tools:` list includes Read, Write, Edit, Bash, Glob, Grep — excludes tools only needed by orchestration agents
+- [ ] Model tier is `inherit` — frontmatter `model:` reads exactly `inherit` (tiers: `.claude/docs/model-tiers.md`)
 - [ ] Agent definition does not claim authority over UI, AI behavior, or engine/rendering code
 
 ---
@@ -23,9 +22,9 @@ No gate IDs assigned.
 **Input:** "Implement a melee combo system where three consecutive light attacks chain into a finisher."
 **Expected behavior:**
 - Produces code or a code scaffold following the project's language (GDScript/C#) and coding standards
-- Defines combo state tracking, input window timing, and finisher trigger logic as separate, testable methods
+- Models the combo as a state machine with an explicit transition table, and keeps the input-window check and finisher trigger as logic unit tests can drive without the full game running (logic separated from presentation)
 - References the relevant GDD section if one is provided in context
-- Does NOT implement UI feedback (delegates to ui-programmer) or AI reaction (delegates to ai-programmer)
+- Does NOT implement UI feedback or enemy reactions: emits events/signals for them instead of referencing UI code, leaving the UI side to `ui-programmer` and enemy reactions to `ai-programmer`
 - Output includes doc comments on all public methods per coding standards
 
 ### Case 2: Out-of-domain request — redirects correctly
@@ -34,14 +33,14 @@ No gate IDs assigned.
 - Does NOT produce menu implementation code
 - Explicitly states this is outside its domain
 - Redirects the request to `ui-programmer`
-- May note that if the pause menu requires reading gameplay state it can provide the state API surface
+- Any part it offers is the gameplay side of the gameplay-to-UI event contract the menu consumes (e.g., pause-state events), agreed with `ui-programmer` — never menu code
 
 ### Case 3: Domain boundary — threading flag
 **Input:** "The combo system is causing frame stutters; can you add threading to spread the input processing?"
 **Expected behavior:**
 - Does NOT unilaterally implement threading or async systems
 - Flags the threading concern to `engine-programmer` with a clear description of the hot path
-- May produce a non-threaded refactor to reduce work per frame as a safe interim step
+- Any interim step it offers stays single-threaded (less work per frame in the combo code it owns) and is proposed for approval before any code changes
 - Documents the escalation so lead-programmer is aware
 
 ### Case 4: Conflict with an Accepted ADR
@@ -50,7 +49,7 @@ No gate IDs assigned.
 - Identifies that the proposed change violates ADR-003 (Accepted status)
 - Does NOT silently implement the violation
 - Flags the conflict to `lead-programmer` with the ADR reference and the trade-off described
-- Will implement only after explicit override decision from lead-programmer or technical-director
+- Implements the change only after ADR-003 is superseded by a new ADR through `/architecture-decision` — which only the user, or technical-director on the user's confirmation, moves to Accepted — never on the original request alone, and not on lead-programmer's approval alone
 
 ### Case 5: Context pass — implements to GDD spec
 **Input:** GDD for "PlayerCombat" provided in context. Request: "Implement the stamina drain formula from the combat GDD."
@@ -67,9 +66,10 @@ No gate IDs assigned.
 - [ ] Stays within declared domain (mechanics, player systems, combat)
 - [ ] Redirects out-of-domain requests to correct agent (ui-programmer, ai-programmer, engine-programmer)
 - [ ] Returns structured findings (code scaffold, method signatures, inline comments) not freeform opinions
-- [ ] Does not modify files outside `src/gameplay/` or `src/core/` without explicit delegation
+- [ ] Does not modify engine-level systems without lead-programmer approval, and does not write networking code (delegates to network-programmer)
 - [ ] Flags ADR violations rather than overriding them silently
 - [ ] Makes gameplay values data-driven, never hardcoded
+- [ ] Asks "May I write this to [filepath]?" naming the file before writing
 
 ---
 

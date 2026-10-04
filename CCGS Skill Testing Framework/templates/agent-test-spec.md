@@ -1,8 +1,4 @@
-# Agent Spec: [agent-name]
-
-> **Tier**: [directors | leads | specialists | godot | unity | unreal | operations | creative]
-> **Category**: [director | lead | specialist | engine | operations | creative]
-> **Spec written**: [YYYY-MM-DD]
+# Agent Test Spec: [agent-name]
 
 ## Agent Summary
 
@@ -15,10 +11,11 @@ delegates vs. handles directly. Include which gates it triggers (if any).]
 
 ---
 
-## Static Assertions
+## Static Assertions (Structural)
 
 - [ ] Agent file exists at `.claude/agents/[name].md`
 - [ ] Frontmatter has `name`, `description`, `model`, `tools` fields
+- [ ] Model tier is `[opus | sonnet | haiku | inherit]` — frontmatter `model:` reads exactly that alias (tiers: `.claude/docs/model-tiers.md`)
 - [ ] Domain clearly stated
 - [ ] Escalation path documented
 - [ ] Does not make decisions outside its domain
@@ -45,7 +42,7 @@ delegates vs. handles directly. Include which gates it triggers (if any).]
 - [ ] Output format matches expected structure
 - [ ] Collaborative protocol followed (ask → draft → approve)
 
-**Case Verdict**: PASS / FAIL / PARTIAL
+**Case Verdict**: PASS / FAIL / PARTIAL / NOT ASSESSED
 
 ---
 
@@ -65,7 +62,7 @@ delegates vs. handles directly. Include which gates it triggers (if any).]
 - [ ] Agent declines and redirects (does not silently handle cross-domain work)
 - [ ] Correct agent named in redirect
 
-**Case Verdict**: PASS / FAIL / PARTIAL
+**Case Verdict**: PASS / FAIL / PARTIAL / NOT ASSESSED
 
 ---
 
@@ -78,16 +75,16 @@ delegates vs. handles directly. Include which gates it triggers (if any).]
 - [gate ID: e.g., CD-PHASE-GATE]
 
 **Expected behavior**:
-1. Agent reads the relevant documents
-2. Agent produces a PASS / CONCERNS / FAIL verdict
-3. Agent does not auto-advance on CONCERNS or FAIL
+1. Agent reads the gate's definition file, then the documents it names
+2. Agent opens with `[GATE-ID]: [word]`, the word taken from that gate's **Verdicts** line
+3. Agent returns the verdict to the calling skill and does not act on it itself
 
 **Assertions**:
-- [ ] Verdict keyword present in output (PASS, CONCERNS, FAIL)
+- [ ] First line is `[GATE-ID]: [word]` with a word from the invoked gate's Verdicts line — or `NOT ASSESSED`, naming the input, when an input the gate names was not given
 - [ ] Reasoning provided for verdict
-- [ ] On CONCERNS/FAIL: work is blocked, not silently continued
+- [ ] Agent does not carry on with the reviewed work past its own verdict — the calling skill, not the agent, blocks on the gate's failure word (CONCERNS is not blocking; the skill takes it to the user)
 
-**Case Verdict**: PASS / FAIL / PARTIAL
+**Case Verdict**: PASS / FAIL / PARTIAL / NOT ASSESSED
 
 ---
 
@@ -108,7 +105,7 @@ delegates vs. handles directly. Include which gates it triggers (if any).]
 - [ ] Correct escalation path followed
 - [ ] No unilateral cross-domain changes made
 
-**Case Verdict**: PASS / FAIL / PARTIAL
+**Case Verdict**: PASS / FAIL / PARTIAL / NOT ASSESSED
 
 ---
 
@@ -130,7 +127,7 @@ delegates vs. handles directly. Include which gates it triggers (if any).]
 - [ ] Result is scoped to the sub-task, not expanded beyond it
 - [ ] Output format suitable for parent agent consumption
 
-**Case Verdict**: PASS / FAIL / PARTIAL
+**Case Verdict**: PASS / FAIL / PARTIAL / NOT ASSESSED
 
 ---
 

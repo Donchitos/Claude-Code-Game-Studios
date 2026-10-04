@@ -2,14 +2,14 @@
 
 ## Trigger
 
-Runs after any merge to the `develop` or `main` branch that includes changes
-to `assets/`.
+Runs after any merge to `main` (the trunk) or a `release/*` branch that
+includes changes to `assets/`.
 
 ## Purpose
 
 Validates that all assets in the merged branch conform to naming conventions,
 size budgets, and format requirements. Prevents non-compliant assets from
-accumulating on integration branches.
+accumulating on the trunk.
 
 ## Implementation
 

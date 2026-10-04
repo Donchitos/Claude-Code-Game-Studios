@@ -2,29 +2,35 @@
 
 ## Skill Summary
 
-`/soak-test` generates a structured soak test protocol — an extended runtime
-test plan designed to surface memory leaks, performance drift, and stability
-issues that only appear under sustained gameplay. The skill produces a document
-specifying the test duration, system under test, monitoring checkpoints (e.g.,
-memory sample every 30 minutes), pass/fail thresholds, and conditions for early
-termination.
+`/soak-test [duration] [focus]` generates an observation protocol for an
+extended play session — the human plays, the skill writes the plan. Duration is
+`30m`, `1h`, `2h` or `4h` (default `1h`); focus is `memory`, `stability`,
+`balance` or `all` (default `all`). It reads `engine.name` and `performance.*`
+from `project.yaml` (falling back to `technical-preferences.md`), the game
+concept or brief, the latest playtest and QA plan, then builds timed
+checkpoints for the duration and engine-specific memory guidance whose alert
+thresholds are relative to the session's own T+0 baseline, in units recorded as
+displayed. The engine tool and counter names it gives are not covered by
+`docs/engine-reference/`, so they are marked NOT SOURCEABLE — pointers the
+tester confirms at T+0, recording the tool actually used.
 
-The skill asks "May I write to `production/qa/soak-[slug]-[date].md`?" before
-persisting. If a previous soak test for the same system exists, the skill offers
-to extend the duration or add new conditions. No director gates apply. The verdict
-is COMPLETE when the soak test protocol is written.
+The protocol document carries a Verdict section with PASS / PASS WITH CONCERNS /
+NOT ASSESSED / FAIL for the tester to fill in after the session; a short soak
+cannot return PASS. The skill asks "May I write this soak test protocol to
+`production/qa/soak-test-[date]-[duration].md`?" before writing, and never runs
+the soak itself. No director gates apply.
 
 ---
 
 ## Static Assertions (Structural)
 
-Verified automatically by `/skill-test static` — no fixture needed.
+Checked against the SKILL.md by `/skill-test spec` — no fixture needed.
 
 - [ ] Has required frontmatter fields: `name`, `description`, `argument-hint`, `user-invocable`, `allowed-tools`
 - [ ] Has ≥2 phase headings
-- [ ] Contains verdict keyword: COMPLETE
+- [ ] Contains verdict keywords: PASS, PASS WITH CONCERNS, NOT ASSESSED, FAIL
 - [ ] Contains "May I write" collaborative protocol language before writing the protocol
-- [ ] Has a next-step handoff (e.g., `/regression-suite` or `/release-checklist`)
+- [ ] Has a next-step handoff (`/bug-triage sprint` after the session; `/smoke-check` after fixing a FAIL)
 
 ---
 
@@ -36,113 +42,120 @@ None. `/soak-test` is a QA planning utility. No director gates apply.
 
 ## Test Cases
 
-### Case 1: Happy Path — Online gameplay feature, 2-hour soak protocol
+### Case 1: Happy Path — 2-hour, all-focus soak on Godot
 
 **Fixture:**
-- User specifies: system = "online multiplayer lobby", duration = "2 hours"
-- `technical-preferences.md` has engine configured
+- `project.yaml` has `engine.name: Godot` and `performance.target_framerate: 60`
+- `design/gdd/game-concept.md` states the intended session length
+- The user approves the write
 
-**Input:** `/soak-test online-lobby 2h`
+**Input:** `/soak-test 2h all`
 
 **Expected behavior:**
-1. Skill generates a 2-hour soak test protocol for the online lobby system
-2. Protocol includes: monitoring checkpoints every 30 minutes, metrics to track
-   (memory usage, connection count, packet loss), pass thresholds, early termination
-   conditions (crash or >20% memory growth)
-3. Networking-specific checks are included (session drop rate, reconnect handling)
-4. Skill asks "May I write to `production/qa/soak-online-lobby-2026-04-06.md`?"
-5. File is written on approval; verdict is COMPLETE
+1. Skill loads context: engine, performance budgets, concept, latest playtest and QA plan
+2. Checkpoints for `2h`: T+0, T+20, T+40, T+60, T+80, T+100, T+120
+3. Godot memory items: the Debugger's memory monitors, Static Memory (unit as
+   displayed), Object Count, Orphan Nodes — names marked NOT SOURCEABLE, since
+   `docs/engine-reference/godot/` does not cover them, for the tester to confirm
+   at T+0; alert when memory grows > 20% from T+0 after the first 15 minutes;
+   Orphan Nodes must return to its T+0 value after a scene unload
+4. Stability items (60 fps target) and balance/fatigue items are both included
+5. Protocol document has Pre-Session Setup, Baseline (T+0), a Checkpoint Log per
+   checkpoint, Post-Session Analysis, and a Verdict section left for the tester
+6. Skill asks "May I write this soak test protocol to
+   `production/qa/soak-test-[date]-2h.md`?"
+7. After writing, prints the run steps ending with `/bug-triage sprint`
 
 **Assertions:**
-- [ ] Protocol duration matches the requested 2 hours
-- [ ] Monitoring checkpoints are at reasonable intervals (e.g., every 30 minutes)
-- [ ] Network-specific checks are included (not just generic memory checks)
-- [ ] "May I write" is asked with the correct file path
-- [ ] Verdict is COMPLETE
+- [ ] Checkpoints are exactly T+0, T+20, T+40, T+60, T+80, T+100, T+120
+- [ ] Memory thresholds are relative to T+0, and the unit is recorded as displayed (no unit assumed)
+- [ ] The Godot tool and counter names are marked NOT SOURCEABLE, not presented as verified, and Pre-Session Setup asks for the tool actually used
+- [ ] Memory, stability and balance observation items are all present (focus `all`)
+- [ ] "May I write" is asked with `production/qa/soak-test-[date]-2h.md`
+- [ ] The skill issues no verdict itself — the protocol's Verdict section is left for the tester
 
 ---
 
-### Case 2: No Target Defined — Prompts for system, duration, and conditions
+### Case 2: No Arguments — Defaults applied
 
 **Fixture:**
-- No arguments provided
-- No soak test config in session state
+- No arguments provided; engine configured
 
 **Input:** `/soak-test`
 
 **Expected behavior:**
-1. Skill detects no target system or duration specified
-2. Skill asks: "What system or feature should be soak-tested?"
-3. After user responds with system: Skill asks: "What duration? (e.g., 1h, 4h, 8h)"
-4. After user responds with duration: Skill asks for specific conditions or
-   uses defaults (normal gameplay loop, default player count)
-5. Skill generates protocol from collected inputs and asks "May I write"
+1. Duration defaults to `1h`, focus to `all` — no questions are needed to start
+2. Checkpoints: T+0, T+15, T+30, T+45, T+60
+3. Protocol header records `Duration: 1h` and `Focus: all`
+4. Skill asks "May I write this soak test protocol to `production/qa/soak-test-[date]-1h.md`?"
 
 **Assertions:**
-- [ ] At minimum 2 follow-up questions are asked (system + duration)
-- [ ] Default conditions are applied when user doesn't specify custom ones
-- [ ] Protocol is not generated until system and duration are known
-- [ ] Verdict is COMPLETE after file is written
+- [ ] Duration `1h` and focus `all` are used when no argument is given
+- [ ] Checkpoints are exactly T+0, T+15, T+30, T+45, T+60
+- [ ] The output path ends `-1h.md`
+- [ ] Nothing is written before the "May I write" approval
 
 ---
 
-### Case 3: Previous Soak Test Exists — Offers to extend or add conditions
+### Case 3: Narrow Focus on Unreal — 4-hour memory soak
 
 **Fixture:**
-- `production/qa/soak-online-lobby-2026-03-15.md` exists with a 1-hour protocol
-- User wants to extend to 4 hours with new memory threshold conditions
+- `project.yaml` has `engine.name: Unreal`
 
-**Input:** `/soak-test online-lobby 4h`
+**Input:** `/soak-test 4h memory`
 
 **Expected behavior:**
-1. Skill finds existing soak test for online-lobby
-2. Skill reports: "Previous soak test found: soak-online-lobby-2026-03-15.md (1h)"
-3. Skill presents options: create new protocol (4h standalone), or extend the
-   existing protocol to 4h and add new conditions
-4. User selects extend; existing checkpoints are preserved, new ones added
-5. Skill asks "May I write to `production/qa/soak-online-lobby-2026-04-06.md`?"
-   (new file, not overwriting old one)
+1. Checkpoints for `4h`: T+0, T+30, T+60, T+90, T+120, T+180, T+240
+2. Unreal memory items: a memory readout at each checkpoint — `stat memory`,
+   marked NOT SOURCEABLE since `docs/engine-reference/unreal/` does not cover
+   it; record Physical Memory Used and Available (units as displayed)
+3. Alert threshold: Physical Memory Used growth > 20% over the full soak,
+   against this run's T+0 — no absolute MB threshold
+4. Balance/fatigue observation items are not generated (focus is `memory`)
+5. Output path `production/qa/soak-test-[date]-4h.md`
 
 **Assertions:**
-- [ ] Existing soak test is surfaced and referenced
-- [ ] User is offered extend vs. new options
-- [ ] New file is created (old file is not overwritten)
-- [ ] Extended protocol includes both old and new checkpoints
-- [ ] Verdict is COMPLETE
+- [ ] Checkpoints are exactly T+0, T+30, T+60, T+90, T+120, T+180, T+240
+- [ ] The Unreal threshold is a relative > 20% growth, not an absolute size
+- [ ] `stat memory` is marked NOT SOURCEABLE, a pointer to confirm rather than a verified command
+- [ ] Balance/fatigue items are omitted for focus `memory`
+- [ ] "May I write" names the `-4h.md` path
 
 ---
 
-### Case 4: Mobile Target Platform — Memory-specific checkpoints added
+### Case 4: No Performance Budgets — "not set", never invented
 
 **Fixture:**
-- `technical-preferences.md` specifies target platform: Mobile
-- User requests soak test for "gameplay session" at 30 minutes
+- `project.yaml` has `engine.name: Unity` and no `performance` block
+- `technical-preferences.md` Performance Budgets are `[TO BE CONFIGURED]`
 
-**Input:** `/soak-test gameplay 30m`
+**Input:** `/soak-test 30m memory`
 
 **Expected behavior:**
-1. Skill reads `technical-preferences.md` and detects mobile target platform
-2. Soak test protocol includes mobile-specific memory checkpoints:
-   - Check heap memory growth vs. device baseline
-   - Check texture memory at checkpoint intervals
-   - Add warning threshold at 300MB (mobile ceiling)
-3. Protocol also includes thermal/battery drain advisory notes
-4. Skill asks "May I write?" and writes on approval; verdict is COMPLETE
+1. Skill falls back from `project.yaml` to `technical-preferences.md` for budgets
+2. Budget notes read `Memory ceiling: not set`, `Target FPS: not set`,
+   `Frame budget: not set` — no number is supplied in their place
+3. Checkpoints: T+0, T+10, T+20, T+30
+4. Unity memory items: a memory profiler, marked NOT SOURCEABLE (not covered by
+   `docs/engine-reference/unity/`); record Total Reserved Memory, GC Allocated,
+   Object Count (units as displayed); alert when GC Allocated grows
+   monotonically across 3+ checkpoints
+5. Skill asks "May I write" before writing `production/qa/soak-test-[date]-30m.md`
 
 **Assertions:**
-- [ ] Mobile platform is detected from technical-preferences.md
-- [ ] Memory checkpoints include mobile-appropriate thresholds (not desktop)
-- [ ] Thermal/battery notes are present in the protocol
-- [ ] Verdict is COMPLETE
+- [ ] Missing budgets are recorded as "not set", not filled with defaults
+- [ ] Checkpoints are exactly T+0, T+10, T+20, T+30
+- [ ] The Unity threshold is the unit-free monotonic-growth check
+- [ ] "May I write" is asked before the file is written
 
 ---
 
 ### Case 5: Director Gate Check — No gate; soak-test is a planning utility
 
 **Fixture:**
-- Valid system and duration provided
+- Engine configured; valid duration and focus provided
 
-**Input:** `/soak-test combat 1h`
+**Input:** `/soak-test 1h stability`
 
 **Expected behavior:**
 1. Skill generates and writes the soak test protocol
@@ -152,27 +165,27 @@ None. `/soak-test` is a QA planning utility. No director gates apply.
 **Assertions:**
 - [ ] No director gate is invoked
 - [ ] No gate skip messages appear
-- [ ] Skill reaches COMPLETE without any gate check
+- [ ] The run ends at "Protocol written." with the run steps — no gate verdict, and no soak verdict issued by the skill
 
 ---
 
 ## Protocol Compliance
 
-- [ ] Collects system, duration, and conditions before generating protocol
-- [ ] Includes monitoring checkpoints at regular intervals
-- [ ] Includes pass/fail thresholds and early termination conditions
-- [ ] Adapts checkpoints to target platform (mobile vs. desktop)
-- [ ] Asks "May I write" before creating the protocol file
-- [ ] Verdict is COMPLETE when file is written
+- [ ] Parses `[duration] [focus]`, defaulting to `1h` and `all`
+- [ ] Uses the Phase 3 checkpoint table for the chosen duration
+- [ ] Memory alert thresholds are ratios or deltas against T+0; units are recorded as displayed
+- [ ] Engine tool names not covered by `docs/engine-reference/` are marked NOT SOURCEABLE; a memory tool the tester cannot find leaves the verdict NOT ASSESSED
+- [ ] The protocol's Verdict section offers PASS / PASS WITH CONCERNS / NOT ASSESSED / FAIL and states a short soak cannot return PASS
+- [ ] Asks "May I write" before creating `production/qa/soak-test-[date]-[duration].md`
+- [ ] Never attempts to run the soak itself
 
 ---
 
 ## Coverage Notes
 
-- Soak tests for specific engine subsystems (rendering pipeline, physics
-  simulation) follow the same protocol structure and are not separately tested.
-- The case where the user provides a duration shorter than the minimum useful
-  soak period (e.g., 5 minutes) is not tested; the skill would note this is
-  too short for meaningful results.
-- Automated execution of the soak test protocol is outside this skill's scope —
-  this skill generates the plan, not the runner.
+- The `stability` and `balance` focus values follow Case 3's pattern with the
+  other observation groups; not separately tested.
+- At `rigor: minimal` the skill reads `design/game-brief.md` instead of the
+  game concept; not separately tested.
+- Executing the protocol is outside this skill's scope — it generates the plan,
+  a human runs it.

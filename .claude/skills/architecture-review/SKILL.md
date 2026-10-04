@@ -1,12 +1,15 @@
 ---
 name: architecture-review
-description: "Validates completeness and consistency of the project architecture against all GDDs. Builds a traceability matrix mapping every GDD technical requirement to ADRs, identifies coverage gaps, detects cross-ADR conflicts, verifies engine compatibility consistency across all decisions, and produces a PASS/CONCERNS/FAIL verdict. The architecture equivalent of /design-review."
+description: "Traceability matrix mapping GDD requirements to ADRs. Finds gaps, cross-ADR conflicts, engine compatibility. PASS/CONCERNS/NOT ASSESSED/FAIL."
 argument-hint: "[focus: full | coverage | consistency | engine | single-gdd path/to/gdd.md]"
 user-invocable: true
-allowed-tools: Read, Glob, Grep, Write, Task, AskUserQuestion
-agent: technical-director
+allowed-tools: Read, Glob, Grep, Bash, Write, Agent, AskUserQuestion, Bash(bash "*/.claude/skills/architecture-review/../../hooks/yaml-helper.sh" resolve_config *)
 model: opus
 ---
+
+!`bash "${CLAUDE_SKILL_DIR}/../../hooks/yaml-helper.sh" resolve_config --keys automation,workflow`
+
+
 
 # Architecture Review
 
@@ -29,9 +32,47 @@ and Pre-Production.
 
 ---
 
+Every `AskUserQuestion` call follows `.claude/docs/automation-modes.md`
+(collaborative asks always · guided major-only · autonomous logs and proceeds;
+`automation_always_ask` categories always prompt).
+
+**`workflow`** (see `.claude/docs/workflow-modes.md`):
+- `full` — full traceability matrix across all GDDs and all ADRs.
+- `standard` — reduced scope: architecture doc + critical ADRs only.
+- `minimal` — not applicable (no architecture doc required).
+
 ## Phase 1: Load Everything
 
 ### Phase 1a — L0: Summary Scan (fast, low tokens)
+
+**Freshness check before any scan.** Locate the latest prior report — Glob
+`docs/architecture/architecture-review-*.md` and take the newest — then:
+
+```
+Bash: bash .claude/scripts/review-receipts.sh check "[latest-report]" docs/architecture/adr-*.md design/gdd/*.md
+```
+
+- **Any `UNRESOLVED`** — check this FIRST; it disqualifies every option
+  below. One of the two globs matched no file, so that whole document class
+  was never examined and the comparison covered less than it appears to.
+  Say which pattern came back unresolved and stop: an ADR or GDD directory
+  that is empty, renamed or misspelled is a finding about the project, not a
+  reason to stand on a prior report. Never read a set of `UNCHANGED` lines as
+  "everything is current" while an `UNRESOLVED` line is present — the set
+  compared was not the set requested.
+- **Everything `UNCHANGED`** (and no `UNRESOLVED`) — nothing this review
+  reads has changed since that report; re-running reproduces it. Surface the
+  prior report's date and verdict and offer via `AskUserQuestion`: `[A] Stand
+  on the prior report (Recommended)` / `[B] Re-run the full review anyway` —
+  `guided` proceeds with [A] and notes it; `autonomous` logs via
+  `log_decision` and stands on the prior report.
+- **Some `CHANGED`/`NEW`** — name them, then scope instead of re-running
+  everything: recommend `/architecture-review [system]` (single-system mode)
+  for just the changed systems. A full re-run stays available on request,
+  and structural changes (a `NEW` ADR, a deleted file) warrant one.
+- **`RECEIPT: NONE`** — no prior report, or one written before receipts
+  existed. Proceed with the full review; this run's report will carry the
+  first stamps.
 
 Before reading any full document, use Grep to extract `## Summary` sections
 from all GDDs and ADRs:
@@ -41,34 +82,92 @@ Grep pattern="## Summary" glob="design/gdd/*.md" output_mode="content" -A 4
 Grep pattern="## Summary" glob="docs/architecture/adr-*.md" output_mode="content" -A 3
 ```
 
+**Fail open on a missing Summary.** Establish the denominator: glob
+`design/gdd/*.md` and count **N**. A scan matching fewer than N means those GDDs
+predate `## Summary` (`/design-system` emits it, but older GDDs lack it) — never
+treat an absent Summary as a system out of scope. A zero-match scan means "no GDD
+carries a Summary yet", not "nothing to review": full-read the unmatched set.
+
 For `single-gdd [path]` mode: use the target GDD's summary to identify which
-ADRs reference the same system (Grep ADRs for the system name), then full-read
-only those ADRs. Skip full-reading unrelated GDDs entirely.
+ADRs reference the same system (Grep ADRs for the system name), then load only
+those ADRs' sections per Phase 1b. Skip unrelated GDDs entirely.
 
-For `engine` mode: only full-read ADRs — GDDs are not needed for engine checks.
+For `engine` mode: load ADR sections only — GDDs are not needed for engine checks.
+In practice this is the `## Engine Compatibility` scan alone.
 
-For `coverage` or `full` mode: proceed to full-read everything below.
+For `coverage` or `full` mode: proceed to Phase 1b for the full in-scope set.
+**This is a section load, not a full-file load** — see below for why, and for the
+narrow cases that still justify escalating to a whole document.
 
-### Phase 1b — L1/L2: Full Document Load
+### Phase 1b — L1/L2: Targeted Section Load
 
-Read all inputs appropriate to the mode:
+Load the sections the later phases actually consume — **not whole files**. This
+skill reads the two largest document sets in the project (every GDD *and* every
+ADR); at realistic sizes a full load of both exhausts the context window before
+Phase 2 starts, and most of what it loads is narrative this skill never uses.
+
+**Establish the denominator first.** Glob `design/gdd/*.md` and count **N_gdd**;
+glob `docs/architecture/adr-*.md` and count **N_adr**. Report both. A section
+scan matching fewer than the denominator means those documents lack the section —
+**never treat an absent section as an absent document.** The scan narrows the
+*read* set; it never shrinks the *in-scope* set.
 
 ### Design Documents
-- All in-scope GDDs in `design/gdd/` — read every file completely
-- `design/gdd/systems-index.md` — the authoritative list of systems
+
+Phase 2 extracts *technical requirements* — data structures, performance
+constraints, engine capabilities, cross-system communication, persistence,
+threading, platform needs. Those live in a known set of sections; Overview and
+Player Fantasy are narrative and yield none.
+
+```
+Grep pattern="^## (Detailed Rules|Detailed Design|Formulas|Dependencies|Tuning Knobs|Acceptance Criteria)" glob="design/gdd/*.md" output_mode="content" -A 40
+```
+
+Accept **either** `## Detailed Rules` or `## Detailed Design` — the design
+standard and the GDD template disagree on the name and they denote the same
+required section. Full-read a single GDD only when a scanned section
+cross-references material outside itself, or when a GDD matched zero sections
+(it predates the template — read it whole and say so).
+
+- `design/gdd/systems-index.md` — the authoritative list of systems; read whole (small, and it is an index)
 
 ### Architecture Documents
-- All in-scope ADRs in `docs/architecture/` — read every file completely
+
+Phases 3–5 need the traceability table, the decision itself, engine claims, and
+the dependency edges — not Context, Consequences, Alternatives, Migration Plan or
+Validation Criteria, which explain *why* a decision was made.
+
+```
+Grep pattern="^## (Status|Decision|GDD Requirements Addressed|Engine Compatibility|ADR Dependencies|Performance Implications)" glob="docs/architecture/adr-*.md" output_mode="content" -A 30
+```
+
+Interpret against **N_adr**, and distinguish the two zero-match cases — they are
+not the same finding:
+
+| Result | Meaning | Action |
+|---|---|---|
+| N_adr matches | Normal. | Proceed on the scanned sections. |
+| Some ADRs match, some do not | Those ADRs are missing sections. | Record each as a **structural gap** in the Phase 7 report — a missing `## GDD Requirements Addressed` is itself a traceability finding. |
+| **0 matches, N_adr > 0** | **Malformed ADRs**, not "no architecture". | "[N_adr] ADRs found, none carries a scannable section — run `/architecture-decision retrofit [file]` on each." Do **not** report zero coverage; that would read as a design failure when it is a format failure. |
+
+Escalate to a full read of one ADR only when judging a conflict needs its
+reasoning (Phase 4) — that is a per-ADR decision, not a blanket load.
+
 - `docs/architecture/architecture.md` if it exists
 
 ### Engine Reference
 - `docs/engine-reference/[engine]/VERSION.md`
 - `docs/engine-reference/[engine]/breaking-changes.md`
 - `docs/engine-reference/[engine]/deprecated-apis.md`
-- All files in `docs/engine-reference/[engine]/modules/`
+- **Only the module docs the in-scope ADRs actually name** — take the union of
+  each ADR's `References Consulted` and `Post-Cutoff APIs Used` fields (already
+  captured by the `## Engine Compatibility` scan above) and read those files.
+  Reading the whole `modules/` directory loads engine subsystems the project may
+  not use at all. If no ADR names any module, read none and note it: Phase 5
+  cannot cross-check engine claims that were never made.
 
 ### Project Standards
-- `.claude/docs/technical-preferences.md`
+- `project.yaml` — `naming.*` and `performance.*`; plus `.claude/docs/technical-preferences.md` for those keys when absent and for forbidden patterns / allowed libraries
 
 Report a count: "Loaded [N] GDDs, [M] ADRs, engine: [name + version]."
 
@@ -137,16 +236,36 @@ architecture must cover.
 
 For each technical requirement extracted in Phase 2, search the ADRs:
 
-1. Read every ADR's "GDD Requirements Addressed" section
+1. Use the ADRs **already loaded in Phase 1b** — do not re-read them. Extract each
+   ADR's "GDD Requirements Addressed" section from what is already in context.
+   (If Phase 1b ran in a mode that did not load every ADR, `Grep pattern="## GDD
+   Requirements Addressed" glob="docs/architecture/adr-*.md" output_mode="content"
+   -A 15` fills the gap without a full re-read.)
 2. Check if it explicitly references the requirement or its GDD
 3. Check if the ADR's decision text implicitly covers the requirement
 4. Mark coverage status:
 
 | Status | Meaning |
 |--------|---------|
-| ✅ **Covered** | An ADR explicitly addresses this requirement |
+| ✅ **Covered** | An **Accepted** ADR explicitly addresses this requirement |
+| 🟡 **Covered (Proposed)** | An ADR addresses it, but that ADR is still `Proposed` |
 | ⚠️ **Partial** | An ADR partially covers this, or coverage is ambiguous |
 | ❌ **Gap** | No ADR addresses this requirement |
+| ❓ **Not assessed** | The ADR is unreadable, or has no `## Status` section |
+
+> **Read each ADR's `## Status` before marking coverage — an unaccepted decision
+> is not coverage.** If `✅` meant only that *an ADR addresses this*, with no
+> status qualification, a requirement covered entirely by `Proposed` ADRs would
+> count as covered and this review could return **PASS: All requirements
+> covered** over an architecture nobody had accepted. Four skills downstream
+> (`create-control-manifest`, `create-epics`, `create-stories`, `gate-check`)
+> require `Accepted`, so a PASS on that basis sends work forward that every one
+> of them will refuse.
+>
+> `🟡` is **not** a pass state: it caps the verdict at **CONCERNS**, and names the
+> route out — `/architecture-decision accept ADR-NNNN`. That route is the only
+> thing that moves an ADR to `Accepted`; without it, grading `Proposed` as
+> covered would be the only option, which is why it must never be graded so.
 
 Build the full matrix:
 
@@ -174,16 +293,30 @@ Requirements Traceability Matrix (RTM).
 
 ### Step 3b-1 — Load stories
 
-Glob `production/epics/**/*.md` (excluding EPIC.md index files). For each
-story file:
-- Extract `TR-ID` from the story's Context section
-- Extract story file path, title, Status
-- Extract `## Test Evidence` section — the stated test file path
+Glob `production/epics/**/*.md` (excluding EPIC.md index files) to establish the
+denominator. Then collect the fields with **targeted section greps, not a full
+read of each story** — the same two-grep form `/test-evidence-review` uses for
+this identical extraction:
+
+```
+Grep pattern="## Test Evidence" glob="production/epics/**/story-*.md" output_mode="content" -A 8
+Grep pattern="TR-" glob="production/epics/**/story-*.md" output_mode="content"
+```
+
+- **TR-ID** — from the second grep.
+- **Test file path** — under `## Test Evidence`, captured by the first grep's `-A 8`.
+- **Status** — from the story header; add `Grep pattern="^> \*\*Status\*\*"` if not already captured.
+- **Story path and title** — from the file name and path; no read at all.
+
+Full-read a story only when its Test Evidence section is missing or ambiguous.
 
 ### Step 3b-2 — Load test files
 
-Glob `tests/unit/**/*_test.*` and `tests/integration/**/*_test.*`.
-Build an index: system → [test file paths].
+Glob the engine's test root (`.claude/docs/directory-structure.md`): Godot
+`tests/unit/**/*_test.*` and `tests/integration/**/*_test.*`; Unity
+`Assets/Tests/**/*Tests.cs`; Unreal `Source/*/Private/Tests/**/*.cpp`. With no
+engine configured, say the test index could not be built rather than reading an
+empty glob as "no tests". Build an index: system → [test file paths].
 
 For each test file path from Step 3b-1, confirm via Glob whether the file
 actually exists. Note MISSING if the stated path does not exist.
@@ -250,24 +383,41 @@ Resolution options:
 
 ### ADR Dependency Ordering
 
-After conflict detection, analyse the dependency graph across all ADRs:
+After conflict detection, analyse the dependency graph across all ADRs.
 
-1. **Collect all `Depends On` fields** from every ADR's "ADR Dependencies" section
-2. **Topological sort**: Determine the correct implementation order — ADRs with no
+**Build the graph deterministically — do not trace it by hand:**
+
+```
+Bash: bash .claude/scripts/adr-dep-graph.sh
+```
+
+It collects every `Depends On` edge, runs Kahn's algorithm, and emits
+`ADRS:` / `EDGES:` / `NO_DEPS_SECTION:` / `CYCLE:`. A model tracing A→B→C→A across
+a dozen ADRs eventually misses an edge; the algorithm cannot. It reports
+observations, not a verdict — you apply the meaning below.
+
+**`NO_DEPS_SECTION` is load-bearing**: it makes "no cycles because the graph is
+clean" distinguishable from "no cycles because half the ADRs declare no
+dependencies". Report the second case as a structural gap, never as a clean graph.
+
+Then interpret:
+
+1. **Topological sort**: the emitted order — ADRs with no
    dependencies come first (Foundation), ADRs that depend on those come next, etc.
-3. **Flag unresolved dependencies**: If ADR-A's "Depends On" field references an ADR
-   that is still `Proposed` or does not exist, flag it:
+2. **Flag unresolved dependencies**: cross the `EDGES:` list against the `## Status`
+   values already scanned in Phase 1b. If ADR-A depends on an ADR that is still
+   `Proposed` or does not exist, flag it:
    ```
    ⚠️  ADR-0005 depends on ADR-0002 — but ADR-0002 is still Proposed.
        ADR-0005 cannot be safely implemented until ADR-0002 is Accepted.
    ```
-4. **Cycle detection**: If ADR-A depends on ADR-B and ADR-B depends on ADR-A (directly
-   or transitively), flag it as a `DEPENDENCY CYCLE`:
+3. **Cycle detection**: every `CYCLE:` line the script emitted is a
+   `DEPENDENCY CYCLE` — report each one. Do not re-derive them by hand:
    ```
    🔴 DEPENDENCY CYCLE: ADR-0003 → ADR-0006 → ADR-0003
       This cycle must be broken before either can be implemented.
    ```
-5. **Output recommended implementation order**:
+4. **Output recommended implementation order**:
    ```
    ### Recommended ADR Implementation Order (topologically sorted)
    Foundation (no dependencies):
@@ -323,9 +473,9 @@ Post-Cutoff API Conflicts:
 
 ### Engine Specialist Consultation
 
-After completing the engine audit above, spawn the **primary engine specialist** via Task for a domain-expert second opinion:
-- Read `.claude/docs/technical-preferences.md` `Engine Specialists` section to get the primary specialist
-- If no engine is configured, skip this consultation
+After completing the engine audit above, spawn the **primary engine specialist** via `Agent` for a domain-expert second opinion:
+- Resolve the primary specialist: `<engine>-specialist` derived from `engine.name` in `project.yaml` (Godot→`godot-specialist`, Unity→`unity-specialist`, Unreal→`unreal-specialist`); if `engine.name` is absent or empty, read the Primary line of the `## Engine Specialists` section in `.claude/docs/technical-preferences.md`
+- If no engine is configured (neither source yields an engine), skip this consultation **Record ``Engine validation: NOT ASSESSED — no engine configured (`engine.name` unset in `project.yaml`)`` in this run's output.** A skipped check that says nothing is indistinguishable from a check that passed; the reader cannot tell engine guidance was never sought.
 - Spawn `subagent_type: [primary specialist]` with: all ADRs that contain engine-specific decisions or `Post-Cutoff APIs Used` fields, the engine reference docs, and the Phase 5 audit findings. Ask them to:
   1. Confirm or challenge each audit finding — specialists may know of engine nuances not captured in the reference docs
   2. Identify engine-specific anti-patterns in the ADRs that the audit may have missed (e.g., using the wrong Godot node type, Unity component coupling, Unreal subsystem misuse)
@@ -385,7 +535,16 @@ If [B]: display the complete proposed systems-index section, then re-ask with `A
 
 ## Phase 6: Architecture Document Coverage
 
-If `docs/architecture/architecture.md` exists, validate it against GDDs:
+**If `docs/architecture/architecture.md` does not exist, say so in the report** —
+`Architecture document coverage: NOT ASSESSED — no docs/architecture/architecture.md`
+— and carry it into the Phase 7 verdict per the trigger list below. Phase 5
+already models this for the engine consultation (*"A skipped check that says
+nothing is indistinguishable from a check that passed"*); this phase is the one
+that did not. Silently producing no Phase 6 findings reads as an architecture
+document that was checked and found clean, which is the opposite of what
+happened.
+
+If it exists, validate it against GDDs:
 
 - Does every system from `systems-index.md` appear in the architecture layers?
 - Does the data flow section cover all cross-system communication defined in GDDs?
@@ -403,6 +562,10 @@ Date: [date]
 Engine: [name + version]
 GDDs Reviewed: [N]
 ADRs Reviewed: [M]
+
+[output of: Bash: bash .claude/scripts/review-receipts.sh hash docs/architecture/adr-*.md design/gdd/*.md
+ — one Reviewed-Content-Hash line per file reviewed; Phase 1a's freshness
+ check reads these on the next run to skip or scope an unchanged re-review]
 
 ---
 
@@ -438,12 +601,38 @@ For each gap:
 
 ---
 
-### Verdict: [PASS / CONCERNS / FAIL]
+### Verdict: [PASS / NOT ASSESSED / CONCERNS / FAIL]
 
-PASS: All requirements covered, no conflicts, engine consistent
-CONCERNS: Some gaps or partial coverage, but no blocking conflicts
+PASS: All requirements covered by **Accepted** ADRs, no conflicts, engine consistent
+NOT ASSESSED: The review could not be performed over its stated scope — name why
+CONCERNS: Some gaps, partial coverage, or coverage resting on `Proposed` ADRs,
+      but no blocking conflicts
 FAIL: Critical gaps (Foundation/Core layer requirements uncovered),
       or blocking cross-ADR conflicts detected
+
+**`NOT ASSESSED` ranks above PASS and below CONCERNS and FAIL.** Emit it when:
+
+- **No ADRs exist, or none could be read.** Zero requirements traced is not full
+  coverage — it is an untraced architecture, and a matrix of `❌ Gap` rows at
+  least says so while an empty matrix says nothing.
+- **The requirement source is missing** — no `tr-registry.yaml` and no GDD
+  requirements to trace *from*. A review with no left-hand column cannot report
+  coverage; it can only report that it had nothing to compare.
+- **An ADR is unreadable or has no `## Status`**, so its rows are `❓` and their
+  coverage is unknown rather than absent.
+- **Phase 6 could not run** — no `docs/architecture/architecture.md`. It must
+  appear as a named `NOT ASSESSED` **line item** in the report rather than as
+  absent findings. ADR traceability can still be complete, so a CONCERNS or FAIL
+  finding elsewhere still stands; but in `full` mode, whose scope includes
+  Phase 6, the verdict cannot be PASS — a review that could not look at part of
+  its scope has not shown that part is sound, so it is NOT ASSESSED.
+- **No engine is configured** (`full` and `engine` modes) — Phase 5 has no pinned
+  engine reference to audit the ADRs against, and the specialist consultation was
+  skipped. Record the `Engine validation: NOT ASSESSED` line item; like Phase 6
+  above, it keeps the verdict from PASS.
+
+Do not resolve any of these to PASS on the grounds that no gap was *found*. No
+gap was looked for.
 
 ### Blocking Issues (must resolve before PASS)
 [List items that must be resolved — FAIL verdict only]
@@ -458,9 +647,14 @@ FAIL: Critical gaps (Foundation/Core layer requirements uncovered),
 
 Use `AskUserQuestion` for the write approval:
 - "Review complete. What would you like to write?"
-  - [A] Write all three files (review report + traceability index + TR registry)
+  - [A] Write all three files — review report (`docs/architecture/architecture-review-[date].md`), traceability index (`docs/architecture/requirements-traceability.md`), TR registry (`docs/architecture/tr-registry.yaml`)
   - [B] Write review report only — `docs/architecture/architecture-review-[date].md`
   - [C] Don't write anything yet — I need to review the findings first
+
+When Phase 4 found a 🔴 conflict and `docs/consistency-failures.md` exists, name
+that file in option [A] as well — "…and append [N] conflict entr(y/ies) to
+`docs/consistency-failures.md`". Only [A] appends there (see Reflexion Log
+Update); [B] writes the report and nothing else.
 
 ### RTM Output (rtm mode only)
 
@@ -544,8 +738,9 @@ across every subsequent architecture review.
 
 ### Reflexion Log Update
 
-After writing the review report, append any 🔴 CONFLICT entries found in Phase 4
-to `docs/consistency-failures.md` (if the file exists):
+When the user chose Phase 8's [A] — the option that named this file — append
+any 🔴 CONFLICT entries found in Phase 4 to `docs/consistency-failures.md` (if
+the file exists), after writing the review report:
 
 ```markdown
 ### [YYYY-MM-DD] — /architecture-review — 🔴 CONFLICT
@@ -566,7 +761,7 @@ After writing all approved files, silently append to
 `production/session-state/active.md`:
 
     ## Session Extract — /architecture-review [date]
-    - Verdict: [PASS / CONCERNS / FAIL]
+    - Verdict: [PASS / NOT ASSESSED / CONCERNS / FAIL]
     - Requirements: [N] total — [X] covered, [Y] partial, [Z] gaps
     - New TR-IDs registered: [N, or "None"]
     - GDD revision flags: [comma-separated GDD names, or "None"]
@@ -576,7 +771,9 @@ After writing all approved files, silently append to
 If `active.md` does not exist, create it with this block as the initial content.
 Confirm in conversation: "Session state updated."
 
-The traceability index format:
+The traceability index — written to `docs/architecture/requirements-traceability.md`,
+the path `/propagate-design-change` and the Pre-Production gate read; `rtm` mode
+later extends the same file with story and test columns — uses this format:
 
 ```markdown
 # Architecture Traceability Index
@@ -608,7 +805,7 @@ After completing the review and writing approved files, present:
 1. **Immediate actions**: List the top 3 ADRs to create (highest-impact gaps first,
    Foundation layer before Feature layer)
 2. **Pre-gate checklist**: Check whether these exist via Glob and mark each ✅ or ❌:
-   - `tests/unit/` and `tests/integration/` directories — if ❌: run `/test-setup`
+   - the engine's test root — `tests/unit/` and `tests/integration/` (Godot), `Assets/Tests/EditMode/` and `Assets/Tests/PlayMode/` (Unity), `Source/<Module>/Private/Tests/` (Unreal) — if ❌: run `/test-setup`
    - `.github/workflows/tests.yml` — if ❌: run `/test-setup`
    - `design/accessibility-requirements.md` — if ❌: run `/ux-design`
    - `design/ux/interaction-patterns.md` — if ❌: run `/ux-design`
@@ -634,23 +831,30 @@ Then close with `AskUserQuestion` tailored to the pre-gate checklist state:
 
 ## Error Recovery Protocol
 
-If any spawned agent returns BLOCKED, errors, or fails to complete:
+**First, verify the artifact.** If the return contract named a path, check the
+path exists before treating the phase as done — **a named artifact that is not
+on disk is a failed phase, however fluent the response reads.** An agent can
+burn a full phase and return a plausible preamble having written nothing, which
+is neither BLOCKED nor an error nor "fails to complete", so the trigger below
+never fires. Resume it naming the unmet contract; the context is
+usually still there.
 
-1. **Surface immediately**: Report "[AgentName]: BLOCKED — [reason]" before continuing
-2. **Assess dependencies**: If the blocked agent's output is required by a later phase, do not proceed past that phase without user input
-3. **Offer options** via AskUserQuestion with three choices:
-   - Skip this agent and note the gap in the final report
-   - Retry with narrower scope (fewer GDDs, single-system focus)
-   - Stop here and resolve the blocker first
-4. **Always produce a partial report** — output whatever was completed so work is not lost
+If any spawned agent returns BLOCKED, errors, or fails to complete: **surface it
+immediately, don't proceed past a dependency it blocks, and always produce a
+partial report** (retry scope here = fewer GDDs / single-system). Full procedure:
+`.claude/docs/error-recovery-protocol.md`.
 
 ---
 
 ## Collaborative Protocol
 
+**Applies in `collaborative` mode (the default).** For `guided` and
+`autonomous` modes, see `.claude/docs/automation-modes.md` — the rules below
+describe what collaborative mode requires, not universal behavior.
+
 1. **Read silently** — do not narrate every file read
-2. **Show the matrix** — present the full traceability matrix before asking for
-   anything; let the user see the state
+2. **Show the matrix** — present the full traceability matrix before any write
+   approval; let the user see the state
 3. **Don't guess** — if a requirement is ambiguous, ask: "Is [X] a technical
    requirement or a design preference?"
 4. **Draft before approval** — always show the content that will be written (the

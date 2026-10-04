@@ -1,7 +1,12 @@
 # Technical Preferences
 
-<!-- Populated by /setup-engine. Updated as the user makes decisions throughout development. -->
-<!-- All agents reference this file for project-specific standards and conventions. -->
+<!-- project.yaml at the repo root is the machine-readable source of truth for
+     engine, specialists, naming, performance, platform, and testing.framework.
+     This file is the human-readable LEGACY FALLBACK: agents and skills resolve
+     each key from project.yaml first and fall back here only when the
+     project.yaml key is absent. /setup-engine dual-writes both.
+     Forbidden patterns and allowed libraries are NOT migrated — they live only
+     in this file. Populated by /setup-engine; updated as decisions are made. -->
 
 ## Engine & Language
 

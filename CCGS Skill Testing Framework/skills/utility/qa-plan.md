@@ -2,174 +2,201 @@
 
 ## Skill Summary
 
-`/qa-plan` generates a structured QA test plan for a feature or sprint milestone.
-It reads story files for the specified sprint, extracts acceptance criteria from
-each story, cross-references test standards from `coding-standards.md` to assign
-the appropriate test type (unit, integration, visual, UI, or config/data), and
-produces a prioritized QA plan document.
+`/qa-plan [sprint | feature: system-name | story: path]` generates a QA plan
+before implementation. `sprint` reads the most recent file in
+`production/sprints/` (or `production/sprint-status.yaml` when present) for its
+story list; `feature:` globs `production/epics/*/story-*.md` by system name;
+`story:` loads one file; no argument asks for the scope with `AskUserQuestion`.
+A referenced story file that does not exist is noted as MISSING and the plan
+continues; a scope with zero stories stops with `NOT ASSESSED — no stories in
+scope` and a route (e.g. "No sprint plan found. Run `/sprint-plan new`.").
 
-The skill asks "May I write to `production/qa/qa-plan-sprint-NNN.md`?" before
-persisting the output. If an existing test plan for the same sprint is found, the
-skill offers to update rather than replace. The verdict is COMPLETE when the plan
-is written. No director gates are used — gate-level story readiness is handled by
-`/story-readiness`.
+Story fields are collected with targeted greps. A declared `Type:` is accepted
+as-is; a missing one is inferred from the acceptance criteria and flagged as a
+gap. A story with no `## Acceptance Criteria` is full-read and reported as a QA
+finding, never skipped. After a classification summary table, the plan
+(Test Summary, Automated Tests Required, Manual QA Checklist, Smoke Test Scope,
+Playtest Requirements, Definition of Done) is shown, then one `AskUserQuestion`
+(multiSelect) asks whether to write `production/qa/qa-plan-[sprint-slug]-[date].md`
+and whether to back-fill `## QA Test Cases` in the story files. `qa.level`
+changes the plan's depth, but no level drops the Visual/Feel and UI screenshot
+rows. No director gates apply.
 
 ---
 
 ## Static Assertions (Structural)
 
-Verified automatically by `/skill-test static` — no fixture needed.
+Checked against the SKILL.md by `/skill-test spec` — no fixture needed.
 
 - [ ] Has required frontmatter fields: `name`, `description`, `argument-hint`, `user-invocable`, `allowed-tools`
 - [ ] Has ≥2 phase headings
-- [ ] Contains verdict keyword: COMPLETE
-- [ ] Contains "May I write" collaborative protocol language before writing the plan
-- [ ] Has a next-step handoff (e.g., `/smoke-check` or `/story-readiness`)
+- [ ] Contains the verdict keyword `NOT ASSESSED` for an empty scope
+- [ ] Asks for approval before writing: an `AskUserQuestion` option naming `production/qa/qa-plan-[sprint-slug]-[date].md`, and the rule "Never write the plan without asking"
+- [ ] Has a next-step handoff (`/smoke-check sprint` after implementation, `/story-done` checks for the test files)
 
 ---
 
 ## Director Gate Checks
 
-None. `/qa-plan` is a planning utility. Story readiness gates are separate.
+None. `/qa-plan` is a planning utility. It spawns no agents (`Agent` is not in
+its allowed tools) and no director gates apply.
 
 ---
 
 ## Test Cases
 
-### Case 1: Happy Path — Sprint with 4 stories generates full test plan
+### Case 1: Happy Path — Sprint With Four Typed Stories
 
 **Fixture:**
-- `production/sprints/sprint-003.md` lists 4 stories with defined acceptance criteria
-- Stories span types: 1 logic (formula), 1 integration, 1 visual, 1 UI
-- `coding-standards.md` is present with test evidence table
+- `production/sprints/sprint-003.md` is the most recent sprint and references 4
+  story files, each with acceptance criteria and a declared Type: Logic,
+  Integration, Visual/Feel, UI
+- The stories reference GDDs in `design/gdd/`; `engine.name: Godot`
+- `qa.level: standard`; `modes.automation: collaborative`
 
-**Input:** `/qa-plan sprint-003`
+**Input:** `/qa-plan sprint`
 
 **Expected behavior:**
-1. Skill reads sprint-003.md and identifies 4 stories
-2. Skill reads each story's acceptance criteria
-3. Skill assigns test types per coding-standards.md table:
-   - Logic story → Unit test (BLOCKING)
-   - Integration story → Integration test (BLOCKING)
-   - Visual story → Screenshot + lead sign-off (ADVISORY)
-   - UI story → Manual walkthrough doc (ADVISORY)
-4. Skill drafts QA plan with story-by-story test type breakdown
-5. Skill asks "May I write to `production/qa/qa-plan-sprint-003.md`?"
-6. File is written on approval; verdict is COMPLETE
+1. Skill reads the most recent sprint file and reports "Building QA plan for 4
+   stories in [scope]."
+2. Story fields are collected with section greps; each declared Type is accepted
+   without re-classification
+3. A classification summary table is shown before the plan is generated
+4. The plan's Test Summary maps Logic → unit test under `tests/unit/[system]/`,
+   Integration → integration test under `tests/integration/[system]/`,
+   Visual/Feel → screenshot + lead sign-off, UI → retained screenshot of each
+   screen touched
+5. The plan is shown, then one multiSelect `AskUserQuestion` offers "Write QA
+   plan to production/qa/qa-plan-[sprint-slug]-[date].md" and the story
+   back-fill option
+6. After writing, next steps name `/smoke-check sprint` (after implementation)
+   and `/story-done`
 
 **Assertions:**
-- [ ] All 4 stories are included in the plan
-- [ ] Test type is assigned per coding-standards.md (not guessed)
-- [ ] Gate level (BLOCKING vs ADVISORY) is noted for each story
-- [ ] "May I write" is asked with the correct file path
-- [ ] Verdict is COMPLETE
+- [ ] All 4 stories appear in the plan, each with its declared Type unchanged
+- [ ] The classification summary table appears before the plan
+- [ ] Logic and Integration rows name test paths under `tests/unit/` and `tests/integration/`
+- [ ] The UI row's manual verification is the retained screenshot of each screen touched, not a step-through
+- [ ] Nothing is written before the multiSelect approval, and the written path is `production/qa/qa-plan-[sprint-slug]-[date].md`
+- [ ] Next steps name `/smoke-check sprint` and `/story-done`
 
 ---
 
-### Case 2: Story With No Acceptance Criteria — Flagged as UNTESTABLE
+### Case 2: Story Without Acceptance Criteria and a Missing Story File
 
 **Fixture:**
-- `production/sprints/sprint-004.md` lists 3 stories; one story has empty
-  acceptance criteria section
+- The most recent sprint file references 4 story paths
+- One story has no `## Acceptance Criteria` section
+- One referenced story path does not exist on disk
+- The other 2 stories are complete
 
-**Input:** `/qa-plan sprint-004`
+**Input:** `/qa-plan sprint`
 
 **Expected behavior:**
-1. Skill reads all 3 stories
-2. Skill detects the story with no AC
-3. Story is flagged as `UNTESTABLE — Acceptance Criteria required` in the plan
-4. Other 2 stories receive normal test type assignments
-5. Plan is written with the UNTESTABLE story flagged; verdict is COMPLETE
+1. The missing path is noted as MISSING and the plan continues
+2. The story whose AC grep matched nothing is full-read, and the plan says it
+   has no testable criteria — a QA finding, not a skipped story
+3. The 2 complete stories are classified and planned normally
+4. Approval is asked before writing
 
 **Assertions:**
-- [ ] UNTESTABLE label appears for the story with no AC
-- [ ] Plan is not blocked — the other stories are still planned
-- [ ] Output suggests adding AC to the flagged story (next step)
-- [ ] Verdict is COMPLETE (the plan is still generated)
+- [ ] The missing file is reported as MISSING without failing the whole plan
+- [ ] The story with no acceptance criteria is full-read and reported as a QA finding
+- [ ] That story is not silently dropped from the plan
+- [ ] The two complete stories receive normal test assignments
 
 ---
 
-### Case 3: Existing Test Plan Found — Offers update rather than replace
+### Case 3: Mode Variant — qa.level minimal
 
 **Fixture:**
-- `production/qa/qa-plan-sprint-003.md` already exists from a previous run
-- Sprint-003 has 2 new stories added since the last plan
+- Same 4-story sprint as Case 1
+- `qa.level: minimal`
 
-**Input:** `/qa-plan sprint-003`
+**Input:** `/qa-plan sprint`
 
 **Expected behavior:**
-1. Skill reads sprint-003.md and detects 2 stories not in the existing plan
-2. Skill reports: "Existing QA plan found for sprint-003 — offering to update"
-3. Skill presents the 2 new stories and their proposed test assignments
-4. Skill asks "May I update `production/qa/qa-plan-sprint-003.md`?" (not overwrite)
-5. Updated plan is written on approval
+1. Skill produces only a minimal smoke plan
+2. The "Automated Tests Required" section is omitted and the Test Summary's
+   "Automated Test Required" column is blanked
+3. The Definition of Done drops the test-file and smoke rows only; it still
+   requires a retained screenshot of each screen touched for the Visual/Feel
+   and UI stories, and a signed-off evidence doc for the Visual/Feel story —
+   `qa.level` waives tests, never the screenshot
+4. Approval is asked before writing
 
 **Assertions:**
-- [ ] Skill detects the existing plan file
-- [ ] "update" language is used (not "overwrite")
-- [ ] Only new stories are proposed for addition — existing entries preserved
-- [ ] Verdict is COMPLETE
+- [ ] No "Automated Tests Required" section appears
+- [ ] The Test Summary's automated-test column is blank
+- [ ] The Definition of Done has no test-file or smoke-check rows
+- [ ] The Definition of Done still requires the retained screenshot for the Visual/Feel and UI stories, and the signed-off evidence doc for the Visual/Feel story
+- [ ] Approval is still asked before the plan is written
 
 ---
 
-### Case 4: No Stories Found for Sprint — Error with guidance
+### Case 4: No Sprint Plan — NOT ASSESSED
 
 **Fixture:**
-- `production/sprints/sprint-007.md` does not exist
-- No other sprint file matching sprint-007
+- `production/sprints/` contains no files
+- No `production/sprint-status.yaml`
+- `modes.rigor: standard` (so sprints are expected)
 
-**Input:** `/qa-plan sprint-007`
+**Input:** `/qa-plan sprint`
 
 **Expected behavior:**
-1. Skill attempts to read sprint-007.md — file not found
-2. Skill outputs: "No sprint file found for sprint-007"
-3. Skill suggests running `/sprint-plan` to create the sprint first
-4. No plan is written; no "May I write" is asked
+1. The resolved scope contains zero stories
+2. Skill stops before Phase 2 and reports `NOT ASSESSED — no stories in scope`,
+   naming the scope searched and the empty path
+3. Skill routes: "No sprint plan found. Run `/sprint-plan new`."
+4. No plan is generated and no write approval is asked
 
 **Assertions:**
-- [ ] Error message names the missing sprint file
-- [ ] `/sprint-plan` is suggested as the remediation step
-- [ ] No write tool is called
-- [ ] Verdict is not COMPLETE (error state)
+- [ ] Verdict is `NOT ASSESSED — no stories in scope`
+- [ ] The empty path `production/sprints/` is named
+- [ ] `/sprint-plan new` is suggested
+- [ ] No plan document with empty tables is produced, and nothing is written
 
 ---
 
-### Case 5: Director Gate Check — No gate; QA planning is a utility
+### Case 5: Director Gate Check — None
 
 **Fixture:**
-- Sprint with valid stories and AC
+- A sprint with typed stories and acceptance criteria
+- Any review mode
 
-**Input:** `/qa-plan sprint-003`
+**Input:** `/qa-plan sprint`
 
 **Expected behavior:**
-1. Skill generates and writes QA plan
-2. No director agents are spawned
-3. No gate IDs appear in output
+1. Skill classifies stories and generates the plan
+2. No director or other agent is spawned; no gate IDs appear
+3. The only interactive step after scope resolution is the single write approval
 
 **Assertions:**
-- [ ] No director gate is invoked
-- [ ] No gate skip messages appear
-- [ ] Skill reaches COMPLETE without any gate check
+- [ ] No director gate is invoked and no gate skip message appears
+- [ ] No subagent is spawned
+- [ ] Phases 2–4 run without asking the user anything
+- [ ] Exactly one approval prompt precedes the write
 
 ---
 
 ## Protocol Compliance
 
-- [ ] Reads coding-standards.md test evidence table before assigning test types
-- [ ] Assigns BLOCKING or ADVISORY gate level per story type
-- [ ] Flags stories with no AC as UNTESTABLE (does not silently skip them)
-- [ ] Detects existing plan and offers update path
-- [ ] Asks "May I write" before creating or updating the plan file
-- [ ] Verdict is COMPLETE when plan is written
+- [ ] Stops with `NOT ASSESSED — no stories in scope` when the scope is empty, and routes to the producing skill
+- [ ] Notes missing story files as MISSING and continues
+- [ ] Accepts declared `Type:` values; infers and flags a missing Type
+- [ ] Never skips a story because its acceptance-criteria section is absent
+- [ ] Shows the classification table and the plan before asking to write
+- [ ] Writes only after the `AskUserQuestion` approval; back-fills story files only when that option is selected
 
 ---
 
 ## Coverage Notes
 
-- The case where `coding-standards.md` is missing (skill cannot assign test types)
-  is not fixture-tested; behavior would follow the BLOCKED pattern with a note
-  to restore the standards file.
-- Multi-sprint planning (spanning 2 sprints) is not tested; the skill is designed
-  for one sprint at a time.
-- Config/data story type (balance tuning → smoke check) follows the same
-  assignment pattern as other types in Case 1 and is not separately tested.
+- `feature: [system-name]` and `story: [path]` scopes, and the no-argument
+  scope question, are not separately tested.
+- A story with no `Type:` field (inferred from acceptance criteria and flagged
+  as a gap) is covered only by protocol compliance.
+- The back-fill option (editing `## QA Test Cases` in each story file) is not
+  tested in detail.
+- At `rigor: minimal`, the empty-sprint route points to `/qa-plan feature:` or
+  `/qa-plan story:` instead of `/sprint-plan new`; not separately tested.

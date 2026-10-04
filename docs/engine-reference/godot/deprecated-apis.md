@@ -38,6 +38,6 @@ with the "Use Instead" column.
 | String-based `connect()` | Typed signal connections | Type-safe, refactor-friendly |
 | `$NodePath` in `_process()` | `@onready var` cached reference | Performance: path lookup every frame |
 | Untyped `Array` / `Dictionary` | `Array[Type]`, typed variables | GDScript compiler optimizations |
-| `Texture2D` in shader parameters | `Texture` base type | Changed in 4.4 |
+| `Texture2D` in `Shader.set_default_texture_parameter()` / `get_default_texture_parameter()` | `Texture` base type | Changed in 4.4; the shading language's `sampler2D` / `texture()` did not change |
 | Manual post-process viewport chains | `Compositor` + `CompositorEffect` | Structured post-processing (4.3+) |
 | GodotPhysics3D for new projects | Jolt Physics 3D | Default since 4.6; better stability |

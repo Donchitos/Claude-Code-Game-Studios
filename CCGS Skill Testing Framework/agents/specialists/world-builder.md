@@ -3,7 +3,6 @@
 ## Agent Summary
 - **Domain**: World lore architecture — factions and their cultures/governments/motivations, world history, geography and ecology, cosmology and metaphysics, world rules (how magic works, what is and is not possible), internal consistency enforcement across the world document
 - **Does NOT own**: Specific NPC or quest dialogue (writer), game mechanics rules derived from world rules (game-designer/systems-designer), narrative story structure and arc design (narrative-director)
-- **Model tier**: Sonnet
 - **Gate IDs**: None; escalates world rule/mechanic conflicts to narrative-director and game-designer jointly
 
 ---
@@ -11,8 +10,8 @@
 ## Static Assertions (Structural)
 
 - [ ] `description:` field is present and domain-specific (references world lore, factions, history, world rules, ecology)
-- [ ] `allowed-tools:` list matches the agent's role (Read/Write for design/narrative/world/ documents; no game source, mechanic design, or dialogue files)
-- [ ] Model tier is Sonnet (default for creative specialists)
+- [ ] `tools:` reads Read, Glob, Grep, Write, Edit and `disallowedTools:` lists Bash — document authoring only, no shell or code execution
+- [ ] Model tier is `inherit` — frontmatter `model:` reads exactly `inherit` (tiers: `.claude/docs/model-tiers.md`)
 - [ ] Agent definition does not claim authority over dialogue writing, mechanic design, or narrative arc structure
 
 ---
@@ -22,17 +21,18 @@
 ### Case 1: In-domain request — faction culture and government design
 **Input**: "Design the Ironveil Merchant Consortium — a powerful trading faction in our world. I need their culture, government structure, and internal motivations."
 **Expected behavior**:
-- Produces a faction profile document with: cultural values and norms, government structure (how decisions are made, who holds power, succession or appointment process), internal factions or tensions within the consortium, relationship to other factions (allies, rivals, neutral parties), and primary motivations (what they want and why)
+- Before drafting, asks clarifying questions and presents 2-4 options for the government model (e.g., council of founding houses, elected chair, shareholder-weighted vote) with pros/cons and a recommendation, deferring the choice to the user
+- Produces a faction profile with: motivations (what they want and why), power structure (how decisions are made, who holds power, succession or appointment), relationships to other factions (allies, rivals, neutral parties), territories, player-facing personality, and cultural details (customs, beliefs, daily life)
 - The faction is internally consistent: a merchant consortium's government is driven by economic logic, not feudal or religious logic, unless a deliberate hybrid is specified
-- Output includes at least one internal tension or contradiction within the faction — factions without internal complexity are flat
-- Formatted as a structured faction profile, not a narrative essay
+- The entry carries the Lore Document Standard fields: Canon Level, Visible To Player, Cross-References, Contradictions Check, Source
+- Formatted as a structured faction profile, not a narrative essay; asks "May I create [filepath] with the section skeleton?" before creating the file and "May I write this section to [filepath]?" before writing each section
 
 ### Case 2: Out-of-domain request — dialogue writing
 **Input**: "Write the dialogue for a Ironveil Consortium merchant NPC that the player meets at the city gates."
 **Expected behavior**:
 - Does not produce NPC dialogue
-- States clearly: "Dialogue writing is owned by writer; I provide the world and faction context that informs the dialogue, including the faction's culture, tone, and speaking style"
-- Offers to produce the faction's speaking style notes and cultural context that writer would need to write consistent dialogue
+- States that dialogue writing is owned by `writer`, and that its own part is the world and faction context that informs the dialogue — the faction's culture, tone and speaking style
+- Offers to produce the faction's cultural details — customs, beliefs, language fragments, daily life — that writer would need to write consistent dialogue
 
 ### Case 3: New lore entry contradicts established history — conflict flagging
 **Input**: "Add a lore entry stating the Ironveil Consortium was founded 50 years ago by a single merchant family." [Context includes existing lore: the Consortium has existed for 300 years and was founded as a collective by 12 rival trading houses.]
@@ -40,8 +40,8 @@
 - Identifies the contradiction: existing lore states 300-year history and a founding coalition of 12 houses; the new entry claims 50 years and a single founding family
 - Does NOT write the new entry as requested
 - Flags the conflict: states both versions, identifies which is established and which is the proposed change
-- Proposes resolution options: (a) the new entry is wrong and should be corrected; (b) the existing lore should be updated if the new version is the intended canon; (c) there is an in-world explanation (the current family claims founding credit despite the collective origin — a deliberate narrative unreliable narrator)
-- Routes the resolution to narrative-director if no clear answer exists
+- Proposes resolution options: (a) the new entry is wrong and should be corrected; (b) the existing lore should be updated if the new version is the intended canon; (c) there is an in-world explanation (the current family claims founding credit despite the collective origin — a deliberate unreliable narrator, with the truth documented separately)
+- Does not apply option (b) on its own: changing established canon requires narrative-director approval
 
 ### Case 4: World rule has gameplay implications — coordination with game-designer
 **Input**: "I want to establish a world rule: magic users who cast spells near iron ore are weakened. Iron disrupts arcane energy."

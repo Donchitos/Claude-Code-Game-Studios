@@ -2,178 +2,200 @@
 
 ## Skill Summary
 
-`/onboard` generates a contextual project onboarding summary tailored for a new
-team member. It reads CLAUDE.md, `technical-preferences.md`, the active sprint
-file, recent git commits, and `production/stage.txt` to produce a structured
-orientation document. The skill runs on the Haiku model (read-only, formatting
-task) and produces no file writes — all output is conversational.
+`/onboard [role|area]` generates an onboarding document for a new contributor or
+agent. It reads `CLAUDE.md`, the matching agent definition in `.claude/agents/`
+when a role is given, scans the area that role works in (the code root for
+programmers, `design/` for designers, `design/narrative/` for narrative, `tests/`
+for QA, `production/` for production) and reads recent git history.
 
-The skill optionally accepts a role argument (e.g., `/onboard artist`) to tailor
-the summary to a specific discipline. When the project is in an early stage or
-unconfigured, the output adapts to reflect what little is known. The verdict is
-always ONBOARDING COMPLETE — the skill is purely informational.
+Before producing anything it lists its inputs as FOUND or ABSENT. A section whose
+input is ABSENT is written as `NOT ASSESSED — NO DATA`, and one fed by an
+unresolved code root as `NOT ASSESSED — code root unresolved`. The current-state
+section names what Phase 2 found by path (for a designer, each existing GDD and
+design doc). If every input is ABSENT
+the whole verdict is `NOT ASSESSED — NO DATA`, naming what was missing. Otherwise
+it fills the `# Onboarding: [Role/Area]` template, presents it, and asks "May I
+write this to `production/onboarding/onboard-[role]-[date].md`?". The verdict is
+**COMPLETE**, followed by next steps pointing to `/sprint-status` and `/help`. No
+director gates apply.
 
 ---
 
 ## Static Assertions (Structural)
 
-Verified automatically by `/skill-test static` — no fixture needed.
+Checked against the SKILL.md by `/skill-test spec` — no fixture needed.
 
 - [ ] Has required frontmatter fields: `name`, `description`, `argument-hint`, `user-invocable`, `allowed-tools`
 - [ ] Has ≥2 phase headings
-- [ ] Contains verdict keyword: ONBOARDING COMPLETE
-- [ ] Does NOT contain "May I write" language (skill is read-only)
-- [ ] Has a next-step handoff suggesting a relevant follow-on skill
+- [ ] Contains verdict keywords: COMPLETE, NOT ASSESSED
+- [ ] Contains "May I write" language before saving the onboarding document
+- [ ] Has a next-step handoff suggesting `/sprint-status` and `/help`
 
 ---
 
 ## Director Gate Checks
 
-None. `/onboard` is a read-only orientation skill. No director gates apply.
+None. `/onboard` is an orientation utility. It spawns no agents (`Agent` is not
+in its allowed tools) and no director gates apply.
 
 ---
 
 ## Test Cases
 
-### Case 1: Happy Path — Configured project in Production stage with active sprint
+### Case 1: Happy Path — Programmer Role on a Godot Project
 
 **Fixture:**
-- `production/stage.txt` contains `Production`
-- `technical-preferences.md` has engine, language, and specialists populated
-- `production/sprints/sprint-005.md` exists with stories in progress
-- Git log contains 5 recent commits
+- `CLAUDE.md` exists
+- `project.yaml` has `engine.name: Godot`, so the code root is `src/`
+- `src/` holds game code; `.claude/agents/gameplay-programmer.md` exists
+- `production/sprints/sprint-005.md` exists; git log has recent commits
+- `modes.automation` is unset (defaults to `collaborative`)
 
-**Input:** `/onboard`
+**Input:** `/onboard gameplay-programmer`
 
 **Expected behavior:**
-1. Skill reads stage.txt, technical-preferences.md, active sprint, and git log
-2. Skill produces an onboarding summary with sections: Project Overview, Tech Stack,
-   Current Stage, Active Sprint Summary, Recent Activity
-3. Summary is formatted for readability (headers, bullet points)
-4. Next-step suggestions are appropriate for Production stage (e.g., `/sprint-status`,
-   `/dev-story`)
-5. Verdict ONBOARDING COMPLETE is stated
+1. Skill reads `CLAUDE.md` and `.claude/agents/gameplay-programmer.md`
+2. Skill scans the code root `src/` for architecture, patterns and key files, and
+   reads recent git history
+3. Skill generates a document headed `# Onboarding: gameplay-programmer` with the
+   template sections (Project Summary, Your Role, Project Architecture, Current
+   Standards and Conventions, Current State of Your Area, Current Sprint Context,
+   Key Dependencies, Common Pitfalls, First Tasks, Questions to Ask)
+4. Skill presents the document, then asks "May I write this to
+   `production/onboarding/onboard-gameplay-programmer-[date].md`?"
+5. On approval it writes the file (creating the directory if needed); verdict is
+   COMPLETE, with `/sprint-status` and `/help` as next steps
 
 **Assertions:**
-- [ ] Output includes current stage name from stage.txt
-- [ ] Output includes engine and language from technical-preferences.md
-- [ ] Active sprint stories are summarized (not just the sprint file name)
-- [ ] Recent commit context is present
-- [ ] Verdict is ONBOARDING COMPLETE
-- [ ] No files are written
+- [ ] The agent definition for the named role is read
+- [ ] The code root `src/` is scanned for this programmer role
+- [ ] The document uses the `# Onboarding: [Role/Area]` template sections
+- [ ] The document is presented before the "May I write" ask naming `production/onboarding/onboard-gameplay-programmer-[date].md`
+- [ ] Verdict is COMPLETE and next steps name `/sprint-status` and `/help`
 
 ---
 
-### Case 2: Fresh Project — No engine, no sprint, suggests /start
+### Case 2: Designer Role — Scans design/, Not the Code Root
 
 **Fixture:**
-- `technical-preferences.md` contains only placeholders (`[TO BE CONFIGURED]`)
-- No `production/stage.txt`
-- No sprint files
-- No CLAUDE.md overrides beyond defaults
+- `CLAUDE.md` exists; `.claude/agents/game-designer.md` exists
+- `design/gdd/` holds three system GDDs
+- `src/` also holds code
 
-**Input:** `/onboard`
+**Input:** `/onboard game-designer`
 
 **Expected behavior:**
-1. Skill reads all config files and detects unconfigured state
-2. Skill produces a minimal summary: "This project has not been configured yet"
-3. Output explains the onboarding workflow: `/start` → `/setup-engine` → `/brainstorm`
-4. Skill suggests running `/start` as the immediate next step
-5. Verdict is ONBOARDING COMPLETE (informational, not a failure)
+1. Skill reads `CLAUDE.md` and `.claude/agents/game-designer.md`
+2. Phase 2 takes the designers branch and scans `design/` for existing design
+   documents
+3. "Current State of Your Area" reflects the three GDDs found
+4. Document is presented, "May I write" asked for
+   `production/onboarding/onboard-game-designer-[date].md`; verdict COMPLETE
 
 **Assertions:**
-- [ ] Output explicitly mentions the project is not yet configured
-- [ ] `/start` is recommended as the next step
-- [ ] Skill does NOT error out — it gracefully handles an empty project state
-- [ ] Verdict is still ONBOARDING COMPLETE
+- [ ] `design/` is the area scanned for this role
+- [ ] The existing GDDs are named in the document's current-state section
+- [ ] The file path in the "May I write" ask uses the role name
+- [ ] Verdict is COMPLETE
 
 ---
 
-### Case 3: No CLAUDE.md Found — Error with remediation
+### Case 3: Every Input Absent — NOT ASSESSED, No Document
 
 **Fixture:**
-- `CLAUDE.md` file does not exist (deleted or never created)
-- All other files may or may not exist
+- `CLAUDE.md` does not exist
+- `.claude/agents/` does not exist, so no agent definition can be read
+- `tests/` does not exist; the directory is not a git repository
 
-**Input:** `/onboard`
+**Input:** `/onboard qa-tester`
 
 **Expected behavior:**
-1. Skill attempts to read CLAUDE.md and fails
-2. Skill outputs an error: "CLAUDE.md not found — cannot generate onboarding summary"
-3. Skill provides remediation: "Run `/start` to initialize the project configuration"
-4. No partial summary is generated
+1. Skill lists its inputs and records each as ABSENT
+2. Because every required input is ABSENT, it stops and reports
+   `NOT ASSESSED — NO DATA` as the whole verdict
+3. The report names what was missing and what produces it: `/test-setup` for
+   `tests/`; `CLAUDE.md` and `.claude/agents/` come with the framework itself —
+   no skill creates them — so they are reported as missing from the install,
+   not attributed to a skill
+4. No onboarding document is generated and no file is written
 
 **Assertions:**
-- [ ] Error message clearly identifies the missing file as CLAUDE.md
-- [ ] Remediation step (`/start`) is explicitly named
-- [ ] Skill does NOT produce a partial output when the root config is missing
-- [ ] Verdict is ONBOARDING COMPLETE (with error context, not a crash)
+- [ ] Inputs are recorded as FOUND or ABSENT before any report is produced
+- [ ] Verdict is `NOT ASSESSED — NO DATA`, not COMPLETE
+- [ ] The missing inputs are named; `tests/` points to `/test-setup`
+- [ ] No skill is named as the producer of `CLAUDE.md` or `.claude/agents/` — none creates them
+- [ ] No template is filled in and no "May I write" ask appears
 
 ---
 
-### Case 4: Role-Specific Onboarding — User specifies "artist" role
+### Case 4: Edge Case — Programmer Role With an Unresolved Code Root
 
 **Fixture:**
-- Fully configured project in Production stage
-- `art-bible.md` exists in `design/`
-- Active sprint has visual story types (animation, VFX)
+- `CLAUDE.md` exists; `.claude/agents/gameplay-programmer.md` exists
+- `project.yaml` has no `engine.name`, technical-preferences has
+  `[TO BE CONFIGURED]`, and both `src/` and `Assets/` exist (ambiguous tree)
 
-**Input:** `/onboard artist`
+**Input:** `/onboard gameplay-programmer`
 
 **Expected behavior:**
-1. Skill reads all standard files plus any art-relevant docs (art bible, asset specs)
-2. Summary is tailored to the artist role: art bible overview, asset pipeline,
-   current visual stories in the active sprint
-3. Technical architecture details (code structure, ADRs) are de-emphasized
-4. Specialist agents for art/audio are highlighted in the summary
-5. Verdict is ONBOARDING COMPLETE
+1. Skill tries to resolve the code root and finds it unresolved (two candidate
+   roots, no engine set)
+2. It does not default to `src/`
+3. The code-dependent sections (Project Architecture, Key Files) are written as
+   `NOT ASSESSED — code root unresolved` rather than filled from a guess — the
+   code exists, so this is not a missing-data case
+4. Sections backed by found inputs (Project Summary, Your Role, Current
+   Standards and Conventions) are still produced; the document is presented
+   before the "May I write" ask
 
 **Assertions:**
-- [ ] Role argument is acknowledged in the output ("Onboarding for: Artist")
-- [ ] Art bible summary is included if the file exists
-- [ ] Current visual stories from the active sprint are shown
-- [ ] Technical implementation details are not the primary focus
-- [ ] Verdict is ONBOARDING COMPLETE
+- [ ] The code root is not assumed to be `src/`
+- [ ] Architecture/key-file content is marked `NOT ASSESSED — code root unresolved`, not `NO DATA`
+- [ ] Sections with found inputs are still generated
+- [ ] "May I write" is asked before any file is written
 
 ---
 
-### Case 5: Director Gate Check — No gate; onboard is read-only orientation
+### Case 5: Director Gate Check — None; No Agents Spawned
 
 **Fixture:**
-- Any configured project state
+- Any project state with `CLAUDE.md` present
+- Any review mode
 
-**Input:** `/onboard`
+**Input:** `/onboard producer`
 
 **Expected behavior:**
-1. Skill completes the full onboarding summary
-2. No director agents are spawned at any point
-3. No gate IDs appear in the output
-4. No "May I write" prompts appear
+1. Skill scans `production/` for the current sprint and milestone
+2. No agent of any kind is spawned; no gate IDs appear in output
+3. Document is presented, then "May I write this to
+   `production/onboarding/onboard-producer-[date].md`?" is asked
+4. Verdict is COMPLETE
 
 **Assertions:**
-- [ ] No director gate is invoked
-- [ ] No write tool is called
-- [ ] No gate skip messages appear
-- [ ] Verdict is ONBOARDING COMPLETE without any gate check
+- [ ] No director gate is invoked and no gate skip message appears
+- [ ] No subagent is spawned
+- [ ] `production/` is the area scanned for this role
+- [ ] Verdict is COMPLETE after the write ask
 
 ---
 
 ## Protocol Compliance
 
-- [ ] Reads all source files before generating output (no hallucinated project state)
-- [ ] Adapts output to project stage (Production ≠ Concept)
-- [ ] Respects role argument when provided
-- [ ] Does not write any files
-- [ ] Ends with ONBOARDING COMPLETE verdict in all paths
+- [ ] Reads `CLAUDE.md` and, when a role is given, its agent definition before generating
+- [ ] Scans only the area that matches the role
+- [ ] Records each input as FOUND or ABSENT; ABSENT-backed sections read `NOT ASSESSED — NO DATA`
+- [ ] Presents the document before asking "May I write" to `production/onboarding/onboard-[role]-[date].md`
+- [ ] Ends with verdict COMPLETE and the `/sprint-status` / `/help` next steps — or, when every input is absent, stops at `NOT ASSESSED — NO DATA` naming what produces each missing input
 
 ---
 
 ## Coverage Notes
 
-- The case where `technical-preferences.md` is missing entirely (as opposed to
-  having placeholders) is not separately tested; behavior follows the graceful
-  error pattern of Case 3.
-- Git history reading is assumed available; offline/no-git scenarios are not
+- A call with no role argument (`/onboard`) takes Phase 2's general-orientation
+  branch (the top level of `design/`, `docs/architecture/`, `production/` and
+  the code root, plus `active.md`, and a note that a role would focus the next
+  pass); it is not separately tested.
+- `narrative` (`design/narrative/`) and QA with an existing `tests/` directory
+  follow the same branch pattern as Cases 1 and 2 and are not separately tested.
+- `modes.automation: autonomous` (log and proceed instead of asking) is not
   tested here.
-- Discipline roles beyond "artist" (e.g., programmer, designer, producer) follow
-  the same tailoring pattern as Case 4 and are not separately tested.

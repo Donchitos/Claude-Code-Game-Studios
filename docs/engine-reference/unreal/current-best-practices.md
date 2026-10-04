@@ -24,6 +24,42 @@ These are production-ready recommendations as of UE 5.8.
 
 ---
 
+## Command Line — Build and Automation Tests (per platform)
+
+Build the project's own editor target before running tests (a fresh checkout has
+no compiled game module), then run the automation tests with the editor. Epic
+recommends building `<Project>Editor` rather than `UnrealEditor`, so the modules
+the `.uproject` disables stay disabled. Give the project as an absolute path.
+
+| Step | Windows | Linux | macOS |
+|------|---------|-------|-------|
+| Build the editor target | `Engine/Binaries/DotNET/UnrealBuildTool/UnrealBuildTool.exe <Project>Editor Win64 Development -Project="<abs>/<Project>.uproject"` | `Engine/Build/BatchFiles/Linux/Build.sh <Project>Editor Linux Development -Project="<abs>/<Project>.uproject"` | `Engine/Build/BatchFiles/Mac/Build.sh <Project>Editor Mac Development -Project="<abs>/<Project>.uproject"` |
+| Editor executable for a command-line run | `Engine/Binaries/Win64/UnrealEditor-Cmd.exe` | `Engine/Binaries/Linux/UnrealEditor` | **NOT SOURCEABLE** — Epic documents only the `Engine/Binaries/Mac/UnrealEditor.app` bundle, not a command-line editor inside it |
+| Packaged build | `Engine/Binaries/DotNET/AutomationTool/AutomationTool.exe BuildCookRun … -platform=Win64` | `Engine/Build/BatchFiles/RunUAT.sh BuildCookRun … -platform=Linux` | `Engine/Build/BatchFiles/RunUAT.sh BuildCookRun … -platform=Mac` |
+
+The automation arguments are the same on every platform:
+`"<abs>/<Project>.uproject" -ExecCmds="Automation RunTests <Project>.; Quit" -unattended -nullrhi -stdout -FullStdOutLogOutput`.
+`RunTests` is a partial (substring) match. Each test prints
+`Test Completed. Result={<status>}`, and the run ends with
+`**** TEST COMPLETE. EXIT CODE: <n> ****` — exit code 0 means no test failed.
+Only one `Automation` run request is allowed per `-ExecCmds`, and `-testexit=` is
+legacy.
+
+The Windows column was run on UE 5.7 (not re-checked on 5.8). The Linux and macOS columns come from
+Epic's documentation and forum answers by Epic staff (sources below); Epic never
+prints the full Linux test line, so it is assembled from the executable and the
+platform-neutral arguments.
+
+Sources (Epic's 5.7 docs; not re-checked on 5.8):
+- Build.sh on Linux and Mac, platform names — *Create an Installed Build*: https://dev.epicgames.com/documentation/en-us/unreal-engine/create-an-installed-build-of-unreal-engine?application_version=5.7
+- `RunUBT.sh <Target> [Linux|Mac] Development` — *Unreal Insights*: https://dev.epicgames.com/documentation/en-us/unreal-engine/unreal-insights-in-unreal-engine?application_version=5.7
+- `Engine/Binaries/Linux/UnrealEditor`, `Engine/Binaries/Mac/UnrealEditor.app` — *Onboarding Licensees*: https://dev.epicgames.com/documentation/en-us/unreal-engine/onboarding-licensees-in-unreal-engine?application_version=5.7 and *Linux Development Quickstart*: https://dev.epicgames.com/documentation/en-us/unreal-engine/linux-development-quickstart-for-unreal-engine?application_version=5.7
+- `-nullrhi`, `-unattended`, `-stdout`, `-ExecCmds` — *Command-Line Arguments Reference*: https://dev.epicgames.com/documentation/en-us/unreal-engine/unreal-engine-command-line-arguments-reference?application_version=5.7
+- Running tests from the command line — *Run Automation Tests*: https://dev.epicgames.com/documentation/en-us/unreal-engine/run-automation-tests-in-unreal-engine?application_version=5.7 ; result lines and exit code — *Review Test Results*: https://dev.epicgames.com/documentation/en-us/unreal-engine/review-test-results-in-unreal-engine?application_version=5.7
+- `RunUAT.sh` from `Engine/Build/BatchFiles` on Mac/Linux — *Unreal Automation Tool Overview*: https://dev.epicgames.com/documentation/en-us/unreal-engine/unreal-automation-tool-overview-for-unreal-engine?application_version=5.7
+
+---
+
 ## C++ Coding
 
 ### Use Modern C++ Features (C++20, MSVC v145 in UE 5.8)
@@ -292,6 +328,18 @@ void AMyCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLife
 
 ```cpp
 // ✅ Reuse objects instead of Spawn/Destroy
+//
+// ⚠ INCONSISTENT WITH THIS FILE'S OWN RULE (flagged 2026-08-10).
+// The GC section above states that an unmarked raw UObject pointer is
+// "Dangerous! May be garbage collected" and requires UPROPERTY() +
+// TObjectPtr<T>. This pooling example then holds raw AActor* in a bare TArray,
+// which is exactly the shape that section forbids. FOLLOW THE RULE, NOT THIS
+// SNIPPET: declare the pool UPROPERTY() TArray<TObjectPtr<AActor>>.
+//
+// Left visible rather than silently rewritten: the corrected form has not been
+// verified against Epic's docs for 5.7 or 5.8, and this directory is the offline
+// substitute for them -- editing a code sample here from memory is the failure
+// mode the whole reference exists to prevent. Re-verify, then fix both together.
 TArray<AActor*> ProjectilePool;
 
 AActor* GetPooledProjectile() {

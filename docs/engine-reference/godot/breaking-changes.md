@@ -53,7 +53,7 @@ Changes between Godot versions, focused on post-LLM-cutoff changes (4.4+).
 | Core | `OS.execute_with_pipe` | Added optional `blocking` parameter |
 | Core | `RegEx.compile/create_from_string` | Added optional `show_error` parameter |
 | Rendering | `RenderingDevice.draw_list_begin` | Many parameters removed; `breadcrumb` parameter added |
-| Rendering | Shader texture types | Parameter/return types changed from `Texture2D` to `Texture` |
+| Rendering | `Shader.set_default_texture_parameter()` / `get_default_texture_parameter()` | Parameter/return type changed from `Texture2D` to `Texture`; the shading language did not change |
 | Particles | `.restart()` method | Added optional `keep_seed` parameter (CPU/GPU 2D/3D) |
 | GUI | `RichTextLabel.push_meta` | Added optional `tooltip` parameter |
 | GUI | `GraphEdit.connect_node` | Added optional `keep_alive` parameter |

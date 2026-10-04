@@ -1,6 +1,6 @@
 ---
 name: estimate
-description: "Estimates task effort by analyzing complexity, dependencies, historical velocity, and risk factors. Produces a structured estimate with confidence levels."
+description: "Estimate task effort from complexity, dependencies, velocity, risk. Structured estimate with confidence levels."
 argument-hint: "[task-description]"
 user-invocable: true
 allowed-tools: Read, Glob, Grep
@@ -24,7 +24,10 @@ Identify files and modules that would need to change:
 - Assess complexity (size, dependency count, cyclomatic complexity)
 - Identify integration points with other systems
 - Check for existing test coverage in the affected areas
-- Read past sprint data from `production/sprints/` for similar completed tasks and historical velocity
+- Read past sprint data from `production/sprints/` for similar completed tasks and historical velocity.
+  **If there is none**, say so under Notes and Assumptions — "No sprint history found;
+  this estimate is not calibrated to the team's velocity" — and treat that as a risk
+  in the confidence level, not as a silent padding of the figures.
 
 ---
 
@@ -130,3 +133,4 @@ This skill is read-only — no files are written. Verdict: **COMPLETE** — esti
 - The recommended budget should be the expected estimate, not the optimistic one
 - Round to half-day increments — estimating in hours implies false precision for tasks longer than a day
 - Do not pad estimates silently — call out risk explicitly so the team can decide
+- Confidence is Low whenever the approach is undecided or the core requirements are still TBD — a range built on an unmade decision is a guess

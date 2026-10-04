@@ -1,22 +1,102 @@
 ---
 name: brainstorm
-description: "Guided game concept ideation — from zero idea to a structured game concept document. Uses professional studio ideation techniques, player psychology frameworks, and structured creative exploration."
+description: "Guided concept ideation using professional studio techniques, player psychology, creative exploration."
 argument-hint: "[genre or theme hint, or 'open'] [--review full|lean|solo]"
 user-invocable: true
-allowed-tools: Read, Glob, Grep, Write, WebSearch, Task, AskUserQuestion
+allowed-tools: Read, Glob, Grep, Write, WebSearch, Agent, AskUserQuestion, Bash(bash "*/.claude/skills/brainstorm/../../hooks/yaml-helper.sh" resolve_config *)
 model: sonnet
 ---
 
-When this skill is invoked:
+!`bash "${CLAUDE_SKILL_DIR}/../../hooks/yaml-helper.sh" resolve_config --keys review_mode,automation,docs.density,workflow`
+
+Resolved above — use as-is. No block → defaults in
+`.claude/docs/config-resolution.md`.
+
+
+`--review` overrides `review_mode`; store it for all gate spawns this run. See
+`.claude/docs/director-gates.md` for the full check pattern. Individual gate definitions live in `.claude/docs/director-gates/[gate-id].md` — the spawned agent reads its own gate file; do not read it in the parent session.
+
+Every `AskUserQuestion` call follows `.claude/docs/automation-modes.md`
+(collaborative asks always · guided major-only · autonomous logs and proceeds;
+`automation_always_ask` categories always prompt).
+
+**`docs.density`** — it controls per-section *depth*, where `workflow`
+controls which sections exist. `modes.rigor` sets both together; set
+`docs.density` explicitly to vary depth alone: `terse` (the default, via `rigor: minimal`) = pillar bullets + concept bullets;
+`balanced` = pillars + concept with brief rationale (`rigor: standard`); `thorough` =
+pillars + concept + extensive rationale + alternatives. Apply it to every section
+you author.
+
+---
+
+## Tier branch — check `workflow` FIRST
+
+The `workflow` tier resolved above governs this skill's output:
+
+- **`standard` / `full`** → run the full flow ("When this skill is invoked" through
+  Phase 5 and the concept-document generation). No change.
+- **`minimal`** → run the **Lean Brief flow** immediately below and **STOP** — skip
+  Phases 1–5, the director gates (CD-PILLARS / AD-CONCEPT-VISUAL / TD-FEASIBILITY /
+  PR-SCOPE), and the full-length concept document entirely. Output is the one-page
+  `design/game-brief.md`, not `game-concept.md`.
+
+### Lean Brief flow (`workflow: minimal` only)
+
+A jam / small-scope session: capture the load-bearing thinking in one page, then get
+to code. Keep prompting light — a few exchanges, not fifteen. Author from the
+one-page template `.claude/docs/templates/game-brief.md` (6 required fields + 3
+one-liners). If `design/game-brief.md` already exists, read it and resume/refine
+rather than restart.
+
+1. **Concept** — from the argument hint (or one quick open question if none), propose
+   **2–3 one-line concepts** (verb-first or mashup, per Phase 2's techniques). One
+   `AskUserQuestion` to pick or combine — the only guaranteed creative prompt.
+2. **Fill the brief fields** conversationally (not one prompt each):
+   - **One-sentence pitch** — the excited one-liner.
+   - **Core loop** — the 2–4 step cycle the player repeats.
+   - **Player goal & fail state** — what the player is trying to do, and how they
+     lose or fail. `/create-stories` turns it into each story's acceptance criteria.
+   - **MVP** — the ruthlessly short feature list that makes it *the game* (each becomes
+     a story downstream). If it runs past ~7, push back on scope.
+   - **Out of scope** — what they're deliberately NOT building.
+   - **Build order** — sequence to build the MVP, risky / core-fun thing first.
+   - **Who it's for / what they feel**, **Art & audio direction** and **Reference
+     game** (the shipped game it is closest to, and the ~10% of it the MVP keeps) —
+     one line each (offer, don't force).
+   Present the filled brief back in full for a single confirmation.
+3. **Write approval** — `AskUserQuestion`: "Brief is ready. May I write it to
+   `design/game-brief.md`?" → `[A] Yes — write it` / `[B] Revise a field first`. On
+   [B], revise the named field, show before/after, re-ask; repeat until [A]. Then
+   write `design/game-brief.md` from the template, creating directories as needed.
+   Honor `modes.automation` for this write as elsewhere in the framework.
+4. **Next steps** (short — this is the point). **Read `engine.name` from
+   `project.yaml` first and list `/setup-engine` only if it is absent or empty:**
+   1. *(only when `engine.name` is absent or empty)* "`/setup-engine` — configure
+      the engine (required before code)"
+   2. "`/create-stories` — turn the brief's MVP list into implementable stories. The
+      epic is implicit at `minimal`; there is no separate `/create-epics` or
+      `/sprint-plan` — the brief's build order is the plan."
+   3. "`/dev-story` — first line of game code"
+
+   > **Why the condition.** `/start`'s `minimal` path runs `/setup-engine`
+   > *before* `/brainstorm`, and `/setup-engine` Section 2 states that a missing
+   > brief is expected because the brief is authored afterwards. Listing engine
+   > setup unconditionally here tells a user who just followed that path to go
+   > back and redo step one — the only skill in the four-step path that assumes
+   > it runs first.
+   Then output a one-line summary (pitch + MVP feature count + `design/game-brief.md`).
+
+Verdict: **COMPLETE** — game brief created; next stop is code. Do NOT run Phases 1–5,
+spawn any director gate, or write `game-concept.md` at this tier.
+
+---
+
+When this skill is invoked (`standard` / `full` tier — `minimal` uses the Lean Brief
+flow above):
 
 1. **Parse the argument** for an optional genre/theme hint (e.g., `roguelike`,
    `space survival`, `cozy farming`). If `open` or no argument, start from
-   scratch. Also resolve the review mode (once, store for all gate spawns this run):
-   1. If `--review [full|lean|solo]` was passed → use that
-   2. Else read `production/review-mode.txt` → use that value
-   3. Else → default to `lean`
-
-   See `.claude/docs/director-gates.md` for the full check pattern.
+   scratch.
 
 2. **Check for existing concept work**:
    - Read `design/gdd/game-concept.md` if it exists (resume, don't restart)
@@ -109,6 +189,13 @@ For each concept, present:
 
 Present all three. Then use `AskUserQuestion` to capture the selection.
 
+**This decision asks regardless of `modes.automation`.** Concept selection
+is the creative heart of `/brainstorm` and has no defensible autonomous
+default — there is no algorithmic way to pick which creative direction
+resonates with the user. Per `.claude/docs/automation-modes.md`, treat
+this site as exempt (it overrides the mode the same way
+`automation_always_ask` categories do).
+
 **CRITICAL**: This MUST be a plain list call — no tabs, no form fields. Use exactly this structure:
 
 ```
@@ -195,28 +282,35 @@ If the user selects B, C, or D, make the revision, then use `AskUserQuestion` ag
 - Prompt: "Pillars updated. Ready to lock these in?"
 - Options: `[A] Lock these in` / `[B] Revise another pillar` / `[C] Something else`
 
-Repeat until the user selects [A] Lock these in.
+**At `collaborative`** — repeat until the user selects [A] Lock these in.
+**At `guided`** — pillars are a major decision, so ask once; apply the chosen
+revision and lock them in without a second confirmation round.
+**At `autonomous`** — do not ask. Lock in the drafted pillars and record them via
+`log_decision` with the alternatives considered.
+
+> An `autonomous` run never issues the question, so "repeat until [A]" has no
+> exit condition (`automation-modes.md:56`).
 
 **Review mode check** — apply before spawning CD-PILLARS and AD-CONCEPT-VISUAL:
 - `solo` → skip both. Note: "CD-PILLARS skipped — Solo mode. AD-CONCEPT-VISUAL skipped — Solo mode." Proceed to Phase 5.
 - `lean` → skip both (not PHASE-GATEs). Note: "CD-PILLARS skipped — Lean mode. AD-CONCEPT-VISUAL skipped — Lean mode." Proceed to Phase 5.
 - `full` → spawn as normal.
 
-**After pillars and anti-pillars are agreed, spawn BOTH `creative-director` AND `art-director` via Task in parallel before moving to Phase 5. Issue both Task calls simultaneously — do not wait for one before starting the other.**
+**After pillars and anti-pillars are agreed, spawn BOTH `creative-director` AND `art-director` via `Agent` in parallel before moving to Phase 5. Issue both `Agent` calls simultaneously — do not wait for one before starting the other.**
 
-- **`creative-director`** — gate **CD-PILLARS** (`.claude/docs/director-gates.md`)
+- **`creative-director`** — gate **CD-PILLARS** (`.claude/docs/director-gates/cd-pillars.md`)
   Pass: full pillar set with design tests, anti-pillars, core fantasy, unique hook.
 
-- **`art-director`** — gate **AD-CONCEPT-VISUAL** (`.claude/docs/director-gates.md`)
+- **`art-director`** — gate **AD-CONCEPT-VISUAL** (`.claude/docs/director-gates/ad-concept-visual.md`)
   Pass: game concept elevator pitch, full pillar set with design tests, target platform (if known), any reference games or visual touchstones the user mentioned.
 
-Collect both verdicts, then present them together using a two-tab `AskUserQuestion`:
+Collect both verdicts. When CD-PILLARS returns APPROVE, present them together using a two-tab `AskUserQuestion`:
 - Tab **"Pillars"**: present creative-director feedback. Options mirror the standard CD-PILLARS handling — `Lock in as-is` / `Revise [specific pillar]` / `Discuss further`.
-- Tab **"Visual anchor"**: present the art-director's 2-3 named visual direction options. Options: each named direction (one per option) + `Combine elements across directions` + `Describe my own direction`.
+- Tab **"Visual anchor"**: present the art-director's 2-3 named visual direction options. Options: each named direction (one per option) + `Combine elements across directions` + `Describe my own direction`. On **STRONG**, mark the dominant direction `(Recommended)`. On **CONCERNS** (the pillars do not yet differentiate a visual identity), show the art-director's reason instead of directions and offer `Revise pillars` / `Describe my own direction`.
 
 The user's selected visual anchor (the named direction or their custom description) is stored as the **Visual Identity Anchor** — it will be written into the game-concept document and becomes the foundation of the art bible.
 
-If the creative-director returns CONCERNS or REJECT on pillars, resolve pillar issues before asking for the visual anchor selection — visual direction should flow from confirmed pillars.
+If the creative-director returns CONCERNS or REJECT on pillars, resolve pillar issues before asking for the visual anchor selection — visual direction should flow from confirmed pillars. Ask the Pillars question on its own first (same options, no Visual anchor tab); once the pillars are resolved, ask the Visual anchor question on its own. **NOT ASSESSED** from either gate (it lacked an input — `.claude/docs/director-gates.md`) is not an approval: name what was missing, and supply it and re-run that gate; failing that, treat a CD-PILLARS NOT ASSESSED like CONCERNS, and with no art-director directions offer only `Describe my own direction`.
 
 ---
 
@@ -246,6 +340,12 @@ Ground the concept in reality:
 
 - **Engine experience**: Use `AskUserQuestion` — "Do you already have an engine you work in?"
   Options: `Godot` / `Unity` / `Unreal Engine 5` / `No preference — help me decide`
+  - **This decision always prompts regardless of `modes.automation` —
+    including `autonomous` mode.** Engine choice is a project-wide
+    architectural commitment that downstream tooling depends on and is
+    effectively irreversible mid-project, so this skill guards it
+    unconditionally (it is NOT left to the configurable
+    `automation_always_ask` list). The model must NOT silently pick an engine.
   - If they pick an engine → record it as their preference and move on. Do NOT second-guess it.
   - If "No preference" → tell them: "Run `/setup-engine` after this session — it will walk you through the full decision based on your concept and platform target." Do not make a recommendation here.
 - **Art pipeline**: What's the art style and how labor-intensive is it?
@@ -260,22 +360,28 @@ Ground the concept in reality:
 - `lean` → skip (not a PHASE-GATE). Note: "TD-FEASIBILITY skipped — Lean mode." Proceed directly to scope tier definition.
 - `full` → spawn as normal.
 
-**After identifying biggest technical risks, spawn `technical-director` via Task using gate TD-FEASIBILITY (`.claude/docs/director-gates.md`) before scope tiers are defined.**
+**After identifying biggest technical risks, spawn `technical-director` via `Agent` using gate TD-FEASIBILITY (`.claude/docs/director-gates/td-feasibility.md`) before scope tiers are defined.**
 
 Pass: core loop description, platform target, engine choice (or "undecided"), list of identified technical risks.
 
-Present the assessment to the user. If HIGH RISK, offer to revisit scope before finalising. If CONCERNS, note them and continue.
+Present the assessment to the user. If HIGH RISK, offer to revisit scope before finalising. If CONCERNS, note them and continue. If NOT ASSESSED, name the missing input and record feasibility as not assessed in the concept's risks — never as VIABLE.
 
 **Review mode check** — apply before spawning PR-SCOPE:
 - `solo` → skip. Note: "PR-SCOPE skipped — Solo mode." Proceed to document generation.
 - `lean` → skip (not a PHASE-GATE). Note: "PR-SCOPE skipped — Lean mode." Proceed to document generation.
 - `full` → spawn as normal.
 
-**After scope tiers are defined, spawn `producer` via Task using gate PR-SCOPE (`.claude/docs/director-gates.md`).**
+**After scope tiers are defined, spawn `producer` via `Agent` using gate PR-SCOPE (`.claude/docs/director-gates/pr-scope.md`).**
 
-Pass: full vision scope, MVP definition, timeline estimate, team size.
+Pass: full vision scope, MVP definition, the scope tiers (what ships if time runs out), timeline estimate, team size.
 
-Present the assessment to the user. If UNREALISTIC, offer to adjust the MVP definition or scope tiers before writing the document.
+Present the assessment to the user. PR-SCOPE answers REALISTIC / OPTIMISTIC /
+UNREALISTIC. If UNREALISTIC, ask via `AskUserQuestion` whether to adjust the MVP
+definition or scope tiers before writing the document or keep them — the user
+decides; the concept is never rejected for it. If OPTIMISTIC, show the
+producer's suggested adjustments and ask whether to apply them before writing. If NOT ASSESSED, name
+the missing input (a timeline or team size, say) and ask for it and re-run the
+gate, or record scope as not assessed — never as REALISTIC.
 
 ---
 
@@ -301,7 +407,13 @@ If [B]: ask which section to revise using `AskUserQuestion` with options: `Eleva
 
 After revising, show the updated section as a diff or clear before/after, then use `AskUserQuestion` — "Ready to write the updated concept document?"
 Options: `[A] Yes — write it` / `[B] Revise another section`
-Repeat until the user selects [A].
+**At `collaborative`** — repeat until the user selects [A].
+**At `guided`** — ask once; apply the requested revision and write the document
+without a further confirmation round.
+**At `autonomous`** — do not ask; write the document and record the decision via
+`log_decision`.
+
+> Same exit-condition problem as the pillars loop above (`automation-modes.md:56`).
 
 If yes, generate the document using the template at `.claude/docs/templates/game-concept.md`, fill in ALL sections from the brainstorm conversation, and write the file, creating directories as needed.
 
@@ -356,4 +468,4 @@ After the game concept is written, follow the pre-production pipeline in order:
 4. `/design-system [first-system]` — author per-system GDDs in dependency order
 5. `/create-architecture` — produce the master architecture blueprint
 6. `/architecture-review` — bootstrap TR registry and Requirements Traceability Matrix
-7. `/gate-check pre-production` — validate readiness before committing to production
+7. `/gate-check pre-production` — validate readiness for Pre-Production (the `systems-design` and `technical-setup` gates come first, at their own phase boundaries)

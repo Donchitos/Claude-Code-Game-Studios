@@ -1,6 +1,6 @@
 # Incident Response: [Incident Title]
 
-**Severity**: [S1-Critical / S2-Major / S3-Moderate / S4-Minor]
+**Severity**: [S1-Critical / S2-High / S3-Medium / S4-Low]
 **Status**: [Active / Mitigated / Resolved / Post-Mortem Complete]
 **Detected**: [Date Time UTC]
 **Resolved**: [Date Time UTC or ONGOING]

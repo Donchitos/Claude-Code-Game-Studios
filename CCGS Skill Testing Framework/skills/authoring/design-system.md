@@ -2,191 +2,272 @@
 
 ## Skill Summary
 
-`/design-system` guides the user through section-by-section authoring of a Game
-Design Document (GDD) for a single game system. All 8 required sections must be
-authored: Overview, Player Fantasy, Detailed Rules, Formulas, Edge Cases,
-Dependencies, Tuning Knobs, and Acceptance Criteria. The skill uses a
-skeleton-first approach — it creates the GDD file with all 8 section headers
-before filling any content — and writes each section individually after approval.
+`/design-system <system-name>` authors a Game Design Document for one system at
+`design/gdd/[system-name].md`. Which sections are required depends on the
+resolved `workflow` tier (a `system_overrides` row wins for that system): all 8
+at `full` (Overview, Player Fantasy, Detailed Design, Formulas, Edge Cases,
+Dependencies, Tuning Knobs, Acceptance Criteria); 5 plus conditional Formulas at
+`standard`; 5 at a voluntary `minimal`. `## Summary` is authored at every tier,
+after the other sections.
 
-The CD-GDD-ALIGN gate (creative-director) runs in both `full` AND `lean` modes.
-It is only skipped in `solo` mode. If an existing GDD file is found, the skill
-offers a retrofit mode to update specific sections rather than rewriting the whole
-document.
+The skill reads context first (game concept, systems index, entity registry,
+dependency GDD sections, engine reference), presents a context summary and a
+Technical Feasibility Brief, then asks "May I create the skeleton file at
+`design/gdd/[system-name].md`?". Each section then runs the cycle Context →
+Questions → Options → Decision → Draft → Approval → Write: in `collaborative`
+mode the draft and the "Approve the [Section Name] section?" widget appear in
+the same response, and the approved section is written immediately with Edit.
+Specialist agents are consulted per section, subject to per-section review-mode
+checks.
+
+After all sections are written, the CD-GDD-ALIGN gate runs once in `full` mode
+only. `retrofit <path>` fills only the missing or placeholder sections of an
+existing GDD. The skill never offers `/design-review` inline — it directs the
+user to a fresh session.
 
 ---
 
 ## Static Assertions (Structural)
 
-Verified automatically by `/skill-test static` — no fixture needed.
+Checked against the SKILL.md by `/skill-test spec` — no fixture needed.
 
 - [ ] Has required frontmatter fields: `name`, `description`, `argument-hint`, `user-invocable`, `allowed-tools`
 - [ ] Has ≥2 phase headings
-- [ ] Contains verdict keywords: APPROVED, NEEDS REVISION, MAJOR REVISION
-- [ ] Contains "May I write" collaborative protocol language (per-section approval)
+- [ ] Contains verdict keywords: `APPROVED`, `CONCERNS`, `BLOCKED`
+- [ ] Contains "May I write" / "May I create" collaborative protocol language (skeleton and per-section approval)
 - [ ] Has a next-step handoff at the end
-- [ ] Documents skeleton-first approach (file created with headers before content)
-- [ ] Documents CD-GDD-ALIGN gate: active in full AND lean mode; skipped in solo only
+- [ ] Documents skeleton-first approach (file created with headers before content, after approval)
+- [ ] Documents CD-GDD-ALIGN gate: runs in full mode only; skipped in lean and solo with a named note
 - [ ] Documents retrofit mode for existing GDD files
 
 ---
 
 ## Director Gate Checks
 
-In `full` mode: CD-GDD-ALIGN (creative-director) gate runs after each section is
-drafted, before writing. If MAJOR REVISION is returned, the section must be
-rewritten before proceeding.
+Review mode comes from the resolved `review_mode` (`modes.review_mode` in
+`project.yaml`); `--review full|lean|solo` overrides it for one run.
 
-In `lean` mode: CD-GDD-ALIGN still runs (this gate is NOT skipped in lean mode —
-it runs in both full and lean). Only solo mode skips it.
+**CD-GDD-ALIGN** (`creative-director`) runs once, in Step 5a-bis, after every
+section and the Summary are written and the self-check has read the GDD back
+from file. It is passed the GDD path, the game pillars, the MDA aesthetics
+target and the GDD's Player Fantasy section (or a statement that the tier did not
+author one). The verdict is recorded in the GDD Status header as
+`> **Creative Director Review (CD-GDD-ALIGN)**: APPROVED [date] / CONCERNS (accepted) [date] / REVISED [date] / NOT ASSESSED [date] — [missing input]`.
 
-In `solo` mode: CD-GDD-ALIGN is skipped. Output notes:
-"CD-GDD-ALIGN skipped — solo mode". Sections are written with only user approval.
+- `full` → spawned.
+- `lean` → skipped (not a PHASE-GATE). Note: "CD-GDD-ALIGN skipped — Lean mode."
+- `solo` → skipped. Note: "CD-GDD-ALIGN skipped — Solo mode."
+
+Per-section specialist spawns (not director gates) have their own checks:
+`solo` skips them all; `lean` skips them except for Sections D (Formulas) and
+H (Acceptance Criteria), Section G (Tuning Knobs) when Section D defines a
+formula whose knobs interact, and Visual/Audio when the system's visual feedback
+is central to it (a `Gameplay` or `UI` system whose events the player reads to
+play); `full` spawns them. Every skipped spawn prints the section's note naming
+the agent and the mode, e.g. "`creative-director` not consulted — Lean mode.
+Review manually before production."
 
 ---
 
 ## Test Cases
 
-### Case 1: Happy Path — New GDD, skeleton-first, CD-GDD-ALIGN in lean mode
+### Case 1: Happy Path — New combat GDD, full mode, full workflow
 
 **Fixture:**
-- No existing GDD for the target system in `design/gdd/`
-- `production/session-state/review-mode.txt` contains `lean`
+- `design/gdd/game-concept.md` and `design/gdd/systems-index.md` exist; `combat` is listed with `Category: Gameplay`
+- No `design/gdd/combat.md`
+- `project.yaml` has `engine.name: Godot`, `modes.review_mode: full`, `modes.workflow: full`, `modes.automation: collaborative`; `docs/engine-reference/godot/` has `VERSION.md` and `modules/physics.md` (combat maps to the Physics domain)
+- CD-GDD-ALIGN returns APPROVE
 
-**Input:** `/design-system [system-name]`
+**Input:** `/design-system combat`
 
 **Expected behavior:**
-1. Skill creates skeleton file `design/gdd/[system-name].md` with all 8 section headers (empty bodies)
-2. For each section: discusses with user, drafts content, shows draft
-3. CD-GDD-ALIGN gate runs on each section draft (lean mode — gate is active)
-4. Gate returns APPROVED for each section
-5. "May I write [section]?" asked after gate approval
-6. Section written to file after user approval
-7. Process repeats for all 8 sections
+1. Phase 2 reads the concept, systems index, entity registry (if present) and dependency GDD sections before asking anything, then presents the "Designing: Combat" context summary and the Technical Feasibility Brief with its `AskUserQuestion`
+2. "Ready to start designing combat?" is asked
+3. "May I create the skeleton file at `design/gdd/combat.md`?" — on yes, the skeleton is written with all 8 required sections plus the template's other sections, each holding `[To be designed]`; `production/session-state/active.md` is updated
+4. Sections A–H are walked in order; each draft is followed in the same response by "Approve the [Section Name] section?" with `[A] Approve — write it to file` / `[B] Make changes — describe what to fix` / `[C] Start over`
+5. Section B consults `creative-director`; Section C spawns the Combat row's `game-designer` plus supporting agents in parallel; Section D spawns `systems-designer`; Section E `systems-designer`; Section H `qa-lead`
+6. Each approved section is written immediately by an Edit whose `old_string` includes the section heading; `active.md` is updated after each
+7. Visual/Audio and Game Feel are treated as required (Gameplay category) — not offered as skippable
+8. `## Summary` is authored after the other sections; Step 5a reads the GDD back from file
+9. CD-GDD-ALIGN spawns once and returns APPROVE; the Status header records `APPROVED [date]`
+10. The completion summary directs the user to run `/design-review design/gdd/combat.md` in a fresh session
 
 **Assertions:**
-- [ ] Skeleton file is created with all 8 section headers before any content is written
-- [ ] CD-GDD-ALIGN runs on each section in lean mode (not skipped)
-- [ ] "May I write" is asked per section (not once for all sections)
-- [ ] Each section is written individually after gate + user approval
-- [ ] All 8 sections are present in the final GDD file
+- [ ] The skeleton is written only after the "May I create the skeleton file" approval, and contains all 8 required section headers
+- [ ] Every section draft is followed in the same response by the "Approve the [Section Name] section?" widget
+- [ ] Each section is written individually, immediately after its approval, by an Edit anchored on its heading
+- [ ] Section C's specialists come from the routing table's Combat row and are spawned in parallel before drafting
+- [ ] CD-GDD-ALIGN spawns once, after all sections and the Summary are written — not per section
+- [ ] The verdict is recorded as `> **Creative Director Review (CD-GDD-ALIGN)**: APPROVED [date]`
+- [ ] `/design-review` is directed to a fresh session and never offered inline
 
 ---
 
-### Case 2: Retrofit Mode — Existing GDD, update specific section
+### Case 2: Retrofit Mode — Fill only the incomplete sections at standard tier
 
 **Fixture:**
-- `design/gdd/[system-name].md` already exists with all 8 sections populated
+- `project.yaml` has `engine.name: Godot`, `modes.workflow: standard`, `modes.review_mode: lean`
+- `design/gdd/game-concept.md` and `design/gdd/systems-index.md` exist; `inventory` is listed with `Category: Economy` (engine domain Scripting)
+- `docs/engine-reference/godot/` has `VERSION.md` and `modules/`, but no `modules/scripting.md`
+- `design/gdd/inventory.md` exists with Overview, Detailed Design and Formulas fully written; its `## Summary` holds only `[To be designed]`
+- `## Edge Cases` and `## Acceptance Criteria` contain only `[To be designed]`; `## Dependencies` has an empty body
+- The file has no Player Fantasy or Tuning Knobs section
 
-**Input:** `/design-system [system-name]`
+**Input:** `/design-system retrofit design/gdd/inventory.md`
 
 **Expected behavior:**
-1. Skill detects existing GDD file and reads its current content
-2. Skill offers retrofit mode: "GDD already exists. Which section would you like to update?"
-3. User selects a specific section (e.g., Formulas)
-4. Skill authors only that section, runs CD-GDD-ALIGN, asks "May I write?"
-5. Only the selected section is updated — other sections are not modified
+1. The skill reads the existing GDD and identifies which sections are present, placeholder-only or empty
+2. It presents the "Retrofit: Inventory" block: written sections (will not be touched) and missing or incomplete sections (will be authored)
+3. Player Fantasy and Tuning Knobs are listed as available to add, not as gaps, because `standard` does not require them
+4. It asks: "Shall I fill the 3 missing sections? I will not modify any existing content."
+5. On yes, Phase 2 runs as normal; §2e names the missing module — "no engine reference for `Scripting` under `docs/engine-reference/godot/modules/`; feasibility not checked against the pinned engine" — and carries it into §5-pre
+6. No skeleton is created; only Edge Cases, Dependencies and Acceptance Criteria run the section cycle, then §5-pre replaces the Summary placeholder
+7. Each write replaces only the placeholder or empty body; Overview, Detailed Design and Formulas are not modified
 
 **Assertions:**
-- [ ] Skill detects and reads existing GDD before offering retrofit mode
-- [ ] User is asked which section to update — not asked to rewrite the whole document
-- [ ] Only the selected section is rewritten — others remain unchanged
-- [ ] CD-GDD-ALIGN still runs on the updated section
-- [ ] "May I write" is asked before updating the section
+- [ ] The retrofit block is shown before any change is made
+- [ ] Sections the tier does not require are not reported as gaps
+- [ ] The skill asks "Shall I fill the 3 missing sections? I will not modify any existing content."
+- [ ] The absent `scripting.md` module is named in the output, not skipped silently as if feasibility had been checked
+- [ ] No skeleton is created and complete sections are not re-authored or overwritten
+- [ ] Each filled section still goes through the per-section approval before its write
 
 ---
 
-### Case 3: Director Gate — CD-GDD-ALIGN returns MAJOR REVISION
+### Case 3: Director Gate — CD-GDD-ALIGN returns CONCERNS, REJECT or NOT ASSESSED
 
 **Fixture:**
-- New GDD being authored
-- `production/session-state/review-mode.txt` contains `lean`
-- CD-GDD-ALIGN gate returns MAJOR REVISION on the Player Fantasy section
+- `design/gdd/game-concept.md` (pillars include "Fearless Exploration") and `design/gdd/systems-index.md` exist; `stamina` is listed with `Category: Gameplay`
+- `project.yaml` has `modes.review_mode: full` and `modes.workflow: full`
+- All eight sections, Player Fantasy included, and the Summary are written for `design/gdd/stamina.md`
+- Scenario (a): CD-GDD-ALIGN returns CONCERNS: "Detailed Design's stamina drain undercuts the 'Fearless Exploration' pillar"
+- Scenario (b): CD-GDD-ALIGN returns REJECT: "stamina exhaustion strands the player mid-exploration, which the 'Fearless Exploration' pillar rules out"
+- Scenario (c): CD-GDD-ALIGN returns NOT ASSESSED — no MDA aesthetics target was available to check the GDD against
 
-**Input:** `/design-system [system-name]`
+**Input:** `/design-system stamina` (reaching Step 5a-bis)
 
 **Expected behavior:**
-1. Player Fantasy section is drafted
-2. CD-GDD-ALIGN gate runs and returns MAJOR REVISION with specific feedback
-3. Skill surfaces the feedback to the user
-4. Section is NOT written to file while MAJOR REVISION is unresolved
-5. User rewrites the section in collaboration with the skill
-6. CD-GDD-ALIGN runs again on the revised section
-7. If revised section passes, "May I write?" is asked and section is written
+1. `creative-director` is spawned with gate CD-GDD-ALIGN and passed the GDD path, the game pillars, the MDA aesthetics target and the GDD's Player Fantasy section
+2. (a) The CONCERNS are surfaced via `AskUserQuestion` with the standard options: `Revise flagged items` / `Accept and proceed` / `Discuss further`
+3. (a) If "Revise flagged items": Detailed Design runs its section cycle again — its specialists consulted first — and is approved through "Approve the Detailed Design section?" before it is written; the Status header records `REVISED [date]`
+4. (a) If "Accept and proceed": the Status header records `CONCERNS (accepted) [date]`
+5. (b) The blockers are shown; the flagged section is re-drafted and re-approved the same way before anything else is written, and the Status header records `REVISED [date]`, never `APPROVED`
+6. (c) The missing input is named; the user can supply it and re-run the gate, or the Status header records `NOT ASSESSED [date] — [missing input]`, never `APPROVED`
+7. Only after the verdict is recorded does the skill continue to the entity registry step (5b)
 
 **Assertions:**
-- [ ] Section is NOT written when CD-GDD-ALIGN returns MAJOR REVISION
-- [ ] Gate feedback is shown to the user before requesting revision
-- [ ] CD-GDD-ALIGN runs again after the section is revised
-- [ ] Skill does NOT auto-proceed to the next section while MAJOR REVISION is unresolved
+- [ ] CD-GDD-ALIGN receives the completed GDD path, the pillars, the MDA target and the Player Fantasy section
+- [ ] (a) CONCERNS are shown to the user with the three standard options, not auto-accepted
+- [ ] A revised section re-runs its section cycle and is re-approved before it is written
+- [ ] The Status header records `REVISED [date]` or `CONCERNS (accepted) [date]` to match the user's choice
+- [ ] (b) After a REJECT, no later step (5b registry, 5d systems index) runs until the flagged section has been revised
+- [ ] (c) NOT ASSESSED is never recorded or reported as an approval
 
 ---
 
-### Case 4: Solo Mode — CD-GDD-ALIGN skipped; sections written with user approval only
+### Case 4: Lean and Solo Modes — Gate skipped once; specialist spawns follow their own checks
 
 **Fixture:**
-- New GDD being authored
-- `production/session-state/review-mode.txt` contains `solo`
+- `design/gdd/game-concept.md` and `design/gdd/systems-index.md` exist; the system is `stamina` (`Category: Gameplay`); no `design/gdd/stamina.md`
+- `project.yaml` has `engine.name: Godot` and `modes.workflow: full`
+- Section D's stamina formula has no knobs that interact; the stamina bar is feedback the player reads to play
+- Scenario (a): `modes.review_mode: lean`
+- Scenario (b): `modes.review_mode: solo`
 
-**Input:** `/design-system [system-name]`
+**Input:** `/design-system stamina`
 
 **Expected behavior:**
-1. Skeleton file is created with 8 section headers
-2. For each section: drafted, shown to user
-3. CD-GDD-ALIGN is skipped — noted per section: "CD-GDD-ALIGN skipped — solo mode"
-4. "May I write [section]?" asked after user reviews draft
-5. Section written after user approval
-6. No gate review at any stage
+1. (a) Sections B, C, E and G are drafted without specialist spawns, and each prints its note with the mode, e.g. "`creative-director` not consulted — Lean mode. Review manually before production."
+2. (a) Section D still spawns `systems-designer`, Section H `qa-lead`, and Visual/Audio `art-director` — stamina's feedback is central to play
+3. (a) At Step 5a-bis: "CD-GDD-ALIGN skipped — Lean mode." — printed once, not per section
+4. (b) No specialist or director agent is spawned; each section whose spawn was skipped carries its note, e.g. "`creative-director` not consulted — Solo mode. Review manually before production."
+5. (b) At Step 5a-bis: "CD-GDD-ALIGN skipped — Solo mode."
+6. In both scenarios every section still requires the "Approve the [Section Name] section?" approval before it is written
 
 **Assertions:**
-- [ ] "CD-GDD-ALIGN skipped — solo mode" noted for each section
-- [ ] Sections are written after user approval alone (no gate required)
-- [ ] Skill does NOT spawn any CD-GDD-ALIGN gate in solo mode
-- [ ] Full GDD is written with only user approval in solo mode
+- [ ] (a) In lean mode Sections B, C, E and G are drafted without their specialists, while Sections D and H and Visual/Audio still spawn theirs
+- [ ] (a) Each lean-skipped spawn prints a "not consulted — Lean mode" note naming its agent — none is skipped silently
+- [ ] (a) The CD-GDD-ALIGN skip note appears once, at Step 5a-bis
+- [ ] (b) In solo mode no agent is spawned, and each skipped specialist leaves a "not consulted — Solo mode" note
+- [ ] (b) The skip note reads "CD-GDD-ALIGN skipped — Solo mode."
+- [ ] Per-section user approval is required in both modes
 
 ---
 
-### Case 5: Director Gate — Empty sections not written to file
+### Case 5: Missing Input and Declined Skeleton
 
 **Fixture:**
-- GDD authoring in progress
-- User and skill discuss one section but do not produce any approved content
-  (e.g., discussion ends without a decision, or user says "skip for now")
+- `project.yaml` has `modes.workflow: standard` in every scenario — the systems index is required at this tier, so pointing at `/map-systems` is correct
+- Scenario (a): no argument; `design/gdd/systems-index.md` lists `stamina` as the highest-priority "Not Started" system (MVP, Core layer)
+- Scenario (b): no argument; no systems index
+- Scenario (c): `/design-system stamina` with concept and index present; the user declines the skeleton
 
-**Input:** `/design-system [system-name]`
+**Input:** (a) `/design-system` (b) `/design-system` (c) `/design-system stamina`
 
 **Expected behavior:**
-1. Section discussion produces no approved content
-2. Skill does NOT write an empty or placeholder body to the section
-3. The section header remains in the skeleton file but the body stays empty
-4. Skill moves to the next section without writing the empty one
-5. At the end, incomplete sections are listed and user is reminded to return to them
+1. (a) `AskUserQuestion`: "The next system in your design order is **stamina** (MVP | Core). Start designing it?" with `[A] Yes — design stamina` / `[B] Pick a different system` / `[C] Stop here`
+2. (b) The skill stops with the usage message ("Usage: `/design-system <system-name>` …"), the retrofit example, and "No systems index found. Run `/map-systems` first to map your systems and get the design order."
+3. (c) The skill stops with: "Verdict: **BLOCKED** — skeleton creation declined. …" and does not proceed to Section A
+4. In none of the three scenarios is a GDD file written before an approval
 
 **Assertions:**
-- [ ] Empty or unapproved sections are NOT written to the file
-- [ ] Skeleton section header remains (preserves structure)
-- [ ] Skill tracks and lists incomplete sections at the end of the session
-- [ ] Skill does NOT write "TBD" or placeholder content without user approval
+- [ ] (a) The next system is proposed from the systems index with the three options
+- [ ] (b) The usage message and the `/map-systems` pointer are printed; nothing is written
+- [ ] (c) Declining the skeleton produces the BLOCKED verdict and stops before Section A
+- [ ] No GDD file is created without an approval
+
+---
+
+### Case 6: Minimal Project, One System Raised by `system_overrides`
+
+**Fixture:**
+- `project.yaml` has `modes.workflow: minimal`, `modes.review_mode: solo` and `workflow_overrides.system_overrides.combat: standard`
+- `design/game-brief.md` exists; its MVP features describe combat (a damage rule and a stagger threshold), and its build order lists combat first
+- No `design/gdd/game-concept.md`, no `design/gdd/systems-index.md`, no `design/gdd/combat.md`
+
+**Input:** `/design-system combat`
+
+**Expected behavior:**
+1. The effective tier for combat is `standard` (the override); the project tier is `minimal`
+2. §2a takes the `minimal` branch because it keys on the project tier: it reads `design/game-brief.md` and skips the systems-index read, and does not stop with "No game concept found" or "No systems index found"
+3. It derives `Category`, `Layer` and `Priority` from the brief once (e.g. `Gameplay`, `Foundation` or `Feature`, `MVP`)
+4. The skeleton and the section walk follow `standard`: A, C, D (combat defines numeric rules), E, F, H — no Player Fantasy or Tuning Knobs
+5. §5-pre's Quick reference marks the derived values, e.g. "Category: Gameplay (inferred from the brief — no systems index at this tier)"
+6. §5d says "no `design/gdd/systems-index.md` at this workflow tier; nothing to update" and writes no systems index
+
+**Assertions:**
+- [ ] The run reads the brief and does not stop for the missing concept or systems index
+- [ ] The required section set is `standard`'s (the effective tier) — not the project tier's
+- [ ] Category, Layer and Priority are derived from the brief and marked inferred in the Quick reference
+- [ ] No systems index is created; §5d reports nothing to update
 
 ---
 
 ## Protocol Compliance
 
-- [ ] Skeleton file created with all 8 headers before any content is written
-- [ ] CD-GDD-ALIGN runs in both full AND lean mode (not just full)
-- [ ] CD-GDD-ALIGN skipped only in solo mode — noted per section
-- [ ] "May I write [section]?" asked per section (not once for the whole document)
-- [ ] MAJOR REVISION from CD-GDD-ALIGN blocks section write until resolved
-- [ ] Only approved, non-empty sections are written to the file
-- [ ] Ends with next-step handoff: `/review-all-gdds` or `/map-systems next`
+- [ ] Reads context before asking anything; stops with the `/brainstorm` or `/map-systems` message when the game concept or systems index is missing on a `standard`/`full` project (a `minimal` project reads the brief instead, even for a system `system_overrides` raises)
+- [ ] The skeleton is created only after "May I create the skeleton file at `design/gdd/[system-name].md`?"
+- [ ] In collaborative mode every section draft is followed by its approval widget, and no section is written without approval
+- [ ] Sections are written incrementally, and `production/session-state/active.md` is updated after each
+- [ ] Specialist spawns follow the per-section review-mode checks; every skipped spawn leaves a "not consulted" note naming the agent and the mode, in lean as in solo
+- [ ] CD-GDD-ALIGN runs once in full mode after all sections; lean and solo print a skip note naming the gate and mode
+- [ ] `/design-review` is directed to a fresh session and never run or offered inline
+- [ ] Ends with a next-step `AskUserQuestion` and Recommended Next Steps (`/consistency-check`, `/map-systems next`, `/design-review` in a fresh session)
 
 ---
 
 ## Coverage Notes
 
-- The 8 required sections are validated against the project's design document
-  standards defined in `CLAUDE.md` — not re-enumerated here.
-- The skill's internal section-ordering logic (which section to author first) is
-  not independently tested — the order follows the standard GDD template.
-- Pillar alignment checking within CD-GDD-ALIGN is evaluated holistically by
-  the gate agent — specific pillar checks are not fixture-tested here.
+- `guided` and `autonomous` automation modes (write without the per-section
+  widget; `log_decision` in autonomous) are not fixture-tested.
+- A voluntary GDD on a `minimal` project with no override (the 5 standard
+  sections from `design/game-brief.md`, Formulas never pulled back in) is not
+  fixture-tested; Case 6 covers a `minimal` project whose system an override
+  raises. The no-argument prompt on a `minimal` project, where no systems index
+  exists by design, is not tested either.
+- The registry conflict check after Sections C and D, and the Step 5b entity
+  registry update, are not individually tested.
+- The Step 5d systems index update and the context-window (≥70%) notice are not
+  tested.
+- Recovery and resume after an interrupted session is not tested.

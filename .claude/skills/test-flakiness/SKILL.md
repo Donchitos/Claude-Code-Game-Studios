@@ -1,11 +1,19 @@
 ---
 name: test-flakiness
-description: "Detect non-deterministic (flaky) tests by reading CI run logs or test result history. Aggregates pass rates per test, identifies intermittent failures, recommends quarantine or fix, and maintains a flaky test registry. Best run during Polish phase or after multiple CI runs."
+description: "Find flaky tests from CI logs — aggregates pass rates, spots intermittent failures, recommends quarantine. After multiple runs."
 argument-hint: "[ci-log-path | scan | registry]"
 user-invocable: true
-allowed-tools: Read, Glob, Grep, Write, Edit, Bash
+allowed-tools: Read, Glob, Grep, Write, Edit, Bash, Bash(bash "*/.claude/skills/test-flakiness/../../hooks/yaml-helper.sh" resolve_config *)
 model: sonnet
 ---
+
+!`bash "${CLAUDE_SKILL_DIR}/../../hooks/yaml-helper.sh" resolve_config --keys automation`
+
+**Automation mode**: Resolve `modes.automation` (`project.local.yaml` →
+`project.yaml` → default `collaborative`). Every `AskUserQuestion` call and
+every file write follows `.claude/docs/automation-modes.md`
+(collaborative asks always · guided major-only · autonomous logs and proceeds;
+`automation_always_ask` categories always prompt).
 
 # Test Flakiness Detection
 
@@ -47,14 +55,17 @@ ls -t .github/ 2>/dev/null
 ls -t test-results/ 2>/dev/null
 ```
 
-For Godot projects: GdUnit4 outputs XML results compatible with JUnit format.
-Check `test-results/` for `.xml` files.
+For Godot projects: GdUnit4 outputs XML results compatible with JUnit format,
+under `reports/` (its default report folder, `res://reports/`). Check `reports/`,
+and any `test-results/` you saved runs into, for `.xml` files.
 
 For Unity projects: game-ci test runner outputs NUnit XML to `test-results/`
 by default.
 
 For Unreal projects: automation logs go to `Saved/Logs/`. Grep for
-`Result: Success` and `Result: Fail` patterns.
+`Result={Success}` and `Result={Fail}` — each test prints
+`Test Completed. Result={<status>}`
+(`docs/engine-reference/unreal/current-best-practices.md`, "Command Line").
 
 ### Option B — Local log files
 
@@ -78,15 +89,22 @@ Stop and ask the user which option to pursue.
 
 For each CI log or result file found, parse:
 
-**JUnit XML format** (GdUnit4 / Unity):
+**JUnit XML format** (GdUnit4):
 - Grep for `<testcase name=` to get test names
 - Grep for `<failure` or `<error` to identify failures
 - Parse `classname` and `name` attributes for full test identifiers
 
+**NUnit XML format** (Unity — the file whose `<test-run>` element `/smoke-check`
+reads):
+- Each test is a `<test-case` element; its `fullname` attribute is the identifier
+- Its `result` attribute is `Passed`, `Failed`, `Inconclusive` or `Skipped`
+  (`docs/engine-reference/unity/current-best-practices.md`, "Command Line");
+  only `Passed` and `Failed` enter the history
+
 **Plain text logs**:
 - Grep for pass/fail patterns:
   - Godot: `PASSED` / `FAILED` adjacent to test names
-  - Unreal: `Result: Success` / `Result: Fail`
+  - Unreal: `Result={Success}` / `Result={Fail}`
   - Unity: `Test passed` / `Test failed`
 
 Build a table: `test_id → [run1_result, run2_result, run3_result, ...]`
@@ -103,6 +121,11 @@ Flakiness thresholds:
 - **Moderate flakiness**: Fails in 5–25% of runs — investigate and fix soon
 - **Low/suspected flakiness**: Fails in 1–5% of runs — monitor; may be
   genuinely rare failure
+
+**With fewer than 3 runs, every finding is *suspected*, whatever its fail rate.**
+One failure in two runs reads as 50%, but it is one data point: do not
+quarantine it, label it suspected, and ask whether more run data is available.
+The tiers above, and quarantine, apply from 3 runs up.
 
 For each flaky test, classify the likely cause:
 
@@ -128,10 +151,24 @@ or equality comparisons on floats to narrow down the cause.
 For each flaky test:
 
 **Quarantine (High flakiness):**
-> "Quarantine this test immediately. Disable it in CI by adding
-> `@pytest.mark.skip` / `[Ignore]` / `GdUnitSkip` annotation. Log it in
-> `tests/regression-suite.md` quarantine section. The test is now opt-in only.
-> Fix the root cause before removing quarantine."
+> "Quarantine this test immediately. Skip it with the engine's own mechanism,
+> log it in the `tests/regression-suite.md` quarantine section, and fix the root
+> cause before removing quarantine."
+
+Skip mechanisms, by engine — name only the one for the project's engine:
+- **Godot (gdUnit4), GDScript**: a skip parameter on the test function —
+  `func test_x(_do_skip := true, _skip_reason := "flaky: [cause]")`. gdUnit4 reads
+  the argument names `do_skip` and `skip_reason` (a leading `_` is allowed) in
+  `addons/gdUnit4/src/core/GdUnitTestSuiteScanner.gd`, as of gdUnit4 6.1.3;
+  confirm them there for the installed version.
+- **Godot (gdUnit4), C#**: **NOT SOURCEABLE** — gdUnit4's C# test attributes are
+  not in the `addons/gdUnit4/` source, and `docs/engine-reference/godot/` does not
+  cover them. Log it in the quarantine section and ask the user how their C#
+  tests are skipped; do not invent an attribute.
+- **Unity (NUnit)**: `[Ignore("flaky: [cause]")]` — NUnit 3 requires the reason
+- **Unreal**: **NOT SOURCEABLE** — `docs/engine-reference/unreal/` documents no way
+  to skip an automation test. Log it in the quarantine section and ask the user
+  how their CI excludes a test; do not invent a flag.
 
 **Investigate and fix soon (Moderate):**
 > "This test is intermittently unreliable. Root cause appears to be [cause].
@@ -156,11 +193,11 @@ For each flaky test:
 
 ### Flaky Tests Found
 
-| Test | System | Fail Rate | Likely Cause | Recommendation |
-|------|--------|-----------|--------------|----------------|
-| [test_name] | [system] | [N]% | Timing | Quarantine + fix async |
-| [test_name] | [system] | [N]% | Float comparison | Fix: use epsilon compare |
-| [test_name] | [system] | [N]% | Order dependency | Investigate teardown |
+| Test | System | Fail Rate | Confidence | Likely Cause | Recommendation |
+|------|--------|-----------|------------|--------------|----------------|
+| [test_name] | [system] | [N]% | confirmed | Timing | Quarantine + fix async |
+| [test_name] | [system] | [N]% | confirmed | Float comparison | Fix: use epsilon compare |
+| [test_name] | [system] | [N]% | suspected (fewer than 3 runs) | Order dependency | Collect more runs before acting |
 
 ### Clean Tests (no flakiness detected)
 

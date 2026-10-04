@@ -2,111 +2,156 @@
 
 ## Skill Summary
 
-`/propagate-design-change` handles GDD revision cascades. When a GDD is updated,
-the skill traces all downstream artifacts that reference it: ADRs, TR-registry
-entries, stories, and epics. It produces a structured impact report showing what
-needs to change and why. The skill does NOT automatically apply changes — it
-proposes edits for each affected artifact and asks "May I write" per artifact
-before making any modification.
+`/propagate-design-change` handles GDD revision cascades into the architecture.
+Given a changed GDD path, it asks git what changed (`git diff HEAD`, then the last
+commit), summarises the changed sections, checks the entity registry for
+downstream GDDs to re-check, then finds every ADR that references the GDD — by
+scanning `## GDD Requirements Addressed` tables plus a prose grep for the GDD's
+basename — and reads only that affected set. Each affected ADR is classified
+Still Valid / Needs Review / Likely Superseded and the full Design Change Impact
+Report is shown before any action.
 
-The skill is read-only during analysis and write-gated per artifact during the
-update phase. It has no director gates — the analysis itself is mechanical
-tracing, not a creative review.
+In `full` review mode the TD-CHANGE-IMPACT gate (technical-director) reviews the
+report before resolution; in `lean`/`solo` it is skipped with a note. The user
+then decides per ADR (Mark Superseded / Update in place / Keep as-is / Skip), and
+every file change — an ADR status line, the traceability index, the
+`docs/architecture/change-impact-[date]-[system].md` report — has its own ask.
+The cascade scope follows the changed system's workflow tier (`full` all ADRs,
+`standard` critical ADRs plus those referencing the GDD, `minimal` not applicable).
+Verdicts: COMPLETE (impact report saved) or BLOCKED (user declined the write).
 
 ---
 
 ## Static Assertions (Structural)
 
-Verified automatically by `/skill-test static` — no fixture needed.
+Checked against the SKILL.md by `/skill-test spec` — no fixture needed.
 
 - [ ] Has required frontmatter fields: `name`, `description`, `argument-hint`, `user-invocable`, `allowed-tools`
 - [ ] Has ≥2 phase headings
-- [ ] Contains verdict keywords: COMPLETE, BLOCKED, NO IMPACT
-- [ ] Contains "May I write" collaborative protocol language (per-artifact approval)
-- [ ] Has a next-step handoff at the end
-- [ ] Documents that changes are proposed, not applied automatically
+- [ ] Contains verdict keywords: COMPLETE, BLOCKED
+- [ ] Contains "May I" ask-before-write language for each file it changes
+- [ ] Has a next-step handoff at the end (`/architecture-decision`, `/architecture-review`)
+- [ ] Documents that the impact report is shown before any change is made
+- [ ] Documents gate TD-CHANGE-IMPACT: runs in full, skipped in lean/solo
 
 ---
 
 ## Director Gate Checks
 
-No director gates — this skill spawns no director gate agents during analysis.
-The impact report is a mechanical tracing operation; no creative or technical
-director review is required at the analysis stage.
+One gate: **TD-CHANGE-IMPACT** (`technical-director`,
+`.claude/docs/director-gates/td-change-impact.md`), spawned after the Design
+Change Impact Report is presented and before the per-ADR resolution workflow.
+
+- `full` → spawned with the full impact report (change summary, classifications,
+  recommended actions)
+- `lean` → skipped; output notes "TD-CHANGE-IMPACT skipped — Lean mode."
+- `solo` → skipped; output notes "TD-CHANGE-IMPACT skipped — Solo mode."
+
+Verdict handling: APPROVE → resolution workflow; CONCERNS → `AskUserQuestion` with
+`Revise the impact assessment` / `Accept with noted concerns` / `Discuss further`;
+REJECT → no resolution; the impact is re-analysed first; NOT ASSESSED [missing
+input] → never read as APPROVE: the input is supplied and the gate re-run, or the
+run goes on with `TD-CHANGE-IMPACT: NOT ASSESSED — [input]` stated in the report
+and the Verdict line.
 
 ---
 
 ## Test Cases
 
-### Case 1: Happy Path — GDD revision affects 2 stories and 1 epic
+### Case 1: Happy Path — GDD formula change affects one of two referencing ADRs
 
 **Fixture:**
-- `design/gdd/[system].md` exists and has been recently revised (git diff shows changes)
-- `production/epics/[layer]/EPIC-[system].md` references this GDD
-- 2 story files reference TR-IDs from this GDD
-- The changed GDD section affects the acceptance criteria of both stories
+- `project.yaml`: `modes.workflow: full`, `modes.review_mode: lean`
+- `design/gdd/combat.md` has an uncommitted edit to a damage formula in its
+  Formulas section
+- `docs/architecture/` has 4 ADRs; ADR-0003 and ADR-0005 list `combat.md` in
+  `## GDD Requirements Addressed`; ADR-0003's decision assumed the old formula,
+  ADR-0005's decision does not depend on it
+- `docs/architecture/requirements-traceability.md` exists
 
-**Input:** `/propagate-design-change design/gdd/[system].md`
+**Input:** `/propagate-design-change design/gdd/combat.md`
 
 **Expected behavior:**
-1. Skill reads the revised GDD and identifies what changed (git diff or content comparison)
-2. Skill scans ADRs, TR-registry, epics, and stories for references to this GDD
-3. Skill produces an impact report: 1 epic affected, 2 stories affected
-4. Skill shows the proposed change for each artifact
-5. For each artifact: asks "May I update [filepath]?" separately
-6. Applies changes only after per-artifact approval
+1. Verifies the file exists; runs `git diff HEAD -- design/gdd/combat.md` and
+   derives the changed sections from the hunks
+2. Prints the Change Summary (changed / unchanged sections, key changes)
+3. Globs the ADRs (N = 4), greps the requirement tables and the `combat`
+   basename, and reports "Loaded 4 ADRs by scan. 2 reference combat.md (…)"
+4. Reads ADR-0003 and ADR-0005 (size checked with `wc -c` first) and classifies
+   ADR-0003 Needs Review or Likely Superseded, ADR-0005 Still Valid
+5. Presents the Design Change Impact Report
+6. Notes "TD-CHANGE-IMPACT skipped — Lean mode."
+7. Asks "ADR-0003 ([title]) — [status]. What would you like to do?" with the four
+   options; no resolution ask for ADR-0005
+8. Asks "May I update the traceability index?" and "May I write the change impact
+   report to `docs/architecture/change-impact-[date]-combat.md`?"
+9. Verdict: COMPLETE — change impact report saved
 
 **Assertions:**
-- [ ] Impact report identifies all 3 affected artifacts (1 epic + 2 stories)
-- [ ] Each affected artifact's proposed change is shown before asking to write
-- [ ] "May I write" is asked per artifact (not once for all artifacts)
-- [ ] Skill does NOT apply any changes without per-artifact approval
-- [ ] Verdict is COMPLETE after all approved changes are applied
+- [ ] What changed is taken from `git diff`, not from reading two whole documents
+- [ ] Only the 2 referencing ADRs are full-read; the other 2 are not described as verified unaffected
+- [ ] The full impact report is shown before any resolution ask or write
+- [ ] A resolution ask is made per Needs Review / Likely Superseded ADR, one at a time
+- [ ] Each file change (ADR status, traceability index, impact report) has its own ask
+- [ ] "TD-CHANGE-IMPACT skipped — Lean mode." appears
+- [ ] Verdict is COMPLETE after the impact report is written
 
 ---
 
-### Case 2: No Impact — Changed GDD has no downstream references
+### Case 2: Zero matches — "no impact" versus "cannot trace"
 
-**Fixture:**
-- `design/gdd/[system].md` exists and has been revised
-- No ADRs, stories, or epics reference this GDD's TR-IDs or GDD path
+**Fixture (tables present):**
+- `project.yaml`: `modes.workflow: full`
+- `design/gdd/combat.md` has an uncommitted edit
+- 3 ADRs, each with a `## GDD Requirements Addressed` section, none naming
+  `combat.md` in the table or in prose
 
-**Input:** `/propagate-design-change design/gdd/[system].md`
+**Input (both fixtures):** `/propagate-design-change design/gdd/combat.md`
 
-**Expected behavior:**
-1. Skill reads the revised GDD
-2. Skill scans all ADRs, stories, and epics for references
-3. No references found
-4. Skill outputs: "No downstream impact found for [system].md — no artifacts reference this GDD."
-5. No write operations are performed
+**Expected behavior (tables present):**
+1. Both scans return 0 with N = 3
+2. The files-with-matches check for `## GDD Requirements Addressed` is non-empty
+3. Reports "No ADR references combat.md — no architecture impact."
+
+**Fixture (tables absent):**
+- Same GDD edit; 3 ADRs, none containing a `## GDD Requirements Addressed` section
+  and none naming `combat.md`
+
+**Expected behavior (tables absent):**
+1. Both scans return 0 with N = 3; the section check is also empty
+2. Reports "3 ADRs found, none contains a 'GDD Requirements Addressed' section —
+   traceability cannot be computed (a `gate-pre-production` blocker). Run
+   `/architecture-decision retrofit [adr]`."
 
 **Assertions:**
-- [ ] Skill outputs the "No downstream impact found" message
-- [ ] Verdict is NO IMPACT
-- [ ] No "May I write" asks are issued (nothing to update)
+- [ ] With tables present, the "no architecture impact" message is printed
+- [ ] With tables absent, the skill does NOT report "no impact" — it reports that traceability cannot be computed and names `/architecture-decision retrofit [adr]`, the form that skill parses
+- [ ] No per-ADR resolution ask and no ADR edit happens in either fixture
 - [ ] Skill does NOT error or crash when no references are found
 
 ---
 
-### Case 3: In-Progress Story Warning — Referenced story is currently being developed
+### Case 3: Edge Case — Empty diff on a GDD with history
 
 **Fixture:**
-- A story referencing this GDD has `Status: In Progress`
-- The developer has already started implementing this story
+- `project.yaml`: `modes.workflow: full`
+- `design/gdd/combat.md` is committed, has no uncommitted changes, and was not
+  touched by the last commit
 
-**Input:** `/propagate-design-change design/gdd/[system].md`
+**Input:** `/propagate-design-change design/gdd/combat.md`
 
 **Expected behavior:**
-1. Skill identifies the In Progress story as an affected artifact
-2. Skill outputs an elevated warning: "CAUTION: [story-file] is currently In Progress — a developer may be working on this. Coordinate before updating."
-3. The warning appears in the impact report before the "May I write" ask for that story
-4. User can still approve or skip the update for that story
+1. `git diff HEAD -- design/gdd/combat.md` is empty
+2. `git diff HEAD~1 HEAD -- design/gdd/combat.md` is also empty
+3. Reports "no uncommitted or last-commit changes to `design/gdd/combat.md`" and
+   asks which revision to propagate
+4. Does not report "no impact" and does not scan ADRs before a revision is chosen
 
 **Assertions:**
-- [ ] In Progress story is flagged with an elevated warning (distinct from regular affected-artifact entries)
-- [ ] Warning appears before the "May I write" ask for that story
-- [ ] Skill still offers to update the story — the warning does not block the option
-- [ ] Other (non-In-Progress) artifacts are not affected by this warning
+- [ ] Both diffs are tried, working tree first, then the last commit
+- [ ] The "no uncommitted or last-commit changes" report is printed
+- [ ] The user is asked which revision to propagate
+- [ ] The empty diff is NOT reported as "no impact"
 
 ---
 
@@ -119,57 +164,103 @@ director review is required at the analysis stage.
 
 **Expected behavior:**
 1. Skill detects no argument is provided
-2. Skill outputs a usage error: "No GDD specified. Usage: /propagate-design-change design/gdd/[system].md"
-3. Skill lists recently modified GDDs as suggestions (git log)
-4. No analysis is performed
+2. Skill fails with: "Usage: `/propagate-design-change design/gdd/[system].md`
+   Provide the path to the GDD that was changed."
+3. No diff, scan or analysis is performed
 
 **Assertions:**
-- [ ] Skill outputs a usage error when no argument is given
-- [ ] Usage example is shown with the correct path format
-- [ ] No impact analysis is performed without a target GDD
+- [ ] Skill outputs the usage message when no argument is given
+- [ ] The usage example shows the `design/gdd/[system].md` path format
+- [ ] No `git diff` or ADR scan is performed without a target GDD
 - [ ] Skill does NOT silently pick a GDD without user input
 
 ---
 
-### Case 5: Director Gate — No gate spawned regardless of review mode
+### Case 5: Director Gate — TD-CHANGE-IMPACT returns CONCERNS in full mode
 
 **Fixture:**
-- A GDD has been revised with downstream references
-- `production/session-state/review-mode.txt` exists with `full`
+- `project.yaml`: `modes.workflow: full`, `modes.review_mode: full`
+- A GDD edit that leaves one referencing ADR classified Needs Review
+- TD-CHANGE-IMPACT returns CONCERNS: a second ADR was under-classified
 
 **Input:** `/propagate-design-change design/gdd/[system].md`
 
 **Expected behavior:**
-1. Skill reads the GDD and traces downstream references
-2. Skill does NOT read `production/session-state/review-mode.txt`
-3. No director gate agents are spawned at any point
-4. Impact report is produced and per-artifact approval proceeds normally
+1. The Design Change Impact Report is presented
+2. `technical-director` is spawned via `Agent` with gate TD-CHANGE-IMPACT, passing
+   the full report
+3. CONCERNS are surfaced, naming the flagged ADR
+4. `AskUserQuestion`: `Revise the impact assessment` / `Accept with noted concerns`
+   / `Discuss further`
+5. The per-ADR resolution workflow starts only after that answer
 
 **Assertions:**
-- [ ] No director gate agents are spawned (no CD-, TD-, PR-, AD- prefixed gates)
-- [ ] Skill does NOT read `production/session-state/review-mode.txt`
-- [ ] Output contains no "Gate: [GATE-ID]" or gate-skipped entries
-- [ ] Review mode has no effect on this skill's behavior
+- [ ] TD-CHANGE-IMPACT is spawned after the impact report is shown and before any resolution ask
+- [ ] The gate receives the full report (change summary, classifications, recommended actions)
+- [ ] The CONCERNS name the flagged ADR and all three options are offered
+- [ ] No ADR, traceability or report file is written before the CONCERNS are answered
+- [ ] No "TD-CHANGE-IMPACT skipped" note appears in `full` mode
+
+---
+
+### Case 6: Workflow tiers — `minimal` stops before the cascade; `standard` narrows it
+
+**Fixture (minimal):**
+- `project.yaml` sets no `modes` keys — `modes.rigor` defaults to `minimal`, so
+  the workflow resolves to `minimal`
+- `design/gdd/loot.md` has an uncommitted edit
+
+**Fixture (standard):**
+- `project.yaml`: `modes.workflow: standard`, `modes.review_mode: solo`
+- `design/gdd/loot.md` has an uncommitted edit
+- 4 ADRs, by their Engine Compatibility `Layer`: ADR-0001 (Foundation, event bus,
+  no mention of `loot.md`), ADR-0002 (Foundation, save system, lists `loot.md` in
+  `## GDD Requirements Addressed`), ADR-0006 (Feature, loot tables, names `loot.md`
+  in prose only), ADR-0007 (Feature, enemy AI, no mention)
+
+**Input (both fixtures):** `/propagate-design-change design/gdd/loot.md`
+
+**Expected behavior (minimal):**
+1. The diff and Change Summary run as usual
+2. At the ADR step: "No ADR cascade at minimal workflow — design change recorded;
+   no architecture impact analysis." and the skill stops
+
+**Expected behavior (standard):**
+1. The in-scope set is the Foundation ADRs plus any ADR referencing `loot.md`:
+   ADR-0001, ADR-0002 and ADR-0006, so N = 3; ADR-0007 is out of scope
+2. Reports "Loaded 3 ADRs by scan. 2 reference loot.md (1 via requirements table,
+   1 via prose reference only)."
+3. Full-reads only ADR-0002 and ADR-0006; notes "TD-CHANGE-IMPACT skipped — Solo mode."
+
+**Assertions:**
+- [ ] Minimal: no ADR is globbed or read, no gate is spawned or noted, and no write ask is made
+- [ ] Standard: ADR-0007 is not counted or read, and neither it nor ADR-0001 is described as verified unaffected
+- [ ] Standard: the prose-only reference in ADR-0006 is caught by the basename grep
+- [ ] Standard: the Foundation ADRs are found from the `**Layer**` rows (`Grep pattern="\*\*Layer\*\*" glob="docs/architecture/adr-*.md"`), not guessed from titles
+- [ ] Variant — ADR-0007 has no `**Layer**` row: it is treated as critical (when in doubt, critical) and joins the in-scope set, so N = 4
 
 ---
 
 ## Protocol Compliance
 
-- [ ] Reads revised GDD and all potentially affected artifacts before producing impact report
-- [ ] Impact report shown in full before any "May I write" ask
-- [ ] "May I write" asked per artifact — never for the entire set at once
-- [ ] In Progress stories flagged with elevated warning before their approval ask
-- [ ] No director gates — no review-mode.txt read
-- [ ] Ends with next-step handoff appropriate to verdict (COMPLETE or NO IMPACT)
+- [ ] Diffs the GDD and scans ADRs before producing the impact report
+- [ ] Impact report shown in full before any resolution ask
+- [ ] Resolution asked per ADR — never one decision for the whole set
+- [ ] "May I" asked before each file change; ADR content is never deleted, only marked Superseded
+- [ ] TD-CHANGE-IMPACT runs in `full`, skipped with a named note in `lean`/`solo`
+- [ ] Ends with follow-up actions matching the resolutions (`/architecture-decision` for Superseded ADRs, `/architecture-review` when many are affected)
 
 ---
 
 ## Coverage Notes
 
-- ADR impact (when a GDD change requires an ADR update or new ADR) follows the
-  same per-artifact approval pattern as story/epic updates — not independently
+- A system pinned `minimal` through `system_overrides` on a `standard` project
+  (its change is N/A) is not given its own fixture; Case 6 reaches `minimal`
+  through the project default.
+- Downstream GDD impact via `design/registry/entities.yaml` is not independently
   fixture-tested.
-- TR-registry impact (when changed GDD requires new or updated TR-IDs) is part
-  of the analysis phase but not independently fixture-tested.
-- The git diff comparison method (detecting what changed in the GDD) is a runtime
-  concern — fixtures use pre-arranged content differences.
+- A GDD with no git history ("appears to be a new GDD, not a revision") and a
+  path that does not exist are not separately tested.
+- TD-CHANGE-IMPACT APPROVE, REJECT and NOT ASSESSED paths are not separately tested.
+- Stories and epics are outside this skill's scope — it cascades into ADRs and the
+  traceability index only.

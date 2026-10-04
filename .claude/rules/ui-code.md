@@ -1,6 +1,8 @@
 ---
 paths:
   - "src/ui/**"
+  - "Assets/**/{UI,Ui,ui}/**/*.cs"
+  - "Source/**/{UI,Ui,ui}/**/*.{h,cpp}"
 ---
 
 # UI Code Rules

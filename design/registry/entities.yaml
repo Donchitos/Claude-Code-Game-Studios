@@ -21,7 +21,10 @@
 #               Section C/D writes to conflict-check new entities/formulas)
 #             /consistency-check (primary input — grep-first, GDD-second)
 #             /review-all-gdds (Phase 1 — baseline for Phase 2 checks)
-#             /architecture-review (data structure and interface validation)
+#             /design-review (Phase 1 — cross-doc facts, in place of sibling GDDs)
+#             /content-audit (Step 2 — planned named-content count)
+#             /balance-check (Phase 3 — intended constant/formula values)
+#             /propagate-design-change (Step 3 — downstream GDD impact via referenced_by)
 #
 # SEARCH PATTERNS (for skills using Grep):
 #   All entity names:        Grep pattern="^  - name:" path="design/registry/entities.yaml"

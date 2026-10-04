@@ -1,12 +1,18 @@
 ---
 name: adopt
-description: "Brownfield onboarding — audits existing project artifacts for template format compliance (not just existence), classifies gaps by impact, and produces a numbered migration plan. Run this when joining an in-progress project or upgrading from an older template version. Distinct from /project-stage-detect (which checks what exists) — this checks whether what exists will actually work with the template's skills."
+description: "Brownfield audit — do existing artifacts actually work? Numbered migration plan. Unlike /project-stage-detect, checks compliance not existence."
 argument-hint: "[focus: full | gdds | adrs | stories | infra]"
 user-invocable: true
-allowed-tools: Read, Glob, Grep, Write, AskUserQuestion
+allowed-tools: Read, Glob, Grep, Bash, Write, AskUserQuestion, Bash(bash "*/.claude/skills/adopt/../../hooks/yaml-helper.sh" resolve_config *)
 model: sonnet
-agent: technical-director
 ---
+
+!`bash "${CLAUDE_SKILL_DIR}/../../hooks/yaml-helper.sh" resolve_config --keys review_mode,automation,automation_always_ask,workflow`
+
+Resolved above — use as-is. `/adopt` also inspects `project.yaml` and the legacy
+config files directly when reporting and writing migration state; that raw
+inspection is deliberate and separate from the resolved values above.
+
 
 # Adopt — Brownfield Template Adoption
 
@@ -25,7 +31,7 @@ wrong internal format.
 
 **Argument modes:**
 
-**Audit mode:** `$ARGUMENTS[0]` (blank = `full`)
+**Audit mode:** `$ARGUMENTS` (blank = `full`)
 
 - **No argument / `full`**: Complete audit — all artifact types
 - **`gdds`**: GDD format compliance only
@@ -35,6 +41,16 @@ wrong internal format.
 
 ---
 
+**Automation mode**: Resolve `modes.automation` (`project.local.yaml` →
+`project.yaml` → default `collaborative`). Every `AskUserQuestion` call follows `.claude/docs/automation-modes.md`
+(collaborative asks always · guided major-only · autonomous logs and proceeds;
+`automation_always_ask` categories always prompt).
+
+**`workflow`** (per `.claude/docs/workflow-modes.md`). It scopes the Phase 2 audit and
+Phase 3 severity: `full` audits all doc types at full structure; `standard` audits
+only the required docs/sections (optional sections are informational, not gaps);
+`minimal` is a `design/game-brief.md` format check — GDDs/ADRs/UX are not expected. See Phase 2.
+
 ## Phase 1: Detect Project State
 
 Emit one line before reading: `"Scanning project artifacts..."` — this confirms the
@@ -43,23 +59,23 @@ skill is running during the silent read phase.
 Then read silently before presenting anything else.
 
 ### Existence check
-- `production/stage.txt` — if present, read it (authoritative phase)
-- `design/gdd/game-concept.md` — concept exists?
+- `project.stage` in `project.yaml` (fallback `production/stage.txt`) — if either is present, use that value (authoritative phase)
+- `design/gdd/game-concept.md` (or, at the minimal tier, `design/game-brief.md`) — concept exists?
 - `design/gdd/systems-index.md` — systems index exists?
 - Count GDD files: `design/gdd/*.md` (excluding game-concept.md and systems-index.md)
 - Count ADR files: `docs/architecture/adr-*.md`
 - Count story files: `production/epics/**/*.md` (excluding EPIC.md)
-- `.claude/docs/technical-preferences.md` — engine configured?
+- `project.yaml` (`engine.name`) / `.claude/docs/technical-preferences.md` — engine configured?
 - `docs/engine-reference/` — engine reference docs present?
 - Glob `docs/adoption-plan-*.md` — note the filename of the most recent prior plan if any exist
 
-### Infer phase (if no stage.txt)
+### Infer phase (if no project.stage / stage.txt)
 Use the same heuristic as `/project-stage-detect`:
-- 10+ source files in `src/` → Production
+- 10+ source files in the code root → Production
 - Stories in `production/epics/` → Pre-Production
 - ADRs exist → Technical Setup
 - systems-index.md exists → Systems Design
-- game-concept.md exists → Concept
+- game-concept.md (or `design/game-brief.md`) exists → Concept
 - Nothing → Fresh (not a brownfield project — suggest `/start`)
 
 If the project appears fresh (no artifacts at all), use `AskUserQuestion`:
@@ -78,32 +94,65 @@ Report: "Detected phase: [phase]. Found: [N] GDDs, [M] ADRs, [P] stories."
 
 ## Phase 2: Format Audit
 
-For each artifact type in scope (based on argument mode), check not just that
-the file exists but that it contains the internal structure the template requires.
+For each artifact type in scope (based on argument mode **and the resolved
+workflow tier**), check not just that the file exists but that it contains the
+internal structure the template requires. At `minimal`, scope the audit to
+`design/game-brief.md` — do not audit for GDDs, ADRs, or UX specs (they are not expected).
+Steps 2e (the Engine reference row only), 2f (project config) and 2g (v1.0
+migration check) run at every tier.
 
 ### 2a: GDD Format Audit
 
-For each GDD file found, check for the 8 required sections by scanning headings:
+**Gather section presence deterministically — do not read the GDDs to count
+headings.** For each GDD discovered in Phase 1, pass its path explicitly to the
+structure-check script:
 
-| Required Section | Heading pattern to look for |
-|---|---|
-| Overview | `## Overview` |
-| Player Fantasy | `## Player Fantasy` |
-| Detailed Rules / Design | `## Detailed` or `## Core Rules` or `## Detailed Design` |
-| Formulas | `## Formulas` or `## Formula` |
-| Edge Cases | `## Edge Cases` |
-| Dependencies | `## Dependencies` or `## Depends` |
-| Tuning Knobs | `## Tuning` |
-| Acceptance Criteria | `## Acceptance` |
+```
+Bash: bash .claude/scripts/gdd-structure-check.sh [path-to-gdd]
+```
 
-For each GDD, record:
-- Which sections are present
-- Which sections are missing
-- Whether it has any content in present sections or just placeholder text
-  (`[To be designed]` or equivalent)
+**Pass paths one at a time; do not invoke it bare.** The no-argument form sweeps
+`design/gdd/` only, and a brownfield project's GDDs are not guaranteed to live
+there — pass whatever paths Phase 1 found. The script prints a `PRESENT:` list
+and, when applicable, an `ABSENT:` list per file. It reports **presence only**
+and makes no REQUIRED/ADVISORY judgment (that is the tier logic below), and it
+already accepts `## Detailed Design` as satisfying the `Detailed Rules`
+requirement, so do not flag that alias as missing.
 
-Also check: does each GDD have a `**Status**:` field in its header block?
-Valid values: `In Design`, `Designed`, `In Review`, `Approved`, `Needs Revision`.
+If the script prints `Not found:` for a path or errors, that is a **discovery
+failure, not a format gap** — report it as "could not audit [path]" and do not
+count it as a missing-sections finding.
+
+**Then apply the workflow tier** resolved above to each file's PRESENT/ABSENT
+lists. Which sections are **required** (a miss = gap) vs **advisory** (a miss =
+informational):
+- **`full`** — all 8 sections are required.
+- **`standard`** — the 5 required (Overview, Detailed Rules, Edge Cases,
+  Dependencies, Acceptance Criteria) + Formulas for any system that defines
+  numeric rules (rates, curves, thresholds, costs — the system's `Category` is a
+  hint, not the test); Player Fantasy and Tuning Knobs are advisory.
+- **`minimal`** — GDDs are not expected; audit `design/game-brief.md` instead,
+  against `.claude/docs/templates/game-brief.md`: each of the six required fields
+  present and not a placeholder; the three one-liners advisory. Any GDD that
+  does exist is checked at the `standard` bar, advisorily.
+
+The script's 8 canonical labels are: Overview, Player Fantasy, Detailed Rules,
+Formulas, Edge Cases, Dependencies, Tuning Knobs, Acceptance Criteria.
+
+A section reported PRESENT can still be an empty heading. For each GDD, also
+record with a targeted grep (not a full read):
+- Placeholder-only sections — `Grep pattern="\[To be designed\]"` (or an
+  equivalent empty/single-line body) marks a present-but-unwritten section.
+- The `**Status**:` header field — `Grep pattern="^>?[[:space:]]*\*\*Status\*\*:"`.
+  Valid values: `Draft`, `In Design`, `Designed`, `In Review`, `Approved`,
+  `Implemented`, `Needs Revision`.
+
+> **The `>?` is load-bearing, and so are `Draft`/`Implemented`.** Both emitters
+> write this field inside a blockquote — `.claude/docs/templates/game-design-document.md`
+> and `/design-system` produce `> **Status**: …` — so an anchor of
+> `^\*\*Status\*\*:` matches nothing and reports *every* template-compliant GDD
+> as missing its Status. The template's own value list offers `Draft` and
+> `Implemented`, so both must count as valid.
 
 ### 2b: ADR Format Audit
 
@@ -154,17 +203,78 @@ For each story file found:
 | Control manifest | `docs/architecture/control-manifest.md` | HIGH — no layer rules for stories |
 | Manifest version stamp | In manifest header: `Manifest Version:` | MEDIUM — staleness checks blind |
 | Sprint status | `production/sprint-status.yaml` | MEDIUM — `/sprint-status` falls back to markdown |
-| Stage file | `production/stage.txt` | MEDIUM — phase auto-detect unreliable |
+| Stage file | `project.stage` in `project.yaml` (fallback `production/stage.txt`) | MEDIUM — phase auto-detect unreliable |
 | Engine reference | `docs/engine-reference/[engine]/VERSION.md` | HIGH — ADR engine checks blind |
-| Architecture traceability | `docs/architecture/architecture-traceability.md` | MEDIUM — no persistent matrix |
+| Architecture traceability | `docs/architecture/requirements-traceability.md` | MEDIUM — no persistent matrix |
 
-### 2f: Technical Preferences Audit
+At `workflow: minimal` only the Engine reference row applies. The TR registry,
+control manifest and its version stamp, sprint status, stage file and
+traceability matrix are not on the minimal path, so their absence is not a gap.
 
-Read `.claude/docs/technical-preferences.md`. Check each field for `[TO BE CONFIGURED]`:
-- Engine, Language, Rendering, Physics → HIGH if unconfigured (ADR skills fail)
-- Naming conventions → MEDIUM
-- Performance budgets → MEDIUM
-- Forbidden Patterns, Allowed Libraries → LOW (starts empty by design)
+### 2f: Project Config Audit
+
+Read `project.yaml` (the primary config store) and `.claude/docs/technical-preferences.md` (legacy mirror). A setting counts as configured if EITHER source has a real value (in technical-preferences.md, `[TO BE CONFIGURED]` means unconfigured):
+- `engine.name`/`version`/`language`/`rendering`/`physics` (else the Engine/Language/Rendering/Physics fields) → HIGH if unconfigured in both (ADR skills fail)
+- `naming.*` (else Naming conventions) → MEDIUM
+- `performance.*` (else Performance budgets) → MEDIUM
+- Forbidden Patterns, Allowed Libraries (technical-preferences.md only — not migrated to project.yaml) → LOW (starts empty by design)
+
+### 2g: v1.0 Migration Check
+
+A project is a **v1.0 project needing migration** when `project.yaml` does NOT
+exist at the repo root AND at least one legacy file does: `production/stage.txt`,
+`production/review-mode.txt`, or a `.claude/docs/technical-preferences.md` with
+real values.
+
+"Real values" means one of the keys the converter actually migrates — Engine,
+Language, Rendering, Physics, the naming, platform and performance fields,
+Framework, or the specialists. Not merely "some bullet is filled in": the
+shipped template ships one prose default (`- **Required Tests**: …`) that is
+never migrated, and counting it made every fresh clone read as a v1.0 project.
+
+Do not hand-migrate. Run the converter, which is deterministic and covered by
+the framework's own test suite:
+
+```bash
+bash .claude/scripts/migrate-v1-config.sh --dry-run
+```
+
+The dry run writes nothing; record what it lists for the report. Do not run the
+converter during the audit — Phase 2 reads silently. The migration is
+classified BLOCKING in Phase 3, heads the plan, and **Phase 7 offers it as the
+first action**: report what the dry run listed, then ask "May I run the
+converter? It writes `project.yaml` and `production/migration-report.md`." If
+the user approves, run it without `--dry-run`. It
+writes `project.yaml` plus `production/migration-report.md` and **deletes
+nothing** — the whole operation stays reversible with `git checkout`.
+
+Then tell the user to read `production/migration-report.md` before running:
+
+```bash
+bash .claude/scripts/migrate-v1-config.sh --finalize
+```
+
+`--finalize` deletes a legacy file only after proving its value is present in
+`project.yaml`; on mismatch it deletes nothing and exits 4. It never deletes
+`technical-preferences.md`, which still holds Forbidden Patterns and Allowed
+Libraries.
+
+**If the script refuses with exit 3**, do not work around it. Exit 3 means one
+of two things, and the message says which:
+
+- **the values DISAGREE** — two sources of truth and no way to know which the
+  user edited last. Surface it and let them decide.
+- **a `production/migration-report.md` is already present** — a migration ran
+  here, so these are post-migration leftovers and `--finalize` is the next step,
+  not a second `migrate`.
+
+Both files merely *existing* is not exit 3 and must not be reported as a
+conflict: `/start` writes `production/stage.txt` on every new v1.1 project as a
+mirror, so agreement is the normal state. The script says
+`the legacy files mirror it (values agree)` and exits 0 for that.
+
+Classify as **BLOCKING** in Phase 3: until migration runs, every skill reads
+config through the legacy fallback chain, and v1.1 settings are unavailable.
 
 ---
 
@@ -226,7 +336,13 @@ For each affected GDD, list which sections are missing and the fix:
 2. Run `/architecture-review` → bootstraps `tr-registry.yaml`
 3. Run `/create-control-manifest` → creates manifest with version stamp
 4. Run `/sprint-plan update` → creates `sprint-status.yaml`
-5. Run `/gate-check [phase]` → writes `stage.txt` authoritatively
+5. Run `/gate-check [phase]` (the gate into the phase the project is in; at Concept there is none — Concept is the default stage, nothing to run) → writes `project.stage` in `project.yaml` (and legacy `stage.txt`) authoritatively
+
+**At `workflow: minimal` the plan prescribes none of this sequence.** None of it
+is on the minimal path: ADRs are not expected, the brief's build order is the
+plan (no `/sprint-plan`), and nothing there runs `/gate-check`. The plan's
+Step 3 says so in one line and names the path's next step instead —
+`/create-stories` when no stories exist, else `/dev-story`.
 
 **Existing stories** — note explicitly:
 > "Existing stories continue to work with all template skills — all new format
@@ -311,6 +427,10 @@ Re-run `/adopt` anytime to check remaining gaps.
 
 ## Step 3: Bootstrap Infrastructure
 
+[At `workflow: minimal`, replace 3a–3d with one line: "Not on the minimal path —
+the brief's build order is the plan. Next: `/create-stories` (or `/dev-story`
+once stories exist)."]
+
 ### 3a. Register existing requirements (creates tr-registry.yaml)
 Run `/architecture-review` — even if ADRs already exist, this run bootstraps
 the TR registry from your existing GDDs and ADRs.
@@ -328,9 +448,10 @@ Run `/sprint-plan update`
 - [ ] production/sprint-status.yaml created
 
 ### 3d. Set authoritative project stage
-Run `/gate-check [current-phase]`
+Run `/gate-check [current-phase]` (the gate into the phase the project is in;
+at Concept there is none — Concept is the default stage, nothing to run)
 **Time**: 5 min
-- [ ] production/stage.txt written
+- [ ] `project.stage` in `project.yaml` written (legacy `production/stage.txt` also updated)
 
 ---
 
@@ -363,27 +484,19 @@ are resolved. The new run will reflect the current state of the project.
 
 ---
 
-## Phase 6b: Set Review Mode
+## Phase 6b: Report Review Mode
 
-After writing the adoption plan (or if the user cancels writing), check whether
-`production/review-mode.txt` exists.
+**Do not write a review mode.** `modes.review_mode` is one of the six knobs
+`modes.rigor` fronts: pinning it in `project.yaml` shadows the rigor expansion, and
+the legacy `production/review-mode.txt` sits *above* that expansion in resolution,
+so either write would freeze director-review depth for good — the rule `/start`
+and `project.yaml`'s header comment both state.
 
-**If it exists**: Read it and note the current mode — "Review mode is already set to `[current]`." — skip the prompt.
-
-**If it does not exist**: Use `AskUserQuestion`:
-
-- **Prompt**: "One more setup step: how much design review would you like as you work through the workflow?"
-- **Options**:
-  - `Full` — Director specialists review at each key workflow step. Best for teams, learning the workflow, or when you want thorough feedback on every decision.
-  - `Lean (recommended)` — Directors only at phase gate transitions (/gate-check). Skips per-skill reviews. Balanced for solo devs and small teams.
-  - `Solo` — No director reviews at all. Maximum speed. Best for game jams, prototypes, or if reviews feel like overhead.
-
-Write the choice to `production/review-mode.txt` immediately after selection — no separate "May I write?" needed:
-- `Full` → write `full`
-- `Lean (recommended)` → write `lean`
-- `Solo` → write `solo`
-
-Create the `production/` directory if it does not exist.
+Report the value the bootstrap above resolved instead: "Review mode resolves to
+`[value]` — from `modes.rigor`, unless something pins it." If the user wants a
+different depth, point them to changing `modes.rigor`, or to pinning it on purpose
+with `/settings --local modes.review_mode=<full|lean|solo>` (a personal override in
+`project.local.yaml`).
 
 ---
 
@@ -392,6 +505,11 @@ Create the `production/` directory if it does not exist.
 After writing the plan, don't stop there. Pick the single highest-priority gap
 and offer to handle it immediately using `AskUserQuestion`. Choose the first
 branch that applies:
+
+**If Phase 2g found a v1.0 project needing migration:** offer the converter run
+described there — report what the dry run listed and ask "May I run the
+converter? It writes `project.yaml` and `production/migration-report.md`."
+Every other fix reads config through it, so it comes first.
 
 **If there are parenthetical status values in systems-index.md:**
 Use `AskUserQuestion`:
@@ -420,6 +538,15 @@ Use `AskUserQuestion`:
   - "Do all [N] GDDs one by one"
   - "I'll handle GDDs myself"
 
+**Otherwise, if any BLOCKING or HIGH gap remains** (one no branch above names —
+e.g. a missing TR registry):
+Use `AskUserQuestion`:
+- "The most urgent remaining gap is [first BLOCKING or HIGH item in the plan] —
+  [one line on what it breaks]. Start on it now?"
+  - "Yes — start on [item]"
+  - "Show me that plan item first"
+  - "Done — leave me with the plan"
+
 **If no BLOCKING or HIGH gaps exist:**
 Use `AskUserQuestion`:
 - "No blocking gaps — this project is template-compatible. What next?"
@@ -432,6 +559,10 @@ Use `AskUserQuestion`:
 ---
 
 ## Collaborative Protocol
+
+**Applies in `collaborative` mode (the default).** For `guided` and
+`autonomous` modes, see `.claude/docs/automation-modes.md` — the rules below
+describe what collaborative mode requires, not universal behavior.
 
 1. **Read silently** — complete the full audit before presenting anything
 2. **Show the summary first** — let the user see scope before asking to write

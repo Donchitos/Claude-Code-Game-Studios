@@ -1,8 +1,4 @@
-# Skill Spec: /[skill-name]
-
-> **Category**: [gate | review | authoring | readiness | pipeline | analysis | team | sprint | utility]
-> **Priority**: [critical | high | medium | low]
-> **Spec written**: [YYYY-MM-DD]
+# Skill Test Spec: /[skill-name]
 
 ## Skill Summary
 
@@ -10,13 +6,13 @@
 
 ---
 
-## Static Assertions
+## Static Assertions (Structural)
 
-These should pass before any behavioral testing:
+Checked against the SKILL.md by `/skill-test spec` — no fixture needed.
 
 - [ ] Frontmatter has all required fields (`name`, `description`, `argument-hint`, `user-invocable`, `allowed-tools`)
 - [ ] 2+ phase headings found
-- [ ] At least one verdict keyword present (`PASS`, `FAIL`, `CONCERNS`, `APPROVED`, `BLOCKED`, `COMPLETE`, `READY`)
+- [ ] Contains the skill's verdict keywords — any that `/skill-test static` Check 3 accepts (gate or review verdicts, go/no-go verdicts, or a severity scale), plus `NOT ASSESSED` when anything depends on the verdict; none needed when the skill outputs an artifact rather than a judgement
 - [ ] If `allowed-tools` includes Write/Edit: `"May I write"` language present
 - [ ] Next-step handoff section present at end
 
@@ -27,8 +23,8 @@ These should pass before any behavioral testing:
 [Describe which director gates this skill triggers (if any), and under what review mode conditions.]
 
 - **Full mode**: [gates triggered — e.g., CD-PHASE-GATE, TD-PHASE-GATE, PR-PHASE-GATE, AD-PHASE-GATE]
-- **Lean mode**: [phase gates only — e.g., CD-PHASE-GATE only, or none]
-- **Solo mode**: [no gates — skill runs without director review]
+- **Lean mode**: [phase gates only — for `/gate-check`, the panel `modes.workflow` sets (PR only at `minimal`, TD + PR at `standard`, all four at `full`); other skills skip their non-phase gates, each noted `[GATE-ID] skipped — Lean mode`]
+- **Solo mode**: [no gates — skill runs without director review; each skip is noted, e.g. `[GATE-ID] skipped — Solo mode`]
 - **N/A**: [if this skill never triggers gates, explain why]
 
 ---
@@ -51,7 +47,7 @@ These should pass before any behavioral testing:
 - [ ] [Assertion 2]
 - [ ] [Assertion 3]
 
-**Case Verdict**: PASS / FAIL / PARTIAL
+**Case Verdict**: PASS / FAIL / PARTIAL / NOT ASSESSED
 
 ---
 
@@ -66,11 +62,11 @@ These should pass before any behavioral testing:
 3. [Skill does NOT proceed]
 
 **Assertions**:
-- [ ] Skill stops early and does not produce output
+- [ ] Skill stops before producing the artifact and reports BLOCKED or NOT ASSESSED, naming the missing input
 - [ ] Correct error/block message displayed
 - [ ] No files written without user approval
 
-**Case Verdict**: PASS / FAIL / PARTIAL
+**Case Verdict**: PASS / FAIL / PARTIAL / NOT ASSESSED
 
 ---
 
@@ -87,7 +83,7 @@ These should pass before any behavioral testing:
 - [ ] [Mode-specific assertion]
 - [ ] [Output differs correctly from Case 1]
 
-**Case Verdict**: PASS / FAIL / PARTIAL
+**Case Verdict**: PASS / FAIL / PARTIAL / NOT ASSESSED
 
 ---
 
@@ -103,7 +99,7 @@ These should pass before any behavioral testing:
 - [ ] [Edge case handled without crash or silent failure]
 - [ ] [Correct output or message]
 
-**Case Verdict**: PASS / FAIL / PARTIAL
+**Case Verdict**: PASS / FAIL / PARTIAL / NOT ASSESSED
 
 ---
 
@@ -119,11 +115,30 @@ These should pass before any behavioral testing:
 
 **Assertions**:
 - [ ] In full mode: [specific gates spawn]
-- [ ] In lean mode: [phase gates only, or skip]
-- [ ] In solo mode: no director gates spawn
-- [ ] Skill does not auto-advance past a CONCERNS or FAIL verdict
+- [ ] In lean mode: [phase gates only, at the width `modes.workflow` sets — or each gate skipped with `[GATE-ID] skipped — Lean mode`]
+- [ ] In solo mode: no director gates spawn, and the output names each skip
+- [ ] Skill does not auto-advance past a CONCERNS, FAIL or NOT ASSESSED verdict
 
-**Case Verdict**: PASS / FAIL / PARTIAL
+**Case Verdict**: PASS / FAIL / PARTIAL / NOT ASSESSED
+
+---
+
+### Case 6: Could Not Assess — [brief name]
+
+**Fixture**:
+- [an input the skill needs is missing, unreadable, empty or placeholder-only — or a check it must run cannot run]
+
+**Expected behavior**:
+1. [Skill detects that part of its scope could not be evaluated]
+2. [Skill reports NOT ASSESSED, naming what it could not assess and why]
+3. [Skill does NOT resolve the unknown to a pass]
+
+**Assertions**:
+- [ ] Verdict is NOT ASSESSED — never the pass value — and names the missing or unreadable input
+- [ ] A failure found alongside it still takes the failure verdict (NOT ASSESSED ranks above the pass value, below the failure values)
+- [ ] The check that could not run is named in the output, not silently omitted
+
+**Case Verdict**: PASS / FAIL / PARTIAL / NOT ASSESSED
 
 ---
 

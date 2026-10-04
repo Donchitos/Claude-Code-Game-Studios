@@ -4,6 +4,19 @@
 
 [Proposed | Accepted | Deprecated | Superseded by ADR-XXXX]
 
+> **Who may move this to `Accepted`: the user, or `technical-director` on the
+> user's explicit confirmation. No other agent, and no skill on its own.**
+> Stated here because every consumer of this field enforces the *consequences*
+> of acceptance (stories referencing a `Proposed` ADR are set `Blocked`; epics
+> require `Accepted`), so something has to say who may produce it. `technical-director` is the role `coordination-rules.md`
+> already escalates technical conflicts to, and an ADR is exactly that decision
+> made durable.
+>
+> This does **not** relax the existing rule that `Status: Accepted` is never set
+> without explicit user confirmation — it narrows *which agent* may set it once
+> that confirmation exists. An agent that believes an ADR is ready says so and
+> escalates; it does not edit this field.
+
 ## Date
 
 [YYYY-MM-DD — when this ADR was written]
@@ -31,6 +44,7 @@ chosen approach.]
 |-------|-------|
 | **Engine** | [e.g. Godot 4.6 / Unity 6 / Unreal Engine 5.8] |
 | **Domain** | [Physics / Rendering / UI / Audio / Navigation / Animation / Networking / Core / Input / Scripting] |
+| **Layer** | [Foundation / Core / Feature / Presentation] |
 | **Knowledge Risk** | [LOW — in training data / MEDIUM — near cutoff, verify / HIGH — post-cutoff, must verify] |
 | **References Consulted** | [e.g. `docs/engine-reference/godot/modules/physics.md`, `breaking-changes.md`] |
 | **Post-Cutoff APIs Used** | [Specific APIs from post-cutoff engine versions this decision depends on, or "None"] |
@@ -38,6 +52,22 @@ chosen approach.]
 
 > **Note**: If Knowledge Risk is MEDIUM or HIGH, this ADR must be re-validated if the
 > project upgrades engine versions. Flag it as "Superseded" and write a new ADR.
+
+> **`Layer` is the ADR's own layer, not the referencing epic's — and it is a
+> different taxonomy from `Domain`.** Several sites branch on whether an ADR is
+> *critical (Foundation-layer)*: `/create-stories`, `/create-epics`,
+> `/architecture-decision`, `/story-readiness`, `/propagate-design-change` and
+> `gate-pre-production.md`; a missing row counts as critical. At `standard`,
+> `/create-stories` **stops** for a missing critical ADR and only **warns** for a
+> non-critical one, so this row decides whether a run halts. Earlier revisions of
+> this template recorded no layer at all, leaving those sites to infer one from
+> the referencing epic — which gives the wrong answer whenever a Foundation-layer
+> ADR is referenced by a Core-layer epic, the common case.
+>
+> The vocabulary is the same `Foundation / Core / Feature / Presentation` that
+> epics and stories already carry — do not invent a fifth value, and do not
+> reuse a `Domain` value here. `Domain` says *what part of the engine this
+> touches*; `Layer` says *how early in the build it must exist*.
 
 ## ADR Dependencies
 

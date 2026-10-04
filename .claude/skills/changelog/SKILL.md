@@ -1,13 +1,88 @@
 ---
 name: changelog
-description: "Auto-generates a changelog from git commits, sprint data, and design documents. Produces both internal and player-facing versions."
+description: "Auto-generate a changelog from git commits and sprint data. Internal and player-facing versions."
 argument-hint: "[version|sprint-number]"
 user-invocable: true
-allowed-tools: Read, Glob, Grep, Bash, Write
-context: |
-  !git log --oneline -30 2>/dev/null
-  !git tag --list --sort=-v:refname 2>/dev/null | head -5
-model: haiku
+allowed-tools: Read, Glob, Grep, Bash, Write, Bash(bash "*/.claude/skills/changelog/../../hooks/yaml-helper.sh" resolve_config *)
+model: sonnet
+---
+
+!`bash "${CLAUDE_SKILL_DIR}/../../hooks/yaml-helper.sh" resolve_config --keys automation`
+
+**Automation mode**: Resolve `modes.automation` (`project.local.yaml` →
+`project.yaml` → default `collaborative`). Every `AskUserQuestion` call and
+every file write follows `.claude/docs/automation-modes.md`
+(collaborative asks always · guided major-only · autonomous logs and proceeds;
+`automation_always_ask` categories always prompt).
+
+## Recent History
+
+Recent commits:
+
+!`git log --oneline -30 2>/dev/null || true`
+
+Recent tags (newest first):
+
+!`git tag --list --sort=-v:refname 2>/dev/null | head -5`
+
+## Provenance check — before trusting the history above
+
+**The commits above may not belong to this game.** This skill's history blocks are
+auto-resolved *before* the body runs, so the read has already happened — what this
+check governs is whether that output is usable, not whether it is fetched.
+
+1. Read the injected commit subjects above. **If there are none — the log is
+   empty or git is unavailable — skip this check**: there is nothing to
+   classify, and Phase 1's no-history branch is the right stop.
+2. **Classify each one** as **Game** (mechanics, content, balance, art, audio,
+   UI, or a bug in those), **Framework / maintenance** (subjects naming skills,
+   hooks, agents, the test plan, CI, or the framework's own docs), or **Unclear**
+   — and treat Unclear as Framework.
+3. Decide from the counts:
+   - **At least one Game commit** → proceed using only those, and state how many
+     of how many you used.
+   - **Zero Game commits** → stop, using the message below.
+
+> **Filter per commit; a repo containing maintenance work is not a wrong repo.**
+> Every project on this framework accumulates commits touching hooks, CI and
+> skills — the game repo *is* the framework repo. Listing those as a hard STOP
+> fires on virtually every real project and contradicts step 2 whenever the
+> history is mostly the game's. The harm is those commits becoming release copy,
+> and excluding them prevents that precisely.
+>
+> This rule is kept identical to `/patch-notes`' on purpose — the two read the
+> same history for different audiences, and they must not disagree about whose
+> history it is. Change both together.
+
+The genuine wrong-history signal is different: Game commits naming a product that
+`design/` and the code root (`src/`, `Assets/` or `Source/`) never mention. If you
+see that, stop.
+
+If **no** commit in the range is this game's, say so and stop:
+
+> "The git history in this repo does not appear to belong to [game]: 0 of the [N]
+> recent commits are Game commits. The recent
+> commits describe [what they actually describe]. I cannot generate a changelog
+> from it — point me at the right history, or supply the change list directly."
+
+Verdict: **BLOCKED** — stop here without generating a changelog.
+
+**Why this is a hard stop, not a warning.** This exact failure is real, not
+hypothetical: a batch of framework-internal commits produced player-facing copy
+reading *"Fixed an issue where progress from your last session could be lost on
+launch"* — a
+session-hook timeout rendered as a gameplay fix for a game with **no save
+system**. It was fluent, plausible, and entirely false. A reader cannot tell the
+difference; only this check can.
+
+**Do not treat the preamble's existence as evidence.** Injected output means the
+command ran, never that its subject is your game.
+
+---
+
+Both blocks are resolved before this skill runs. Use them as the starting point
+for Phase 2 rather than re-running the same commands.
+
 ---
 
 ## Phase 1: Parse Arguments
@@ -15,6 +90,13 @@ model: haiku
 Read the argument for the target version or sprint number. If a version is given, use the corresponding git tag. If a sprint number is given, use the sprint date range.
 
 Verify the repository is initialized: run `git rev-parse --is-inside-work-tree` to confirm git is available. If not a git repo, inform the user and abort gracefully.
+
+**If there is no history to read** — not a git repository, or no commits yet:
+
+> "No git history found. A changelog is built from commits — commit the work
+> first, or supply the change list directly."
+
+Verdict: **BLOCKED** — stop here without generating a changelog.
 
 ---
 
@@ -26,7 +108,11 @@ Read the git log since the last tag or release:
 git log --oneline [last-tag]..HEAD
 ```
 
-If no tags exist, read the full log or a reasonable recent range (last 100 commits).
+If no tags exist, bound the range explicitly — `git log --oneline -n 100`. Do not
+fall back to the full log: on an established repo that is thousands of lines for
+a changelog covering one release, and the oldest of them are the least relevant.
+If 100 commits does not reach far enough back, say so and ask for a start ref
+rather than widening blindly.
 
 Read sprint reports from `production/sprints/` for the relevant period to understand planned work and context behind changes.
 
@@ -42,6 +128,7 @@ Categorize every change into one of these categories:
 - **Improvements**: Enhancements to existing features, UX improvements, performance gains
 - **Bug Fixes**: Corrections to broken behavior
 - **Balance Changes**: Tuning of gameplay values, difficulty, economy
+- **Technical Debt / Refactoring**: Refactors and cleanup of the game's code that change nothing the player sees — a commit that says it refactors, cleans up or tidies, and names no fix, feature or tuning. Internal changelog only; never in the player-facing one
 - **Known Issues**: Issues the team is aware of but have not yet resolved
 - **Miscellaneous**: Changes that do not fit the above categories, or commits whose messages are too vague to classify confidently
 

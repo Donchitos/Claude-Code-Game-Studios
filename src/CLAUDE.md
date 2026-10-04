@@ -13,15 +13,18 @@ Do not guess at post-cutoff API signatures — look them up first.
 - All public APIs require doc comments
 - Gameplay values must be **data-driven** (external config files), never hardcoded
 - Prefer dependency injection over singletons for testability
-- Every new system needs a corresponding ADR in `docs/architecture/`
+- Architecture decisions go in `docs/architecture/` as ADRs — **how many depends on
+  `modes.workflow`**: all at `full`, critical only at `standard`, none required at
+  `minimal` (the decision log carries them)
 - Commits must reference the relevant story ID or design document
 
 ## File Routing
 
 Match the engine-specialist agent to the file type being written.
-See `CLAUDE.md` → Technical Preferences → Engine Specialists → File Extension Routing.
+`/setup-engine` records which specialist handles code, shaders and UI in the
+`specialists` block of `project.yaml`.
 
-When in doubt, use the primary engine specialist configured in `CLAUDE.md`.
+When in doubt, use `specialists.code` from `project.yaml`.
 
 ## Tests
 

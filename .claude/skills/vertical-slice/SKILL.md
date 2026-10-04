@@ -1,13 +1,18 @@
 ---
 name: vertical-slice
-description: "Pre-Production validation — build a production-quality end-to-end build to confirm the full game loop is achievable before committing to Production. Run after GDDs, architecture, and UX specs are complete. Produces a PROCEED/PIVOT/KILL verdict that gates the Pre-Production → Production transition."
+description: "Pre-production validation — end-to-end build to confirm the full loop is achievable before committing to Production. After GDDs, architecture, UX specs."
 argument-hint: "[--review full|lean|solo]"
 user-invocable: true
-allowed-tools: Read, Glob, Grep, Write, Edit, Bash, Task, AskUserQuestion
+allowed-tools: Read, Glob, Grep, Write, Edit, Bash, Agent, AskUserQuestion, Bash(bash "*/.claude/skills/vertical-slice/../../hooks/yaml-helper.sh" resolve_config *)
 model: sonnet
-agent: prototyper
-isolation: worktree
 ---
+
+!`bash "${CLAUDE_SKILL_DIR}/../../hooks/yaml-helper.sh" resolve_config --keys review_mode,automation`
+
+Resolved above — use as-is; `--review` overrides `review_mode` for this run. No
+block → defaults in `.claude/docs/config-resolution.md`.
+
+
 
 ## Purpose
 
@@ -36,16 +41,19 @@ whether the core idea is worth designing, run `/prototype` (concept prototype) i
 
 ## Phase 1: Resolve Review Mode and Load Context
 
-Resolve the review mode:
-1. If `--review [full|lean|solo]` was passed → use that
-2. Else read `production/review-mode.txt` → use that value
-3. Else → default to `lean`
 
-See `.claude/docs/director-gates.md` for the full check pattern.
+See `.claude/docs/director-gates.md` for the full check pattern. Individual gate definitions live in `.claude/docs/director-gates/[gate-id].md` — the spawned agent reads its own gate file; do not read it in the parent session.
+
+
+Every `AskUserQuestion` call follows `.claude/docs/automation-modes.md`
+(collaborative asks always · guided major-only · autonomous logs and proceeds;
+`automation_always_ask` categories always prompt).
 
 Read the following files to understand the full design intent:
 - `CLAUDE.md` — tech stack and engine
-- `design/gdd/game-concept.md` — core fantasy and game pillars
+- `design/gdd/game-concept.md` — core fantasy and game pillars (or
+  `design/game-brief.md`, the one-page brief that replaces it at `rigor: minimal` —
+  pitch, core loop and "what they feel" line; it has no pillars)
 - `design/gdd/systems-index.md` — MVP systems and their priorities
 - `docs/architecture/architecture.md` — layer structure
 - `docs/architecture/control-manifest.md` — technical rules for implementation
@@ -57,7 +65,7 @@ Read the following files to understand the full design intent:
 
 Before building, define the **falsifiable validation question**:
 
-> *"Does a player, starting from nothing, experience [core fantasy from game-concept.md]
+> *"Does a player, starting from nothing, experience [core fantasy from game-concept.md or game-brief.md]
 > within [N] minutes, without developer guidance — and can we build one such loop
 > in [X] days at representative quality?"*
 
@@ -92,7 +100,8 @@ Define in bullet points:
 - Specific, measurable success criteria for the validation question
 - Hard time limit: [X] days. If exceeded, scope was wrong — stop and reassess.
 
-Ask the user to confirm scope before building.
+Ask the user to confirm scope before building. Name the checkpoint file in that
+confirmation: "May I record this plan in `production/session-state/active.md`?"
 
 Once confirmed, write a session checkpoint to `production/session-state/active.md`
 (create `production/session-state/` if it does not exist). Include: concept name,
@@ -111,14 +120,20 @@ Ask: "May I create the vertical slice directory at
 If yes, create the directory. Every file must begin with:
 
 ```
-// VERTICAL SLICE - NOT FOR PRODUCTION
-// Validation Question: [What this build is proving]
-// Date: [Current date]
+[comment] VERTICAL SLICE - NOT FOR PRODUCTION
+[comment] Validation Question: [What this build is proving]
+[comment] Date: [Current date]
 ```
+
+Write `[comment]` in each file's own comment syntax — `#` in GDScript (`.gd`) and
+Python, `//` in C#, C++ and JavaScript, `--` in Lua, `<!-- … -->` in HTML and
+Markdown. A header in another language's syntax is a parse error, not a label.
+Files that cannot hold a comment (JSON, engine-generated scene and project
+files) are exempt.
 
 **Quality standards** — higher than concept prototype, not full production:
 - Follow architecture layers from `docs/architecture/control-manifest.md`
-- Naming conventions from `.claude/docs/technical-preferences.md`
+- Naming conventions — `naming.*` from `project.yaml`; for any key absent or empty (including when `project.yaml` has no `naming` block), from `.claude/docs/technical-preferences.md`
 - No hardcoded gameplay values — use constants or config files
 - Basic error handling on critical paths
 - Placeholder art acceptable; representative art preferred
@@ -193,7 +208,7 @@ Once the user returns, ask these questions **one at a time**:
    > where you felt like you were actually playing the game?"
 
 3. **Core fantasy:**
-   > "The game is supposed to make you feel [core fantasy from game-concept.md].
+   > "The game is supposed to make you feel [core fantasy from game-concept.md or game-brief.md].
    > Did it? Be honest — not 'kind of' but specifically what you felt and when."
 
 4. **Blockers:**
@@ -209,6 +224,21 @@ Once the user returns, ask these questions **one at a time**:
 
 If any answer is vague, ask: "Can you give me the specific moment where that happened?"
 Precise observations populate the report. Vague ones produce a useless report.
+
+**PROCEED is not available when a validation item is NO.** `/gate-check production`
+FAILs a built slice with any NO in its Vertical Slice Validation — a player got
+through the loop without developer guidance (question 1), learned what to do
+within the first 2 minutes (question 2 — longer is a no), the core mechanic feels
+good (question 3), no critical fun-blocker bug (question 4). If any of those
+answers is no, the verdict is PIVOT or KILL — the user chooses — and the report
+names the NO.
+
+**NOT ASSESSED is the fourth verdict.** When nobody has yet played the complete
+loop from scratch — the user cannot play it this session, or stopped before the
+end — the validation did not run, and the verdict is **NOT ASSESSED**, with the
+reason. It ranks above PROCEED and below PIVOT and KILL: an unplayed slice has not
+earned PROCEED, and a slice known to fail is more actionable than one nobody
+played. It is never recorded as PROCEED.
 
 ---
 
@@ -226,26 +256,25 @@ skip it. It feeds directly into sprint planning.
 Read `.claude/docs/templates/vertical-slice-report.md` to get the report structure.
 If the template file is not found, use this fallback structure:
 - `## Vertical Slice Report — [Game Title] — [Date]`
-- `### Executive Summary` (PROCEED / PIVOT / STOP verdict + 2-sentence rationale)
+- `### Executive Summary` (PROCEED / PIVOT / KILL / NOT ASSESSED verdict + 2-sentence rationale)
 - `### Core Loop Validation` (what was tested, what passed, what failed)
 - `### Feel Assessment` (animation, controls, feedback — subjective notes)
 - `### Technical Findings` (performance, engine issues, architectural risks)
 - `### Velocity Log` (day-by-day actual progress — do not skip)
+- `### Lessons Learned` (assumptions broken by building to near-production
+  quality; what surprised us about the pipeline or architecture; what we would
+  change about the slice scope next time)
 - `### Recommended Next Steps`
 
 Fill in every section based on what was observed and built during this session.
 The velocity log must reflect actual day-by-day progress, not estimates — this is
 the most honest production rate data you will ever have. Replace all placeholder
-text with real observations.
-
-### Lessons Learned
-- What assumptions were broken by actually building to near-production quality?
-- What surprised us about the pipeline or architecture?
-- What would we change about the slice scope if we ran this again?
-```
+text with real observations. The recommendation carries the Phase 5 verdict,
+NOT ASSESSED included, with its reason.
 
 Ask: "May I write this report to
-`prototypes/[concept-name]-vertical-slice/REPORT.md`?"
+`prototypes/[concept-name]-vertical-slice/REPORT.md` and add its row to
+`prototypes/index.md`?"
 
 If yes, write the file. Then update `prototypes/index.md` (create if it does not
 exist) — append one row to the vertical slice table: concept name, date, verdict,
@@ -260,15 +289,35 @@ the project — cross-reference it with sprint estimates.
 **Review mode check:**
 - `solo` → skip. Note: "CD-PLAYTEST skipped — Solo mode."
 - `lean` → skip (not a PHASE-GATE). Note: "CD-PLAYTEST skipped — Lean mode."
-- `full` → spawn `creative-director` via Task using gate **CD-PLAYTEST**
-  (`.claude/docs/director-gates.md`).
+- `full` → spawn `creative-director` via `Agent` using gate **CD-PLAYTEST**
+  (`.claude/docs/director-gates/cd-playtest.md`) — unless the slice's verdict is
+  NOT ASSESSED: with no playthrough there is nothing to review, so note
+  "CD-PLAYTEST skipped — the slice has not been played yet."
 
 Pass: the full REPORT.md content, the validation question, game pillars and core
-fantasy from `design/gdd/game-concept.md`.
+fantasy from `design/gdd/game-concept.md` (or the pitch and "what they feel" line
+from `design/game-brief.md` at `rigor: minimal`).
 
 The creative director evaluates the vertical slice result against the game's
-creative vision and pillars, then confirms, modifies, or overrides the
-recommendation. Their verdict is final. Update REPORT.md if the verdict differs.
+creative vision and pillars and returns one of the gate's verdicts — APPROVE,
+CONCERNS or REJECT. Apply it to the recommendation:
+
+- **APPROVE** → the recommendation stands.
+- **CONCERNS** → show the concerns alongside the recommendation, then use
+  `AskUserQuestion`: `Revise the recommendation` / `Accept with noted concerns` /
+  `Discuss further`. The user decides; the director does not.
+- **REJECT** (the core fantasy is not present) → a PROCEED recommendation cannot
+  stand. Use `AskUserQuestion` to ask the user to choose `PIVOT` or `KILL`, and run
+  Phase 8 for that choice. A PIVOT or KILL recommendation stands.
+- **NOT ASSESSED** [missing input] → the director made no judgement, so it neither
+  backs nor overturns the recommendation (`.claude/docs/director-gates.md`): name
+  what was missing, then supply it and re-run the gate, or record
+  `CD-PLAYTEST: NOT ASSESSED — [input]` in the report.
+
+When the director returned CONCERNS, REJECT or NOT ASSESSED, ask "May I update
+`prototypes/[concept-name]-vertical-slice/REPORT.md` and its
+`prototypes/index.md` row?", then record the director's verdict and reason in
+REPORT.md, and the final recommendation in both if it changed.
 
 ---
 
@@ -286,7 +335,7 @@ Recommended next steps:
 - `/create-epics layer:core` — plan Core layer epics
 - `/create-stories [epic-slug]` — break each epic into implementable stories
 - `/sprint-plan` — plan the first sprint using velocity data from the slice
-- `/gate-check pre-production` — formally advance the stage to Production
+- `/gate-check production` — formally advance the stage to Production
 
 **Playtest note:** `/gate-check` will look for documented playtest evidence.
 At minimum, 1 documented session with a REPORT.md showing PROCEED is required
@@ -338,6 +387,14 @@ Ask: "May I append this to `prototypes/GRAVEYARD.md`?" If yes, add one entry:
 
 - Return to `/brainstorm` with what you learned
 - Or run `/prototype [new-concept]` to test a new direction cheaply first
+
+**If NOT ASSESSED:**
+
+The slice is built but not validated. Say which reason applied, then finish the
+Phase 5 playthrough and debrief — the `production/session-state/active.md`
+checkpoint is where to resume — and, after asking, update REPORT.md and its
+`prototypes/index.md` row with the verdict. Do not take the slice to
+`/gate-check production` as if it had passed: NOT ASSESSED is not a PROCEED.
 
 ---
 

@@ -1,6 +1,8 @@
 ---
 paths:
   - "src/ai/**"
+  - "Assets/**/{AI,Ai,ai}/**/*.cs"
+  - "Source/**/{AI,Ai,ai}/**/*.{h,cpp}"
 ---
 
 # AI Code Rules

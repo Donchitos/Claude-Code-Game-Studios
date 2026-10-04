@@ -1,11 +1,15 @@
 ---
 name: consistency-check
-description: "Scan all GDDs against the entity registry to detect cross-document inconsistencies: same entity with different stats, same item with different values, same formula with different variables. Grep-first approach — reads registry then targets only conflicting GDD sections rather than full document reads."
+description: "Scan GDDs against the entity registry for cross-document conflicts. Grep-first approach targets conflicting sections, different stats."
 argument-hint: "[full | since-last-review | entity:<name> | item:<name>]"
 user-invocable: true
-allowed-tools: Read, Glob, Grep, Write, Edit, Bash, AskUserQuestion
+allowed-tools: Read, Glob, Grep, Write, Edit, Bash, AskUserQuestion, Bash(bash "*/.claude/skills/consistency-check/../../hooks/yaml-helper.sh" resolve_config *)
 model: sonnet
 ---
+
+!`bash "${CLAUDE_SKILL_DIR}/../../hooks/yaml-helper.sh" resolve_config --keys automation,workflow,system_overrides`
+
+
 
 # Consistency Check
 
@@ -28,6 +32,19 @@ catches too late.
 
 ---
 
+Every `AskUserQuestion` call follows `.claude/docs/automation-modes.md`
+(collaborative asks always · guided major-only · autonomous logs and proceeds;
+`automation_always_ask` categories always prompt).
+
+**`workflow`** (see `.claude/docs/workflow-modes.md`), applied per GDD at its
+**effective** tier — the `system_overrides` row for that GDD's system (its
+filename stem) when the block lists one, else the project value:
+- `full` — full entity-registry cross-check against all GDD sections.
+- `standard` — cross-check against the required sections only. The report's
+  Scope line says so, and each value stated for a registered name outside those
+  sections is listed as not checked at this tier (Phase 3 applies this).
+- `minimal` — not meaningful (no GDDs to check).
+
 ## Phase 1: Parse Arguments and Load Registry
 
 **Modes:**
@@ -46,7 +63,8 @@ If the file does not exist or has no entries:
 > "Entity registry is empty. Run `/design-system` to write GDDs — the registry
 > is populated automatically after each GDD is completed. Nothing to check yet."
 
-Stop and exit.
+Verdict: **NOT ASSESSED — entity registry empty**. Stop: nothing was compared,
+so there is no PASS to give and nothing to write.
 
 Build four lookup tables from the registry:
 - **entity_map**: `{ name → { source, attributes, referenced_by } }`
@@ -60,6 +78,11 @@ Registry loaded: [N] entities, [N] items, [N] formulas, [N] constants
 Scope: [full | since-last-review | entity:name]
 ```
 
+For `entity:<name>` or `item:<name>`, if the registry has no entry by that name
+the verdict is **NOT ASSESSED — `<name>` is not in the registry**: list the
+closest registered names and stop. Checking an unregistered name compares
+nothing, and that is not a PASS.
+
 ---
 
 ## Phase 2: Locate In-Scope GDDs
@@ -68,8 +91,10 @@ Scope: [full | since-last-review | entity:name]
 Glob pattern="design/gdd/*.md"
 ```
 
-Exclude: `game-concept.md`, `systems-index.md`, `game-pillars.md` — these are
-not system GDDs.
+Exclude the docs that live in `design/gdd/` but are not system GDDs:
+`game-concept.md`, `systems-index.md`, `game-pillars.md`, `gameplay-tags.md`,
+`entity-registry.md`, `fixture-swap-ledger.md`, `sound-bible.md` and any
+`gdd-cross-review-*.md` (the report `/review-all-gdds` writes here).
 
 For `since-last-review` mode:
 ```bash
@@ -78,7 +103,10 @@ git log --name-only --pretty=format: -- design/gdd/ | grep "\.md$" | sort -u
 Limit to GDDs modified since the most recent `design/gdd/gdd-cross-review-*.md`
 file's creation date.
 
-Report the in-scope GDD list before scanning.
+Report the in-scope GDD list before scanning. **If the list is empty** — no system
+GDDs exist, or `since-last-review` found none changed — the verdict is
+**NOT ASSESSED — no GDDs in scope**: say which filter produced zero, and stop.
+A scan of nothing finds no conflicts, and that is not a PASS.
 
 ---
 
@@ -91,6 +119,19 @@ context (-C 3 lines).
 This is the core optimization: instead of reading 10 GDDs × 400 lines each
 (4,000 lines), you grep 50 entity names × 10 GDDs (50 targeted searches,
 each returning ~10 lines on a hit).
+
+**In a GDD whose effective tier is `standard`, compare only hits under a
+required section.** The effective tier is per GDD: `system_overrides.<stem>`
+replaces the project tier for that GDD in either direction (a `full` row makes
+every section compared). Grep each such GDD once for `^## ` to get its headings
+and line numbers, and file every name hit under the nearest heading above it:
+only hits under Overview, Detailed Rules / Detailed Design, Formulas, Edge
+Cases, Dependencies or Acceptance Criteria are compared — plus Tuning Knobs when
+`project.yaml` sets `workflow_overrides.tuning_knobs: true` (read that flag
+once; it only ever adds the section). Any other hit (Tuning Knobs without the
+flag, Player Fantasy, any other section) raises no finding and is not logged;
+list each one that states a value (name, GDD, section) on the report's
+`Not checked at this tier` line.
 
 ### 3a: Entity Scan
 
@@ -180,6 +221,8 @@ For each conflict, classify:
 Date: [date]
 Registry entries checked: [N entities, N items, N formulas, N constants]
 GDDs scanned: [N] ([list names])
+Scope: [all GDD sections | required sections only — workflow: standard | per GDD — name each GDD whose effective tier differs, and its tier]
+Not checked at this tier: [each value stated outside the required sections (name, GDD, section) — or "none"; omit when every GDD is at `full`]
 
 ---
 
@@ -214,12 +257,15 @@ GDDs scanned: [N] ([list names])
 
 ---
 
-Verdict: PASS | CONFLICTS FOUND
+Verdict: PASS | CONFLICTS FOUND | NOT ASSESSED
 ```
 
 **Verdict:**
-- **PASS** — no conflicts. Registry and GDDs agree on all checked values.
 - **CONFLICTS FOUND** — one or more conflicts detected. List resolution steps.
+- **NOT ASSESSED** — nothing was compared: the entity registry is empty or the
+  named entity is not in it (Phase 1), or no GDDs were in scope (Phase 2). Say
+  which.
+- **PASS** — no conflicts. Registry and GDDs agree on all checked values, across at least one GDD.
 
 ---
 
@@ -248,7 +294,9 @@ If conflicts remain unresolved: Verdict: **BLOCKED** — [N] conflicts need manu
 ### 6b: Append to Reflexion Log
 
 If any 🔴 CONFLICT entries were found (regardless of whether they were resolved),
-append an entry to `docs/consistency-failures.md` for each conflict:
+ask: "May I append [N] entries to `docs/consistency-failures.md` (creating it if
+absent)?" On yes, append an entry for each conflict; on no, say the conflicts
+were not logged.
 
 ```markdown
 ### [YYYY-MM-DD] — /consistency-check — 🔴 CONFLICT
@@ -272,7 +320,7 @@ If `docs/consistency-failures.md` does not exist, create it with this header bef
 |------|-------|-------|---------------|--------|
 ```
 
-Then append the new conflict entries. Never skip logging — a missing file is not a reason to lose conflict history.
+Then append the new conflict entries. Never skip logging on your own — a missing file is not a reason to lose conflict history; only the user's "no" is.
 
 ---
 
@@ -281,19 +329,26 @@ Then append the new conflict entries. Never skip logging — a missing file is n
 Silently append to `production/session-state/active.md` (create the file if it does not exist):
 
 ```
-<!-- CONSISTENCY-CHECK: [date] | GDDs checked: [N] | Conflicts found: [N] | Report: docs/consistency-report-[date].md -->
+<!-- CONSISTENCY-CHECK: [date] | GDDs checked: [N] | Conflicts found: [N] | Log: docs/consistency-failures.md -->
 ```
+
+> **Point at `docs/consistency-failures.md` — the file Phase 6 actually appends
+> to.** A breadcrumb is a pointer left for a future session to follow. One that
+> names a file nothing writes sends that session looking for conflict history it
+> will never find, and nothing errors along the way. Never invent a report
+> filename here.
 
 Then close with an `AskUserQuestion` widget:
 
 - **Prompt**: "Consistency check complete — [N] conflicts found. What next?"
 - **Options**:
   - `[A] Fix the highest-priority conflict now`
-  - `[B] Save full report and stop`
-  - `[C] Run /design-review on the most conflicted GDD`
-  - `[D] Stop here`
+  - `[B] Run /design-review on the most conflicted GDD`
+  - `[C] Stop here`
 
-Never end the skill with plain text. Always close with this widget.
+In collaborative and guided modes, never end the skill with plain text — always
+close with this widget. In autonomous mode, print the findings and recommended
+next step, then record via `log_decision` (no widget).
 
 ---
 

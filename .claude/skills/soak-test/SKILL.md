@@ -1,11 +1,19 @@
 ---
 name: soak-test
-description: "Generate a soak test protocol for extended play sessions. Defines what to observe, measure, and log during long play sessions to surface slow leaks, fatigue effects, and edge cases that only appear after sustained play. Primarily used in Polish and Release phases."
+description: "Soak test protocol for extended play — what to observe and log for slow leaks, fatigue, late-appearing edge cases."
 argument-hint: "[duration: 30m | 1h | 2h | 4h] [focus: memory | stability | balance | all]"
 user-invocable: true
-allowed-tools: Read, Glob, Grep, Write
+allowed-tools: Read, Glob, Grep, Write, Bash(bash "*/.claude/skills/soak-test/../../hooks/yaml-helper.sh" resolve_config *)
 model: sonnet
 ---
+
+!`bash "${CLAUDE_SKILL_DIR}/../../hooks/yaml-helper.sh" resolve_config --keys automation`
+
+**Automation mode**: Resolve `modes.automation` (`project.local.yaml` →
+`project.yaml` → default `collaborative`). Every `AskUserQuestion` call and
+every file write follows `.claude/docs/automation-modes.md`
+(collaborative asks always · guided major-only · autonomous logs and proceeds;
+`automation_always_ask` categories always prompt).
 
 # Soak Test
 
@@ -53,16 +61,20 @@ human does the actual playing.**
 ## 2. Load Context
 
 Read:
-- `.claude/docs/technical-preferences.md` — engine (for engine-specific memory
-  monitoring guidance), performance budgets (memory ceiling, target FPS)
+- `project.yaml` — `engine.name` (for engine-specific memory monitoring
+  guidance) and `performance.*` budgets (memory ceiling, target FPS); for any
+  key absent or empty (including when `project.yaml` has no `performance` or
+  `engine` block), fall back to `.claude/docs/technical-preferences.md`
 - `design/gdd/game-concept.md` — intended session length (for comparison against
-  soak duration), core loop description
-- Most recent file in `production/playtests/` — prior playtest findings
+  soak duration), core loop description (or `design/game-brief.md`, the one-page
+  brief that replaces it at `rigor: minimal` — core loop, and session length only
+  if its "Who it's for" line states one)
+- Most recent file in `production/qa/playtests/` — prior playtest findings
   (to avoid re-documenting known issues)
 - Most recent file in `production/qa/qa-plan-*.md` — current sprint test coverage
   (to understand what has been formally tested vs. what the soak covers)
 
-Note any performance budget targets from technical-preferences.md:
+Note any performance budget targets (`performance.*` from `project.yaml`, else `.claude/docs/technical-preferences.md`):
 - Memory ceiling: [N MB, or "not set"]
 - Target FPS: [N, or "not set"]
 - Frame budget: [N ms, or "not set"]
@@ -87,26 +99,53 @@ Phase 4.
 
 ### Memory / Stability observation items (if focus = memory or all)
 
-Engine-specific monitoring guidance:
+Engine-specific monitoring guidance.
+
+> **Record the unit the tool shows; never convert, and never assume one.**
+> A soak test looks for **growth**, so every threshold below is a *ratio or a
+> delta against this session's own T+0 baseline* — which is unit-agnostic and
+> stays correct however the editor reports the number. Write the unit down at
+> T+0 exactly as displayed and use it consistently for the rest of the run.
+>
+> This replaces a note asserting the return units of
+> `Performance.get_monitor` — **NOT SOURCEABLE from `docs/engine-reference/`**,
+> the identifier appears nowhere in it — a claim that sat one line under a row asking
+> the tester to record "Static Memory (**KB**)". A wrong units claim in a leak
+> detector is off by 1024× in the one measurement the protocol exists to take,
+> and it would read as a plausible instruction throughout. Deltas need no such
+> claim, so the safest fix was to stop needing it.
+
+> **NOT SOURCEABLE — the tool, panel and counter names below are not covered by
+> `docs/engine-reference/`**: Godot's Debugger → Monitors and its memory
+> counters, Unity's Memory Profiler and its fields, Unreal's `stat memory`. Mark
+> them so in the protocol: they are pointers for the tester to confirm in their
+> own editor at T+0, not verified paths. If no memory tool can be found, nothing
+> was measured, and the Verdict section's NOT ASSESSED applies.
 
 **Godot 4:**
 - Open Debugger → Monitors tab; track `Memory → Static Memory` and
   `Object Count → Objects` across checkpoints
-- Record: Static Memory (KB), Object Count, Orphan Nodes count
+- Record: Static Memory (**unit as displayed**), Object Count, Orphan Nodes count
 - Alert threshold: Memory growth > 20% from T+0 after the first 15 minutes
   (some growth on load is expected; sustained growth indicates a leak)
-- Note: `Performance.get_monitor(Performance.MEMORY_STATIC)` returns bytes
-  in Godot 4.6
+- **Orphan Nodes is the one absolute number worth watching**: it should return to
+  its T+0 value after a scene unload. A ratio hides that; a non-zero floor that
+  keeps rising is a leak regardless of units
 
 **Unity:**
 - Open Memory Profiler (Window → Analysis → Memory Profiler)
-- Record: Total Reserved Memory (MB), GC Allocated (MB), Object Count at each checkpoint
-- Alert threshold: GC Allocated growing monotonically across 3+ checkpoints
+- Record: Total Reserved Memory, GC Allocated, Object Count at each checkpoint
+  (**units as displayed**)
+- Alert threshold: GC Allocated growing monotonically across 3+ checkpoints —
+  a monotonicity check, deliberately unit-free
 
 **Unreal Engine:**
 - Use `stat memory` console command at each checkpoint
-- Record: Physical Memory Used (MB), Physical Memory Available
-- Alert threshold: Physical Memory Used growth > 50MB over the full soak
+- Record: Physical Memory Used, Physical Memory Available (**units as displayed**)
+- Alert threshold: Physical Memory Used growth **> 20% over the full soak**,
+  measured against this run's T+0. The previous threshold was an absolute
+  "> 50MB", which silently assumes both the unit *and* a project scale — 50MB is
+  a rounding error for one game and a catastrophe for another
 
 ### Stability observation items (if focus = stability or all)
 
@@ -151,6 +190,8 @@ Before starting the soak:
   - **Godot**: Debugger → Monitors tab → Memory section visible
   - **Unity**: Memory Profiler window open
   - **Unreal**: `stat memory` ready in console
+  - Tool actually used, as named in this editor: [record it — the names above
+    are NOT SOURCEABLE from `docs/engine-reference/`; none found → NOT ASSESSED]
 - [ ] Soak target confirmed: [session design intent from game concept]
 - [ ] Prior known issues to watch for: [from most recent playtest / qa-plan]
 
@@ -235,11 +276,25 @@ Difficulty arc: [appropriate / too easy throughout / difficulty spike at T+N]
 
 ---
 
-## Verdict: PASS / PASS WITH CONCERNS / FAIL
+## Verdict: PASS / PASS WITH CONCERNS / NOT ASSESSED / FAIL
 
 **PASS**: No leaks detected, stability maintained, fun factor consistent
 **PASS WITH CONCERNS**: Minor drift or fatigue noted; addressable in Polish
+**NOT ASSESSED**: The soak did not run to a length that could show what it looks
+for — say how far it got and which checkpoints were never reached
 **FAIL**: Memory leak confirmed, stability breach, or severe fun fatigue
+
+> **A short soak cannot return PASS.** Everything this protocol exists to detect
+> — slow leaks, fatigue, late-appearing edge cases — is by definition invisible
+> early, so a session that ended before the checkpoints it was built around has
+> not shown stability; it has shown nothing yet. Record `NOT ASSESSED — reached
+> T+[N] of [duration]; checkpoints [list] not reached`. Ranks **above both pass
+> values** and **below FAIL**: a crash observed at T+20 is a real finding no
+> matter how short the run, and must not be demoted behind the run's length.
+> The same applies when the build crashed for reasons unrelated to the soak, when
+> no memory instrumentation was available (nothing was measured, so "no leaks
+> detected" means "no leaks could have been detected"), or when the protocol was
+> written but never executed — a protocol document is not a result.
 
 ---
 

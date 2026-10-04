@@ -3,6 +3,7 @@
 | Field | Value |
 |-------|-------|
 | **Engine Version** | Unreal Engine 5.8 |
+| **Installed at pin time** | NOT DETERMINED — `/setup-engine` §3 probes the installed editor and records the result here. |
 | **Release Date** | June 2026 |
 | **Project Pinned** | 2026-08-16 |
 | **Last Docs Verified** | 2026-08-16 |
@@ -18,6 +19,15 @@ Always cross-reference this directory before suggesting Unreal API calls.
 > UE5 roadmap as work ramps up on UE6. Prefer the production-ready 5.8 systems
 > (MegaLights, Iris, Mutable) and fix deprecation warnings
 > now rather than carrying them into a future UE6 migration.
+
+## Installed-Version Gap Warning
+
+The warning above is one-directional — it covers the **model** knowing less than
+this pin. The reverse gap is real and `/setup-engine` §3 creates it deliberately
+("pin the newer one and upgrade later"): this reference can sit **ahead of the
+installed editor**, and an agent citing it correctly then emits APIs that do not
+compile locally. **Check `Installed at pin time` above before trusting a
+version-qualified claim** — `NOT DETERMINED` means the gap is unknown, not absent.
 
 ## Post-Cutoff Version Timeline
 

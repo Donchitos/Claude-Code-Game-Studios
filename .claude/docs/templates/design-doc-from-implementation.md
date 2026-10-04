@@ -17,6 +17,13 @@
 
 ---
 
+## Summary
+
+[2–3 sentences: what this system is, what it does for the player, why it
+exists — inferred from code; mark `[inferred — confirm]`]
+
+---
+
 ## 1. Overview
 
 **Purpose**: [What problem does this system solve?]
@@ -32,9 +39,17 @@
 
 ---
 
-## 2. Detailed Design
+## 2. Player Fantasy
 
-### 2.1 Core Mechanics
+[What the player should FEEL when using this system. Code does not record this:
+infer it from the player-facing effects above, then CONFIRM it with the designer
+and mark it `[inferred — confirm]` until they do.]
+
+---
+
+## 3. Detailed Design
+
+### 3.1 Core Mechanics
 
 [Describe the mechanics as implemented, organized clearly]
 
@@ -50,20 +65,7 @@
 - **Design Rationale**: [Why it exists]
 - **Player-Facing**: [Player experience]
 
-### 2.2 Rules and Formulas
-
-**Formulas Discovered in Code**:
-
-| Formula | Expression | Purpose | Verified? |
-|---------|-----------|---------|-----------|
-| [Formula 1] | `[mathematical expression]` | [What it calculates] | ✅ / ⚠️ needs tuning |
-| [Formula 2] | `[expression]` | [Purpose] | ✅ / ⚠️ needs tuning |
-
-**Clarifications**:
-- [Formula X]: Originally [value/approach], user clarified intent is [corrected intent]
-- [Formula Y]: Implemented as [X], but should be [Y] — flagged for update
-
-### 2.3 State and Data
+### 3.2 State and Data
 
 **Data Structures** (from code):
 - [Data structure 1]: `[fields/properties]`
@@ -78,7 +80,7 @@
 - Saved: [What is saved to player save file]
 - Not saved: [What is session-only or recalculated]
 
-### 2.4 Integration Points
+### 3.3 Integration Points
 
 **Dependencies** (systems this depends on):
 - [System 1]: [What it provides]
@@ -94,7 +96,22 @@
 
 ---
 
-## 3. Edge Cases
+## 4. Formulas
+
+**Formulas Discovered in Code**:
+
+| Formula | Expression | Purpose | Verified? |
+|---------|-----------|---------|-----------|
+| [Formula 1] | `[mathematical expression]` | [What it calculates] | ✅ / ⚠️ needs tuning |
+| [Formula 2] | `[expression]` | [Purpose] | ✅ / ⚠️ needs tuning |
+
+**Clarifications**:
+- [Formula X]: Originally [value/approach], user clarified intent is [corrected intent]
+- [Formula Y]: Implemented as [X], but should be [Y] — flagged for update
+
+---
+
+## 5. Edge Cases
 
 **Handled in Code**:
 - ✅ [Edge case 1]: [How it's handled]
@@ -109,7 +126,7 @@
 
 ---
 
-## 4. Dependencies
+## 6. Dependencies
 
 **Technical Dependencies**:
 - [Dependency 1]: [Why needed]
@@ -125,7 +142,7 @@
 
 ---
 
-## 5. Balance and Tuning
+## 7. Tuning Knobs
 
 **Current Values** (as implemented):
 
@@ -144,7 +161,7 @@
 
 ---
 
-## 6. Acceptance Criteria
+## 8. Acceptance Criteria
 
 **What Exists** (implemented):
 - ✅ [Criterion 1]
@@ -162,7 +179,7 @@
 
 ---
 
-## 7. Open Questions and Follow-Up Work
+## Open Questions and Follow-Up Work
 
 ### Questions Needing User Decision
 1. **[Question 1]**: [What needs to be decided?]
@@ -180,7 +197,7 @@
 
 ---
 
-## 8. Version History
+## Version History
 
 | Date | Author | Changes |
 |------|--------|---------|

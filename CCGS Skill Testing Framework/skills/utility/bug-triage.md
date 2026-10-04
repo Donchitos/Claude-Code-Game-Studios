@@ -2,173 +2,192 @@
 
 ## Skill Summary
 
-`/bug-triage` reads all open bug reports in `production/bugs/` and produces a
-prioritized triage table sorted by severity (CRITICAL → HIGH → MEDIUM → LOW).
-It runs on the Haiku model (read-only, formatting/sorting task) and produces no
-file writes — the triage output is conversational. The skill flags bugs missing
-reproduction steps and identifies possible duplicates by comparing titles and
-affected systems.
+`/bug-triage` turns the open bug backlog into a prioritised, sprint-assigned
+action list and writes it to `production/qa/bug-triage-[date].md` after a
+"May I write" ask. It runs on the Sonnet model. Modes: `sprint` (assign fixable
+bugs to the current sprint, defer the rest), `full` (P1 → current sprint, P2 →
+next sprint, P3+ → backlog), `trend` (trend analysis only, no assignment, from
+header fields alone); no argument runs `sprint` if a sprint file exists, else `full`.
 
-The verdict is always TRIAGED — the skill is advisory and informational. No
-director gates apply. The output is intended to help a producer or QA lead
-prioritize which bugs to address next.
+Bugs are discovered in `production/qa/bugs/*.md`, falling back to
+`production/qa/bugs.md`, then a `production/qa/qa-plan-*.md` "Bugs Found" table.
+Each bug gets a **severity** (S1 Critical – S4 Low, impact) and a **priority**
+(P1 Fix this sprint – P4 Won't fix / Deferred, urgency) — two separate axes, so
+the report groups bugs by priority, not severity. A deviation check flags
+systemic problems (3+ bugs in one system in a sprint; 2+ S1/S2 in one story; a
+bug filed against a Complete story). The verdict is `COMPLETE` when the report is
+written, `COMPLETE` with no report when there are no bug files to triage, and
+`BLOCKED` when the user declines the write. No director gates apply.
 
 ---
 
 ## Static Assertions (Structural)
 
-Verified automatically by `/skill-test static` — no fixture needed.
+Checked against the SKILL.md by `/skill-test spec` — no fixture needed.
 
 - [ ] Has required frontmatter fields: `name`, `description`, `argument-hint`, `user-invocable`, `allowed-tools`
 - [ ] Has ≥2 phase headings
-- [ ] Contains verdict keyword: TRIAGED
-- [ ] Does NOT contain "May I write" language (skill is read-only)
-- [ ] Has a next-step handoff (e.g., `/bug-report` to create new reports, `/hotfix` for critical bugs)
+- [ ] Contains verdict keywords: COMPLETE, BLOCKED
+- [ ] Contains "May I write" language before writing `production/qa/bug-triage-[date].md`
+- [ ] Has a next-step handoff (`/sprint-status` for unassigned S1s; `/smoke-check` after regressions)
 
 ---
 
 ## Director Gate Checks
 
-None. `/bug-triage` is a read-only advisory skill. No director gates apply.
+None. `/bug-triage` is an operational triage skill. No director gates apply.
 
 ---
 
 ## Test Cases
 
-### Case 1: Happy Path — 5 bugs of varying severity, sorted table produced
+### Case 1: Happy Path — Sprint mode, 5 bugs grouped by priority
 
 **Fixture:**
-- `production/bugs/` contains 5 bug report files:
-  - bug-2026-03-10-audio-crash.md (CRITICAL)
-  - bug-2026-03-12-score-overflow.md (HIGH)
-  - bug-2026-03-14-ui-overlap.md (MEDIUM)
-  - bug-2026-03-15-typo-tutorial.md (LOW)
-  - bug-2026-03-16-vfx-flicker.md (HIGH)
+- `production/sprints/sprint-004.md` is the newest sprint file and notes spare capacity
+- `production/qa/bugs/` contains 5 bug files:
+  - `BUG-0001.md` — S1, P1, Audio
+  - `BUG-0002.md` — S2, P1, Combat
+  - `BUG-0003.md` — S3, P2, UI
+  - `BUG-0004.md` — S2, P2, VFX
+  - `BUG-0005.md` — S4, P3, Tutorial
 
 **Input:** `/bug-triage`
 
 **Expected behavior:**
-1. Skill reads all 5 bug report files
-2. Skill extracts severity, title, system, and repro status from each
-3. Skill produces a triage table sorted: CRITICAL first, then HIGH, MEDIUM, LOW
-4. Within the same severity, bugs are ordered by date (oldest first)
-5. Verdict is TRIAGED
+1. No argument and a sprint file exists → `sprint` mode
+2. Reads the 5 bug files and the newest sprint file
+3. Classifies severity and priority separately; P1 bugs are assigned to sprint 4
+4. Report has the Triage Summary table (P1: 2, P2: 2, P3: 1, P4: 0),
+   "Critical (S1/S2) unfixed count: 3", and separate P1, P2 and P3/P4 tables
+5. Presents the report and asks "May I write this triage report to `production/qa/bug-triage-[date].md`?"
+6. Writes only after approval
 
 **Assertions:**
-- [ ] Triage table has exactly 5 rows
-- [ ] CRITICAL bug appears before both HIGH bugs
-- [ ] HIGH bugs appear before MEDIUM and LOW bugs
-- [ ] Verdict is TRIAGED
-- [ ] No files are written
+- [ ] Mode reported as `sprint`
+- [ ] BUG-0001 and BUG-0002 are in the "P1 Bugs — Fix This Sprint" table, assigned to the current sprint
+- [ ] BUG-0003 and BUG-0004 are in the P2 table; BUG-0005 is in the P3/P4 table
+- [ ] Triage Summary counts and the S1/S2 unfixed count (3) are correct
+- [ ] "May I write" names `production/qa/bug-triage-[date].md`, and nothing is written before approval
 
 ---
 
-### Case 2: No Bug Reports Found — Guidance to run /bug-report
+### Case 2: No Bug Files Found — Stops without a report
 
 **Fixture:**
-- `production/bugs/` directory exists but is empty (or does not exist)
+- `production/qa/bugs/` does not exist
+- No `production/qa/bugs.md` and no `production/qa/qa-plan-*.md`
 
 **Input:** `/bug-triage`
 
 **Expected behavior:**
-1. Skill scans `production/bugs/` and finds no reports
-2. Skill outputs: "No open bug reports found in production/bugs/"
-3. Skill suggests running `/bug-report` to create a bug report
-4. No triage table is produced
+1. Step 2a finds no bug source in any of its three locations
+2. Skill says: "No bug files found in `production/qa/bugs/`. If bugs are tracked in a
+   different location, adjust the glob pattern. If no bugs exist yet, there is nothing to triage."
+3. Skill stops — no classification, no triage report, no write — and ends
+   `Verdict: COMPLETE — no bug files in production/qa/bugs/; nothing to triage.`
 
 **Assertions:**
-- [ ] Output explicitly states no bugs were found
-- [ ] `/bug-report` is suggested as the next step
-- [ ] Skill does not error out — it handles empty directory gracefully
-- [ ] Verdict is TRIAGED (with "no bugs found" context)
+- [ ] Output states that no bug files were found in `production/qa/bugs/`
+- [ ] Skill stops gracefully rather than erroring
+- [ ] No triage tables are produced
+- [ ] No "May I write" ask and no file written
+- [ ] The stop still ends with a verdict: Verdict: COMPLETE — no bug files, nothing to triage
 
 ---
 
-### Case 3: Bug Missing Reproduction Steps — Flagged as NEEDS REPRO INFO
+### Case 3: Systemic Issues — Deviation check flags a hot spot and a regression
 
 **Fixture:**
-- `production/bugs/` contains 3 bug reports; one has an empty "Repro Steps" section
+- `production/sprints/sprint-004.md` exists
+- `production/qa/bugs/` holds 4 bugs: 3 in the Inventory system filed this sprint,
+  and 1 filed against `production/epics/core/story-003.md`, whose `Status: Complete`
+- The user approves the write when asked
 
-**Input:** `/bug-triage`
+**Input:** `/bug-triage sprint`
 
 **Expected behavior:**
-1. Skill reads all 3 reports
-2. Skill detects the report with no repro steps
-3. That bug appears in the triage table with a `NEEDS REPRO INFO` tag
-4. Other bugs are triaged normally
-5. Verdict is TRIAGED
+1. Classifies all 4 bugs
+2. "Systemic Issues Flagged" lists "Potential design or implementation quality issue in Inventory"
+3. It also flags "Regression in completed story — story should be re-opened in sprint tracking"
+4. Trend Analysis names Inventory as the hot spot and counts 1 regression
+5. Asks "May I write this triage report to `production/qa/bug-triage-[date].md`?";
+   the user approves and the report is written
+6. After writing, the skill adds: "Regressions found — consider re-opening the affected
+   stories in sprint tracking and running `/smoke-check` to re-gate." Verdict: COMPLETE
 
 **Assertions:**
-- [ ] `NEEDS REPRO INFO` tag appears next to the bug missing repro steps
-- [ ] The flagged bug is still included in the table (not excluded)
-- [ ] Other bugs are unaffected
-- [ ] Verdict is TRIAGED
+- [ ] Inventory is flagged as a potential quality issue (3+ bugs in one system)
+- [ ] The bug against the Complete story is flagged as a regression
+- [ ] Trend Analysis shows Inventory as the hot spot and "Regressions: 1"
+- [ ] The report is written only after the "May I write" ask is approved
+- [ ] The post-write message recommends `/smoke-check`, and the verdict is COMPLETE
 
 ---
 
-### Case 4: Possible Duplicate Bugs — Flagged in triage output
+### Case 4: Sprint at Capacity — Overflow flagged, Won't Fix asked, write declined
 
 **Fixture:**
-- `production/bugs/` contains 2 bug reports with similar titles:
-  - bug-2026-03-18-player-fall-through-floor.md
-  - bug-2026-03-20-player-clips-through-floor.md
-  - Both affect the "Physics" system with identical severity
+- `production/sprints/sprint-004.md` notes the sprint is at full capacity
+- `production/qa/bugs/` holds one S2/P1 bug and one S4 bug judged P4 (cosmetic, out of scope)
 
-**Input:** `/bug-triage`
+**Input:** `/bug-triage sprint`
 
 **Expected behavior:**
-1. Skill reads both reports and detects similar title + same system + same severity
-2. Both bugs are included in the triage table
-3. Each is tagged with `POSSIBLE DUPLICATE` and cross-references the other report
-4. No bugs are merged or deleted — flagging is advisory
-5. Verdict is TRIAGED
+1. The P1 bug is not auto-assigned to the full sprint; it is flagged
+   `Priority overflow — consider pulling from sprint`
+2. The S4 bug is surfaced as a P4 candidate with "Are these acceptable as Won't Fix?"
+   — it is not marked Won't Fix without the user's answer
+3. User declines the report write
+4. Verdict is BLOCKED — user declined write; no file is created
 
 **Assertions:**
-- [ ] Both bugs appear in the table (not merged)
-- [ ] Both are tagged `POSSIBLE DUPLICATE`
-- [ ] Each cross-references the other (by filename or title)
-- [ ] Verdict is TRIAGED
+- [ ] P1 bug carries the `Priority overflow` flag instead of a sprint assignment
+- [ ] The Won't Fix question is asked before any bug is dispositioned P4
+- [ ] Verdict is BLOCKED when the write is declined
+- [ ] `production/qa/bug-triage-[date].md` is not written
 
 ---
 
-### Case 5: Director Gate Check — No gate; triage is advisory
+### Case 5: Director Gate Check — Full mode, no P1 bugs
 
 **Fixture:**
-- `production/bugs/` contains any number of reports
+- No sprint file in `production/sprints/`
+- `production/qa/bugs/` holds two bugs, S3/P3 and S4/P3
 
-**Input:** `/bug-triage`
+**Input:** `/bug-triage full`
 
 **Expected behavior:**
-1. Skill produces the triage table
-2. No director agents are spawned
-3. No gate IDs appear in output
-4. No write tool is called
+1. Notes "No sprint plan found — assigning to backlog only."
+2. Both bugs go to the backlog (P3+)
+3. Report is written after "May I write" approval
+4. With no P1 bugs: "No P1 bugs — build is in good shape for QA hand-off." Verdict: COMPLETE
+5. No director agents are spawned; no gate IDs appear
 
 **Assertions:**
-- [ ] No director gate is invoked
-- [ ] No write tool is called
-- [ ] No gate skip messages appear
-- [ ] Verdict is TRIAGED without any gate check
+- [ ] "No sprint plan found — assigning to backlog only." is stated
+- [ ] Both bugs are dispositioned Backlog
+- [ ] "No P1 bugs — build is in good shape for QA hand-off." appears with Verdict COMPLETE
+- [ ] No director gate is invoked and no gate skip messages appear
 
 ---
 
 ## Protocol Compliance
 
-- [ ] Reads all files in `production/bugs/` before generating the table
-- [ ] Sorts by severity (CRITICAL → HIGH → MEDIUM → LOW)
-- [ ] Flags bugs missing repro steps
-- [ ] Flags possible duplicates by title/system similarity
-- [ ] Does not write any files
-- [ ] Verdict is TRIAGED in all cases (even empty)
+- [ ] Discovers bugs in `production/qa/bugs/*.md` before the fallbacks
+- [ ] Keeps severity (S1–S4) and priority (P1–P4) as separate classifications
+- [ ] Never auto-assigns to a sprint at capacity
+- [ ] Never marks a bug Won't Fix without asking the user
+- [ ] Asks "May I write" before writing the triage report
+- [ ] Verdict is COMPLETE when written (or when there are no bug files to triage), BLOCKED when the write is declined
 
 ---
 
 ## Coverage Notes
 
-- The case where a bug report is malformed (missing severity field entirely)
-  is not fixture-tested; skill would flag it as `UNKNOWN SEVERITY` and sort it
-  last in the table.
-- Status transitions (marking bugs as resolved) are outside this skill's scope —
-  bug-triage is read-only.
-- The duplicate detection heuristic (title similarity + same system) is
-  approximate; exact matching logic is defined in the skill body.
+- `trend` mode (header-field Grep only, no bug-body reads, no assignment) is not
+  separately tested.
+- The consolidated `production/qa/bugs.md` and `qa-plan-*.md` fallbacks are not
+  separately tested.
+- The "2+ S1/S2 bugs in the same story" deviation flag and the aged-bug
+  warning (>2 sprints) are not separately tested.

@@ -3,8 +3,7 @@
 ## Agent Summary
 **Domain owned:** Visual identity, art bible authorship and enforcement, asset quality standards, UI/UX visual design, visual phase gate, concept art evaluation.
 **Does NOT own:** UX interaction flows and information architecture (ux-designer's domain), audio direction (audio-director), code implementation.
-**Model tier:** Sonnet (note: despite the "director" title, art-director is assigned Sonnet per coordination-rules.md — it handles individual system analysis, not multi-document phase gate synthesis at the Opus level).
-**Gate IDs handled:** AD-CONCEPT-VISUAL, AD-ART-BIBLE, AD-PHASE-GATE.
+**Gate IDs handled:** AD-CONCEPT-VISUAL, AD-ART-BIBLE, AD-VISUAL, AD-PHASE-GATE.
 
 ---
 
@@ -13,8 +12,8 @@
 Verified by reading the agent's `.claude/agents/art-director.md` frontmatter:
 
 - [ ] `description:` field is present and domain-specific (references visual identity, art bible, asset standards — not generic)
-- [ ] `allowed-tools:` list is read-focused; image review capability if supported; no Bash unless asset pipeline checks are justified
-- [ ] Model tier is `claude-sonnet-4-6` (NOT Opus — coordination-rules.md assigns Sonnet to art-director)
+- [ ] `tools:` includes Read (which also opens images for visual review) and Write/Edit for the art bible it maintains, and no Bash — `disallowedTools:` blocks it
+- [ ] Model tier is `inherit` — frontmatter `model:` reads exactly `inherit` (tiers: `.claude/docs/model-tiers.md`)
 - [ ] Agent definition does not claim authority over UX interaction flows or audio direction
 
 ---
@@ -22,12 +21,12 @@ Verified by reading the agent's `.claude/agents/art-director.md` frontmatter:
 ## Test Cases
 
 ### Case 1: In-domain request — appropriate output format
-**Scenario:** The art bible's color palette section is submitted for review. The section defines a desaturated earth-tone primary palette with high-contrast accent colors tied to the game pillar "beauty in decay." The palette is internally consistent and references the pillar vocabulary. Request is tagged AD-ART-BIBLE.
-**Expected:** Returns `AD-ART-BIBLE: APPROVE` with rationale confirming the palette's internal consistency and its alignment with the stated pillar.
+**Scenario:** A complete art bible is submitted for sign-off with the pillars and core fantasy, the platform constraints and the visual identity anchor chosen during brainstorm. Its color section defines a desaturated earth-tone primary palette with high-contrast accent colors tied to the game pillar "beauty in decay"; its shape language, asset standards and character direction are consistent with that section and within the stated platform constraints. Request is tagged AD-ART-BIBLE.
+**Expected:** Returns `AD-ART-BIBLE: APPROVE` with rationale confirming the palette's internal consistency and that the color system matches the pillar's mood target.
 **Assertions:**
 - [ ] Verdict is exactly one of APPROVE / CONCERNS / REJECT
 - [ ] Verdict token is formatted as `AD-ART-BIBLE: APPROVE`
-- [ ] Rationale references the specific palette characteristics and pillar alignment — not generic art advice
+- [ ] Rationale references the specific palette characteristics and how they serve the "beauty in decay" mood target (the gate's color-vs-mood check) — not generic art advice
 - [ ] Output stays within visual domain — does not comment on UX interaction patterns or audio mood
 
 ### Case 2: Out-of-domain request — redirects or escalates
@@ -36,16 +35,16 @@ Verified by reading the agent's `.claude/agents/art-director.md` frontmatter:
 **Assertions:**
 - [ ] Does not make any binding decision about audio layering or ducking behavior
 - [ ] Explicitly names `audio-director` as the correct handler
-- [ ] May note if the audio has visual mood implications (e.g., "the audio should match the visual tension of the zone"), but defers all audio specification to audio-director
+- [ ] Any comment it makes is about the zone's visual mood (e.g., "the audio should match the visual tension of the zone") — it specifies no layer, duck amount, fade time or trigger
 
 ### Case 3: Gate verdict — correct vocabulary
-**Scenario:** Concept art for the protagonist is submitted. The art uses a vivid, saturated color palette (primary: #FF4500, #00BFFF) that directly contradicts the established art bible's "desaturated earth-tones" palette specification. Request is tagged AD-CONCEPT-VISUAL.
-**Expected:** Returns `AD-CONCEPT-VISUAL: CONCERNS` with specific citation of the palette discrepancy, referencing the art bible's stated palette values versus the submitted concept's palette.
+**Scenario:** Right after pillars are locked, the concept and pillar set are submitted for a visual identity anchor. The three pillars are "fun combat," "great story," and "lots of content"; none of their design tests says anything about mood, atmosphere, or what the world should feel like, and no visual touchstones were given. Request is tagged AD-CONCEPT-VISUAL.
+**Expected:** Returns `AD-CONCEPT-VISUAL: CONCERNS` — the gate's verdict for pillars that don't yet give enough direction to differentiate a visual identity — naming which pillars give no visual direction and what is missing (mood, shape language, color meaning).
 **Assertions:**
-- [ ] Verdict is exactly one of APPROVE / CONCERNS / REJECT — not freeform text
+- [ ] Verdict is exactly one of CONCEPTS / STRONG / CONCERNS (the AD-CONCEPT-VISUAL verdicts) — not APPROVE / REJECT and not freeform text
 - [ ] Verdict token is formatted as `AD-CONCEPT-VISUAL: CONCERNS`
-- [ ] Rationale specifically identifies the palette conflict — not a generic "doesn't match style" comment
-- [ ] References the art bible as the authoritative source for the correct palette
+- [ ] Rationale names the specific pillars that give no visual direction and which of the gate's four direction components (visual rule, mood, shape language, color philosophy) they leave open — not a generic "pillars are vague"
+- [ ] Does not rewrite the pillars itself — pillar changes go back to the user and creative-director
 
 ### Case 4: Conflict escalation — correct parent
 **Scenario:** ux-designer proposes using high-contrast, brightly colored icons for the HUD to improve readability. art-director believes this violates the art bible's muted visual language and would undermine the visual identity.
@@ -57,23 +56,32 @@ Verified by reading the agent's `.claude/agents/art-director.md` frontmatter:
 - [ ] References the specific art bible rule being violated
 
 ### Case 5: Context pass — uses provided context
-**Scenario:** Agent receives a gate context block that includes the existing art bible with specific palette values (primary: #8B7355, #6B6B47; accent: #C8A96E) and style rules ("no pure white, no pure black; all shadows have warm undertones"). A new asset is submitted for review.
-**Expected:** Assessment references the specific hex values and style rules from the provided art bible, not generic color theory advice. Any concerns are tied to specific violations of the provided rules.
+**Scenario:** Agent receives a gate context block that includes the existing art bible with specific palette values (primary: #8B7355, #6B6B47; accent: #C8A96E) and style rules ("no pure white, no pure black; all shadows have warm undertones"). A new asset type is submitted for review: the first enemy sprite sheet, whose body colors come from the primary palette but whose outline is pure black (#000000), highlights pure white (#FFFFFF) and shadows a cool blue-grey (#5A6A7A). Request is tagged AD-VISUAL.
+**Expected:** Assessment references the specific hex values and style rules from the provided art bible, not generic color theory advice, and returns `AD-VISUAL: REJECT` — the sprite breaks all three style rules, a style violation to resolve before the asset type is used — with each violation tied to the rule it breaks.
 **Assertions:**
 - [ ] References specific palette values from the provided art bible context
-- [ ] Applies the specific style rules (no pure white/black, warm shadow undertones) from the provided document
+- [ ] Applies the specific style rules (no pure white/black, warm shadow undertones) from the provided document, naming the outline, highlight and shadow colors that break them
 - [ ] Does not generate generic art direction feedback disconnected from the supplied art bible
-- [ ] Verdict rationale is traceable to specific lines or rules in the provided context
+- [ ] Verdict token is `AD-VISUAL: REJECT`, with rationale traceable to specific lines or rules in the provided context
+
+### Case 6: Missing gate input — NOT ASSESSED
+**Scenario:** A complete, internally consistent art bible is submitted for sign-off with the pillars and the visual identity anchor, but no platform or performance constraints: the context gives none, `project.yaml` sets no `platform.*` or `performance.*` keys, and `.claude/docs/technical-preferences.md` still holds only unconfigured placeholders. Request is tagged AD-ART-BIBLE.
+**Expected:** Returns `AD-ART-BIBLE: NOT ASSESSED`, naming the platform and performance constraints as the input it could not read — without them, the gate's check that the asset standards are achievable on the platform cannot be made.
+**Assertions:**
+- [ ] Verdict token is `AD-ART-BIBLE: NOT ASSESSED` — not APPROVE, although every section it could check is sound
+- [ ] Names the platform and performance constraints as the missing input
+- [ ] Does not assume a platform or budget to complete the review
 
 ---
 
 ## Protocol Compliance
 
-- [ ] Returns verdicts using APPROVE / CONCERNS / REJECT vocabulary only
+- [ ] Returns the verdict vocabulary the invoked gate's definition file lists — APPROVE / CONCERNS / REJECT for AD-ART-BIBLE and AD-VISUAL; CONCEPTS / STRONG / CONCERNS for AD-CONCEPT-VISUAL; READY / CONCERNS / NOT READY for AD-PHASE-GATE; `NOT ASSESSED`, naming the input, at any gate when an input the gate names is missing
 - [ ] Stays within declared visual domain
 - [ ] Escalates UX-vs-visual conflicts to creative-director
 - [ ] Uses gate IDs in output (e.g., `AD-ART-BIBLE: APPROVE`) not inline prose verdicts
 - [ ] Does not make binding UX interaction, audio, or code implementation decisions
+- [ ] At a phase gate, treats an artifact the target phase requires that the calling skill passes as "none" as a finding (NOT READY or CONCERNS), and one passed as "not expected before [phase]" or "not required at `workflow: [tier]`" as no finding — it judges readiness for the phase being entered, not a later one
 
 ---
 

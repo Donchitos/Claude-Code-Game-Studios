@@ -2,6 +2,7 @@
 
 **Generated**: [DATE]
 **Stage**: [Concept | Systems Design | Technical Setup | Pre-Production | Production | Polish | Release]
+**Stage Confidence**: [PASS / CONCERNS / NOT ASSESSED / FAIL — reason]
 **Analysis Scope**: [Full project | Specific role: programmer/designer/producer]
 
 ---
@@ -30,11 +31,11 @@
 
 ### Source Code
 - **Status**: [X%] complete
-- **Files Found**: [N] source files in `src/`
+- **Files Found**: [N] source files in `[code root]/` (`src/` Godot, `Assets/` Unity, `Source/` Unreal)
 - **Major Systems Identified**:
-  - ✅ [System 1] (`src/path/`) — [brief status]
-  - ✅ [System 2] (`src/path/`) — [brief status]
-  - ⚠️  [System 3] (`src/path/`) — [issue or incomplete]
+  - ✅ [System 1] (`[code root]/path/`) — [brief status]
+  - ✅ [System 2] (`[code root]/path/`) — [brief status]
+  - ⚠️  [System 3] (`[code root]/path/`) — [issue or incomplete]
 - **Key Gaps**:
   - [ ] [Missing system 1 + impact]
   - [ ] [Missing system 2 + impact]
@@ -70,7 +71,7 @@
 
 ### Prototypes
 - **Active Prototypes**: [N] in `prototypes/`
-  - ✅ [Prototype 1] — documented with README
+  - ✅ [Prototype 1] — documented with REPORT.md
   - ⚠️  [Prototype 2] — no README, unclear status
 - **Archived**: [N] (experiments completed)
 - **Key Gaps**:
@@ -174,7 +175,7 @@ design/
   narrative/     [N] files
   levels/        [N] files
 
-src/
+[code root]/     (src/, Assets/ or Source/<Module>/)
   core/          [N] files
   gameplay/      [N] files
   ai/            [N] files

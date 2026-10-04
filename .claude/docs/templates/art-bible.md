@@ -1,80 +1,67 @@
 # Art Bible: [Game Title]
 
-## Document Status
-- **Version**: 1.0
-- **Last Updated**: [Date]
-- **Owned By**: art-director
-- **Status**: [Draft / Under Review / Approved]
+> **Status**: [Draft / Under Review / Approved]
+> **Owned By**: art-director
+> **Last Updated**: [Date]
+> **Art Director Sign-Off (AD-ART-BIBLE)**: [Not yet reviewed]
 
-## Visual Identity Summary
-[2-3 sentences describing the overall visual identity]
+`/art-bible` writes these nine sections in this order and replaces each
+section's `[To be designed]` line as that section is approved. A section still
+holding its placeholder is incomplete; a later run fills only those.
 
-## Reference Board
-[List reference games, films, art, and what specific visual quality each represents]
+## 1. Visual Identity Statement
 
-| Reference | Medium | What We're Taking |
-| --------- | ------ | ----------------- |
-| [Name] | [Game/Film/Art] | [Specific quality] |
+[To be designed] — a one-line visual rule that resolves any visual ambiguity,
+plus 2–3 supporting principles, each with a design test ("when X is ambiguous,
+choose Y") and the pillar it serves.
 
-## Color Palette
+## 2. Mood & Atmosphere
 
-### Primary Palette
-| Name | Hex | Usage |
-| ---- | --- | ----- |
-| [Color Name] | #XXXXXX | [Where and when to use] |
+[To be designed] — for each major game state (exploration, combat, victory,
+defeat, menus — whichever this game has): the emotional target, lighting
+character (time of day, colour temperature, contrast), 3–5 atmospheric
+descriptors, and energy level. Each state must look distinct from the others.
 
-### Emotional Color Mapping
-| Game State | Dominant Colors | Mood |
-| ---------- | --------------- | ---- |
-| Exploration | [Colors] | [Feeling] |
-| Combat | [Colors] | [Feeling] |
-| Safe zones | [Colors] | [Feeling] |
-| Danger | [Colors] | [Feeling] |
+## 3. Shape Language
 
-## Art Style
+[To be designed] — character silhouette philosophy (readable at thumbnail
+size, one distinguishing trait per archetype), environment geometry, UI shape
+grammar, and hero versus supporting shapes.
 
-### Rendering Style
-[Realistic / Stylized / Pixel / Cel-shaded / etc.]
+## 4. Color System
 
-### Proportions
-[Character proportions, environment scale, UI scale relationships]
+[To be designed] — a primary palette of 5–7 colours with their meaning in this
+world, semantic colour usage, per-area colour temperature rules, the UI palette
+and where it diverges, and colourblind safety: which semantic colours need a
+shape, icon or sound backup.
 
-### Level of Detail
-[How detailed are characters, environments, UI elements?]
+## 5. Character Design Direction
 
-### Visual Hierarchy
-[How do we guide the player's eye? What's always most prominent?]
+[To be designed] — the player character's visual archetype, how players tell
+enemies, NPCs and allies apart at a glance, expression and pose style, and how
+much detail survives at game camera distance (LOD philosophy).
 
-## Character Art Standards
-[Silhouette requirements, color coding, animation style, proportions]
+## 6. Environment Design Language
 
-## Environment Art Standards
-[Tilesets, modularity, lighting, atmospheric effects, scale]
+[To be designed] — architectural style and its tie to the world's culture,
+texture philosophy (painted, PBR or stylised, and why), prop density rules per
+area type, and environmental storytelling guidelines.
 
-## UI Art Standards
-[Button styles, typography, icon style, menu layout principles, HUD density]
+## 7. UI/HUD Visual Direction
 
-## VFX Standards
-[Particle style, screen effects, impact feedback, color coding]
+[To be designed] — diegetic versus screen-space HUD, typography (personality,
+weight, size hierarchy, minimum readable size), iconography style, UI animation
+feel, and any art-direction versus readability conflict and how it was decided.
 
-## Asset Production Standards
+## 8. Asset Standards
 
-### Naming Convention
-`[category]_[name]_[variant]_[size].[ext]`
+[To be designed] — file formats, naming convention, texture resolution tiers,
+LOD levels, export settings, and the engine's hard limits (poly budgets per
+asset category, texture memory, material slots). Where an art preference and a
+technical limit disagree, record both and the trade-off chosen.
 
-### Texture Standards
-| Category | Max Resolution | Format | Color Space |
-| -------- | -------------- | ------ | ----------- |
-| Characters | [Size] | [Format] | [Space] |
-| Environments | [Size] | [Format] | [Space] |
-| UI | [Size] | [Format] | [Space] |
-| VFX | [Size] | [Format] | [Space] |
+## 9. Reference Direction
 
-### Animation Standards
-[Frame rates, blend times, animation graph structure]
-
-## Accessibility
-- Colorblind-safe UI elements required
-- Minimum text size: [X]px at 1080p
-- High contrast mode specifications
-- Icon + color (never color alone) for game state
+[To be designed] — 3–5 references (games, films, art styles or artists). For
+each: the specific element to take from it, and what to avoid so the result
+does not read as a copy.

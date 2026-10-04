@@ -146,6 +146,17 @@ skills:
     priority: high
     category: pipeline
 
+  - name: vertical-slice
+    spec: CCGS Skill Testing Framework/skills/pipeline/vertical-slice.md
+    last_static: ""
+    last_static_result: ""
+    last_spec: ""
+    last_spec_result: ""
+    last_category: ""
+    last_category_result: ""
+    priority: high
+    category: pipeline
+
   - name: design-system
     spec: CCGS Skill Testing Framework/skills/authoring/design-system.md
     last_static: ""
@@ -797,146 +808,203 @@ skills:
     priority: low
     category: utility
 
+  - name: settings
+    spec: ""
+    last_static: ""
+    last_static_result: ""
+    last_spec: ""
+    last_spec_result: ""
+    last_category: ""
+    last_category_result: ""
+    priority: low
+    category: utility
+
 agents:
-  # Tier 1 Directors (Opus)
+  # Tier 1 Directors
   - name: creative-director
     spec: CCGS Skill Testing Framework/agents/directors/creative-director.md
     last_spec: ""
     last_spec_result: ""
+    last_category: ""
+    last_category_result: ""
     category: director
 
   - name: technical-director
     spec: CCGS Skill Testing Framework/agents/directors/technical-director.md
     last_spec: ""
     last_spec_result: ""
+    last_category: ""
+    last_category_result: ""
     category: director
 
   - name: producer
     spec: CCGS Skill Testing Framework/agents/directors/producer.md
     last_spec: ""
     last_spec_result: ""
+    last_category: ""
+    last_category_result: ""
     category: director
 
   - name: art-director
     spec: CCGS Skill Testing Framework/agents/directors/art-director.md
     last_spec: ""
     last_spec_result: ""
+    last_category: ""
+    last_category_result: ""
     category: director
 
-  # Tier 2 Leads (Sonnet)
+  # Tier 2 Leads
   - name: lead-programmer
     spec: CCGS Skill Testing Framework/agents/leads/lead-programmer.md
     last_spec: ""
     last_spec_result: ""
+    last_category: ""
+    last_category_result: ""
     category: lead
 
   - name: qa-lead
     spec: CCGS Skill Testing Framework/agents/leads/qa-lead.md
     last_spec: ""
     last_spec_result: ""
+    last_category: ""
+    last_category_result: ""
     category: lead
 
   - name: narrative-director
     spec: CCGS Skill Testing Framework/agents/leads/narrative-director.md
     last_spec: ""
     last_spec_result: ""
+    last_category: ""
+    last_category_result: ""
     category: lead
 
   - name: audio-director
     spec: CCGS Skill Testing Framework/agents/leads/audio-director.md
     last_spec: ""
     last_spec_result: ""
+    last_category: ""
+    last_category_result: ""
     category: lead
 
   - name: game-designer
     spec: CCGS Skill Testing Framework/agents/leads/game-designer.md
     last_spec: ""
     last_spec_result: ""
+    last_category: ""
+    last_category_result: ""
     category: lead
 
   - name: systems-designer
     spec: CCGS Skill Testing Framework/agents/leads/systems-designer.md
     last_spec: ""
     last_spec_result: ""
+    last_category: ""
+    last_category_result: ""
     category: lead
 
   - name: level-designer
     spec: CCGS Skill Testing Framework/agents/leads/level-designer.md
     last_spec: ""
     last_spec_result: ""
+    last_category: ""
+    last_category_result: ""
     category: lead
 
-  # Core Specialists (Sonnet)
+  # Core Specialists
   - name: gameplay-programmer
     spec: CCGS Skill Testing Framework/agents/specialists/gameplay-programmer.md
     last_spec: ""
     last_spec_result: ""
+    last_category: ""
+    last_category_result: ""
     category: specialist
 
   - name: ai-programmer
     spec: CCGS Skill Testing Framework/agents/specialists/ai-programmer.md
     last_spec: ""
     last_spec_result: ""
+    last_category: ""
+    last_category_result: ""
     category: specialist
 
   - name: technical-artist
     spec: CCGS Skill Testing Framework/agents/specialists/technical-artist.md
     last_spec: ""
     last_spec_result: ""
+    last_category: ""
+    last_category_result: ""
     category: specialist
 
   - name: sound-designer
     spec: CCGS Skill Testing Framework/agents/specialists/sound-designer.md
     last_spec: ""
     last_spec_result: ""
+    last_category: ""
+    last_category_result: ""
     category: specialist
 
   - name: engine-programmer
     spec: CCGS Skill Testing Framework/agents/specialists/engine-programmer.md
     last_spec: ""
     last_spec_result: ""
+    last_category: ""
+    last_category_result: ""
     category: specialist
 
   - name: tools-programmer
     spec: CCGS Skill Testing Framework/agents/specialists/tools-programmer.md
     last_spec: ""
     last_spec_result: ""
+    last_category: ""
+    last_category_result: ""
     category: specialist
 
   - name: network-programmer
     spec: CCGS Skill Testing Framework/agents/specialists/network-programmer.md
     last_spec: ""
     last_spec_result: ""
+    last_category: ""
+    last_category_result: ""
     category: specialist
 
   - name: security-engineer
     spec: CCGS Skill Testing Framework/agents/qa/security-engineer.md
     last_spec: ""
     last_spec_result: ""
-    category: qa
+    last_category: ""
+    last_category_result: ""
+    category: specialist
 
   - name: accessibility-specialist
     spec: CCGS Skill Testing Framework/agents/qa/accessibility-specialist.md
     last_spec: ""
     last_spec_result: ""
-    category: qa
+    last_category: ""
+    last_category_result: ""
+    category: specialist
 
   - name: ux-designer
     spec: CCGS Skill Testing Framework/agents/specialists/ux-designer.md
     last_spec: ""
     last_spec_result: ""
+    last_category: ""
+    last_category_result: ""
     category: specialist
 
   - name: ui-programmer
     spec: CCGS Skill Testing Framework/agents/specialists/ui-programmer.md
     last_spec: ""
     last_spec_result: ""
+    last_category: ""
+    last_category_result: ""
     category: specialist
 
   - name: performance-analyst
     spec: CCGS Skill Testing Framework/agents/specialists/performance-analyst.md
     last_spec: ""
     last_spec_result: ""
+    last_category: ""
+    last_category_result: ""
     category: specialist
 
   # Engine Specialists — Godot
@@ -944,30 +1012,40 @@ agents:
     spec: CCGS Skill Testing Framework/agents/engine/godot/godot-specialist.md
     last_spec: ""
     last_spec_result: ""
+    last_category: ""
+    last_category_result: ""
     category: engine
 
   - name: godot-gdscript-specialist
     spec: CCGS Skill Testing Framework/agents/engine/godot/godot-gdscript-specialist.md
     last_spec: ""
     last_spec_result: ""
+    last_category: ""
+    last_category_result: ""
     category: engine
 
   - name: godot-csharp-specialist
     spec: CCGS Skill Testing Framework/agents/engine/godot/godot-csharp-specialist.md
     last_spec: ""
     last_spec_result: ""
+    last_category: ""
+    last_category_result: ""
     category: engine
 
   - name: godot-shader-specialist
     spec: CCGS Skill Testing Framework/agents/engine/godot/godot-shader-specialist.md
     last_spec: ""
     last_spec_result: ""
+    last_category: ""
+    last_category_result: ""
     category: engine
 
   - name: godot-gdextension-specialist
     spec: CCGS Skill Testing Framework/agents/engine/godot/godot-gdextension-specialist.md
     last_spec: ""
     last_spec_result: ""
+    last_category: ""
+    last_category_result: ""
     category: engine
 
   # Engine Specialists — Unity
@@ -975,30 +1053,40 @@ agents:
     spec: CCGS Skill Testing Framework/agents/engine/unity/unity-specialist.md
     last_spec: ""
     last_spec_result: ""
+    last_category: ""
+    last_category_result: ""
     category: engine
 
   - name: unity-ui-specialist
     spec: CCGS Skill Testing Framework/agents/engine/unity/unity-ui-specialist.md
     last_spec: ""
     last_spec_result: ""
+    last_category: ""
+    last_category_result: ""
     category: engine
 
   - name: unity-shader-specialist
     spec: CCGS Skill Testing Framework/agents/engine/unity/unity-shader-specialist.md
     last_spec: ""
     last_spec_result: ""
+    last_category: ""
+    last_category_result: ""
     category: engine
 
   - name: unity-dots-specialist
     spec: CCGS Skill Testing Framework/agents/engine/unity/unity-dots-specialist.md
     last_spec: ""
     last_spec_result: ""
+    last_category: ""
+    last_category_result: ""
     category: engine
 
   - name: unity-addressables-specialist
     spec: CCGS Skill Testing Framework/agents/engine/unity/unity-addressables-specialist.md
     last_spec: ""
     last_spec_result: ""
+    last_category: ""
+    last_category_result: ""
     category: engine
 
   # Engine Specialists — Unreal
@@ -1006,30 +1094,40 @@ agents:
     spec: CCGS Skill Testing Framework/agents/engine/unreal/unreal-specialist.md
     last_spec: ""
     last_spec_result: ""
+    last_category: ""
+    last_category_result: ""
     category: engine
 
   - name: ue-blueprint-specialist
     spec: CCGS Skill Testing Framework/agents/engine/unreal/ue-blueprint-specialist.md
     last_spec: ""
     last_spec_result: ""
+    last_category: ""
+    last_category_result: ""
     category: engine
 
   - name: ue-gas-specialist
     spec: CCGS Skill Testing Framework/agents/engine/unreal/ue-gas-specialist.md
     last_spec: ""
     last_spec_result: ""
+    last_category: ""
+    last_category_result: ""
     category: engine
 
   - name: ue-umg-specialist
     spec: CCGS Skill Testing Framework/agents/engine/unreal/ue-umg-specialist.md
     last_spec: ""
     last_spec_result: ""
+    last_category: ""
+    last_category_result: ""
     category: engine
 
   - name: ue-replication-specialist
     spec: CCGS Skill Testing Framework/agents/engine/unreal/ue-replication-specialist.md
     last_spec: ""
     last_spec_result: ""
+    last_category: ""
+    last_category_result: ""
     category: engine
 
   # Operations
@@ -1037,42 +1135,56 @@ agents:
     spec: CCGS Skill Testing Framework/agents/operations/devops-engineer.md
     last_spec: ""
     last_spec_result: ""
+    last_category: ""
+    last_category_result: ""
     category: operations
 
   - name: release-manager
     spec: CCGS Skill Testing Framework/agents/operations/release-manager.md
     last_spec: ""
     last_spec_result: ""
+    last_category: ""
+    last_category_result: ""
     category: operations
 
   - name: live-ops-designer
     spec: CCGS Skill Testing Framework/agents/operations/live-ops-designer.md
     last_spec: ""
     last_spec_result: ""
+    last_category: ""
+    last_category_result: ""
     category: operations
 
   - name: community-manager
     spec: CCGS Skill Testing Framework/agents/operations/community-manager.md
     last_spec: ""
     last_spec_result: ""
+    last_category: ""
+    last_category_result: ""
     category: operations
 
   - name: analytics-engineer
     spec: CCGS Skill Testing Framework/agents/operations/analytics-engineer.md
     last_spec: ""
     last_spec_result: ""
+    last_category: ""
+    last_category_result: ""
     category: operations
 
   - name: economy-designer
     spec: CCGS Skill Testing Framework/agents/operations/economy-designer.md
     last_spec: ""
     last_spec_result: ""
+    last_category: ""
+    last_category_result: ""
     category: operations
 
   - name: localization-lead
     spec: CCGS Skill Testing Framework/agents/operations/localization-lead.md
     last_spec: ""
     last_spec_result: ""
+    last_category: ""
+    last_category_result: ""
     category: operations
 
   # QA & Creative
@@ -1080,22 +1192,30 @@ agents:
     spec: CCGS Skill Testing Framework/agents/qa/qa-tester.md
     last_spec: ""
     last_spec_result: ""
+    last_category: ""
+    last_category_result: ""
     category: qa
 
   - name: prototyper
     spec: CCGS Skill Testing Framework/agents/specialists/prototyper.md
     last_spec: ""
     last_spec_result: ""
+    last_category: ""
+    last_category_result: ""
     category: specialist
 
   - name: writer
     spec: CCGS Skill Testing Framework/agents/specialists/writer.md
     last_spec: ""
     last_spec_result: ""
+    last_category: ""
+    last_category_result: ""
     category: specialist
 
   - name: world-builder
     spec: CCGS Skill Testing Framework/agents/specialists/world-builder.md
     last_spec: ""
     last_spec_result: ""
+    last_category: ""
+    last_category_result: ""
     category: specialist

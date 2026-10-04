@@ -1,13 +1,18 @@
 ---
 name: prototype
-description: "Concept prototype — validate the core idea is worth designing before writing GDDs. Run right after /brainstorm and /setup-engine. Routes to HTML, Engine, or Paper path based on game type. Produces a throwaway build and a PROCEED/PIVOT/KILL verdict."
+description: "Concept prototype before GDDs — throwaway HTML, Engine or Paper build, PROCEED/PIVOT/KILL/NOT ASSESSED. After /brainstorm and /setup-engine."
 argument-hint: "[concept-description] [--path html|engine|paper] [--review full|lean|solo] [--spike]"
 user-invocable: true
-allowed-tools: Read, Glob, Grep, Write, Edit, Bash, Task, AskUserQuestion
+allowed-tools: Read, Glob, Grep, Write, Edit, Bash, Agent, AskUserQuestion, Bash(bash "*/.claude/skills/prototype/../../hooks/yaml-helper.sh" resolve_config *)
 model: sonnet
-agent: prototyper
-isolation: worktree
 ---
+
+!`bash "${CLAUDE_SKILL_DIR}/../../hooks/yaml-helper.sh" resolve_config --keys review_mode,automation,workflow`
+
+Resolved above — use as-is; `--review` overrides `review_mode` for this run. No
+block → defaults in `.claude/docs/config-resolution.md`.
+
+
 
 ## Purpose
 
@@ -29,15 +34,20 @@ before committing to Production, run `/vertical-slice` instead.
 
 ## Phase 1: Define the Question
 
-Resolve the review mode (once, store for all gate spawns this run):
-1. If `--review [full|lean|solo]` was passed → use that
-2. Else read `production/review-mode.txt` → use that value
-3. Else → default to `lean`
+
+Every `AskUserQuestion` call follows `.claude/docs/automation-modes.md`
+(collaborative asks always · guided major-only · autonomous logs and proceeds;
+`automation_always_ask` categories always prompt).
 
 **Check for spike mode:** If `--spike` was passed, skip to the **Spike Mode** section
 at the bottom of this skill.
 
-Otherwise, use `AskUserQuestion` to confirm intent before proceeding:
+**Check for a carry-forward note:** Glob `prototypes/*/PIVOT-NOTE.md`. If one
+exists for this concept (or an earlier version of it), read it and start from its
+revised hypothesis instead of forming one from scratch — say which note you used.
+
+Then, unless `--spike` sent you to Spike Mode, use `AskUserQuestion` to confirm
+intent before proceeding — with or without a carry-forward note:
 
 - **Prompt**: "How would you like to use this prototype session?"
 - **Options**:
@@ -90,12 +100,16 @@ thing the prototype should test — not the easiest part, the riskiest.
 
 ## Phase 2: Load Concept Context
 
-Read `design/gdd/game-concept.md` if it exists. Extract:
+Read `design/gdd/game-concept.md` — or `design/game-brief.md`, the one-page brief
+that replaces it at `rigor: minimal` — if either exists. Extract:
 - Core fantasy (what the player is supposed to feel)
 - Core loop (the moment-to-moment action being tested)
 
-Read `CLAUDE.md` and `.claude/docs/technical-preferences.md` for the engine and
-language in use.
+Determine the engine and language in use: read `engine.name` and
+`engine.language` from `project.yaml`. For each field, if its key is absent or
+empty (including when `project.yaml` has no `engine:` block), fall back to
+`CLAUDE.md` and `.claude/docs/technical-preferences.md`. Treat a
+`[TO BE CONFIGURED]` value as not set.
 
 ---
 
@@ -249,6 +263,8 @@ Define in 3–5 bullet points the minimum viable prototype:
 If scope covers more than one mechanic, cut it down. When in doubt, cut more.
 
 Present this plan to the user before building. Get confirmation before proceeding.
+Name the checkpoint file in that confirmation: "May I record this plan in
+`production/session-state/active.md`?"
 
 Once confirmed, write a session checkpoint to `production/session-state/active.md`
 (create `production/session-state/` if it does not exist). Include: concept name,
@@ -266,10 +282,16 @@ and begin implementation?"
 If yes, create the directory. Every file must begin with:
 
 ```
-// PROTOTYPE - NOT FOR PRODUCTION
-// Question: [Core question being tested]
-// Date: [Current date]
+[comment] PROTOTYPE - NOT FOR PRODUCTION
+[comment] Question: [Core question being tested]
+[comment] Date: [Current date]
 ```
+
+Write `[comment]` in each file's own comment syntax — `#` in GDScript (`.gd`) and
+Python, `//` in C#, C++ and JavaScript, `--` in Lua, `<!-- … -->` in HTML and
+Markdown. A header in another language's syntax is a parse error, not a label.
+Files that cannot hold a comment (JSON, engine-generated scene and project
+files) are exempt.
 
 Standards are intentionally relaxed:
 
@@ -366,6 +388,11 @@ behavior. Now ask for the overall assessment:
 > nearby, try running the rules with them. Come back when you've seen at least one
 > full play cycle."
 
+**If nobody can play it this session**, do not ask for a verdict and do not infer
+one from how the build looks: the recommendation is **NOT ASSESSED — built, not
+played**. Write the report with that verdict (Phase 7, asking first) and name the
+next step — play it, then re-run this debrief.
+
 Once the user returns, ask these questions **one at a time** — wait for each answer
 before asking the next:
 
@@ -400,11 +427,12 @@ Read `.claude/docs/templates/prototype-report.md` to get the report structure.
 Fill in every section based on what was observed during this session. Replace all
 placeholder text with real observations — no generic filler.
 
-Ask: "May I write this report to `prototypes/[concept-name]-concept/REPORT.md`?"
+Ask: "May I write this report to `prototypes/[concept-name]-concept/REPORT.md`
+and add its row to `prototypes/index.md`?"
 
 If yes, write the file. Then update `prototypes/index.md` (create if it does not
 exist) — append one row to the concept prototype table: concept name, date, path
-used, verdict (PROCEED/PIVOT/KILL), and a link to the REPORT.md. If a PIVOT chain
+used, verdict (PROCEED/PIVOT/KILL, or NOT ASSESSED when nobody has played it), and a link to the REPORT.md. If a PIVOT chain
 exists (prior PIVOT-NOTE.md in a related concept folder), note the chain. This file
 is the project's complete history of what was tried and what was learned.
 
@@ -415,17 +443,36 @@ is the project's complete history of what was tried and what was learned.
 **Review mode check:**
 - `solo` → skip. Note: "CD-PLAYTEST skipped — Solo mode."
 - `lean` → skip. Note: "CD-PLAYTEST skipped — Lean mode."
-- `full` → spawn `creative-director` via Task using gate **CD-PLAYTEST** if
-  `design/gdd/game-concept.md` exists with game pillars defined. If pillars are
-  not yet defined, note: "CD-PLAYTEST skipped — game pillars not yet defined at
-  concept prototype stage."
+- `full` → spawn `creative-director` via `Agent` using gate **CD-PLAYTEST** if
+  `design/gdd/game-concept.md` exists with game pillars defined, or
+  `design/game-brief.md` exists (the `rigor: minimal` brief has no pillars — its
+  pitch and "what they feel" line stand in). If neither is available, note:
+  "CD-PLAYTEST skipped — game pillars not yet defined at concept prototype stage."
 
 Pass: the full REPORT.md content, the original hypothesis, and game pillars /
-core fantasy from `design/gdd/game-concept.md`.
+core fantasy from `design/gdd/game-concept.md` (or the brief's pitch and "what
+they feel" line from `design/game-brief.md`).
 
 The creative director evaluates the result against the game's creative vision and
-confirms, modifies, or overrides the recommendation. Their verdict is final. Update
-REPORT.md if the verdict differs.
+returns one of the gate's verdicts — APPROVE, CONCERNS or REJECT — or NOT
+ASSESSED when it could not judge. Apply it to the recommendation:
+
+- **APPROVE** → the recommendation stands.
+- **CONCERNS** → show the concerns alongside the recommendation, then use
+  `AskUserQuestion`: `Revise the recommendation` / `Accept with noted concerns` /
+  `Discuss further`. The user decides; the director does not.
+- **REJECT** (the core fantasy is not present) → a PROCEED recommendation cannot
+  stand. Use `AskUserQuestion` to ask the user to choose `PIVOT` or `KILL`, and run
+  Phase 9 for that choice. A PIVOT or KILL recommendation stands.
+- **NOT ASSESSED** (the director lacked an input — `.claude/docs/director-gates.md`)
+  → not an approval. Name what was missing; supply it and re-run the gate, or
+  record the review as NOT ASSESSED and let the user decide whether the
+  recommendation stands unreviewed.
+
+When the director returned CONCERNS, REJECT or NOT ASSESSED, ask "May I update
+`prototypes/[concept-name]-concept/REPORT.md` and its `prototypes/index.md`
+row?", then record the director's verdict and reason in REPORT.md, and the final
+recommendation in both if it changed.
 
 ---
 
@@ -438,7 +485,10 @@ Link to `prototypes/[concept-name]-concept/REPORT.md`.
 Your concept prototype validated the core idea. Now design it properly, informed by
 what you just learned.
 
-Recommended path (in order):
+At `workflow: minimal`: `/create-stories` (from the brief), then `/dev-story`
+on the first story — the rest of this list is the `standard`/`full` path.
+
+Recommended path (in order, `standard`/`full`):
 1. `/design-review design/gdd/game-concept.md` — validate the concept doc against what the prototype revealed
 2. `/gate-check` — confirm readiness to advance to Systems Design
 3. `/art-bible` — define visual identity (optional but worth doing before GDDs)
@@ -461,9 +511,8 @@ two questions (plain text, one at a time):
 Ask: "May I write this to `prototypes/[concept-name]-concept/PIVOT-NOTE.md`?"
 
 If yes, write the file with: original hypothesis, what to keep, what to change, and
-the revised hypothesis for the next prototype. When `/prototype` is next run, check
-`prototypes/` for any `PIVOT-NOTE.md` files — if found, read them and use the
-revised hypothesis as the starting point rather than forming one from scratch.
+the revised hypothesis for the next prototype. The next `/prototype` run picks it
+up at the start of Phase 1.
 
 - Run `/prototype [revised-concept]` to test the adjusted direction
 - Or `/brainstorm [hint]` if the concept needs more fundamental rethinking
@@ -496,6 +545,14 @@ This file exists so the same mistake doesn't get made twice on the next concept.
 - Run `/brainstorm open` or `/brainstorm [new-hint]` to explore a different concept
 - The prototype report is the deliverable — no further action needed
 
+**If NOT ASSESSED (nobody has played it):**
+
+There is no fun evidence yet, so PROCEED, PIVOT and KILL are all unreachable —
+report NOT ASSESSED and stop here rather than guess.
+
+- Play it, then run `/prototype [same concept]` again
+- The report and the concept index row read NOT ASSESSED until a playtest happens
+
 ---
 
 ---
@@ -523,11 +580,11 @@ gate implications. Hard cap: ~4 hours.
 
 3. **Scope** — maximum 2-3 bullet points. One mechanic, one technical question, nothing else.
 
-4. **Build** — same relaxed standards as concept prototype. Hard cap: 4 hours. If not demonstrable in 4 hours, the question is too large. Split it.
+4. **Build** — first ask "May I create `prototypes/[concept-name]-spike-[date]/` and build the spike there?" Same relaxed standards and header as the concept prototype. Hard cap: 4 hours. If not demonstrable in 4 hours, the question is too large. Split it.
 
 5. **Observe and decide** — no formal playtest debrief. Ask: "Did the spike answer the question? YES or NO, and why in one sentence."
 
-6. **Write a spike note** (not a full report) to `prototypes/[concept-name]-spike-[date]/SPIKE-NOTE.md`:
+6. **Write a spike note** (not a full report) to `prototypes/[concept-name]-spike-[date]/SPIKE-NOTE.md` — first ask once for this step and the next, naming both files: "May I write `prototypes/[concept-name]-spike-[date]/SPIKE-NOTE.md` and clear the spike from `production/session-state/active.md`?" The note holds:
    - Question tested
    - Result (YES it works / NO it doesn't / PARTIAL — needs more investigation)
    - What to do next (add to current sprint / investigate further / abandon the idea)

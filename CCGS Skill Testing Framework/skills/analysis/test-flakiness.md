@@ -2,176 +2,192 @@
 
 ## Skill Summary
 
-`/test-flakiness` detects non-deterministic tests by analyzing test history logs
-(if available) or scanning test source code for common flakiness patterns (random
-numbers without seeds, real-time waits, external I/O). No director gates are
-invoked. The skill does not write without user approval. Verdicts: NO FLAKINESS,
-SUSPECT TESTS FOUND, or CONFIRMED FLAKY.
+`/test-flakiness` finds flaky tests from the results of multiple CI or local
+test runs. It takes a log path, `scan` (all available result files — JUnit XML
+from gdUnit4 in `reports/` or saved into `test-results/`, NUnit XML from Unity in
+`test-results/`, Unreal automation logs in `Saved/Logs/`), or `registry` (remediation guidance for tests already in the
+quarantine section of `tests/regression-suite.md`). With no result data it lists
+three ways to get some and stops to ask. It builds a per-test history across
+runs, classifies each test that both passed and failed by fail rate — >25% High
+(quarantine immediately), 5–25% Moderate (fix directly, do not quarantine yet),
+1–5% Low (monitor) — and names a likely cause and fix direction from its cause
+table, using Grep on the test file. With fewer than 3 runs, every finding is
+"suspected", not "confirmed", whatever its fail rate, and nothing is quarantined;
+the summary table's Confidence column says which. It asks separately "May I update the quarantine
+section of `tests/regression-suite.md`…?" and "May I write a full flakiness
+report to `production/qa/flakiness-report-[date].md`?", appends quarantine
+entries without removing existing ones, and never deletes test files. No
+director gates are invoked. Verdicts: COMPLETE (report written) or BLOCKED
+(user declined write).
 
 ---
 
 ## Static Assertions (Structural)
 
-Verified automatically by `/skill-test static` — no fixture needed.
+Checked against the SKILL.md by `/skill-test spec` — no fixture needed.
 
 - [ ] Has required frontmatter fields: `name`, `description`, `argument-hint`, `user-invocable`, `allowed-tools`
 - [ ] Has ≥2 phase headings
-- [ ] Contains verdict keywords: NO FLAKINESS, SUSPECT TESTS FOUND, CONFIRMED FLAKY
-- [ ] Does NOT require "May I write" language (read-only; optional report requires approval)
-- [ ] Has a next-step handoff (what to do after flakiness findings)
+- [ ] Contains verdict keywords: COMPLETE, BLOCKED, and the flakiness tiers High / Moderate / Low
+- [ ] Contains "May I" write language for `tests/regression-suite.md` and `production/qa/flakiness-report-[date].md`
+- [ ] Has a next-step handoff (Section 7: add skip annotations, schedule fixes before the release gate)
 
 ---
 
 ## Director Gate Checks
 
-None. Flakiness detection is an advisory quality skill for the QA lead; no gates
-are invoked.
+None. Flakiness detection is an advisory quality skill; no gates are invoked.
 
 ---
 
 ## Test Cases
 
-### Case 1: Happy Path — Clean test history, no flakiness
+### Case 1: Happy Path — High flakiness from JUnit history, quarantined on approval
 
 **Fixture:**
-- `production/qa/test-history/` contains logs for 10 test runs
-- All tests pass consistently across all 10 runs (100% pass rate per test)
-- No test has a failure pattern
+- `project.yaml`: `engine.name: godot`; `modes.automation` unset (collaborative)
+- `test-results/` holds 6 gdUnit4 JUnit XML files from 6 runs of the same commit
+- `test_loot_drop_rolls_rare_item` fails in 2 of the 6 runs (33%); the other 40 tests pass in all 6
+- `tests/unit/loot/loot_drop_test.gd` calls `randf()` with no seed
+- `tests/regression-suite.md` has a Quarantined Tests table with 1 existing entry
 
-**Input:** `/test-flakiness`
+**Input:** `/test-flakiness scan`
 
 **Expected behavior:**
-1. Skill reads test history logs from `production/qa/test-history/`
-2. Skill computes per-test pass rate across 10 runs
-3. All tests pass all 10 runs — no inconsistency detected
-4. Verdict is NO FLAKINESS
+1. Skill finds the XML files in `test-results/` and parses `<testcase name=` and `<failure` / `<error` entries
+2. Skill builds `test_id → [run1 … run6]` and finds one test with both outcomes
+3. 33% is above 25% over 6 runs → **High** flakiness, Confidence confirmed → quarantine immediately
+4. Grep of `loot_drop_test.gd` finds `randf` → likely cause Random seed; fix direction: pass an explicit seed
+5. The quarantine recommendation names gdUnit4's GDScript skip parameters (`_do_skip := true`, `_skip_reason := "flaky: ..."`) as the way to skip it
+6. Summary shows Runs analysed 6, Tests tracked 41, the flaky test with a 33% fail rate, and 40 tests with consistent results
+7. Skill asks "May I update the quarantine section of `tests/regression-suite.md` with the flaky tests found?" and, separately, "May I write a full flakiness report to `production/qa/flakiness-report-[date].md`?"
+8. On approval, the new entry is appended with `Edit`; the existing entry stays
+9. Verdict: **COMPLETE** — flakiness report written
 
 **Assertions:**
-- [ ] Skill reads test history logs when available
-- [ ] Per-test pass rate is computed across all available runs
-- [ ] Verdict is NO FLAKINESS when all tests pass consistently
+- [ ] JUnit XML results in `test-results/` are parsed per test across all 6 runs
+- [ ] The flaky test is named with its fail rate, Confidence confirmed, and classified High → quarantine
+- [ ] The skip mechanism named is gdUnit4's `_do_skip` / `_skip_reason` parameter pair, not an invented flag
+- [ ] The likely cause is Random seed, with the explicit-seed fix direction
+- [ ] The two writes are asked about separately, each before it happens
+- [ ] The quarantine entry is appended and the existing entry is not removed
+- [ ] Verdict is COMPLETE
+
+---
+
+### Case 2: Moderate Flakiness — Fix directly, do not quarantine
+
+**Fixture:**
+- `project.yaml`: `engine.name: godot`
+- `test-results/` holds 20 JUnit XML files from 20 runs of the same commit
+- `test_physics_bounce_height_matches_spec` fails in 3 of 20 runs (15%)
+- The test asserts `bounce_height == 0.5`
+
+**Input:** `/test-flakiness scan`
+
+**Expected behavior:**
+1. Skill computes a 15% fail rate → **Moderate** flakiness
+2. Grep of the test file finds a float equality comparison → likely cause Floating point
+3. Recommendation: "This test is intermittently unreliable… Do not quarantine yet — fix the test directly", with the fix direction of an epsilon comparison (`is_equal_approx`)
+
+**Assertions:**
+- [ ] A 15% fail rate is classified Moderate
+- [ ] The recommendation is to fix directly, not to quarantine
+- [ ] The cause is Floating point and the fix names an epsilon comparison such as `is_equal_approx`
+
+---
+
+### Case 3: No Result Data — List options and stop
+
+**Fixture:**
+- No `test-results/` directory, no `.github/` directory, no `Saved/Logs/`
+- No log path is given
+
+**Input:** `/test-flakiness scan`
+
+**Expected behavior:**
+1. Skill finds no CI or local result data
+2. Skill prints "No CI log data found…" with the three options: run the suite at least 3 times and collect logs; save a CI log to `test-results/`; run `/test-flakiness registry`
+3. Skill stops and asks the user which option to pursue
+4. No flakiness table is produced and nothing is written
+
+**Assertions:**
+- [ ] Output states no CI log data was found
+- [ ] All three options are listed, including `/test-flakiness registry`
+- [ ] Skill stops to ask instead of reporting a clean result
 - [ ] No files are written
 
 ---
 
-### Case 2: Suspect Tests Found — Test fails intermittently in history
+### Case 4: Too Few Runs — Suspected, not confirmed
 
 **Fixture:**
-- `production/qa/test-history/` contains logs for 10 test runs
-- `test_combat_damage_applies_crit_multiplier` passes 7 times, fails 3 times
-- Failure messages differ (sometimes timeout, sometimes wrong value)
+- `project.yaml`: `engine.name: godot`
+- `test-results/` holds only 2 JUnit XML files, from 2 runs of the same commit
+- `test_save_roundtrip_preserves_inventory` passes in one run and fails in the other
 
-**Input:** `/test-flakiness`
+**Input:** `/test-flakiness scan`
 
 **Expected behavior:**
-1. Skill reads test history logs — computes pass rates
-2. `test_combat_damage_applies_crit_multiplier` has 70% pass rate (threshold: 95%)
-3. Skill flags it as SUSPECT with pass rate (7/10) and failure pattern noted
-4. Verdict is SUSPECT TESTS FOUND
-5. Skill recommends investigating the test for timing or state dependencies
+1. Skill parses both files and finds the test with both outcomes — a 50% fail rate
+2. With fewer than 3 runs, the finding is flagged "suspected", not "confirmed": the summary table's Confidence reads suspected, and the High tier's quarantine-immediately does not apply
+3. The test is not quarantined; the recommendation is to collect more runs before acting
+4. Skill asks whether more run data is available
+5. The Data Limitations section notes that fewer than 5 runs were available, so confidence is low
 
 **Assertions:**
-- [ ] Tests below the pass-rate threshold are flagged by name
-- [ ] Pass rate (fraction and percentage) is shown for each suspect test
-- [ ] Failure pattern (e.g., inconsistent error messages) is noted if detectable
-- [ ] Verdict is SUSPECT TESTS FOUND
-- [ ] Skill recommends investigation steps
+- [ ] The finding is labelled suspected, not confirmed, in the summary table's Confidence column
+- [ ] The 50% fail rate does not trigger quarantine — no skip is recommended, and any regression-suite note marks the test suspected
+- [ ] Skill asks whether more run data is available
+- [ ] Data Limitations states that fewer than 5 runs were analysed
 
 ---
 
-### Case 3: Source Pattern — Random number used without seed
+### Case 5: Registry Mode in Full Review Mode — Guidance for known quarantined tests, no gates
 
 **Fixture:**
-- No test history logs exist
-- `tests/unit/loot/loot_drop_test.gd` contains:
-  ```gdscript
-  var roll = randf()  # unseeded random — non-deterministic
-  assert_gt(roll, 0.5, "Loot should drop above 50%")
-  ```
+- `project.yaml`: `modes.review_mode: full`
+- `tests/regression-suite.md` Quarantined Tests table lists `test_ai_path_recalc_avoids_blocked_tile` (reason: timing) and `test_scene_load_spawns_player` (reason: scene not ready)
 
-**Input:** `/test-flakiness`
+**Input:** `/test-flakiness registry`
 
 **Expected behavior:**
-1. Skill finds no test history logs
-2. Skill falls back to source code analysis
-3. Skill detects `randf()` call without a preceding `seed()` call
-4. Skill flags the test as FLAKINESS RISK (source pattern, not confirmed)
-5. Verdict is SUSPECT TESTS FOUND (pattern detected, not confirmed by history)
-6. Skill recommends seeding random before the call or mocking the random function
+1. Skill reads the quarantine section of `tests/regression-suite.md`
+2. For each quarantined test it gives remediation guidance from the cause table: Timing / async → explicit await or synchronisation instead of time-based delays; Scene/prefab load race → await one frame after instantiation (`await get_tree().process_frame`)
+3. No director gate is invoked regardless of review mode
+4. Existing quarantine entries are not removed and no test file is deleted or edited by the skill
 
 **Assertions:**
-- [ ] Source code analysis is used as fallback when no history logs exist
-- [ ] Unseeded random number usage is detected as a flakiness risk
-- [ ] Verdict is SUSPECT TESTS FOUND (not CONFIRMED FLAKY — no history to confirm)
-- [ ] Remediation recommends seeding or mocking
-
----
-
-### Case 4: No Test History — Source-only analysis with common patterns
-
-**Fixture:**
-- `production/qa/test-history/` does not exist
-- `tests/` contains 15 test files
-- Scan finds 2 tests using `OS.get_ticks_msec()` for timing assertions
-- No other flakiness patterns found
-
-**Input:** `/test-flakiness`
-
-**Expected behavior:**
-1. Skill checks for test history — not found
-2. Skill notes: "No test history available — analyzing source code for flakiness patterns only"
-3. Skill scans all test files for known patterns: unseeded random, real-time waits, system clock usage
-4. Finds 2 tests using `OS.get_ticks_msec()` — flags as FLAKINESS RISK
-5. Verdict is SUSPECT TESTS FOUND
-
-**Assertions:**
-- [ ] Skill notes clearly that source-only analysis is being performed (no history)
-- [ ] Common flakiness patterns are scanned: random, time-based assertions, external I/O
-- [ ] `OS.get_ticks_msec()` usage for assertions is flagged as a flakiness risk
-- [ ] Verdict is SUSPECT TESTS FOUND when source patterns are found
-
----
-
-### Case 5: Gate Compliance — No gate; flakiness report is advisory
-
-**Fixture:**
-- Test history shows 1 CONFIRMED FLAKY test (fails 6 out of 10 runs)
-- `review-mode.txt` contains `full`
-
-**Input:** `/test-flakiness`
-
-**Expected behavior:**
-1. Skill analyzes test history; identifies 1 confirmed flaky test
-2. No director gate is invoked regardless of review mode
-3. Verdict is CONFIRMED FLAKY
-4. Skill presents findings and offers optional written report
-5. If user opts in: "May I write to `production/qa/flakiness-report-[date].md`?"
-
-**Assertions:**
+- [ ] The quarantine section of `tests/regression-suite.md` is the input
+- [ ] Each quarantined test gets a fix direction matching its cause
 - [ ] No director gate is invoked in any review mode
-- [ ] CONFIRMED FLAKY verdict requires history-based evidence (not just source patterns)
-- [ ] Optional report requires "May I write" before writing
-- [ ] Flakiness report is advisory for qa-lead; skill does not auto-disable tests
+- [ ] No quarantine entry is removed and no test file is deleted
 
 ---
 
 ## Protocol Compliance
 
-- [ ] Reads test history logs when available; falls back to source analysis when not
-- [ ] Notes clearly which analysis mode is being used (history vs. source-only)
-- [ ] Flakiness threshold (e.g., 95% pass rate) is used for SUSPECT classification
-- [ ] CONFIRMED FLAKY requires history evidence; SUSPECT covers source patterns only
-- [ ] Does not disable or modify any test files
+- [ ] Locates result data (`test-results/` XML, `Saved/Logs/`, or a given log path) before analysis; with none, lists the three options and stops to ask
+- [ ] Classifies tests with both outcomes by fail rate: >25% High (quarantine), 5–25% Moderate (fix, do not quarantine), 1–5% Low (monitor)
+- [ ] Names a likely cause and fix direction from the cause table, using Grep on the test file
+- [ ] Counts a test as flaky only when it both passed and failed across runs with no code change between them
+- [ ] With fewer than 3 runs, flags findings as suspected, not confirmed, in the summary's Confidence column, and quarantines nothing
+- [ ] Asks separately before updating `tests/regression-suite.md` and before writing `production/qa/flakiness-report-[date].md`
+- [ ] Appends quarantine entries, never removes existing ones, and never deletes test files
 - [ ] No director gates are invoked
-- [ ] Verdict is one of: NO FLAKINESS, SUSPECT TESTS FOUND, CONFIRMED FLAKY
+- [ ] Ends with COMPLETE on write or BLOCKED on decline; with no result data it lists the three options and stops to ask instead (Case 3), never reporting a clean result
 
 ---
 
 ## Coverage Notes
 
-- The pass-rate threshold for SUSPECT classification (95% suggested above) is an
-  implementation detail; the tests verify that intermittent failures are flagged,
-  not the exact threshold value.
-- Tests that fail due to environment issues (missing assets, wrong platform) are
-  not flakiness — the skill distinguishes environment failures from non-determinism
-  in the test itself; this distinction is not explicitly tested here.
+- The no-argument path (run `scan` when CI logs are accessible, else
+  `registry`) is not tested here.
+- Unity NUnit XML follows the same flow as Case 1, read from `<test-case`
+  elements and their `result` attribute; not tested separately.
+- Unreal differs and is not tested here: its results are plain-text
+  `Result={Success}` / `Result={Fail}` lines in `Saved/Logs/` (each test prints
+  `Test Completed. Result={<status>}`), and its skip
+  mechanism is NOT SOURCEABLE, so a quarantined Unreal test is logged and the
+  user is asked how their CI excludes it. The same applies to gdUnit4 C# tests.
+- The Low tier (1–5%) needs 20 or more runs to reach and is not tested.

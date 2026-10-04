@@ -1,11 +1,15 @@
 ---
 name: review-all-gdds
-description: "Holistic cross-GDD consistency and game design review. Reads all system GDDs simultaneously and checks for contradictions between them, stale references, ownership conflicts, formula incompatibilities, and game design theory violations (dominant strategies, economic imbalance, cognitive overload, pillar drift). Run after all MVP GDDs are written, before architecture begins."
+description: "Holistic cross-GDD review — contradictions between systems, dominant strategies, economic imbalance, cognitive overload, pillar drift."
 argument-hint: "[focus: full | consistency | design-theory | since-last-review]"
 user-invocable: true
-allowed-tools: Read, Glob, Grep, Write, Bash, AskUserQuestion, Task
+allowed-tools: Read, Glob, Grep, Write, Bash, AskUserQuestion, Agent, Bash(bash "*/.claude/skills/review-all-gdds/../../hooks/yaml-helper.sh" resolve_config *)
 model: opus
 ---
+
+!`bash "${CLAUDE_SKILL_DIR}/../../hooks/yaml-helper.sh" resolve_config --keys automation,workflow,system_overrides`
+
+
 
 # Review All GDDs
 
@@ -27,9 +31,13 @@ completeness. This skill reviews the *relationships* between all GDDs.
 - Before `/create-architecture` begins (architecture built on inconsistent GDDs
   inherits those inconsistencies)
 
+Every `AskUserQuestion` call follows `.claude/docs/automation-modes.md`
+(collaborative asks always · guided major-only · autonomous logs and proceeds;
+`automation_always_ask` categories always prompt).
+
 **Argument modes:**
 
-**Focus:** `$ARGUMENTS[0]` (blank = `full`)
+**Focus:** `$ARGUMENTS` (blank = `full`)
 
 - **No argument / `full`**: Both consistency and design theory passes
 - **`consistency`**: Cross-GDD consistency checks only (faster)
@@ -37,6 +45,13 @@ completeness. This skill reviews the *relationships* between all GDDs.
 - **`since-last-review`**: Only GDDs modified since the last review report (git-based)
 
 ---
+
+**`workflow`** per GDD (per `.claude/docs/workflow-modes.md`): each GDD validates
+against its effective tier — the project value, overridden per system by the
+`system_overrides` row for that system when the block lists one. At `full`, validate all 8
+sections across all GDDs. At `standard`, validate the 5 required sections;
+optional sections (Player Fantasy, Tuning Knobs, conditional Formulas) are
+surfaced as advisory only. At `minimal`, this skill is not applicable (no GDDs).
 
 ## Phase 1: Load Everything
 
@@ -49,6 +64,14 @@ from all GDD files:
 Grep pattern="## Summary" glob="design/gdd/*.md" output_mode="content" -A 5
 ```
 
+**Fail open on a missing Summary.** Establish the denominator: glob
+`design/gdd/*.md` and count **N**. A scan matching fewer than N means those GDDs
+predate `## Summary` — never treat an absent Summary as a system out of scope.
+A zero-match scan means "no GDD carries a Summary yet", not "nothing to review".
+This review is holistic and loads its in-scope GDDs regardless (see Phase 1c);
+the Summary scan only builds the manifest and narrows `since-last-review`, it
+never shrinks the review set.
+
 Display a manifest to the user:
 ```
 Found [N] GDDs. Summaries:
@@ -57,10 +80,22 @@ Found [N] GDDs. Summaries:
   ...
 ```
 
-For `since-last-review` mode: run `git log --name-only` to identify GDDs
-modified since the last review report file was written. Show the user which
-GDDs are in scope based on summaries before doing any full reads. Only
-proceed to L1 for those GDDs plus any GDDs listed in their "Key deps".
+For `since-last-review` mode, compute the scope deterministically instead of
+reasoning through git history:
+
+```
+Bash: bash .claude/scripts/review-scope.sh
+```
+
+It prints `PRIOR_REVIEW:`, a `CHANGED:` list, and a `DEPS ...:` list of each
+changed GDD's declared dependencies. Use those lists as the scope — the
+dependency lines are already the "Key deps" expansion, so no second pass is
+needed. If `PRIOR_REVIEW: NONE`, a full review is required; fall back to `full`
+mode.
+
+Show the user which GDDs are in scope based on summaries before doing any full
+reads. Only proceed to L1 for the `CHANGED` set plus the GDDs named on the
+`DEPS` lines.
 
 ### Phase 1b — Registry Pre-Load (fast baseline)
 
@@ -80,19 +115,44 @@ If the registry is empty or absent: proceed without it. Note in the report:
 "Entity registry is empty — consistency checks rely on full GDD reads only.
 Run `/consistency-check` after this review to populate the registry."
 
-### Phase 1c — L1/L2: Full Document Load
+### Phase 1c — L1/L2: Section Load
 
-Full-read the in-scope documents:
+Read whole (small, and every part is used):
 
-1. `design/gdd/game-concept.md` — game vision, core loop, MVP definition
+1. `design/gdd/game-concept.md` — game vision, core loop, MVP definition (or
+   `design/game-brief.md`, the one-page brief that replaces it at `rigor: minimal` —
+   pitch, core loop, MVP list)
 2. `design/gdd/game-pillars.md` if it exists — design pillars and anti-pillars
 3. `design/gdd/systems-index.md` — authoritative system list, layers, dependencies, status
-4. **Every in-scope system GDD in `design/gdd/`** — read completely (skip
-   game-concept.md and systems-index.md — those are read above)
+
+Then, for **every in-scope system GDD**, load the sections this review actually
+consumes — **not the whole file**:
+
+```
+Grep pattern="^## (Dependencies|Detailed Rules|Detailed Design|Formulas|Tuning Knobs|Acceptance Criteria|Player Fantasy)" glob="design/gdd/*.md" output_mode="content" -A 40
+```
+
+That list is not a guess — it is exactly the union the Parallel Execution
+contract below already enumerates: Phase 2 needs Dependencies, Detailed
+Design/Rules, Formulas, Tuning Knobs and Acceptance Criteria; Phase 3 needs
+Player Fantasy and progression/reward structure. Overview is narrative restated
+by the Summary this skill already scanned in Phase 1a, and Edge Cases feeds no
+checklist item here (`/design-review` owns per-GDD completeness). Loading them
+put content in three context windows — this one and both sub-agents' — that no
+checklist item ever read.
+
+Accept **either** `## Detailed Rules` or `## Detailed Design`; the design standard
+and the GDD template disagree on the name and they denote the same section.
+
+**Escalate to a full read of one GDD** when a scanned section cross-references
+material outside itself, or when a GDD matched **zero** sections — that GDD
+predates the template, and a zero-match there means "unstructured", not "empty".
+Never let a zero-match silently drop a system: the scan narrows the *read*, it
+never shrinks the *review set*.
 
 Report: "Loaded [N] system GDDs covering [M] systems. Pillars: [list]. Anti-pillars: [list]."
 
-If fewer than 2 system GDDs exist, stop:
+If fewer than 2 system GDDs exist (count the files present; an empty one is handled under NOT ASSESSED in Phase 5, not here), stop:
 > "Cross-GDD review requires at least 2 system GDDs. Write more GDDs first,
 > then re-run `/review-all-gdds`."
 
@@ -101,17 +161,26 @@ If fewer than 2 system GDDs exist, stop:
 ### Parallel Execution
 
 Phase 2 (Consistency) and Phase 3 (Design Theory) are independent — they read
-the same GDD inputs but produce separate reports. Spawn both as parallel Task
+the same GDD inputs but produce separate reports. Spawn both as parallel `Agent`
 agents simultaneously rather than waiting for Phase 2 to complete before
 starting Phase 3. Collect both results before writing the combined report.
 
-**When spawning parallel Task agents for Phase 2 and Phase 3, always pass:**
-- The complete list of GDD file paths loaded in Phase 1 (explicit paths, not just counts)
+Spawn both as `game-designer` sub-agents (`subagent_type: game-designer`) — GDD
+consistency and design-theory review is its domain.
+
+**When spawning the Phase 2 and Phase 3 agents, always pass:**
+- The loaded GDD **content** each phase needs — **not file paths**. Paste the
+  sections; the sub-agent has its own context and cannot re-read Phase 1's
+  results, so a path forces a full re-read (and contradicts the "do not re-read"
+  rule below). Pass only the phase's slice: Phase 2 (consistency) needs each GDD's
+  Dependencies, Detailed Design/Rules, Formulas, Tuning Knobs and Acceptance
+  Criteria; Phase 3 (design theory) needs Player Fantasy, progression/reward
+  structure and the game pillars.
 - The full TR registry contents if loaded in Phase 1b (paste the registry text, not just a file path)
 - The specific checklist items assigned to that agent's phase (Phase 2 gets 2a–2f; Phase 3 gets 3a–3g)
-- The engine name and version from `.claude/docs/technical-preferences.md` and `docs/engine-reference/[engine]/VERSION.md`
+- The engine name and version — `engine.name` and `engine.version` from `project.yaml`, resolving each field independently (if its key is absent or empty, use `.claude/docs/technical-preferences.md`) — plus `docs/engine-reference/[engine]/VERSION.md`
 
-Do not rely on the subagent to re-read these files — it has its own context window and cannot access Phase 1 results unless they are explicitly passed in the Task prompt.
+Do not rely on the subagent to re-read these files — it has its own context window and cannot access Phase 1 results unless they are explicitly passed in the `Agent` prompt.
 
 ---
 
@@ -158,6 +227,21 @@ Categories to scan:
 
 ### 2c: Stale References
 
+**Start from the `## Cross-References` table where a GDD has one.** That table is
+the document's own declaration of what it depends on — `templates/game-design-document.md`
+tells authors it is machine-checked here, and `/design-system` requires it
+whenever Dependencies names another GDD. For each row, confirm the `Target GDD`
+exists and the `Specific Element Referenced` is still present in it under that
+name, with the declared `Nature` still accurate.
+
+A table that is absent, or still holding the template's bracketed examples, is
+itself reportable: say the GDD declares no cross-references and that the prose
+scan below was the only check applied. Do not treat an absent table as "no
+dependencies" — it far more often means the section was never authored.
+
+**Then scan the prose regardless**, table or no table: a declared table catches
+what the author remembered, and the scan below catches what they did not.
+
 For every cross-document reference (GDD-A mentions a mechanic, value, or
 system name from GDD-B), verify the referenced element still exists in GDD-B
 with the same name and behaviour:
@@ -167,15 +251,24 @@ with the same name and behaviour:
 - If GDD-A references "the progression curve defined in [system].md", check that
   [system].md actually has that curve, not a different progression model
 - If GDD-A was written before GDD-B and assumed a mechanic that GDD-B later
-  designed differently, flag GDD-A as containing a stale reference
+  designed differently, flag GDD-A as containing a stale reference. Severity: a
+  reference to a mechanic or formula that **does not exist** is **Blocking** — the
+  architecture would inherit a rule nobody defined; one that exists but was
+  designed differently is a **Warning**, unless the difference changes a rule the
+  referencing GDD depends on (then Blocking)
+- If the **target GDD is not written yet** (no file in `design/gdd/`): when
+  `systems-index.md` lists that system (e.g. `Status: Not Started`), it is a
+  **Warning** — a dependency on planned work, to re-check when that GDD is
+  written; when neither a GDD nor a systems-index entry exists for it, it is
+  **Blocking** — nothing will ever define it
 
 ```
-⚠️  Stale Reference
+🔴 Stale Reference
 inventory.md (written first): "Item weight uses the encumbrance formula
   from movement.md"
 movement.md (written later): Defines no encumbrance formula — uses a flat
   carry limit instead
-→ inventory.md references a formula that doesn't exist
+→ inventory.md references a formula that doesn't exist — Blocking
 ```
 
 ### 2d: Data and Tuning Knob Ownership Conflicts
@@ -480,7 +573,8 @@ step where the issue occurs, and the nature of the failure mode.
 ```
 ## Cross-GDD Review Report
 Date: [date]
-GDDs Reviewed: [N]
+GDDs Reviewed: [N] of [M] present
+Not read: [each GDD that could not be read or is present but empty, by file name — or "none"]
 Systems Covered: [list]
 
 ---
@@ -533,20 +627,53 @@ Scenarios walked: [N]
 | GDD | Reason | Type | Priority |
 |-----|--------|------|----------|
 | [system-a].md | Rule contradiction with [system-b].md | Consistency | Blocking |
+| [system-b].md | Rule contradiction with [system-a].md | Consistency | Blocking |
 | [system-c].md | Stale reference to nonexistent mechanic | Consistency | Blocking |
 | [system-d].md | No pillar alignment | Design Theory | Warning |
 
 ---
 
-### Verdict: [PASS / CONCERNS / FAIL]
+### Verdict: [PASS / NOT ASSESSED / CONCERNS / FAIL]
 
-PASS: No blocking issues. Warnings present but don't prevent architecture.
-CONCERNS: Warnings present that should be resolved but are not blocking.
+PASS: No blocking issues and no warnings.
+NOT ASSESSED: One or more review phases could not run — named below.
+CONCERNS: Warnings present that should be resolved, but nothing blocking.
 FAIL: One or more blocking issues must be resolved before architecture begins.
+
+### If NOT ASSESSED — what could not be reviewed, and why:
+[Name each phase that did not run and the input it needed, and each GDD that could not be read or is present but empty, by file name]
 
 ### If FAIL — required actions before re-running:
 [Specific list of what must change in which GDD]
 ```
+
+**`NOT ASSESSED` — a cross-review is only as wide as what it could read.** Rank:
+**above PASS**, **below CONCERNS and FAIL**. This skill's whole value is
+comparing systems *against each other*, so it is unusually easy for it to look
+thorough while covering a fraction of the surface. Emit it when any of:
+
+- **Fewer than two GDDs were readable.** Contradiction-hunting across one document
+  is not a cross-review; a clean result there means only that nothing was
+  compared. This is the single most important trigger in this skill.
+- **A whole review phase did not run** — consistency, design theory, economy,
+  pillar drift. A parallel phase that returned nothing has to be distinguished
+  from one that returned no findings; if a spawned agent produced no report, that
+  phase is NOT ASSESSED, not clean — an agent can return a fluent sentence,
+  write nothing, and consume a phase.
+- **The design pillars are undefined**, so pillar-drift has no reference to drift
+  from — the same shape as an accessibility gate with no committed tier.
+- **A GDD is present but empty** (headings only, or all placeholders), **or
+  could not be read**. Present is not the same as reviewable, and a stub
+  contradicts nothing.
+
+Report the covered set explicitly either way: `GDDs reviewed: [N] of [M] present`
+(`[M]` counts the system GDDs present — the Phase 1c set, not `game-concept.md`,
+`game-pillars.md`, `systems-index.md` or an earlier `gdd-cross-review-*.md`),
+and the `Not read:` line naming every GDD that could not be read or is present but empty, whatever the
+verdict — a FAIL found in the GDDs that were read does not make the unread ones
+reviewed.
+A cross-review that silently skipped half the systems is indistinguishable from
+one that found them consistent.
 
 ---
 
@@ -555,6 +682,16 @@ FAIL: One or more blocking issues must be resolved before architecture begins.
 Use `AskUserQuestion` for write permission:
 - Prompt: "May I write this review to `design/gdd/gdd-cross-review-[date].md`?"
 - Options: `[A] Yes — write the report` / `[B] No — skip`
+
+> **`[date]` here means ISO 8601 — `YYYY-MM-DD`, e.g.
+> `gdd-cross-review-2026-08-19.md`. This is not a style preference.**
+> `.claude/scripts/review-scope.sh` picks the prior review with
+> `sort | tail -1`, so lexical order IS chronological order only for ISO dates.
+> Written as `aug-19-2026` or `19-08-2026`, the wrong file is chosen as the
+> baseline, the changed-set is computed from it, and GDDs modified since the
+> real last review silently escape the next one. That is the same
+> quiet-escape failure the three fixes documented at the top of that script
+> exist to prevent.
 
 If any GDDs are flagged for revision, use a second `AskUserQuestion`:
 - Prompt: "Should I update the systems index to mark these GDDs as needing revision? ([list of flagged GDDs])"
@@ -569,8 +706,9 @@ After writing the report (and updating systems index if approved), silently
 append to `production/session-state/active.md`:
 
     ## Session Extract — /review-all-gdds [date]
-    - Verdict: [PASS / CONCERNS / FAIL]
-    - GDDs reviewed: [N]
+    - Verdict: [PASS / NOT ASSESSED / CONCERNS / FAIL]
+    - GDDs reviewed: [N of M present]
+    - Phases not run: [names, or "None"]
     - Flagged for revision: [comma-separated list, or "None"]
     - Blocking issues: [N — brief one-line descriptions, or "None"]
     - Recommended next: [the Phase 7 handoff action, condensed to one line]
@@ -600,31 +738,41 @@ Build the option list dynamically — only include options that apply:
 - `[_] Apply quick fix: [W-XX description] in [gdd-name].md — [effort estimate]` (one option per simple-edit warning; only for Warning-level, not Blocking)
 - `[_] Run /design-review [flagged-gdd-path] — address flagged warnings` (one per flagged GDD, if any)
 - `[_] Run /design-system [next-system] — next in design order` (always include, name the actual system)
-- `[_] Run /create-architecture — begin architecture (verdict is PASS/CONCERNS)` (include if verdict is not FAIL)
+- `[_] Run /create-architecture — begin architecture (verdict is PASS/CONCERNS)` (include only if the verdict is PASS or CONCERNS — never on FAIL or NOT ASSESSED)
 - `[_] Run /gate-check — validate Systems Design phase gate` (include if verdict is PASS)
 - `[_] Stop here`
 
 Assign letters A, B, C… only to included options. Mark the most pipeline-advancing option as `(recommended)`.
 
-Never end the skill with plain text. Always close with this widget.
+In collaborative and guided modes, never end the skill with plain text — always
+close with this widget. In autonomous mode, print the verdict and recommended
+next step, then record via `log_decision` (no widget).
 
 ---
 
 ## Error Recovery Protocol
 
-If any spawned agent returns BLOCKED, errors, or fails to complete:
+**First, verify the artifact.** If the return contract named a path, check the
+path exists before treating the phase as done — **a named artifact that is not
+on disk is a failed phase, however fluent the response reads.** An agent can
+burn a full phase and return a plausible preamble having written nothing, which
+is neither BLOCKED nor an error nor "fails to complete", so the trigger below
+never fires. Resume it naming the unmet contract; the context is
+usually still there.
 
-1. **Surface immediately**: Report "[AgentName]: BLOCKED — [reason]" before continuing
-2. **Assess dependencies**: If the blocked agent's output is required by a later phase, do not proceed past that phase without user input
-3. **Offer options** via AskUserQuestion with three choices:
-   - Skip this agent and note the gap in the final report
-   - Retry with narrower scope (fewer GDDs, single-system focus)
-   - Stop here and resolve the blocker first
-4. **Always produce a partial report** — output whatever was completed so work is not lost
+If any spawned agent returns BLOCKED, errors, or fails to complete: **surface it
+immediately, don't proceed past a dependency it blocks, and always produce a
+partial report** (retry scope here = fewer GDDs / single-system). Full procedure:
+`.claude/docs/error-recovery-protocol.md`.
 
 ---
 
 ## Collaborative Protocol
+
+**In `collaborative` mode (the default).** For `guided` and `autonomous` modes,
+see `.claude/docs/automation-modes.md`. In `autonomous` mode the
+PASS/CONCERNS/FAIL verdict is still printed and logged — only the closing
+handoff widget is skipped.
 
 1. **Read silently** — load all GDDs before presenting anything
 2. **Show everything** — present the full consistency and design theory analysis

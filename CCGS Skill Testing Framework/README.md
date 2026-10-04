@@ -3,9 +3,25 @@
 Quality assurance infrastructure for the **Claude Code Game Studios** framework.
 Tests the skills and agents themselves — not any game built with them.
 
-> **This folder is self-contained and optional.**
-> Game developers using CCGS don't need it. To remove it entirely:
-> `rm -rf "CCGS Skill Testing Framework"` — nothing in `.claude/` depends on it.
+**This ships as part of the template, and it is meant to.** CCGS is a template
+you are expected to customize — edit a skill, add your own, retune an agent. This
+folder is how you check that what you changed still holds up: `catalog.yaml`
+tracks all 74 skills and 49 agents, `quality-rubric.md` defines per-category
+pass/fail metrics, and `templates/` gives you the spec format for anything new
+you write. Driven by `/skill-test` and `/skill-improve`.
+
+> **If you remove it, two of the four `/skill-test` modes stop working.**
+>
+> | Mode | Without this folder |
+> |------|---------------------|
+> | `/skill-test static` | **Works** — the 7 structural checks read `SKILL.md` only |
+> | `/skill-test audit` | **Degrades** — reports that no catalog exists |
+> | `/skill-test spec` | **Breaks** — the behavioral specs live here |
+> | `/skill-test category` | **Breaks** — reads `quality-rubric.md` from here |
+> | `/skill-improve` | **Degrades** — its test-fix-retest loop loses the category pass |
+>
+> `/skill-test` and `/skill-improve` read this folder by path, so removing it is a
+> real trade, not a free cleanup — the table above states the actual cost.
 
 ---
 
@@ -15,10 +31,10 @@ Tests the skills and agents themselves — not any game built with them.
 CCGS Skill Testing Framework/
 ├── README.md              ← you are here
 ├── CLAUDE.md              ← tells Claude how to use this framework
-├── catalog.yaml           ← master registry: all 73 skills + 49 agents, coverage tracking
+├── catalog.yaml           ← master registry: all 74 skills + 49 agents, coverage tracking
 ├── quality-rubric.md      ← category-specific pass/fail metrics for /skill-test category
 │
-├── skills/                ← behavioral spec files for skills (one per skill)
+├── skills/                ← behavioral spec files for skills (73 of 74 — settings has none yet)
 │   ├── gate/              ← gate category specs
 │   ├── review/            ← review category specs
 │   ├── authoring/         ← authoring category specs
@@ -31,19 +47,20 @@ CCGS Skill Testing Framework/
 │
 ├── agents/                ← behavioral spec files for agents (one per agent)
 │   ├── directors/         ← creative-director, technical-director, producer, art-director
-│   ├── leads/             ← lead-programmer, narrative-director, audio-director, etc.
-│   ├── specialists/       ← engine/code/shader/UI specialists
-│   ├── godot/             ← Godot-specific specialists
-│   ├── unity/             ← Unity-specific specialists
-│   ├── unreal/            ← Unreal-specific specialists
-│   ├── operations/        ← QA, live-ops, release, localization, etc.
-│   └── creative/          ← writer, world-builder, game-designer, etc.
+│   ├── leads/             ← lead-programmer, narrative-director, audio-director, game-designer, systems-designer, level-designer, qa-lead
+│   ├── specialists/       ← gameplay/engine/network/AI/tools/UI programmers, technical-artist, sound-designer, ux-designer, performance-analyst, prototyper, writer, world-builder
+│   ├── engine/            ← engine-specific specialists, split per engine:
+│   │   ├── godot/         ← Godot-specific specialists
+│   │   ├── unity/         ← Unity-specific specialists
+│   │   └── unreal/        ← Unreal-specific specialists
+│   ├── operations/        ← devops, release, live-ops, community, analytics, economy, localization
+│   └── qa/                ← qa-tester, security-engineer, accessibility-specialist
 │
 ├── templates/             ← spec file templates for writing new specs
 │   ├── skill-test-spec.md ← template for skill behavioral specs
 │   └── agent-test-spec.md ← template for agent behavioral specs
 │
-└── results/               ← test run outputs (written by /skill-test spec, gitignored)
+└── results/               ← test run outputs (written by /skill-test spec; not gitignored — add it to .gitignore to keep them out of commits)
 ```
 
 ---
@@ -56,7 +73,7 @@ All testing is driven by two skills already in the framework:
 
 ```
 /skill-test static [skill-name]     # Check one skill (7 checks)
-/skill-test static all              # Check all 73 skills
+/skill-test static all              # Check all 74 skills
 ```
 
 ### Run a behavioral spec test
@@ -64,13 +81,15 @@ All testing is driven by two skills already in the framework:
 ```
 /skill-test spec gate-check         # Evaluate a skill against its written spec
 /skill-test spec design-review
+/skill-test spec creative-director  # Agents too: evaluates agents/directors/creative-director.md
 ```
 
 ### Check against category rubric
 
 ```
 /skill-test category gate-check     # Evaluate one skill against its category metrics
-/skill-test category all            # Run rubric checks across all categorized skills
+/skill-test category art-director   # Or one agent, against its agent category
+/skill-test category all            # Run rubric checks across every categorized skill and agent
 ```
 
 ### See full coverage picture
@@ -105,16 +124,16 @@ All testing is driven by two skills already in the framework:
 
 ## Agent tiers
 
-| Tier | Agents |
+| Tier (directory) | Agents |
 |------|--------|
 | `directors` | creative-director, technical-director, producer, art-director |
-| `leads` | lead-programmer, narrative-director, audio-director, ux-designer, qa-lead, release-manager, localization-lead |
-| `specialists` | gameplay-programmer, engine-programmer, ui-programmer, tools-programmer, network-programmer, ai-programmer, level-designer, sound-designer, technical-artist |
-| `godot` | godot-specialist, godot-gdscript-specialist, godot-csharp-specialist, godot-shader-specialist, godot-gdextension-specialist |
-| `unity` | unity-specialist, unity-ui-specialist, unity-shader-specialist, unity-dots-specialist, unity-addressables-specialist |
-| `unreal` | unreal-specialist, ue-gas-specialist, ue-replication-specialist, ue-umg-specialist, ue-blueprint-specialist |
-| `operations` | devops-engineer, security-engineer, performance-analyst, analytics-engineer, community-manager |
-| `creative` | writer, world-builder, game-designer, economy-designer, systems-designer, prototyper |
+| `leads` | lead-programmer, narrative-director, audio-director, game-designer, systems-designer, level-designer, qa-lead |
+| `specialists` | gameplay-programmer, engine-programmer, network-programmer, ai-programmer, tools-programmer, ui-programmer, ux-designer, technical-artist, sound-designer, performance-analyst, prototyper, writer, world-builder |
+| `engine/godot` | godot-specialist, godot-gdscript-specialist, godot-csharp-specialist, godot-shader-specialist, godot-gdextension-specialist |
+| `engine/unity` | unity-specialist, unity-ui-specialist, unity-shader-specialist, unity-dots-specialist, unity-addressables-specialist |
+| `engine/unreal` | unreal-specialist, ue-gas-specialist, ue-replication-specialist, ue-umg-specialist, ue-blueprint-specialist |
+| `operations` | devops-engineer, release-manager, live-ops-designer, community-manager, analytics-engineer, economy-designer, localization-lead |
+| `qa` | qa-tester, security-engineer, accessibility-specialist |
 
 ---
 
@@ -135,16 +154,21 @@ All testing is driven by two skills already in the framework:
 3. Update the `spec:` field in `catalog.yaml` to point to the new file
 4. Run `/skill-test spec [skill-name]` to validate it
 
+For an agent, copy `templates/agent-test-spec.md` to `agents/[tier]/[agent-name].md`,
+set the `spec:` field on its entry under `agents:` in `catalog.yaml`, and run
+`/skill-test spec [agent-name]`.
+
 ---
 
 ## Removing this framework
 
-This folder has no hooks into the main project. To remove:
+No hook or import in the main project depends on this folder, but `/skill-test`
+and `/skill-improve` read it by path. To remove:
 
 ```bash
 rm -rf "CCGS Skill Testing Framework"
 ```
 
-The skills `/skill-test` and `/skill-improve` will still function — they'll simply
-report that `catalog.yaml` is missing and suggest running `/skill-test audit` to
-initialize it.
+Afterwards `/skill-test static` works as before, `spec` and `category` stop
+working, `audit` reports that no catalog exists, and `/skill-improve` skips its
+category checks — the table at the top of this file lists the cost per mode.

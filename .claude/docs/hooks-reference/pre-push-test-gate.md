@@ -2,8 +2,8 @@
 
 ## Trigger
 
-Runs before any push to a remote branch. Mandatory for pushes to `develop`
-and `main`.
+Runs before any push to a remote branch. Mandatory for pushes to `main` (the
+trunk) and to `release/*` branches.
 
 ## Purpose
 
@@ -20,17 +20,13 @@ before code affects other developers.
 REMOTE="$1"
 URL="$2"
 
-# Only enforce full gate for develop and main
-PROTECTED_BRANCHES="develop main"
+# Only enforce the full gate on the trunk and release branches
 CURRENT_BRANCH=$(git rev-parse --abbrev-ref HEAD)
 
 FULL_GATE=false
-for branch in $PROTECTED_BRANCHES; do
-    if [ "$CURRENT_BRANCH" = "$branch" ]; then
-        FULL_GATE=true
-        break
-    fi
-done
+case "$CURRENT_BRANCH" in
+    main|release/*) FULL_GATE=true ;;
+esac
 
 echo "=== Pre-Push Quality Gate ==="
 

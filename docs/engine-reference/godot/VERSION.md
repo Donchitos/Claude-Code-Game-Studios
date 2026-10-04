@@ -3,6 +3,7 @@
 | Field | Value |
 |-------|-------|
 | **Engine Version** | Godot 4.6 |
+| **Installed at pin time** | NOT DETERMINED — `/setup-engine` §3 probes the installed editor and records the result here. |
 | **Release Date** | January 2026 |
 | **Project Pinned** | 2026-02-12 |
 | **Last Docs Verified** | 2026-02-12 |
@@ -13,6 +14,15 @@
 The LLM's training data likely covers Godot up to ~4.3. Versions 4.4, 4.5,
 and 4.6 introduced significant changes that the model does NOT know about.
 Always cross-reference this directory before suggesting Godot API calls.
+
+## Installed-Version Gap Warning
+
+The warning above is one-directional — it covers the **model** knowing less than
+this pin. The reverse gap is real and `/setup-engine` §3 creates it deliberately
+("pin the newer one and upgrade later"): this reference can sit **ahead of the
+installed editor**, and an agent citing it correctly then emits APIs that do not
+compile locally. **Check `Installed at pin time` above before trusting a
+version-qualified claim** — `NOT DETERMINED` means the gap is unknown, not absent.
 
 ## Post-Cutoff Version Timeline
 

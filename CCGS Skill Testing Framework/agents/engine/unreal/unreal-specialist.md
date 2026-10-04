@@ -3,7 +3,6 @@
 ## Agent Summary
 - **Domain**: Unreal Engine patterns and architecture — Blueprint vs C++ decisions, UE subsystems (GAS, Enhanced Input, Niagara), UE project structure, plugin integration, and engine-level configuration
 - **Does NOT own**: Art style and visual direction (art-director), server infrastructure and deployment (devops-engineer), UI/UX flow design (ux-designer)
-- **Model tier**: Sonnet
 - **Gate IDs**: None; defers gate verdicts to technical-director
 
 ---
@@ -11,8 +10,8 @@
 ## Static Assertions (Structural)
 
 - [ ] `description:` field is present and domain-specific (references Unreal Engine)
-- [ ] `allowed-tools:` list matches the agent's role (Read, Write for UE project files; no deployment tools)
-- [ ] Model tier is Sonnet (default for specialists)
+- [ ] `tools:` reads Read, Glob, Grep, Write, Edit, Bash and `Agent(ue-gas-specialist, ue-blueprint-specialist, ue-replication-specialist, ue-umg-specialist)` — it may spawn only its four sub-specialists
+- [ ] Model tier is `inherit` — frontmatter `model:` reads exactly `inherit` (tiers: `.claude/docs/model-tiers.md`)
 - [ ] Agent definition does not claim authority outside its declared domain (no art, no server infra)
 
 ---
@@ -22,26 +21,27 @@
 ### Case 1: In-domain request — Blueprint vs C++ decision criteria
 **Input**: "Should I implement our combo attack system in Blueprint or C++?"
 **Expected behavior**:
-- Provides structured decision criteria: complexity, reuse frequency, team skill, and performance requirements
-- Recommends C++ for systems called every frame or shared across 5+ ability types
-- Recommends Blueprint for designer-tunable values and one-off logic
+- Applies its stated default: C++ for the combo system's framework, Blueprint for content and prototyping
+- Routes the combat logic through GAS (combo attacks as Gameplay Abilities, combo state as Gameplay Tags, montage flow via Ability Tasks) and names ue-gas-specialist for the GAS design rather than implementing it itself
+- Recommends Blueprint for designer-tunable values (exposed with `EditAnywhere` / `BlueprintReadWrite`, data-only Blueprints for combo variations, `BlueprintNativeEvent` where designers override behavior)
+- Cites its ~20-nodes-per-function threshold as the point where Blueprint combo logic belongs in C++
 - Does NOT render a final verdict without knowing project context — asks clarifying questions if context is absent
-- Output is structured (criteria table or bullet list), not a freeform opinion
+- Presents the split as a proposed class structure with its trade-offs, not a freeform opinion
 
 ### Case 2: Out-of-domain request — Unity C# code
 **Input**: "Write me a C# MonoBehaviour that handles player health and fires a Unity event on death."
 **Expected behavior**:
 - Does not produce Unity C# code
-- States clearly: "This project uses Unreal Engine; the Unity equivalent would be an Actor Component in UE C++ or a Blueprint Actor Component"
-- Optionally offers to provide the UE equivalent if requested
-- Does not redirect to a Unity specialist (none exists in the framework)
+- Confirms the project's engine from `engine.name` in `project.yaml` before answering: with Unreal configured, states that the project is built in Unreal Engine 5; with it unset, asks which engine the project uses rather than assuming
+- With Unreal configured, maps the request to the Unreal equivalent its own standards prescribe: health as an Attribute Set attribute changed only through Gameplay Effects when GAS is in use, otherwise a C++ `UActorComponent` exposing a death event to Blueprint
+- Does not redirect to unity-specialist — that agent serves Unity projects only, and this agent's `Agent` grant covers only its four Unreal sub-specialists
 
 ### Case 3: Domain boundary — UE5.4 API requirement
 **Input**: "I need to use the new Motion Matching API introduced in UE5.4."
 **Expected behavior**:
-- Flags that UE5.4 is a specific version with potentially limited LLM training coverage
-- Recommends cross-referencing official Unreal docs or the project's engine-reference directory before trusting any API suggestions
-- Provides best-effort API guidance with explicit uncertainty markers (e.g., "Verify this against UE5.4 release notes")
+- Flags that UE5.4 is past the model's training coverage (`docs/engine-reference/unreal/VERSION.md` lists 5.4 as a post-cutoff, HIGH-risk version)
+- Checks `docs/engine-reference/unreal/` before trusting any API suggestion
+- States that no file under `docs/engine-reference/unreal/` documents Motion Matching, and labels any class or node names it offers as unverified against the pinned version
 - Does NOT silently produce stale or incorrect API signatures without a caveat
 
 ### Case 4: Conflict — Blueprint spaghetti in a core system
@@ -67,14 +67,16 @@
 ## Protocol Compliance
 
 - [ ] Stays within declared domain (Unreal patterns, Blueprint/C++, UE subsystems)
-- [ ] Redirects Unity or other-engine requests without producing wrong-engine code
-- [ ] Returns structured findings (criteria tables, decision trees, migration plans) rather than freeform opinions
-- [ ] Flags version uncertainty explicitly before producing API suggestions
+- [ ] Answers Unity or other-engine requests with the Unreal equivalent, never wrong-engine code
+- [ ] Proposes class structure, data flow and trade-offs before implementing (Implementation Workflow step 3) rather than freeform opinions
+- [ ] Flags version uncertainty explicitly before producing API suggestions, citing `docs/engine-reference/unreal/`
 - [ ] Coordinates with lead-programmer for architecture-scale refactors rather than deciding unilaterally
+- [ ] Asks "May I write this to [filepath]?" naming the file before writing
 
 ---
 
 ## Coverage Notes
 - No automated runner exists for agent behavior tests — these are reviewed manually or via `/skill-test`
 - Version-awareness (Case 3, Case 5) is the highest-risk failure mode for this agent; test regularly when engine version changes
+- Cases 3 and 5 pass only if the agent is directed to `docs/engine-reference/unreal/`; `CLAUDE.md` imports the Unreal `VERSION.md` only after `/setup-engine` selects Unreal, so the agent's own file must carry that direction
 - Case 4 integration with lead-programmer is a coordination test, not a technical correctness test

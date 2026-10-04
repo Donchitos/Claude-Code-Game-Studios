@@ -8,6 +8,20 @@ skill pipeline. It classifies every gap by severity (BLOCKING / HIGH / MEDIUM / 
 composes a numbered, ordered migration plan, and writes it to `docs/adoption-plan-[date].md`
 after explicit user approval via `AskUserQuestion`.
 
+The resolved `workflow` tier scopes the audit: `full` requires all 8 GDD sections,
+`standard` requires 5 (+ Formulas for numeric systems), and `minimal` — the
+default, since `modes.rigor` defaults to `minimal` — audits `design/game-brief.md`
+instead and checks any existing GDD only advisorily, and the plan prescribes no
+infrastructure bootstrap (`/architecture-review`, `/create-control-manifest`,
+`/sprint-plan`, `/gate-check` are not on the minimal path). Fixtures that exercise the
+GDD and ADR audits therefore set `modes.rigor: full` in `project.yaml`.
+
+A v1.0 project (no `project.yaml`, legacy config with real values) is migrated
+only by `.claude/scripts/migrate-v1-config.sh` — `--dry-run` first, the real run
+after an ask naming the files it writes, and `--finalize` left until the user
+has read the migration report. `/adopt` never writes a review mode; it reports
+the resolved one.
+
 This skill is distinct from `/project-stage-detect` (which checks what exists).
 `/adopt` checks whether what exists will actually work with the template's skills.
 
@@ -17,7 +31,7 @@ No director gates apply. The skill does NOT invoke any director agents.
 
 ## Static Assertions (Structural)
 
-Verified automatically by `/skill-test static` — no fixture needed.
+Checked against the SKILL.md by `/skill-test spec` — no fixture needed.
 
 - [ ] Has required frontmatter fields: `name`, `description`, `argument-hint`, `user-invocable`, `allowed-tools`
 - [ ] Has ≥2 phase headings
@@ -35,43 +49,53 @@ None. `/adopt` is a brownfield audit utility. No director gates apply.
 
 ## Test Cases
 
-### Case 1: Happy Path — All GDDs compliant, no gaps, COMPLIANT
+### Case 1: Happy Path — All GDDs compliant, no BLOCKING or HIGH gaps
 
 **Fixture:**
+- `project.yaml` sets `modes.rigor: full`, `project.stage`, and `engine.name`,
+  `engine.version`, `engine.language`, `engine.rendering`, `engine.physics`
 - `design/gdd/` contains 3 GDD files; each has all 8 required sections with content
-- `docs/architecture/adr-0001.md` exists with `## Status`, `## Engine Compatibility`,
-  and all other required sections
-- `production/stage.txt` exists
+  and a valid `> **Status**:` field
+- `docs/architecture/adr-0001.md` exists with `## Status`, `## ADR Dependencies`,
+  `## Engine Compatibility`, `## GDD Requirements Addressed` and `## Performance Implications`
 - `docs/architecture/tr-registry.yaml` and `docs/architecture/control-manifest.md` exist
-- Engine configured in `technical-preferences.md`
+- `docs/engine-reference/[engine]/VERSION.md` exists
 
 **Input:** `/adopt`
 
 **Expected behavior:**
 1. Skill emits "Scanning project artifacts..." then reads all artifacts silently
 2. Reports detected phase, GDD count, ADR count, story count
-3. Phase 2 audit: all 3 GDDs have all 8 sections, Status field present and valid
-4. ADR audit: all required sections present
-5. Infrastructure audit: all critical files exist
-6. Phase 3: zero BLOCKING, zero HIGH, zero MEDIUM, zero LOW gaps
-7. Summary reports: "No blocking gaps — this project is template-compatible"
-8. Uses `AskUserQuestion` to ask about writing the plan; user selects write
-9. Adoption plan is written to `docs/adoption-plan-[date].md`
-10. Phase 7 offers next action: no blocking gaps, offers options for next steps
+3. Phase 2 audit: `gdd-structure-check.sh` is run once per GDD path; all 3 GDDs
+   have all 8 sections and a valid Status field
+4. ADR audit: all critical sections present
+5. Infrastructure audit: registry, manifest and engine reference all exist
+6. Phase 3: zero BLOCKING and zero HIGH gaps — the project is reported
+   template-compatible with only advisory improvements remaining (any MEDIUM/LOW
+   item, e.g. a missing `sprint-status.yaml`, is listed as advisory)
+7. Uses `AskUserQuestion` to ask about writing the plan; user selects write
+8. Adoption plan is written to `docs/adoption-plan-[date].md`
+9. Phase 6b reports the resolved review mode ("Review mode resolves to `full` —
+   from `modes.rigor`, unless something pins it") and writes nothing for it
+10. Phase 7 takes the "no BLOCKING or HIGH" branch: "No blocking gaps — this project
+   is template-compatible. What next?"
 
 **Assertions:**
 - [ ] Skill reads silently before presenting any output
 - [ ] "Scanning project artifacts..." appears before the silent read phase
-- [ ] Gap counts show 0 BLOCKING, 0 HIGH, 0 MEDIUM (or only LOW)
+- [ ] `gdd-structure-check.sh` is invoked with an explicit path per GDD (not bare)
+- [ ] Gap counts show `BLOCKING: 0` and `HIGH: 0`, and the project is reported template-compatible
 - [ ] `AskUserQuestion` is used before writing the adoption plan
 - [ ] Adoption plan file is written to `docs/adoption-plan-[date].md`
-- [ ] Phase 7 offers a specific next action (not just a list)
+- [ ] `modes.review_mode` is not written to `project.yaml` and `production/review-mode.txt` is not created — the review mode is reported, never pinned
+- [ ] Phase 7 asks "No blocking gaps — this project is template-compatible. What next?" via `AskUserQuestion`
 
 ---
 
-### Case 2: Non-Compliant Documents — GDDs missing sections, NEEDS MIGRATION
+### Case 2: Non-Compliant Documents — GDDs missing sections, BLOCKING and HIGH gaps
 
 **Fixture:**
+- `project.yaml` sets `modes.rigor: full` and configures the engine
 - `design/gdd/` contains 2 GDD files:
   - `combat.md` — missing `## Acceptance Criteria` and `## Formulas` sections
   - `movement.md` — all 8 sections present
@@ -112,32 +136,34 @@ None. `/adopt` is a brownfield audit utility. No director gates apply.
 ### Case 3: Mixed State — Some docs compliant, some not, partial report
 
 **Fixture:**
-- 4 GDD files: 2 fully compliant, 2 with gaps (one missing Tuning Knobs, one missing Edge Cases)
+- `project.yaml` sets `modes.rigor: full` and configures engine, naming and performance
+- 4 GDD files: 2 fully compliant, 2 with gaps (one missing Tuning Knobs, one missing Formulas)
 - ADRs: 3 files — 2 compliant, 1 missing `## ADR Dependencies`
 - Stories: 5 files — 3 have TR-ID references, 2 do not
-- Infrastructure: all critical files present; `technical-preferences.md` fully configured
+- Infrastructure: all critical files present
 
 **Input:** `/adopt`
 
 **Expected behavior:**
 1. Skill audits all artifact types
-2. Audit summary shows totals: "4 GDDs (2 fully compliant, 2 with gaps); 3 ADRs
-   (2 fully compliant, 1 with gaps); 5 stories (3 with TR-IDs, 2 without)"
+2. Adoption Audit Summary shows `GDDs audited: 4 (2 fully compliant, 2 with gaps)`,
+   `ADRs audited: 3 (2 fully compliant, 1 with gaps)` and `Stories audited: 5`
 3. Gap classification:
    - No BLOCKING gaps
    - HIGH: 1 ADR missing `## ADR Dependencies`
-   - MEDIUM: 2 GDDs with missing sections; 2 stories missing TR-IDs
-   - LOW: none
-4. Migration plan lists HIGH gap first, then MEDIUM gaps in order
-5. Note included: "Existing stories continue to work — do not regenerate stories
+   - MEDIUM: 2 GDDs with missing sections (Tuning Knobs, Formulas); 2 stories missing TR-IDs
+4. Gap Preview has no BLOCKING bullets and shows HIGH / MEDIUM as counts
+5. Migration plan lists the HIGH gap first, then MEDIUM gaps with GDD gaps before story gaps
+6. Note included: "Existing stories continue to work — do not regenerate stories
    that are in progress or done"
-6. `AskUserQuestion` to write plan; writes after approval
+7. `AskUserQuestion` to write plan; writes after approval
 
 **Assertions:**
-- [ ] Per-artifact compliance tallies are shown (N compliant, M with gaps)
+- [ ] Summary shows GDD and ADR tallies as `N (X fully compliant, Y with gaps)` and `Stories audited: 5`
+- [ ] Summary shows `BLOCKING: 0` and the Gap Preview lists no BLOCKING bullets
+- [ ] The 2 stories without TR-IDs are counted as MEDIUM gaps
 - [ ] Existing story compatibility note is included in the plan
-- [ ] No BLOCKING gaps results in no BLOCKING section in migration plan
-- [ ] HIGH gap precedes MEDIUM gaps in plan ordering
+- [ ] HIGH gap precedes MEDIUM gaps; MEDIUM GDD gaps precede MEDIUM story gaps
 - [ ] `AskUserQuestion` is used before writing
 
 ---
@@ -146,9 +172,9 @@ None. `/adopt` is a brownfield audit utility. No director gates apply.
 
 **Fixture:**
 - Repository has no files in `design/gdd/`, `docs/architecture/`, `production/epics/`
-- `production/stage.txt` does not exist
-- `src/` directory does not exist or has fewer than 10 files
-- No game-concept.md, no systems-index.md
+- No `project.stage` in `project.yaml` and no `production/stage.txt`
+- No source code: none of `src/`, `Assets/` or `Source/` exists
+- No game-concept.md, no game-brief.md, no systems-index.md
 
 **Input:** `/adopt`
 
@@ -169,23 +195,67 @@ None. `/adopt` is a brownfield audit utility. No director gates apply.
 
 ---
 
-### Case 5: Director Gate Check — No gate; adopt is a utility audit skill
+### Case 5: Director Gate Check — No gate; minimal tier scopes the audit to the brief
 
 **Fixture:**
-- Project with a mix of compliant and non-compliant GDDs
+- `project.yaml` configures the engine and has no `modes` block (`workflow`
+  resolves to `minimal`)
+- `design/game-brief.md` exists
+- `design/gdd/combat.md` exists and is missing `## Acceptance Criteria`
 
 **Input:** `/adopt`
 
 **Expected behavior:**
-1. Skill completes full audit and produces migration plan
-2. No director agents are spawned at any point
-3. No gate IDs (CD-*, TD-*, AD-*, PR-*) appear in output
-4. No `/gate-check` is invoked during the skill run
+1. Phase 2 audits `design/game-brief.md`; GDDs, ADRs and UX specs are not expected
+2. `combat.md` is checked at the `standard` bar advisorily — its missing Acceptance
+   Criteria is reported as informational, not as a HIGH gap
+3. The plan does not prescribe the infrastructure bootstrap: its Step 3 says in
+   one line that it is not on the minimal path and names `/create-stories` as
+   the next step (no stories exist)
+4. No director agents are spawned at any point
+5. No gate IDs (CD-*, TD-*, AD-*, PR-*) appear in output
+6. No `/gate-check` is invoked during the skill run
 
 **Assertions:**
-- [ ] No director gate is invoked
-- [ ] No gate skip messages appear
+- [ ] `design/game-brief.md` is audited
+- [ ] Absent ADRs and UX specs are not reported as gaps
+- [ ] `combat.md`'s missing Acceptance Criteria is not counted in the HIGH total
+- [ ] The plan prescribes none of `/architecture-review`, `/create-control-manifest`, `/sprint-plan` or `/gate-check` — none is on the minimal path
+- [ ] No director gate is invoked and no gate skip messages appear
 - [ ] Skill reaches plan-writing or cancellation without any gate verdict
+
+---
+
+### Case 6: v1.0 Project — Converter run, never hand-migrated
+
+**Fixture:**
+- No `project.yaml` at the repo root
+- `production/stage.txt` reads `Production`; `.claude/docs/technical-preferences.md`
+  has `- **Engine**: Godot 4.6` and a filled naming section
+- `design/gdd/` holds GDDs; no `production/migration-report.md`
+
+**Input:** `/adopt`
+
+**Expected behavior:**
+1. Phase 2g identifies a v1.0 project needing migration (no `project.yaml`,
+   legacy files with real, migratable values)
+2. It runs `bash .claude/scripts/migrate-v1-config.sh --dry-run` during the
+   audit (the dry run writes nothing) — it does not hand-write `project.yaml`
+3. The migration is classified BLOCKING in Phase 3 and heads the plan, which
+   reports what the dry run listed
+4. After the plan, Phase 7 offers the migration first: it asks "May I run the
+   converter? It writes `project.yaml` and `production/migration-report.md`."
+   and runs it without `--dry-run` only after approval
+5. It tells the user to read `production/migration-report.md` before running
+   `bash .claude/scripts/migrate-v1-config.sh --finalize`, and does not run
+   `--finalize` itself before the user has read the report
+
+**Assertions:**
+- [ ] `--dry-run` runs before any real migration, and its output is reported
+- [ ] `project.yaml` is written only by the converter, after the ask naming `project.yaml` and `production/migration-report.md` is approved
+- [ ] `--finalize` is not run before the user has read `production/migration-report.md`
+- [ ] The migration is a BLOCKING item, first in the plan
+- [ ] No legacy file is deleted during the run
 
 ---
 
@@ -210,5 +280,9 @@ None. `/adopt` is a brownfield audit utility. No director gates apply.
   Not separately fixture-tested here.
 - The systems-index.md parenthetical status value check (BLOCKING) is a special case
   that triggers an immediate fix offer before writing the plan; not separately tested.
-- The review-mode.txt prompt (Phase 6b) runs after plan writing if `production/review-mode.txt`
-  does not exist; not separately tested here.
+- Phase 6b reports the resolved review mode and writes nothing — `review_mode` is
+  fronted by `modes.rigor`, so pinning it would shadow the rigor expansion; Case 1
+  asserts that nothing is written for it.
+- The converter's refusals (exit 3 when its values disagree or a migration
+  already ran; `--finalize` exiting 4 on a mismatch) are not separately tested;
+  Case 6 covers the migration itself.

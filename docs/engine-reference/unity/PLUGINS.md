@@ -57,7 +57,7 @@ These are NOT part of the core engine but are commonly used for specific game ty
 - **Purpose:** Modern input handling (rebindable, cross-platform)
 - **Status:** Production-Ready (default in Unity 6)
 - **Package:** `com.unity.inputsystem`
-- **Docs:** See [modules/input.md](../modules/input.md)
+- **Docs:** See [modules/input.md](modules/input.md)
 - **Official:** https://docs.unity3d.com/Packages/com.unity.inputsystem@1.11/manual/index.html
 
 ---
@@ -66,7 +66,7 @@ These are NOT part of the core engine but are commonly used for specific game ty
 - **Purpose:** Modern runtime UI (HTML/CSS-like, performant)
 - **Status:** Production-Ready (Unity 6)
 - **Package:** Built-in
-- **Docs:** See [modules/ui.md](../modules/ui.md)
+- **Docs:** See [modules/ui.md](modules/ui.md)
 - **Official:** https://docs.unity3d.com/Packages/com.unity.ui@2.0/manual/index.html
 
 ---

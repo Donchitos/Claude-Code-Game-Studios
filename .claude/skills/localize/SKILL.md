@@ -1,12 +1,15 @@
 ---
 name: localize
-description: "Full localization pipeline: scan for hardcoded strings, extract and manage string tables, validate translations, generate translator briefings, run cultural/sensitivity review, manage VO localization, test RTL/platform requirements, enforce string freeze, and report coverage."
+description: "Localization pipeline — find hardcoded strings, extract string tables, cultural review, VO, RTL, enforce string freeze."
 argument-hint: "[scan|extract|validate|status|brief|cultural-review|vo-pipeline|rtl-check|freeze|qa]"
 user-invocable: true
-agent: localization-lead
-allowed-tools: Read, Glob, Grep, Write, Bash, Task, AskUserQuestion
+allowed-tools: Read, Glob, Grep, Write, Bash, Agent, AskUserQuestion, Bash(bash "*/.claude/skills/localize/../../hooks/yaml-helper.sh" resolve_config *)
 model: sonnet
 ---
+
+!`bash "${CLAUDE_SKILL_DIR}/../../hooks/yaml-helper.sh" resolve_config --keys automation`
+
+
 
 # Localization Pipeline
 
@@ -32,9 +35,13 @@ If no subcommand is provided, output usage and stop. Verdict: **FAIL** — missi
 
 ---
 
+Every `AskUserQuestion` call follows `.claude/docs/automation-modes.md`
+(collaborative asks always · guided major-only · autonomous logs and proceeds;
+`automation_always_ask` categories always prompt).
+
 ## Phase 2A: Scan Mode
 
-Search `src/` for hardcoded user-facing strings:
+Search the **code root** (resolve per `.claude/docs/code-root-resolution.md`) for hardcoded user-facing strings. **If the code root is unresolved, report `NOT ASSESSED — code root unresolved` rather than zero hits.** Zero hits from an unresolved root reads as "nothing to localize", which is the failure this guards:
 
 - String literals in UI code not wrapped in a localization function (`tr()`, `Tr()`, `NSLocalizedString`, `GetText`, etc.)
 - Concatenated strings that should be parameterized
@@ -83,7 +90,7 @@ Read all string table files in `assets/data/strings/`. For each locale, check:
 - **Placeholder mismatches** — source has `{name}` but translation omits it or adds extras
 - **String length violations** — translation exceeds the character limit recorded in the source `context` field
 - **Plural form count** — locale requires N plural forms; translation provides fewer
-- **Orphaned keys** — translation exists but nothing in `src/` references the key
+- **Orphaned keys** — translation exists but nothing in the code root references the key
 - **Stale translations** — source string changed after translation was written (flag for re-translation)
 - **Encoding** — non-ASCII characters present and font atlas supports them (flag if uncertain)
 
@@ -104,8 +111,16 @@ String freeze: [Active / Not yet called / Lifted]
 
 | Locale | Total | Translated | Missing | Stale | Coverage |
 |--------|-------|-----------|---------|-------|----------|
-| en (source) | [N] | [N] | 0 | 0 | 100% |
+| en (source) | [N] | [N] | [N] | [N] | [N]% |
 | [locale] | [N] | [N] | [N] | [N] | [X]% |
+
+> **Every cell above is a count you must take from the string table — including
+> the source row.** Do not pre-fill the source locale as `100%`: that asserts a
+> result before counting, and on a project with no `assets/data/strings/` it
+> produces a coverage report for a table that does not exist. If the string table
+> is absent, the whole status output is
+> **`NOT ASSESSED — no string table found`**, not a matrix of zeros with a
+> confident source row.
 
 ### Issues
 - [N] hardcoded strings found in source code (run /localize scan)
@@ -180,7 +195,7 @@ Ask: "May I write this translator brief to `production/localization/translator-b
 
 ## Phase 2F: Cultural Review Mode
 
-Spawn `localization-lead` via Task. Ask them to audit the following for cultural sensitivity across the target locales (read from `assets/data/strings/` and `assets/`):
+Spawn `localization-lead` via `Agent`. Ask them to audit the following for cultural sensitivity across the target locales (read from `assets/data/strings/` and `assets/`):
 
 ### Content Areas to Review
 
@@ -268,7 +283,7 @@ Glob `assets/audio/vo/[locale]/` for all `.wav`/`.ogg` files. Cross-reference ag
 
 ### VO Pipeline: Integrate
 
-Grep `src/` for VO audio references. Verify each referenced path exists in `assets/audio/vo/[locale]/`. Report broken references.
+Grep the code root for VO audio references. Verify each referenced path exists in `assets/audio/vo/[locale]/`. Report broken references.
 
 ---
 
@@ -277,7 +292,7 @@ Grep `src/` for VO audio references. Verify each referenced path exists in `asse
 Right-to-left languages (Arabic, Hebrew, Persian, Urdu) require layout mirroring beyond
 just translating text. This mode validates the implementation.
 
-Read `.claude/docs/technical-preferences.md` to determine the engine. Then check:
+Determine the engine: read `engine.name` from `project.yaml`; if that key is absent or empty (including when `project.yaml` has no `engine:` block), fall back to `.claude/docs/technical-preferences.md`. Then check:
 
 **Layout mirroring**
 - Is RTL layout enabled in the engine? (Godot: `Control.layout_direction`, Unity: `RTL Support` package, Unreal: text direction flags)
@@ -333,7 +348,7 @@ Pre-Freeze Checklist
 ```
 
 Use `AskUserQuestion`:
-- Prompt: "Are all items above confirmed? Calling string freeze locks the source table."
+- Prompt: "Call string freeze now? This writes `production/localization/freeze-status.md` (Status: ACTIVE) and locks the source table."
 - Options: `[A] Yes — call string freeze now` / `[B] No — I still have strings to add`
 
 If [A]: Write `production/localization/freeze-status.md`:
@@ -352,11 +367,11 @@ If [A]: Write `production/localization/freeze-status.md`:
 
 ### freeze lift
 
-If argument includes `lift`: update `freeze-status.md` Status to `LIFTED`, record the reason and date. Warn: "Lifting the freeze requires re-translation of all modified strings. Notify the translation team."
+If argument includes `lift`: ask "May I update `freeze-status.md` to LIFTED?", then set its Status to `LIFTED` and record the reason and date. Warn: "Lifting the freeze requires re-translation of all modified strings. Notify the translation team."
 
 ### freeze check (auto-integrated into extract)
 
-When `extract` mode finds new or modified strings and `freeze-status.md` shows Status: ACTIVE — append the new keys to `## Post-Freeze Changes` and warn:
+When `extract` mode finds new or modified strings and `freeze-status.md` shows Status: ACTIVE — name `freeze-status.md` in extract's own "May I write" question, append the new keys to its `## Post-Freeze Changes` on approval, and warn:
 > "⚠️ String freeze is active. [N] new/modified strings have been added. These are freeze violations. Notify your localization vendor before proceeding."
 
 ---
@@ -364,10 +379,10 @@ When `extract` mode finds new or modified strings and `freeze-status.md` shows S
 ## Phase 2J: QA Mode
 
 Localization QA is a dedicated pass that runs after translations are delivered but
-before any locale ships. This is not the same as `/validate` (which checks completeness)
-— this is a structured playthrough-based quality check.
+before any locale ships. This is not the same as `/localize validate` (which checks
+completeness) — this is a structured playthrough-based quality check.
 
-Spawn `localization-lead` via Task with:
+Spawn `localization-lead` via `Agent` with:
 - The target locale(s) to QA
 - The list of all screens/flows in the game (from `design/gdd/` or `/content-audit` output)
 - The current `/localize validate` report
@@ -387,7 +402,7 @@ Output a QA verdict per locale:
 ```
 ## Localization QA Verdict — [Locale]
 
-**Status**: PASS / PASS WITH CONDITIONS / FAIL
+**Status**: PASS / PASS WITH CONDITIONS / NOT ASSESSED / FAIL
 **Reviewed by**: localization-lead
 **Date**: [date]
 
@@ -405,9 +420,17 @@ Output a QA verdict per locale:
 [ ] Producer approves shipping [Locale]
 ```
 
+First match wins: **FAIL** if any BLOCKING finding is open; else **NOT ASSESSED**
+if a check could not run — the checks are playthrough-based, so a locale nobody
+has played in-game (or whose translations were not delivered) cannot pass on the
+string tables alone; name each check that did not run; else **PASS WITH
+CONDITIONS** if conditions remain; else **PASS**. NOT ASSESSED outranks both
+pass values — an unplayed locale has not passed — and ranks below FAIL, so an
+open BLOCKING finding is never buried behind it.
+
 Ask: "May I write this localization QA report to `production/localization/loc-qa-[locale]-[date].md`?"
 
-**Gate integration**: The Polish → Release gate requires a PASS or PASS WITH CONDITIONS verdict for every locale being shipped. A FAIL blocks release for that locale only — other locales may still proceed if their QA passes.
+**Gate integration**: At `workflow: full`, the Polish → Release gate requires a PASS or PASS WITH CONDITIONS verdict for every translated locale being shipped (recommended at `standard`; dropped at `minimal`). A FAIL blocks release for that locale only — other locales may still proceed if their QA passes. A NOT ASSESSED locale has not passed: its QA did not run.
 
 ---
 
@@ -438,4 +461,4 @@ Ask: "May I write this localization QA report to `production/localization/loc-qa
 /localize qa              → full localization QA pass
 ```
 
-After `qa` returns PASS for all shipping locales, include the QA report path when running `/gate-check release`.
+After `qa` returns PASS or PASS WITH CONDITIONS for every translated locale you ship, include the QA report paths when running `/gate-check release`.

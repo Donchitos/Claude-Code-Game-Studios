@@ -90,11 +90,13 @@ encounter, 0.5 days per UI screen"]
 
 ---
 
-## Recommendation: [PROCEED / PIVOT / KILL]
+## Recommendation: [PROCEED / PIVOT / KILL / NOT ASSESSED — the slice was built but nobody has played it]
 
 [One paragraph with evidence — reference the validation question directly. Did a
 player experience the core fantasy within the target time, without developer guidance?
 Can the team build at this quality on the projected schedule?]
+
+**Creative Director review (CD-PLAYTEST):** [APPROVE / CONCERNS / REJECT / NOT ASSESSED — the director's reason; or "not run — [review mode]"]
 
 ---
 
@@ -116,13 +118,25 @@ Can the team build at this quality on the projected schedule?]
 **Performance targets:** [Confirmed / Revised — list changes if revised]
 
 **Playtest note:** Run `/playtest-report` to structure additional session data
-before running `/gate-check pre-production`.
+before running `/gate-check production`.
 
 **Next steps:**
-1. `/gate-check pre-production` — formally advance to Production
-2. `/create-epics layer:foundation` — plan Foundation layer epics
-3. `/create-epics layer:core` — plan Core layer epics
+1. `/create-epics layer:foundation` — plan Foundation layer epics
+2. `/create-epics layer:core` — plan Core layer epics
+3. `/create-stories [epic-slug]` — break each epic into stories
 4. `/sprint-plan` — use velocity data from this report in the estimate
+5. `/gate-check production` — formally advance to Production
+
+---
+
+## If Not Assessed
+
+[The slice was built but nobody has played it through, so there is no evidence
+for PROCEED, PIVOT or KILL yet.]
+
+**Next step:** play the slice unguided (at least one documented session), then
+re-run `/vertical-slice` — it resumes from the checkpoint in
+`production/session-state/active.md`.
 
 ---
 

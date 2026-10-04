@@ -1,11 +1,19 @@
 ---
 name: bug-triage
-description: "Read all open bugs in production/qa/bugs/, re-evaluate priority vs. severity, assign to sprints, surface systemic trends, and produce a triage report. Run at sprint start or when the bug count grows enough to need re-prioritization."
+description: "Re-evaluate open bugs — priority vs severity, assign to sprints, surface systemic trends. Run when the count grows."
 argument-hint: "[sprint | full | trend]"
 user-invocable: true
-allowed-tools: Read, Glob, Grep, Write, Edit
+allowed-tools: Read, Glob, Grep, Write, Edit, Bash(bash "*/.claude/skills/bug-triage/../../hooks/yaml-helper.sh" resolve_config *)
 model: sonnet
 ---
+
+!`bash "${CLAUDE_SKILL_DIR}/../../hooks/yaml-helper.sh" resolve_config --keys automation`
+
+**Automation mode**: Resolve `modes.automation` (`project.local.yaml` →
+`project.yaml` → default `collaborative`). Every `AskUserQuestion` call and
+every file write follows `.claude/docs/automation-modes.md`
+(collaborative asks always · guided major-only · autonomous logs and proceeds;
+`automation_always_ask` categories always prompt).
 
 # Bug Triage
 
@@ -48,7 +56,19 @@ If no bug files found:
 > different location, adjust the glob pattern. If no bugs exist yet, there is
 > nothing to triage."
 
-Stop and report. Do not proceed if no bugs exist.
+Stop and report. Do not proceed if no bugs exist. Verdict: **COMPLETE** — no bug files in `production/qa/bugs/`; nothing to triage.
+
+**In `trend` mode, do not read full bug bodies.** Trend metrics (volume, severity
+mix, by-system, by-date) are computable from the header fields alone:
+```
+Grep pattern="\*\*(Severity|Priority|Status|System|Category|Reported)\*\*" glob="production/qa/bugs/*.md" output_mode="content"
+```
+(Bug-report fields are bolded — `**Severity**:`, `- **System**:` — so match the
+`**field**` form, not a bare line-start `Field:`.)
+Full bug bodies are needed only for the priority-vs-severity **re-evaluation** in
+`sprint`/`full` modes; `trend` is a read-only report and skips it. (The one
+deviation check that needs a story's status — "bug filed against a Complete
+story" — is a targeted story-status grep either way, not a bug-body read.)
 
 ### Step 2b — Load sprint context
 
@@ -165,7 +185,7 @@ After classifying all bugs, generate trend metrics:
 
 | ID | System | Severity | Summary | Assigned to | Story |
 |----|--------|----------|---------|-------------|-------|
-| BUG-NNN | [system] | S[1-4] | [one-line description] | [sprint] | [story path] |
+| BUG-NNNN | [system] | S[1-4] | [one-line description] | [sprint] | [story path] |
 
 ---
 
@@ -173,7 +193,7 @@ After classifying all bugs, generate trend metrics:
 
 | ID | System | Severity | Summary | Target Sprint |
 |----|--------|----------|---------|---------------|
-| BUG-NNN | [system] | S[1-4] | [one-line description] | Sprint [N+1] |
+| BUG-NNNN | [system] | S[1-4] | [one-line description] | Sprint [N+1] |
 
 ---
 
@@ -181,7 +201,7 @@ After classifying all bugs, generate trend metrics:
 
 | ID | System | Severity | Summary | Disposition |
 |----|--------|----------|---------|-------------|
-| BUG-NNN | [system] | S4 | [one-line description] | Backlog |
+| BUG-NNNN | [system] | S4 | [one-line description] | Backlog |
 
 ---
 
@@ -215,7 +235,9 @@ After classifying all bugs, generate trend metrics:
 
 ## 6. Write and Gate
 
-Present the report in conversation, then ask:
+Present the report in conversation. If any bug is a P4 candidate, first ask
+"Are these acceptable as Won't Fix?" and keep its disposition `P4 candidate`
+until the user answers. Then ask:
 
 "May I write this triage report to `production/qa/bug-triage-[date].md`?"
 
@@ -226,7 +248,9 @@ After writing:
   can be considered healthy. Run `/sprint-status` to see current capacity."
 - If regression bugs exist: "Regressions found — consider re-opening the
   affected stories in sprint tracking and running `/smoke-check` to re-gate."
-- If no P1 bugs exist: "No P1 bugs — build is in good shape for QA hand-off." Verdict: **COMPLETE** — triage report written.
+- If no P1 bugs exist: "No P1 bugs — build is in good shape for QA hand-off."
+
+Then, whether or not P1 bugs exist: Verdict: **COMPLETE** — triage report written.
 
 If user declined write: Verdict: **BLOCKED** — user declined write.
 

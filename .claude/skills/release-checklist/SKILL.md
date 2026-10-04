@@ -1,11 +1,61 @@
 ---
 name: release-checklist
-description: "Generates a comprehensive pre-release validation checklist covering build verification, certification requirements, store metadata, and launch readiness."
+description: "Pre-release checklist — build verification, certification requirements, store metadata, launch readiness."
 argument-hint: "[platform: pc|console|mobile|all]"
 user-invocable: true
-allowed-tools: Read, Glob, Grep, Write
+allowed-tools: Read, Glob, Grep, Write, Bash(bash "*/.claude/skills/release-checklist/../../hooks/yaml-helper.sh" resolve_config *)
 model: sonnet
 ---
+!`bash "${CLAUDE_SKILL_DIR}/../../hooks/yaml-helper.sh" resolve_config --keys rigor,workflow,project.stage,cert_tier,automation`
+
+**Automation mode**: Resolve `modes.automation` (`project.local.yaml` →
+`project.yaml` → default `collaborative`). Every `AskUserQuestion` call and
+every file write follows `.claude/docs/automation-modes.md`
+(collaborative asks always · guided major-only · autonomous logs and proceeds;
+`automation_always_ask` categories always prompt).
+
+Resolved above — use as-is. No block → defaults in `.claude/docs/config-resolution.md`.
+
+**Scope this checklist to the project.** Emitting every item for every platform
+trains the reader to skip the list, which defeats the gate:
+
+- **`project.stage`** — items for phases this project has not reached are out of
+  scope; say so rather than listing them unchecked.
+- **`modes.rigor`** — at `minimal`, drop items whose only justification is process
+  weight this project has opted out of.
+- **`platform.cert_tier`** — emit certification items **only** for the tier the
+  project targets. If it is **unset**, **ask which platforms are in scope**
+  rather than emitting all of them — an unset value is a question, not a licence
+  to emit every certification track. If it cannot be determined, mark the section
+  **`NOT ASSESSED — cert tier unknown`**. **Unset is not `none`:** `none` is a
+  decision, unset is a missing one, and they must not produce the same output.
+  Branch on the **four values this key takes** — `none | itch | steam | console` —
+  and not on platform names. The full requirement table is the `## platform.cert_tier`
+  section of `.claude/docs/effects-map.md` — read **only that section** (Grep its
+  heading, then a bounded Read); the file as a whole is not a runtime input.
+  - `none` — **emit no certification section at all.** Internal release, alpha or
+    jam game. Say the section was omitted and why; do not leave it blank.
+  - `itch` — itch.io upload requirements only: build size, page setup, age tags.
+    **No console and no Steamworks items.**
+  - `steam` — Steamworks: store page, depot build, achievements, system
+    requirements, common content rules. **No console certification items.**
+  - `console` — full platform certification (TRC / XR / Lotcheck), save-data
+    rules, controller-mapping rules, age-rating boards. The heaviest tier.
+
+  > **Branch on the `cert_tier` values above, not on platform names.** "Emit
+  > console/mobile certification items only for the platforms the project targets"
+  > is the wrong test: it treats an `itch` project and a `steam` project
+  > identically, conflates `none` with unset, and keys on `mobile`, which is not a
+  > `cert_tier` value at all. Use the vocabulary the config defines.
+
+If an item cannot be scoped because the config is absent, mark it
+**`NOT ASSESSED — platform/stage unknown`**. Do not silently include it: a
+`rigor: standard`, single-platform project would otherwise receive a ~150-item
+checklist demanding PC **and** console **and** mobile certification plus age
+ratings, of which ~140 are unassessable.
+
+---
+
 
 > **Explicit invocation only**: This skill should only run when the user explicitly requests it with `/release-checklist`. Do not auto-invoke based on context matching.
 
@@ -13,16 +63,41 @@ model: sonnet
 
 Read the argument for the target platform (`pc`, `console`, `mobile`, or `all`). If no platform is specified, default to `all`.
 
+**The argument selects DEVICE requirements. It never selects the certification
+track.** Certification is decided by `platform.cert_tier`, resolved in the resolved-config block at the top of this skill —
+see the `platform.cert_tier` rule above. The two axes are different lists that
+happen to share one word: `pc`/`console`/`mobile` are hardware shapes, while
+`none|itch|steam|console` are certification regimes. They agree on `console` and
+nowhere else — `itch` and `none` have no device block at all, and `mobile` is not
+a `cert_tier` value. So emitting a device block says nothing about which
+certification block to emit, and `all` is **not** a licence to emit every
+certification track.
+
 ---
 
 ## Phase 2: Load Project Context
 
 - Read `CLAUDE.md` for project context, version information, and platform targets.
 - Read the current milestone from `production/milestones/` to understand what features and content should be included in this release.
+- Read the open bugs from `production/qa/bugs/`: grep the `**Severity**` and `**Status**` lines of `production/qa/bugs/*.md`, as `/bug-triage` does. A bug is open unless its Status is `Closed` or `Verified Fixed`. The bug items use the thresholds `/gate-check release` applies for the resolved `workflow`: at `full` an open S1, S2 or S3 bug fails its item; at `standard` and `minimal` only an open S1 does, and an open S2 or S3 is listed in the Rationale as a risk. Each failing bug is named in the Rationale as a blocking item. **No bug files in `production/qa/bugs/`** → the bug items read `NOT ASSESSED — no bug records` — never zero and never ticked, since an absent record and a clean one must not produce the same checklist; bugs are filed with `/bug-report`.
 
 ---
 
 ## Phase 3: Scan Codebase
+
+> **State the denominator with every count.** These scans look for something bad,
+> so `0` means either "searched and found none" or "there was nothing to search",
+> and on a release gate those are opposite findings. Report
+> `scanned [N] source files: [M] TODO, [M] FIXME, [M] HACK` — or, when the code
+> root (`src/`, `Assets/` or `Source/`; resolve per
+> `.claude/docs/code-root-resolution.md`) is unresolved,
+> **`NOT ASSESSED — code root unresolved`**, and when it is absent or holds no
+> source files, **`NOT ASSESSED — no source files found to scan`**. A bare `0` is
+> not a result.
+>
+> `/launch-checklist` scans the same way and is most often run beside this one.
+> Keep the two consistent: changing the rule in one and not the other leaves a
+> route to the same misleading `0`.
 
 Scan for outstanding issues:
 
@@ -32,6 +107,9 @@ Scan for outstanding issues:
 - Note their locations and severity
 
 Check for test results in any test output directories or CI logs if available.
+**If none are found, say so** — `Test results: NOT ASSESSED — no test output or
+CI logs found` — rather than omitting the line. An absent test result and a
+passing one must not produce the same release checklist.
 
 ---
 
@@ -42,6 +120,7 @@ Check for test results in any test output directories or CI logs if available.
 Generated: [Date]
 
 ### Codebase Health
+- Scanned: [N] source files (or `NOT ASSESSED — [reason]`, per Phase 3)
 - TODO count: [N] ([list top 5 if many])
 - FIXME count: [N] ([list all -- these are potential blockers])
 - HACK count: [N] ([list all -- these need review])
@@ -55,8 +134,9 @@ Generated: [Date]
 - [ ] Build is reproducible from tagged commit
 
 ### Quality Gates
-- [ ] Zero S1 (Critical) bugs
-- [ ] Zero S2 (Major) bugs -- or documented exceptions with producer approval
+- Open bugs (`production/qa/bugs/`): [N] S1, [N] S2, [N] S3 -- or `NOT ASSESSED — no bug records`
+- [ ] Zero open S1 (Critical) bugs
+- [ ] Zero open S2 (High) and S3 (Medium) bugs, no exceptions -- this row at `workflow: full` only; at `standard`/`minimal` open S2/S3 bugs go in the Rationale as risks
 - [ ] All critical path features tested and signed off by QA
 - [ ] Performance within budgets:
   - [ ] Target FPS met on minimum spec hardware
@@ -75,7 +155,10 @@ Generated: [Date]
 - [ ] Credits complete and accurate
 ```
 
-Add platform-specific sections based on the argument:
+Add **device** sections based on the argument. These carry no certification or
+storefront-SDK items — those are gated on `platform.cert_tier` in the next
+subsection, and duplicating them here is what let an `itch` project receive
+Steamworks rows.
 
 **For `pc`:**
 ```markdown
@@ -86,24 +169,16 @@ Add platform-specific sections based on the argument:
 - [ ] Resolution scaling tested (1080p, 1440p, 4K, ultrawide)
 - [ ] Windowed, borderless, and fullscreen modes working
 - [ ] Graphics settings save and load correctly
-- [ ] Steam/Epic/GOG SDK integrated and tested
-- [ ] Achievements functional
-- [ ] Cloud saves functional
-- [ ] Steam Deck compatibility verified (if targeting)
 ```
 
 **For `console`:**
 ```markdown
 ### Platform Requirements: Console
-- [ ] TRC/TCR/Lotcheck requirements checklist complete
 - [ ] Platform-specific controller prompts display correctly
 - [ ] Suspend/resume works correctly
 - [ ] User switching handled properly
 - [ ] Network connectivity loss handled gracefully
 - [ ] Storage full scenario handled
-- [ ] Parental controls respected
-- [ ] Platform-specific achievement/trophy integration tested
-- [ ] First-party certification submission prepared
 ```
 
 **For `mobile`:**
@@ -120,6 +195,71 @@ Add platform-specific sections based on the argument:
 - [ ] In-app purchase flow tested (if applicable)
 - [ ] App size within store limits
 ```
+
+> **Mobile storefront rows stay here on purpose.** `platform.cert_tier` models
+> `none|itch|steam|console` and has no mobile regime, so App Store / Play Store
+> compliance cannot be gated on it. Leaving these in the device block is a
+> deliberate choice, not an oversight — do not "fix" it by inventing a `mobile`
+> tier, which is the exact wrong vocabulary the `cert_tier` rule warns against.
+
+**Certification — emit ONLY the block matching `platform.cert_tier`** (resolved in
+the resolved-config block at the top of this skill). Do not emit this subsection's other blocks, and do not fall back to
+emitting all of them because the platform argument was `all`.
+
+**At `none`** — emit no certification block at all. Emit exactly this one line in
+its place, so the omission is visible rather than looking like a missing section:
+```markdown
+Certification: omitted — cert_tier is 'none' (internal build, alpha or jam release).
+```
+
+**At `itch`:**
+```markdown
+### Certification: itch.io
+- [ ] Build size within itch.io upload limits
+- [ ] itch.io page complete (cover art, screenshots, description)
+- [ ] Age/content tags set honestly
+- [ ] Downloadable vs browser build decided and tested
+- [ ] Butler channel names correct for each platform uploaded
+```
+
+**At `steam`:**
+```markdown
+### Certification: Steamworks
+- [ ] Steamworks SDK integrated and tested
+- [ ] Depot build uploaded and installs cleanly from a fresh account
+- [ ] Achievements functional
+- [ ] Cloud saves functional
+- [ ] Steam Deck compatibility verified (if targeting)
+- [ ] Steam common content rules reviewed
+```
+
+**At `console`:**
+```markdown
+### Certification: Console
+- [ ] TRC/TCR/Lotcheck requirements checklist complete
+- [ ] First-party certification submission prepared
+- [ ] Platform-specific achievement/trophy integration tested
+- [ ] Parental controls respected
+- [ ] Save-data rules compliant (corruption, full storage, user switching)
+- [ ] Age ratings obtained (ESRB, PEGI, regional)
+```
+
+If `cert_tier` is **unset**, ask which platforms are in scope rather than
+emitting every track; if it cannot be determined, emit
+`### Certification: NOT ASSESSED — cert tier unknown` and say why. **Unset is not
+`none`** — `none` is a decision and unset is a missing one.
+
+> **Certification rows belong here, in one `cert_tier`-gated subsection.** Do not
+> spread them back through the PC, Console and Mobile device blocks: those are
+> selected by the command argument and default to `all`, so an `itch` project
+> running `/release-checklist` with no argument would be handed the Steamworks SDK
+> rows *and* the Lotcheck rows — exactly what the `cert_tier` rule at the top of
+> this skill forbids.
+>
+> **`console` means two different things in this file.** It is a device-block
+> argument value *and* a `cert_tier` value, colliding on one word out of four. A
+> `**For \`console\`:**` heading is argument-gating, not tier-gating — do not read
+> it as evidence that certification is already scoped by tier.
 
 **Store and launch sections (all platforms):**
 ```markdown
@@ -150,7 +290,12 @@ Add platform-specific sections based on the argument:
 - [ ] Support team briefed on known issues and FAQ
 - [ ] Rollback plan documented (if critical issues found post-launch)
 
-### Go / No-Go: [READY / NOT READY]
+### Go / No-Go: [READY / NOT ASSESSED / NOT READY]
+
+First match wins: **NOT READY** if any blocking item fails; else **NOT ASSESSED**
+if any section or item came out `NOT ASSESSED` (name each one); else **READY**. NOT
+ASSESSED outranks READY — an unassessed section is not a passed one — and ranks
+below NOT READY, so a known blocker is never buried behind it.
 
 **Rationale:**
 [Summary of readiness assessment. List any blocking items that must be
@@ -178,5 +323,6 @@ If yes, write the file, creating the directory if needed.
 
 ## Phase 6: Next Steps
 
-- Run `/gate-check` for a formal phase gate verdict before proceeding to release.
-- Coordinate final sign-offs via `/team-release`.
+- Draft the changelog or patch notes (`/changelog`, `/patch-notes`) if not done — the release gate checks them.
+- Run `/gate-check release` — the Polish → Release gate reads this checklist.
+- After a PASS: `/launch-checklist`, then coordinate the release via `/team-release`.

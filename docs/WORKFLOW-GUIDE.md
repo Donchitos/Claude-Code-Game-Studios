@@ -3,29 +3,33 @@
 > **How to go from zero to a shipped game using the Agent Architecture.**
 >
 > This guide walks you through every phase of game development using the
-> 49-agent system, 73 slash commands, and 12 automated hooks. It assumes you
+> 49-agent system, 74 slash commands, and 12 automated hooks. It assumes you
 > have Claude Code installed and are working from the project root.
 >
-> The pipeline has 7 phases. Each phase has a formal gate (`/gate-check`)
-> that must pass before you advance. The authoritative phase sequence is
-> defined in `.claude/docs/workflow-catalog.yaml` and read by `/help`.
+> The pipeline has 7 phases. At `rigor: standard` and `full`, each phase has
+> a formal gate (`/gate-check`) that must pass before you advance. At
+> `rigor: minimal` -- the default -- nothing requires a gate; see
+> [The Default Path](#the-default-path-rigor-minimal). The authoritative
+> phase sequence is defined in `.claude/docs/workflow-catalog.yaml` and read
+> by `/help`.
 
 ---
 
 ## Table of Contents
 
 1. [Quick Start](#quick-start)
-2. [Phase 1: Concept](#phase-1-concept)
-3. [Phase 2: Systems Design](#phase-2-systems-design)
-4. [Phase 3: Technical Setup](#phase-3-technical-setup)
-5. [Phase 4: Pre-Production](#phase-4-pre-production)
-6. [Phase 5: Production](#phase-5-production)
-7. [Phase 6: Polish](#phase-6-polish)
-8. [Phase 7: Release](#phase-7-release)
-9. [Cross-Cutting Concerns](#cross-cutting-concerns)
-10. [Appendix A: Agent Quick-Reference](#appendix-a-agent-quick-reference)
-11. [Appendix B: Slash Command Quick-Reference](#appendix-b-slash-command-quick-reference)
-12. [Appendix C: Common Workflows](#appendix-c-common-workflows)
+2. [The Default Path: Rigor Minimal](#the-default-path-rigor-minimal)
+3. [Phase 1: Concept](#phase-1-concept)
+4. [Phase 2: Systems Design](#phase-2-systems-design)
+5. [Phase 3: Technical Setup](#phase-3-technical-setup)
+6. [Phase 4: Pre-Production](#phase-4-pre-production)
+7. [Phase 5: Production](#phase-5-production)
+8. [Phase 6: Polish](#phase-6-polish)
+9. [Phase 7: Release](#phase-7-release)
+10. [Cross-Cutting Concerns](#cross-cutting-concerns)
+11. [Appendix A: Agent Quick-Reference](#appendix-a-agent-quick-reference)
+12. [Appendix B: Slash Command Quick-Reference](#appendix-b-slash-command-quick-reference)
+13. [Appendix C: Common Workflows](#appendix-c-common-workflows)
 
 ---
 
@@ -38,7 +42,7 @@ Before you start, make sure you have:
 - **Claude Code** installed and working
 - **Git** with Git Bash (Windows) or standard terminal (Mac/Linux)
 - **jq** (optional but recommended -- hooks fall back to `grep` if missing)
-- **Python 3** (optional -- some hooks use it for JSON validation)
+- **Python 3** (required -- every skill and hook reads `project.yaml` through it; without it every setting silently falls back to its default)
 
 ### Step 1: Clone and Open
 
@@ -59,7 +63,8 @@ This guided onboarding asks where you are and routes you to the right phase:
 
 - **Path A** -- No idea yet: routes to `/brainstorm`
 - **Path B** -- Vague idea: routes to `/brainstorm` with seed
-- **Path C** -- Clear concept: routes to `/setup-engine` and `/map-systems`
+- **Path C** -- Clear concept: routes to `/brainstorm` to write it down, or
+  straight to `/setup-engine`
 - **Path D1** -- Existing project, few artifacts: normal flow
 - **Path D2** -- Existing project, GDDs/ADRs exist: runs `/project-stage-detect`
   then `/adopt` for brownfield migration
@@ -88,16 +93,18 @@ At any point, run:
 /help
 ```
 
-This reads your current phase from `production/stage.txt`, checks which
-artifacts exist, and tells you exactly what to do next. It distinguishes
-between REQUIRED next steps and OPTIONAL opportunities.
+This reads your current phase from `project.stage` in `project.yaml` (falling
+back to `production/stage.txt`) -- at `rigor: minimal`, where the stage never
+moves, it follows the minimal route instead -- checks which artifacts exist, and tells you
+exactly what to do next. It distinguishes between REQUIRED next steps and
+OPTIONAL opportunities.
 
 ### Step 5: Create Your Directory Structure
 
 Directories are created as needed. The system expects this layout:
 
 ```
-src/                  # Game source code
+src/                  # Game source code (Godot; Unity: Assets/, Unreal: Source/<Module>/)
   core/               # Engine/framework code
   gameplay/           # Gameplay systems
   ai/                 # AI systems
@@ -136,7 +143,36 @@ production/           # Sprint plans, milestones, releases
 > reach the phase that needs them. The important thing is to follow this
 > structure when you do create them, because the **rules system** enforces
 > standards based on file paths. Code in `src/gameplay/` gets gameplay rules,
-> code in `src/ai/` gets AI rules, and so on.
+> code in `src/ai/` gets AI rules, and so on — and the same for C# and C++ in
+> Unity and Unreal `Gameplay/` and `AI/` folders.
+
+---
+
+## The Default Path: Rigor Minimal
+
+`modes.rigor` defaults to `minimal` (`/start` asks which tier fits; `/settings`
+changes it any time). At `minimal` the path to code is four steps:
+
+1. `/setup-engine` -- configure the engine
+2. `/brainstorm` -- writes the one-page `design/game-brief.md`, which replaces
+   the full concept doc, the systems decomposition and the per-system GDDs
+3. `/create-stories` -- turns the brief's MVP list and build order into stories
+   under `production/epics/<slug>/`. No `/create-epics`, no `/sprint-plan`: the
+   brief's build order is the plan
+4. `/dev-story` then `/story-done`, story by story. `/story-done` names the
+   next story, and `/help` knows this route
+
+Nothing on this path runs `/gate-check`, so `project.stage` stays at Concept --
+that is expected. Every skill still runs at any tier; rigor changes what is
+required, not what is allowed.
+
+The trade: there are no GDDs to catch design problems before they reach code.
+Raise rigor with `/settings` when the game outgrows a one-page brief -- several
+systems that affect each other, a design someone else implements, a team, or a
+firm release date. Existing files stay where they are, and `/help` shows what
+the new tier requires next.
+
+The rest of this guide describes the `standard`/`full` pipeline.
 
 ---
 
@@ -155,7 +191,7 @@ with defined pillars and a player journey. This is where you figure out
      |                                        |                    |
      v                                        v                    v
   10 concepts     Concept doc with       Validation          Engine pinned in
-  MDA analysis    pillars, MDA,          of concept          technical-preferences.md
+  MDA analysis    pillars, MDA,          of concept          project.yaml
   Player motiv.   core loop, USP         document
                                                                    |
                                                                    v
@@ -230,8 +266,9 @@ Or with a specific engine:
 
 **What /setup-engine does:**
 
-- Populates `.claude/docs/technical-preferences.md` with naming conventions,
-  performance budgets, and engine-specific defaults
+- Writes engine, language, specialists, naming conventions, and performance
+  budgets to `project.yaml` (the source of truth) and mirrors them to
+  `.claude/docs/technical-preferences.md` (the human-readable legacy fallback)
 - Detects knowledge gaps (engine version newer than LLM training data) and
   advises cross-referencing `docs/engine-reference/`
 - Creates version-pinned reference docs in `docs/engine-reference/`
@@ -260,20 +297,38 @@ This step is **required** before proceeding to Phase 2. Research from 155 game
 postmortems confirms that skipping systems enumeration costs 5-10x more in
 production.
 
+### Step 1.5: Art Bible
+
+```
+/art-bible
+```
+
+Authors `design/art/art-bible.md`, the visual identity every asset follows.
+Run it once the concept is approved; `/art-bible` suggests doing it before
+`/map-systems` (Step 1.4). Sections 1–4 are needed before `/gate-check pre-production`, and all
+9 before `/gate-check production`. At `standard` it is required only when the
+game has visual-asset stories; at `minimal` it is optional.
+
 ### Phase 1 Gate
 
 ```
-/gate-check concept
+/gate-check systems-design
 ```
 
 **Requirements to pass:**
 
-- Engine configured in `technical-preferences.md`
-- `design/gdd/game-concept.md` exists with pillars
-- `design/gdd/systems-index.md` exists with dependency ordering
+- `design/gdd/game-concept.md` with content, the game pillars, and a Visual
+  Identity Anchor section (at `minimal`: `design/game-brief.md` with content)
+- Recommended: a concept prototype whose REPORT.md says PROCEED
 
-**Verdict:** PASS / CONCERNS / FAIL. CONCERNS is passable with acknowledged
-risks. FAIL blocks advancement.
+This is the `full` list. `standard` and `minimal` drop items; the gate's own
+file, `.claude/skills/gate-check/references/gate-systems-design.md`, has the full
+checklist and what each tier drops.
+
+**Verdict:** PASS / CONCERNS / NOT ASSESSED / FAIL. PASS advances the stage.
+On CONCERNS it advances only if you explicitly accept the risks, which are
+recorded; a FAIL never advances it. NOT ASSESSED means something required could
+not be checked.
 
 ---
 
@@ -302,7 +357,7 @@ and then all GDDs are cross-checked for consistency.
        |
        v
   Cross-GDD consistency + design theory review
-  PASS / CONCERNS / FAIL
+  PASS / CONCERNS / NOT ASSESSED / FAIL
 ```
 
 ### Step 2.1: Author System GDDs
@@ -357,11 +412,12 @@ Before the next system starts, validate the current one:
 /design-review design/gdd/combat-system.md
 ```
 
-Checks all 8 sections for completeness, formula clarity, edge case resolution,
+Checks the sections your `modes.workflow` tier requires (all 8 at `full`, 5 at
+`standard`) for completeness, formula clarity, edge case resolution,
 bidirectional dependencies, and testable acceptance criteria.
 
-**Verdict:** APPROVED / NEEDS REVISION / MAJOR REVISION. Only APPROVED GDDs
-should proceed.
+**Verdict:** APPROVED / NEEDS REVISION / MAJOR REVISION NEEDED / NOT ASSESSED.
+Only APPROVED GDDs should proceed.
 
 ### Step 2.3: Small Changes Without Full GDDs
 
@@ -416,15 +472,21 @@ If your game has story, lore, or dialogue, this is when you build it:
 ### Phase 2 Gate
 
 ```
-/gate-check systems-design
+/gate-check technical-setup
 ```
 
 **Requirements to pass:**
 
-- All MVP systems in `systems-index.md` have `Status: Approved`
-- Each MVP system has a reviewed GDD
-- Cross-GDD review report exists (`design/gdd/gdd-cross-review-*.md`)
-  with verdict of PASS or CONCERNS (not FAIL)
+- `design/gdd/systems-index.md` listing at least the MVP systems, with their
+  dependencies mapped
+- A GDD for every MVP system, each passing `/design-review` (no MAJOR REVISION
+  NEEDED)
+- A cross-GDD review report from `/review-all-gdds` whose verdict is not FAIL —
+  and not NOT ASSESSED, which means the GDDs could not be compared
+
+This is the `full` list. `standard` and `minimal` drop items; the gate's own
+file, `.claude/skills/gate-check/references/gate-technical-setup.md`, has the full
+checklist and what each tier drops.
 
 ---
 
@@ -456,8 +518,9 @@ gives programmers flat, actionable rules. You also establish UX foundations.
         Also in this phase:
         -------------------
         /ux-design  -->  /ux-review
-        Accessibility requirements doc
-        Interaction pattern library
+        Accessibility requirements doc  (/ux-design accessibility)
+        Interaction pattern library     (/ux-design patterns)
+        /test-setup  -->  test framework + CI workflow
 ```
 
 ### Step 3.1: Master Architecture Document
@@ -535,20 +598,42 @@ matrix (visual, motor, cognitive, auditory).
 
 This document is required in Phase 3 because UX specs (written in Phase 4)
 reference this tier — it is a design prerequisite, not a UX deliverable.
+`/ux-design accessibility` authors it; `/ux-design patterns` starts the
+interaction pattern library (`design/ux/interaction-patterns.md`), which the same
+gate checks.
+
+### Step 3.6: Test Framework
+
+```
+/test-setup
+```
+
+Scaffolds the engine's test root, `.github/workflows/tests.yml` and one example
+test; the Pre-Production gate checks for them. `/test-helpers` can follow once
+there are systems to test.
 
 ### Phase 3 Gate
 
 ```
-/gate-check technical-setup
+/gate-check pre-production
 ```
 
 **Requirements to pass:**
 
-- `docs/architecture/architecture.md` exists
-- At least 3 ADRs exist and are Accepted
-- Architecture review report exists
-- `docs/architecture/control-manifest.md` exists
-- `design/accessibility-requirements.md` exists
+- The engine configured, `project.yaml` populated (engine, naming, performance)
+  and the engine reference docs present
+- Art bible Sections 1–4 (`design/art/art-bible.md`)
+- `docs/architecture/architecture.md`, at least 3 ADRs covering Foundation-layer
+  systems, an `/architecture-review` report and
+  `docs/architecture/requirements-traceability.md`
+- The test framework in the engine's test root, `.github/workflows/tests.yml`
+  and one example test (`/test-setup`)
+- `design/accessibility-requirements.md` and `design/ux/interaction-patterns.md`
+  (`/ux-design accessibility`, `/ux-design patterns`)
+
+This is the `full` list. `standard` and `minimal` drop items; the gate's own
+file, `.claude/skills/gate-check/references/gate-pre-production.md`, has the full
+checklist and what each tier drops.
 
 ---
 
@@ -599,8 +684,9 @@ Three modes: screen/flow, HUD, and interaction patterns. Output goes to
 interaction map, data requirements, events fired, accessibility, localization.
 
 Reads your `accessibility-requirements.md` (written in Phase 3) and your
-input method config from `technical-preferences.md` to drive accessibility
-and input coverage checks — no need to re-specify them per screen.
+input method config from `project.yaml` (the `platform.*` block, falling back
+to `technical-preferences.md`) to drive accessibility and input coverage
+checks — no need to re-specify them per screen.
 
 > **Tip:** `/design-system` emits a 📌 UX Flag for every system with UI
 > requirements. Use those flags as a checklist for which screens need specs.
@@ -608,12 +694,13 @@ and input coverage checks — no need to re-specify them per screen.
 **Interaction Pattern Library:**
 
 ```
-/ux-design interaction-patterns
+/ux-design patterns
 ```
 
-Create `design/ux/interaction-patterns.md` — 16 standard controls plus
-game-specific patterns (inventory slot, ability icon, HUD bar, dialogue box,
-etc.) with animation and sound standards.
+Started in Phase 3 (the Pre-Production gate checks it); extend it here as the
+key screens add patterns. `design/ux/interaction-patterns.md` holds 16 standard
+controls plus game-specific patterns (inventory slot, ability icon, HUD bar,
+dialogue box, etc.) with animation and sound standards.
 
 **UX Review:**
 
@@ -648,7 +735,8 @@ you can build it properly. They answer different questions. If you skipped the
 concept prototype, now is a reasonable time to run one first before investing
 in the full slice.
 
-**Verdict:** The vertical slice produces a PROCEED / PIVOT / KILL verdict.
+**Verdict:** The vertical slice produces a PROCEED / PIVOT / KILL verdict, or
+NOT ASSESSED while nobody has played it through.
 - **PROCEED** → move to Step 4.3 (epics and stories)
 - **PIVOT** → revise affected GDDs with `/design-system [mechanic]`, then re-run `/vertical-slice`
 - **KILL** → return to `/brainstorm` with what you learned
@@ -681,7 +769,7 @@ automatically to the correct programmer agent.
 ```
 
 Checks: Design completeness, Architecture coverage, Scope clarity, Definition
-of Done. Verdict: READY / NEEDS WORK / BLOCKED.
+of Done. Verdict: READY / NEEDS WORK / BLOCKED / NOT ASSESSED.
 
 ### Step 4.5: Effort Estimation
 
@@ -701,35 +789,47 @@ Provides effort estimates with risk assessment.
 - Asks for sprint goal and available time
 - Breaks the goal into Must Have / Should Have / Nice to Have tasks
 - Identifies risks and blockers
-- Creates `production/sprints/sprint-01.md`
+- Creates `production/sprints/sprint-001.md`
 - Populates `production/sprint-status.yaml` (machine-readable story tracking)
 
-### Step 4.7: Vertical Slice (Hard Gate)
+### Step 4.7: Vertical Slice (recommended)
 
-Before advancing to Production, you must build and playtest a Vertical Slice:
+Before advancing to Production, build and playtest a Vertical Slice:
 
 - One complete end-to-end core loop, playable from start to finish
 - Representative quality (not placeholder everything)
-- Played unguided in at least 3 sessions
+- Played unguided in at least 1 documented session (3+ recommended)
 - Playtest report written (`/playtest-report`)
 
-This is a **hard gate** -- `/gate-check` will auto-FAIL if a human has not
-played the build unguided.
+`/gate-check production` treats it as recommended, not blocking: a skipped
+slice is CONCERNS, a slice nobody has played is NOT ASSESSED, and a built slice
+that is broken or not fun is a FAIL. At `workflow: minimal` the slice items
+drop: the gate asks instead whether the current build's core loop is fun and
+runs end to end.
 
 ### Phase 4 Gate
 
 ```
-/gate-check pre-production
+/gate-check production
 ```
 
 **Requirements to pass:**
 
-- At least 1 UX spec reviewed in `design/ux/`
-- UX review completed (APPROVED or NEEDS REVISION with documented risks)
-- At least 1 prototype with README
-- Story files exist in `production/epics/[epic-slug]/`
-- At least 1 sprint plan exists
-- At least 1 playtest report exists (Vertical Slice played in 3+ sessions)
+- A first sprint plan in `production/sprints/`, and Foundation and Core epics
+  with their stories under `production/epics/`
+- The complete art bible (all 9 sections) with its AD-ART-BIBLE sign-off
+  recorded
+- Every MVP GDD complete, the master architecture document, Foundation and Core
+  ADRs `Accepted`, and the control manifest
+- UX specs for the key screens (main menu, HUD, pause menu) that passed
+  `/ux-review`
+- Recommended, not blocking: a Vertical Slice built and played in at least one
+  documented session. Skipped → CONCERNS; built but broken or not fun → FAIL;
+  built but not yet played → NOT ASSESSED
+
+This is the `full` list. `standard` and `minimal` drop items; the gate's own
+file, `.claude/skills/gate-check/references/gate-production.md`, has the full
+checklist and what each tier drops.
 
 ---
 
@@ -776,7 +876,7 @@ The production phase centers on the **story lifecycle**:
 
 This checks design completeness, architecture coverage, ADR status (blocks
 if ADR is still Proposed), control manifest version (warns if stale), and
-scope clarity. Verdict: READY / NEEDS WORK / BLOCKED.
+scope clarity. Verdict: READY / NEEDS WORK / BLOCKED / NOT ASSESSED.
 
 **2. Implementation:** Work with the appropriate agents:
 
@@ -822,7 +922,7 @@ Quick 30-line snapshot reading from `production/sprint-status.yaml`.
 If scope is growing:
 
 ```
-/scope-check production/sprints/sprint-03.md
+/scope-check production/sprints/sprint-003.md
 ```
 
 This compares current scope against the original plan and flags scope increase,
@@ -900,15 +1000,24 @@ recommendation.
 ### Phase 5 Gate
 
 ```
-/gate-check production
+/gate-check polish
 ```
 
 **Requirements to pass:**
 
-- All MVP stories complete
-- Playtesting: 3 sessions covering new player, mid-game, and difficulty curve
-- Fun hypothesis validated
-- No confusion loops in playtest data
+- Every core GDD mechanic implemented, and the main gameplay path playable end
+  to end
+- Tests in the engine's test root covering the Logic and Integration stories,
+  and passing
+- A smoke-check report in `production/qa/` with PASS or PASS WITH WARNINGS
+- A `/team-qa` sign-off (APPROVED or APPROVED WITH CONDITIONS)
+- At least 3 documented playtest sessions (new player, mid-game, difficulty
+  curve) and the fun hypothesis validated or revised
+- No open S1 Critical bugs, and performance within budget
+
+This is the `full` list. `standard` and `minimal` drop items; the gate's own
+file, `.claude/skills/gate-check/references/gate-polish.md`, has the full
+checklist and what each tier drops.
 
 ---
 
@@ -935,6 +1044,10 @@ performance, balance, accessibility, audio, visual polish, and playtesting.
   Track and        Coordinated pass:
   prioritize       performance + art +
   debt items       audio + UX + QA
+
+  /security-audit  -->  /localize qa  -->  /release-checklist  -->  /changelog
+                        (per language)                           + /patch-notes
+  Release readiness: the Polish -> Release gate checks all four.
 ```
 
 ### Step 6.1: Performance Profiling
@@ -993,7 +1106,9 @@ missing tests, and outdated dependencies. Each item categorized and prioritized.
 ```
 
 Coordinates 4 specialists in parallel:
-1. Performance optimization (performance-analyst)
+1. Performance optimization (performance-analyst lists the optimisations; a
+   programmer in the active set implements them — at `team.size: individual`,
+   where none is active, the list is handed to `/dev-story`)
 2. Visual polish (technical-artist)
 3. Audio polish (sound-designer)
 4. Feel/juice (gameplay-programmer + technical-artist)
@@ -1003,7 +1118,7 @@ You set priorities; the team executes with your approval at each step.
 ### Step 6.7: Localization and Accessibility
 
 ```
-/localize src/
+/localize scan
 ```
 
 Scans for hardcoded strings, concatenation that breaks translation, text that
@@ -1012,18 +1127,80 @@ does not account for expansion, and missing locale files.
 Accessibility is audited against the tier committed in Phase 3's accessibility
 requirements document.
 
+### Step 6.8: Security Audit
+
+```
+/security-audit
+```
+
+Required for the release gate at `standard` and `full`: the newest report must
+have no open CRITICAL or HIGH finding. A report whose recommendation is NOT
+ASSESSED leaves the gate's security item NOT ASSESSED.
+
+### Step 6.9: Localization QA
+
+```
+/localize qa
+```
+
+Run it for every language you ship. At `full` the release gate needs a PASS (or
+PASS WITH CONDITIONS) for each; a locale nobody has checked is NOT ASSESSED.
+
+### Step 6.10: Release Checklist
+
+```
+/release-checklist all
+```
+
+The argument is the platform scope (`pc`, `console`, `mobile` or `all`), not a
+version.
+
+Generates a comprehensive pre-release checklist covering:
+- Build verification (all platforms compile and run)
+- Certification requirements (platform-specific)
+- Store metadata (descriptions, screenshots, trailers)
+- Legal compliance (EULA, privacy policy, ratings)
+- Save game compatibility
+- Analytics verification
+
+### Step 6.11: Changelog and Patch Notes
+
+```
+/patch-notes v1.0.0
+```
+
+Generates player-friendly patch notes from git history and sprint data.
+Translates developer language into player language.
+
+```
+/changelog v1.0.0
+```
+
+Generates an internal changelog (more technical, for the team).
+
+The release gate needs the changelog or the patch notes drafted, so write them
+now; `/team-release` publishes them once the release is a GO.
+
 ### Phase 6 Gate
 
 ```
-/gate-check polish
+/gate-check release
 ```
 
 **Requirements to pass:**
 
-- At least 3 playtest reports exist
-- Coordinated polish pass completed (`/team-polish`)
-- No blocking performance issues
-- Accessibility tier requirements met
+- Every milestone feature implemented and the content complete
+- A QA test plan and a QA sign-off, and every Must Have story's test evidence
+  (UI: retained screenshots; Visual/Feel: screenshots plus lead sign-off)
+- Smoke check PASS on the release candidate, and the test suite passing
+- `/balance-check` run, the release checklist completed, and the changelog or
+  patch notes drafted
+- No open S1–S3 bugs, the newest `/security-audit` with no open CRITICAL or
+  HIGH finding, and a `/localize qa` pass for every locale you ship
+
+This is the `full` list. `standard` and `minimal` drop items; the gate's own
+file, `.claude/skills/gate-check/references/gate-release.md`, has the full
+checklist and what each tier drops.
 
 ---
 
@@ -1036,31 +1213,18 @@ Your game is polished, tested, and ready. Now you ship it.
 ### Phase 7 Pipeline
 
 ```
-/release-checklist  -->  /launch-checklist  -->  /team-release
-        |                       |                      |
-        v                       v                      v
-  Pre-release             Full cross-department    Coordinate:
-  validation across       validation (Go/No-Go     build, QA sign-off,
-  code, content,          per department)           deployment, launch
-  store, legal
-                    Also: /changelog, /patch-notes, /hotfix
+/launch-checklist  -->  /team-release
+        |                      |
+        v                      v
+  Full cross-department    Coordinate:
+  validation (Go/No-Go     build, QA sign-off,
+  per department)          deployment, launch
+
+  The release checklist, security audit and patch notes are done in Polish,
+  before /gate-check release.   Also: /hotfix, /day-one-patch
 ```
 
-### Step 7.1: Release Checklist
-
-```
-/release-checklist v1.0.0
-```
-
-Generates a comprehensive pre-release checklist covering:
-- Build verification (all platforms compile and run)
-- Certification requirements (platform-specific)
-- Store metadata (descriptions, screenshots, trailers)
-- Legal compliance (EULA, privacy policy, ratings)
-- Save game compatibility
-- Analytics verification
-
-### Step 7.2: Launch Readiness (Full Validation)
+### Step 7.1: Launch Readiness (Full Validation)
 
 ```
 /launch-checklist
@@ -1084,24 +1248,13 @@ Complete cross-department validation:
 | **Infrastructure** | Servers scaled, CDN configured, monitoring active |
 | **Legal** | EULA finalized, privacy policy, COPPA/GDPR compliance |
 
-Each item gets a **Go / No-Go** status. All must be Go to ship.
+What no file can settle — the EULA, pricing, the on-call schedule — is asked
+once per section: yes, no, not yet or N/A. A "no" or "not yet" is a failed item.
+The overall status is READY, CONDITIONAL (only items with a workaround or an
+accepted risk remain), NOT ASSESSED (something is still unconfirmed) or NOT
+READY (a blocking item failed).
 
-### Step 7.3: Generate Player-Facing Content
-
-```
-/patch-notes v1.0.0
-```
-
-Generates player-friendly patch notes from git history and sprint data.
-Translates developer language into player language.
-
-```
-/changelog v1.0.0
-```
-
-Generates an internal changelog (more technical, for the team).
-
-### Step 7.4: Coordinate the Release
+### Step 7.2: Coordinate the Release
 
 ```
 /team-release
@@ -1114,9 +1267,9 @@ Coordinates release-manager, QA, and DevOps through:
 4. Deployment preparation
 5. Go/No-Go decision
 
-### Step 7.5: Ship
+### Step 7.3: Ship
 
-The `validate-push` hook will warn you when pushing to `main` or `develop`.
+The `validate-push` hook will warn you when pushing to `main` or a `release/*` branch.
 This is intentional -- release pushes should be deliberate:
 
 ```bash
@@ -1124,7 +1277,7 @@ git tag v1.0.0
 git push origin main --tags
 ```
 
-### Step 7.6: Post-Launch
+### Step 7.4: Post-Launch
 
 **Hotfix workflow** for critical production bugs:
 
@@ -1135,7 +1288,7 @@ git push origin main --tags
 Bypasses normal sprint processes with a full audit trail:
 1. Creates a hotfix branch
 2. Implements the fix
-3. Ensures backport to development branch
+3. Ensures the fix is backported to `main` (the trunk)
 4. Documents the incident
 
 **Post-mortem** after launch stabilizes:
@@ -1154,25 +1307,30 @@ These topics apply across all phases.
 ### Director Review Modes
 
 Director gates are specialist agents that review your work at key workflow steps.
-By default they run at every checkpoint. You can control how much review you get.
+**By default none run.** `modes.review_mode` follows `modes.rigor`, and the
+default rigor, `rigor: minimal`, gives `solo`.
 
-**Set your review intensity once during `/start`.** Saved to `production/review-mode.txt`.
+| Mode | What runs | The default under | Best for |
+|------|-----------|-------------------|----------|
+| `full` | All director gates at every step | `rigor: full` | Studio-scale projects, learning the system |
+| `lean` | Directors only at phase transitions (`/gate-check`) | `rigor: standard` | Experienced devs |
+| `solo` | No director reviews | `rigor: minimal` | Solo projects, game jams, prototypes |
 
-| Mode | What runs | Best for |
-|------|-----------|----------|
-| `full` | All director gates at every step | New projects, learning the system |
-| `lean` | Directors only at phase transitions (`/gate-check`) | Experienced devs |
-| `solo` | No director reviews | Game jams, prototypes, maximum speed |
+**Change it** with `/settings modes.review_mode=lean` (written to `project.yaml`;
+an explicit value wins over rigor), or `/settings --local modes.review_mode=full`
+for your machine only. `/start` does not set it.
 
-**Override for a single run** without changing your global setting:
+**Override for a single run** without changing your setting:
 
 ```
 /brainstorm space horror --review full
 /architecture-decision --review solo
 ```
 
-The `--review` flag works on all gate-using skills. Change the global mode at any
-time by editing `production/review-mode.txt` directly or re-running `/start`.
+The `--review` flag works on all gate-using skills. The first of these that is
+set wins: the flag, `project.local.yaml`, `project.yaml`, a legacy
+`production/review-mode.txt`, then the rigor default. A `review-mode.txt` left
+from an older version still overrides rigor — delete it if the mode surprises you.
 
 Full gate definitions and check pattern: `.claude/docs/director-gates.md`
 
@@ -1247,16 +1405,16 @@ The system has 12 hooks that run automatically:
 |------|---------|-------------|
 | `session-start.sh` | Session start | Shows branch, recent commits, detects active.md for recovery |
 | `detect-gaps.sh` | Session start | Detects fresh projects (no engine, no concept) and suggests `/start` |
-| `pre-compact.sh` | Before compaction | Dumps session state into conversation for auto-recovery |
-| `post-compact.sh` | After compaction | Reminds Claude to restore session state from `active.md` |
+| `pre-compact.sh` | Before compaction | Logs the compaction (its output does not reach Claude) |
+| `post-compact.sh` | After compaction | Debug-log reminder only (its output does not reach Claude) |
 | `notify.sh` | Notification event | Shows Windows toast notification via PowerShell |
 | `validate-commit.sh` | Before commit | Checks for design doc references, valid JSON, no hardcoded values |
-| `validate-push.sh` | Before push | Warns on pushes to main/develop |
-| `validate-assets.sh` | Before commit | Checks asset naming and size |
+| `validate-push.sh` | Before push | Warns on pushes to main, master or release/* |
+| `validate-assets.sh` | After a file write | Checks data-file JSON, and asset naming in Godot's `assets/` |
 | `validate-skill-change.sh` | Skill file written | Advises running `/skill-test` after `.claude/skills/` changes |
 | `log-agent.sh` | Agent start | Logs agent invocations for audit trail |
 | `log-agent-stop.sh` | Agent stop | Completes agent audit trail (start + stop) |
-| `session-stop.sh` | Session end | Final session logging |
+| `session-stop.sh` | **Every response ends** | Session logging and the subagent spawn tally. Despite the name it fires once per response, not once per session. |
 
 ### Context Resilience
 
@@ -1270,8 +1428,8 @@ survive crashes and context compactions. Previous discussion about written
 sections can be safely compacted.
 
 **Automatic recovery:** The `session-start.sh` hook detects and previews
-`active.md` automatically. The `pre-compact.sh` hook dumps state into the
-conversation before compaction.
+`active.md` automatically, and runs again after every compaction, so the
+checkpoint comes back when the conversation is summarised.
 
 **Sprint status tracking:** `production/sprint-status.yaml` is the
 machine-readable story tracker. Written by `/sprint-plan` (init) and
@@ -1311,31 +1469,38 @@ These detect which sections are present vs. missing and fill only the gaps.
 
 ### Gate System
 
-Phase gates are formal checkpoints. Run `/gate-check` with the transition name:
+Phase gates are formal checkpoints. Run `/gate-check` with the phase you are
+entering:
 
 ```
-/gate-check concept              # Concept -> Systems Design
-/gate-check systems-design       # Systems Design -> Technical Setup
-/gate-check technical-setup      # Technical Setup -> Pre-Production
-/gate-check pre-production       # Pre-Production -> Production
-/gate-check production           # Production -> Polish
-/gate-check polish               # Polish -> Release
+/gate-check systems-design       # Concept -> Systems Design
+/gate-check technical-setup      # Systems Design -> Technical Setup
+/gate-check pre-production       # Technical Setup -> Pre-Production
+/gate-check production           # Pre-Production -> Production
+/gate-check polish               # Production -> Polish
+/gate-check release              # Polish -> Release
 ```
 
 **Verdicts:**
 - **PASS** -- all requirements met, advance to next phase
-- **CONCERNS** -- requirements met with acknowledged risks, passable
+- **CONCERNS** -- risks found; the stage advances only if you explicitly accept
+  them, and the accepted risks are recorded
+- **NOT ASSESSED** -- something required could not be checked; the report names
+  it, so supply it and re-run
 - **FAIL** -- requirements not met, blocks advancement with specific remediation
 
-When a gate passes, `production/stage.txt` is updated (only then), which
-controls the status line and `/help` behavior.
+When a gate passes — or you accept a CONCERNS verdict's risks — `project.stage`
+in `project.yaml` is updated (only then; a FAIL never advances it) — mirrored to
+`production/stage.txt`. At `standard` and `full` the stage drives
+the status line and `/help`; at `minimal` they follow the brief and stories
+instead.
 
 ### Reverse Documentation
 
 For code that exists without design docs (common after brownfield adoption):
 
 ```
-/reverse-document src/gameplay/combat/
+/reverse-document design src/gameplay/combat/
 ```
 
 Reads existing code and generates GDD-format design documentation from it.
@@ -1422,9 +1587,9 @@ conflicts go to `producer`.
 
 ## Appendix B: Slash Command Quick-Reference
 
-### All 73 Commands by Category
+### All 74 Commands by Category
 
-#### Onboarding and Navigation (6)
+#### Onboarding and Navigation (7)
 
 | Command | Purpose | Phase |
 |---------|---------|-------|
@@ -1433,6 +1598,7 @@ conflicts go to `producer`.
 | `/project-stage-detect` | Full project audit to determine current phase | Any |
 | `/setup-engine` | Configure engine, pin version, set preferences | 1 |
 | `/adopt` | Brownfield audit and migration plan | Any (existing projects) |
+| `/settings` | View or change project config (rigor, review mode, ...) | Any |
 | `/skill-improve` | Improve a skill via test-fix-retest loop | Any |
 
 #### Game Design (6)
@@ -1450,7 +1616,7 @@ conflicts go to `producer`.
 
 | Command | Purpose | Phase |
 |---------|---------|-------|
-| `/ux-design` | Author UX specs (screen/flow, HUD, patterns) | 4 |
+| `/ux-design` | Author UX specs (screen/flow, HUD, patterns) | 3-4 |
 | `/ux-review` | Validate UX specs for accessibility and GDD alignment | 4 |
 
 #### Architecture (4)
@@ -1489,9 +1655,9 @@ conflicts go to `producer`.
 | `/scope-check` | Scope creep detection | 5 |
 | `/perf-profile` | Performance profiling workflow | 6 |
 | `/tech-debt` | Tech debt scanning and prioritization | 6 |
-| `/gate-check` | Formal phase gate with PASS/CONCERNS/FAIL | All transitions |
+| `/gate-check` | Formal phase gate with PASS/CONCERNS/NOT ASSESSED/FAIL | All transitions |
 | `/reverse-document` | Generate design docs from existing code | Any |
-| `/security-audit` | Security vulnerability audit (save, network, input) | 6-7 |
+| `/security-audit` | Security vulnerability audit (save, network, input) | 6 |
 
 #### QA and Testing (9)
 
@@ -1501,8 +1667,8 @@ conflicts go to `producer`.
 | `/smoke-check` | Critical path smoke test gate before QA hand-off | 5-6 |
 | `/soak-test` | Soak test protocol for extended play sessions | 6 |
 | `/regression-suite` | Map test coverage, identify fixed bugs lacking regression tests | 5-6 |
-| `/test-setup` | Scaffold test framework and CI/CD pipeline | 4 |
-| `/test-helpers` | Generate engine-specific test helper libraries | 4-5 |
+| `/test-setup` | Scaffold test framework and CI/CD pipeline | 3 |
+| `/test-helpers` | Generate engine-specific test helper libraries | 3-5 |
 | `/test-evidence-review` | Quality review of test files and manual evidence | 5 |
 | `/test-flakiness` | Detect non-deterministic tests from CI logs | 5-6 |
 | `/skill-test` | Validate skill files for structural and behavioral correctness | Any |
@@ -1522,10 +1688,10 @@ conflicts go to `producer`.
 
 | Command | Purpose | Phase |
 |---------|---------|-------|
-| `/release-checklist` | Pre-release validation | 7 |
+| `/release-checklist` | Pre-release validation | 6 |
 | `/launch-checklist` | Full cross-department launch readiness | 7 |
-| `/changelog` | Auto-generate internal changelog | 7 |
-| `/patch-notes` | Player-facing patch notes | 7 |
+| `/changelog` | Auto-generate internal changelog | 6 |
+| `/patch-notes` | Player-facing patch notes | 6 |
 | `/hotfix` | Emergency fix workflow | 7+ |
 | `/day-one-patch` | Scoped patch for issues found after gold master | 7+ |
 
@@ -1534,7 +1700,7 @@ conflicts go to `producer`.
 | Command | Purpose | Phase |
 |---------|---------|-------|
 | `/prototype` | Concept prototype — validate core idea before GDDs | 1 |
-| `/art-bible` | Guided Art Bible authoring — visual identity spec | 1-2 |
+| `/art-bible` | Guided Art Bible authoring — visual identity spec | 1-4 |
 | `/vertical-slice` | Production-quality end-to-end build before Production | 4 |
 | `/localize` | String extraction and validation | 6-7 |
 
@@ -1564,7 +1730,7 @@ conflicts go to `producer`.
 3. /setup-engine (pin engine and version)
 4. /design-review on concept doc (optional, recommended)
 5. /map-systems (decompose concept into systems with deps and priorities)
-6. /gate-check concept (verify you're ready for Systems Design)
+6. /gate-check systems-design (verify you're ready for Systems Design)
 7. /design-system per system (guided GDD authoring)
 ```
 
@@ -1573,14 +1739,18 @@ conflicts go to `producer`.
 ```
 1. /design-review on each GDD (make sure they're solid)
 2. /review-all-gdds (cross-GDD consistency)
-3. /gate-check systems-design
+3. /gate-check technical-setup
 4. /create-architecture + /architecture-decision (per major decision)
 5. /architecture-review
 6. /create-control-manifest
-7. /gate-check technical-setup
-8. /create-epics layer: foundation + /create-stories [slug] (define epics, break into stories)
-9. /sprint-plan new
-10. /story-readiness -> implement -> /story-done (story lifecycle)
+7. /art-bible (sections 1–4 now) + /test-setup + /ux-design accessibility + /ux-design patterns
+8. /gate-check pre-production
+9. /ux-design per key screen + /ux-review
+10. /vertical-slice (recommended before committing to epics)
+11. /create-epics layer: foundation + /create-stories [slug] (define epics, break into stories)
+12. /sprint-plan new
+13. /gate-check production
+14. /story-readiness -> implement -> /story-done (story lifecycle)
 ```
 
 ### Workflow 3: "I need to add a complex feature mid-production"
@@ -1632,16 +1802,17 @@ conflicts go to `producer`.
 ### Workflow 7: "Shipping the game"
 
 ```
-1. /gate-check polish (verify Polish phase is complete)
-2. /tech-debt (decide what's acceptable at launch)
-3. /localize (final localization pass)
-4. /release-checklist v1.0.0
-5. /launch-checklist (full cross-department validation)
-6. /team-release (coordinate the release)
-7. /patch-notes and /changelog
-8. Ship!
-9. /hotfix if anything breaks post-launch
-10. Post-mortem after launch stabilizes
+1. /tech-debt (decide what's acceptable at launch)
+2. /security-audit (the release gate reads the newest report)
+3. /localize qa for every language you ship
+4. /release-checklist all
+5. /changelog and /patch-notes (drafts; /team-release finalizes them)
+6. /gate-check release (verify Polish is complete and the game is ready to release)
+7. /launch-checklist (full cross-department validation)
+8. /team-release (coordinate the release)
+9. Ship!
+10. /hotfix if anything breaks post-launch
+11. Post-mortem after launch stabilizes
 ```
 
 ### Workflow 8: "I'm lost / don't know what to do next"
@@ -1669,7 +1840,8 @@ conflicts go to `producer`.
    delta time, accessibility, etc.).
 
 4. **Compact proactively.** At ~65-70% context usage, compact or `/clear`.
-   The pre-compact hook saves your progress. Do not wait until you are at the
+   Your checkpoint in `active.md` survives it, and `session-start.sh` shows it
+   again afterwards. Do not wait until you are at the
    limit.
 
 5. **Use the right tier of agent.** Do not ask `creative-director` to write a

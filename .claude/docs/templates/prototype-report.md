@@ -51,7 +51,7 @@ directly where possible.]
 
 ---
 
-## Recommendation: [PROCEED / PIVOT / KILL]
+## Recommendation: [PROCEED / PIVOT / KILL / NOT ASSESSED — built but nobody has played it]
 
 [One paragraph explaining the recommendation with evidence from the result above.]
 

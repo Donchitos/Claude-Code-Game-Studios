@@ -2,8 +2,7 @@
 
 ## Agent Summary
 Domain: Editor extensions, content authoring tools, debug utilities, and pipeline automation scripts.
-Does NOT own: game code (gameplay-programmer, ui-programmer, etc.), engine core systems (engine-programmer).
-Model tier: Sonnet (default).
+Does NOT own: game runtime code (gameplay-programmer), engine core systems (engine-programmer), art pipeline requirements (technical-artist).
 No gate IDs assigned.
 
 ---
@@ -11,8 +10,8 @@ No gate IDs assigned.
 ## Static Assertions (Structural)
 
 - [ ] `description:` field is present and domain-specific (references editor tools / pipeline / debug utilities)
-- [ ] `allowed-tools:` list includes Read, Write, Edit, Bash, Glob, Grep
-- [ ] Model tier is Sonnet (default for specialists)
+- [ ] `tools:` list includes Read, Write, Edit, Bash, Glob, Grep
+- [ ] Model tier is `inherit` — frontmatter `model:` reads exactly `inherit` (tiers: `.claude/docs/model-tiers.md`)
 - [ ] Agent definition does not claim authority over game source code or engine internals
 
 ---
@@ -34,23 +33,23 @@ No gate IDs assigned.
 - Does NOT produce gameplay mechanic code
 - Explicitly states that combat system implementation belongs to `gameplay-programmer`
 - Redirects the request to `gameplay-programmer`
-- May note it can build a debug overlay tool to visualize combo state if useful during development
+- Any part it offers is tooling on its side of the line — e.g., a debug overlay that visualizes combo state — never combo logic
 
 ### Case 3: Runtime data access — coordination required
-**Input:** "The waypoint editor tool needs to read game data at runtime to validate patrol routes against the AI budget."
+**Input:** "The waypoint editor must check at edit time that every patrol segment is walkable, but the collision queries that answer this live in the game's runtime code and the editor cannot call them."
 **Expected behavior:**
-- Identifies that runtime data access from an editor plugin requires a defined, safe interface to the game's runtime systems
-- Coordinates with `engine-programmer` to establish a read-only data access pattern (e.g., a resource validation API)
-- Does NOT directly read internal engine or game memory structures without an agreed interface
-- Documents the required interface before implementing the tool
+- Identifies that the tool needs a runtime query the editor cannot yet call, and that adding one is a change to game runtime code
+- Does NOT add the runtime hook itself — delegates it to `engine-programmer` (collision queries are engine-level runtime code) and asks before coordinating ("This will require changes to [other system]. Should I coordinate with that first?")
+- Documents the read-only interface the tool needs (inputs, outputs, called from editor context) before implementing the tool
+- Reports failing segments as clear, actionable errors rather than silently skipping them
 
 ### Case 4: Engine version breakage
 **Input:** "After the engine upgrade, the waypoint editor tool crashes on startup."
 **Expected behavior:**
-- Checks the engine version reference (`docs/engine-reference/`) for breaking changes in editor plugin APIs
-- Identifies the specific API or signal that changed in the new version
+- Checks the engine version reference (`docs/engine-reference/`) before touching editor plugin APIs, including the pinned version in VERSION.md against the upgraded editor (an `Installed at pin time` of NOT DETERMINED is an unknown gap, not a match)
+- Looks for the failing API in the reference's breaking-changes and deprecated-APIs files rather than recalling it from training data; if they do not cover it, says so instead of asserting a cause
 - Produces a targeted fix for the breaking change
-- Notes any other tools that may be affected by the same API change
+- Tests the fix on representative data before calling the tool fixed
 
 ### Case 5: Context pass — art pipeline requirements
 **Input:** Art pipeline requirements provided in context: "All texture imports must set compression to VRAM Compressed, generate mipmaps, and tag with a LOD group." Request: "Build an asset import tool that enforces these settings."
@@ -58,7 +57,7 @@ No gate IDs assigned.
 - References all three requirements from the context: VRAM compression, mipmap generation, LOD group tagging
 - Produces an import tool that validates and applies all three settings on import
 - Adds a warning or error report for assets that fail to meet the specified settings
-- Does NOT change the art pipeline requirements themselves (those belong to art-director / technical-artist)
+- Treats the three settings as given: does NOT change or add requirements itself — any change it thinks is needed is raised with `technical-artist`, its partner for art pipeline tools
 
 ---
 
@@ -67,9 +66,10 @@ No gate IDs assigned.
 - [ ] Stays within declared domain (editor tools, pipeline scripts, debug utilities)
 - [ ] Redirects game code requests to appropriate programmer agents
 - [ ] Returns structured findings (tool specs, editor extension code, pipeline scripts)
-- [ ] Coordinates with engine-programmer before accessing runtime data from editor context
+- [ ] Delegates any runtime-code change a tool depends on (e.g., a query API) to engine-programmer or gameplay-programmer instead of making it
 - [ ] Checks engine version reference before using editor plugin APIs
 - [ ] Builds tools to enforce requirements, does not author the requirements themselves
+- [ ] Asks "May I write this to [filepath]?" naming the file before writing
 
 ---
 

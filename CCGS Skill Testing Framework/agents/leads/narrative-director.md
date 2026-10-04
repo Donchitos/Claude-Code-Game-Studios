@@ -1,10 +1,9 @@
 # Agent Test Spec: narrative-director
 
 ## Agent Summary
-**Domain owned:** Story architecture, character design direction, world-building oversight, ND-CONSISTENCY gate, dialogue quality review.
+**Domain owned:** Story architecture, character design direction, world-building oversight, ND-CONSISTENCY gate, dialogue strategy.
 **Does NOT own:** Visual art style (art-director), technical systems or code (lead-programmer), production scheduling (producer), game mechanics rules (game-designer).
-**Model tier:** Sonnet (individual system analysis — narrative consistency and lore review).
-**Gate IDs handled:** ND-CONSISTENCY.
+**Gate IDs handled:** ND-CONSISTENCY (verdicts APPROVE / CONCERNS / REJECT, defined in `.claude/docs/director-gates/nd-consistency.md`).
 
 ---
 
@@ -13,8 +12,8 @@
 Verified by reading the agent's `.claude/agents/narrative-director.md` frontmatter:
 
 - [ ] `description:` field is present and domain-specific (references story, character, world-building, consistency — not generic)
-- [ ] `allowed-tools:` list is read-focused; includes Read for lore documents, GDDs, and narrative docs; no Bash unless justified
-- [ ] Model tier is `claude-sonnet-4-6` per coordination-rules.md
+- [ ] `tools:` reads Read, Glob, Grep, Write, Edit, WebSearch and `disallowedTools:` lists Bash
+- [ ] Model tier is `inherit` — frontmatter `model:` reads exactly `inherit` (tiers: `.claude/docs/model-tiers.md`)
 - [ ] Agent definition does not claim authority over visual style, technical systems, or production scheduling
 
 ---
@@ -22,63 +21,73 @@ Verified by reading the agent's `.claude/agents/narrative-director.md` frontmatt
 ## Test Cases
 
 ### Case 1: In-domain request — appropriate output format
-**Scenario:** A new lore document for "The Sunken Archive" location is submitted. The document establishes that the Archive was flooded 200 years ago during the Great Collapse, consistent with the established timeline in the world-bible. All named characters referenced are consistent with their established backstories. Request is tagged ND-CONSISTENCY.
-**Expected:** Returns `ND-CONSISTENCY: CONSISTENT` with rationale confirming the timeline alignment and character reference accuracy.
+**Scenario:** A new lore document for "The Sunken Archive" location is submitted. The document establishes that the Archive was flooded 200 years ago during the Great Collapse, consistent with the established timeline in the world-bible. All named characters referenced are consistent with their established profiles, and the tone matches the narrative bible's tone guide. The gate context passes every input `.claude/docs/director-gates/nd-consistency.md` names: the document path, the tone guide, the world-bible's timeline rules, and the profiles of the characters it references. Request is tagged ND-CONSISTENCY.
+**Expected:** Returns `APPROVE` with rationale confirming the timeline alignment, character consistency, and tone.
 **Assertions:**
-- [ ] Verdict is exactly one of CONSISTENT / INCONSISTENT
-- [ ] Verdict token is formatted as `ND-CONSISTENCY: CONSISTENT`
-- [ ] Rationale references specific established facts verified (the 200-year timeline, the Great Collapse event)
+- [ ] Verdict is exactly one of APPROVE / CONCERNS / REJECT (the ND-CONSISTENCY gate's vocabulary) — here APPROVE
+- [ ] Rationale answers each question the gate prompt asks: character consistency with established profiles, contradictions with established lore, and tone
+- [ ] Rationale references the specific established facts verified (the 200-year timeline, the Great Collapse event)
 - [ ] Output stays within narrative scope — does not comment on visual design of the location or its technical implementation
 
 ### Case 2: Out-of-domain request — redirects or escalates
 **Scenario:** A developer asks narrative-director to review and optimize the shader code used for the "ancient glow" visual effect on Archive artifacts.
-**Expected:** Agent declines to evaluate shader code and redirects to the appropriate engine specialist (godot-gdscript-specialist or equivalent shader specialist).
+**Expected:** Agent declines to evaluate the shader code. It names `technical-artist` — the owner of shader, VFX and rendering code in its own "must not" list — as who reviews and optimizes it; naming `art-director`, who owns how the effect should look, as well is fine. Any narrative input it adds is the mood the effect should carry.
 **Assertions:**
-- [ ] Does not make any binding decision about shader code or visual implementation
-- [ ] Explicitly names the appropriate engine or shader specialist as the correct handler
-- [ ] May note the intended narrative mood the effect should convey (e.g., "should feel ancient and sacred, not technological"), but defers all technical visual implementation
+- [ ] Does not review, rewrite, or optimize the shader code, and makes no binding decision about visual implementation
+- [ ] Names `technical-artist` (or the engine's shader specialist) as the owner of the shader code, per its "Review or change shader, VFX or rendering code (technical-artist owns it; art-director owns how it should look)" limit — naming `art-director` too is acceptable, naming only art-director is not
+- [ ] Any narrative input it gives (e.g., "should feel ancient and sacred, not technological") is framed as input for the visual owners, not as a visual or technical decision
 
 ### Case 3: Gate verdict — correct vocabulary
-**Scenario:** A new character backstory document is submitted for the character "Aldric Vorne." The document states Aldric was born in the Capital 150 years ago and witnessed the Great Collapse firsthand. However, the established world-bible states Aldric was born 50 years after the Great Collapse in a provincial town, not the Capital. Request is tagged ND-CONSISTENCY.
-**Expected:** Returns `ND-CONSISTENCY: INCONSISTENT` with specific citation of the two contradicting facts: the birth timing (150 years ago vs. 50 years post-Collapse) and the birth location (Capital vs. provincial town).
+**Scenario:** A new character backstory document is submitted for the character "Aldric Vorne." The document states Aldric was born in the Capital 150 years ago and witnessed the Great Collapse firsthand; the backstory's central arc is his guilt over the Collapse he watched happen. The established world-bible states Aldric was born 50 years after the Great Collapse in a provincial town, not the Capital. Request is tagged ND-CONSISTENCY.
+**Expected:** Returns `REJECT` — the contradicted facts carry the backstory's central arc, so they break its narrative foundation rather than being a local fix — listing both contradictions: birth timing (150 years ago vs. 50 years after the Collapse) and birth location (Capital vs. provincial town).
 **Assertions:**
-- [ ] Verdict is exactly one of CONSISTENT / INCONSISTENT — not freeform text
-- [ ] Verdict token is formatted as `ND-CONSISTENCY: INCONSISTENT`
-- [ ] Rationale cites both contradictions specifically, not just "doesn't match lore"
-- [ ] References the authoritative source (world-bible) for the established facts
+- [ ] Verdict is exactly one of APPROVE / CONCERNS / REJECT — not freeform text; here REJECT, because the contradicted facts are load-bearing for the whole backstory (a contradiction it found takes the gate's word, so it is not NOT ASSESSED even though no character profile is passed)
+- [ ] The verdict carries both contradictions specifically, in the gate's `REJECT [contradictions ...]` form — not just "doesn't match lore"
+- [ ] References the world-bible as the authoritative source for the established facts
+- [ ] Does not write a replacement backstory itself — the rewrite belongs to the content author (lore entries are delegated to `writer` / `world-builder` in its Delegation Map)
 
 ### Case 4: Conflict escalation — correct parent
-**Scenario:** A writer has established in their latest dialogue that the ancient civilization "spoke only in song." The world-builder's existing lore entries describe the same civilization communicating through written glyphs. Both are in the narrative domain, and the two creators disagree on which is canonical.
-**Expected:** narrative-director makes a binding canonical decision within their domain. They do not need to escalate to a higher authority for intra-narrative conflicts — this is within their declared domain authority. They issue a ruling (e.g., "glyph-writing is the canonical primary communication; song may be ritual/ceremonial") and direct both writer and world-builder to align their work to the ruling.
+**Scenario:** A writer has established in their latest dialogue that the ancient civilization "spoke only in song." The world-builder's existing lore entries describe the same civilization communicating through written glyphs. Both report to narrative-director, and the two disagree on which is canonical.
+**Expected:** narrative-director resolves the conflict at its own tier — it is the shared parent of writer and world-builder, so it does not escalate to creative-director. Following its collaboration protocol, it presents reconciliation options with a recommended canonical ruling (e.g., "glyph-writing is the canonical primary communication; song is ritual/ceremonial"), leaves the final call to the user, and then directs both writer and world-builder to align their work to the confirmed ruling.
 **Assertions:**
-- [ ] Makes a binding canonical decision — does not defer this intra-narrative conflict to creative-director
-- [ ] Decision is clearly stated and provides a path to reconciliation for both parties
-- [ ] Directs both parties (writer and world-builder) to update their respective documents to align
-- [ ] Notes the decision in a way that can be added to the world-bible as a canonical fact
+- [ ] Resolves the conflict itself as the shared parent — does not defer this intra-narrative conflict to creative-director
+- [ ] Presents reconciliation options with a clearly stated recommended ruling, and leaves the final canon decision to the user
+- [ ] Directs both parties to update their documents to the ruling: writer revises the dialogue, world-builder updates the lore entry
+- [ ] Proposes recording the ruling as a canonical fact in the world-building documentation, so later lore can be checked against it
 
 ### Case 5: Context pass — uses provided context
-**Scenario:** Agent receives a gate context block that includes three existing lore documents: the world-bible (establishes the Great Collapse timeline and causes), the character registry (lists canonical character ages, origins, and allegiances), and a faction document (describes the Sunken Archive Keepers). A new story chapter is submitted that introduces a previously unregistered character.
-**Expected:** Assessment cross-references the new character against the character registry (no conflict), checks the chapter's timeline references against the world-bible, and evaluates the chapter's portrayal of the Archive Keepers against the faction document. Uses specific facts from all three provided documents in the assessment.
+**Scenario:** A new story chapter is submitted for ND-CONSISTENCY review. It introduces a previously unregistered character. The gate context passes three documents: the world-bible (the Great Collapse timeline and causes), the character registry (canonical character ages, origins, and allegiances), and a faction document describing the Sunken Archive Keepers.
+**Expected:** Assessment cross-references the new character against the character registry (no conflict), checks the chapter's timeline references against the world-bible, and evaluates the chapter's portrayal of the Archive Keepers against the faction document. Uses specific facts from all three provided documents and returns an ND-CONSISTENCY verdict.
 **Assertions:**
 - [ ] Cross-references the new character against the provided character registry
 - [ ] Checks timeline references against the provided world-bible facts
 - [ ] Evaluates faction portrayal against the provided faction document
-- [ ] Does not generate generic narrative feedback — all assertions are traceable to the provided documents
+- [ ] Returns one of APPROVE / CONCERNS / REJECT with a rationale traceable to the three provided documents — no generic narrative feedback
+
+### Case 6: Gate input missing — NOT ASSESSED
+**Scenario:** ND-CONSISTENCY is invoked for a new dialogue file in which "Aldric Vorne" speaks. The gate context passes the file path and the world-building rules, and the dialogue contradicts none of them — but Aldric's character profile, an input the gate names, is not passed, so his voice cannot be checked against it.
+**Expected:** Returns `ND-CONSISTENCY: NOT ASSESSED`, naming the missing input (Aldric Vorne's character profile), rather than APPROVE — voice consistency against a profile it never saw has not been established.
+**Assertions:**
+- [ ] Verdict is `NOT ASSESSED` — not APPROVE, CONCERNS or REJECT — because the inputs it could read show no inconsistency
+- [ ] Names the missing input: Aldric Vorne's character profile
+- [ ] Does not reconstruct Aldric's established voice from the dialogue itself or from memory to complete the check
 
 ---
 
 ## Protocol Compliance
 
-- [ ] Returns verdicts using CONSISTENT / INCONSISTENT vocabulary only
+- [ ] Returns ND-CONSISTENCY verdicts using APPROVE / CONCERNS / REJECT only — or NOT ASSESSED, naming the input, when an input the gate names is missing and no inconsistency was found
+- [ ] Asks "May I create [filepath] with the section skeleton?" before creating a narrative document, and "May I write this section to [filepath]?" before writing each section
 - [ ] Stays within declared narrative domain
-- [ ] Makes binding decisions for intra-narrative conflicts without unnecessary escalation
-- [ ] Uses gate IDs in output (e.g., `ND-CONSISTENCY: INCONSISTENT`) not inline prose verdicts
+- [ ] Resolves intra-narrative conflicts at its own tier instead of escalating them, while leaving the final canon decision to the user
+- [ ] A CONCERNS or REJECT verdict names the specific inconsistencies or contradictions, as the gate prompt's `CONCERNS [...]` / `REJECT [...]` forms require — never a bare verdict word
 - [ ] Does not make binding visual design, technical, or production decisions
 
 ---
 
 ## Coverage Notes
 - Dialogue quality review (distinct from world-building consistency) is not covered — a dedicated case should be added.
+- The CONCERNS verdict (fixable inconsistencies that do not break the narrative foundation) has no dedicated case.
 - Multi-document consistency check across a full chapter set is not covered — deferred to /review-all-gdds integration.
 - Narrative impact of mechanical changes (e.g., a game mechanic that undermines story tension) requires coordination with game-designer and is not covered here.
 - Character arc review (progression, motivation coherence over time) is not covered.

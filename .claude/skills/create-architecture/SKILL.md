@@ -1,12 +1,17 @@
 ---
 name: create-architecture
-description: "Guided, section-by-section authoring of the master architecture document for the game. Reads all GDDs, the systems index, existing ADRs, and the engine reference library to produce a complete architecture blueprint before any code is written. Engine-version-aware: flags knowledge gaps and validates decisions against the pinned engine version."
+description: "Author the architecture blueprint before code is written. Validates decisions against the pinned engine, flags knowledge gaps."
 argument-hint: "[focus-area: full | layers | data-flow | api-boundaries | adr-audit] [--review full|lean|solo]"
 user-invocable: true
-allowed-tools: Read, Glob, Grep, Write, Bash, AskUserQuestion, Task
+allowed-tools: Read, Glob, Grep, Write, Edit, Bash, AskUserQuestion, Agent, Bash(bash "*/.claude/skills/create-architecture/../../hooks/yaml-helper.sh" resolve_config *)
 model: sonnet
-agent: technical-director
 ---
+
+!`bash "${CLAUDE_SKILL_DIR}/../../hooks/yaml-helper.sh" resolve_config --keys review_mode,automation,workflow,docs.density`
+
+Resolved above — use as-is; `--review` overrides `review_mode`. No block →
+defaults in `.claude/docs/config-resolution.md`.
+
 
 # Create Architecture
 
@@ -17,12 +22,26 @@ It sits between design and implementation, and must exist before sprint planning
 **Distinct from `/architecture-decision`**: ADRs record individual point decisions.
 This skill creates the whole-system blueprint that gives ADRs their context.
 
-Resolve the review mode (once, store for all gate spawns this run):
-1. If `--review [full|lean|solo]` was passed → use that
-2. Else read `production/review-mode.txt` → use that value
-3. Else → default to `lean`
 
-See `.claude/docs/director-gates.md` for the full check pattern.
+See `.claude/docs/director-gates.md` for the full check pattern. Individual gate definitions live in `.claude/docs/director-gates/[gate-id].md` — the spawned agent reads its own gate file; do not read it in the parent session.
+
+
+Every `AskUserQuestion` call follows `.claude/docs/automation-modes.md`
+(collaborative asks always · guided major-only · autonomous logs and proceeds;
+`automation_always_ask` categories always prompt).
+
+**`docs.density`** — it controls per-section *depth*, where `workflow`
+controls which sections exist. `modes.rigor` sets both together; set
+`docs.density` explicitly to vary depth alone: `terse` (the default, via `rigor: minimal`) = layer diagrams + decision bullets,
+no essays; `balanced` = diagrams + paragraph explanations of layer choices
+(`rigor: standard`); `thorough` = full prose with rationale, trade-offs, and alternatives
+considered per layer. Apply it to every section you author.
+
+**`workflow`** (see `.claude/docs/workflow-modes.md`):
+- `full` — full architecture: all layers, module ownership, data flow, API
+  boundaries, full ADR audit.
+- `standard` — simplified: system layer map + critical ADR list only.
+- `minimal` — not required. Can still be run voluntarily.
 
 **Argument modes:**
 - **No argument / `full`**: Full guided walkthrough — all sections, start to finish
@@ -39,7 +58,8 @@ Before anything else, load the full project context in this order:
 
 ### 0a. Engine Context (Critical)
 
-Read the engine reference library completely:
+Read the four project-wide engine documents in full — they are small, and every
+part of each is used:
 
 1. `docs/engine-reference/[engine]/VERSION.md`
    → Extract: engine name, version, LLM cutoff, post-cutoff risk levels
@@ -49,8 +69,22 @@ Read the engine reference library completely:
    → Extract: APIs to avoid
 4. `docs/engine-reference/[engine]/current-best-practices.md`
    → Extract: post-cutoff best practices that differ from training data
-5. All files in `docs/engine-reference/[engine]/modules/`
+
+Then read **only the module docs whose domain this game actually uses** —
+not the whole `modules/` directory:
+
+5. `docs/engine-reference/[engine]/modules/` — glob it to establish what exists,
+   then match against the domains present in `design/gdd/systems-index.md`
+   (the same domain vocabulary the ADR template uses: Physics, Rendering, UI,
+   Audio, Navigation, Animation, Networking, Core, Input). Read the matching
+   modules; skip the rest.
    → Extract: current API patterns per domain
+
+   A game with no multiplayer system does not need the networking module loaded
+   to write its architecture, and loading it costs the same as one that does.
+   **If the domain match is ambiguous, read the module** — a missed engine
+   constraint is far more expensive here than a redundant read, because this
+   phase is where those constraints get baked into the architecture.
 
 If no engine is configured, stop and prompt:
 > "No engine is configured. Run `/setup-engine` first. Architecture cannot be
@@ -58,13 +92,52 @@ If no engine is configured, stop and prompt:
 
 ### 0b. Design Context + Technical Requirements Extraction
 
-Read all approved design documents and extract technical requirements from each:
+Load the approved design documents and extract technical requirements from each:
 
 1. `design/gdd/game-concept.md` — game pillars, genre, core loop
 2. `design/gdd/systems-index.md` — all systems, dependencies, priority tiers
-3. `.claude/docs/technical-preferences.md` — naming conventions, performance budgets,
-   allowed libraries, forbidden patterns
-4. **Every GDD in `design/gdd/`** — for each, extract technical requirements:
+
+**Check both exist before reading either. Neither is optional here, and both
+need an absence branch** — §0a stops for an unconfigured engine, and these two
+matter just as much:
+
+- **`systems-index.md` absent** — stop:
+  > "No systems index found. Run `/map-systems` first. An architecture written
+  > without it invents layers for systems nobody mapped, and every ADR, epic and
+  > story downstream inherits that invention."
+  At `minimal` the index is not required (§ tier note above) — say so and proceed
+  from the brief instead.
+- **`game-concept.md` absent** — at `standard`/`full`, stop and point at
+  `/brainstorm`. At `minimal`, read `design/game-brief.md` in its place; if that
+  is absent too, stop — there is no design record to architect against.
+- **Either present but empty or still template placeholders** — treat as absent.
+  Present-but-empty is the case that most looks like present.
+
+Do not proceed on a partial read and note it later. This phase is where design
+assumptions get baked into ADRs, and an assumption made here is re-derived by
+everything downstream rather than re-checked.
+3. Project config — `naming.*` and `performance.*` from `project.yaml` (for any
+   key absent or empty, fall back to `.claude/docs/technical-preferences.md`);
+   allowed libraries and forbidden patterns from
+   `.claude/docs/technical-preferences.md` (not migrated to project.yaml)
+4. **Every GDD in `design/gdd/`** — extract technical requirements from the
+   sections that carry them, **not from whole files**. Establish the denominator
+   first (glob `design/gdd/*.md`, count **N**), then:
+   ```
+   Grep pattern="^## (Detailed Rules|Detailed Design|Formulas|Dependencies|Tuning Knobs|Acceptance Criteria)" glob="design/gdd/*.md" output_mode="content" -A 40
+   ```
+   Overview and Player Fantasy are narrative and imply no architecture; the
+   scanned set is where rules, numbers, and cross-system contracts live. Accept
+   either `## Detailed Rules` or `## Detailed Design` — the design standard and
+   the GDD template disagree on the name and they denote the same section.
+
+   Full-read a GDD when it matched **zero** sections (it predates the template —
+   a zero-match means "unstructured", never "no requirements") or when a scanned
+   section refers to material outside itself. **Never treat an absent section as
+   an absent requirement**: report any GDD that contributed nothing, rather than
+   letting it drop silently out of the baseline below.
+
+   For each, extract:
    - Data structures implied by the game rules
    - Performance constraints stated or implied
    - Engine capabilities the system requires
@@ -92,8 +165,17 @@ left without an architectural decision to support it by the end of this session.
 
 ### 0c. Existing Architecture Decisions
 
-Read all files in `docs/architecture/` to understand what has already been decided.
-List any ADRs found and their domains.
+To learn **what has already been decided and in which domain**, scan the ADR
+headers — do not full-read every ADR to produce a list of numbers and domains:
+```
+Grep pattern="^## (Status|Summary)" glob="docs/architecture/adr-*.md" output_mode="content" -A 4
+Grep pattern="\*\*Domain\*\*" glob="docs/architecture/adr-*.md" output_mode="content"
+```
+`## Summary` (a 2-sentence what-and-why) plus `## Status` and the Engine
+Compatibility `Domain` field are exactly "what was decided and its domain". List
+the ADRs found, their status, and their domains from the scan. Full-read a
+specific ADR only when a new decision this session would collide with it and you
+need its reasoning — not to build the inventory.
 
 ### 0d. Generate Knowledge Gap Inventory
 
@@ -125,6 +207,25 @@ Use `AskUserQuestion`:
   - `[B] Let me check the engine reference first — pause here`
   - `[C] Show me which domains are HIGH RISK and why`
 
+### 0e. Existing Architecture Document
+
+Glob `docs/architecture/architecture.md`. If it exists, this run updates it —
+it never replaces it unasked. Read its `## Document Status` block and its `##`
+headings, then use `AskUserQuestion`:
+- Prompt: "An architecture document already exists (v[N], [last updated]). What should this run do?"
+- Options: `[A] Update chosen sections in place` / `[B] Rewrite the whole document — replaces the existing file` / `[C] Stop`
+
+On `[A]`, ask which sections. Phases 1–6 author only those and say which they
+skipped; Phase 7 replaces just those sections and raises `Version` to N+1,
+leaving every other section as it is. `[B]` runs the full walkthrough, and
+Phase 7's ask says it replaces the existing file.
+
+A focus-area argument (`layers`, `data-flow`, `api-boundaries`, `adr-audit`)
+is `[A]` with that one section chosen: it runs only its phase (1, 3, 4 or 5),
+and Phase 7 writes that section. Phase 7b still runs on the updated document —
+an update is reviewed like a first draft, at the review modes that review one. With no existing document there is nothing to
+update — say so, and offer the full walkthrough instead.
+
 ---
 
 ## Phase 1: System Layer Mapping
@@ -153,7 +254,8 @@ For each GDD system, ask:
 - What does it own exclusively? (data, state, behaviour)
 
 Present the proposed layer assignment and ask for approval before proceeding to
-the next section. Write the approved layer map immediately to the skeleton file.
+the next section. Record the approved layer map in
+`production/session-state/active.md`; it goes into the document at Phase 7.
 
 **Engine awareness check**: For each system assigned to the Core and Foundation
 layers, flag if it touches a HIGH or MEDIUM risk engine domain. Show the relevant
@@ -182,7 +284,8 @@ relevant module reference doc. If an API is post-cutoff, flag it:
     Behaviour confirmed: [yes / NEEDS VERIFICATION]
 ```
 
-Get user approval on the ownership map before writing.
+Get user approval on the ownership map, then record it in
+`production/session-state/active.md`; it is written at Phase 7.
 
 ---
 
@@ -201,7 +304,8 @@ Use ASCII sequence diagrams where helpful. For each data flow:
 - State whether this is synchronous call, signal/event, or shared state
 - Flag any data flows that cross thread boundaries
 
-Get user approval per scenario before writing.
+Get user approval on each scenario, then record it in
+`production/session-state/active.md`; it is written at Phase 7.
 
 ---
 
@@ -220,6 +324,9 @@ These become the contracts programmers implement against.
 **Engine awareness check**: If any interface uses engine-specific types (e.g.
 `Node`, `Resource`, `Signal` in Godot), flag the version and verify the type
 exists and has not changed signature in the target engine version.
+
+Get user approval on the API boundaries, then record them in
+`production/session-state/active.md`; they are written at Phase 7.
 
 ---
 
@@ -291,6 +398,10 @@ but don't yet. Group by priority:
 Once all sections are approved, write the complete document to
 `docs/architecture/architecture.md`.
 
+In an update (Phase 0e `[A]`, or a focus-area argument), write only the chosen
+sections instead, replacing each in place with `Edit`, and raise `Version`; the
+ask below then names those sections and the version change.
+
 Display a one-paragraph summary of what the document will contain (layers, modules, data flows, ADR gaps). Then use `AskUserQuestion`:
 - "All sections approved. May I write the master architecture document?"
   - [A] Yes — write to `docs/architecture/architecture.md` now
@@ -344,32 +455,35 @@ derived from the game concept, GDDs, and technical preferences]
 
 After writing the master architecture document, perform an explicit sign-off before handoff.
 
-**Step 1 — Technical Director self-review** (this skill runs as technical-director):
+**Review mode check** — apply before spawning either gate:
+- `solo` → skip both. Note: "TD-ARCHITECTURE and LP-FEASIBILITY skipped — Solo mode." Go to Step 4 and record both as skipped, then Phase 8.
+- `lean` → skip both (neither is a PHASE-GATE). Note: "TD-ARCHITECTURE and LP-FEASIBILITY skipped — Lean mode." Go to Step 4 and record both as skipped, then Phase 8.
+- `full` → spawn both, in parallel.
 
-Apply gate **TD-ARCHITECTURE** (`.claude/docs/director-gates.md`) as a self-review. Check all four criteria from that gate definition against the completed document.
+**Step 1 — Spawn `technical-director` via `Agent` using gate TD-ARCHITECTURE (`.claude/docs/director-gates/td-architecture.md`):**
 
-**Review mode check** — apply before spawning LP-FEASIBILITY:
-- `solo` → skip. Note: "LP-FEASIBILITY skipped — Solo mode." Proceed to Phase 8 handoff.
-- `lean` → skip (not a PHASE-GATE). Note: "LP-FEASIBILITY skipped — Lean mode." Proceed to Phase 8 handoff.
-- `full` → spawn as normal.
+Pass: the architecture document path (`docs/architecture/architecture.md`), the Technical Requirements Baseline (TR-IDs and count), the ADR list with statuses, and the Engine Knowledge Gap Inventory from Phase 0d. Issue this call and Step 2's before waiting for either result.
 
-**Step 2 — Spawn `lead-programmer` via Task using gate LP-FEASIBILITY (`.claude/docs/director-gates.md`):**
+**Step 2 — Spawn `lead-programmer` via `Agent` using gate LP-FEASIBILITY (`.claude/docs/director-gates/lp-feasibility.md`):**
 
 Pass: architecture document path, technical requirements baseline summary, ADR list.
 
 **Step 3 — Present both assessments to the user:**
 
-Show the Technical Director assessment and Lead Programmer verdict side by side.
+Show the TD-ARCHITECTURE verdict (APPROVE / CONCERNS / REJECT) and the LP-FEASIBILITY verdict (FEASIBLE / CONCERNS / INFEASIBLE) side by side.
 
 Use `AskUserQuestion` — "Technical Director and Lead Programmer have reviewed the architecture. How would you like to proceed?"
-Options: `Accept — proceed to handoff` / `Revise flagged items first` / `Discuss specific concerns`
+Options: `Accept — proceed to handoff` / `Revise flagged items first` / `Discuss specific concerns`.
+If either verdict is REJECT or INFEASIBLE, do not offer `Accept` — the blockers are revised (or discussed) first.
+`Revise flagged items first` re-drafts each flagged section and shows it for approval as in Phases 1–4; the revised document is then written once, through Phase 7's ask, and Step 4 records `REVISED after [verdict]`.
+A `NOT ASSESSED` answer is never recorded as `APPROVE` or `FEASIBLE`: Step 4 records it with the input that was missing (`director-gates.md`).
 
 **Step 4 — Record sign-off in the architecture document:**
 
 Update the Document Status section:
 ```
-- Technical Director Sign-Off: [date] — APPROVED / APPROVED WITH CONDITIONS
-- Lead Programmer Feasibility: FEASIBLE / CONCERNS ACCEPTED / REVISED
+- TD-ARCHITECTURE: [date] — APPROVE / CONCERNS (accepted) / REVISED after CONCERNS / REVISED after REJECT / NOT ASSESSED — [missing input] / skipped — [mode] mode
+- LP-FEASIBILITY: [date] — FEASIBLE / CONCERNS (accepted) / REVISED after CONCERNS / REVISED after INFEASIBLE / NOT ASSESSED — [missing input] / skipped — [mode] mode
 ```
 
 Show the proposed Document Status block inline, then use `AskUserQuestion`:
@@ -389,7 +503,7 @@ Show the proposed Document Status block inline, then use `AskUserQuestion`:
 
 ## Architecture Complete
 
-`docs/architecture/architecture.md` v1.0 — [TD verdict: APPROVED / APPROVED WITH CONCERNS / CONCERNS]. [One sentence on what the architecture covers.]
+`docs/architecture/architecture.md` v[N] — [TD-ARCHITECTURE: APPROVE / CONCERNS (accepted) / REVISED after CONCERNS / REVISED after REJECT / NOT ASSESSED / skipped — [mode] mode]. [One sentence on what the architecture covers.]
 
 ---
 
@@ -404,22 +518,25 @@ Show the proposed Document Status block inline, then use `AskUserQuestion`:
 **3. `/architecture-decision "[Title]"` → ADR-[XXXX]**
 [One sentence.]
 
+**Then:** `/architecture-review`, and `/create-control-manifest` once it passes and those ADRs are Accepted — it turns them into the layer rules manifest.
+
 List top 3 from Phase 6 in priority order. If fewer than 3 remain, list only what's outstanding.
 
 ---
 
 ## Gate-Check Readiness
 
-> **Required before `/gate-check [stage]`:**
+> **Required before `/gate-check pre-production`:**
 > - [ ] Accept ADRs: [list Proposed ADR IDs that must be Accepted]
 > - [ ] Write ADRs: [list ADR IDs that must still be written]
+> - [ ] Run `/architecture-review` — writes the review report and the traceability index (`docs/architecture/requirements-traceability.md`) the gate reads
 > - [ ] Run `/test-setup` — scaffolds `tests/unit/`, `tests/integration/`, CI workflow, and an example test file
 > - [ ] Run `/ux-design` — creates `design/ux/interaction-patterns.md` and `design/accessibility-requirements.md`
 >
-> Run `/gate-check [stage]` when all boxes are checked.
+> Run `/gate-check pre-production` when all boxes are checked.
 
 If nothing is blocking, write instead:
-> No blockers — run `/gate-check [stage]` now.
+> No blockers — run `/gate-check pre-production` now.
 
 ---
 
@@ -439,6 +556,10 @@ Omit this section entirely if there are no open QQs.
 
 ## Collaborative Protocol
 
+**Applies in `collaborative` mode (the default).** For `guided` and
+`autonomous` modes, see `.claude/docs/automation-modes.md` — the rules below
+describe what collaborative mode requires, not universal behavior.
+
 This skill follows the collaborative design principle at every phase:
 
 1. **Load context silently** — do not narrate file reads
@@ -450,8 +571,13 @@ This skill follows the collaborative design principle at every phase:
    sufficient. Use the structured tool with labeled options [A]/[B]/[C] (write now /
    show full draft first / not yet). For multi-file changesets, list every file
    and what changes, then ask once grouped — not separate plain-text asks per file.
-6. **Incremental writing** — write each approved section immediately; do not
-   accumulate everything and write at the end. This survives session crashes.
+6. **One write, after every section is approved** — the document is written once,
+   at Phase 7; Phase 7b's Step 4 only updates its Document Status, after its own
+   ask. Record each approved section's decisions in
+   `production/session-state/active.md` as you go, so a crash loses no decision.
+   A revision that Phase 7b forces is written the same way — once, after its
+   re-drafted sections are approved — and an update (Phase 0e) writes only the
+   sections it chose.
 
 Never make a binding architectural decision without user input. If the user is
 unsure, present 2-4 options with pros/cons before asking them to decide.

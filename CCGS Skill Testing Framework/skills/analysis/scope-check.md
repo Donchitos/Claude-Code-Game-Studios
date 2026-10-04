@@ -2,23 +2,33 @@
 
 ## Skill Summary
 
-`/scope-check` is a Haiku-tier read-only skill that analyzes a feature, sprint,
-or story for scope creep risk. It reads sprint and story files and compares them
-against the active milestone goals. It is designed for fast, low-cost checks
-before or during planning. No director gates are invoked. No files are written.
-Verdicts: ON SCOPE, CONCERNS, or SCOPE CREEP DETECTED.
+`/scope-check` is a Haiku-tier read-only skill that compares a feature's,
+sprint's or milestone's original planned scope against what has actually been
+implemented. It takes the whole argument string — a feature name (which may be
+several words), a sprint number, or a milestone name — and locates the baseline
+at `design/gdd/[feature].md` (or a matching file in `design/`),
+`production/sprints/sprint-NNN.md`, or `production/milestones/[name].md`. If the
+baseline is absent it reports the missing file and stops. It then reads the
+current state (related source files, `git log`, TODO/FIXME comments, the active
+sprint plan) and produces a comparison report: Original Scope, Current Scope,
+Scope Additions, Scope Removals, a Bloat Score, a Risk Assessment and
+Cut / Defer / Keep / Flag recommendations. The verdict follows the net scope
+change: ≤10% PASS, 10–25% CONCERNS, >25% FAIL. When the percentage would be
+meaningless — a baseline that enumerates no items, or a current state that
+cannot be read — the verdict is NOT ASSESSED and the numeric block is replaced.
+No files are written and no director gates are invoked.
 
 ---
 
 ## Static Assertions (Structural)
 
-Verified automatically by `/skill-test static` — no fixture needed.
+Checked against the SKILL.md by `/skill-test spec` — no fixture needed.
 
 - [ ] Has required frontmatter fields: `name`, `description`, `argument-hint`, `user-invocable`, `allowed-tools`
 - [ ] Has ≥2 phase headings
-- [ ] Contains verdict keywords: ON SCOPE, CONCERNS, SCOPE CREEP DETECTED
-- [ ] Does NOT require "May I write" language (read-only skill)
-- [ ] Has a next-step handoff (what to do based on verdict)
+- [ ] Contains verdict keywords: PASS, CONCERNS, NOT ASSESSED, FAIL
+- [ ] Does NOT require "May I write" language (the skill states it is read-only and `allowed-tools` has no Write/Edit)
+- [ ] Has a next-step handoff (Phase 5: follow-up per verdict)
 
 ---
 
@@ -30,139 +40,163 @@ None. Scope check is a read-only advisory skill; no gates are invoked.
 
 ## Test Cases
 
-### Case 1: Happy Path — Sprint stories align with milestone goals
+### Case 1: Happy Path — Multi-word feature on track
 
 **Fixture:**
-- `production/milestones/milestone-03.md` lists 3 goals: combat system, enemy AI, level loading
-- `production/sprints/sprint-006.md` contains 5 stories, all tagged to one of the 3 goals
-- `production/session-state/active.md` references milestone-03 as the active milestone
+- `design/gdd/inventory-crafting-system.md` enumerates 20 scope items
+- `src/gameplay/inventory/` and `src/gameplay/crafting/` implement all 20, plus one addition (item sorting) found in a recent commit
+- No items were dropped
 
-**Input:** `/scope-check`
+**Input:** `/scope-check inventory crafting system`
 
 **Expected behavior:**
-1. Skill reads active milestone goals from milestone-03
-2. Skill reads sprint-006 stories and checks each against milestone goals
-3. All 5 stories map to one of the 3 goals
-4. Skill outputs a mapping table: story → milestone goal
-5. Verdict is ON SCOPE
+1. Skill uses the whole argument, "inventory crafting system", to locate the baseline — not only "inventory"
+2. Skill reads `design/gdd/inventory-crafting-system.md` as the baseline (Phase 1)
+3. Skill reads the current state: related source files, `git log --oneline` for the work, TODO/FIXME comments (Phase 2)
+4. Report lists Original Scope and Current Scope; the Scope Additions table names item sorting with its source, date, justification and effort
+5. Bloat Score: 20 original, 21 current, 1 added (+5%), 0 removed
+6. Verdict: **PASS** — On Track
+7. Phase 5: no action required; suggests re-running before the next milestone; ends with "Run `/scope-check [name]` again after cuts are made to verify the verdict improves."
 
 **Assertions:**
-- [ ] Each story is mapped to a milestone goal in the output
-- [ ] Verdict is ON SCOPE when all stories map to milestone goals
+- [ ] The baseline is located from the full multi-word argument, not its first word
+- [ ] The addition is named in the Scope Additions table with source, when, justified and effort columns
+- [ ] Bloat Score shows original, current, added and removed counts and the net percentage
+- [ ] Verdict is PASS for a net change ≤10%
 - [ ] No files are written
-- [ ] Skill does not modify sprint or milestone files
 
 ---
 
-### Case 2: Scope Creep Detected — Stories introducing systems not in milestone
+### Case 2: Significant Creep — Sprint gained unplanned items
 
 **Fixture:**
-- `production/milestones/milestone-03.md` goals: combat, enemy AI, level loading
-- `production/sprints/sprint-006.md` contains 5 stories:
-  - 3 stories map to milestone goals
-  - 2 stories reference "online leaderboard" and "achievement system" (not in milestone-03)
+- `production/sprints/sprint-003.md` lists 8 planned stories
+- Commits since the sprint start add an online leaderboard, an achievement system and a photo mode, none of which appear in the sprint plan
+- No planned stories were dropped
 
-**Input:** `/scope-check`
+**Input:** `/scope-check sprint-3`
 
 **Expected behavior:**
-1. Skill reads milestone goals and sprint stories
-2. Skill identifies 2 stories with no matching milestone goal
-3. Skill names the out-of-scope stories: "Online Leaderboard Feature", "Achievement System Setup"
-4. Verdict is SCOPE CREEP DETECTED
+1. Skill reads `production/sprints/sprint-003.md` as the baseline
+2. Skill finds the three additions from `git log` and the source tree
+3. Scope Additions table names all three; Bloat Score shows 8 original, 11 current, +37.5%
+4. Recommendations sort items into Cut / Defer / Keep / Flag
+5. Verdict: **FAIL** — Significant Creep
+6. Phase 5: recommends escalating to the producer and references `/sprint-plan update` for re-planning or `/estimate` to re-baseline
 
 **Assertions:**
-- [ ] Out-of-scope stories are named explicitly in the output
-- [ ] Verdict is SCOPE CREEP DETECTED when any story has no milestone goal match
-- [ ] Skill does not automatically remove the stories — findings are advisory
-- [ ] Output recommends deferring the out-of-scope stories to a later milestone
+- [ ] Each unplanned addition is named explicitly in the Scope Additions table
+- [ ] Verdict is FAIL for a net change between 25% and 50%
+- [ ] Output recommends escalating to the producer and references `/sprint-plan update` or `/estimate`
+- [ ] Skill does not edit the sprint plan or remove stories — findings are advisory
 
 ---
 
-### Case 3: No Milestone Defined — CONCERNS; scope cannot be validated
+### Case 3: Baseline Missing — Report the missing file and stop
 
 **Fixture:**
-- `production/session-state/active.md` has no milestone reference
-- `production/milestones/` directory exists but is empty
-- `production/sprints/sprint-006.md` has 4 stories
+- No `design/gdd/crafting.md` and no file in `design/` matches "crafting"
+- `src/gameplay/crafting/` contains implemented code
 
-**Input:** `/scope-check`
+**Input:** `/scope-check crafting`
 
 **Expected behavior:**
-1. Skill reads active.md — finds no milestone reference
-2. Skill checks `production/milestones/` — no milestone files found
-3. Skill outputs: "No active milestone defined — scope cannot be validated"
-4. Verdict is CONCERNS
+1. Phase 1 looks for `design/gdd/crafting.md` and a matching file in `design/`; none exists
+2. Skill reports which baseline file was missing and stops
+3. No comparison report, Bloat Score or percentage is produced
 
 **Assertions:**
-- [ ] Skill does not error when no milestone is defined
-- [ ] Output explicitly states that scope validation requires a milestone reference
-- [ ] Verdict is CONCERNS (not ON SCOPE or SCOPE CREEP DETECTED without data)
-- [ ] Output suggests running `/milestone-review` or creating a milestone
+- [ ] Output names the baseline file it looked for and did not find
+- [ ] Skill stops at Phase 1 — no Phase 3 comparison report is rendered
+- [ ] No percentage and no PASS verdict are produced without a baseline
+- [ ] No files are written
 
 ---
 
-### Case 4: Single Story Check — Evaluated against its parent epic
+### Case 4: Empty Baseline — NOT ASSESSED, not 0%
 
 **Fixture:**
-- User targets a single story: `production/epics/combat/story-parry-timing.md`
-- Story references parent epic: `epic-combat.md`
-- `production/epics/combat/epic-combat.md` has scope: "melee combat mechanics"
-- Story title: "Implement parry timing window" — matches epic scope
+- `design/gdd/dialogue.md` exists but contains only section headings and `[TO BE CONFIGURED]` placeholders — no scope items
+- `src/narrative/dialogue/` contains implemented code
 
-**Input:** `/scope-check production/epics/combat/story-parry-timing.md`
+**Input:** `/scope-check dialogue`
 
 **Expected behavior:**
-1. Skill reads the specified story file
-2. Skill reads the parent epic to get scope definition
-3. Skill evaluates story against epic scope — "parry timing" matches "melee combat"
-4. Verdict is ON SCOPE
+1. Phase 1 finds the baseline document, so it does not stop there
+2. Phase 4 detects that the baseline enumerates no scope items
+3. The Bloat Score block is replaced with `Baseline unusable — see verdict` and the reason; no `Original items: 0` or `Net scope change: 0%` is rendered
+4. Verdict: **NOT ASSESSED**, stating that the baseline side could not be read and why
+5. Phase 5: says the baseline document needs populating; does not offer a re-run against the same inputs
 
 **Assertions:**
-- [ ] Single-file argument is accepted (story path, not sprint)
-- [ ] Skill reads the parent epic referenced in the story file
-- [ ] Story is evaluated against epic scope (not milestone scope) in single-story mode
-- [ ] Verdict is ON SCOPE when story matches epic scope
+- [ ] Verdict is NOT ASSESSED, never PASS, when the baseline has no items
+- [ ] No computed percentage appears anywhere in the report
+- [ ] Output says which side was unusable and what would fix it (populate the baseline document)
+- [ ] Skill does not offer a re-run against the same inputs
 
 ---
 
-### Case 5: Gate Compliance — No gate; PR may be consulted separately
+### Case 4b: Unreadable Current State — NOT ASSESSED, not −100%
 
 **Fixture:**
-- Sprint has 2 SCOPE CREEP stories and 3 ON SCOPE stories
-- `review-mode.txt` contains `full`
+- `production/sprints/sprint-004.md` lists 6 planned stories
+- No source files relate to those stories, `git log` shows no commits since the sprint start, and nothing is marked in progress
 
-**Input:** `/scope-check`
+**Input:** `/scope-check sprint-4`
 
 **Expected behavior:**
-1. Skill reads milestone and sprint; identifies 2 scope creep items
-2. No director gate is invoked regardless of review mode
-3. Skill presents findings with SCOPE CREEP DETECTED verdict
-4. Output notes: "Consider raising scope concerns with the Producer before sprint begins"
-5. Skill ends without writing any files
+1. Phase 1 reads `production/sprints/sprint-004.md` as the baseline — 6 items
+2. Phase 2 finds nothing to read for the current state
+3. Phase 4 emits NOT ASSESSED instead of computing a change: 0 current items would compute −100%, which the ≤10% row would read as PASS
+4. The Bloat Score block is replaced with `Current state unusable — see verdict`; no `Current items: 0` or percentage is rendered
+5. The verdict says the current-state side could not be read and why, and Phase 5 says what would fix it (point the skill at where the work lives) without offering a re-run on the same inputs
 
 **Assertions:**
+- [ ] Verdict is NOT ASSESSED, never PASS
+- [ ] No −100% (or any percentage) appears in the report
+- [ ] Output names the current state as the side that could not be read
+- [ ] Skill does not offer a re-run against the same inputs
+
+---
+
+### Case 5: Minor Creep in Full Review Mode — CONCERNS, no gates
+
+**Fixture:**
+- `project.yaml` has `modes.review_mode: full`
+- `production/milestones/alpha.md` enumerates 10 scope items
+- Current state has all 10 plus two additions (a settings menu rework and an extra enemy type)
+
+**Input:** `/scope-check alpha`
+
+**Expected behavior:**
+1. Skill reads `production/milestones/alpha.md` as the baseline
+2. Bloat Score: 10 original, 12 current, +20%
+3. Verdict: **CONCERNS** — Minor Creep
+4. No director gate is invoked regardless of review mode
+5. Phase 5: offers to identify the 2–3 additions with the best cut ratio and references `/sprint-plan update`
+6. Skill ends without writing any files
+
+**Assertions:**
+- [ ] Verdict is CONCERNS for a net change between 10% and 25%
 - [ ] No director gate is invoked in any review mode
-- [ ] Producer consultation is suggested (not mandated)
+- [ ] Output offers to identify the additions with the best cut ratio and references `/sprint-plan update`
 - [ ] No files are written
-- [ ] Verdict is SCOPE CREEP DETECTED
 
 ---
 
 ## Protocol Compliance
 
-- [ ] Reads milestone goals and sprint/story files before analysis
-- [ ] Maps each story to a milestone goal (or flags as unmapped)
+- [ ] Locates the baseline document (`design/gdd/`, `production/sprints/`, `production/milestones/`) before any comparison, and stops if it is absent
+- [ ] Reads the current state from source files, `git log`, TODO/FIXME comments and the active sprint plan
+- [ ] Verdict follows the net-change table: ≤10% PASS, 10–25% CONCERNS, >25% FAIL
+- [ ] Emits NOT ASSESSED instead of a percentage when the baseline has no items or the current state cannot be read
 - [ ] Does not write any files
 - [ ] No director gates are invoked
-- [ ] Runs on Haiku model tier (fast, low-cost)
-- [ ] Verdict is one of: ON SCOPE, CONCERNS, SCOPE CREEP DETECTED
+- [ ] Declares `model: haiku` (when a declared tier is used: `.claude/docs/model-tiers.md`)
 
 ---
 
 ## Coverage Notes
 
-- The case where the sprint file itself does not exist is not tested; the
-  skill would output a CONCERNS verdict with a message about missing sprint data.
-- Partial scope overlap (story touches a milestone goal but also introduces
-  new scope) is not explicitly tested; implementation may classify this as
-  CONCERNS rather than SCOPE CREEP DETECTED.
+- The >50% "Out of Control" band shares the FAIL verdict with Case 2 and is not
+  tested separately.

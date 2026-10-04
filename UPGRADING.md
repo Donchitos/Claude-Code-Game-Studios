@@ -7,13 +7,17 @@ of the template to the next.
 ```bash
 git log --oneline | grep -i "release\|setup"
 ```
-Or check `README.md` for the version badge.
+Or read `framework.version` in your `project.yaml`, or the newest entry in
+`CHANGELOG.md`.
 
 ---
 
 ## Table of Contents
 
 - [Upgrade Strategies](#upgrade-strategies)
+- [v1.1.1 → v1.1.2](#v111--v112)
+- [v1.1.0 → v1.1.1](#v110--v111)
+- [v1.0 → v1.1](#v10--v11)
 - [v1.0.0-beta → v1.0](#v100-beta--v10)
 - [v0.4.x → v1.0](#v04x--v10)
 - [v0.4.0 → v0.4.1](#v040--v041)
@@ -25,31 +29,112 @@ Or check `README.md` for the version badge.
 
 ## Upgrade Strategies
 
-There are three ways to pull in template updates. Choose based on how your
+There are four ways to pull in template updates. Choose based on how your
 repo is set up.
 
 ### Strategy A — Git Remote Merge (recommended)
 
-Best when: you cloned the template and have your own commits on top of it.
+Best when: you cloned the template and have your own commits on top of it —
+your repo shares history with the template.
 
 ```bash
-# Add the template as a remote (one-time setup)
+# Add the template as a remote (one-time setup; skip this if `git remote -v` already lists template)
 git remote add template https://github.com/Donchitos/Claude-Code-Game-Studios.git
 
 # Fetch the new version
 git fetch template main
 
 # Merge into your branch
-git merge template/main --allow-unrelated-histories
+git merge template/main
 ```
 
 Git will flag conflicts only in files that both the template *and* you have
 changed. Resolve each one — your game content goes in, structural improvements
 come along for the ride. Then commit the merge.
 
-**Tip:** The files most likely to conflict are `CLAUDE.md` and
+**Tip:** The files most likely to conflict are `CLAUDE.md`, `project.yaml`, and
 `.claude/docs/technical-preferences.md`, because you've filled them in with
 your engine and project settings. Keep your content; accept the structural changes.
+
+**If git refuses with `fatal: refusing to merge unrelated histories`**, your
+repo did not start as a clone of the template (zip download, `git init` from
+scratch). Do **not** force it with `--allow-unrelated-histories` — with no
+common ancestor, git flags *every* template file as a conflict and you'll be
+resolving hundreds of files by hand. Use Strategy A2 instead.
+
+### Strategy A2 — Selective checkout (no shared history)
+
+Best when: your repo has no common history with the template but you do use git.
+
+> **First, check whether you have edited any framework files.** The checkout
+> below **replaces** everything under `.claude/`. Files *you added* survive, but
+> your edits to files the framework also ships are overwritten — agent
+> definitions and director gates are the ones people customise most.
+>
+> ```bash
+> git log --oneline -- .claude    # commits here mean you have customisations
+> ```
+>
+> If that lists anything beyond your initial import, work through the restore
+> step below rather than skipping it.
+
+```bash
+# One-time setup; skip it if `git remote -v` already lists template
+git remote add template https://github.com/Donchitos/Claude-Code-Game-Studios.git
+git fetch template main
+
+# Take the framework-owned paths wholesale from the new version.
+# This overwrites/adds template files but never deletes files you added.
+git checkout template/main -- .claude UPGRADING.md CHANGELOG.md docs/migration-guide-v1.1.md
+
+# The checkout is STAGED, not committed — so nothing is lost yet, and this
+# lists every framework file it changed:
+git diff --cached --stat -- .claude
+
+# Restore any file whose local edits you want to keep. This is one command per
+# file, deliberately: each is a decision between your version and the new one.
+git checkout HEAD -- .claude/docs/technical-preferences.md   # v1.0 config; v1.1 keeps config in project.yaml
+git checkout HEAD -- <any other file you customised>
+
+git status   # review what changed before committing
+```
+
+> **Restoring a file keeps your version of it in full — including whatever the
+> new release changed there.** For a file you edited lightly, it is usually
+> better to take the new version and re-apply your change on top than to keep
+> the old one wholesale. `git diff HEAD template/main -- <file>` shows what you
+> would be giving up.
+
+For `CLAUDE.md`, don't checkout — diff and merge by hand, keeping your
+engine/project content:
+
+```bash
+git diff HEAD template/main -- CLAUDE.md
+```
+
+`project.yaml` depends on where you are coming from, and the two cases need
+opposite actions:
+
+- **Upgrading from v1.0** (the case this section is about): you have no
+  `project.yaml` — it did not exist in v1.0. There is nothing to merge by hand,
+  and the checkout above deliberately does not fetch it. Build it from your
+  legacy files instead, which is what the converter is for:
+
+  ```bash
+  bash .claude/scripts/migrate-v1-config.sh --dry-run   # preview
+  bash .claude/scripts/migrate-v1-config.sh             # writes project.yaml
+  ```
+
+  If you skip this, `detect-gaps.sh` will nudge you at the next session start —
+  but do it here rather than discovering it later.
+
+- **Upgrading from v1.1 or later:** you already have a `project.yaml` holding
+  your settings. Treat it like `CLAUDE.md` — diff and merge by hand, never
+  checkout, or you will overwrite your own configuration:
+
+  ```bash
+  git diff HEAD template/main -- project.yaml
+  ```
 
 ---
 
@@ -59,6 +144,7 @@ Best when: you only want one specific feature (e.g., just the new skill, not
 the full update).
 
 ```bash
+# One-time setup; skip it if `git remote -v` already lists template
 git remote add template https://github.com/Donchitos/Claude-Code-Game-Studios.git
 git fetch template main
 
@@ -75,9 +161,426 @@ Commit SHAs for each version are listed in the version sections below.
 Best when: you didn't use git to set up the template (just downloaded a zip).
 
 1. Download or clone the new version alongside your repo.
-2. Copy the files listed under **"Safe to overwrite"** directly.
+2. Copy the files listed under **"Safe to overwrite"** directly — except any
+   file the list marks as yours, such as `.claude/docs/technical-preferences.md`.
 3. For files under **"Merge carefully"**, open both versions side-by-side
    and manually merge the structural changes while keeping your content.
+
+---
+
+## v1.1.1 → v1.1.2
+
+**Released:** 2026-09-29
+**Commit range:** `v1.1.1..v1.1.2`
+**Key themes:** The default minimal path end to end; engine test, build and
+parse commands that report the right result; Unity and Unreal treated like
+Godot; hook warnings you can see; skills that read the whole argument
+
+### What Changed
+
+| Category | Changes |
+|----------|---------|
+| **Minimal path** | `/help`, `/story-done`, `/sprint-status` and the status line follow the minimal route; about 25 default labels corrected; 10 skills and 4 director gates read `design/game-brief.md` when there is no concept doc; `/dev-story` and `/story-done` write the session checkpoint |
+| **Engine commands** | `/setup-engine`, `/test-setup`, `/dev-story`, `/smoke-check`, the `qa-tester` agent and `run-and-observe.md` use commands run on Windows with Godot 4.6.1, Unity 6000.3.23f1 and Unreal 5.7; Unreal's Linux and macOS commands come from Epic's documentation |
+| **Unity / Unreal** | Eight rules gain Unity (`Assets/`) and Unreal (`Source/`, `Content/`, `.usf`/`.ush`) globs; the commit and asset hooks check every engine's data folder; the status line and three checklists find the code root |
+| **Hooks** | Warnings arrive as hook JSON (`hook_warn` in `yaml-helper.sh`); the commit and push checks find `git` anywhere in a command, skip quoted here-doc text, and run for the PowerShell tool; the commit check validates the staged copy of each data file; session start caps the checkpoint it prints |
+| **Skills (7)** | `/adopt`, `/balance-check`, `/gate-check`, `/review-all-gdds`, `/scope-check`, `/sprint-status`, `/story-readiness` read `$ARGUMENTS`, not its first word |
+| **Agents** | Nearly every agent file changed: directors answer each gate in the verdict words its definition file gives; `creative-director`, `producer` and `technical-director` keep memory in the project; `devops-engineer` is trunk-based and, with `community-manager`, runs on Sonnet; `qa-tester`'s Unity and Unreal templates compile; Unity and Unreal agents check their engine reference; agents that don't write code draft and ask before writing |
+
+No setting changes meaning, and nothing is migrated automatically.
+
+---
+
+### Files: Safe to Overwrite
+
+**Existing files to overwrite (no user content):**
+```
+.claude/skills/**                            ← nearly every skill changed, including
+                                               gate-check/references/gate-production.md
+.claude/hooks/*.sh                           ← validate-commit, validate-push,
+                                               validate-assets, validate-skill-change,
+                                               session-start, detect-gaps, pre-compact,
+                                               post-compact, log-agent, log-agent-stop,
+                                               log-instructions, yaml-helper
+.claude/statusline.sh
+.claude/scripts/artifact-check.sh, project-coherence.sh, migrate-v1-config.sh,
+                                               gdd-structure-check.sh, review-scope.sh
+.claude/scripts/review-receipts.sh           ← falls back to shasum, which every Mac has
+.claude/scripts/godot-parse-check.gd         ← new: /dev-story's Godot parse check
+.claude/scripts/story-status.sh              ← new: the story list /help and
+                                               /sprint-status route from
+.claude/agents/*.md                          ← nearly every agent changed (see Agents
+                                               above); merge any you edited, and see
+                                               Director agents' memory below
+.claude/docs/**                              ← EXCEPT technical-preferences.md, which
+                                               is yours and unchanged in 1.1.2.
+                                               Includes templates/game-brief.md
+                                               (new Reference game line)
+docs/WORKFLOW-GUIDE.md, docs/skill-flow-diagrams.md,
+docs/COLLABORATIVE-DESIGN-PRINCIPLE.md, docs/engine-reference/README.md
+docs/engine-reference/godot/current-best-practices.md, breaking-changes.md,
+deprecated-apis.md, modules/rendering.md;
+docs/engine-reference/unity/current-best-practices.md,
+plugins/addressables.md;
+docs/engine-reference/unreal/modules/networking.md,
+docs/engine-reference/unreal/current-best-practices.md,
+plugins/gameplay-ability-system.md
+                                             ← corrected examples; the Godot, Unity
+                                               and Unreal references gain Command Line
+                                               sections (build and test commands per
+                                               platform, with sources). If /setup-engine
+                                               has updated your copy of one, merge
+                                               that file instead
+README.md, CHANGELOG.md, UPGRADING.md        ← keep your README if it is your game's
+CCGS Skill Testing Framework/
+```
+
+---
+
+### Files: Merge Carefully
+
+**`.claude/settings.json`** — if you have not edited it, overwrite it with the
+shipped file. If you have, change the `matcher` of the
+`PreToolUse` entry that runs `validate-commit.sh` and `validate-push.sh` from
+`"Bash"` to `"Bash|PowerShell"`, and copy the new `deny` rules: the
+`PowerShell(…)` ones, `Bash(git push *--force*)` / `Bash(git push * -f*)`, and
+the variants of recursive delete, `git clean`, `git reset --hard` and force push
+(`rm -fr`, `rm -rf*` with no space, the `--recursive` / `--force` spellings such
+as `rm -r --force`, `git clean* -f*`, `git clean* -df*` and the other `git clean`
+force forms, the `git *clean* …`, `git *push* -f*` / `-uf*` / `+*` and
+`git *reset *--hard*` forms that also catch git options before the subcommand
+(`git -C x clean -f`), `git push * +*`, `git * push *--force*`,
+`Remove-Item * -r*`). The `git clean` rules name the common force forms rather
+than `git clean -*f*`, which would also deny a dry run such as
+`git clean -n config/`, and no allow rule can undo a deny. The `git` rules match
+anywhere after `git`, so a git command whose text fits one of them is denied even
+when nothing dangerous runs: a commit message that mentions one of these
+commands, or plain prose such as `git commit -m "push + pull"` (`push` then ` +`)
+— reword the message. A dry run written with `-f` first,
+`git clean -fn`, is denied too; write it `git clean -n`. 1.1.1's
+`Bash(git clean -f*)` is covered by the new rules and can go.
+
+**`.claude/rules/*.md`** — if you have not edited a rule, overwrite it with the
+shipped file. If you have, keep your text, copy
+every `paths:` line from the shipped file — they changed in eight rules — and
+merge the five changed bodies named below. Without
+the Unity (`Assets/**`) and Unreal (`Source/**`, `Content/**`) globs the rule
+never loads on those engines. Keep each glob in double quotes — an unquoted
+`*` breaks the frontmatter, and a rule whose frontmatter does not parse loads
+on every file. The code-rule globs now name their file types (`*.cs`,
+`*.{h,cpp}`), `data-files.md`'s end in `*.json`, and five rule bodies changed:
+`test-standards.md` names tests per engine, `shader-code.md`,
+`gameplay-code.md` and `engine-code.md` give Unity and Unreal examples, and
+`agent-memory.md` names every engine's code root.
+
+**`src/CLAUDE.md`** — if you have not edited it, overwrite it with the shipped
+file. If you have, merge: its File Routing section now
+points to the `specialists` block of `project.yaml` instead of `CLAUDE.md`.
+
+**`.gitignore`** — add `/reports/` and `/test-results/` (gdUnit4 and Unity test
+output), and `!addons/gdUnit4/bin/` on the line after `bin/`: without it the
+`bin/` rule keeps gdUnit4's test runner out of your commits, and a fresh clone
+or CI has no runner.
+
+**Your `project.yaml` `commands:` block** — `/setup-engine` wrote these into your
+project, so updating the template does not change them. If you set up an engine
+on 1.1.0 or 1.1.1:
+
+| Engine | Key | Old (1.1.1) | New |
+|---|---|---|---|
+| Godot | `test` | `godot --headless --script tests/gdunit4_runner.gd` | `godot --headless -s -d --remote-debug tcp://127.0.0.1:0 res://addons/gdUnit4/bin/GdUnitCmdTool.gd -a res://tests --ignoreHeadlessMode` |
+| Unity | `build` | `Unity -batchmode -quit -projectPath . -buildTarget <TARGET>` | `"<Unity editor>" -batchmode -quit -projectPath . -buildTarget <TARGET> -build<PLATFORM>Player Builds/<Target>/<Game>.exe` (e.g. `-buildWindows64Player`) |
+| Unity | `test` | `Unity -runTests -projectPath . -testPlatform PlayMode` | `"<Unity editor>" -batchmode -runTests -projectPath . -testPlatform EditMode -testResults test-results/editmode.xml` |
+| Unity | `smoke` | `Unity -batchmode -quit -projectPath . -executeMethod SmokeCheck.Run` | `"<Unity editor>" -batchmode -quit -projectPath . -logFile -` |
+| Unreal | `build` | `RunUAT.bat BuildCookRun -project=<project>.uproject -platform=Win64 -build -cook` | `"<UE root>/Engine/Binaries/DotNET/AutomationTool/AutomationTool.exe" BuildCookRun -project="$(pwd -W 2>/dev/null || pwd)/<project>.uproject" -platform=Win64 -build -cook` |
+| Unreal | `test` | `UnrealEditor-Cmd.exe <project>.uproject -ExecCmds="Automation RunTests <project>; Quit" -unattended -nullrhi` | `"<UE root>/Engine/Binaries/Win64/UnrealEditor-Cmd.exe" "$(pwd -W 2>/dev/null || pwd)/<project>.uproject" -ExecCmds="Automation RunTests <project>.; Quit" -unattended -nullrhi -stdout -FullStdOutLogOutput` |
+| Unreal | `smoke` | `UnrealEditor-Cmd.exe <project>.uproject -game -nullrhi -unattended -ExecCmds="Quit"` | `"<UE root>/Engine/Binaries/Win64/UnrealEditor-Cmd.exe" "$(pwd -W 2>/dev/null || pwd)/<project>.uproject" -game -nullrhi -unattended -stdout -ExecCmds="Quit"` |
+| Unreal | `run` | `UnrealEditor.exe <project>.uproject -game -windowed -ResX=1280 -ResY=720` | `"<UE root>/Engine/Binaries/Win64/UnrealEditor.exe" "$(pwd -W 2>/dev/null || pwd)/<project>.uproject" -game -windowed -ResX=1280 -ResY=720` |
+
+Godot also needs gdUnit4 installed under `addons/gdUnit4/`. If `godot` is not
+on your `PATH` (the default on Windows and macOS), `/setup-engine` now writes the
+editor's full path instead: put it, double-quoted, at the start of each Godot
+`commands.*` value, make the value a single-quoted YAML scalar, and record the
+same path as `engine.path` —
+`build: '"C:/Program Files/Godot/Godot_v4.6.1-stable_win64.exe" --headless --export-debug "Windows Desktop"'`.
+For Unity,
+`<Unity editor>` is the editor's full path, quoted — bare `Unity` can resolve to
+Unity's separate CLI, which rejects `-batchmode` with exit 2, the same code as a
+failed test. The quoted path needs a single-quoted YAML value:
+`test: '"C:/Program Files/Unity/Hub/Editor/<version>/Editor/Unity.exe" -batchmode …'`.
+
+The Unreal rows are the Windows commands. On Linux, `build` is
+`"<UE root>/Engine/Build/BatchFiles/RunUAT.sh" BuildCookRun … -platform=Linux -build -cook`
+and `test`, `run` and `smoke` use `"<UE root>/Engine/Binaries/Linux/UnrealEditor"`
+with the same arguments. On macOS keep only `build` (`RunUAT.sh … -platform=Mac`)
+and set the other three yourself: Epic documents no command-line editor inside
+`UnrealEditor.app`. `/setup-engine`'s Unreal section has the exact lines.
+
+For Unreal, `<UE root>` is the engine folder (`engine.path`) — no editor binary
+is on `PATH` — and the project path must be absolute: UE 5.7 does not find a
+relative `<project>.uproject` and exits 1 before running anything.
+`$(pwd -W 2>/dev/null || pwd)` gives the `C:/…` form in Git Bash, even with
+`MSYS_NO_PATHCONV` set. These values contain double quotes, so they take
+single-quoted YAML scalars too.
+
+**`.github/workflows/tests.yml` (Godot)** — if `/test-setup` wrote it, add
+`permissions:` with `contents: read` and `checks: write` to the `test` job, as
+the shipped template now does. The gdUnit4 action publishes a check run, and a
+new repository's token is read-only, so without it the job fails even when
+every test passes. In the test step, copy the shipped `uses:` line
+(`godot-gdunit-labs/gdUnit4-action@v1`), set `godot-version` to the full release
+`godot --version` prints (e.g. `4.6.1`; 1.1.1 filled in VERSION.md's `4.6`,
+which is not one), and add `version: 'installed'`: without it the action deletes
+the gdUnit4 you commit under `addons/` and installs the latest release. If you
+protect `main`, require the `Run GdUnit4 Tests` job's check, not `test-results`,
+which passes even when a test fails.
+
+**`.github/workflows/tests.yml` (Unreal)** — if `/test-setup` wrote it, add the
+`Build Editor Target` step from the shipped `/test-setup` before the test step,
+set `UE_ROOT` on the runner, and replace `-log` with
+`-stdout -FullStdOutLogOutput` so the results reach the CI log. The 1.1.1
+template ran `Automation RunTests MyGame.`; change the filter to your project's
+test root (`<Project>.`, as in `commands.test`), or no test matches. A fresh checkout
+has no compiled game module, so without the build the editor quits before
+running a test. Change `runs-on: self-hosted` to `runs-on: [self-hosted, windows]`:
+with the bare label, GitHub can give the job to any self-hosted runner the
+repository has, including a Linux one with no Unreal on it. Change each
+`shell: bash` to `shell: bash --noprofile --norc -eo pipefail "{0}"`: the
+Windows runner passes bash its script path unquoted, so every step fails when
+the runner's folder has a space in it.
+
+**Tests written on 1.1.x** — Unity never compiled tests under `tests/`: move them
+to `Assets/Tests/EditMode/` or `Assets/Tests/PlayMode/`, each with an assembly
+definition (`/test-setup` shows the layout). Unreal never built `Source/Tests/`:
+move tests to `Source/<Module>/Private/Tests/`, and replace
+`EAutomationTestFlags::GameFilter` with
+`EAutomationTestFlags::EditorContext | EAutomationTestFlags::ProductFilter`.
+
+**Director agents' memory** — `creative-director`, `producer` and
+`technical-director` now declare `memory: project`, so they read and write
+`.claude/agent-memory/<agent>/` in this project. Notes they saved before are in
+`~/.claude/agent-memory/<agent>/` and are no longer read; copy the ones that
+belong to this project across. If you edited those agent files, change
+`memory: user` to `memory: project` in their frontmatter.
+
+**`production/session-state/active.md`** — no action. The first `/dev-story` or
+`/story-done` adds the STATUS and CHECKPOINT blocks at the top of an older file
+and leaves the rest alone.
+
+**`design/game-brief.md`** — optional: add a `**Reference game:**` line (see the
+template).
+
+**Python 3** — now listed as required. If you ran without it, every setting was
+silently at its default; install it and your `project.yaml` takes effect.
+
+**`modes.review_mode` / `production/review-mode.txt`** — 1.1.x's `/sprint-plan`
+wrote a review mode into `project.yaml` and `production/review-mode.txt` the first
+time it ran, which pinned it over `modes.rigor` for good. If you did not choose
+that value yourself, remove both so `modes.rigor` applies again (`/settings`
+shows where each value comes from).
+
+**`project.yaml`** — optionally set `framework.version: 1.1.2`. Nothing reads it
+for this release.
+
+---
+
+## v1.1.0 → v1.1.1
+
+**Released:** 2026-09-24
+**Commit range:** `d056997..v1.1.1`
+**Key themes:** Fix for skills and agents failing to start outside auto mode ([#128](https://github.com/Donchitos/Claude-Code-Game-Studios/issues/128))
+
+### What Changed
+
+| Category | Changes |
+|----------|---------|
+| **Skill fix (66 skills)** | The config line at the top of each skill is now one plain `bash` command, pre-approved in that skill's own `allowed-tools`. The 1.1.0 line aborted the skill outside auto mode |
+| **Helper** | `.claude/hooks/yaml-helper.sh` can be run directly as `bash yaml-helper.sh resolve_config …`, and finds the project root from its own location |
+| **Docs** | `.claude/docs/config-resolution.md` documents the required form and why |
+
+No settings, config files or agents change. Your `project.yaml` and
+`project.local.yaml` are untouched apart from the version stamp.
+
+---
+
+### Files: Safe to Overwrite
+
+**Existing files to overwrite (no user content):**
+```
+.claude/skills/*/SKILL.md                 ← all skills with a config line (66)
+.claude/hooks/yaml-helper.sh              ← direct-execution entry point
+.claude/docs/config-resolution.md         ← corrected "why this command" section
+.claude/docs/director-gates.md            ← example line updated
+```
+
+---
+
+### Files: Merge Carefully
+
+**Skills you have edited yourself.** If you customised a skill, keep your
+version and change two lines in it — the config line and the `allowed-tools`
+entry — to this form, with your skill's folder name in place of `<name>`:
+
+```markdown
+allowed-tools: …, Bash(bash "*/.claude/skills/<name>/../../hooks/yaml-helper.sh" resolve_config *)
+```
+```markdown
+!`bash "${CLAUDE_SKILL_DIR}/../../hooks/yaml-helper.sh" resolve_config --keys <same keys as before>`
+```
+
+Both halves are needed: the line without the grant still aborts. The same
+applies to any skill you wrote yourself that copied the 1.1.0 line.
+
+**`project.yaml`** — optionally set `framework.version: 1.1.1`. Nothing reads it
+for this release.
+
+---
+
+## v1.0 → v1.1
+
+**Released:** 2026-09-23
+**Key themes:** `project.yaml` as the single source of truth, a modes system
+(`modes.rigor` fronting `workflow`/`docs.density`/`qa.level`/`story_granularity`,
+plus `review_mode` and `automation`), `/settings`, `project.local.yaml`
+per-developer overrides, migration tooling, token-efficiency cuts.
+
+This is the biggest config change since the template's `production/stage.txt`
+/ `production/review-mode.txt` era. Read
+[CHANGELOG.md](CHANGELOG.md#110--2026-09-23) for the full list of additions —
+this section covers what to do about it.
+
+### What Changed
+
+See [CHANGELOG.md](CHANGELOG.md#110--2026-09-23) for the complete list. The
+short version: `project.yaml` replaces `production/stage.txt`,
+`production/review-mode.txt`, and `.claude/docs/technical-preferences.md` as
+the primary config store (all three still work as a fallback — nothing is
+force-deleted), a new `modes` block controls how much process the project
+carries (`modes.rigor: minimal | standard | full`), and a new `/settings`
+skill views and edits any of it, including a gitignored
+`project.local.yaml` for settings that should vary per developer.
+
+### Heads-up: the process level you get by default has changed
+
+`modes.rigor` now defaults to **`minimal`**, not `standard`. If your
+`project.yaml` sets `modes.rigor` explicitly, nothing changes for you and you
+can skip this.
+
+If it does not, the upgrade is visible: any of the six knobs `rigor` fronts that
+you never set moves from the `standard` row to the `minimal` row. In practice
+that means fewer required GDD sections, terser writing, coarser stories, no
+director review panels, and `qa.level` dropping from `standard` to `minimal`.
+Knobs you *did* set explicitly are untouched.
+
+**To keep the old behaviour, pin it in one line:**
+
+```yaml
+modes:
+  rigor: standard
+```
+
+We changed the default because we measured it. Built both ways, `standard` cost
+several times more to reach working code, did not produce a better result, and
+gave nothing back when a fresh developer picked the project up. Most projects
+were paying for process that did not repay.
+If yours is one that does -- several interacting systems, or a design someone
+else has to implement -- `standard` and `full` are one `/settings` call away,
+and `/help` and `/gate-check` will suggest raising it as your project grows.
+
+### Files: Safe to Overwrite
+
+**Take `.claude/` as a whole. Do not copy a subset.** v1.1 adds around 73 new
+files under that directory — `automation-modes.md`, `workflow-modes.md`,
+`config-resolution.md`, `effects-map.md`, 28 director gates, the game-brief
+template, 7 guidance templates, 8 scripts, 6 gate-check references, 10
+`CONTRACT.md` files — and the skills cross-reference each other across all of
+them. A partial copy leaves skills pointing at documents you do not have, which
+fails at the moment you run them rather than at the moment you copy. That is why
+there is no short file list here.
+
+```
+.claude/          (the whole directory — new and changed files alike)
+                  EXCEPT .claude/docs/technical-preferences.md — see the note below.
+                  The template ships a placeholder copy of that file; overwriting
+                  yours silently discards your Forbidden Patterns and Allowed
+                  Libraries, which have no project.yaml equivalent. Back it up
+                  before you copy and restore it afterwards.
+README.md
+CHANGELOG.md
+UPGRADING.md
+.gitignore        (adds project.local.yaml)
+```
+
+> **Strategy A (git merge) protects you here automatically** — git flags that file
+> as a conflict because you both changed it. The manual-copy strategies do not:
+> a recursive copy overwrites it without a word.
+
+Your own tests under `tests/` and any tooling under `tools/` are yours; the
+template ships nothing into either, so nothing there is at risk.
+
+Copying is additive: files *you* added under `.claude/` survive, because nothing
+is deleted. Only files the template also ships get replaced.
+
+All 74 `SKILL.md` files changed in v1.1, and 66 of them now resolve config via
+`resolve_config`. If you have not hand-edited any skill file, taking them all is
+safe.
+
+> **Two things under `.claude/` are yours — check them before you copy.**
+>
+> - `.claude/docs/technical-preferences.md` still holds your Forbidden Patterns
+>   and Allowed Libraries, which have no `project.yaml` equivalent. Keep your
+>   copy; see [Merge Carefully](#claudedocstechnical-preferencesmd) below.
+> - Anything else you customised — agent definitions and director gates are the
+>   usual ones. If your project is in git, `git log --oneline -- .claude` lists
+>   whether you have any. Re-apply your edits on top of the new version rather
+>   than keeping your old file wholesale; the new version almost certainly
+>   changed there too.
+
+(`project.yaml` itself is not copied from the template — `/start` generates it
+for new projects, and `.claude/scripts/migrate-v1-config.sh` builds it from
+your legacy config files for existing ones.)
+
+### Files: Merge Carefully
+
+#### `project.yaml` (new — this is YOUR data, not template infrastructure)
+
+This file does not exist in v1.0. If you have an existing project with
+`production/stage.txt`, `production/review-mode.txt`, or a filled-in
+`.claude/docs/technical-preferences.md`, **do not hand-author
+`project.yaml`** — those files hold your project's actual configuration and
+migrating them by hand risks transcription errors the tooling is built to
+avoid. Follow the dedicated
+[migration guide](docs/migration-guide-v1.1.md) instead, which walks
+`.claude/scripts/migrate-v1-config.sh` end to end.
+
+If you're starting fresh (no legacy files with real values), just run
+`/start` — it writes a complete `project.yaml` for you.
+
+#### `.claude/docs/technical-preferences.md`
+
+Stays in place. Most of its content (engine, naming, performance budgets,
+testing framework, specialists) has a `project.yaml` equivalent now and is
+read from there first. Two sections — Forbidden Patterns and Allowed
+Libraries — have no `project.yaml` equivalent and this file remains their
+home permanently; `--finalize` migration never deletes it.
+
+### After Upgrading
+
+1. If you have an existing project (not starting fresh), read
+   [docs/migration-guide-v1.1.md](docs/migration-guide-v1.1.md) and run
+   `.claude/scripts/migrate-v1-config.sh --dry-run` to see what migration
+   would do before committing to it.
+2. Run `/settings` to see your effective configuration once `project.yaml`
+   exists — it shows you the value, source, and whether each setting is
+   locally overridable.
+3. Consider setting `modes.rigor` explicitly if your project doesn't match
+   the `minimal` default — `/settings modes.rigor=standard` to keep the
+   process level v1.0 had, `modes.rigor=full` for a project that wants every
+   gate. The migration report says this too.
+4. If you customised any skill, re-read it against the new version before
+   relying on it — a skill that resolves config differently from the rest of
+   the framework fails quietly, by taking a default branch rather than by
+   erroring.
 
 ---
 
@@ -140,7 +643,7 @@ None — all changes are to infrastructure files with no user content.
 | **New skill** | `/vertical-slice` — Pre-Production gate that validates the full game loop with a production-quality end-to-end build before Production. Pairs with the overhauled `/prototype` (concept validation right after `/brainstorm`). |
 | **New flow** | Entity inventory step in `/map-systems` — surfaces all named entities up front for cleaner downstream GDD authoring. |
 | **UX polish** | Added missing `AskUserQuestion` widgets to 7 skills; comprehensive skill audit for consistency, prompts, and flow gaps; exposed `--review` flag in `argument-hints` for all `team-*` skills. |
-| **Bug fixes** | `#21` log-agent hooks logged "unknown" `agent_type`; `#36` missing `allowed-tools` in `/architecture-decision` and `/story-done`; `#42` `rg --type gdscript` is invalid (now uses `--glob *.gd`); `#43` session-start preview showed oldest state instead of newest; `#45` duplicate `## 0.` heading and broken step numbering in `/architecture-decision`. |
+| **Bug fixes** | log-agent hooks logged "unknown" `agent_type`; missing `allowed-tools` in `/architecture-decision` and `/story-done`; `rg --type gdscript` is invalid (now uses `--glob *.gd`); session-start preview showed oldest state instead of newest; duplicate `## 0.` heading and broken step numbering in `/architecture-decision`. |
 | **Project docs** | Added `CONTRIBUTING.md` (framework contribution guidelines) and `SECURITY.md` (coordinated disclosure policy). |
 | **Counts/refs** | Synced agent/skill/hook counts across `WORKFLOW-GUIDE.md`, `README.md`, and agent rosters; fixed stale agent names and skill model-tier fields. |
 
@@ -157,8 +660,8 @@ SECURITY.md
 
 **Existing files to overwrite (no user content):**
 - All files under `.claude/skills/` modified in the commit range (skill audit + AskUserQuestion widgets + `--review` argument-hints)
-- `.claude/hooks/log-agent.sh` (fix #21)
-- `README.md`, `docs/WORKFLOW-GUIDE.md`, `docs/examples/skill-flow-diagrams.md`
+- `.claude/hooks/log-agent.sh` (`agent_type` logging fix)
+- `README.md`, `docs/WORKFLOW-GUIDE.md`, `docs/skill-flow-diagrams.md`
 - `UPGRADING.md`
 
 ---
@@ -255,7 +758,7 @@ individual run with `--review [mode]` on any gate-using skill:
 
 ```
 /design-system combat --review lean
-/gate-check concept --review full
+/gate-check systems-design --review full
 /brainstorm my-game-idea --review solo
 ```
 
@@ -637,14 +1140,14 @@ is safe. Otherwise, add this block manually:
 the terminal status line:
 
 ```
-ctx: 42% | claude-sonnet-4-6 | Systems Design
+ctx: 42% | claude-sonnet-5 | Systems Design
 ```
 
 In Production/Polish/Release stages, it also shows the active Epic/Feature/Task
 from `production/session-state/active.md` if a `<!-- STATUS -->` block is present:
 
 ```
-ctx: 42% | claude-sonnet-4-6 | Production | Combat System > Melee Combat > Hitboxes
+ctx: 42% | claude-sonnet-5 | Production | Combat System > Melee Combat > Hitboxes
 ```
 
 The current stage is auto-detected from project artifacts, or can be pinned by
@@ -709,9 +1212,6 @@ versions directly with no risk to your project content.
 .claude/skills/map-systems/SKILL.md
 .claude/skills/design-system/SKILL.md
 .claude/docs/templates/systems-index.md
-.claude/docs/templates/collaborative-protocols/design-agent-protocol.md
-.claude/docs/templates/collaborative-protocols/implementation-agent-protocol.md
-.claude/docs/templates/collaborative-protocols/leadership-agent-protocol.md
 .claude/hooks/detect-gaps.sh
 .claude/hooks/session-start.sh
 production/session-state/.gitkeep

@@ -3,7 +3,6 @@
 ## Agent Summary
 Domain: Godot-specific patterns, node/scene architecture, signals, resources, and GDScript vs C# vs GDExtension decisions.
 Does NOT own: actual code authoring in a specific language (delegates to language sub-specialists).
-Model tier: Sonnet (default).
 No gate IDs assigned.
 
 ---
@@ -11,8 +10,8 @@ No gate IDs assigned.
 ## Static Assertions (Structural)
 
 - [ ] `description:` field is present and domain-specific (references Godot architecture / node patterns / engine decisions)
-- [ ] `allowed-tools:` list includes Read, Write, Edit, Bash, Glob, Grep
-- [ ] Model tier is Sonnet (default for specialists)
+- [ ] `tools:` list includes Read, Write, Edit, Bash, Glob, Grep
+- [ ] Model tier is `inherit` — frontmatter `model:` reads exactly `inherit` (tiers: `.claude/docs/model-tiers.md`)
 - [ ] Agent definition references `docs/engine-reference/godot/VERSION.md` as the authoritative API source
 
 ---
@@ -25,25 +24,28 @@ No gate IDs assigned.
 - Produces a pattern decision guide with rationale:
   - Signals: decoupled communication, parent-to-child ignorance, event-driven UI updates, one-to-many notification
   - Direct calls: tightly-coupled systems where the caller needs a return value, or performance-critical hot paths
-- Provides concrete examples of each pattern in the project's context
+- Illustrates each side with a concrete Godot case (e.g., a child health component emitting a typed `health_changed` signal that its parent or the HUD listens to; a parent calling a method on a child it owns)
 - Does NOT produce raw code for both patterns — refers to gdscript-specialist or csharp-specialist for implementation
-- Notes the "no upward signals" convention (child does not call parent methods directly — uses signals instead)
+- Notes the "call down, signal up" convention: a child does not call its parent's methods directly — it emits a signal — so each scene stays self-contained with no implicit dependency on its parent
 
 ### Case 2: Wrong-engine redirect
 **Input:** "Write a MonoBehaviour that runs on Start() and subscribes to a UnityEvent."
 **Expected behavior:**
 - Does NOT produce Unity MonoBehaviour code
 - Clearly identifies that this is a Unity pattern, not a Godot pattern
-- Provides the Godot equivalent: a Node script using `_ready()` instead of `Start()`, and Godot signals instead of UnityEvent
-- Confirms the project is Godot-based and redirects the conceptual mapping
+- Maps the concepts to Godot: `_ready()` instead of `Start()`, and a typed Godot `signal` connected in `_ready()` instead of a UnityEvent
+- Grounds the answer in the project's engine pin (`docs/engine-reference/godot/VERSION.md`, Godot 4.6) rather than asking which engine the project uses
+- Routes the actual node script to godot-gdscript-specialist or godot-csharp-specialist rather than writing it itself
+- Variant: with `engine.name: Unity` in `project.yaml`, it says it is the wrong specialist for this project instead of mapping the concepts
 
 ### Case 3: Post-cutoff API risk
 **Input:** "Use the new Godot 4.5 @abstract annotation to define an abstract base class."
 **Expected behavior:**
 - Identifies that `@abstract` is a post-cutoff feature (introduced in Godot 4.5, after LLM knowledge cutoff)
-- Flags the version risk: LLM knowledge of this annotation may be incomplete or incorrect
-- Directs the user to verify against `docs/engine-reference/godot/VERSION.md` and the official 4.5 migration guide
-- Provides best-effort guidance based on the migration notes in the version reference while clearly marking it as unverified
+- Flags the version risk: LLM knowledge of this annotation may be incomplete or incorrect, so the reference docs take precedence
+- Confirms the feature against the version reference before answering — `docs/engine-reference/godot/breaking-changes.md` lists the `@abstract` decorator in its 4.4 → 4.5 table
+- Flags the installed-version gap: `VERSION.md` records `Installed at pin time` as NOT DETERMINED, so the installed editor must be confirmed as 4.5 or later before `@abstract` code will parse
+- Routes the class authoring to godot-gdscript-specialist rather than writing the class itself
 
 ### Case 4: Language selection for a hot path
 **Input:** "The physics query loop runs every frame for 500 objects. Should we use GDScript or C# for this?"
@@ -51,17 +53,17 @@ No gate IDs assigned.
 - Provides a balanced analysis:
   - GDScript: simpler, team familiar, but slower for tight loops
   - C#: faster for CPU-intensive loops, requires .NET runtime, team needs C# knowledge
-- Does NOT make the final decision unilaterally
-- Defers the decision to `lead-programmer` with the analysis as input
+- Does NOT make the final decision unilaterally — presents the trade-off for the user to decide
+- Flags that bringing C#/.NET (or a GDExtension module) into the project is a major tech choice that needs `technical-director` sign-off, not a call it makes alone
 - Notes that GDExtension (C++) is a third option for extreme performance cases and recommends escalating if C# is insufficient
 
 ### Case 5: Context pass — engine version 4.6
 **Input:** Engine version context provided: Godot 4.6, Jolt as default physics. Request: "Set up a RigidBody3D for the player character."
 **Expected behavior:**
-- Reads the 4.6 context and applies the Jolt-default knowledge (from VERSION.md migration notes)
-- Recommends RigidBody3D configuration choices that are Jolt-compatible (e.g., notes any GodotPhysics-specific settings that behave differently under Jolt)
-- References the 4.6 migration note about Jolt becoming default rather than relying on LLM training data alone
-- Flags any RigidBody3D properties that changed behavior between GodotPhysics and Jolt
+- Reads the 4.6 context and the physics module reference (`docs/engine-reference/godot/modules/physics.md`) rather than relying on LLM training data alone
+- States what the reference documents: Jolt is the default 3D engine for new projects, but existing projects keep their setting — so it checks Project Settings → Physics → 3D → Physics Engine before assuming Jolt
+- Carries over the documented Jolt differences that apply: collision margins may behave differently, and Jolt emits runtime warnings for properties it does not support (e.g. HingeJoint3D `damp`)
+- Does NOT invent RigidBody3D property changes between GodotPhysics and Jolt — the reference documents none, and it says so
 
 ---
 
@@ -72,7 +74,8 @@ No gate IDs assigned.
 - [ ] Returns structured findings (decision trees, pattern recommendations with rationale)
 - [ ] Treats `docs/engine-reference/godot/VERSION.md` as authoritative over LLM training data
 - [ ] Flags post-cutoff API usage (4.4, 4.5, 4.6) with verification requirements
-- [ ] Defers language-selection decisions to lead-programmer when trade-offs exist
+- [ ] Leaves language-selection decisions to the user and routes adoption of a new language or runtime to technical-director
+- [ ] Asks "May I write this to [filepath]?" naming the file before writing
 
 ---
 

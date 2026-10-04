@@ -11,23 +11,47 @@ major engine subsystems. All design agents and templates are grounded in
 established game design theory (MDA Framework, Self-Determination Theory,
 Flow State, Bartle Player Types). Use whichever engine set matches your project.
 
+## The Default Path: Rigor Minimal
+
+`modes.rigor` defaults to `minimal` (`/start` asks; `/settings` changes it any
+time). At `minimal` the path to code is four steps:
+
+1. `/setup-engine` -- configure the engine
+2. `/brainstorm` -- writes the one-page `design/game-brief.md`, in place of the
+   concept doc, systems decomposition and per-system GDDs
+3. `/create-stories` -- turns the brief's MVP list into stories under
+   `production/epics/<slug>/`; the brief's build order is the plan, so there is
+   no `/create-epics` or `/sprint-plan`
+4. `/dev-story` then `/story-done`, story by story -- `/story-done` names the
+   next story, and `/help` knows this route
+
+Nothing at `minimal` runs `/gate-check`, so `project.stage` stays at Concept.
+Every skill still runs at any tier. The trade: no GDDs catch design problems
+before code. Raise rigor with `/settings` when the game outgrows the brief;
+`standard` and `full` are the longer pipelines under
+[First Steps for a New Project](#first-steps-for-a-new-project).
+
 ## How to Use
 
 ### 1. Understand the Hierarchy
 
 There are three tiers of agents:
 
-- **Tier 1 (Opus)**: Directors who make high-level decisions
+- **Tier 1 — Directors** who make high-level decisions (they run on Opus)
   - `creative-director` -- vision and creative conflict resolution
   - `technical-director` -- architecture and technology decisions
   - `producer` -- scheduling, coordination, and risk management
 
-- **Tier 2 (Sonnet)**: Department leads who own their domain
+- **Tier 2 — Department leads** who own their domain
   - `game-designer`, `lead-programmer`, `art-director`, `audio-director`,
     `narrative-director`, `qa-lead`, `release-manager`, `localization-lead`
 
-- **Tier 3 (Sonnet/Haiku)**: Specialists who execute within their domain
+- **Tier 3 — Specialists** who execute within their domain
   - Designers, programmers, artists, writers, testers, engineers
+
+The tiers are seniority of role. Most agents run on your session's model; the
+agent file's own `model:` line says which do not
+(`.claude/docs/model-tiers.md`).
 
 ### 2. Pick the Right Agent for the Job
 
@@ -111,7 +135,7 @@ Ask yourself: "What department would handle this in a real studio?"
 | `/scope-check` | Detect scope creep against plan |
 | `/perf-profile` | Performance profiling and bottleneck ID |
 | `/tech-debt` | Scan, track, and prioritize tech debt |
-| `/gate-check` | Validate phase readiness (PASS/CONCERNS/FAIL) |
+| `/gate-check` | Validate phase readiness (PASS/CONCERNS/NOT ASSESSED/FAIL) |
 | `/consistency-check` | Scan all GDDs for cross-document inconsistencies (conflicting stats, names, rules) |
 | `/security-audit` | Audit for security vulnerabilities: save tampering, cheat vectors, network exploits, data exposure |
 | `/reverse-document` | Generate design/architecture docs from existing code |
@@ -157,6 +181,7 @@ Templates are in `.claude/docs/templates/`:
 - `game-design-document.md` -- for new mechanics and systems
 - `architecture-decision-record.md` -- for technical decisions
 - `architecture-traceability.md` -- maps GDD requirements to ADRs to story IDs
+  (`/architecture-review` writes it to `docs/architecture/requirements-traceability.md`)
 - `risk-register-entry.md` -- for new risks
 - `narrative-character-sheet.md` -- for new characters
 - `test-plan.md` -- for feature test plans
@@ -173,6 +198,7 @@ Templates are in `.claude/docs/templates/`:
 - `release-notes.md` -- for player-facing release notes
 - `incident-response.md` -- for live incident response playbooks
 - `game-concept.md` -- for initial game concepts (MDA, SDT, Flow, Bartle)
+- `game-brief.md` -- for the one-page brief that replaces the concept doc at `rigor: minimal`
 - `pitch-document.md` -- for pitching the game to stakeholders
 - `economy-model.md` -- for virtual economy design (sink/faucet model)
 - `faction-design.md` -- for faction identity, lore, and gameplay role
@@ -189,12 +215,6 @@ Templates are in `.claude/docs/templates/`:
 - `difficulty-curve.md` -- for difficulty axes, onboarding ramp, and cross-system interactions
 - `test-evidence.md` -- template for recording manual test evidence (screenshots, walkthrough notes)
 
-Also in `.claude/docs/templates/collaborative-protocols/` (used by agents, not typically edited directly):
-
-- `design-agent-protocol.md` -- question-options-draft-approval cycle for design agents
-- `implementation-agent-protocol.md` -- story pickup through /story-done cycle for programming agents
-- `leadership-agent-protocol.md` -- cross-department delegation and escalation for director-tier agents
-
 ### 5. Follow the Coordination Rules
 
 1. Work flows down the hierarchy: Directors -> Leads -> Specialists
@@ -208,6 +228,9 @@ Also in `.claude/docs/templates/collaborative-protocols/` (used by agents, not t
 **Don't know where to begin?** Run `/start`. It asks where you are and routes
 you to the right workflow. No assumptions about your game, engine, or experience level.
 
+The paths below walk the `standard`/`full` pipeline. At `rigor: minimal` (the
+default), follow [The Default Path](#the-default-path-rigor-minimal) instead.
+
 If you already know what you need, jump directly to the relevant path:
 
 ### Path A: "I have no idea what to build"
@@ -218,11 +241,12 @@ If you already know what you need, jump directly to the relevant path:
    - Produces a game concept document and recommends an engine
 2. **Set up the engine** — Run `/setup-engine` (uses the brainstorm recommendation)
    - Configures CLAUDE.md, detects knowledge gaps, populates reference docs
-   - Creates `.claude/docs/technical-preferences.md` with naming conventions,
-     performance budgets, and engine-specific defaults
+   - Writes engine, naming conventions, and performance budgets to `project.yaml`
+     (the source of truth), mirrored to `.claude/docs/technical-preferences.md`
    - If the engine version is newer than the LLM's training data, it fetches
      current docs from the web so agents suggest correct APIs
 3. **Validate the concept** — Run `/design-review design/gdd/game-concept.md`
+   (or `design/game-brief.md`, if `/brainstorm` wrote the one-page brief)
 4. **Decompose into systems** — Run `/map-systems` to map all systems and dependencies
 5. **Design each system** — Run `/design-system [system-name]` (or `/map-systems next`)
    to write GDDs in dependency order
@@ -270,16 +294,17 @@ If you have design docs, prototypes, or code already:
 ## File Structure Reference
 
 ```
-CLAUDE.md                          -- Master config (read this first, ~60 lines)
+CLAUDE.md                          -- Master config (read this first, ~80 lines)
+project.yaml                       -- Machine-readable project config (engine, modes, stage) — source of truth
 .claude/
   settings.json                    -- Claude Code hooks and project settings
   agents/                          -- 49 agent definitions (YAML frontmatter)
-  skills/                          -- 73 slash command definitions (YAML frontmatter)
-  hooks/                           -- 12 hook scripts (.sh) wired by settings.json
-  rules/                           -- 11 path-specific rule files
+  skills/                          -- 74 slash command definitions (YAML frontmatter)
+  hooks/                           -- 12 event hooks (.sh, wired by settings.json) + yaml-helper.sh
+  rules/                           -- 13 path-specific rule files
   docs/
     quick-start.md                 -- This file
-    technical-preferences.md       -- Project-specific standards (populated by /setup-engine)
+    technical-preferences.md       -- Legacy fallback for project.yaml config (mirror; see project.yaml at repo root)
     coding-standards.md            -- Coding and design doc standards
     coordination-rules.md          -- Agent coordination rules
     context-management.md          -- Context budgets and compaction instructions
@@ -287,5 +312,6 @@ CLAUDE.md                          -- Master config (read this first, ~60 lines)
     workflow-catalog.yaml          -- 7-phase pipeline definition (read by /help)
     setup-requirements.md          -- System prerequisites (Git Bash, jq, Python)
     settings-local-template.md     -- Personal settings.local.json guide
-    templates/                     -- 41 document templates
+    CLAUDE-local-template.md       -- Personal CLAUDE.local.md guide (gitignored overrides)
+    templates/                     -- 39 document templates (+ per-section guidance)
 ```
