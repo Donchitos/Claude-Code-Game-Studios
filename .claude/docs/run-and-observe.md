@@ -147,7 +147,7 @@ and the game stops on a "map not found" dialog nobody can see. Alternatively
 pass the map through `-ExecCmds="open /Game/Maps/Shop"`, which is not converted.
 **The project path must be absolute** — with `MSYS_NO_PATHCONV` set, only
 `$(pwd -W 2>/dev/null || pwd)` gives one: a relative `Game.uproject` is not
-found, and the launch waits on an error dialog forever (verified on 5.7). There
+found, and the launch waits on an error dialog forever (verified on 5.7; not re-checked on 5.8). There
 is no `-unattended` on this line, so every failure is a dialog nobody clicks:
 always run it under `timeout`. Capture is the
 `HighResShot` console command, fired either from a dev actor (`Execute Console
@@ -225,7 +225,7 @@ engine on this machine". Absence of a path is not absence of an engine.
 ---
 
 *Commands above were run on Windows with Godot 4.6.1 (gdUnit4 6.1.3), Unity
-6000.3.23f1 and Unreal Engine 5.7; the Unreal Linux and macOS notes come from
+6000.3.23f1 and Unreal Engine 5.7 (not re-checked on 5.8); the Unreal Linux and macOS notes come from
 Epic's documentation. `docs/engine-reference/<engine>/` is
 the project's pinned authority; check it before trusting a version-qualified
 claim here.*

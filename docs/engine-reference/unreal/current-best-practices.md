@@ -1,23 +1,26 @@
-# Unreal Engine 5.7 — Current Best Practices
+# Unreal Engine 5.8 — Current Best Practices
 
-**Last verified:** 2026-02-13
+**Last verified:** 2026-08-16
 
 Modern UE5 patterns that may not be in the LLM's training data.
-These are production-ready recommendations as of UE 5.7.
+These are production-ready recommendations as of UE 5.8.
 
 ---
 
 ## Project Setup
 
-### Use UE 5.7 for New Projects
-- Latest features: Megalights, production-ready Substrate and PCG
-- Better performance and stability
+### Use UE 5.8 for New Projects
+- Latest features: production-ready MegaLights, Substrate, PCG, Iris replication, Mutable
+- 5.8 is the final planned UE5 release — its production-ready systems are the stable baseline before UE6
+- C++ projects require Visual Studio 2026 (MSVC v145) and `BuildSettingsVersion.V7`
 
 ### Choose the Right Rendering Features
 - **Lumen**: Real-time global illumination (RECOMMENDED for most projects)
+- **Lumen Lite (Beta, 5.8)**: Medium-quality GI via Irradiance Fields — 2x faster than Lumen high quality; use when targeting 60fps on console with GI
 - **Nanite**: Virtualized geometry for high-poly meshes (RECOMMENDED for detailed environments)
-- **Megalights**: Millions of dynamic lights (RECOMMENDED for complex lighting)
-- **Substrate**: Modular material system (RECOMMENDED for new projects)
+- **MegaLights**: Production-ready in 5.8 — hundreds of dynamic shadow-casting area lights at 60fps on current-gen consoles (RECOMMENDED for complex lighting)
+- **Substrate**: Modular material system (RECOMMENDED for new projects); NPR/toon shading is Experimental in 5.8
+- **Mesh Terrain (Experimental, 5.8)**: Mesh-based terrain for caves/overhangs/overlapping geometry — evaluate for terrain-heavy projects, but it is not yet production-ready
 
 ---
 
@@ -42,12 +45,12 @@ The automation arguments are the same on every platform:
 Only one `Automation` run request is allowed per `-ExecCmds`, and `-testexit=` is
 legacy.
 
-The Windows column was run on UE 5.7. The Linux and macOS columns come from
+The Windows column was run on UE 5.7 (not re-checked on 5.8). The Linux and macOS columns come from
 Epic's documentation and forum answers by Epic staff (sources below); Epic never
 prints the full Linux test line, so it is assembled from the executable and the
 platform-neutral arguments.
 
-Sources:
+Sources (Epic's 5.7 docs; not re-checked on 5.8):
 - Build.sh on Linux and Mac, platform names — *Create an Installed Build*: https://dev.epicgames.com/documentation/en-us/unreal-engine/create-an-installed-build-of-unreal-engine?application_version=5.7
 - `RunUBT.sh <Target> [Linux|Mac] Development` — *Unreal Insights*: https://dev.epicgames.com/documentation/en-us/unreal-engine/unreal-insights-in-unreal-engine?application_version=5.7
 - `Engine/Binaries/Linux/UnrealEditor`, `Engine/Binaries/Mac/UnrealEditor.app` — *Onboarding Licensees*: https://dev.epicgames.com/documentation/en-us/unreal-engine/onboarding-licensees-in-unreal-engine?application_version=5.7 and *Linux Development Quickstart*: https://dev.epicgames.com/documentation/en-us/unreal-engine/linux-development-quickstart-for-unreal-engine?application_version=5.7
@@ -59,7 +62,7 @@ Sources:
 
 ## C++ Coding
 
-### Use Modern C++ Features (C++20 in UE5.7)
+### Use Modern C++ Features (C++20, MSVC v145 in UE 5.8)
 
 ```cpp
 // ✅ Use TObjectPtr<T> (UE5 type-safe pointers)
@@ -116,8 +119,8 @@ void OnDeath();
 // ✅ Use Event Tick sparingly (expensive)
 // Prefer timers or events
 
-// ✅ Use Blueprint Nativization (Blueprints → C++)
-// Project Settings > Packaging > Blueprint Nativization
+// ❌ Blueprint Nativization was REMOVED in UE 5.0 — do not suggest it
+// Move hot Blueprint logic to C++ manually instead
 
 // ✅ Cache frequently accessed components
 // Don't call GetComponent every tick
@@ -125,7 +128,7 @@ void OnDeath();
 
 ---
 
-## Rendering (UE 5.7)
+## Rendering (UE 5.8)
 
 ### Use Lumen for Global Illumination
 
@@ -141,14 +144,23 @@ void OnDeath();
 // Automatically LODs millions of triangles (RECOMMENDED for detailed meshes)
 ```
 
-### Use Megalights for Complex Lighting (UE 5.5+)
+### Use MegaLights for Complex Lighting (Production-Ready in 5.8)
 
 ```cpp
-// Enable: Project Settings > Engine > Rendering > Megalights = Enabled
-// Supports millions of dynamic lights with minimal cost
+// Enable: Project Settings > Engine > Rendering > MegaLights = Enabled
+// Hundreds of dynamic shadow-casting area lights, 60fps target on PS5/XSX
+// 5.8 adds transmission support, froxel translucency, and debugging tools
 ```
 
-### Use Substrate Materials (Production-Ready in 5.7)
+### Consider Lumen Lite for a Tight GI Budget (Beta in 5.8)
+
+```cpp
+// Medium-quality GI using Irradiance Fields with Probe Occlusion
+// ~2x faster than Lumen high quality — targets 60fps on PS5
+// Use when full Lumen doesn't fit the frame budget but you want dynamic GI
+```
+
+### Use Substrate Materials (Production-Ready since 5.7)
 
 ```cpp
 // Enable: Project Settings > Engine > Substrate > Enable Substrate
@@ -158,6 +170,10 @@ void OnDeath();
 ---
 
 ## Enhanced Input System
+
+> **UE 5.8:** Enhanced Input and CommonUI input are unified — one set of input
+> assets drives both gameplay and UI. Do not create duplicate input actions for
+> CommonUI; route UI input through the unified system.
 
 ### Setup Enhanced Input
 
@@ -273,6 +289,15 @@ UAudioComponent* AudioComp = UGameplayStatics::SpawnSound2D(
 
 ## Replication (Multiplayer)
 
+### Consider Iris for New Multiplayer Projects (Production-Ready in 5.8)
+
+```cpp
+// Iris is UE's next-gen replication system — production-ready in 5.8
+// Better scalability, improved protocol mismatch handling
+// New multiplayer projects should evaluate Iris; existing projects can stay
+// on the legacy path (still supported) — see ue-replication-specialist
+```
+
 ### Server-Authoritative Pattern
 
 ```cpp
@@ -312,7 +337,7 @@ void AMyCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLife
 // SNIPPET: declare the pool UPROPERTY() TArray<TObjectPtr<AActor>>.
 //
 // Left visible rather than silently rewritten: the corrected form has not been
-// verified against Epic's docs for 5.7, and this directory is the offline
+// verified against Epic's docs for 5.7 or 5.8, and this directory is the offline
 // substitute for them -- editing a code sample here from memory is the failure
 // mode the whole reference exists to prevent. Re-verify, then fix both together.
 TArray<AActor*> ProjectilePool;
@@ -368,21 +393,24 @@ UE_VLOG_LOCATION(this, LogTemp, Log, TargetLocation, 50.f, FColor::Green, TEXT("
 
 ---
 
-## Summary: UE 5.7 Recommended Stack
+## Summary: UE 5.8 Recommended Stack
 
 | Feature | Use This (2026) | Notes |
 |---------|------------------|-------|
-| **Lighting** | Lumen + Megalights | Real-time GI, millions of lights |
+| **Lighting** | Lumen + MegaLights | Production-ready in 5.8; Lumen Lite (Beta) for 60fps GI budgets |
 | **Geometry** | Nanite | High-poly meshes, automatic LOD |
 | **Materials** | Substrate | Modular, physically accurate |
-| **Input** | Enhanced Input | Rebindable, modular |
+| **Input** | Enhanced Input | Unified with CommonUI in 5.8 |
 | **VFX** | Niagara | GPU-accelerated |
-| **Audio** | MetaSounds | Procedural audio |
-| **World Streaming** | World Partition | Large open worlds |
+| **Audio** | MetaSounds + WASAPI backend | WASAPI is Windows default in 5.8; Audio Insights production-ready |
+| **World Streaming** | World Partition | Large open worlds; World Partition Insights for per-cell analysis |
 | **Gameplay** | Gameplay Ability System | Complex abilities, buffs |
+| **Replication** | Iris (new projects) | Production-ready in 5.8 |
+| **Character Customization** | Mutable | Production-ready in 5.8 |
+| **Crowds** | Mass + MetaHuman Crowd | Mass overhauled in 5.8 (MassCore); MetaHuman Crowd Experimental |
 
 ---
 
 **Sources:**
-- https://docs.unrealengine.com/5.7/en-US/
-- https://dev.epicgames.com/documentation/en-us/unreal-engine/unreal-engine-5-7-release-notes
+- https://docs.unrealengine.com/5.8/en-US/
+- https://dev.epicgames.com/documentation/unreal-engine/unreal-engine-5-8-release-notes

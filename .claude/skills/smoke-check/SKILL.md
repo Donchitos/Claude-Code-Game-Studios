@@ -244,7 +244,7 @@ nothing changed; a failed build is a FAIL.
 
 **Pick the commands for this machine** with `uname -s`: `Linux` → Linux,
 `Darwin` → macOS, anything else (`MINGW*`, `MSYS*`, `CYGWIN*`) → Windows. The
-Windows forms below were run on UE 5.7; the Linux and macOS forms come from
+Windows forms below were run on UE 5.7 (not re-checked on 5.8); the Linux and macOS forms come from
 Epic's documentation — `docs/engine-reference/unreal/current-best-practices.md`,
 "Command Line", has them with their sources. On Windows use
 `UnrealBuildTool.exe`, not `Build.bat`: run from bash, `Build.bat` fails on an
@@ -261,7 +261,7 @@ Then the default. Keep `-stdout -FullStdOutLogOutput`; when `commands.test`
 lacks them, add them to the command for this run only: without them the editor
 prints nothing, and the lines below are only in `Saved/Logs/<Project>.log`.
 Give the project as an **absolute** path — when `commands.test` passes a
-relative one, run it with the absolute path instead: UE 5.7
+relative one, run it with the absolute path instead: UE 5.7 (not re-checked on 5.8)
 does not find a relative `<Project>.uproject` and exits 1 (`Project file not
 found`). `$(pwd -W 2>/dev/null || pwd)` gives the `C:/…` form in Git Bash and
 the plain path elsewhere; `$PWD` alone fails when `MSYS_NO_PATHCONV` is set.

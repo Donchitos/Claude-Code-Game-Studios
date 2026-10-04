@@ -1,9 +1,9 @@
-# Unreal Engine 5.7 — Breaking Changes
+# Unreal Engine 5.8 — Breaking Changes
 
-**Last verified:** 2026-02-13
+**Last verified:** 2026-08-16
 
 This document tracks breaking API changes and behavioral differences between Unreal Engine 5.3
-(likely in model training) and Unreal Engine 5.7 (current version). Organized by risk level.
+(likely in model training) and Unreal Engine 5.8 (current version). Organized by risk level.
 
 ## HIGH RISK — Will Break Existing Code
 
@@ -43,30 +43,90 @@ PCG framework reached production-ready status with major API changes.
 
 ---
 
-### Megalights Rendering System
-**Versions:** UE 5.5+
+### MegaLights Rendering System
+**Versions:** UE 5.5+ (experimental), 5.8 (production-ready)
 
-New lighting system supports millions of dynamic lights.
+New lighting system supports massive numbers of dynamic, shadow-casting lights.
+Production-ready in 5.8 with reduced noise, transmission support, froxel
+translucency, and new debugging tools. Targets 60fps on current-gen consoles.
 
 ```cpp
 // ❌ OLD: Limited dynamic lights (clustered forward shading)
 // Max ~100-200 dynamic lights before performance degrades
 
-// ✅ NEW: Megalights (5.5+)
-// Millions of dynamic lights with minimal performance cost
-// Enable: Project Settings > Engine > Rendering > Megalights
+// ✅ NEW: MegaLights (production-ready in 5.8)
+// Hundreds of dynamic shadow-casting area lights with minimal noise
+// Enable: Project Settings > Engine > Rendering > MegaLights
 ```
 
 **Migration:** No code changes needed, but lighting behavior may differ. Test scenes after enabling.
 
 ---
 
+### C++ Toolchain: Visual Studio 2026 / MSVC v145 Required
+**Versions:** UE 5.8
+
+UBT rejects VS2022's MSVC v143 toolset with:
+`"Visual Studio compiler version 14.38.x is not a preferred version. Please use the latest preferred version 14.50.x"`
+
+```csharp
+// ✅ NEW: Required .Target.cs settings for 5.8 (both game and Editor targets)
+DefaultBuildSettings = BuildSettingsVersion.V7;
+IncludeOrderVersion = EngineIncludeOrderVersion.Unreal5_8;
+```
+
+**Migration:** Install VS2026 (MSVC v145). Delete `Binaries/`, `Intermediate/`,
+`DerivedDataCache/`, `.vs/`, and `.sln`, then regenerate project files. If the
+built project won't launch after a successful compile, install
+`Engine/Extras/Redist/en-us/vc_redist.x64.exe` from the 5.8 install.
+
+---
+
+### WASAPI Is the Default Windows Audio Backend
+**Versions:** UE 5.8
+
+Windows audio switched from XAudio2 to WASAPI. XAudio2 is now an opt-in fallback
+via config. Projects using native audio APIs or audio middleware must re-verify
+their Windows audio path.
+
+**Migration:** Test audio on Windows after upgrading. Opt back into XAudio2 via
+config only if a middleware incompatibility is found.
+
+---
+
 ## MEDIUM RISK — Behavioral Changes
 
-### Enhanced Input System (Now Default)
-**Versions:** UE 5.1+ (recommended), 5.7 (default)
+### Zenserver Configuration Renames
+**Versions:** UE 5.8
 
-Enhanced Input is now the default input system.
+- `AllowRemoteNetworkService` renamed to `RemoteNetworkService` with new enum values (`None` / `Unsecured` / `GeneratedStaticKey`)
+- Zenserver cooked output store is now the default; projects that had the Zen store disabled must manually re-enable/opt out in project settings
+- `DefaultFastGeoStreaming.ini` replaces `FastGeoStreaming.ini`
+
+---
+
+### Sequencer Animation Section Looping Redefined
+**Versions:** UE 5.8
+
+Section looping now uses a completion-based model; `KeepState` / `RestoreState`
+logic changed. Cinematics relying on precise loop/restore behavior need re-testing.
+
+---
+
+### OpenXR Stereo Layer Ordering
+**Versions:** UE 5.8
+
+Stereo layers are now priority-driven instead of fixed-order. Set
+`xr.OpenXRSortFaceLockedLayersAboveOtherLayers=1` to restore pre-5.8 behavior.
+
+---
+
+### Enhanced Input System (Now Default)
+**Versions:** UE 5.1+ (recommended), 5.7 (default), 5.8 (unified with CommonUI)
+
+Enhanced Input is now the default input system. In 5.8, Enhanced Input and
+CommonUI input are unified — duplicate input assets between the two systems
+are eliminated.
 
 ```cpp
 // ❌ OLD: Legacy input bindings (deprecated)
@@ -120,6 +180,7 @@ Use UE5's World Partition system for large worlds.
 ### Windows
 - **UE 5.7**: DirectX 12 is now default (was DX11 in older versions)
 - Update shaders for DX12 compatibility
+- **UE 5.8**: WASAPI default audio backend (XAudio2 opt-in); VS2026 / MSVC v145 required for C++
 
 ### macOS
 - **UE 5.5+**: Metal 3 required (minimum macOS 13)
@@ -127,24 +188,37 @@ Use UE5's World Partition system for large worlds.
 ### Mobile
 - **UE 5.7**: Minimum Android API level raised to 26 (Android 8.0)
 - Minimum iOS deployment target raised to iOS 14
+- **UE 5.8**: Multi-pass deferred rendering is the mobile default (forward is opt-in)
 
 ---
 
 ## Migration Checklist
 
-When upgrading from UE 5.3 to UE 5.7:
+When upgrading from UE 5.3 to UE 5.8:
 
 - [ ] Review Substrate materials (convert if ready for new system)
 - [ ] Audit PCG usage (update to production API if using experimental)
-- [ ] Test Megalights performance (enable and benchmark)
+- [ ] Test MegaLights performance (production-ready in 5.8 — enable and benchmark)
 - [ ] Migrate legacy input to Enhanced Input
 - [ ] Convert high-poly meshes to Nanite
 - [ ] Update shaders for DX12 (Windows) or Metal 3 (macOS)
 - [ ] Verify minimum platform versions (Android 8.0, iOS 14)
 - [ ] Test Lumen and Nanite performance on target hardware
 
+When upgrading from UE 5.7 to UE 5.8 (no hard breaking changes, but):
+
+- [ ] Install VS2026 / MSVC v145; UBT rejects VS2022's v143
+- [ ] Set `BuildSettingsVersion.V7` + `EngineIncludeOrderVersion.Unreal5_8` in all `.Target.cs` files
+- [ ] Delete `Binaries/`, `Intermediate/`, `DerivedDataCache/`, `.vs/`, `.sln`; regenerate project files
+- [ ] Inventory plugins (binary vs source); bump `.uplugin` EngineVersion
+- [ ] Test Windows audio path (WASAPI now default)
+- [ ] Re-test Sequencer cinematics relying on loop/`KeepState`/`RestoreState` behavior
+- [ ] Full Blueprint compile pass; watch LogLinker; let shaders finish compiling before judging
+- [ ] Fix deprecation warnings now — 5.8 is the last UE5 release before UE6
+
 ---
 
 **Sources:**
-- https://dev.epicgames.com/documentation/en-us/unreal-engine/unreal-engine-5-7-release-notes
-- https://dev.epicgames.com/documentation/en-us/unreal-engine/upgrading-projects-to-newer-versions-of-unreal-engine
+- https://dev.epicgames.com/documentation/unreal-engine/unreal-engine-5-8-release-notes
+- https://dev.epicgames.com/documentation/en-us/unreal-engine/unreal-engine-5-migration-guide
+- https://jakubpradeniak.com/posts/dev-notes/migrating-unreal-engine-5-8-cpp-project/

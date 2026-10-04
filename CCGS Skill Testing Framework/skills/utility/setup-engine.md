@@ -120,7 +120,7 @@ None. `/setup-engine` is a technical configuration skill. No director gates appl
 - Placeholders only; the user never states that the project is Blueprint-primary
 - The session runs on Windows (`uname -s` is neither `Linux` nor `Darwin`), so the Windows `commands` block applies
 
-**Input:** `/setup-engine unreal 5.7`
+**Input:** `/setup-engine unreal 5.8`
 
 **Expected behavior:**
 1. The primary-language question defaults to C++, so CLAUDE.md Language reads
@@ -137,7 +137,7 @@ None. `/setup-engine` is a technical configuration skill. No director gates appl
 6. No `.uproject` is scaffolded; verdict COMPLETE
 
 **Assertions:**
-- [ ] Engine field is set to Unreal Engine 5.7 and `engine.language` is `C++`
+- [ ] Engine field is set to Unreal Engine 5.8 and `engine.language` is `C++`
 - [ ] Routing table includes `.uasset` and `.umap` entries
 - [ ] ue-blueprint-specialist is assigned for Blueprint graphs
 - [ ] `commands` carry the `# TODO: confirm these` comment

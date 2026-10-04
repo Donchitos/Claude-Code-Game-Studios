@@ -1,6 +1,6 @@
-# Unreal Engine 5.7 — Gameplay Ability System (GAS)
+# Unreal Engine 5.8 — Gameplay Ability System (GAS)
 
-**Last verified:** 2026-02-13
+**Last verified:** 2026-08-16
 **Status:** Production-Ready
 **Plugin:** `GameplayAbilities` (built-in, enable in Plugins)
 
@@ -211,14 +211,15 @@ public:
         NetExecutionPolicy = EGameplayAbilityNetExecutionPolicy::ServerInitiated;
 
         // Tags
-        // ⚠️ UNVERIFIED FOR 5.7 — `AbilityTags` may be deprecated in favour of
+        // ⚠️ UNVERIFIED (flagged upstream against 5.7; not re-checked on 5.8) —
+        // `AbilityTags` may be deprecated in favour of
         // SetAssetTags()/GetAssetTags(). Reported by the `unreal-specialist`
         // agent (2026-08-12), which believed the change landed around 5.5 and
         // correctly REFUSED to emit code on a symbol it could not verify.
-        // NOT SOURCEABLE offline: this repo has no 5.7 API dump to check against,
+        // NOT SOURCEABLE offline: this repo has no 5.8 API dump to check against,
         // and the same knowledge-gap warning that governs the agent governs this
-        // file. Verify against the UE 5.7 docs before using this snippet, and
-        // correct both occurrences (here and ~line 328) together.
+        // file. Verify against the UE 5.8 docs before using this snippet, and
+        // correct both occurrences (here and the Melee ability below) together.
         AbilityTags.AddTag(FGameplayTag::RequestGameplayTag(FName("Ability.Attack.Fireball")));
     }
 
@@ -405,6 +406,6 @@ void AMyCharacter::OnHealthChanged(const FOnAttributeChangeData& Data) {
 ---
 
 ## Sources
-- https://docs.unrealengine.com/5.7/en-US/gameplay-ability-system-for-unreal-engine/
+- https://docs.unrealengine.com/5.8/en-US/gameplay-ability-system-for-unreal-engine/
 - Clamping: *Gameplay Attributes and Attribute Sets* https://dev.epicgames.com/documentation/en-us/unreal-engine/gameplay-attributes-and-attribute-sets-for-the-gameplay-ability-system-in-unreal-engine ; `UAttributeSet` API https://dev.epicgames.com/documentation/en-us/unreal-engine/API/Plugins/GameplayAbilities/UAttributeSet ; `PreAttributeChange` https://dev.epicgames.com/documentation/en-us/unreal-engine/API/Plugins/GameplayAbilities/UAttributeSet/PreAttributeChange
 - https://github.com/tranek/GASDocumentation (community guide)

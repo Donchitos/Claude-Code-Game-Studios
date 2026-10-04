@@ -1,17 +1,26 @@
-# Unreal Engine 5.7 — Networking Module Reference
+# Unreal Engine 5.8 — Networking Module Reference
 
-**Last verified:** 2026-02-13
-**Knowledge Gap:** UE 5.7 networking improvements
+**Last verified:** 2026-08-16
+**Knowledge Gap:** Iris replication production-ready in 5.8
 
 ---
 
 ## Overview
 
-UE 5.7 networking:
+UE 5.8 networking:
 - **Client-Server Architecture**: Server-authoritative (RECOMMENDED)
 - **Replication**: Automatic state synchronization
+- **Iris**: Next-gen replication system — production-ready in 5.8; evaluate for new multiplayer projects
 - **RPCs (Remote Procedure Calls)**: Call functions across network
 - **Relevancy**: Optimize bandwidth by only replicating relevant actors
+
+---
+
+## What's New in UE 5.8
+
+- **Iris is production-ready**: improved protocol mismatch handling; recommended evaluation path for new multiplayer projects (legacy replication remains supported)
+- **Mover improvements**: better physics, animation, and networking integration; ChaosMover trajectory prediction
+- The property replication and RPC patterns below apply to the legacy path and remain valid; consult ue-replication-specialist before choosing Iris vs legacy
 
 ---
 
@@ -404,6 +413,6 @@ UE_LOG(LogNet, Warning, TEXT("Replicating Health: %d"), Health);
 ---
 
 ## Sources
-- https://docs.unrealengine.com/5.7/en-US/networking-and-multiplayer-in-unreal-engine/
-- https://docs.unrealengine.com/5.7/en-US/actor-replication-in-unreal-engine/
-- https://docs.unrealengine.com/5.7/en-US/rpcs-in-unreal-engine/
+- https://docs.unrealengine.com/5.8/en-US/networking-and-multiplayer-in-unreal-engine/
+- https://docs.unrealengine.com/5.8/en-US/actor-replication-in-unreal-engine/
+- https://docs.unrealengine.com/5.8/en-US/rpcs-in-unreal-engine/

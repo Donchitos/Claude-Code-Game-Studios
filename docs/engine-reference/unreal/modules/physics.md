@@ -1,7 +1,7 @@
-# Unreal Engine 5.7 — Physics Module Reference
+# Unreal Engine 5.8 — Physics Module Reference
 
-**Last verified:** 2026-02-13
-**Knowledge Gap:** UE 5.7 Chaos Physics improvements
+**Last verified:** 2026-08-16
+**Knowledge Gap:** UE 5.7 Chaos Physics improvements; 5.8 Mover/ChaosMover advances
 
 ---
 
@@ -11,6 +11,14 @@ UE 5 uses **Chaos Physics** (replaced PhysX in UE 4):
 - Better performance
 - Destruction support
 - Vehicle physics improvements
+
+---
+
+## What's New in UE 5.8
+
+- **Mover**: improved physics, animation, and networking integration — the modern replacement path for CharacterMovementComponent-style movement
+- **ChaosMover**: trajectory prediction support
+- **Fast Geometry Streaming (Experimental)**: now supports physics (plus decals and lights); config moved to `DefaultFastGeoStreaming.ini`
 
 ---
 
@@ -279,5 +287,5 @@ DrawDebugBox(GetWorld(), Location, Extent, FColor::Red, false, 2.0f);
 ---
 
 ## Sources
-- https://docs.unrealengine.com/5.7/en-US/physics-in-unreal-engine/
-- https://docs.unrealengine.com/5.7/en-US/chaos-physics-overview-in-unreal-engine/
+- https://docs.unrealengine.com/5.8/en-US/physics-in-unreal-engine/
+- https://docs.unrealengine.com/5.8/en-US/chaos-physics-overview-in-unreal-engine/

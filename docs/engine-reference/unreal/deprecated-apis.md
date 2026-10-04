@@ -1,6 +1,6 @@
-# Unreal Engine 5.7 — Deprecated APIs
+# Unreal Engine 5.8 — Deprecated APIs
 
-**Last verified:** 2026-02-13
+**Last verified:** 2026-08-16
 
 Quick lookup table for deprecated APIs and their replacements.
 Format: **Don't use X** → **Use Y instead**
@@ -44,6 +44,7 @@ Format: **Don't use X** → **Use Y instead**
 |------------|-------------|-------|
 | Old animation retargeting | IK Rig + IK Retargeter | UE5 retargeting system |
 | Legacy control rig | Control Rig 2.0 | Production-ready rigging |
+| Remap Curves Stack (5.7 RigMapper workflow) | Rig mapper user data ops | 5.8 — single rig mapper op supported |
 
 ---
 
@@ -70,6 +71,10 @@ Format: **Don't use X** → **Use Y instead**
 |------------|-------------|-------|
 | Old audio mixer | MetaSounds | Procedural audio system |
 | Sound Cue (for complex logic) | MetaSounds | More powerful, node-based |
+| `QueueSubtitle()` | `QueueSingleSubtitle()` / `QueueSubtitlesFromAsset()` | 5.8 — asset variant queues all lines with timing offsets applied |
+| XAudio2 (Windows backend) | WASAPI | 5.8 — WASAPI is Windows default; XAudio2 is opt-in fallback |
+| `FVertexInterface` (MetaSound node config) | `FClassInterface` | 5.8 — MetaSound node configuration |
+| Legacy input node helpers in `IDataTypeRegistry` | New node creation API | 5.8 — legacy input node creation removed |
 
 ---
 
@@ -78,6 +83,7 @@ Format: **Don't use X** → **Use Y instead**
 | Deprecated | Replacement | Notes |
 |------------|-------------|-------|
 | `DOREPLIFETIME()` (basic) | `DOREPLIFETIME_CONDITION()` | Conditional replication for optimization |
+| Legacy replication system (new projects) | Iris replication | 5.8 — Iris is production-ready; evaluate for new multiplayer projects |
 
 ---
 
@@ -150,21 +156,23 @@ UNiagaraComponent* NiagaraComp = CreateDefaultSubobject<UNiagaraComponent>(TEXT(
 
 ---
 
-## Summary: UE 5.7 Tech Stack
+## Summary: UE 5.8 Tech Stack
 
 | Feature | Use This (2026) | Avoid This (Legacy) |
 |---------|------------------|----------------------|
-| **Input** | Enhanced Input | Legacy Input Bindings |
+| **Input** | Enhanced Input (unified with CommonUI in 5.8) | Legacy Input Bindings |
 | **Materials** | Substrate | Legacy Material System |
-| **Lighting** | Lumen + Megalights | Lightmaps + Limited Lights |
+| **Lighting** | Lumen + MegaLights (production-ready 5.8); Lumen Lite for 60fps GI budget | Lightmaps + Limited Lights |
 | **Particles** | Niagara | Cascade |
-| **Audio** | MetaSounds | Sound Cue (for logic) |
+| **Audio** | MetaSounds; WASAPI backend on Windows | Sound Cue (for logic); XAudio2 |
 | **World Streaming** | World Partition | World Composition |
+| **Replication (new projects)** | Iris (production-ready 5.8) | Legacy replication for new multiplayer code |
+| **Character Customization** | Mutable (production-ready 5.8) | Custom morph/mesh-swap systems |
 | **Animation Retarget** | IK Rig + Retargeter | Old Retargeting |
 | **Geometry** | Nanite (high-poly) | Standard Static Mesh LODs |
 
 ---
 
 **Sources:**
-- https://docs.unrealengine.com/5.7/en-US/deprecated-and-removed-features/
-- https://dev.epicgames.com/documentation/en-us/unreal-engine/unreal-engine-5-7-release-notes
+- https://docs.unrealengine.com/5.8/en-US/deprecated-and-removed-features/
+- https://dev.epicgames.com/documentation/unreal-engine/unreal-engine-5-8-release-notes

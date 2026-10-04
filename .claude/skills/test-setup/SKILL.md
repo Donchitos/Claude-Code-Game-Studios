@@ -503,7 +503,7 @@ jobs:
 Note: UE CI requires a self-hosted Windows runner with Unreal Editor installed.
 The `windows` label keeps the job off any Linux self-hosted runner the
 repository also has. Set the `UE_ROOT` environment variable on the runner to the engine folder
-(e.g. `C:/Program Files/Epic Games/UE_5.7`). `[ProjectName]Editor` is the
+(e.g. `C:/Program Files/Epic Games/UE_5.8`). `[ProjectName]Editor` is the
 editor target in `Source/[ProjectName]Editor.Target.cs`.
 
 ---

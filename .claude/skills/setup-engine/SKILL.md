@@ -746,7 +746,7 @@ commands:
 >
 > ```yaml
 > engine:
->   path: "C:/Program Files/Epic Games/UE_5.7"   # omit if the editor is on PATH
+>   path: "C:/Program Files/Epic Games/UE_5.8"   # omit if the editor is on PATH
 > ```
 >
 > **This is not cosmetic.** Without it, an agent reports *"no editor on this
@@ -760,7 +760,7 @@ Substitute the engine's install folder for `<UE root>` (the value you record as
 `engine.path`) — none of the editor binaries is on `PATH`. The commands embed
 double quotes, so they take single-quoted scalars. Write the block for the
 machine the project is developed on (`uname -s`: `Linux`, `Darwin` = macOS,
-anything else = Windows). The Windows block was run on UE 5.7; the Linux and
+anything else = Windows). The Windows block was run on UE 5.7 (not re-checked on 5.8); the Linux and
 macOS lines come from Epic's documentation, recorded with their sources in
 `docs/engine-reference/unreal/current-best-practices.md` ("Command Line").
 
@@ -804,9 +804,9 @@ On Windows, `build` calls AutomationTool directly: from Git Bash, `RunUAT.bat` f
 (`'C:\Program' is not recognized`) whenever the project path has a space.
 AutomationTool.exe runs on the machine's .NET 8 runtime; `RunUAT.bat` brings
 its own SDK, so with no space in the path and no .NET 8 installed, use it.
-`-build` builds the editor target too (verified on 5.7).
+`-build` builds the editor target too (verified on 5.7; not re-checked on 5.8).
 
-**Three details are load-bearing.** The project path is absolute: UE 5.7
+**Three details are load-bearing.** The project path is absolute: UE 5.7 (not re-checked on 5.8)
 does not find a relative `<project>.uproject` and exits 1 (`Project file not
 found`) before anything runs. `$(pwd -W 2>/dev/null || pwd)` gives the `C:/…`
 form in Git Bash and the plain path elsewhere, run from the project root;
@@ -824,7 +824,7 @@ project's name is also an engine area — `Audio`, `Core`, `Input`, `Test`,
 to thousands of the engine's own tests; give the tests a distinct root (say
 `<project>Game.`) and put the same root in the filter. This form exits 255 on
 a failing test AND on a filter that matches nothing (`No automation tests
-matched`, verified on 5.7), so `/smoke-check` reads the output, not the exit
+matched`, verified on 5.7; not re-checked on 5.8), so `/smoke-check` reads the output, not the exit
 code. `smoke` carries `-stdout` for the same reason: without it a failed boot
 prints nothing. Do not swap in
 `-TestExit="Automation Test Queue Empty"`: that form exits **0** on a failing
