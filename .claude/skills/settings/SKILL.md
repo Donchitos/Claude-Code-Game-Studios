@@ -46,18 +46,26 @@ Anything else that doesn't match the four forms above → Phase 6 (usage).
 
 ## Phase 1: Load Helper
 
-All four subcommands need `yaml-helper.sh`. Source it once via Bash:
+All four subcommands need `yaml-helper.sh`. Each Bash call starts a fresh
+shell, so load it **in the same command as every helper call**, from the project
+root, in parentheses so the session's working directory does not change:
 
 ```bash
-source "${CLAUDE_PROJECT_DIR:-.}/.claude/hooks/yaml-helper.sh"
+(cd "${CLAUDE_SKILL_DIR}/../../.." && source .claude/hooks/yaml-helper.sh && <helper call>)
 ```
+
+`<helper call>` is the function each phase below names, for example
+`resolve_setting modes.review_mode` or `validate_yaml_enum project.yaml`.
+Running from the root is what makes those `project.yaml` and
+`project.local.yaml` arguments resolve when the session was started in a
+subfolder.
 
 If `.claude/hooks/yaml-helper.sh` is missing, this is not a CCGS project.
 Report the error and exit.
 
 ## Phase 1b: Reserved-setting detection
 
-Some settings are fully documented, enum-validated and settable, and **no skill
+Some settings are fully documented and settable, and **no skill
 or hook reads them** — setting one changes nothing. **This skill must say so.**
 Returning an ordinary success lets a user reasonably believe the behaviour the
 setting describes is now enforced — an accessibility tier being the case that
@@ -156,7 +164,7 @@ legitimate; storing it *silently* is the defect.
    print this line with the legend below the block:
 
    ```
-   reserved = stored and validated, but nothing reads it. Setting it changes
+   reserved = stored, but nothing reads it. Setting it changes
    no behaviour today.
    ```
 
@@ -185,7 +193,7 @@ Schema validation: ok
 Effective config:
 
 framework:
-  version: 1.1.2            (project.yaml, locked)
+  version: 1.1.3            (project.yaml, locked)
 
 modes:
   review_mode: lean         (project.yaml)
@@ -241,8 +249,8 @@ Schema validation: ERRORS
 **If `<key>` is in `RESERVED_SET`, print this BEFORE the value block** — above,
 not below. A caveat under a value reads as a footnote on a working setting:
 
-> **`<key>` is RESERVED — nothing reads it.** The value below is stored and
-> validated; it changes no behaviour today.
+> **`<key>` is RESERVED — nothing reads it.** The value below is stored; it
+> changes no behaviour today.
 
 Let `<key>` be the argument. Perform four reads:
 

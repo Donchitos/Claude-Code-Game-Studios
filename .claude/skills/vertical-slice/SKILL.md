@@ -7,10 +7,12 @@ allowed-tools: Read, Glob, Grep, Write, Edit, Bash, Agent, AskUserQuestion, Bash
 model: sonnet
 ---
 
-!`bash "${CLAUDE_SKILL_DIR}/../../hooks/yaml-helper.sh" resolve_config --keys review_mode,automation`
+!`bash "${CLAUDE_SKILL_DIR}/../../hooks/yaml-helper.sh" resolve_config --keys review_mode,automation,workflow`
 
 Resolved above — use as-is; `--review` overrides `review_mode` for this run. No
 block → defaults in `.claude/docs/config-resolution.md`.
+
+# Vertical Slice
 
 
 
@@ -251,7 +253,8 @@ Track velocity throughout the build. Log:
 - etc.
 
 This is the most honest data you will ever have about your production rate. Do not
-skip it. It feeds directly into sprint planning.
+skip it. It feeds directly into sprint planning (at `workflow: minimal`, which has
+no sprints, into the brief's build order).
 
 Read `.claude/docs/templates/vertical-slice-report.md` to get the report structure.
 If the template file is not found, use this fallback structure:
@@ -330,7 +333,10 @@ Link to `prototypes/[concept-name]-vertical-slice/REPORT.md`.
 Your vertical slice validated the full game loop. The project is ready for
 Production.
 
-Recommended next steps:
+At `workflow: minimal`: `/create-stories` (from the brief), then `/dev-story`
+on the first story — the rest of this list is the `standard`/`full` path.
+
+Recommended next steps (`standard`/`full`):
 - `/create-epics layer:foundation` — plan Foundation layer epics
 - `/create-epics layer:core` — plan Core layer epics
 - `/create-stories [epic-slug]` — break each epic into implementable stories

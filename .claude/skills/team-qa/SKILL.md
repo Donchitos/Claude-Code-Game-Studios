@@ -7,6 +7,8 @@ allowed-tools: Read, Glob, Grep, Write, Agent, AskUserQuestion, Bash(bash "*/.cl
 model: sonnet
 ---
 
+# Team QA
+
 When this skill is invoked, orchestrate the QA team through a structured testing cycle.
 
 **Decision Points:** At each phase transition, use `AskUserQuestion` to present

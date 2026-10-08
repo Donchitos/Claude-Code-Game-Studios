@@ -5,16 +5,25 @@ paths:
 
 # Agent Memory Rules
 
-**Agent memory is the one place an agent may write without asking — and the only
-one.** `.claude/agent-memory/` is gitignored, per-agent, and never ships. That
-exemption exists because the memory is the agent's own working notes about how to
-do its job, not a project artifact.
+**Agent memory is one of three writes that need no "May I write?"** The other two
+are named in `CLAUDE.md`:
 
-It does **not** extend anywhere else. The Collaboration Protocol still governs
-every file under the code root (`src/`, `Assets/` or `Source/`), `design/`,
-`docs/`, `production/` and `assets/`: ask
-first, naming the path. Writing a memory is never a substitute for asking, and a
-memory must never be used to record something the user declined to have written.
+- **Appends to `production/session-state/active.md`** — the session checkpoint
+  the hooks and the next session rely on. An append, never a rewrite of what is
+  already there.
+- **A subagent's new file at the path its orchestrating skill named.** Only a
+  new file under `production/`, `docs/` or `tests/`, only at a path the skill's
+  prompt names (never one you chose), and only inside a phase the user approved.
+
+`.claude/agent-memory/` is gitignored, per-agent, and never ships. Its exemption
+exists because the memory is the agent's own working notes about how to do its
+job, not a project artifact.
+
+None of the three extends anywhere else. The Collaboration Protocol still governs
+every other write under the code root (`src/`, `Assets/` or `Source/`),
+`design/`, `docs/`, `production/` and `assets/`: ask first, naming the path.
+Writing a memory is never a substitute for asking, and a memory must never be
+used to record something the user declined to have written.
 
 ## Never record a temporary absence as a durable fact
 

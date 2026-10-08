@@ -10,19 +10,25 @@
 #   - When a GDD requirement is reworded (same intent): update `requirement`
 #     text and add a `revised` date. The ID stays the same.
 #   - When a requirement is removed from the GDD: set status: deprecated.
-#   - When a requirement is split or replaced: set status: superseded-by with
-#     the new TR-ID(s).
+#   - When a requirement is split or replaced: set
+#     status: "superseded-by: TR-[system]-NNN" with the new TR-ID(s), quoted:
+#     unquoted, the second colon makes the file invalid YAML.
 #
 # WRITTEN BY: /architecture-review (appends new entries, never overwrites)
 # READ BY:    /create-stories (embed IDs in stories)
+#             /dev-story (current requirement text before implementing)
 #             /story-done (look up current requirement text at review time)
 #             /story-readiness (validate TR-ID exists and is active)
+#             /create-epics (trace requirements to ADR coverage)
+#             /test-helpers (map requirements to tested systems)
+#             /adopt (brownfield audit: is the registry there)
 #
-# ID FORMAT: TR-[system-slug]-[NNN]
-#   system-slug = short slug matching the GDD system name
+# ID FORMAT: TR-[system]-[NNN]
+#   [system] = a short lowercase slug for the system. It is an alias: the
+#   system's key (system_overrides and the like) is its GDD filename stem
 #   NNN = three-digit zero-padded sequence per system, starting at 001
 #
-# STATUS VALUES: active | deprecated | superseded-by: TR-[system]-NNN
+# STATUS VALUES: active | deprecated | "superseded-by: TR-[system]-NNN"
 
 version: 1
 last_updated: ""
@@ -53,4 +59,4 @@ requirements: []
 #   requirement: "Old damage formula using raw stats"
 #   created: 2026-03-10
 #   revised: ""
-#   status: superseded-by: TR-combat-001
+#   status: "superseded-by: TR-combat-001"

@@ -98,19 +98,34 @@ available on native Windows, which is CCGS's primary platform.
 ### One setting CCGS does ship
 
 `permissions.defaultMode` is set to `default` in `.claude/settings.json`, on
-purpose. It makes Claude Code ask before acting, which is what every approval
-gate in this framework depends on. Project settings outrank personal ones, so
-this holds even if your own config sets `acceptEdits` or `auto` — otherwise
-CCGS's collaboration protocol would be silently switched off for you and the
-agents would write files you never approved.
+purpose. A terminal session started **at the project root** then starts in
+Claude Code's ask-first mode, so file edits wait for your approval even if your
+own config sets `acceptEdits` or `auto`.
 
-If you genuinely want it off, override it in `.claude/settings.local.json`,
-which takes precedence. Understand what you are turning off first.
+It sets the mode a session starts in. It is a backstop, not a guarantee, and
+these routes go around it:
 
-**The VS Code extension does not read it.** The extension never reads a
-project's `.claude/settings.json` for the permission mode a conversation starts
-in. To get the same behaviour there, set `claudeCode.initialPermissionMode` to
-`default` in your VS Code user settings.
+- **Starting in a subfolder** such as `design/` or the code root (`src/`,
+  `Assets/` or `Source/`, depending on the engine). Claude Code loads
+  `.claude/settings.json` only from the folder it starts in, so that session has
+  none of this project's hooks, deny rules or permission mode. Start at the root.
+- **Resuming a session.** A resumed session keeps the mode it ended in.
+- **Switching during a session**: Shift+Tab, answering "Yes, and switch to auto
+  mode", or allowing all edits for the session.
+- **`claude --permission-mode auto`** on the command line.
+- **The VS Code extension**, which never reads a project's `.claude/settings.json`
+  for the mode a conversation starts in. Set `claudeCode.initialPermissionMode`
+  to `default` in your VS Code user settings to get the same behaviour.
+- **The Desktop app**, which remembers the mode you last picked for a folder and
+  uses that instead.
+
+In any mode that accepts edits without asking, the framework's "May I write?" is
+an instruction to the model, not a stop.
+
+To start terminal sessions in a different mode, set `permissions.defaultMode` in
+`.claude/settings.local.json`, which takes precedence. Terminal sessions accept
+any mode from it except `auto` and `bypassPermissions`. Understand what you are
+turning off first.
 
 ## Recommended IDE
 

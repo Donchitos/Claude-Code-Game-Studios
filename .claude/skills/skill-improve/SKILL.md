@@ -85,7 +85,9 @@ NOT ASSESSED — stop:
 
 ## Phase 3: Diagnose
 
-Read the full skill file at `.claude/skills/[name]/SKILL.md`.
+Read the full skill: `.claude/skills/[name]/SKILL.md` and every file in its `references/` folder,
+if it has one — the longest skills keep each phase there. Name the file each
+gap is in.
 
 For each failing or warning **static** check, identify the exact gap:
 
@@ -114,7 +116,9 @@ Show the full combined diagnosis to the user before proposing any changes.
 
 Write a targeted fix for each failure and warning. Show the proposed changes
 as clearly marked before/after blocks. Only change what is failing — do not
-rewrite sections that are passing.
+rewrite sections that are passing. In a skill with a `references/` folder, a
+fix to a phase's steps goes in that phase's `references/` file, not back into
+`SKILL.md`; the question below then names each file the fix changes.
 
 Ask: "May I write this improved version to `.claude/skills/[name]/SKILL.md`?"
 
@@ -124,10 +128,11 @@ If the user says no, stop here.
 
 ## Phase 5: Write and Retest
 
-Record the current content of the skill file — the exact text, kept in this
-conversation — so Phase 6 can restore it.
+Record the current content of each file the fix changes — the exact text, kept
+in this conversation — so Phase 6 can restore it.
 
-Write the improved skill to `.claude/skills/[name]/SKILL.md`.
+Write the improved skill to `.claude/skills/[name]/SKILL.md`, and to each
+`references/` file the fix changes.
 
 Re-run `/skill-test static [name]` and record the new static score — measured by that run, never stated from the edit.
 If a category was assigned, also re-run `/skill-test category [name]` and record the new category score.
@@ -159,7 +164,8 @@ Show a summary of what was fixed in each dimension.
 Report: "Combined score did not improve."
 Show what changed and why it may not have helped.
 Ask: "May I restore `.claude/skills/[name]/SKILL.md` to the content it had before this run?"
-If yes: write the content recorded in Phase 5 back to the file with Write; if no, leave the file as written. Never
+— naming every file Phase 5 wrote.
+If yes: write the content recorded in Phase 5 back to each file with Write; if no, leave the files as written. Never
 `git checkout` it — that returns the last *committed* version and discards any edits
 made before this run that were not yet committed.
 

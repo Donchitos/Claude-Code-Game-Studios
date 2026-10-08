@@ -7,6 +7,8 @@ allowed-tools: Read, Glob, Grep
 model: sonnet
 ---
 
+# Estimate
+
 ## Phase 1: Understand the Task
 
 Read the task description from the argument. If the description is too vague to estimate meaningfully, ask for clarification before proceeding.
@@ -125,7 +127,7 @@ This skill is read-only — no files are written. Verdict: **COMPLETE** — esti
 
 - If confidence is Low: recommend a time-boxed spike (`/prototype`) before committing.
 - If the task is > 10 days: recommend breaking it into smaller stories via `/create-stories`.
-- To schedule the task: run `/sprint-plan update` to add it to the next sprint.
+- To schedule the task: run `/sprint-plan update` to add it to the next sprint (if the project has no sprint plan, as on the default minimal workflow, add it to the brief's build order instead).
 
 ### Guidelines
 

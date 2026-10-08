@@ -7,7 +7,7 @@ allowed-tools: Read, Glob, Grep, Write, Bash(bash "*/.claude/skills/soak-test/..
 model: sonnet
 ---
 
-!`bash "${CLAUDE_SKILL_DIR}/../../hooks/yaml-helper.sh" resolve_config --keys automation`
+!`bash "${CLAUDE_SKILL_DIR}/../../hooks/yaml-helper.sh" resolve_config --keys automation,workflow`
 
 **Automation mode**: Resolve `modes.automation` (`project.local.yaml` →
 `project.yaml` → default `collaborative`). Every `AskUserQuestion` call and
@@ -322,7 +322,7 @@ After writing:
 2. Record each checkpoint as you play
 3. Complete the Post-Session Analysis section when done
 4. File bugs from 'Issues Found' to `production/qa/bugs/`
-5. Run `/bug-triage sprint` after the session to integrate any S1/S2 issues
+5. Run `/bug-triage sprint` after the session to integrate any S1/S2 issues (at `workflow: minimal`, which has no sprints: `/bug-triage full`)
 
 If the verdict is FAIL, run `/smoke-check` again after fixing the issues."
 

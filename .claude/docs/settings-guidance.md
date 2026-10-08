@@ -6,7 +6,7 @@ other doc does:
 1. **Which value should a skill recommend** for a given project or user?
 2. **When should a skill proactively suggest changing** a setting already set?
 
-## Boundary with its siblings — do not duplicate their content here
+## Boundary with its siblings
 
 | Doc | Answers | Nature |
 |---|---|---|
@@ -15,8 +15,8 @@ other doc does:
 | **`settings-guidance.md`** (this file) | Which value to *recommend*, and *when* | Prescriptive |
 
 Skills reference this doc **on demand**, only at a "recommend a setting" moment.
-It is deliberately **not** a CLAUDE.md import — advisory content must not ride in
-per-turn context (the same reason `context-management.md` was demoted).
+It is **not** a CLAUDE.md import — advisory content must not ride in per-turn
+context.
 
 ---
 
@@ -26,8 +26,7 @@ Almost every "what settings should I use?" question reduces to one choice:
 `modes.rigor` (`minimal` | `standard` | `full`, default `minimal`). It fronts six
 sub-knobs — `modes.workflow`, `docs.density`, `qa.level`, `modes.story_granularity`,
 `modes.review_mode`, `team.size`. Recommend **rigor**, not the six; let the
-expansion do the rest. Full expansion table lives in `effects-map.md § modes.rigor`
-— do not restate it here.
+expansion do the rest. The full expansion table is in `effects-map.md § modes.rigor`.
 
 `modes.automation` (`collaborative` | `guided` | `autonomous`) is a **separate
 axis** — how often skills stop to confirm — and is *not* fronted by rigor. Pick it
@@ -73,8 +72,8 @@ rigor; want that?"). If the user has **no concept yet** (exploring), do not seed
 "No concept yet" means **no signal**, not a particular onboarding path. A rough
 one-line hint is still a description: if it trips the signals above, seed from the
 signal. Only fall back to `minimal`-for-exploring when the user has given you
-nothing to map. (`/start` Phase 3d states the same rule for its Path A/B branch —
-the two must agree, since both drive the identical recommendation.)
+nothing to map. (`/start` Phase 3d states the same rule for its Path A/B branch;
+both drive the same recommendation.)
 
 ---
 
@@ -106,7 +105,7 @@ state is needed — but never emit the same suggestion twice in one session.
 | `/gate-check` | on PASS into a new stage | § 4 (raise trigger) |
 | `/settings` | view output — further reading | § 2 (choosing a value) |
 
-Each skill carries a **one-line pointer** to this doc, not a copy of its tables.
+These skills each carry a **one-line pointer** to this doc.
 
 ---
 

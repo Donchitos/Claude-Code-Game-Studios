@@ -32,13 +32,11 @@ The checkpoint holds: current task, next step, what it is blocked on, files in
 progress, open questions. Write it so a cold reader can resume without opening
 anything else.
 
-> **Why the split.** One append-only file doing both jobs grows without bound —
-> past 700 lines every consumer invents its own slice: a status line parsing a
-> STATUS block nothing writes, `pre-compact` injecting `head -100` (12.7 KB, at
-> the moment context is scarcest), `session-start` previewing `tail -20` — the
-> opposite end. None was wrong, because nothing defined where
-> the recoverable state lived. Now every consumer reads the named region, and
-> the cost is fixed no matter how long the narrative grows.
+> **Why the split.** One append-only file doing both jobs grows without bound,
+> and every consumer then reads a different slice of it: the top, the bottom, or
+> a block nothing writes. None of them is wrong, because nothing defines where
+> the recoverable state lives. With a named region, every consumer reads the
+> same part, and the cost is fixed no matter how long the narrative grows.
 
 **Rotation.** When the narrative passes ~200 lines, move it into
 `production/session-logs/`:
@@ -125,7 +123,7 @@ Current helpers:
 - **`review-scope.sh`** — which GDDs changed since the last cross-review, plus
   their declared dependencies. Replaces reasoning through git history.
 
-Two rules when adding one:
+Two rules for helpers:
 
 1. **Grant it the way `.claude/docs/config-resolution.md` shows.** `allowed-tools`
    pre-approves commands; it does not restrict them — a skill without the grant

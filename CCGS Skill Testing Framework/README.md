@@ -14,7 +14,7 @@ you write. Driven by `/skill-test` and `/skill-improve`.
 >
 > | Mode | Without this folder |
 > |------|---------------------|
-> | `/skill-test static` | **Works** — the 7 structural checks read `SKILL.md` only |
+> | `/skill-test static` | **Works** — the 7 structural checks read only the skill's own files |
 > | `/skill-test audit` | **Degrades** — reports that no catalog exists |
 > | `/skill-test spec` | **Breaks** — the behavioral specs live here |
 > | `/skill-test category` | **Breaks** — reads `quality-rubric.md` from here |

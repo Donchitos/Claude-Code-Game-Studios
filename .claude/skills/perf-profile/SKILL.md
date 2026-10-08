@@ -7,10 +7,12 @@ allowed-tools: Read, Glob, Grep, Write, Bash, Bash(bash "*/.claude/skills/perf-p
 model: sonnet
 ---
 
-!`bash "${CLAUDE_SKILL_DIR}/../../hooks/yaml-helper.sh" resolve_config --keys performance.enforce,automation`
+!`bash "${CLAUDE_SKILL_DIR}/../../hooks/yaml-helper.sh" resolve_config --keys performance.enforce,automation,workflow`
 
 Resolved above — use as-is. No block → defaults in
 `.claude/docs/config-resolution.md`.
+
+# Performance Profile
 
 Every `AskUserQuestion` call follows `.claude/docs/automation-modes.md`
 (collaborative asks always · guided major-only · autonomous logs and proceeds;
@@ -34,11 +36,10 @@ not a filled-in report.** Check first, and stop if the check fails.
 
 **A verdict of `NOT ASSESSED` is a success.** It is the correct, useful answer to
 "what does the data say?" when there is no data. The failure mode this prevents is
-specific and has been observed in practice: report templates whose verdict
-enum had no "could not run" state produced **false clean passes** — an asset audit
-returning COMPLIANT on a project with no assets and no standards, and a
-performance profile reporting ">99% headroom against a 16.67ms budget" with zero
-profiler data and no budget ever set.
+specific: a report whose verdict enum has no "could not run" state produces
+**false clean passes** — an asset audit returning COMPLIANT on a project with no
+assets and no standards, or a performance profile reporting ">99% headroom against
+a 16.67ms budget" with zero profiler data and no budget ever set.
 
 **Absence of evidence is never evidence of absence.** A scan that finds no
 matches because there are no files to scan has not verified anything. Say which of
@@ -81,12 +82,16 @@ Read the argument:
 record of what it agreed to, and design docs are the fallback, not the source:
 
 ```bash
-source "${CLAUDE_PROJECT_DIR:-.}/.claude/hooks/yaml-helper.sh" 2>/dev/null
-get_effective_yaml_key performance.target_framerate
-get_effective_yaml_key performance.frame_budget_ms
-get_effective_yaml_key performance.draw_call_limit
-get_effective_yaml_key performance.memory_ceiling_mb
+(cd "${CLAUDE_SKILL_DIR}/../../.." && source .claude/hooks/yaml-helper.sh 2>/dev/null &&
+  echo "performance.target_framerate: $(get_effective_yaml_key performance.target_framerate)" &&
+  echo "performance.frame_budget_ms: $(get_effective_yaml_key performance.frame_budget_ms)" &&
+  echo "performance.draw_call_limit: $(get_effective_yaml_key performance.draw_call_limit)" &&
+  echo "performance.memory_ceiling_mb: $(get_effective_yaml_key performance.memory_ceiling_mb)")
 ```
+
+Run it as one command: it loads the helper from the project root, so it works
+when the session was started in a subfolder. An empty value after a key means
+that budget is not set.
 
 > Written as four literal keys rather than a loop over leaf names, deliberately.
 > The dead-settings audit matches the **full dotted key**, so a loop building
@@ -206,7 +211,7 @@ Activate this phase only if any hotspot has Fix Effort rated M or L.
 
 Present significant-effort items and ask the user to choose for each:
 
-- **A) Implement the optimization** (proceed with fix now or schedule it)
+- **A) Implement the optimization** (proceed with fix now or schedule it — at `workflow: minimal`, which has no sprints, add it to the brief's build order)
 - **B) Reduce feature scope** (run `/scope-check [feature]` to analyze trade-offs)
 - **C) Accept the performance hit and defer to Polish phase** (log as known issue)
 - **D) Escalate to technical-director for an architectural decision** (run `/architecture-decision`)
@@ -228,7 +233,7 @@ other outcome is the `NOT ASSESSED — NO DATA` path above.
 
 - If bottlenecks require architectural change: run `/architecture-decision`.
 - If scope reduction is needed: run `/scope-check [feature]`.
-- To schedule optimizations: run `/sprint-plan update`.
+- To schedule optimizations: run `/sprint-plan update` (at `workflow: minimal`, which has no sprints, add them to the brief's build order instead).
 
 ### Rules
 - Never optimize without measuring first — gut feelings about performance are unreliable

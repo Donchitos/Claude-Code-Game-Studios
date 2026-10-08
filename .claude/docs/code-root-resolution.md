@@ -1,9 +1,8 @@
 # Code Root Resolution
 
 Shared procedure for any skill that reads, scans, counts or writes game source
-files. Referenced from the point of use in each such skill. Those skills keep
-the one load-bearing imperative inline — **an unresolved code root means the
-check did not run** — and cite this file for the resolution order.
+files. **An unresolved code root means the check did not run.** This file gives
+the resolution order.
 
 `.claude/docs/directory-structure.md` is the authority for which directory holds
 code. This file is the procedure for applying it.

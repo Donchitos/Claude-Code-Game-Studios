@@ -7,6 +7,8 @@ allowed-tools: Read, Glob, Grep, Write, Edit, Bash, Agent, AskUserQuestion, Task
 model: sonnet
 ---
 
+# Team Level
+
 If no argument is provided, output usage guidance and exit without spawning any agents or reading any design files:
 > Usage: `/team-level [level name or area to design] [--review full|lean|solo]` — specify the level or area to design (e.g., `forest temple`, `tutorial village`, `final boss arena`). Do not use `AskUserQuestion` here; output the guidance directly.
 

@@ -62,7 +62,9 @@ missing.
 
 ## Phase 2A: Static Mode — Structural Linter
 
-For each skill being tested, read its `SKILL.md` fully and run all 7 checks:
+For each skill being tested, read its `SKILL.md` and every file in its `references/` folder
+fully, and run all 7 checks on them as one skill — the longest skills keep each
+phase in `references/`. The frontmatter checks (1, 6 and 7) read `SKILL.md`.
 
 ### Check 1 — Required Frontmatter Fields
 The file must contain all of these in the YAML frontmatter block:
@@ -218,7 +220,8 @@ If either is missing:
 
 ### Step 2 — Read Both Files
 
-Read the skill or agent file and the test spec file completely.
+Read the skill — its `SKILL.md` and every file in its `references/` folder — or
+the agent file, and the test spec file, completely.
 
 ### Step 3 — Evaluate Assertions
 
@@ -257,7 +260,8 @@ Code loads into the agent at launch:
   place of the four skill checks below.
 
 **For a skill**, check each of the spec's **Static Assertions** against the
-`SKILL.md` frontmatter and body the same way; a literal value is an exact
+skill's frontmatter and body (`SKILL.md` and its `references/` files) the same
+way; a literal value is an exact
 comparison. `/skill-test static` runs only its 7 fixed checks, so a spec's own
 static lines — a verdict keyword, a phase, "May I write" before a named file —
 are evaluated here or nowhere.
@@ -294,7 +298,7 @@ Mark each assertion:
   to replace.
 
 For a skill's **Protocol Compliance** section (always present), evaluate each line
-of the spec's own list against the `SKILL.md` exactly as you evaluate a case
+of the spec's own list against the skill's files exactly as you evaluate a case
 assertion — PASS, PARTIAL, FAIL or NOT ASSESSED. Specs put rules there that no
 case repeats ("covered by the protocol compliance assertions above"), so a
 list that is not evaluated is a set of rules nobody checks. These four checks are
@@ -390,7 +394,8 @@ name the missing section, and never borrow another category's metrics.
 
 ### Step 3 — Read Skill
 
-Read the skill's `SKILL.md` or the agent's `.claude/agents/[name].md` fully,
+Read the skill's `SKILL.md` and every file in its `references/` folder, or the
+agent's `.claude/agents/[name].md`, fully,
 and the project context Phase 2B Step 3 describes — a metric met by a rule in
 `CLAUDE.md` or a file it imports is met, citing that file. Its rule for
 redirect and escalation cases decides the domain, deferral and escalation

@@ -15,6 +15,8 @@ every file write follows `.claude/docs/automation-modes.md`
 (collaborative asks always · guided major-only · autonomous logs and proceeds;
 `automation_always_ask` categories always prompt).
 
+# Patch Notes
+
 ## Provenance check — before reading any history
 
 **Confirm the history you are about to read belongs to THIS game.** Run this

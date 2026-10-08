@@ -69,8 +69,7 @@ falling back to the defaults above when it is absent.
 > **Exception — `/smoke-check`.** The ADVISORY default for **Config/Data** above
 > applies to *per-story evidence* gates. `/smoke-check` is a build-health gate,
 > not a per-story evidence gate, so its own unset default for
-> `testing.strict.config` is **BLOCKING**. This divergence is intentional and is
-> documented at both sites; do not reconcile one to the other.
+> `testing.strict.config` is **BLOCKING**. The two defaults differ on purpose.
 
 ## Automated Test Rules
 

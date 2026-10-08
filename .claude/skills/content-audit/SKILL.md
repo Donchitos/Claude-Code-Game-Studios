@@ -17,6 +17,8 @@ every file write follows `.claude/docs/automation-modes.md`
 
 Resolved above — use as-is. No block → defaults in `.claude/docs/config-resolution.md`.
 
+# Content Audit
+
 > This skill declares tier-dependent behaviour ("audit only specs in the required
 > sections"), which is unreachable unless the tier is actually resolved — without
 > it the skill applies whatever tier it assumed. Resolve `modes.workflow` before
@@ -59,11 +61,10 @@ not a filled-in report.** Check first, and stop if the check fails.
 
 **A verdict of `NOT ASSESSED` is a success.** It is the correct, useful answer to
 "what does the data say?" when there is no data. The failure mode this prevents is
-specific and has been observed in practice: report templates whose verdict
-enum had no "could not run" state produced **false clean passes** — an asset audit
-returning COMPLIANT on a project with no assets and no standards, and a
-performance profile reporting ">99% headroom against a 16.67ms budget" with zero
-profiler data and no budget ever set.
+specific: a report whose verdict enum has no "could not run" state produces
+**false clean passes** — an asset audit returning COMPLIANT on a project with no
+assets and no standards, or a performance profile reporting ">99% headroom against
+a 16.67ms budget" with zero profiler data and no budget ever set.
 
 **Absence of evidence is never evidence of absence.** A scan that finds no
 matches because there are no files to scan has not verified anything. Say which of

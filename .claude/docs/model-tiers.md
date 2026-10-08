@@ -4,14 +4,13 @@
 >
 > A skill's `model:` overrides the session model for the rest of the turn the
 > skill runs in, and your next prompt returns to the session model. Whether the
-> override happens depends on how the skill starts (measured on Claude Code
-> 2.1.282):
+> override happens depends on how the skill starts:
 >
 > | How the skill starts | Is `model:` used? |
 > |---|---|
 > | You type `/skill-name` in Manual (`default`) mode | Yes |
-> | You type `/skill-name` in auto mode | `sonnet` and `opus`: yes. `haiku`: no — auto mode does not support Haiku, so the session keeps its model (documented) |
-> | Claude starts the skill itself, through the Skill tool | No — the session model runs it (measured; the docs do not say) |
+> | You type `/skill-name` in auto mode | `sonnet` and `opus`: yes. `haiku`: no — auto mode does not support Haiku, so the session keeps its model |
+> | Claude starts the skill itself, through the Skill tool | No — the session model runs it |
 >
 > Two things follow:
 >
@@ -59,10 +58,9 @@ Skills with `model: opus` (3): `/architecture-review`, `/gate-check`, `/review-a
 
 All other skills are Sonnet. When creating a new skill, assign Haiku if it only
 reads and formats; assign Opus if it must synthesize 5+ documents with
-high-stakes output; otherwise write `model: sonnet` explicitly. Every skill in
-this repo declares a tier, and the lists above are kept in step with what the
-`SKILL.md` files declare. That is a check on two descriptions agreeing; it
-proves nothing about which model actually runs.
+high-stakes output; otherwise write `model: sonnet` explicitly. Every skill
+declares a tier. Whether the tier takes effect depends on how the skill starts
+(see the table at the top of this file).
 
 **Agent model tiers.** 30 agents use `model: inherit` and run on the session's
 model. 19 are pinned:
@@ -87,7 +85,7 @@ model. 19 are pinned:
   writing player-facing text are Sonnet work, as they are for `/patch-notes`.
 
 Every agent not named above is `inherit`. The `model:` line in the agent's own
-file is what runs, and this list is kept in step with those files.
+file is what runs.
 
 A pin gets that model's context window, whatever the session runs. On the
 Anthropic API `sonnet` currently resolves to Sonnet 5, which always has a 1M

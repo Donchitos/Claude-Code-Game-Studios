@@ -188,10 +188,13 @@ Hooks fail gracefully if optional tools are missing — you just lose validation
    cd my-game
    ```
 
-2. **Open Claude Code** and start a session:
+2. **Open Claude Code in the project's root folder** (the one holding
+   `CLAUDE.md` and `project.yaml`) and start a session:
    ```bash
    claude
    ```
+   Starting it in a subfolder such as `src/` skips the project's hooks, deny
+   rules and ask-first permission mode.
 
 3. **Run `/start`** — the system asks where you are (no idea, vague concept,
    clear design, existing work) and guides you to the right workflow. No assumptions.
@@ -218,11 +221,10 @@ and `team.size`), so `/start` asks it once instead of six times:
 - **`standard`** — 5 required GDD sections, balanced doc depth, standard QA evidence, lean review.
 - **`full`** — all 8 GDD sections, thorough docs, full QA evidence on every story type, full director review.
 
-`minimal` is the default because it was measured against the alternatives: the
-heavier tier cost several times more to reach working code, was ranked last on
-play quality, and returned nothing measurable when a fresh developer inherited
-the project. Raise it in one `/settings` call when your project grows — `/help`
-and `/gate-check` will suggest it when they see the signs.
+`minimal` is the default because the heavier tier costs more to reach working
+code without producing a better result, and gives nothing back when someone new
+picks the project up. Raise it in one `/settings` call when your project grows
+— `/help` and `/gate-check` will suggest it when they see the signs.
 
 Two escape hatches keep one setting from being a blunt instrument.
 **`system_overrides`** holds a single system to a higher standard than the rest
@@ -324,6 +326,12 @@ This is **not** an auto-pilot system. Every agent follows a strict collaboration
 
 You stay in control. The agents provide structure and expertise, not autonomy.
 
+That is how a terminal session started at the project root behaves out of the
+box. The `guided` and `autonomous` automation settings, and Claude Code's own
+auto mode, trade some of these prompts for speed; see
+[setup-requirements.md](.claude/docs/setup-requirements.md) for the routes into
+auto mode.
+
 ### Automated Safety
 
 **Hooks** run automatically on every session:
@@ -345,7 +353,7 @@ You stay in control. The agents provide structure and expertise, not autonomy.
 
 > **Note**: `validate-commit.sh`, `validate-assets.sh`, and `validate-skill-change.sh` fire on every Bash, PowerShell or Write tool call and exit immediately (exit 0) when the command or file path is not relevant. This is normal hook behavior — not a performance concern.
 
-**Permission rules** in `settings.json` auto-allow safe operations (git status, test runs) and block dangerous ones (force push, `rm -rf`, reading `.env` files) in both the Bash and PowerShell tools. The `git` rules match anywhere after `git`, so a git command whose text only mentions `push` followed later by ` +` or ` -f`, `clean` followed by ` -f`, or `reset` followed by `--hard` — a commit message such as `git commit -m "push + pull"` included — is denied too: reword the message.
+**Permission rules** in `settings.json` auto-allow test runs and block dangerous operations (force push, `rm -rf`, reading `.env` files) in both the Bash and PowerShell tools. Read-only commands such as `git status`, `git log` and `ls` need no rule: Claude Code runs them without asking. The `git` rules match anywhere after `git`, so a git command whose text only mentions `push` followed later by ` +` or ` -f`, `clean` followed by ` -f`, or `reset` followed by `--hard` — a commit message such as `git commit -m "push + pull"` included — is denied too: reword the message.
 
 ### Path-Scoped Rules
 

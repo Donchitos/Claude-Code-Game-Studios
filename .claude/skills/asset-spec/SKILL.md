@@ -9,6 +9,8 @@ model: sonnet
 
 !`bash "${CLAUDE_SKILL_DIR}/../../hooks/yaml-helper.sh" resolve_config --keys review_mode,automation`
 
+# Asset Spec
+
 
 
 If no argument is provided, check whether `design/assets/entity-inventory.md` exists:

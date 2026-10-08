@@ -75,8 +75,8 @@ A tier is the directory a spec lives in. The rubric category is the agent's
 
 1. Read `catalog.yaml` to get the `spec:` path and `category:` — from the
    `skills:` entry for a skill, the `agents:` entry for an agent
-2. Read the skill at `.claude/skills/[name]/SKILL.md`, or the agent at
-   `.claude/agents/[name].md`
+2. Read the skill at `.claude/skills/[name]/SKILL.md` and every file in its
+   `references/` folder, or the agent at `.claude/agents/[name].md`
 3. Read the project `CLAUDE.md` and the files it imports with `@`: every
    subagent receives them, so a rule stated there (for example a redirect in
    `coordination-rules.md`) counts as the skill's or agent's own

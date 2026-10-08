@@ -51,16 +51,12 @@ MODIFIED_FILES=$(git diff --name-only 2>/dev/null)
 # It is only valid to delete active.md manually or when explicitly superseded.
 # APPEND ONLY WHEN THE CONTENT CHANGED.
 #
-# The Stop hook fires once per RESPONSE, not once per session. Both blocks below
-# appended unconditionally, so a long session wrote the whole of active.md on
-# every turn. Measured on this repository before this guard:
-#
-#   3,187 Stop firings, 665 archived copies, session-log.md at 17.5 MB
-#
-# and session-logs/ is gitignored, so nothing ever surfaced it. The growth
-# compounds: the larger active.md gets, the more each firing appends -- and
-# rotate-session-state.sh caps active.md precisely because it grows, while the
-# log accumulating full copies of it had no cap at all.
+# The Stop hook fires once per RESPONSE, not once per session. Appending
+# unconditionally in the two blocks below would write the whole of active.md on
+# every turn of a long session, and session-logs/ is gitignored, so nothing
+# would surface the growth. It compounds: the larger active.md gets, the more
+# each firing appends -- and rotate-session-state.sh caps active.md precisely
+# because it grows, so a log accumulating full copies of it needs a guard too.
 #
 # Content hash, not mtime: an editor that rewrites a file unchanged would
 # otherwise re-archive it. Same reasoning and same tool as review-receipts.sh --

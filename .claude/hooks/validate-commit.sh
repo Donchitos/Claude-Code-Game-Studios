@@ -38,7 +38,7 @@ INPUT=$(cat)
 
 # Most Bash and PowerShell calls do not mention git at all. Leave before any
 # parsing: this hook runs on every one of them, and the parse is most of its
-# cost (~350 ms a call measured; the early exit is the shell start-up alone).
+# cost (the early exit is the shell start-up alone).
 # Tested only after the "tool_input" key: matching the whole payload also
 # tests cwd and transcript_path, so a project path containing "GitHub" or
 # "digital" never took this exit and paid the full parse on every call.
@@ -253,6 +253,15 @@ fi
 # `cd assets && git commit -m x data/item.json` named nothing here and the file
 # went unchecked. There, and whenever a pathspec names no tracked file, every
 # modified tracked file is checked (`:/`), and the index with it.
+#
+# A `git add` (or `git stage`) earlier in the same command stages its files
+# after this hook has read the index, so `git add -A && git commit` committed a
+# new broken data file unchecked. Each add before a commit is read too, and
+# what it will stage -- modified tracked files, and untracked ones unless it is
+# -u (ignored ones only with -f) -- is checked as working copies. A dry run
+# (-n) stages nothing, an add after the commit is for a later one, a
+# path-limited commit still records only its own paths, and after a cd or -C
+# an add's pathspecs are read as the whole tree, as above.
 if [ -n "$_VC_PY" ]; then
     if command -v jq >/dev/null 2>&1; then
         _VC_CWD=$(echo "$INPUT" | jq -r '.cwd // empty')
@@ -280,9 +289,37 @@ def words(line):
 def git(*args):
     return subprocess.run(["git", "-c", "core.quotePath=false"] + list(args),
                           stdout=subprocess.PIPE, stderr=subprocess.DEVNULL)
+def add(w, k):  # git add/stage from w[k] -> pathspecs, takes untracked, -f, -n, next k
+    specs, rest, alln, upd, force, dry = [], False, False, False, False, False
+    while k < len(w):
+        a = w[k]
+        if a.isdigit() and k + 1 < len(w) and w[k + 1][:1] in "<>":
+            k += 1
+            continue
+        if REDIR.match(a):
+            k += 2
+            continue
+        if a and set(a) <= OPS:
+            break
+        if rest or not a.startswith("-") or a == "-":
+            specs.append(a)
+        elif a == "--":
+            rest = True
+        elif a.startswith("--"):
+            alln = alln or a in ("--all", "--no-ignore-removal")
+            upd, force, dry = upd or a == "--update", force or a == "--force", dry or a == "--dry-run"
+            if a.startswith("--pathspec-from-file"):
+                specs.append(":/")  # paths only git reads
+        else:  # no short option of git add takes a value: -Av is -A -v
+            alln, upd, force, dry = alln or "A" in a, upd or "u" in a, force or "f" in a, dry or "n" in a
+        k += 1
+    if not specs and (alln or upd):
+        specs = [":/"]  # -A and -u with no pathspec take the whole tree
+    return specs, alln or not upd, force, dry, k
 text = sys.stdin.buffer.read().decode("utf-8", "replace")
 away = sys.argv[1] == "1" or re.search(r"(^|[^\w.-])(cd|pushd|popd)(\s|[;&|)]|$)", text, re.M) is not None
 specs, commits, only = [], 0, True
+adds, pending = [], []  # what each git add stages: before a commit, not yet
 for line in text.splitlines():
     w, i = words(line), 0
     while i < len(w):
@@ -293,10 +330,16 @@ for line in text.splitlines():
         while j < len(w) and w[j].startswith("-"):
             away = away or w[j] in ("-C", "--git-dir", "--work-tree") or w[j].startswith(("--git-dir=", "--work-tree="))
             j += 2 if w[j] in GIT_ARG else 1
+        if j < len(w) and w[j] in ("add", "stage"):
+            s, new, force, dry, i = add(w, j + 1)
+            if not dry:
+                pending.append((s, new, force))
+            continue
         if j >= len(w) or w[j] != "commit":
             i = j
             continue
         commits += 1
+        adds, pending = adds + pending, []
         k, rest, mine, index = j + 1, False, [], False
         while k < len(w):
             a = w[k]
@@ -344,7 +387,13 @@ out = git("diff", "--name-only", "HEAD", "--", *specs) if only else None
 if out is None or out.returncode != 0:  # not path-limited, or no HEAD yet
     only = False
     out = git("diff", "--name-only", "--", *specs) if specs else None
-sys.stdout.buffer.write((b"CCGS-ONLY\n" if only else b"CCGS-INDEX\n") + (out.stdout if out else b""))
+more = b""
+for s, new, force in ([] if only else adds):
+    s = [":/"] if away else s
+    more += git("diff", "--name-only", "--", *s).stdout
+    if new:
+        more += git("ls-files", "--others", "--full-name", *([] if force else ["--exclude-standard"]), "--", *s).stdout
+sys.stdout.buffer.write((b"CCGS-ONLY\n" if only else b"CCGS-INDEX\n") + (out.stdout if out else b"") + more)
 ' "$_VC_AWAY" 2>/dev/null)
     case "$_VC_TOK" in CCGS-ONLY*) INDEX_FILES="" ;; esac
     WT_FILES=$(printf '%s\n%s' "$WT_FILES" "$(printf '%s\n' "$_VC_TOK" | tail -n +2)")
@@ -355,8 +404,24 @@ else
     for _p in $(printf '%s' "$_AFTER" | LC_ALL=C grep -oE '(assets|Assets|Content)/[^[:space:]"'"'"';|&)]*'); do
         WT_FILES=$(printf '%s\n%s' "$WT_FILES" "$($_GIT diff --name-only -- "$_p" 2>/dev/null)")
     done
+    # No tokeniser to read a `git add`'s paths: take every change and new file.
+    if git_segment add "$COMMAND" >/dev/null || git_segment stage "$COMMAND" >/dev/null; then
+        WT_FILES=$(printf '%s\n%s\n%s' "$WT_FILES" "$($_GIT diff --name-only 2>/dev/null)" \
+          "$($_GIT ls-files --others --exclude-standard --full-name 2>/dev/null)")
+    fi
 fi
 WT_FILES=$(printf '%s\n' "$WT_FILES" | grep -v '^$' | sort -u)
+# A project in a subfolder of a larger repository (game/ in a monorepo): git
+# names every path above from the repository's top level, and every check below
+# matches from the PROJECT root (^assets/, ^design/gdd/, the code root) and
+# reads files relative to it. Unconverted, nothing matched and the commit went
+# through unchecked. Keep this project's paths with the prefix dropped; files
+# outside the project are not ours to check. "" at the top level.
+_VC_PREFIX=$(git rev-parse --show-prefix 2>/dev/null)
+if [ -n "$_VC_PREFIX" ]; then
+    INDEX_FILES=$(printf '%s\n' "$INDEX_FILES" | LC_ALL=C awk -v p="$_VC_PREFIX" 'index($0, p) == 1 { print substr($0, length(p) + 1) }')
+    WT_FILES=$(printf '%s\n' "$WT_FILES" | LC_ALL=C awk -v p="$_VC_PREFIX" 'index($0, p) == 1 { print substr($0, length(p) + 1) }')
+fi
 STAGED=$(printf '%s\n%s\n' "$INDEX_FILES" "$WT_FILES" | grep -v '^$' | sort -u)
 if [ -z "$STAGED" ]; then
     exit 0
@@ -390,14 +455,11 @@ trap '[ -n "$TMP_DESIGN" ] && rm -f "$TMP_DESIGN"' EXIT
 # it appends to $WARNINGS and the hook still exits 0. This block is the only one
 # that can exit 2, and exit 2 is the entire reason the hook is registered.
 #
-# Running it THIRD, after the design-section scan, and validating one file
-# per `python -m json.tool` invocation -- one interpreter spawn each, ~110ms on
-# Windows -- gets the hook killed by its 15s timeout on a large commit before
-# it reaches the corrupt file, so whether a bad file is caught depends on where
-# its NAME SORTED. Measured with 201 staged files and one corrupt:
-#
-#   corrupt sorts FIRST -> 730ms,   rc=2,   BLOCKED emitted
-#   corrupt sorts LAST  -> 15217ms, rc=124, nothing emitted, commit not blocked
+# Running it after the design-section scan, and validating one file per
+# `python -m json.tool` invocation -- one interpreter spawn each -- would get the
+# hook killed by its 15s timeout on a large commit before it reaches a corrupt
+# file, so whether a bad file is caught would depend on where its NAME SORTS: a
+# corrupt file sorting first is blocked, one sorting last lets the commit through.
 #
 # Two independent fixes, because either alone is a mitigation rather than a
 # guarantee:
@@ -432,17 +494,19 @@ if [ -n "$DATA_FILES" ]; then
         JSON_OUT=$(LC_ALL=C awk -v OFS='\t' 'NR == FNR { if ($0 != "") wt[$0] = 1; next }
                      $0 != "" { print (($0 in wt) ? "W" : "I"), $0 }' \
                      <(printf '%s\n' "$WT_FILES") <(printf '%s\n' "$DATA_FILES") \
-                   | "$PYTHON_CMD" -c '
+                   | CCGS_VC_PREFIX="$_VC_PREFIX" "$PYTHON_CMD" -c '
 import json, sys, os, subprocess
-bad = []
+bad, lfs_unread = [], []
 # Bytes in, decoded as UTF-8: a Windows console code page would mangle a
 # non-ASCII path before it reached os.path or git.
 items = [l.split("\t", 1) for l in sys.stdin.buffer.read().decode("utf-8").splitlines() if "\t" in l]
 staged = [p for mode, p in items if mode == "I"]
+# Paths are project-relative; the index names them from the repository top.
+prefix = os.environ.get("CCGS_VC_PREFIX", "")
 blobs = {}
 if staged:
     out = subprocess.run(["git", "cat-file", "--batch"], stdout=subprocess.PIPE,
-                         input="".join(":" + p + "\n" for p in staged).encode("utf-8")).stdout
+                         input="".join(":" + prefix + p + "\n" for p in staged).encode("utf-8")).stdout
     pos = 0
     for p in staged:
         end = out.index(b"\n", pos)
@@ -458,6 +522,16 @@ for mode, p in items:
             if p not in blobs:
                 continue  # removed from the index: nothing of it is committed
             data = blobs[p]
+            if data.startswith(b"version https://git-lfs.github.com/spec/"):
+                # A Git LFS pointer: git add stored the file in LFS and staged
+                # this stub, which is never JSON. The working copy is the file
+                # it stored. With no working copy there is nothing to read --
+                # say so, do not block a valid file or pass it in silence.
+                if not os.path.isfile(p):
+                    lfs_unread.append(p)
+                    continue
+                with open(p, "rb") as fh:
+                    data = fh.read()
         else:
             if not os.path.isfile(p):
                 continue
@@ -470,13 +544,20 @@ for mode, p in items:
 # putting a CR inside every path but the last. Invisible in a terminal and in
 # a line-by-line diff -- only a byte comparison against the pre-batch
 # implementation surfaced it. get_yaml_key writes bytes for the same reason.
-sys.stdout.buffer.write(("CCGS-JSON-CHECKED\n" + "\n".join(bad)).encode("utf-8"))
+# One line per file: "B<tab>path" not valid JSON, "S<tab>path" an LFS pointer
+# with no working copy to read.
+sys.stdout.buffer.write(("CCGS-JSON-CHECKED\n" + "".join("B\t" + p + "\n" for p in bad)
+                         + "".join("S\t" + p + "\n" for p in lfs_unread)).encode("utf-8"))
 ' 2>/dev/null)
         if [ "$(printf '%s\n' "$JSON_OUT" | head -1)" != "CCGS-JSON-CHECKED" ]; then
             echo "BLOCKED: $(printf '%s\n' "$DATA_FILES" | grep -c .) staged data file(s) could not be validated -- the JSON check did not run under '$PYTHON_CMD'. Check that it is a working Python 3 and commit again." >&2
             exit 2
         fi
-        BAD_JSON=$(printf '%s\n' "$JSON_OUT" | tail -n +2)
+        BAD_JSON=$(printf '%s\n' "$JSON_OUT" | tail -n +2 | LC_ALL=C awk -F'\t' '$1 == "B" { print $2 }')
+        LFS_UNREAD=$(printf '%s\n' "$JSON_OUT" | tail -n +2 | LC_ALL=C awk -F'\t' '$1 == "S" { print $2 }')
+        if [ -n "$LFS_UNREAD" ]; then
+            WARNINGS="$WARNINGS\nSKIPPED: $(printf '%s\n' "$LFS_UNREAD" | grep -c .) staged data file(s) are Git LFS pointers with no working copy, so the JSON check did NOT read them: $(printf '%s' "$LFS_UNREAD" | tr '\n' ' ')"
+        fi
         if [ -n "$BAD_JSON" ]; then
             # Every offender at once. The per-file loop reported only the first
             # and exited, so a commit with several bad files took several
@@ -518,7 +599,12 @@ if [ -f .claude/hooks/yaml-helper.sh ]; then
     command -v resolve_setting >/dev/null 2>&1 && _VC_HELPER=1
 fi
 
-DESIGN_FILES=$(echo "$STAGED" | grep -E '^design/gdd/')
+# design/gdd/ also holds governance and registry files that are not system
+# GDDs and have none of these sections, so they warned on every commit (#133).
+# Skip the names not_a_system_gdd() skips in gdd-structure-check.sh and
+# review-scope.sh; keep the three lists the same.
+DESIGN_FILES=$(echo "$STAGED" | grep -E '^design/gdd/' \
+  | grep -vE '/(game-concept|systems-index|game-pillars|gdd-cross-review-[^/]*|gameplay-tags|fixture-swap-ledger|entity-registry|sound-bible)\.md$')
 if [ -n "$DESIGN_FILES" ]; then
     WORKFLOW="standard"
     if [ "$_VC_HELPER" = 1 ]; then
@@ -545,11 +631,9 @@ if [ -n "$DESIGN_FILES" ]; then
         #
         # A nested shell loop -- for each staged design doc, `echo |
         # tr | while read` then one `grep -qi` per required section -- does not
-        # scale. At
-        # workflow=full that is 8 greps per file, and each is a process. 50
-        # design docs measured 14644ms -- 97% of this hook's 15s budget, from
-        # the ADVISORY half alone. 50 GDDs is an ordinary project, not a
-        # stress case.
+        # scale. At workflow=full that is 8 greps per file, and each is a
+        # process, so an ordinary project of about 50 GDDs would use nearly all
+        # of this hook's 15s budget on the ADVISORY half alone.
         #
         # Matching is unchanged on purpose: case-insensitive SUBSTRING anywhere
         # in the file, exactly what `grep -qi "$section"` did. It is looser than

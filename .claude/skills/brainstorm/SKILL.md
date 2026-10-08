@@ -12,6 +12,8 @@ model: sonnet
 Resolved above — use as-is. No block → defaults in
 `.claude/docs/config-resolution.md`.
 
+# Brainstorm
+
 
 `--review` overrides `review_mode`; store it for all gate spawns this run. See
 `.claude/docs/director-gates.md` for the full check pattern. Individual gate definitions live in `.claude/docs/director-gates/[gate-id].md` — the spawned agent reads its own gate file; do not read it in the parent session.

@@ -246,6 +246,29 @@ None. `/setup-engine` is a technical configuration skill. No director gates appl
 
 ---
 
+### Case 8: A skipped question is not an answer
+
+**Fixture:**
+- Fresh project: no engine configured, no `project.yaml` engine block
+- The engine question comes back skipped: the user closes it, or a headless run
+  returns every question as skipped
+
+**Input:** `/setup-engine`
+
+**Expected behavior:**
+1. The skill does not choose an engine, language or version itself
+2. It asks again in plain text, saying what is waiting on the answer, and waits
+3. Nothing is written to `CLAUDE.md`, `project.yaml`, `technical-preferences.md`
+   or `VERSION.md` before the user answers
+4. In a run where nobody can answer, it stops and reports what is waiting
+
+**Assertions:**
+- [ ] No engine, language or version is picked on the user's behalf
+- [ ] The question is asked again in plain text
+- [ ] No file is written before an answer arrives
+
+---
+
 ## Protocol Compliance
 
 - [ ] Presents draft configuration before asking to write

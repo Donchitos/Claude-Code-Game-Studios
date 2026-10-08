@@ -98,15 +98,11 @@ echo ""
 echo "## Files Modified (git working tree)"
 
 # BOUNDED. These three lists must never be emitted in full, one line per
-# file, with no cap. (They were bounded believing this output goes into the
-# compacting context; it reaches the debug log, where an unbounded dump still
-# costs time and log size.) The checkpoint above was redesigned to be by-reference for exactly
-# that reason (see the note at the top of this file); the lists below were left
-# unbounded, so the hook still dumped whatever the working tree happened to
-# contain at the moment context was scarcest. Measured on a tree with ~5k
-# untracked files: 181,125 bytes, roughly 45,000 tokens, of which ~4,984 lines
-# were this section. A fresh asset import or un-gitignored build output is
-# enough to trigger it.
+# file, with no cap. This output reaches the debug log, where an unbounded dump
+# still costs time and log size: a tree with thousands of untracked files (a
+# fresh asset import, or build output that is not gitignored) would otherwise
+# print one line per file on every compaction. The checkpoint above is
+# by-reference for the same reason (see the note at the top of this file).
 #
 # A count plus a sample is what this section is actually for -- orienting the
 # agent after compaction -- and the full list is one `git status` away.
@@ -141,8 +137,8 @@ WIP_FOUND=false
 # BOUNDED and BATCHED. One `grep -n` per design doc, printing every matching
 # line from every file, fails twice over -- the same two ways as above:
 # unbounded OUTPUT into a compacting context, and unbounded
-# COST -- ~85ms per file, crossing this hook's 10s budget at roughly 90 GDDs.
-# Measured: 220 docs 18262ms, 420 docs killed at the timeout.
+# COST -- one process spawn per file, which grows past this hook's 10s budget
+# on a project with a large set of GDDs.
 #
 # `xargs -0` bounds the spawn count by ARG_MAX rather than by file count, and
 # the NUL delimiter keeps it portable: `-d` is GNU-only, BSD xargs rejects it,

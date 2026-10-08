@@ -38,12 +38,12 @@ a command that would normally just prompt — **aborts the whole invocation**, a
 the model never sees the skill. A read-only command such as `git status`, which
 Claude Code approves on its own, comes back "allow" and runs without a grant. A preloaded skill (`skills:` on an agent) is
 checked the same way at agent launch, so a failing bootstrap line stops the agent
-from starting. Measured on Claude Code 2.1.281 in default
-mode:
+from starting. In default
+mode, the bootstrap forms behave as follows:
 
 | Bootstrap form | Repo root | Subdirectory | Bash-less agent preloading it |
 |---|---|---|---|
-| `source "${CLAUDE_PROJECT_DIR:-.}/…" && resolve_config` (v1.1.0) | aborts | aborts | fails to launch |
+| `source "${CLAUDE_PROJECT_DIR:-.}/…" && resolve_config` | aborts | aborts | fails to launch |
 | same, with a bare `Bash` grant | aborts | — | — |
 | `bash "${CLAUDE_PROJECT_DIR}/…"` + grant | runs | aborts | — |
 | **`bash "${CLAUDE_SKILL_DIR}/../../hooks/…"` + per-skill grant** | **runs** | **runs** | **launches** |
@@ -181,8 +181,8 @@ set the sub-knob. Their effective values come from the rigor level:
 
 Because `rigor` itself defaults to `minimal`, an unconfigured project resolves
 these six to the lean row. That default was `standard`; it changed because the
-heavier tier measured several times more expensive to reach working code without
-producing a better result. See the rationale block above `_yaml_helper_defaults`
+heavier tier costs more to reach working code without producing a better
+result. See the rationale block above `_yaml_helper_defaults`
 in `.claude/hooks/yaml-helper.sh` for the reasoning and the ordering
 constraint. Raising the tier is one question in `/start` or one `/settings`
 call, and `settings-guidance.md § 4`'s upward triggers are written to fire from
@@ -242,40 +242,34 @@ condition below degrades to defaults and is named on `notes:`:
 | Locked key in `project.local.yaml` | ignored as always, but now **named** on `notes:` — `local: not locally overridable, ignored — modes.rigor (move to project.yaml or delete)` |
 | No Python interpreter | legacy files and defaults only; **explicitly noted** on `notes:` |
 | No block at all | shell preprocessing disabled (`disableSkillShellExecution`) — use the defaults table above |
+| A task notice where the block should be ("Command did not complete within its 120s timeout and was moved to the background") | the settings line ran past Claude Code's 120-second limit for a skill's `!` line, because every process start was slowed — usually by antivirus real-time scanning of the project folder. The settings exist: read each key yourself from `project.local.yaml`, then `project.yaml`, then the defaults table above |
 | Bootstrap line not approved, or exits non-zero | **not a degraded state — the skill never renders at all.** See "Why exactly this command" above |
 
 A skill must never treat a missing block as "config is unset in an interesting
-way". It means the block did not render; the defaults apply.
+way". It means the block did not render; the defaults apply. The exception is
+that task notice: the settings line ran out of time, not the settings, so read
+the files as that row says instead of taking the defaults. If it keeps
+happening, exclude the project folder from real-time scanning.
 
-### Two behaviours that are correct but SILENT
+### Two inputs that resolve without a note
 
-In both cases the
-resolved *value* is right — the chain falls through to the default — but the user
-is told nothing, and their explicit configuration was discarded.
+In both cases `resolve_config` follows a fixed rule and emits no note, so it does
+not tell you that something you wrote was not used.
 
 | Input | What happens | Note emitted |
 |---|---|---|
 | **Duplicate key** (`rigor:` twice in one block) | **the last occurrence wins**, deterministically | **none** |
 | **Wrong shape** — a list where a scalar belongs (`rigor:` followed by `- standard`) | key resolves empty, falls through to the default | **none** |
 
-**Why this is worth knowing rather than shrugging at.** An enum-*invalid* value is
-announced (`modes.workflow: 'medium' is not a valid value … — ignored, chain
-continued`). A structurally-invalid one is not. So a user who mistypes the value
-gets told, and a user who mistypes the *structure* does not — and the second
-mistake is the easier one to make by copy-paste. The framework has the mechanism
-(`notes:`) and already uses it for absence, emptiness, tabs, locked keys, orphan
-locals and bad enums. Shape is the gap.
+An enum-*invalid* value is announced (`modes.workflow: 'medium' is not a valid
+value … — ignored, chain continued`). A wrong shape is not: the key is present
+but resolves to nothing, which is also what a key with an empty value does on
+purpose (the "Key present, value empty" row above), and `resolve_config` does not
+tell the two apart. When a setting seems ignored, check the structure of its key
+in the file: one scalar on the key's own line, the key written once per block,
+and no list under it. `/settings` shows the value that is actually in effect.
 
-**Why it is not caught yet.** Detecting "this key is present in the file but
-resolved to nothing" means changing the parser every config read in the framework
-goes through, and the empty-value fall-through above is a *legitimate* case of
-exactly that signature. Distinguishing "empty on purpose" from "unparseable" is
-real work, not a one-liner, and it lands in the most load-bearing file there is.
-Until then, check the structure yourself when a setting seems ignored.
-
-**Duplicate-key precedence was undocumented before this entry.** Last-wins is
-deterministic and reproducible, so it is not a bug — but nothing said so, which
-meant nobody could rely on it either.
+The last-wins rule for a duplicate key is fixed, so you can rely on it.
 
 ## Why not inject at session start
 

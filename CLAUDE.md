@@ -50,9 +50,15 @@ after it runs `project.yaml` holds the real values.
 Every task follows: **Question -> Options -> Decision -> Draft -> Approval**
 
 - Agents MUST ask "May I write this to [filepath]?" before using Write/Edit tools
+  (exempt: `active.md` appends, agent memory, a subagent's new file at the path
+  its orchestrating skill named; see `.claude/rules/agent-memory.md`)
 - Agents MUST show drafts or summaries before requesting approval
 - Multi-file changes require explicit approval for the full changeset
 - No commits without user instruction
+- A skipped or dismissed question is not an answer: act on nothing, re-ask in
+  plain text and wait
+- Started outside this file's folder? Warn first: hooks, deny rules and the
+  ask-first mode load only when Claude Code starts here
 
 See `docs/COLLABORATIVE-DESIGN-PRINCIPLE.md` for full protocol and examples.
 

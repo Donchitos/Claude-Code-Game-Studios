@@ -92,11 +92,10 @@ phases:
         name: "Engine Setup"
         command: /setup-engine
         required: true
-        # v1.1: engine.name in project.yaml is the primary source; technical-
-        # preferences.md is the legacy fallback. Checking only the legacy file
-        # made a correctly-configured project fail this REQUIRED gate.
+        # engine.name in project.yaml is the primary source; technical-
+        # preferences.md is the legacy fallback. Either one completes the step.
         # /setup-engine writes the value quoted (`name: "Godot"`), so the quote
-        # is optional; without it only the legacy alternative ever matched.
+        # is optional in the first alternative.
         # Single-quoted so the `"` needs no escape — artifact-check.sh strips
         # the outer quotes and does not unescape.
         artifact:
@@ -104,9 +103,7 @@ phases:
             - glob: "project.yaml"
               pattern: 'name:[[:space:]]*"?(Godot|Unity|Unreal)'
             # technical-preferences.md writes "- **Engine**: Godot 4.6", so the
-            # pattern must clear the bold markers. The previous "Engine: [^[]"
-            # required a literal "Engine: " and therefore never matched any
-            # file /setup-engine produces. The [^[] guard rejects the
+            # pattern must clear the bold markers. The [^[] guard rejects the
             # "[TO BE CONFIGURED]" placeholder.
             - glob: ".claude/docs/technical-preferences.md"
               pattern: '\*\*Engine\*\*: [^[]'
@@ -219,11 +216,6 @@ phases:
 
       - id: accessibility-doc
         name: "Accessibility Requirements"
-        # This step had no `command:` at all -- the only artifact entry in the
-        # catalog that named no producer. It was REQUIRED, so the Technical
-        # Setup -> Pre-Production gate could never pass, and the remediation
-        # every skill printed ("run /ux-design") wrote into design/ux/ where
-        # this glob does not look. /ux-design now has an `accessibility` mode.
         command: /ux-design
         required: true
         artifact:
@@ -289,10 +281,10 @@ phases:
         command: /prototype
         required: false
         artifact:
-          # /prototype writes prototypes/[name]-concept/REPORT.md -- it has never
-          # written a README. The `-concept` suffix is load-bearing: /vertical-slice
-          # writes the same REPORT.md basename under `-vertical-slice`, so a bare
-          # `prototypes/*/REPORT.md` here would let either step satisfy the other.
+          # /prototype writes prototypes/[name]-concept/REPORT.md. The `-concept`
+          # suffix matters: /vertical-slice writes the same REPORT.md basename
+          # under `-vertical-slice`, so a bare `prototypes/*/REPORT.md` here
+          # would let either step satisfy the other.
           glob: "prototypes/*-concept/REPORT.md"
           min_count: 1
         description: "Build a throwaway prototype to validate the core mechanic is fun before committing to full production. Recommended for first-time mechanics or high-risk design decisions. Solo devs with proven concepts may skip."
@@ -331,9 +323,9 @@ phases:
         command: /vertical-slice
         required: false
         artifact:
-          # Must stay scoped to `-vertical-slice`: the untethered form matched
-          # /prototype's concept report, so running only /prototype silently
-          # marked the vertical slice complete and skipped the validation the
+          # Scoped to `-vertical-slice`: an unscoped form would match
+          # /prototype's concept report, so running only /prototype would mark
+          # the vertical slice complete and skip the validation the
           # Pre-Production → Production gate exists to require.
           glob: "prototypes/*-vertical-slice/REPORT.md"
           min_count: 1
@@ -454,8 +446,6 @@ phases:
         required: true
         artifact:
           # /playtest-report writes production/qa/playtests/, not production/playtests/.
-          # The old glob matched nothing on every project, so this REQUIRED step
-          # read as 0/3 forever no matter how many playtests were actually run.
           glob: "production/qa/playtests/*.md"
           min_count: 3
         description: "Cover: new player experience, mid-game systems, difficulty curve"

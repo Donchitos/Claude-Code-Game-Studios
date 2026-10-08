@@ -8,6 +8,8 @@ allowed-tools: Read, Glob, Grep, Write, Edit, Bash, Agent, AskUserQuestion
 model: sonnet
 ---
 
+# Hotfix
+
 > **Explicit invocation only**: This skill should only run when the user explicitly requests it with `/hotfix`. Do not auto-invoke based on context matching.
 
 ## Phase 1: Assess Severity

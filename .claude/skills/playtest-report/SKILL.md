@@ -12,6 +12,8 @@ model: sonnet
 Resolved above — use as-is; `--review` overrides `review_mode` for this run. No
 block → defaults in `.claude/docs/config-resolution.md`.
 
+# Playtest Report
+
 
 
 ## Phase 1: Parse Arguments

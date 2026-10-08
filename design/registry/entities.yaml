@@ -17,6 +17,8 @@
 #
 # WRITTEN BY: /design-system (Phase 5 — after GDD sections are approved)
 #             /consistency-check (when resolving conflicts)
+#             economy-designer, systems-designer (new cross-system entries,
+#               after asking)
 # READ BY:    /design-system (Phase 2 — before authoring begins, and after
 #               Section C/D writes to conflict-check new entities/formulas)
 #             /consistency-check (primary input — grep-first, GDD-second)
@@ -25,13 +27,18 @@
 #             /content-audit (Step 2 — planned named-content count)
 #             /balance-check (Phase 3 — intended constant/formula values)
 #             /propagate-design-change (Step 3 — downstream GDD impact via referenced_by)
+#             /asset-spec (named entities to write specs for)
+#             economy-designer, systems-designer (before authoring items,
+#               loot tables and formulas)
 #
 # SEARCH PATTERNS (for skills using Grep):
 #   All entity names:        Grep pattern="^  - name:" path="design/registry/entities.yaml"
 #   Specific entity:         Grep pattern="  - name: goblin" path="design/registry/entities.yaml"
 #   All items:               Grep pattern="^  - name:" path="design/registry/entities.yaml" (items section)
 #   What combat.md owns:     Grep pattern="source: design/gdd/combat.md"
-#   What inventory.md uses:  Grep pattern="referenced_by.*inventory"
+#   What inventory.md uses:  Grep pattern="design/gdd/inventory.md" -B 8
+#                            (referenced_by is a block list, so match the
+#                            path; referenced_by.*inventory never matches)
 #   All gold values:          Grep pattern="value_gold:"
 #   Deprecated entries:      Grep pattern="status: deprecated"
 #

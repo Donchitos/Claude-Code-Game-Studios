@@ -8,7 +8,7 @@ a prerequisite is missing: the engine reference docs (no engine → `/setup-engi
 `design/gdd/systems-index.md` (absent at `standard`/`full` → `/map-systems`),
 and `design/gdd/game-concept.md` (absent → `/brainstorm`; at `minimal` the
 one-page `design/game-brief.md` stands in). It extracts a Technical Requirements
-Baseline (`TR-[gdd-slug]-[NNN]`) from the requirement-bearing sections of every
+Baseline (`TR-[system]-[NNN]`) from the requirement-bearing sections of every
 GDD, inventories existing ADRs from their headers, and shows an Engine Knowledge
 Gap Inventory with an `AskUserQuestion` before authoring.
 
@@ -94,7 +94,7 @@ skipped — Solo mode."
 9. Phase 8 writes a summary to `production/session-state/active.md` and prints the handoff with the headings "Architecture Complete", "Run These ADRs Next", "Gate-Check Readiness"; its **Then:** line names `/architecture-review`, then `/create-control-manifest` once the review passes, and the readiness block names `/gate-check pre-production`
 
 **Assertions:**
-- [ ] The baseline uses `TR-[gdd-slug]-[NNN]` IDs and is built from the scanned GDD sections, not whole-file reads
+- [ ] The baseline uses `TR-[system]-[NNN]` IDs and is built from the scanned GDD sections, not whole-file reads
 - [ ] The knowledge gap inventory and its three-option `AskUserQuestion` come before Phase 1
 - [ ] Each section is shown before its approval is asked
 - [ ] The master document is written only after the Phase 7 `AskUserQuestion` approval

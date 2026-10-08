@@ -8,6 +8,106 @@ existing project on the older config files.
 
 ---
 
+## [1.1.3] — 2026-10-08
+
+**Long skills keep their later steps through a long session, a question nobody
+answered is never taken as an answer, and the shipped permissions approve
+less.** A fix release for 1.1.2.
+
+### Fixed
+
+- **The 14 longest skills keep their later phases after a compaction.** Claude
+  Code re-attaches only the first part of an invoked skill after a compaction,
+  so the later phases of a long skill could drop out in the middle of a session.
+  `/adopt`, `/architecture-decision`, `/architecture-review`,
+  `/create-architecture`, `/design-system`, `/dev-story`, `/gate-check`,
+  `/prototype`, `/review-all-gdds`, `/setup-engine`, `/smoke-check`,
+  `/story-done`, `/test-setup` and `/ux-design` now keep each phase in its own
+  file in the skill's `references/` folder, read when the phase starts and
+  again after a compaction. The steps themselves are unchanged. The files are
+  named relative to the skill folder, so they are found wherever the skill is
+  installed, and every reference file over 100 lines opens with a list of what
+  it holds. `/skill-test` and `/skill-improve` read those files too, so they
+  judge a split skill whole and put a fix in the file that holds the text.
+- **A question that is skipped, dismissed or comes back empty is not an
+  answer**, in any mode: nothing is written, set or picked on it, and it is
+  asked again in plain text. Guided mode no longer contradicts itself: a new
+  file waits for "May I write?", and an update to an existing file goes ahead
+  after a short summary.
+- **Agents return their options as a short list for the skill to ask.** Fourteen
+  agents were told to use the question tool, which an agent started by a skill
+  does not have.
+- **Settings read from a subfolder use the project root.** Started in `src/`,
+  per-system overrides read as none, notes about invalid or locked values
+  disappeared, and the older `review-mode.txt` and `stage.txt` were never
+  found. `/settings` and `/perf-profile` also work from a subfolder now.
+- **Setting values.** A hand-edited local `platform.cert_tier` no longer
+  overrides the locked value, and an invalid `cert_tier` or `testing.strict`
+  value counts as unset rather than being used. On Windows the locked-key note
+  no longer ends each key with a stray carriage return, and an always-ask item
+  that contains a comma is no longer split in two.
+- **The commit check sees files a `git add` in the same command stages**
+  (`git add -A && git commit`), and no longer asks `systems-index.md`,
+  `game-concept.md` and the other non-system files in `design/gdd/` for GDD
+  sections (#133).
+- **The commit check works for a project in a subfolder of a larger
+  repository.** A game in `game/` of a bigger repo got no data, GDD or code
+  checks at commit; staged paths are now read from the project folder. **A JSON
+  data file stored with Git LFS** is checked through its working copy instead of
+  being blocked as invalid, and one with no working copy is named as skipped.
+- **`/smoke-check` no longer waits forever on Unreal.** The version check ran
+  `UnrealEditor-Cmd -version`, which opens the editor and never returns. It now
+  reads the engine's `Build.version` file.
+- **Registry lookups.** `/design-system` finds the entities other systems
+  reference it from; the requirement lookups in `/create-stories`, `/dev-story`
+  and `/story-done` no longer match `combat-ai` when asked for `combat`; the
+  documented superseded status is valid YAML; `/consistency-check` and
+  `/architecture-review` re-read their registry before writing to it. Your own
+  registry files are not changed.
+- **Next steps at `workflow: minimal`.** Thirteen skills offered only a sprint as
+  the next step; at minimal they now name the brief's build order.
+  `gameplay-programmer` no longer asks for an ADR there, and five templates name
+  `design/game-brief.md` beside the concept doc.
+- **`team-polish` and `team-ui` keep their core members at the `lean` review
+  mode.**
+- **`/scope-check`'s verdict bands no longer overlap** at exactly 10% and 25%.
+- **`/start` writes a single `modes:` block.** Its rigor and automation
+  questions could each add one. If your `project.yaml` has two `modes:` blocks,
+  merge them into one.
+- **Every skill opens with a title.** 39 skills had no top-level heading, and in
+  `/architecture-decision` the first one was the ADR template's placeholder
+  (#83, reported by @specterslient95-lgtm).
+- **A settings line that runs for more than two minutes** reaches the skill as a
+  task notice instead of the settings; `config-resolution.md` now says what that
+  notice means and where to read the settings instead.
+- **The three writes that need no "May I write?"** — agent memory, appends to
+  `active.md`, and an agent's new file at the path its skill named — are now
+  named in `CLAUDE.md`, which named none of them, and in the agent-memory rule,
+  which named one.
+- **Docs corrected**: the settings, workflow and protocol docs, the README, the
+  setup requirements and the 1.1.0 and 1.1.2 notes on what the default
+  permission mode covers, and three overstatements in `/story-done`, the
+  workflow guide and UPGRADING.
+
+### Security
+
+- **The shipped allow rules no longer approve deleting a branch or writing files
+  without asking.** Four allow rules had no space before their `*`, so they
+  matched any text after the command name: `git branch -D` and `-m`, `git log`
+  and `git diff` with `--output=<file>`, and `python -m json.tool <in> <out>`
+  ran without a prompt, and in auto mode an allow rule also skips the
+  classifier. Those rules are removed; read-only git commands such as
+  `git status` and `git log` still run without a prompt. See
+  [UPGRADING.md](UPGRADING.md#v112--v113) if you merged `settings.json` or
+  copied these rules into `settings.local.json`.
+- **Start Claude Code at the project root.** It loads `.claude/settings.json`
+  only from the folder it starts in, so a session started in `src/` or `design/`
+  runs without the project's hooks, deny rules and ask-first mode. The README
+  says so, and Claude now warns when it was started somewhere else.
+- **`.env` files are denied to Edit.**
+
+---
+
 ## [1.1.2] — 2026-09-29
 
 **The default path works end to end, Unity and Unreal get the same care as
@@ -731,8 +831,10 @@ Code 2.1.281 to 2.1.284, on Windows, Linux (bash 5 and 3.2) and macOS. **If you 
   so the aborting command stopped them at startup with `Shell command permission
   check failed … Contains expansion`. They keep their preloaded skills and still
   have no shell access.
-- **Config is found from any folder.** Starting Claude Code inside `src/` or
-  `design/` now reads the project's `project.yaml`, not nothing.
+- **Skills find `project.yaml` from any folder.** A skill run in a session
+  started inside `src/` or `design/` now reads the project's `project.yaml`, not
+  nothing. Claude Code itself still loads the project's hooks, deny rules and
+  permission mode only when it is started at the project root.
 - **`/changelog` works in a repository with no commits yet.**
 
 Checked on Claude Code 2.1.277 and 2.1.281, in every permission mode, from the
@@ -749,13 +851,13 @@ studio production no longer have to carry the same overhead.
 
 ### Added
 
-- **Ask-before-write now holds, whatever your personal settings say.** CCGS
-  sets Claude Code's permission mode to `default` in the project settings, so
-  every approval gate in the framework actually fires. If your own Claude Code
-  config runs in an auto-accept mode, that used to switch the whole
-  collaboration protocol off silently and agents would write files you never
-  approved. Override it in `.claude/settings.local.json` if you really want to,
-  but read `.claude/docs/setup-requirements.md` first.
+- **Sessions start in ask-before-write mode.** CCGS sets Claude Code's
+  permission mode to `default` in the project settings, so a terminal session
+  started at the project root asks before writing, even if your own Claude Code
+  config runs in an auto-accept mode. It sets the starting mode only: resuming a
+  session, switching modes mid-session, the VS Code extension and the Desktop
+  app can still put you in another one. `.claude/docs/setup-requirements.md`
+  lists them, and how to change the starting mode.
 
 - **`project.yaml` — one place for your project's configuration.** Engine,
   naming conventions, specialists and process settings all live here. It

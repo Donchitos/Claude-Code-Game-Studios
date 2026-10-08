@@ -365,7 +365,11 @@ pattern:
 ❌ **Don't use it for:**
 - Open-ended discovery questions ("What excites you about roguelikes?")
 - Single yes/no confirmations ("May I write to file?")
-- When running as a Task subagent (tool may not be available)
+- When running as a subagent (spawned through the `Agent` tool), which never gets
+  the tool: end with the options as a short labeled list and let the caller ask
+
+A question that comes back skipped, dismissed or empty is not an answer. Act on
+nothing; ask again in plain text and wait (`.claude/docs/automation-modes.md`).
 
 ### Format Guidelines
 
@@ -678,16 +682,3 @@ WHEN implementing:
 2. Flag any deviations from design docs
 3. Ask about ambiguities rather than assuming
 ```
-
----
-
-## Implementation Status
-
-This principle has been fully embedded across the project:
-
-- **CLAUDE.md** — Collaboration protocol section added
-- **All 49 agent definitions** — Updated to enforce question-asking and approval
-- **All skills** — Updated to require approval before writing
-- **WORKFLOW-GUIDE.md** — Rewritten with collaborative examples
-- **README.md** — Clarifies collaborative (not autonomous) design
-- **AskUserQuestion tool** — Used by 68 skills (49 declare it) for structured option UI

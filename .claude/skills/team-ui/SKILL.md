@@ -6,6 +6,8 @@ user-invocable: true
 allowed-tools: Read, Glob, Grep, Write, Edit, Bash, Agent, AskUserQuestion, TaskCreate, TaskGet, TaskList, TaskUpdate, Bash(bash "*/.claude/skills/team-ui/../../hooks/yaml-helper.sh" resolve_config *)
 model: sonnet
 ---
+# Team UI
+
 If no argument is provided, output usage guidance and exit without spawning any agents or reading any design files:
 > Usage: `/team-ui [UI feature description] [--review full|lean|solo]` — describe the screen or UI feature to build (e.g., `inventory screen`, `main menu`, `combat HUD`). Do not use `AskUserQuestion` here; output the guidance directly.
 
@@ -66,8 +68,6 @@ fires at routing time and never states the shape of the run as a whole.
 This is the same rule as the skipped-check reporting elsewhere in this file: **a constraint that is enforced but never surfaced is
 indistinguishable, to the person reading the output, from one that was never
 enforced.**
-
-**Director gate skip rule**: Before spawning creative-director, art-director, or any other Tier 1/2 director for review (outside of PHASE-GATE triggers), apply the resolved mode: skip if solo mode; skip if lean mode and this is not a PHASE-GATE.
 
 ## Team Composition
 - **ux-designer** — User flows, wireframes, accessibility, input handling

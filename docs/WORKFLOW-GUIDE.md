@@ -1408,7 +1408,7 @@ The system has 12 hooks that run automatically:
 | `pre-compact.sh` | Before compaction | Logs the compaction (its output does not reach Claude) |
 | `post-compact.sh` | After compaction | Debug-log reminder only (its output does not reach Claude) |
 | `notify.sh` | Notification event | Shows Windows toast notification via PowerShell |
-| `validate-commit.sh` | Before commit | Checks for design doc references, valid JSON, no hardcoded values |
+| `validate-commit.sh` | Before commit | Checks design doc sections, valid JSON, hardcoded values, TODO format |
 | `validate-push.sh` | Before push | Warns on pushes to main, master or release/* |
 | `validate-assets.sh` | After a file write | Checks data-file JSON, and asset naming in Godot's `assets/` |
 | `validate-skill-change.sh` | Skill file written | Advises running `/skill-test` after `.claude/skills/` changes |

@@ -35,17 +35,12 @@ YYYYMMDD_HHMMSS | <session_id> | Agent invoked: <agent_type>
 to tally the current session, then writes a count plus a per-agent breakdown to
 `production/session-logs/session-cost.md` and echoes a one-line total.
 
-Three constraints that must not be "tidied" later:
+The field order of that record is fixed. `session-stop.sh` matches it literally,
+so a different order silently zeroes the spawn count instead of raising an error.
 
-- **The field order is load-bearing.** Nothing else parses this log, so a
-  reformat looks free — but it silently zeroes the spawn count rather than
-  erroring.
-- **`session-stop.sh` reads stdin last, on purpose.** Everything above the
-  tally block (notably archiving `active.md`) runs first, so a stdin read that
-  ever blocked would cost only the count, not the state archive.
-- **No session id means no number.** The hook prints nothing rather than a
-  total spanning every session in the log. Silence here is correct; a
-  plausible-but-wrong cost figure is worse than none.
+When the hook input has no session id, `session-stop.sh` prints no total. A
+total spanning every session in the log would look plausible and be wrong, which
+is worse than none.
 
 `agent_type` — not `agent_name` — is the field carrying the agent name. See
 `hooks-reference/hook-input-schemas.md`.
@@ -53,16 +48,15 @@ Three constraints that must not be "tidied" later:
 ## Events considered and deliberately not added
 
 Claude Code offers many more hook events than the nine the hooks above use. These were
-evaluated and rejected. Recorded so a future review does not re-propose them
-from the event list alone.
+evaluated and not adopted, for the reasons given.
 
 | Event | Why not |
 | ---- | ---- |
 | `UserPromptSubmit` | Would re-inject session state on **every prompt**. `.claude/docs/config-resolution.md` already rejects the weaker version of this — injecting config at session start — because it "would cost tokens on every session whether or not any skill needs config, and it would go stale mid-session as `/settings` writes land". Firing per prompt is the same argument, multiplied. |
-| `ConfigChange` | Fires only for Claude Code's own settings files — user, project, local, policy and skills. It does **not** fire for `project.yaml`, so a hook watching CCGS config here would never run. `FileChanged` is the event that watches arbitrary files. |
-| `FileChanged` on `project.yaml` | Config is resolved per skill invocation, in the skill body, precisely so each run reads fresh values. The only staleness left is text already injected into an earlier invocation, which is the accepted trade in `config-resolution.md`. A warning hook would second-guess a settled decision. |
+| `ConfigChange` | Fires only for Claude Code's own settings files — user, project, local, policy and skills. It does **not** fire for `project.yaml`, so a hook watching the framework's config here would never run. `FileChanged` is the event that watches arbitrary files. |
+| `FileChanged` on `project.yaml` | Config is resolved per skill invocation, in the skill body, precisely so each run reads fresh values. The only staleness left is text already injected into an earlier invocation, which is the accepted trade in `config-resolution.md`. |
 | `PreToolUse` `updatedInput` | Could rewrite a non-conventional commit message instead of blocking it. Silently editing the user's input contradicts the collaboration protocol: this project blocks and explains rather than acting unasked. |
-| `PostToolUseFailure` | Would add another log with no reader. This repo has already been bitten by that — `log-agent.sh` wrote per-spawn records nothing consumed until `session-stop.sh` was given the job. |
+| `PostToolUseFailure` | Would add another log with no reader. |
 | `SessionEnd` | `session-stop.sh` stays on `Stop`. `SessionEnd` fires on termination, which a crash may never reach, and the content-hash guard already makes the per-response firing cheap. |
 | `InstructionsLoaded` | Useful for debugging which CLAUDE.md and rules files actually loaded, but it is a diagnostic, not a project requirement. Wire it in your own `.claude/settings.local.json` when you need it rather than paying for it on every load. |
 

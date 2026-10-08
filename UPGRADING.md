@@ -3,18 +3,22 @@
 This guide covers upgrading your existing game project repo from one version
 of the template to the next.
 
-**Find your current version** in your git log:
-```bash
-git log --oneline | grep -i "release\|setup"
-```
-Or read `framework.version` in your `project.yaml`, or the newest entry in
-`CHANGELOG.md`.
+**Find your current version** — use the first of these that applies:
+
+- **Cloned the template, or merged it:** `git describe --tags --abbrev=0` prints
+  the newest release tag in your history, for example `v1.1.2`.
+- **`framework.version` in `project.yaml`:** the version the file was last stamped
+  with. It can lag behind after an upgrade that kept your own `project.yaml`, and a
+  project from before 1.1 has no `project.yaml`.
+- **`CHANGELOG.md`:** `grep -m1 '^## \[' CHANGELOG.md` prints the newest release it
+  lists, which is your version while that file is still the template's.
 
 ---
 
 ## Table of Contents
 
 - [Upgrade Strategies](#upgrade-strategies)
+- [v1.1.2 → v1.1.3](#v112--v113)
 - [v1.1.1 → v1.1.2](#v111--v112)
 - [v1.1.0 → v1.1.1](#v110--v111)
 - [v1.0 → v1.1](#v10--v11)
@@ -165,6 +169,92 @@ Best when: you didn't use git to set up the template (just downloaded a zip).
    file the list marks as yours, such as `.claude/docs/technical-preferences.md`.
 3. For files under **"Merge carefully"**, open both versions side-by-side
    and manually merge the structural changes while keeping your content.
+
+---
+
+## v1.1.2 → v1.1.3
+
+**Released:** 2026-10-08
+**Commit range:** `v1.1.2..v1.1.3`
+**Key themes:** Long skills keep their later phases after a compaction; a
+question nobody answered is never an answer; the shipped allow rules approve
+less; settings read the same from a subfolder
+
+### What Changed
+
+| Category | Changes |
+|----------|---------|
+| **Long skills (14)** | `/adopt`, `/architecture-decision`, `/architecture-review`, `/create-architecture`, `/design-system`, `/dev-story`, `/gate-check`, `/prototype`, `/review-all-gdds`, `/setup-engine`, `/smoke-check`, `/story-done`, `/test-setup` and `/ux-design` keep each phase in `references/<phase>.md`; their steps are unchanged. `/skill-test` and `/skill-improve` read a skill's `references/` files too |
+| **Questions** | `automation-modes.md` and `effects-map.md`: a skipped, dismissed or empty answer is never an answer; 14 agents return options as a list for the skill to ask; `CLAUDE.md` and `agent-memory.md` name the three writes that need no "May I write?" |
+| **Settings** | `yaml-helper.sh` reads every setting under the project root when started from a subfolder; the local `platform.cert_tier` cannot override the lock; invalid `cert_tier` and `testing.strict` values count as unset |
+| **Hooks and scripts** | `validate-commit.sh` checks files a `git add` in the same command stages, skips non-system files in `design/gdd/`, checks a project in a subfolder of a larger repository, and reads Git LFS-stored JSON through its working copy; `project-coherence.sh` reads Unreal's `Build.version` |
+| **Permissions** | `settings.json`: seven allow rules removed, the two pytest rules narrowed, `Edit(**/.env*)` denied |
+| **Other skills** | Thirteen skills name the minimal route as a next step; registry lookups in `/design-system`, `/create-stories`, `/dev-story`, `/story-done`, `/consistency-check`, `/architecture-review`; `team-polish`, `team-ui`, `/scope-check`; `/start` writes one `modes:` block; every skill opens with a title |
+
+No setting changes meaning, and nothing is migrated automatically.
+
+---
+
+### Files: Safe to Overwrite
+
+**Existing files to overwrite (no user content):**
+```
+.claude/skills/**                            ← 14 skills gain a references/
+                                               folder; if you edited one of
+                                               them, see Merge Carefully. 39
+                                               skills gain a title line
+.claude/hooks/validate-commit.sh, validate-push.sh, yaml-helper.sh,
+pre-compact.sh, session-stop.sh
+.claude/scripts/project-coherence.sh
+.claude/agents/*.md                          ← 15 agents changed; merge any
+                                               you edited
+.claude/docs/**                              ← EXCEPT technical-preferences.md,
+                                               which is yours and unchanged in
+                                               1.1.3
+docs/WORKFLOW-GUIDE.md, docs/CLAUDE.md, docs/COLLABORATIVE-DESIGN-PRINCIPLE.md,
+docs/engine-reference/unreal/plugins/gameplay-ability-system.md
+README.md, CHANGELOG.md, UPGRADING.md        ← keep your README if it is your
+                                               game's
+CCGS Skill Testing Framework/
+```
+
+---
+
+### Files: Merge Carefully
+
+**`.claude/settings.json`** — if you have not edited it, overwrite it with the
+shipped file. If you have, remove these from `allow`: `Bash(git status*)`,
+`Bash(git diff*)`, `Bash(git log*)`, `Bash(git branch*)`, `Bash(git rev-parse*)`,
+`Bash(ls *)` and `Bash(python -m json.tool*)`; change `Bash(python -m pytest*)`
+and `Bash(py -m pytest*)` to `Bash(python -m pytest *)` and
+`Bash(py -m pytest *)`; and add `Edit(**/.env*)` to `deny`. Read-only git
+commands still run without a prompt after the change. **If you copied any of
+the removed rules into `.claude/settings.local.json`, remove them there too:** a
+copy keeps approving `git branch -D`, `--output` files and `json.tool` writes
+without asking.
+
+**`CLAUDE.md`** — if you have not edited it outside the Technology Stack, take
+the shipped Collaboration Protocol section. If you have, copy its three new
+lines: the exemptions under "May I write", "A skipped or dismissed question is
+not an answer", and "Started outside this file's folder? Warn first".
+
+**`.claude/rules/agent-memory.md`, `.claude/rules/skill-authoring.md`** — if you
+have not edited them, overwrite them with the shipped files.
+
+**One of the 14 long skills, if you edited it** — its `SKILL.md` now holds the
+settings line, the always-apply rules and one heading per phase; each phase's
+steps moved word for word into `references/<phase>.md`. Take the shipped skill,
+then make your change again in the phase file that now holds that text.
+
+**`design/registry/entities.yaml`, `docs/architecture/tr-registry.yaml`** —
+these are your project's data; keep yours. Only the header comments changed.
+If your TR registry has an unquoted `status: superseded-by: TR-...`, quote the
+value (`status: "superseded-by: TR-combat-001"`): unquoted, the second colon
+makes the file invalid YAML. `/story-readiness` reads either form.
+
+**`project.yaml`** — optionally set `framework.version: 1.1.3`. Nothing reads it
+for this release. If it has two `modes:` blocks — `/start` could write a second
+one — merge them into one.
 
 ---
 
@@ -479,10 +569,9 @@ modes:
   rigor: standard
 ```
 
-We changed the default because we measured it. Built both ways, `standard` cost
-several times more to reach working code, did not produce a better result, and
-gave nothing back when a fresh developer picked the project up. Most projects
-were paying for process that did not repay.
+We changed the default because `standard` costs more to reach working code
+without producing a better result, and gives nothing back when someone new
+picks the project up. Most projects were paying for process that did not repay.
 If yours is one that does -- several interacting systems, or a design someone
 else has to implement -- `standard` and `full` are one `/settings` call away,
 and `/help` and `/gate-check` will suggest raising it as your project grows.

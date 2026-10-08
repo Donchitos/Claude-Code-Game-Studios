@@ -9,10 +9,10 @@ this document instead of embedding the tier tables inline.
 sections `modes.workflow` and `workflow_overrides` are the source of
 truth for behavior. This document is the implementation pattern.
 
-> **Do not read `effects-map.md` during a skill run.** It is ~2,150 lines
-> (~110 KB) — about five times the size of everything CLAUDE.md loads per
-> session combined — and it is a reference for *authoring and changing the
-> spec*, not a runtime input. **This document is self-sufficient** for resolving
+> **Do not read `effects-map.md` during a skill run.** It is many times the
+> size of everything CLAUDE.md loads per session combined — and it is a
+> reference for *authoring and changing the spec*, not a runtime input.
+> **This document is self-sufficient** for resolving
 > the tier and applying it: the resolution chain, the three tiers, the required
 > sections, and the override rules are all here. If you hit a case this document
 > genuinely does not cover, read only the one `effects-map.md` section for the
@@ -50,8 +50,8 @@ its fallback will ignore `rigor: minimal` and `rigor: full` entirely.
 
 ### What `<system>` is — one derivation, everywhere
 
-**`<system>` is the GDD filename stem**: `design/gdd/hammer-heat-system.md` →
-`hammer-heat-system`. That is the key to write under
+**`<system>` is the GDD filename stem**: `design/gdd/forge-heat-system.md` →
+`forge-heat-system`. That is the key to write under
 `workflow_overrides.system_overrides`, and every skill must derive it the same
 way.
 
@@ -61,18 +61,18 @@ from it in preference to the stem.
 
 > **Why this is stated here rather than per skill.** Reading *"the `[system]`
 > segment of its `TR-[system]-NNN` ID (else its `design/gdd/` path)"* — TR-ID
-> **first** — is the wrong order. A system whose GDD is `hammer-heat-system.md` and
-> whose requirements are `TR-heat-001` then had **two different override keys
-> depending on whether a registry entry existed**, and the documented remedy for
-> a missing GDD section — "set
-> `workflow_overrides.system_overrides.hammer-heat-system: full`" — was looked up
-> under `heat`, found nothing, and continued at the project tier **silently**.
-> The escape hatch existed and could not be reached.
+> **first** — is the wrong order. A system whose GDD is `forge-heat-system.md` and
+> whose requirements are `TR-forge-001` would then have **two different override
+> keys depending on whether a registry entry existed**, and the documented remedy
+> for a missing GDD section — "set
+> `workflow_overrides.system_overrides.forge-heat-system: full`" — would be looked
+> up under `forge`, find nothing, and continue at the project tier **silently**.
+> The escape hatch would exist and could not be reached.
 
 **A key that matches no system is an error, not a no-op.** If
 `workflow_overrides.system_overrides` contains a key that resolves to no GDD stem
 in `design/gdd/`, say so — naming the unmatched key and the stems available.
-Silently ignoring it is how the above went unnoticed.
+Silently ignoring it would leave an override that does nothing, unnoticed.
 
 > **Checked where GDDs are expected to already exist — not by the skill that
 > writes them.** `/gate-check` is the single implementing site (see

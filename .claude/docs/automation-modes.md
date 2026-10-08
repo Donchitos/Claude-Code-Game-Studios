@@ -13,7 +13,7 @@ through `AskUserQuestion` or writes files should follow this pattern.
 section `modes.automation` is the source of truth for behavior. This document
 is the implementation pattern.
 
-> **Do not read `effects-map.md` during a skill run** — it is ~110 KB, a
+> **Do not read `effects-map.md` during a skill run** — it is a very large file, a
 > reference for authoring the spec rather than a runtime input, and **this
 > document is self-sufficient** for deciding what to ask and what to proceed on.
 > If a case genuinely is not covered here, read only its `modes.automation`
@@ -77,8 +77,8 @@ the right rule.
 - `AskUserQuestion` called for **major decisions only** (see classification below)
 - Minor decisions: AI states recommendation inline and proceeds — e.g.
   > *"Going with a static utility pattern here — it fits the existing architecture. Continuing unless you want to change direction."*
-- Draft shown briefly before writing — proceeds after a short summary, does not wait for explicit "yes"
-- "May I write?" asked for **new files only** — updates to existing files proceed directly
+- Updates to existing files: draft shown briefly before writing — proceeds after a short summary, does not wait for explicit "yes"
+- "May I write?" asked for **new files only**, and a new file waits for the answer — updates to existing files proceed directly
 - Still presents options for major decisions but caps at 2 choices with a clear recommendation
 - Multi-section authoring: writes each approved section immediately, no per-section confirmation
 
@@ -91,6 +91,21 @@ the right rule.
 - All decisions logged via `log_decision` (helper in yaml-helper.sh) to
   `production/session-logs/decision-log.md`
 - User reviews decision log post-session to audit choices made
+
+### Every mode: a question with no answer
+
+A question that comes back **skipped, dismissed or empty is not an answer**, in
+every mode and on every tool: the user closing the question, a headless run that
+returns every question as skipped, a reply that picks nothing.
+
+- Do not write a file, change a mode or setting, or pick an option on its behalf.
+- Ask again in plain text, say what is waiting on the answer, and wait.
+- In `autonomous`, a question the mode did not require can be decided as usual:
+  pick the recommended option and log it via `log_decision`. A question in an
+  `automation_always_ask` category, or in an exempt skill, is the user's: ask
+  again and wait.
+- Where nobody can answer (CI, a headless run), stop and report what is waiting
+  rather than choosing.
 
 ---
 
@@ -135,9 +150,9 @@ Even in `autonomous` mode, certain decision categories ALWAYS trigger
 the categories actually listed in `modes.automation_always_ask` — the three
 defaults above, unless the project overrides them — interrupt an `autonomous`
 run. The other rows do nothing until a project opts into them. Read the resolved
-list with `resolve_config` rather than assuming a row here is active; a real run
-logged two `architecture_decisions` as rule violations on a project where that
-category was never configured.
+list with `resolve_config` rather than assuming a row here is active. Treating a
+category the project never configured, such as `architecture_decisions`, as
+active reports rule violations the project never asked for.
 
 | Category | Examples of decisions in this category |
 |----------|----------------------------------------|
@@ -255,6 +270,8 @@ At each decision point in this skill:
    guided + minor:          State recommendation inline, proceed.
    autonomous + always_ask: AskUserQuestion (regardless of mode).
    autonomous + other:      Pick recommended, log via log_decision, proceed.
+4. If the question comes back skipped, dismissed or empty, it is not an
+   answer: see §Every mode: a question with no answer.
 ```
 
 This is the contract. Skills that follow this pattern produce

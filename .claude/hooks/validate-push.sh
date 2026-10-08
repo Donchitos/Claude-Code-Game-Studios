@@ -39,7 +39,7 @@ INPUT=$(cat)
 
 # Most Bash and PowerShell calls do not mention git at all. Leave before any
 # parsing: this hook runs on every one of them, and the parse is most of its
-# cost (~350 ms a call measured; the early exit is the shell start-up alone).
+# cost (the early exit is the shell start-up alone).
 # Tested only after the "tool_input" key: matching the whole payload also
 # tests cwd and transcript_path, so a project path containing "GitHub" or
 # "digital" never took this exit and paid the full parse on every call.

@@ -2,11 +2,11 @@
 
 > ## READ ONE SECTION, NEVER THIS WHOLE FILE
 >
-> This document is **~31,000 tokens** — roughly **four times an entire turn's
-> context budget**, which sits near 8,300. It is organised as **36 sections of
-> ~900 tokens each**, one per setting, headed `## <key>`.
+> This document is very large, far more than any one lookup needs. It is
+> organised as one section per setting, headed `## <key>`, so a reader can take
+> only the section it wants.
 >
-> **So opening it costs 36× what you need.** To look up a setting:
+> **So opening it whole costs many times what you need.** To look up a setting:
 >
 > ```
 > Grep pattern="^## modes.review_mode" path=".claude/docs/effects-map.md" -A 40
@@ -15,13 +15,12 @@
 > Read the section for your key and stop. The same rule the skills already apply
 > to their own reference files — `/gate-check` loads only the row for the target
 > phase and says "never load the others" — applies here, and this is the largest
-> file in the framework by a factor of seven.
+> file in the framework.
 >
-> This banner exists because six skills cite this document and **none of them
-> scoped the citation**. None instructed a full read either, so
-> nothing was actually loading 31k — but "see effects-map.md for full schema" in
-> front of a file this size is an invitation, and the cost of accepting it is
-> silent.
+> Cite a section of this document, never the whole file. A pointer such as "see
+> effects-map.md for full schema" invites a full read of a file this size, and
+> the cost of accepting that invitation is silent. Name the `## <key>` section
+> you need instead.
 
 This document defines what each `project.yaml` setting actually does across
 every skill that reads it. It is the tracked, authoritative reference.
@@ -341,22 +340,17 @@ behavior: strict project defaults for CI, looser developer overrides for local w
 > **Hotfix / day-one-patch exception:** These skills are emergency or release-critical
 > pipelines. They are never gated by `review_mode` — all agents always run.
 
-> **Known inertness — `full` and `lean` barely differ in the nine `team-*`
-> orchestrators.** Each documents a three-way split: `full` spawns every director
-> and lead gate, `lean` skips director gates *unless* they are PHASE-GATE type,
-> `solo` skips gate spawning entirely. But the director gates the team skills name
-> are the four PHASE-GATEs, which `lean` keeps — and no team pipeline spawns one
-> (`/gate-check` is their only spawner). Two things differ: `/team-release`'s
-> technical-director release sign-off runs only at `full`, and `/team-narrative` at
-> `team.size: small` adds `localization-lead` and `world-builder` only at `full`.
+> **`review_mode` in the nine `team-*` orchestrators.** `review_mode` sets
+> director-gate depth: `full` spawns every director gate a pipeline names, `lean`
+> skips director gates unless they are PHASE-GATE type, and `solo` skips gate
+> spawning entirely. No team pipeline spawns a PHASE-GATE (`/gate-check` is their
+> only spawner), so in the orchestrators
+> `lean` and `solo` behave the same, and `full` adds two things:
+> `/team-release`'s technical-director release sign-off, and, at
+> `team.size: small`, `/team-narrative`'s `localization-lead` and `world-builder`.
 >
-> `solo` genuinely differs, and outside the orchestrators (`/design-review`,
-> `/architecture-review`) all three levels differ as documented.
->
-> **This is recorded, not fixed.** Making `lean` mean something in the
-> orchestrators requires deciding which non-phase-gate reviewers each of the nine
-> should call at `full` — a design decision about review depth, not a wording fix,
-> and one that changes how many agents a run spawns.
+> Outside the orchestrators, the skills in the *Core skills* table below read
+> `review_mode` as that table documents.
 
 ---
 
@@ -395,15 +389,18 @@ behavior: strict project defaults for CI, looser developer overrides for local w
 
 ---
 
-### Skills to be made review-mode aware (currently ignore the setting)
+### Skills that do not read `modes.review_mode`
 
-| Skill | full | lean | solo |
-|-------|------|------|------|
-| **review-all-gdds** | Phase 2 consistency pass + Phase 3 design theory pass (parallel) | Phase 2 consistency pass only, Phase 3 skipped | Phase 2 only, Phase 3 skipped |
-| **architecture-review** | Engine specialist + security-engineer (if online features) | Both skipped | Both skipped |
-| **dev-story** | Core programmer routing always runs + engine-specialist escalation on HIGH risk stories | Core programmer routing always runs, engine-specialist escalation skipped | Core programmer routing always runs, engine-specialist escalation skipped |
-| **code-review** | Language, shader, UI specialists + qa-tester | All optional specialists skipped | All optional specialists skipped |
-| **security-audit** | security-engineer spawned | Skipped | Skipped |
+These skills run the same way at `full`, `lean` and `solo`. None of them takes a
+`--review` flag.
+
+| Skill | What runs at every level |
+|-------|--------------------------|
+| **review-all-gdds** | Phase 2 consistency pass and Phase 3 design-theory pass, in parallel |
+| **architecture-review** | The primary engine specialist is consulted after the engine audit (recorded as NOT ASSESSED when no engine is configured) |
+| **dev-story** | Core programmer routing, plus the engine specialist when the story involves engine-specific APIs or patterns, and always when engine risk is HIGH |
+| **code-review** | Language, shader and UI specialists when an engine is configured, plus `qa-tester` for Logic and Integration stories |
+| **security-audit** | `security-engineer` is spawned to run the audit |
 
 ---
 
@@ -427,9 +424,9 @@ pipeline's own review steps run in every mode.
   phase gates always run. Only `solo` skips them. This is intentional: phase
   gates are the minimum quality bar, not optional extras. **How many directors
   run is a separate axis** — `modes.workflow` sets panel width (`minimal` → PR
-  only, `standard` → TD + PR, `full` → all four), because a fixed four-director
-  Opus panel cost a two-system jam exactly what it cost a thirty-system
-  commercial project. Width never softens a verdict: the strictest verdict from
+  only, `standard` → TD + PR, `full` → all four), because directors are
+  Opus-tier and a small project should not pay for the same four-director panel
+  as a large one. Width never softens a verdict: the strictest verdict from
   whoever ran still wins, and `/gate-check` names the perspectives it skipped.
 - **art-bible** always spawns its section specialists regardless of mode — only
   the final sign-off gate is controlled by `review_mode`. Specialist delegation is
@@ -459,8 +456,8 @@ pipeline's own review steps run in every mode.
 `/start` asks that sets the six knobs below
 **Values:** `minimal` | `standard` | `full`
 **Default:** `minimal` — see the rationale block above `_yaml_helper_defaults`
-in `.claude/hooks/yaml-helper.sh`. Short version: the heavier tier cost several
-times more to reach working code without producing a better result.
+in `.claude/hooks/yaml-helper.sh`. Short version: the heavier tier costs more to
+reach working code without producing a better result.
 **Set by:** `/start` (Phase 3d), `/settings`
 **Read by:** nothing directly — it is read *through* the six knobs it supplies
 
@@ -646,8 +643,8 @@ checklists differ per phase per mode.
      `minimal`. -->
 
 **Director panel width** (`/gate-check` Section 4b) is workflow's second effect
-here. Directors are Opus-tier, so a fixed four-director panel charged a
-two-system jam exactly what it charged a thirty-system commercial project:
+here. Directors are Opus-tier, so the panel is sized to the project rather than
+fixed at four:
 
 | `workflow` | Panel | Directors |
 |---|---|---|
@@ -823,10 +820,10 @@ recommend and proceed — the tradeoff between user control and speed
 - Minor decisions: AI states recommendation inline and proceeds — e.g.
   *"Going with a static utility pattern here — it fits the existing architecture.
   Continuing unless you want to change direction."*
-- Draft shown briefly before writing — proceeds after a short summary, does not
-  wait for explicit "yes"
-- "May I write?" asked for **new files only** — updates to existing files proceed
-  directly
+- Updates to existing files: draft shown briefly before writing — proceeds after a
+  short summary, does not wait for explicit "yes"
+- "May I write?" asked for **new files only**, and a new file waits for the answer
+  — updates to existing files proceed directly
 - Still presents options for major decisions but caps at 2 choices with a clear
   recommendation
 - Multi-section authoring: writes each approved section immediately, no per-section
@@ -841,6 +838,18 @@ recommend and proceed — the tradeoff between user control and speed
 - All decisions logged immediately to `production/session-logs/decision-log.md`
   with: timestamp, skill, decision point, option chosen, reasoning
 - User reviews decision log post-session to audit choices made
+
+#### every mode — a question with no answer
+
+- A question that comes back skipped, dismissed or empty is **not an answer**, in
+  every mode and on every tool (a closed question, a headless run that returns
+  every question as skipped, a reply that picks nothing)
+- Nothing is written, no mode or setting changes and no option is picked on its
+  behalf; the question is asked again in plain text, naming what waits on it
+- `autonomous`: a question the mode did not require is decided and logged as
+  usual; an `automation_always_ask` category or an exempt skill asks again
+- Where nobody can answer (CI, headless), the skill stops and reports what is
+  waiting rather than choosing
 
 ---
 
@@ -1239,7 +1248,7 @@ closing, or produces a warning and lets work continue — per test type
 > **No skill or hook reads this setting. Setting it has no effect.** Everything
 > below describes the intended design, not current behaviour.
 >
-> The value is checked for valid spelling when you set it, and then ignored.
+> The value is not checked when you set it, and nothing reads it.
 
 **Controls:** Whether phase gate failures block stage transition or just warn
 **Values:** `true` | `false`
@@ -1437,7 +1446,7 @@ must tell them apart)
 
 | Value | Required compliance | Best for |
 |-------|---------------------|----------|
-| `none` | No certification — internal release, alpha, jam game | Default |
+| `none` | No certification | Internal releases, alphas, jam games (an explicit choice — unset is not `none`) |
 | `itch` | itch.io upload requirements (build size, page setup, age tags) | Indie web/desktop releases |
 | `steam` | Steamworks integration, store page, achievements, depot build, system requirements, common content rules | Commercial PC releases |
 | `console` | Platform certification (PlayStation/Xbox/Switch) — heavy compliance: TRC/XR/Lotcheck, save data rules, controller mapping rules, age rating boards | Console releases |
@@ -1450,7 +1459,6 @@ must tell them apart)
 |-------|------|------|-------|---------|
 | **launch-checklist** | Internal launch only — no external requirements | + itch.io page setup, butler upload, build size | + Steamworks integration, store page, achievements depot, common content checks | + Platform-specific TRC, certification submission, console save format compliance |
 | **release-checklist** | Smoke pass + version bump only | + itch.io page live, build uploaded to butler | + Steam store page live, depot pushed, achievements live | + Platform submission accepted, age rating boards cleared |
-| **/pre-cert** (future) | Not applicable | Lightweight readiness check | Steam common content audit | Full TRC compliance audit |
 
 ---
 
@@ -1477,8 +1485,8 @@ must tell them apart)
 
 > **Default is `none`, not `standard`.** Most CCGS users are solo devs and jam-game
 > makers — defaulting to `standard` would auto-spawn the accessibility specialist
-> for projects where it's overhead. `/start` asks the question explicitly so users
-> who care can opt into `standard` or `aaa` consciously.
+> for projects where it's overhead. `/start` does not ask about it; you set it with
+> `/settings`.
 
 ---
 
@@ -1564,9 +1572,9 @@ must tell them apart)
 >
 > **Unset is not zero and not a default.** A budget nobody set is not a budget
 > that was met — `/perf-profile` must report `NOT ASSESSED` for a metric with no
-> committed target rather than measuring against a placeholder. That exact
-> failure (">99% headroom against a 16.67ms budget", from zero profiler data)
-> is one of the two instances that motivated `.claude/rules/skill-authoring.md`.
+> committed target rather than measuring against a placeholder. A headroom figure
+> computed against an invented budget, with no profiler data behind it, reads as
+> a pass and is not one; see obligations 1 and 2 in `.claude/rules/skill-authoring.md`.
 
 ## performance.enforce
 
@@ -1832,7 +1840,8 @@ engine reference in this repo can source it. See `/setup-engine` §"The Godot
 
 The Unreal row is Windows'. `/setup-engine` writes the Linux block (`Engine/Build/BatchFiles/RunUAT.sh`,
 `Engine/Binaries/Linux/UnrealEditor`) on Linux, and on macOS only `build`, leaving `test`, `run` and
-`smoke` as TODOs — see `docs/engine-reference/unreal/current-best-practices.md`, "Command Line".
+`smoke` unset, with a comment in `project.yaml` asking you to set them via `/settings` — see
+`docs/engine-reference/unreal/current-best-practices.md`, "Command Line".
 
 > **`<PRESET>` and `<TARGET>` are placeholders, not values to copy.** A Godot
 > export preset is whatever string the operator typed into `export_presets.cfg`;
@@ -1880,16 +1889,15 @@ conventions into a brief, manifest or spec. **NOT by `/code-review` and NOT by
 > and `validate-commit.sh` does not warn on violations — neither contains any
 > naming logic. If you need enforcement, it has to be added.
 >
-> **Known rough edge — asset filenames.** `validate-assets.sh` warns unless files
-> under Godot's `assets/` are lowercase-with-underscores, and it takes no config
-> input, while `/asset-spec` specifies asset names from `naming.*`. Unity's
-> `Assets/` and Unreal's `Content/` are not naming-checked: those engines name
-> assets in PascalCase. On Godot-C#, where `/setup-engine` sets
-> `naming.files: PascalCase`, the hook will warn on assets named exactly as
-> `/asset-spec` specified them. The two are
-> measuring different things — `naming.files` describes **source** files by its
-> own examples (`PlayerController.cs`), and no key currently governs asset
-> filenames — so treat the hook's naming warning as advisory on those engines.
+> **Asset filenames.** `validate-assets.sh` warns when a file under Godot's
+> `assets/` has an uppercase letter, a space or a hyphen in its name (it expects
+> lowercase with underscores), and it takes no config input. `/asset-spec`
+> specifies asset names from `naming.*`. Unity's `Assets/` and Unreal's `Content/`
+> are not naming-checked: those engines name assets in PascalCase. On Godot-C#,
+> where `/setup-engine` sets `naming.files: PascalCase`, the hook warns on assets
+> named exactly as `/asset-spec` specified them. `naming.files` describes
+> **source** files by its own examples (`PlayerController.cs`), and no key governs
+> asset filenames, so treat the hook's naming warning as advisory there.
 
 > **Moved from `technical-preferences.md`**, which is being deleted. Naming
 > conventions are project-level facts shared by everyone on the project, so they
@@ -1931,19 +1939,8 @@ No skill or hook validates code *against* these conventions — see the note abo
 
 ## features.session_state
 
-> ⚠️ **`active.yaml` does not exist and nothing writes it — anywhere in this
-> document.** It is deferred design. What ships is
-> `production/session-state/**active.md**`, whose `<!-- CHECKPOINT -->` region
-> `session-start.sh` and `pre-compact.sh` both read, and whose
-> `<!-- STATUS -->` block `statusline.sh` parses. **Read every `active.yaml` and
-> `status:` mention in this file — above and below — as the deferred design, and
-> substitute `active.md` (and its STATUS block).** This scope note is
-> document-wide on purpose: the equivalent warning under *Status line behavior*
-> scoped itself to mentions "below", which left this section's own Controls line
-> and Hook behavior table describing a file that does not exist.
-
 **Controls:** Whether the harness runs a full session tracking pipeline (hooks,
-log files, `active.yaml` checkpoint — see the scope note above) or relies on
+log files, `active.md` checkpoint) or relies on
 skeleton-first output files for recovery  
 **Values:** `off` | `on`  
 **Default:** `on`  
@@ -2000,11 +1997,11 @@ skeleton-first output files for recovery
 
 | Hook | session_state: off | session_state: on |
 |------|--------------------|-------------------|
-| **session-start.sh** | Runs normally (git/sprint context) — skips active.yaml preview block | Runs fully including active.yaml preview |
+| **session-start.sh** | Runs normally (git/sprint context) — skips the `active.md` checkpoint preview | Runs fully, including the `active.md` checkpoint preview |
 | **detect-gaps.sh** | Runs unchanged — gap detection is independent of session state | Runs unchanged |
 | **pre-compact.sh** | No-op — exits silently (no compaction-log append) | The CHECKPOINT block (and any STATUS lines) from `active.md`, changed and untracked file names and design docs with WIP markers — each list capped at 20 — then a compaction-log append; the output goes to the debug log, since PreCompact output never reaches Claude |
 | **post-compact.sh** | No-op — exits silently | Runs: prints a re-read reminder to the debug log (PostCompact output never reaches Claude; `session-start.sh` restores context) |
-| **session-stop.sh** | No-op — exits silently | Archives active.yaml to session-log, appends commits and diffs |
+| **session-stop.sh** | No-op — exits silently | Archives `active.md` to `session-log.md` when it has changed, appends commits and uncommitted file names |
 | **log-agent.sh** | No-op — exits silently | Appends to agent-audit.log |
 | **log-agent-stop.sh** | No-op — exits silently | Appends to agent-audit.log |
 
@@ -2015,7 +2012,7 @@ skeleton-first output files for recovery
 | File | session_state: off | session_state: on |
 |------|--------------------|-------------------|
 | `production/session-state/active.md` | Still written by skills; session start does not show it | Written by skills; session start shows its checkpoint |
-| `production/session-logs/session-log.md` | Not written | Append-only archive of each session's active.yaml |
+| `production/session-logs/session-log.md` | Not written | Append-only archive of each session's `active.md` |
 | `production/session-logs/compaction-log.txt` | Not written | Append-only timestamp log of compaction events |
 | `production/session-logs/agent-audit.log` | Not written | Append-only log of agent spawn/complete events |
 
@@ -2044,7 +2041,7 @@ bodies and a `<!-- STATUS: incomplete -->` marker per section.
 As each section is approved and written, the marker changes to `<!-- STATUS: done -->`.
 On recovery (after /clear or compaction), the agent reads the skeleton, identifies
 which sections are `done` vs `incomplete`, reads relevant ADRs and the systems index,
-and resumes at the first `incomplete` section. No active.yaml needed.
+and resumes at the first `incomplete` section. No `active.md` needed.
 
 **Skills required to implement skeleton-first:**
 
@@ -2068,14 +2065,6 @@ and resumes at the first `incomplete` section. No active.yaml needed.
 
 ### Status line behavior
 
-> ⚠️ **The table below describes POST-YAML-EXPANSION behavior, which is NOT
-> IMPLEMENTED.** `active.yaml` does not exist and nothing writes it. What ships
-> today: `statusline.sh` parses the `<!-- STATUS --> ... <!-- /STATUS -->`
-> markdown comment block inside `production/session-state/active.md`. Substitute
-> "the STATUS block in `active.md`" for every `active.yaml` / `status:` mention
-> here. **The same substitution applies document-wide, not just below this
-> point** — see the scope note under `## features.session_state`.
-
 > **Stage detection is always independent of session state.** `statusline.sh`
 > auto-detects stage from `project.yaml` `project.stage` or artifact heuristics regardless
 > of `session_state` value, and so is the breadcrumb: `statusline.sh` never reads
@@ -2087,24 +2076,24 @@ and resumes at the first `incomplete` section. No active.yaml needed.
 | Context % display | Always shown | Always shown |
 | Model display | Always shown | Always shown |
 | Stage display | From project.yaml or heuristics — except at `workflow: minimal`, where `Minimal · <done>/<total> stories` (or `Minimal · brief` before any story exists) replaces it | Same |
-| Epic/Feature/Task breadcrumb | Parsed from `status:` block in `active.yaml` (not gated) | Parsed from `status:` block in `active.yaml` |
+| Epic/Feature/Task breadcrumb | Parsed from the `<!-- STATUS -->` block in `active.md` (not gated) | Parsed from the `<!-- STATUS -->` block in `active.md` |
 
 ---
 
 ### Affected skills
 
-Skills interact with session state in two ways: **inference** (reading active.yaml
+Skills interact with session state in two ways: **inference** (reading `active.md`
 to resolve a missing argument) and **extraction** (appending a SESSION EXTRACT
 block after completing work). Neither is gated: no skill reads `session_state`,
 so both happen whatever its value.
 
-#### Inference — skills that read active.yaml to fill in missing arguments
+#### Inference — skills that read `active.md` to fill in missing arguments
 
-When active.yaml holds nothing to infer from, these skills must receive the
+When `active.md` holds nothing to infer from, these skills must receive the
 argument explicitly. If called without an argument, they should prompt the user
 rather than fail silently.
 
-| Skill | What it infers from active.yaml | Fallback when nothing is found |
+| Skill | What it infers from `active.md` | Fallback when nothing is found |
 |-------|----------------------------------|---------------------|
 | **dev-story** | Active story path (when no arg given) | Prompt user for story path |
 | **story-done** | In-progress story path (when no arg given) | Prompt user for story path |
@@ -2137,7 +2126,7 @@ the `<!-- CHECKPOINT -->` block; the others append a SESSION EXTRACT.
 | Per session start | ~500 tokens (git/sprint context only) | ~500–1,250 tokens (+ checkpoint preview, at most ~750) |
 | Per compaction event | 0 (compaction hook output never reaches Claude) | 0 (logged to disk only) |
 | Per session end | 0 | File I/O only (no conversation tokens) |
-| Recovery after /clear | Read skeleton + 2–3 docs (~1,000–3,000 tokens) | Read active.yaml (~200–500 tokens) |
+| Recovery after /clear | Read skeleton + 2–3 docs (~1,000–3,000 tokens) | Read `active.md` (~200–500 tokens) |
 
 > **Note:** The `off` recovery cost (reading skeleton + docs) is paid only when
 > recovery is actually needed. The `on` session-start cost is paid every session
@@ -2152,7 +2141,7 @@ the `<!-- CHECKPOINT -->` block; the others append a SESSION EXTRACT.
 > **No skill or hook reads this setting. Setting it has no effect.** Everything
 > below describes the intended design, not current behaviour.
 >
-> The value is checked for valid spelling when you set it, and then ignored.
+> The value is not checked when you set it, and nothing reads it.
 > Nothing warns at any threshold.
 
 **Controls:** Context usage threshold at which session warnings fire
@@ -2281,7 +2270,7 @@ preserved raw and flagged for manual resolution, never coerced.
 Settings absent from the legacy files (new v1.1 settings like `qa.level`,
 `docs.density`, `team.size`, etc.) get hardcoded defaults from the v1.1 schema.
 
-### Cleanup (deferred, non-destructive)
+### Cleanup (optional, non-destructive)
 
 Migration is **non-destructive in v1.1**: legacy files are NOT auto-deleted.
 Migration produces `project.yaml` and leaves the legacy files in place. Hooks

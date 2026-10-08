@@ -17,7 +17,7 @@
 Read `.claude/docs/model-tiers.md` on demand. It carries the tier table, the
 per-skill assignments and the authoring rule.
 
-**Load-bearing enough to restate here:** whether a skill's `model:` is used
+**Key point:** whether a skill's `model:` is used
 depends on how the skill starts. Typed as `/skill-name`: yes, except a `haiku`
 pin in auto mode. Started by Claude through the Skill tool: no. Never tell a
 user a `haiku` skill saves money; an `opus` skill typed in a Sonnet session
@@ -43,8 +43,7 @@ must NOT be parallelised.
 
 ### Agent Teams (experimental — opt-in)
 Multiple independent Claude Code *sessions* coordinated via a shared task list.
-Opt-in and never yet used here — read `.claude/docs/agent-teams.md` on demand
-before proposing one.
+Opt-in only — read `.claude/docs/agent-teams.md` on demand before proposing one.
 
 ## Parallel Task Protocol
 

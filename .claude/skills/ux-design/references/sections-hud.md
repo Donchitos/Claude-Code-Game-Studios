@@ -3,6 +3,13 @@
 
 # Section Guidance — HUD Design Mode
 
+**In this file:**
+
+- Section A: HUD Philosophy
+- Section B: Information Architecture
+- Section C: Layout Zones
+- Section D: HUD Element Specifications
+- Sections E–L: HUD States, Information Hierarchy, Visual Budget, Feedback & Notification, Platform Adaptation, Accessibility, Tuning Knobs, Acceptance Criteria
 
 HUD design follows a different order from UX spec mode. Begin with philosophy;
 do not touch layout until the information architecture is complete.

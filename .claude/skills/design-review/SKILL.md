@@ -15,6 +15,8 @@ the pre-1.1 name for the same flag: treat `--depth <mode>` exactly as
 wins and `--depth` is ignored — say so. No block → defaults in
 `.claude/docs/config-resolution.md`.
 
+# Design Review
+
 
 ## Phase 0: Parse Arguments
 

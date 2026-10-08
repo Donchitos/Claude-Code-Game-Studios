@@ -7,6 +7,8 @@ allowed-tools: Read, Glob, Grep, Write, Edit, Bash, Agent, AskUserQuestion, Task
 model: sonnet
 ---
 
+# Team Audio
+
 If no argument is provided, output usage guidance and exit without spawning any agents:
 > Usage: `/team-audio [feature or area to design audio for] [--review full|lean|solo]` — specify the feature or area to design audio for (e.g., `combat`, `main menu`, `forest biome`, `boss encounter`). Do not use `AskUserQuestion` here; output the guidance directly.
 

@@ -14,7 +14,7 @@ ADR Dependencies, Engine Compatibility, GDD Requirements Addressed
 - Use `/architecture-decision` to create ADRs through the guided flow
 
 **TR Registry:** `docs/architecture/tr-registry.yaml`
-- Stable requirement IDs (e.g. `TR-MOV-001`) that link GDD requirements to stories
+- Stable requirement IDs (e.g. `TR-movement-001`) that link GDD requirements to stories
 - Never renumber existing IDs — only append new ones
 - Updated by `/architecture-review` Phase 8
 
@@ -30,4 +30,4 @@ ADR Dependencies, Engine Compatibility, GDD Requirements Addressed
 Version-pinned engine API snapshots. **Always check here before using any
 engine API** — the LLM's training data predates the pinned engine version.
 
-Current engine: see `docs/engine-reference/godot/VERSION.md`
+Current engine: see `docs/engine-reference/<engine>/VERSION.md` (`<engine>` is `godot`, `unity` or `unreal`, matching `engine.name` in `project.yaml`)

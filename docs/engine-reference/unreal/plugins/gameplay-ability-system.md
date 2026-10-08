@@ -212,13 +212,12 @@ public:
 
         // Tags
         // ⚠️ UNVERIFIED FOR 5.7 — `AbilityTags` may be deprecated in favour of
-        // SetAssetTags()/GetAssetTags(). Reported by the `unreal-specialist`
-        // agent (2026-08-12), which believed the change landed around 5.5 and
-        // correctly REFUSED to emit code on a symbol it could not verify.
-        // NOT SOURCEABLE offline: this repo has no 5.7 API dump to check against,
-        // and the same knowledge-gap warning that governs the agent governs this
-        // file. Verify against the UE 5.7 docs before using this snippet, and
-        // correct both occurrences (here and ~line 328) together.
+        // SetAssetTags()/GetAssetTags(); the change is believed to have landed
+        // around 5.5.
+        // NOT SOURCEABLE — the 5.7 tag API for abilities is not covered by
+        // docs/engine-reference/unreal/ (no 5.7 API dump). Verify against the UE
+        // 5.7 docs before using this snippet, and correct both occurrences (here
+        // and in "Use Tags in Abilities") together.
         AbilityTags.AddTag(FGameplayTag::RequestGameplayTag(FName("Ability.Attack.Fireball")));
     }
 

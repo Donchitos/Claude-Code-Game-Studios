@@ -1,10 +1,10 @@
 # Error Recovery Protocol
 
-Shared procedure for any skill that spawns agents via the `Agent` tool. Referenced from the
-`## Error Recovery Protocol` section of each orchestration/review skill. Those
-skills keep the two load-bearing imperatives (surface immediately, produce a
-partial report) inline, and keep their own **Common blockers** list inline —
-those are skill-specific. This file holds the full procedure.
+Shared procedure for any skill that spawns agents via the `Agent` tool, used by
+the `## Error Recovery Protocol` section of each orchestration and review skill.
+Two imperatives apply to all of them: **surface a blocked agent immediately, and
+produce a partial report.** Each skill's own **Common blockers** list is
+skill-specific and is not repeated here.
 
 ## Trigger 0 — verify the artifact before reading the response
 
@@ -15,19 +15,18 @@ response reads.
 
 This trigger exists because the three below are not sufficient. They fire on
 BLOCKED, on an error, and on "cannot complete" — and an agent can fail in a way
-that is none of those. Observed live: a `devops-engineer` spawned
-as half of a parallel phase ran **26 tool calls and ~31,600 tokens**, then
-returned a single fluent preamble — "I'll verify the build infrastructure…" —
-with no path, no summary, no BLOCKED item, and **no file written**. Nothing in
+that is none of those. A parallel agent can do a lot of work and then return a
+single fluent preamble — "I'll verify the build infrastructure…" — with no
+path, no summary, no BLOCKED item, and **no file written**. Nothing in
 steps 1–4 matches that shape. An orchestrator reading the transcript sees a
 plausible response and advances, and half a parallel phase disappears with no
 signal at all.
 
-The work was not lost — resumed with an explicit "you did not honour the return
-contract" message, the same agent completed in **one tool call**, because its
-investigation was still in context. Only the write-and-return step had failed.
-So the recovery is cheap; the detection is the hard part, and the detection
-cannot come from reading the response.
+The work is usually not lost. Resume the agent with an explicit "you did not
+honour the return contract" message. Its investigation is still in context, so
+it only has to do the write-and-return step it skipped. So the recovery is
+cheap; the detection is the hard part, and the detection cannot come from
+reading the response.
 
 **A fluent response is not evidence that a phase ran.** The artifact is —
 observe the artifact, not the transcript. The rule applies to sub-agents

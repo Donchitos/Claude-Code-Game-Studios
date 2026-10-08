@@ -12,6 +12,8 @@ model: sonnet
 Resolved above — use as-is. No block → defaults in
 `.claude/docs/config-resolution.md`.
 
+# UX Review
+
 ## Overview
 
 Validates UX design documents before they enter the implementation pipeline.

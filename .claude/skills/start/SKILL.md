@@ -174,7 +174,7 @@ In `project.yaml`, ensure a `project:` block exists with `stage: [value]`.
   schema_version: 1
 
   framework:
-    version: 1.1.2
+    version: 1.1.3
     last_upgraded: <YYYY-MM-DD>
 
   project:
@@ -249,8 +249,11 @@ Value mapping (ignore any ` (Recommended)` suffix on the first option):
 
 Write `modes.rigor` to `project.yaml` immediately after the user selects — no
 separate "May I write?" needed, as the write is a direct consequence of the
-selection. Use the Edit tool to add it under the `modes:` block. There is **no
-legacy mirror file** for this setting, so this is a single write, not a dual-write.
+selection. Use the Edit tool. The Phase 3c template has no `modes:` block: if
+`project.yaml` has none, add one with `rigor:` under it; if it has one, add
+`rigor:` under it. Never add a second `modes:` line — YAML allows one block per
+key. There is **no legacy mirror file** for this setting, so this is a single
+write, not a dual-write.
 If the Phase 3c `project.yaml` write was declined, do not write this one either —
 carry the answer forward and say it was not saved.
 
@@ -288,7 +291,9 @@ Value mapping: `Collaborative` → `collaborative`, `Guided (recommended)` →
 
 Write `modes.automation` to `project.yaml` immediately after the user selects —
 no separate "May I write?" needed, as the write is a direct consequence of the
-selection. Use the Edit tool to add it under the `modes:` block. There is **no
+selection. Use the Edit tool to add `automation:` under the `modes:` block
+(Phase 3d creates it); if `project.yaml` has none, add one.
+Never add a second `modes:` line — YAML allows one block per key. There is **no
 legacy mirror file** for this setting. If the Phase 3c `project.yaml` write was
 declined, do not write this one either — say it was not saved.
 

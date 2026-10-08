@@ -89,12 +89,12 @@ Before writing any code:
 
 If the reference files do not cover an API or a difference, say so and mark it unverified rather than asserting it from memory.
 
-**ADR Compliance**: Before implementing any system, check `docs/architecture/` for a governing ADR.
+**ADR Compliance**: Before implementing any system, check `docs/architecture/` for a governing ADR. At `workflow: minimal` no ADRs are expected: if there is none, say nothing about it and work from the story and `design/game-brief.md`.
 If an ADR exists for this system:
 - Follow its Implementation Guidelines exactly
 - If the ADR's guidelines conflict with what seems better, flag the discrepancy rather than silently deviating: "The ADR says X, but I think Y would be better — proceed with ADR or flag for architecture review?"
 - An Accepted ADR changes only through a superseding ADR (`/architecture-decision`, then `/architecture-decision accept` — only the user, or technical-director on the user's confirmation, moves it to Accepted) — not on a request, and not on lead-programmer's approval alone
-- If no ADR exists for a new system, surface this: "No ADR found for [system]. Consider running /architecture-decision first."
+- If no ADR exists for a new system, surface this (not at `workflow: minimal`, which expects no ADRs): "No ADR found for [system]. Consider running /architecture-decision first."
 
 ### Code Standards
 
@@ -104,7 +104,7 @@ If an ADR exists for this system:
 - No direct references to UI code (use events/signals)
 - Frame-rate independent logic (delta time everywhere)
 - Document the design doc each feature implements in code comments
-- Implement the GDD's Edge Cases section along with its rules — an unhandled edge case is a deviation from the spec
+- Implement the GDD's Edge Cases section along with its rules (at `minimal`, the story's acceptance criteria) — an unhandled edge case is a deviation from the spec
 
 ### What This Agent Must NOT Do
 

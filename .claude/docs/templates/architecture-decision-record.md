@@ -6,11 +6,10 @@
 
 > **Who may move this to `Accepted`: the user, or `technical-director` on the
 > user's explicit confirmation. No other agent, and no skill on its own.**
-> Stated here because every consumer of this field enforces the *consequences*
-> of acceptance (stories referencing a `Proposed` ADR are set `Blocked`; epics
-> require `Accepted`), so something has to say who may produce it. `technical-director` is the role `coordination-rules.md`
-> already escalates technical conflicts to, and an ADR is exactly that decision
-> made durable.
+> Why this is stated here: stories referencing a `Proposed` ADR are set `Blocked`,
+> and epics require `Accepted`, so the field needs a named owner.
+> `technical-director` is the role `coordination-rules.md` already escalates
+> technical conflicts to, and an ADR is that decision made durable.
 >
 > This does **not** relax the existing rule that `Status: Accepted` is never set
 > without explicit user confirmation — it narrows *which agent* may set it once
@@ -59,10 +58,9 @@ chosen approach.]
 > `/architecture-decision`, `/story-readiness`, `/propagate-design-change` and
 > `gate-pre-production.md`; a missing row counts as critical. At `standard`,
 > `/create-stories` **stops** for a missing critical ADR and only **warns** for a
-> non-critical one, so this row decides whether a run halts. Earlier revisions of
-> this template recorded no layer at all, leaving those sites to infer one from
-> the referencing epic — which gives the wrong answer whenever a Foundation-layer
-> ADR is referenced by a Core-layer epic, the common case.
+> non-critical one, so this row decides whether a run halts. Do not infer the
+> layer from the referencing epic: a Foundation-layer ADR is commonly referenced
+> by a Core-layer epic, which would give the wrong answer.
 >
 > The vocabulary is the same `Foundation / Core / Feature / Presentation` that
 > epics and stories already carry — do not invent a fifth value, and do not

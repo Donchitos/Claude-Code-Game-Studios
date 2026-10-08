@@ -303,6 +303,8 @@ After writing (if approved):
 - If coverage drift detected: "Regression suite may be drifting. Consider
   running `/regression-suite audit` at the next sprint boundary."
 
+At `workflow: minimal`, which has no sprints, say "next story" for "next sprint" in the three lines above.
+
 Verdict, first match wins:
 - **NOT ASSESSED** — the Section 1 stop at `qa.level: minimal`: "Regression
   suite not generated at qa.level minimal". Tests are not required at this

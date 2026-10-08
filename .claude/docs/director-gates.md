@@ -190,19 +190,6 @@ Collect every verdict from the directors that ran, then apply escalation rules:
 
 ---
 
-## Adding New Gates
-
-1. Assign a gate ID: `[DIRECTOR-PREFIX]-[DESCRIPTIVE-SLUG]`. Prefixes: `CD-`
-   `TD-` `PR-` `LP-` `QL-` `ND-` `AD-`; add new ones for new agents
-   (`audio-director` → `AU-`, `ux-designer` → `UX-`)
-2. Create `.claude/docs/director-gates/[gate-id].md` (lowercase), starting with
-   the standard "> Gate definition..." header note, with all five fields:
-   Trigger, Context to pass, Prompt, Verdicts, special handling notes
-3. Add its row to the Gate Index table above
-4. Reference it in skills by ID only — never copy the prompt text into the skill
-
----
-
 ## Gate Coverage by Stage
 
 | Stage | Required Gates | Optional Gates |

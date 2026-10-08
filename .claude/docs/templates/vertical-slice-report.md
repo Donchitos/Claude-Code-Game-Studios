@@ -3,7 +3,7 @@
 > **Date**: [YYYY-MM-DD]
 > **Slice Duration**: [N days]
 > **Target Scope**: 3–5 minutes of polished, continuous gameplay
-> **Source GDD**: design/gdd/game-concept.md
+> **Source GDD**: design/gdd/game-concept.md (or design/game-brief.md)
 
 ---
 

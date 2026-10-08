@@ -9,7 +9,7 @@
 > **Platform Target**: [PC | Console | Mobile | All — list all that this spec covers]
 > **Related GDDs**: [Links to the GDD sections that generated this UI requirement — e.g., `design/gdd/inventory.md § UI Requirements`]
 > **Related ADRs**: [Any architectural decisions that constrain this screen — e.g., `ADR-0012: UI Framework Selection`]
-> **Related UX Specs**: [Sibling and parent screens — e.g., `ux-spec-pause-menu.md`, `ux-spec-settings.md`]
+> **Related UX Specs**: [Sibling and parent screens — e.g., `pause-menu.md`, `settings.md`]
 > **Accessibility Tier**: Basic | Standard | Comprehensive | Exemplary
 > **Template**: UX Spec
 

@@ -237,7 +237,8 @@ items pass or are explicitly marked N/A with a stated reason.
 - [ ] **TR-ID is valid and active**: If the story contains a `TR-[system]-NNN`
   reference, look it up in the TR registry loaded in Section 2.
   - If the ID exists and `status: active` → pass.
-  - If the ID exists and `status: deprecated` or `status: superseded-by: ...` →
+  - If the ID exists and `status: deprecated` or `status: "superseded-by: ..."`
+    (quoted or not) →
     NEEDS WORK: the requirement was removed or replaced.
     Fix: update the story to reference the current requirement ID or remove if no longer applicable.
   - If the ID does not exist in the registry → NEEDS WORK: ID was not registered

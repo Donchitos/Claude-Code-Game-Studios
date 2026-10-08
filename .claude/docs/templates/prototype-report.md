@@ -2,7 +2,7 @@
 
 > **Date**: [YYYY-MM-DD]
 > **Prototype Path**: [HTML / Engine / Paper]
-> **Concept File**: design/gdd/game-concept.md (if exists)
+> **Concept File**: design/gdd/game-concept.md, or design/game-brief.md (if either exists)
 
 ---
 

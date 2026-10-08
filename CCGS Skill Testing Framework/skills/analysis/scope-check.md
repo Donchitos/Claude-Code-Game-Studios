@@ -13,7 +13,7 @@ current state (related source files, `git log`, TODO/FIXME comments, the active
 sprint plan) and produces a comparison report: Original Scope, Current Scope,
 Scope Additions, Scope Removals, a Bloat Score, a Risk Assessment and
 Cut / Defer / Keep / Flag recommendations. The verdict follows the net scope
-change: ≤10% PASS, 10–25% CONCERNS, >25% FAIL. When the percentage would be
+change: ≤10% PASS, >10–25% CONCERNS, >25% FAIL. When the percentage would be
 meaningless — a baseline that enumerates no items, or a current state that
 cannot be read — the verdict is NOT ASSESSED and the numeric block is replaced.
 No files are written and no director gates are invoked.
@@ -188,7 +188,7 @@ None. Scope check is a read-only advisory skill; no gates are invoked.
 
 - [ ] Locates the baseline document (`design/gdd/`, `production/sprints/`, `production/milestones/`) before any comparison, and stops if it is absent
 - [ ] Reads the current state from source files, `git log`, TODO/FIXME comments and the active sprint plan
-- [ ] Verdict follows the net-change table: ≤10% PASS, 10–25% CONCERNS, >25% FAIL
+- [ ] Verdict follows the net-change table: ≤10% PASS, >10–25% CONCERNS, >25% FAIL
 - [ ] Emits NOT ASSESSED instead of a percentage when the baseline has no items or the current state cannot be read
 - [ ] Does not write any files
 - [ ] No director gates are invoked

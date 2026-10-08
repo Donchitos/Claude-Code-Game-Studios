@@ -3,6 +3,22 @@
 
 # Section Guidance — UX Spec Mode
 
+**In this file:**
+
+- Section A: Purpose & Player Need
+- Section B: Player Context on Arrival
+- Section B2: Navigation Position
+- Section B3: Entry & Exit Points
+- Section C: Layout Specification
+- Section D: States & Variants
+- Section E: Interaction Map
+- Section E2: Events Fired
+- Section E3: Transitions & Animations
+- Section F: Data Requirements
+- Section F2: Input Method Completeness Checklist
+- Section G: Accessibility
+- Section H: Localization Considerations
+- Section I: Acceptance Criteria
 
 #### Section A: Purpose & Player Need
 

@@ -271,6 +271,12 @@ Verdict: PASS | CONFLICTS FOUND | NOT ASSESSED
 
 ## Phase 6: Registry Corrections
 
+**Re-read before you write.** Phase 1 read the registry before the scans, and
+another skill or session may have changed it since. Before each Edit, read the
+current `design/registry/entities.yaml`, find the entry in its section, and
+anchor the Edit on the entry's current text, never on what Phase 1 saw. Append
+a new entry after the last existing entry of its section.
+
 If stale registry entries were found, ask:
 > "May I update `design/registry/entities.yaml` to fix the [N] stale entries?"
 

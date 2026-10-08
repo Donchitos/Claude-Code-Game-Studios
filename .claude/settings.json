@@ -7,16 +7,9 @@
   "permissions": {
     "defaultMode": "default",
     "allow": [
-      "Bash(git status*)",
-      "Bash(git diff*)",
-      "Bash(git log*)",
-      "Bash(git branch*)",
-      "Bash(git rev-parse*)",
-      "Bash(ls *)",
       "Bash(dir *)",
-      "Bash(python -m json.tool*)",
-      "Bash(python -m pytest*)",
-      "Bash(py -m pytest*)"
+      "Bash(python -m pytest *)",
+      "Bash(py -m pytest *)"
     ],
     "deny": [
       "Bash(rm -rf *)",
@@ -95,6 +88,7 @@
       "Bash(cat *.env*)",
       "Bash(type *.env*)",
       "Read(**/.env*)",
+      "Edit(**/.env*)",
       "PowerShell(Remove-Item *-Recurse*)",
       "PowerShell(Remove-Item * -r*)",
       "PowerShell(Remove-Item -r*)",

@@ -1,10 +1,9 @@
 # Run and Observe
 
 Shared procedure for any skill that closes a story which changes something a
-player can see. Referenced from the point of use in `/dev-story` (Phase 6) and
-`/story-done` (Phase 3). Those skills keep the one load-bearing imperative
-inline — **a parse check is not a run, and a story nobody looked at does not
-close** — and cite this file for how to look.
+player can see. Used by `/dev-story` (Phase 6) and `/story-done` (Phase 3).
+**A parse check is not a run, and a story nobody looked at does not close.**
+This file explains how to look.
 
 `.claude/docs/coding-standards.md` is the authority for *what* evidence a story
 needs. This file is the procedure for *producing* the visual half of it.

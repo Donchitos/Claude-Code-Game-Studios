@@ -11,7 +11,7 @@
 > **Related Documents**:
 > - `design/art/art-bible.md` — visual standards (colors, typography, iconography)
 > - `design/accessibility-requirements.md` — accessibility commitments per feature
-> - `docs/ux/ux-spec-[screen].md` — individual screen specs that reference patterns
+> - `design/ux/[screen].md` — individual screen specs that reference patterns
 >
 > **Template**: Interaction Pattern Library
 

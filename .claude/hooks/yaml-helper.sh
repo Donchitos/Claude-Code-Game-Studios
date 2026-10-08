@@ -569,7 +569,11 @@ EOF
 #   and must agree on YAML edge cases exactly, and a shared copy that drifted
 #   would make two functions disagree about what a file says.
 validate_local_scope() {
-  local file="${1:-project.local.yaml}"
+  local file="${1:-}"
+  # Default to the PROJECT ROOT's local file, not the working directory's: run
+  # from src/, a bare `project.local.yaml` names a file that is not there, and
+  # the check passes because it found nothing to check.
+  if [ -z "$file" ]; then _yaml_helper_set_root; file="$_YH_ROOT/project.local.yaml"; fi
   [ -f "$file" ] || return 0
   if ! _yaml_helper_resolve_python; then return 0; fi
   local found key rc=0
@@ -646,7 +650,10 @@ def walk(node, prefix):
         elif dotted.startswith(EXEMPT_PREFIX):
             continue
         else:
-            print(dotted)
+            # Bytes, not print(): on Windows print() writes CRLF, bash keeps
+            # the CR, and every key but the last reached the notes line with
+            # a carriage return on it. The other parsers here write this way.
+            sys.stdout.buffer.write((dotted + '\n').encode('utf-8'))
 
 walk(data, '')
 PYEOF
@@ -682,7 +689,9 @@ EOF
 #   would be self-defeating.
 session_state_enabled() {
   local f v
-  for f in project.local.yaml project.yaml; do
+  # The root, not the working directory (builtins only -- no added spawn).
+  _yaml_helper_set_root
+  for f in "$_YH_ROOT/project.local.yaml" "$_YH_ROOT/project.yaml"; do
     [ -f "$f" ] || continue
     v=$(awk '
       /^features:[[:space:]]*$/ { inf=1; next }
@@ -792,8 +801,8 @@ data = parse(raw_lines)
 # default. Every enum check below passed on such a file, because a key that
 # cannot be read cannot hold an invalid value. That is rc=0 on a config that
 # configures nothing, byte-identical in outcome to a genuinely clean file.
-# Measured before this check: the same file with tabs instead of spaces
-# reported no errors while `modes.review_mode: BOGUS_VALUE` sat in it unread.
+# Without this check, the same file with tabs instead of spaces reports no
+# errors while `modes.review_mode: BOGUS_VALUE` sits in it unread.
 #
 # This is the validator's own version of the rule the skills are held to --
 # absence of evidence is not evidence of absence. It cannot report "no invalid
@@ -944,12 +953,12 @@ EOF
 # Whole-config resolution.
 #
 # WHY THIS EXISTS
-#   ~51 SKILL.md files each carried an English description of a deterministic
-#   fallback chain ("1. If --review passed -> use that; 2. Else read
-#   modes.review_mode from project.yaml; 3. Else production/review-mode.txt;
-#   4. Else lean"), re-interpreted by a model on every invocation at roughly
-#   +1,360 tokens per skill. resolve_config computes the same answer once, in
-#   ~150 tokens, deterministically -- and testably, which prose never was.
+#   Every skill that reads a setting needs the same deterministic fallback chain
+#   ("1. If --review passed -> use that; 2. Else read modes.review_mode from
+#   project.yaml; 3. Else production/review-mode.txt; 4. Else lean"). Written out
+#   in each SKILL.md, a model would re-interpret that prose on every invocation.
+#   resolve_config computes the same answer once, deterministically -- and
+#   testably, which prose never was.
 #
 # CONTRACT BOUNDARY
 #   This layer resolves SOURCES. It does not own per-skill policy. Anything
@@ -969,32 +978,31 @@ EOF
 # and this table. Leaving a terminal default here as well would shadow the
 # expansion and make `rigor` a no-op for anyone who had not also set the sub-knob.
 # modes.review_mode is fronted by rigor so `rigor: minimal` resolves
-# review_mode to `solo` (skipping the ~44k-token director/specialist gates),
-# `standard` yields `lean` and `full` yields `full`. team.size joined the fronted
-# set the same way: `full` yields `studio` (the whole roster) while
+# review_mode to `solo` (skipping the director and specialist gates),
+# `standard` yields `lean` and `full` yields `full`. team.size is fronted the
+# same way: `full` yields `studio` (the whole roster) while
 # `minimal`/`standard` yield `individual`. Both stay locally overridable (they
 # are personal-experience knobs, not on-disk artifacts): that source sits ABOVE
-# the expansion, so only the terminal fallback moved.
+# the expansion, so a local value wins over the rigor level.
 #
 # --- WHY modes.rigor DEFAULTS TO `minimal` -----------------------------------
 #
-# It defaulted to `standard`. Building the same project both ways showed the
-# heavier tier costing several times as much to reach working code without
-# producing a better result, and giving nothing back when a fresh developer
-# picked the project up. A default that costs more and does not repay is the
-# wrong default, and it was what every user who never opened /settings received.
+# The heavier tier costs more to reach working code without producing a better
+# result, and gives nothing back when a new contributor picks the project up. A
+# default that costs more and does not repay is the wrong default, and it is
+# what every user who never opens /settings would receive.
 #
-# Raising rigor stays one question in /start and one `/settings` call, and
+# Raising rigor is one question in /start and one `/settings` call, and
 # settings-guidance.md's upward triggers ("system-GDD count crosses ~9",
 # "gate-check PASS into Production while rigor is minimal") are written to fire
 # from exactly this starting state. The cost of under-running is one prompt.
 #
 # ORDER MATTERS: this default is only safe while /gate-check keeps its floors.
 # `rigor: minimal` expands to `workflow: minimal` + `qa.level: minimal`, which
-# together once left the Production->Polish gate with ZERO required artifacts --
-# a vacuous PASS. That is fixed (the smoke-report floor and the "nothing
-# required -> NOT ASSESSED, never PASS" rule). Do not move this default again
-# without re-checking that the gates below it still require something.
+# together would leave the Production->Polish gate with ZERO required artifacts
+# -- a vacuous PASS -- without the smoke-report floor and the "nothing required
+# -> NOT ASSESSED, never PASS" rule. Do not change this default without
+# re-checking that each /gate-check gate still requires something.
 _yaml_helper_defaults="\
 modes.automation::collaborative
 modes.rigor::minimal
@@ -1002,12 +1010,11 @@ performance.enforce::warn"
 
 # Rigor expansion — one asked-at-/start knob that supplies four.
 #
-# WHY: /start has never asked about workflow, docs.density, qa.level or
-# story_granularity, so in practice every project ran all four at their defaults.
-# Between them the latter three drive ONE behaviour each (prose verbosity, is-
-# evidence-required, story size) restated across 19 skills with 17 "we are
-# orthogonal" disclaimers. `rigor` makes the common case reachable in one
-# question while each knob stays individually settable.
+# WHY: /start does not ask about workflow, docs.density, qa.level or
+# story_granularity, so in practice a project runs all four at their defaults.
+# The latter three each drive one behaviour (prose verbosity, whether evidence
+# is required, story size) that many skills read. `rigor` makes the common case
+# reachable in one question while each knob stays individually settable.
 #
 # modes.workflow is fronted, NOT replaced: it drives ~5 distinct behaviours and
 # owns the only per-system override mechanism (workflow_overrides.system_
@@ -1120,6 +1127,8 @@ get_legacy_key() {
   [ -z "$path" ] && return 0
   file=$(_yaml_helper_legacy_file_for "$path")
   [ -z "$file" ] && return 0
+  _yaml_helper_set_root
+  file="$_YH_ROOT/$file"
   [ -f "$file" ] || return 0
   awk 'BEGIN{FS="\n"} { gsub(/\r/,""); sub(/^[ \t]+/,""); sub(/[ \t]+$/,"");
         if (length($0) > 0) { print; exit } }' "$file"
@@ -1153,7 +1162,8 @@ resolve_setting() {
 
   if [ -z "$val" ]; then
     legacy=$(_yaml_helper_legacy_file_for "$path")
-    if [ -n "$legacy" ] && [ -f "$legacy" ]; then
+    # Checked under the root; labelled with the short path the user knows.
+    if [ -n "$legacy" ] && [ -f "$_YH_ROOT/$legacy" ]; then
       val=$(get_legacy_key "$path")
       if [ -n "$val" ] && ! validate_enum_value "$path" "$val" 2>/dev/null; then val=""; fi
       [ -n "$val" ] && src="$legacy"
@@ -1330,11 +1340,9 @@ PYEOF
 # a truncated block a skill might half-read.
 #   resolve_config [--keys k1,k2,...] [<system>]
 #
-# --keys restricts output to the named knobs. USE IT. Emitting all 12 lines costs
-# ~188 tokens, while the resolution prose it replaces averages only ~101 tokens
-# per skill -- so a full block is a NET LOSS for any skill that reads 2-3 knobs.
-# A 3-knob block costs ~45 tokens, which is the actual win. Measured, not
-# estimated.
+# --keys restricts output to the named knobs. USE IT. A block of every knob
+# costs more than the resolution prose it replaces in a skill that reads 2-3
+# knobs; a block of just those knobs is the saving.
 # Valid key names are the output labels: rigor, review_mode, automation, workflow,
 # docs.density, story_granularity, qa.level, team.size, project.stage,
 # automation_always_ask, engine, testing.strict, system_overrides.
@@ -1363,11 +1371,14 @@ resolve_config() {
   orphan=$(validate_local_yaml_base 2>&1) || notes="${notes:+$notes; }$orphan"
 
   # Collect enum complaints from both files so a typo is visible, not silent.
+  # Every file below is named under $_YH_ROOT. A bare `project.yaml` is the
+  # WORKING directory's, so run from src/ these checks found no file and
+  # reported nothing, while the values above them resolved from the root.
   local enum_err
-  enum_err=$(validate_yaml_enum project.yaml 2>&1 >/dev/null)
+  enum_err=$(validate_yaml_enum "$_YH_ROOT/project.yaml" 2>&1 >/dev/null)
   [ -n "$enum_err" ] && notes="${notes:+$notes; }$(echo "$enum_err" | tr '\n' ';' | sed 's/;$//') — ignored, chain continued"
   if [ -f "$_YH_ROOT/project.local.yaml" ]; then
-    enum_err=$(validate_yaml_enum project.local.yaml 2>&1 >/dev/null)
+    enum_err=$(validate_yaml_enum "$_YH_ROOT/project.local.yaml" 2>&1 >/dev/null)
     [ -n "$enum_err" ] && notes="${notes:+$notes; }local: $(echo "$enum_err" | tr '\n' ';' | sed 's/;$//')"
     # Locked keys in the local file. Separate from the enum check
     # above because their VALUES are legal — it is the location that is not, so
@@ -1377,17 +1388,16 @@ resolve_config() {
     # full remedy sentence per key for direct callers, and three copies of it
     # would cost more of this block than every resolved value put together.
     local scope_err scope_keys
-    scope_err=$(validate_local_scope project.local.yaml 2>&1 >/dev/null)
+    scope_err=$(validate_local_scope "$_YH_ROOT/project.local.yaml" 2>&1 >/dev/null)
     if [ -n "$scope_err" ]; then
       scope_keys=$(printf '%s\n' "$scope_err" | sed -n 's/.*`\([^`]*\)`.*/\1/p' | paste -sd, - | sed 's/,/, /g')
       notes="${notes:+$notes; }local: not locally overridable, ignored — $scope_keys (move to project.yaml or delete)"
     fi
   fi
 
-  # Framing costs ~81 chars. For a skill reading 1-2 knobs that is more than the
+  # For a skill reading 1-2 knobs the block's framing would cost more than the
   # inline chain it replaced, so bare lines are emitted instead -- "automation:
-  # guided (project.local.yaml)" is self-describing without a banner. Measured:
-  # single-knob skills were +226 chars WITH framing, negative without it.
+  # guided (project.local.yaml)" is self-describing without a banner.
   local nkeys=0
   if [ -n "$want" ]; then
     nkeys=$(printf '%s' "$want" | tr ',' '\n' | grep -c '[a-z]')
@@ -1418,13 +1428,21 @@ resolve_config() {
   done
 
   # automation_always_ask: array-valued, so it does not go through resolve_setting.
+  # Joined item by item. It used to join on commas and then turn every comma
+  # into ", ", so one quoted item holding a comma printed as two items. An item
+  # that holds a comma is now quoted, so one item stays one item.
+  _rc_join() {
+    printf '%s\n' "$1" | awk '/^[[:space:]]*$/ { next }
+      { s = $0; if (index(s, ",")) s = "\"" s "\""; out = out (n++ ? ", " : "") s }
+      END { print out }'
+  }
   local aaa
   if _rc_want automation_always_ask; then
     aaa=$(get_effective_yaml_array modes.automation_always_ask 2>/dev/null)
     if [ -n "$aaa" ]; then
-      echo "automation_always_ask: $(echo "$aaa" | tr '\n' ',' | sed 's/,$//; s/,/, /g') (configured)"
+      echo "automation_always_ask: $(_rc_join "$aaa") (configured)"
     else
-      echo "automation_always_ask: $(echo "$_yaml_helper_always_ask_default" | tr '\n' ',' | sed 's/,$//; s/,/, /g') (default)"
+      echo "automation_always_ask: $(_rc_join "$_yaml_helper_always_ask_default") (default)"
     fi
   fi
 
@@ -1444,11 +1462,29 @@ resolve_config() {
 
   # testing.strict.*: reported as CONFIGURED STATE ONLY, never defaulted here.
   # Its unset default differs per skill by design.
-  local ts_out="" k tv
+  #
+  # Each value is validated before it counts: get_effective_yaml_key printed an
+  # invalid value (`logic: maybe`) as the value while the notes line said it was
+  # ignored. Local first (the keys are locally overridable), then project.yaml,
+  # then the scalar shorthand (`testing.strict: true`), each checked against
+  # true|false. Not resolve_setting: that adds a rigor lookup per type, and
+  # testing.strict is neither rigor-fronted nor defaulted -- five more
+  # interpreter spawns for nothing. validate_enum_value is bash only.
+  local ts_out="" k tv ts_all
   if _rc_want testing.strict; then
+    ts_all=$(get_yaml_key "$_YH_ROOT/project.yaml" testing.strict 2>/dev/null)
+    if [ -n "$ts_all" ] && ! validate_enum_value testing.strict.logic "$ts_all" 2>/dev/null; then ts_all=""; fi
     for k in logic integration visual ui config; do
-      tv=$(get_effective_yaml_key "testing.strict.$k" 2>/dev/null)
-      [ -z "$tv" ] && tv=$(get_yaml_key "$_YH_ROOT/project.yaml" testing.strict 2>/dev/null)
+      tv=""
+      if [ -f "$_YH_ROOT/project.local.yaml" ]; then
+        tv=$(get_yaml_key "$_YH_ROOT/project.local.yaml" "testing.strict.$k" 2>/dev/null)
+        if [ -n "$tv" ] && ! validate_enum_value "testing.strict.$k" "$tv" 2>/dev/null; then tv=""; fi
+      fi
+      if [ -z "$tv" ]; then
+        tv=$(get_yaml_key "$_YH_ROOT/project.yaml" "testing.strict.$k" 2>/dev/null)
+        if [ -n "$tv" ] && ! validate_enum_value "testing.strict.$k" "$tv" 2>/dev/null; then tv=""; fi
+      fi
+      [ -z "$tv" ] && tv="$ts_all"
       ts_out="$ts_out $k=${tv:-unset}"
     done
     echo "testing.strict:${ts_out} (unset = each skill applies its own default)"
@@ -1498,11 +1534,18 @@ resolve_config() {
   # skill-authoring.md. Substituting `none` would make the question unaskable;
   # substituting anything else would emit every track, which is the ~150-item
   # checklist a single-platform jam project once received.
-  local ct
+  #
+  # Through resolve_setting, as performance.enforce above. get_effective_yaml_key
+  # let a hand-edited project.local.yaml win although platform.* is locked, and
+  # printed an invalid value (`banana`) as the value while the notes line said
+  # it was ignored. Only project.yaml can set it, so any other source -- there is
+  # no default to fall to -- leaves it unset and the skill asks.
+  local ct cs
   if _rc_want cert_tier || _rc_want platform.cert_tier; then
-    ct=$(get_effective_yaml_key platform.cert_tier 2>/dev/null)
-    if [ -n "$ct" ]; then
-      echo "platform.cert_tier: $ct"
+    ct=$(resolve_setting platform.cert_tier)
+    cs="${ct#*$(printf '\t')}"; ct="${ct%%$(printf '\t')*}"
+    if [ -n "$ct" ] && [ "$cs" = "project.yaml" ]; then
+      echo "platform.cert_tier: $ct ($cs)"
     else
       echo "platform.cert_tier: (unset -- ask which platforms are in scope)"
     fi
@@ -1512,7 +1555,7 @@ resolve_config() {
   # second call. A named <system> is echoed explicitly for convenience.
   local so_keys so_out="" sk sv
   if _rc_want system_overrides; then
-    so_keys=$(get_yaml_child_keys project.yaml workflow_overrides.system_overrides 2>/dev/null)
+    so_keys=$(get_yaml_child_keys "$_YH_ROOT/project.yaml" workflow_overrides.system_overrides 2>/dev/null)
     if [ -n "$so_keys" ]; then
       while IFS= read -r sk; do
         [ -z "$sk" ] && continue
@@ -1582,7 +1625,7 @@ hook_warn() {
 # Skills cannot `source` this file in their `` !`cmd` `` bootstrap line. Claude
 # Code permission-checks every injected command before the skill renders, and
 # outside auto mode anything short of "allow" ABORTS the whole invocation --
-# measured on 2.1.281, see .claude/docs/config-resolution.md. A `${VAR:-x}` or
+# see .claude/docs/config-resolution.md. A `${VAR:-x}` or
 # `$( )` in the command fails that check as "Contains expansion" and no grant can
 # approve it; a `source … && resolve_config` compound needs every part approved.
 # `${CLAUDE_SKILL_DIR}` is substituted as text before the check, so one plain
@@ -1594,7 +1637,7 @@ hook_warn() {
 # every name added here widens what a skill grant can reach.
 #
 # ROOT. Run from a subdirectory, the skill shell's cwd has no project.yaml and
-# $CLAUDE_PROJECT_DIR is the launch directory, not the repo root (measured), so
+# $CLAUDE_PROJECT_DIR is the launch directory, not the repo root, so
 # rules 1-3 of _yaml_helper_set_root all miss. This file's own location is the
 # one anchor that cannot drift: hooks/ sits two levels below the root. It only
 # fills CLAUDE_PROJECT_DIR when that has no project.yaml, so rules 1-2 (cwd

@@ -6,6 +6,8 @@ user-invocable: true
 allowed-tools: Read, Glob, Grep, Write, Edit, Bash, Agent, AskUserQuestion, TaskCreate, TaskGet, TaskList, TaskUpdate, Bash(bash "*/.claude/skills/team-live-ops/../../hooks/yaml-helper.sh" resolve_config *)
 model: sonnet
 ---
+# Team Live Ops
+
 **Argument check:** If no season name or event description is provided, output:
 > "Usage: `/team-live-ops [season name or event description] [--review full|lean|solo]` — Provide the name or description of the season or live event to plan."
 Then stop immediately without spawning any subagents or reading any files.
@@ -24,7 +26,7 @@ in `autonomous` mode it runs end to end, recording each phase outcome via
 
 ## Phase 0: Resolve Config
 
-!`bash "${CLAUDE_SKILL_DIR}/../../hooks/yaml-helper.sh" resolve_config --keys review_mode,automation,team.size`
+!`bash "${CLAUDE_SKILL_DIR}/../../hooks/yaml-helper.sh" resolve_config --keys review_mode,automation,team.size,workflow`
 
 Resolved above — use as-is; `--review` overrides `review_mode`. No block →
 defaults in `.claude/docs/config-resolution.md`.
@@ -233,7 +235,7 @@ Verdict: **COMPLETE** — season plan produced and handed off for production.
 ## Next Steps
 
 - Run `/design-review` on the season design document for consistency validation.
-- Run `/sprint-plan` to schedule content creation work for the season.
+- Run `/sprint-plan` to schedule content creation work for the season (at `workflow: minimal`, which has no sprints, add it to the brief's build order instead).
 - Run `/team-release` when the season content is ready to deploy.
 - If the run ended **BLOCKED** on an ethics flag: revise the economy design against
   `design/live-ops/ethics-policy.md` and re-run `/team-live-ops`; the three steps

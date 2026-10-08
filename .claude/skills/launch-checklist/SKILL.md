@@ -16,6 +16,8 @@ every file write follows `.claude/docs/automation-modes.md`
 
 Resolved above — use as-is. No block → defaults in `.claude/docs/config-resolution.md`.
 
+# Launch Checklist
+
 **Scope this checklist to the project.** Emitting every item for every platform
 trains the reader to skip the list, which defeats the gate:
 

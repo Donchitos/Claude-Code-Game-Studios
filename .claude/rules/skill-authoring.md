@@ -78,31 +78,15 @@ list.** A gate that fires on forty files does not get fixed, it gets muted — a
 a muted gate is worse than a narrow one, because it reads as coverage. When you
 keep a list, record *why* derivation failed and state the obligation to extend it.
 
-Two further gate rules earned the hard way:
+Two further gate rules:
 
 - **Assert something that cannot be true by accident.** A check for the word
-  "unity" was satisfied by a file path, and case-insensitively by "community".
+  "unity" is satisfied by a file path, and case-insensitively by "community".
   Assert a distinctive token instead.
 - **A gate you have not watched fail is not a gate.** Break the thing it guards,
   confirm it fails, restore. One mutation per tool invocation — a batch that
   times out leaves the repo holding a broken file, and `trap … EXIT` does not
   survive `SIGTERM`.
-
-## Evidence
-
-Every row below is a real instance this rule was written to prevent.
-
-| Where | What was indistinguishable from success |
-|---|---|
-| `team-*` engine step | Specialist skipped when no engine configured — output identical to a run that consulted one |
-| `team-ui` accessibility gate | Passed vacuously; its criterion file did not exist |
-| `yaml-helper` | Locked key in `project.local.yaml` dropped in silence; user saw the default they were overriding |
-| all nine `team-*` | Pipeline printed six agents and ran one, with no statement of the difference |
-| `/security-audit` | Godot-only greps returned zero hits on Unity/Unreal, and zero hits read as clean |
-| `unity/VERSION.md` | "Post-cutoff" table listed pre-cutoff versions, inverting the signal it exists to send |
-| `/security-audit` | `platform.multiplayer` had a reader and no writer; the network category never ran, on any project |
-| `test-evidence-review` | No verdict for "could not check", so an unverifiable story got a verdict saying it was verified |
-| the gate meant to catch all of this | Was a hand-written list, and read green over the gap |
 
 ## The test to apply
 

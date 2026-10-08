@@ -130,7 +130,7 @@ For `standard`/`full` (a `/create-epics` epic exists), read in full (these are s
 - `production/epics/[epic-slug]/EPIC.md` — epic overview, governing ADRs, GDD requirements table
 - The epic's GDD (`design/gdd/[filename].md`) — at `full` read all 8 sections; at `standard` the 5 required sections (+ conditional Formulas); at `minimal` the GDD may not exist — work from the epic brief + acceptance criteria. Always prioritise Acceptance Criteria, Formulas, and Edge Cases where present.
 - `docs/architecture/control-manifest.md` — grep only this epic's layer (`Grep pattern="^## <layer> Layer Rules" path="docs/architecture/control-manifest.md" output_mode="content" -A 40`) plus the header Manifest Version date, not a full read of all layers
-- `docs/architecture/tr-registry.yaml` — grep only this system's entries (`Grep pattern="system: <slug>" path="docs/architecture/tr-registry.yaml" output_mode="content" -B1 -A5`, or `id: TR-<slug>-`), not the whole cross-system registry
+- `docs/architecture/tr-registry.yaml` — grep only this system's entries (`Grep pattern="system: <slug>\s*$" path="docs/architecture/tr-registry.yaml" output_mode="content" -B1 -A5`, or `id: TR-<slug>-[0-9]`; the anchors keep `combat` from matching `combat-ai`), not the whole cross-system registry
 
 **Load each governing ADR by section — never with an unbounded full read.** A
 substantial ADR exceeds the 25k-token `Read` cap, and a capped read's only

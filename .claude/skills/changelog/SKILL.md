@@ -15,6 +15,8 @@ every file write follows `.claude/docs/automation-modes.md`
 (collaborative asks always · guided major-only · autonomous logs and proceeds;
 `automation_always_ask` categories always prompt).
 
+# Changelog
+
 ## Recent History
 
 Recent commits:

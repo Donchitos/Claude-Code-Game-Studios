@@ -12,6 +12,8 @@ model: sonnet
 Resolved above — use as-is; `--review` overrides `review_mode`. No block →
 defaults in `.claude/docs/config-resolution.md`.
 
+# Map Systems
+
 
 When this skill is invoked:
 
