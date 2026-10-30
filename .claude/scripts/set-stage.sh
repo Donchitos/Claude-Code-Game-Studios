@@ -27,9 +27,11 @@
 #     end of the file when there is no `framework:` block
 #   - no project.yaml: it is created from /gate-check's minimal template
 # production/stage.txt gets the stage name with no trailing newline.
-# A file already holding the stage is left byte-for-byte alone. Each file's new
-# text is made in full first, then copied over it in place, so it keeps its
-# mode and a symlink stays one.
+# A file already holding the stage is left byte-for-byte alone. Both new texts
+# are made in full and the old files backed up before either target is changed.
+# A failed second write restores the first, so a call leaves both stages new or
+# both as they were. Targets are copied over in place, so they keep their modes,
+# symlinks and hard links.
 #
 # Output: TSV.
 #   project.yaml <replaced|inserted|added-block|created|unchanged> <line or ->
@@ -54,6 +56,15 @@ HERE="$(cd "$(dirname "$0")" && pwd)"
 STAGE=""
 DRY=0
 ROOT_ARG=""
+Y_NEW=""; Y_OLD=""; T_NEW=""; T_OLD=""
+cleanup_temps() {
+  [ -n "$Y_NEW" ] && rm -f "$Y_NEW"
+  [ -n "$Y_OLD" ] && rm -f "$Y_OLD"
+  [ -n "$T_NEW" ] && rm -f "$T_NEW"
+  [ -n "$T_OLD" ] && rm -f "$T_OLD"
+  return 0
+}
+trap cleanup_temps 0
 while [ $# -gt 0 ]; do
   case "$1" in
     --dry-run) DRY=1; shift ;;
@@ -87,15 +98,21 @@ else
 fi
 [ -f "$HERE/project-state.sh" ] || { echo "set-stage: $HERE/project-state.sh is missing; cannot read the stage back" >&2; exit 1; }
 
-# replace_file TARGET NEWFILE — the new text, made in full in NEWFILE first,
-# copied over TARGET in place, so TARGET keeps its mode, a symlink stays a
-# symlink and a hard link sees the change (a mv would put a new file there).
-replace_file() {
-  if ! cat "$2" > "$1" 2>/dev/null; then
-    echo "set-stage: could not write $1; the new text is kept in $2" >&2
-    exit 1
+# publish_file SOURCE TARGET — copy the bytes over TARGET in place. This keeps
+# its mode and keeps a symlink/hard link in place; a rename would replace them.
+publish_file() {
+  cat "$1" > "$2" 2>/dev/null
+}
+
+# restore_file TARGET BACKUP EXISTED — return TARGET to its pre-call contents.
+# A failed open leaves the old bytes in place, so only write when they differ.
+restore_file() {
+  if [ "$3" = 1 ]; then
+    if [ -f "$1" ] && cmp -s "$2" "$1"; then return 0; fi
+    cat "$2" > "$1" 2>/dev/null
+  else
+    [ ! -e "$1" ] || rm -f "$1" 2>/dev/null
   fi
-  rm -f "$2"
 }
 
 # --- project.yaml ----------------------------------------------------------
@@ -289,13 +306,55 @@ if [ "$DRY" = 1 ]; then
   exit 0
 fi
 
-[ -n "$Y_NEW" ] && replace_file project.yaml "$Y_NEW"
+Y_EXISTED=0
+[ -f project.yaml ] && Y_EXISTED=1
+T_EXISTED=0
+[ -f production/stage.txt ] && T_EXISTED=1
+
+# Prepare both outputs and backups before changing either target. The stage
+# file goes first: if its write fails, project.yaml has not been touched.
 if [ "$T_ACTION" = "written" ]; then
-  mkdir -p production 2>/dev/null
+  mkdir -p production 2>/dev/null || { echo "set-stage: cannot create production/" >&2; exit 1; }
   T_NEW=$(mktemp "production/.ccgs-stage-XXXXXX" 2>/dev/null) || { echo "set-stage: cannot create a temporary file in production/" >&2; exit 1; }
   printf '%s' "$STAGE" > "$T_NEW" || { rm -f "$T_NEW"; echo "set-stage: could not write production/stage.txt" >&2; exit 1; }
-  replace_file production/stage.txt "$T_NEW"
+  if [ "$T_EXISTED" = 1 ]; then
+    T_OLD=$(mktemp "production/.ccgs-stage-XXXXXX" 2>/dev/null) || { echo "set-stage: cannot back up production/stage.txt" >&2; exit 1; }
+    cat production/stage.txt > "$T_OLD" 2>/dev/null || { echo "set-stage: cannot back up production/stage.txt" >&2; exit 1; }
+  fi
 fi
+if [ -n "$Y_NEW" ] && [ "$Y_EXISTED" = 1 ]; then
+  Y_OLD=$(mktemp "./.ccgs-stage-XXXXXX" 2>/dev/null) || { echo "set-stage: cannot back up project.yaml" >&2; exit 1; }
+  cat project.yaml > "$Y_OLD" 2>/dev/null || { echo "set-stage: cannot back up project.yaml" >&2; exit 1; }
+fi
+
+if [ "$T_ACTION" = "written" ]; then
+  if ! publish_file "$T_NEW" production/stage.txt; then
+    if restore_file production/stage.txt "$T_OLD" "$T_EXISTED"; then
+      echo "set-stage: could not write production/stage.txt; both stage files were left unchanged" >&2
+    else
+      echo "set-stage: could not write production/stage.txt or restore it; project.yaml was not changed" >&2
+    fi
+    exit 1
+  fi
+fi
+
+if [ -n "$Y_NEW" ] && ! publish_file "$Y_NEW" project.yaml; then
+  echo "set-stage: could not write project.yaml; rolling back production/stage.txt" >&2
+  ROLLBACK_OK=1
+  restore_file project.yaml "$Y_OLD" "$Y_EXISTED" || ROLLBACK_OK=0
+  if [ "$T_ACTION" = "written" ]; then
+    restore_file production/stage.txt "$T_OLD" "$T_EXISTED" || ROLLBACK_OK=0
+  fi
+  if [ "$ROLLBACK_OK" = 0 ]; then
+    echo "set-stage: rollback could not restore every stage file; inspect both before going on" >&2
+  else
+    echo "set-stage: both stage files were restored to their previous values" >&2
+  fi
+  exit 1
+fi
+
+cleanup_temps
+Y_NEW=""; Y_OLD=""; T_NEW=""; T_OLD=""
 
 # --- read back through the one reader -------------------------------------
 BACK=$(bash "$HERE/project-state.sh" --stage --root .)
