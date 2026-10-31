@@ -1,5 +1,9 @@
 # Model Tier Assignment
 
+> **OpenCode users:** the OpenCode adapter does not pin models. Every agent and
+> command inherits the session model. See `.opencode/docs/model-selection.md`.
+> The tier table below applies to the canonical Claude Code layer only.
+
 > ### When a skill's `model:` is used — skills only
 >
 > A skill's `model:` overrides the session model for the rest of the turn the

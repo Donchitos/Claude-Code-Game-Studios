@@ -68,10 +68,14 @@ Before writing any code:
 
 ## Working in a Worktree
 
-`isolation: worktree` runs you in a separate checkout on your own branch, made
-from the last commit. The user's checkout is somewhere else, and what is only
-there is missing here: uncommitted edits (a just-run `/setup-engine`, a fresh
-`design/` file) and gitignored files. Git LFS files can be pointer stubs.
+In Claude Code, `isolation: worktree` runs you in a separate checkout on your own
+branch, made from the last commit. OpenCode does not automatically isolate
+subagents: if the caller placed you in a worktree, the same rules apply; if not,
+build under `prototypes/` and do not modify `src/`.
+
+The user's checkout is somewhere else, and what is only there is missing here:
+uncommitted edits (a just-run `/setup-engine`, a fresh `design/` file) and
+gitignored files. Git LFS files can be pointer stubs.
 
 **Before building:**
 

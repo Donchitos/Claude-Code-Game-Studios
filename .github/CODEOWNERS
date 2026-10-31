@@ -1,16 +1,22 @@
 # CODEOWNERS — auto-assigns reviewers to PRs by path
 # Format: <pattern> <@github-username or @org/team>
-# Last match wins. Docs: https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
+# Last match wins. Docs: https://docs.github.com/en/repositories/managing-your-repositories-settings-and-features/customizing-your-repository/about-code-owners
 
 # Default owner for everything
 *                           @Donchitos
 
 # Core configuration — owner review required
 CLAUDE.md                   @Donchitos
+AGENTS.md                   @Donchitos
+opencode.jsonc              @Donchitos
+project.yaml                @Donchitos
 .claude/                    @Donchitos
-settings.json               @Donchitos
+.opencode/                  @Donchitos
+tools/sync-opencode.py      @Donchitos
+tools/validate-opencode.py  @Donchitos
 
 # Skills and agents — high-impact, review carefully
 .claude/skills/             @Donchitos
 .claude/agents/             @Donchitos
 .claude/hooks/              @Donchitos
+.opencode/plugins/          @Donchitos

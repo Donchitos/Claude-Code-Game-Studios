@@ -30,6 +30,17 @@ runs entirely within the existing skill/hook/template architecture.
 | `category` | `/skill-test category [name\|all]` | Category rubric — checks a skill or agent against its category-specific metrics | Low (~2k each) |
 | `audit` | `/skill-test audit` | Coverage report — skills, agent specs, last test dates | Low (~3k total) |
 
+**OpenCode adapter check.** This folder is dual-harness. The canonical sources
+live in `.claude/`; the OpenCode adapter is generated. After a skill or agent
+change, also run:
+
+```bash
+python3 tools/sync-opencode.py --check
+python3 tools/validate-opencode.py
+```
+
+`studio-tests/opencode/` holds the adapter smoke checklist.
+
 **What a pass proves.** Every mode reads files; none runs the skill. `static`:
 the file has the structure a skill needs, not that it behaves. `spec`: read
 closely, the instructions cover each case, not that Claude follows them when it

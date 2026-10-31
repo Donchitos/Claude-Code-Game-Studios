@@ -1,5 +1,10 @@
 # Agent Coordination Rules
 
+> **OpenCode users:** the OpenCode adapter uses the `subagent` tool and sets
+> `experimental.subagent_depth: 3`. See `.opencode/docs/coordination-rules.md`
+> for the OpenCode version of this page.
+
+
 1. **Vertical Delegation**: Leadership agents delegate to department leads, who
    delegate to specialists. Never skip a tier for complex decisions.
 2. **Horizontal Consultation**: Agents at the same tier may consult each other

@@ -9,7 +9,7 @@
 Thumbs.db
 Desktop.ini
 
-# === Claude Code Local ===
+# === Harness Local ===
 .claude/settings.local.json
 CLAUDE.local.md
 project.local.yaml
@@ -18,12 +18,18 @@ production/session-logs/
 # gitignored; the rule was missing, so active.md would have been committed.
 production/session-state/
 .scratch/
-# Per-agent working memory written at runtime — not release material
+# Per-agent working memory written at runtime — not release material. The
+# directory is shared by both harnesses.
 .claude/agent-memory/
-# Worktrees from the prototyper, isolated subagents and `claude --worktree`.
-# Each is a separate checkout; staging everything would add it as an embedded
-# repository.
+# Worktrees from the prototyper, isolated subagents, `claude --worktree`, and
+# OpenCode worktrees. Each is a separate checkout; staging everything would add
+# it as an embedded repository.
 .claude/worktrees/
+*.worktree/
+# Local OpenCode adapter dependencies or build output. The committed adapter
+# itself is source, not an artifact.
+.opencode/plugins/**/node_modules/
+.opencode/plugins/**/dist/
 
 
 # === Local sandboxes and scratch work ===

@@ -18,8 +18,8 @@
   name, it reports only those observations, with no verdict. Writes nothing.
 - **spec** `[skill-or-agent-name]`: resolves the name through
   `studio-tests/catalog.yaml`, reads the file and the spec at the
-  entry's `spec:` path, plus `CLAUDE.md` and every file it imports with `@path`,
-  and marks each assertion — the spec's Static Assertions included, for a skill
+  entry's `spec:` path, plus the harness entry file (`CLAUDE.md` or `AGENTS.md`)
+  and the files it loads, and marks each assertion — the spec's Static Assertions included, for a skill
   as for an agent — PASS / PARTIAL / FAIL / NOT ASSESSED. Case and Overall
   Verdicts are the worst result beneath them (FAIL, PARTIAL, NOT ASSESSED,
   PASS). It then asks "May I write these results to
@@ -39,6 +39,7 @@ No director gates apply.
 Checked against the SKILL.md by `/skill-test spec` — no fixture needed.
 
 - [ ] Has required frontmatter fields: `name`, `description`, `argument-hint`, `user-invocable`, `allowed-tools`
+- [ ] Names the OpenCode adapter checks (`tools/sync-opencode.py --check` and `tools/validate-opencode.py`) for the dual-harness repo
 - [ ] Has ≥2 phase headings
 - [ ] Contains verdicts: COMPLIANT, WARNINGS, NON-COMPLIANT, NOT ASSESSED (static mode); PASS, PARTIAL, FAIL, NOT ASSESSED (spec mode)
 - [ ] Contains "May I write" before writing spec results, and "May I update" before recording a category check in `catalog.yaml`

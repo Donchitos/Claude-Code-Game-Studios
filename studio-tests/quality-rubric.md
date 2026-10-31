@@ -11,6 +11,26 @@ has no section for the category, or the skill or agent file could not be read.
 
 ---
 
+## OpenCode Adapter
+
+The adapter is generated, so it is checked structurally rather than per skill.
+Run `python3 tools/validate-opencode.py`; it asserts:
+
+| Check | PASS criteria |
+|---|---|
+| **O1 — Counts** | 50 agents, 74 skills, 74 commands, no duplicates |
+| **O2 — Agent frontmatter** | `mode: subagent` (except `studio` primary), numeric `steps`, permissions, no Claude-only fields |
+| **O3 — Skill frontmatter** | no `model`, `allowed-tools`, `argument-hint`, `user-invocable`, or `disable-model-invocation`; internal skills set `opencode/autoinvoke: false` |
+| **O4 — Commands** | every command names its skill and passes `$ARGUMENTS` |
+| **O5 — No Claude leaks** | no `AskUserQuestion`, `CLAUDE_SKILL_DIR`, or Claude model pins in the adapter |
+| **O6 — Config** | `default_agent: studio`, `subagent_depth: 3`, `todo: true`, instruction files exist |
+| **O7 — Safety** | plugin and docs exist; permissions retain the destructive-command and `.env` denies |
+
+A metric is `NOT ASSESSED` when the adapter cannot be generated because the
+canonical source is unreadable. Fix the source; do not weaken the check.
+
+---
+
 ## Skill Categories
 
 ### `gate`

@@ -1,10 +1,59 @@
 # Changelog
 
-What's new in Claude Code Game Studios, written for the people using it.
+What's new in Game Studios, written for the people using it.
 
 See [UPGRADING.md](UPGRADING.md) for step-by-step upgrade instructions, and
 [docs/migration-guide-v1.1.md](docs/migration-guide-v1.1.md) if you have an
 existing project on the older config files.
+
+---
+
+## [1.3.0] — 2026-10-31
+
+**The studio runs in OpenCode as well as Claude Code, with no model pins, so it
+works with local and open-weight models.**
+
+The canonical studio stays in `.claude/`. A generator produces a native OpenCode
+adapter in `.opencode/`, and a single plugin maps OpenCode's events onto the
+shared hook scripts in `.claude/hooks/`. Claude Code behavior is unchanged.
+
+### Added
+
+- **OpenCode V2 adapter.** `.opencode/agents/` (49 subagents + a primary
+  `studio` agent), `.opencode/skills/`, and `.opencode/commands/` (74 slash
+  commands). `opencode.jsonc` sets `default_agent: studio`,
+  `experimental.subagent_depth: 3`, and `experimental.todo: true`.
+- **`tools/sync-opencode.py`.** Deterministic generator with `--check` for CI.
+  It converts agent frontmatter, generates command wrappers, rewrites
+  Claude-specific tool vocabulary, and removes every Sonnet/Opus/Haiku pin.
+- **`tools/validate-opencode.py`.** Structural and policy validation for the
+  adapter: counts, frontmatter, commands, permissions, no Claude-only fields,
+  no model pins.
+- **OpenCode hook plugin.** `.opencode/plugins/ccgs/` reuses the canonical
+  scripts for session start, compaction restore, commit/push/read/write/registry
+  validation, asset checks, and session stop. It also injects path-scoped rules.
+- **Open-model guidance.** `.opencode/docs/model-selection.md` covers tool
+  calling, context requirements, Ollama, LM Studio, vLLM, and OpenRouter.
+- **Dual-harness docs.** `AGENTS.md`, nested `AGENTS.md` files, and
+  `.opencode/docs/` cover setup, permissions, hooks, rules, sync, and
+  troubleshooting.
+- **CI and studio tests.** `.github/workflows/validate.yml` checks adapter sync,
+  the validator, hook script syntax, and a plugin build. `studio-tests/opencode/`
+  holds the adapter checks and a dual-harness smoke checklist.
+
+### Changed
+
+- `README.md`, `CONTRIBUTING.md`, and `SECURITY.md` describe both harnesses.
+- The canonical Claude docs carry short cross-references to the OpenCode
+  equivalents.
+- `.gitignore` and `.worktreeinclude` cover OpenCode local files and worktrees.
+
+### Not ported
+
+- Desktop notifications (`notify.sh`).
+- The agent audit trail and agent artifact check (`log-agent*.sh`,
+  `validate-agent-artifact.sh`).
+- The status line. OpenCode has its own context/model display.
 
 ---
 

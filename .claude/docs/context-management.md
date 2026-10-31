@@ -1,5 +1,8 @@
 # Context Management
 
+> **OpenCode users:** see `.opencode/docs/context-management.md` for the OpenCode
+> version, including compaction behavior and the adapter's checkpoint restore.
+
 Context is the most critical resource in a Claude Code session. Manage it actively.
 
 ## File-Backed State (Primary Strategy)

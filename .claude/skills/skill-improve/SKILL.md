@@ -25,6 +25,10 @@ skill rather than run it: a better score means a better-written skill, not proof
 that it behaves better. To check behaviour, run the skill on a real request
 before and after the change.
 
+The canonical skill lives in `.claude/`. After changing it, run
+`python3 tools/sync-opencode.py` so the generated OpenCode skill and command
+match, then `python3 tools/validate-opencode.py`.
+
 ---
 
 ## Phase 1: Parse Argument

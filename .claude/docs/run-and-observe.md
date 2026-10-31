@@ -1,5 +1,10 @@
 # Run and Observe
 
+> **OpenCode users:** the procedure is the same. The `read` tool renders PNG,
+> JPEG, GIF, and WebP attachments; take the screenshot with the engine or a
+> shell command and read the file. See `.opencode/docs/model-selection.md` for
+> vision-capable model requirements.
+
 Shared procedure for any skill that closes a story which changes something a
 player can see. Used by `/dev-story` (Phase 6) and `/story-done` (Phase 3).
 **A parse check is not a run, and a story nobody looked at does not close.**

@@ -14,7 +14,7 @@ is allowed. `/help` follows this route at `minimal`.
 
 ```
 MINIMAL PATH (modes.rigor: minimal — the default; no /gate-check, stage stays Concept)
-  /setup-engine ───────────────────────────────────────────────► project.yaml + CLAUDE.md
+  /setup-engine ───────────────────────────────────────► project.yaml + CLAUDE.md / AGENTS.md
   /brainstorm ─────────────────────────────────────────────────► design/game-brief.md (one page)
         │                                                          (replaces concept doc, systems index, GDDs)
         ▼
@@ -39,7 +39,7 @@ The overview below is the `standard`/`full` pipeline.
 PHASE 1: CONCEPT
   /start ──────────────────────────────────────────────────────► routes to A/B/C/D
   /brainstorm ──────────────────────────────────────────────────► design/gdd/game-concept.md
-  /setup-engine ────────────────────────────────────────────────► project.yaml + CLAUDE.md
+  /setup-engine ────────────────────────────────────────► project.yaml + CLAUDE.md / AGENTS.md
   /prototype [core-mechanic] ───────────────────────────────────► prototypes/[name]-concept/REPORT.md
         │ PROCEED                                                  (validate idea BEFORE writing GDDs)
         ▼

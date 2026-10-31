@@ -3,6 +3,10 @@
 Indie game development managed through 49 coordinated Claude Code subagents.
 Each agent owns a specific domain, enforcing separation of concerns and quality.
 
+> **Dual-harness repo:** `.claude/` is the canonical source. OpenCode uses the
+> generated `.opencode/` adapter and `AGENTS.md`; see
+> `.opencode/docs/opencode-setup.md`.
+
 ## Technology Stack
 
 - **Engine**: [CHOOSE: Godot 4 / Unity / Unreal Engine 5]

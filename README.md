@@ -1,68 +1,70 @@
 <p align="center">
-  <h1 align="center">Claude Code Game Studios</h1>
+  <h1 align="center">Game Studios</h1>
   <p align="center">
-    Turn a single Claude Code session into a full game development studio.
+    Turn a single coding session into a full game development studio.
     <br />
-    49 agents. 74 skills. One coordinated AI team.
+    49 agents. 74 workflows. Claude Code and OpenCode. Any tool-capable model.
   </p>
 </p>
 
 <p align="center">
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="MIT License"></a>
   <a href=".claude/agents"><img src="https://img.shields.io/badge/agents-49-blueviolet" alt="49 Agents"></a>
-  <a href=".claude/skills"><img src="https://img.shields.io/badge/skills-74-green" alt="74 Skills"></a>
+  <a href=".claude/skills"><img src="https://img.shields.io/badge/workflows-74-green" alt="74 Workflows"></a>
   <a href=".claude/hooks"><img src="https://img.shields.io/badge/hooks-15-orange" alt="15 Hooks"></a>
   <a href=".claude/rules"><img src="https://img.shields.io/badge/rules-14-red" alt="14 Rules"></a>
-  <a href="https://code.claude.com/docs"><img src="https://img.shields.io/badge/built%20for-Claude%20Code-f5f5f5?logo=anthropic" alt="Built for Claude Code"></a>
-  <a href="https://www.buymeacoffee.com/donchitos3"><img src="https://img.shields.io/badge/Buy%20Me%20a%20Coffee-Support%20this%20project-FFDD00?logo=buymeacoffee&logoColor=black" alt="Buy Me a Coffee"></a>
-  <a href="https://github.com/sponsors/Donchitos"><img src="https://img.shields.io/badge/GitHub%20Sponsors-Support%20this%20project-ea4aaa?logo=githubsponsors&logoColor=white" alt="GitHub Sponsors"></a>
+  <a href="https://code.claude.com/docs"><img src="https://img.shields.io/badge/Claude%20Code-supported-f5f5f5" alt="Claude Code"></a>
+  <a href="https://opencode.ai/v2/docs/"><img src="https://img.shields.io/badge/OpenCode-supported-111111" alt="OpenCode"></a>
 </p>
 
 ---
 
 ## Why This Exists
 
-Building a game solo with AI is powerful — but a single chat session has no structure. No one stops you from hardcoding magic numbers, skipping design docs, or writing spaghetti code. There's no QA pass, no design review, no one asking "does this actually fit the game's vision?"
+Building a game solo with AI is powerful — but a single chat session has no
+structure. No one stops you from hardcoding magic numbers, skipping design docs,
+or writing spaghetti code. There's no QA pass, no design review, no one asking
+"does this actually fit the game's vision?"
 
-**Claude Code Game Studios** solves this by giving your AI session the structure of a real studio. Instead of one general-purpose assistant, you get 49 specialized agents organized into a studio hierarchy — directors who guard the vision, department leads who own their domains, and specialists who do the hands-on work. Each agent has defined responsibilities, escalation paths, and quality gates.
+**Game Studios** gives your AI session the structure of a real studio: directors
+who guard the vision, department leads who own their domains, and specialists who
+do the hands-on work. Each agent has defined responsibilities, escalation paths,
+and quality gates.
 
-The result: you still make every decision, but now you have a team that asks the right questions, catches mistakes early, and keeps your project organized from first brainstorm to launch.
+The result: you still make every decision, but now you have a team that asks the
+right questions, catches mistakes early, and keeps your project organized from
+first brainstorm to launch.
 
----
+## Two Harnesses, One Studio
 
-## Table of Contents
+The repository is **dual-harness**. The canonical studio lives in `.claude/`;
+OpenCode gets a generated adapter in `.opencode/`.
 
-- [What's Included](#whats-included)
-- [Studio Hierarchy](#studio-hierarchy)
-- [Slash Commands](#slash-commands)
-- [Does it produce games, or documents?](#does-it-produce-games-or-documents)
-- [Getting Started](#getting-started)
-- [Configuration](#configuration)
-- [Upgrading](#upgrading)
-- [Project Structure](#project-structure)
-- [How It Works](#how-it-works)
-- [Design Philosophy](#design-philosophy)
-- [Customization](#customization)
-- [Platform Support](#platform-support)
-- [Community](#community)
-- [Supporting This Project](#supporting-this-project)
-- [License](#license)
+| | Claude Code | OpenCode |
+|---|---|---|
+| Entry point | `CLAUDE.md` | `AGENTS.md` |
+| Agents | `.claude/agents/` | `.opencode/agents/` |
+| Workflows | `/skills` | `.opencode/commands/` + `.opencode/skills/` |
+| Hooks | `.claude/settings.json` → `.claude/hooks/` | `.opencode/plugins/ccgs/` → `.claude/hooks/` |
+| Rules | native path-scoped rules | plugin injection from `.claude/rules/` |
+| Models | Claude tiers (optional) | any tool-capable model, no pins |
 
----
+Edit `.claude/`, then run `python3 tools/sync-opencode.py`. CI fails if the
+adapter is stale. See [`.opencode/docs/sync-and-maintenance.md`](.opencode/docs/sync-and-maintenance.md).
 
 ## What's Included
 
 | Category | Count | Description |
 |----------|-------|-------------|
 | **Agents** | 49 | Specialized subagents across design, programming, art, audio, narrative, QA, and production |
-| **Skills** | 74 | Slash commands for every workflow phase (`/start`, `/design-system`, `/create-epics`, `/create-stories`, `/dev-story`, `/story-done`, etc.) |
-| **Hooks** | 15 | Automated validation on commits, pushes, asset changes, design-doc reads, writes and registries, session lifecycle, agent audit trail, and gap detection |
-| **Rules** | 14 | Path-scoped coding standards enforced when editing gameplay, engine, AI, UI, network code, scene and asset files, and more |
-| **Templates** | 62 | Document templates for GDDs, UX specs, ADRs, sprint plans, HUD design, accessibility, and more |
+| **Workflows** | 74 | Slash commands for every phase (`/start`, `/design-system`, `/create-epics`, `/dev-story`, `/story-done`, ...) |
+| **Hooks** | 15 | Validation on commits, pushes, reads, writes, registries, assets, and session lifecycle |
+| **Rules** | 14 | Path-scoped coding standards for gameplay, engine, AI, UI, network, data, shaders, tests, and scenes |
+| **Templates** | 62 | GDD, UX, ADR, sprint, HUD, accessibility, and other document templates |
 
 ## Studio Hierarchy
 
-Agents are organized into three tiers, matching how real studios operate:
+Agents are organized into three tiers:
 
 ```
 Tier 1 — Directors
@@ -84,14 +86,12 @@ Tier 3 — Specialists
   live-ops-designer    community-manager
 ```
 
-Each agent declares a model in its frontmatter: the three directors ask for
-Opus, `lead-programmer` and fifteen specialists name Sonnet, and the remaining thirty
-**inherit your session's model**. Treat the tiers as seniority of role, not as
-a billing plan — most of the studio runs on whatever model you are already using.
+Each agent declares a model in the Claude layer or inherits the session model.
+The **OpenCode adapter removes every model pin**, so all agents and commands
+inherit whatever model is selected in OpenCode. This is what makes the template
+usable with local open-weight models.
 
 ### Engine Specialists
-
-The template includes agent sets for all three major engines. Use the set that matches your project:
 
 | Engine | Lead Agent | Sub-Specialists |
 |--------|-----------|-----------------|
@@ -101,146 +101,137 @@ The template includes agent sets for all three major engines. Use the set that m
 
 ## Slash Commands
 
-Type `/` in Claude Code to access all 74 skills:
+Type `/` in either harness to access the 74 workflows:
 
-**Onboarding & Navigation**
-`/start` `/help` `/project-stage-detect` `/setup-engine` `/adopt` `/settings`
+**Onboarding & Navigation** — `/start` `/help` `/project-stage-detect` `/setup-engine` `/adopt` `/settings`
 
-**Game Design**
-`/brainstorm` `/map-systems` `/design-system` `/quick-design` `/review-all-gdds` `/propagate-design-change`
+**Game Design** — `/brainstorm` `/map-systems` `/design-system` `/quick-design` `/review-all-gdds` `/propagate-design-change`
 
-**Art & Assets**
-`/art-bible` `/asset-spec` `/asset-audit`
+**Art & Assets** — `/art-bible` `/asset-spec` `/asset-audit`
 
-**UX & Interface Design**
-`/ux-design` `/ux-review`
+**UX & Interface** — `/ux-design` `/ux-review`
 
-**Architecture**
-`/create-architecture` `/architecture-decision` `/architecture-review` `/create-control-manifest`
+**Architecture** — `/create-architecture` `/architecture-decision` `/architecture-review` `/create-control-manifest`
 
-**Stories & Sprints**
-`/create-epics` `/create-stories` `/dev-story` `/sprint-plan` `/sprint-status` `/story-readiness` `/story-done` `/estimate`
+**Stories & Sprints** — `/create-epics` `/create-stories` `/dev-story` `/sprint-plan` `/sprint-status` `/story-readiness` `/story-done` `/estimate`
 
-**Reviews & Analysis**
-`/design-review` `/code-review` `/balance-check` `/content-audit` `/scope-check` `/perf-profile` `/tech-debt` `/gate-check` `/consistency-check` `/security-audit`
+**Reviews & Analysis** — `/design-review` `/code-review` `/balance-check` `/content-audit` `/scope-check` `/perf-profile` `/tech-debt` `/gate-check` `/consistency-check` `/security-audit`
 
-**QA & Testing**
-`/qa-plan` `/smoke-check` `/soak-test` `/regression-suite` `/test-setup` `/test-helpers` `/test-evidence-review` `/test-flakiness` `/skill-test` `/skill-improve`
+**QA & Testing** — `/qa-plan` `/smoke-check` `/soak-test` `/regression-suite` `/test-setup` `/test-helpers` `/test-evidence-review` `/test-flakiness` `/skill-test` `/skill-improve`
 
-**Production**
-`/milestone-review` `/retrospective` `/bug-report` `/bug-triage` `/reverse-document` `/playtest-report`
+**Production** — `/milestone-review` `/retrospective` `/bug-report` `/bug-triage` `/reverse-document` `/playtest-report`
 
-**Release**
-`/release-checklist` `/launch-checklist` `/changelog` `/patch-notes` `/hotfix` `/day-one-patch`
+**Release** — `/release-checklist` `/launch-checklist` `/changelog` `/patch-notes` `/hotfix` `/day-one-patch`
 
-**Creative & Content**
-`/prototype` `/vertical-slice` `/onboard` `/localize`
+**Creative & Content** — `/prototype` `/vertical-slice` `/onboard` `/localize`
 
-**Team Orchestration** (coordinate multiple agents on a single feature)
-`/team-combat` `/team-narrative` `/team-ui` `/team-release` `/team-polish` `/team-audio` `/team-level` `/team-live-ops` `/team-qa`
+**Team Orchestration** — `/team-combat` `/team-narrative` `/team-ui` `/team-release` `/team-polish` `/team-audio` `/team-level` `/team-live-ops` `/team-qa`
 
-## Does it produce games, or documents?
+## Does It Produce Games, or Documents?
 
-A fair question, and the answer is a measurement rather than a sample project.
-Four games were built from one brief at different `modes.rigor` levels and the
-documents each wrote **before its first line of game code** were counted:
+A fair question. The upstream project measured four games built from one brief at
+different `modes.rigor` levels:
 
 | `modes.rigor` | Docs before first line of game code | Time |
 |---|---:|---:|
 | `minimal` | **1** (the one-page brief) | 0 min |
 | `standard` | 30 | 58 min |
 
-All of them produced a running, tested game. Two blind reviewers and a human
-playtest then ranked the `standard` build **last** — the extra 29 documents
-bought traceability, not a better game.
+All produced a running, tested game. The extra documents bought traceability, not
+a better game. `minimal` is the default for that reason; raise it when the project
+grows.
 
 ### It runs the game and looks at it
 
-The measurement above is about cost. The other half is whether the thing works,
-and for a game that means someone has to *look* at it — a passing test says
-nothing about a menu drawn off-screen. So a story that changes anything the
-player sees is not closed until the game has been launched, observed, and a
-screenshot retained in `production/qa/evidence/`. A parse check is not a run.
-This holds at every rigor level, including `minimal`, where automated tests are
-waived but the look is not.
-
-The games themselves are deliberately **not** shipped here: this is a template
-you clone to start your own project, and somebody else's game in your repo is
-clutter, not evidence.
+A passing test says nothing about a menu drawn off-screen. A story that changes
+anything the player sees is not closed until the game has been launched,
+observed, and a screenshot retained in `production/qa/evidence/`. A parse check
+is not a run. This holds at every rigor level, including `minimal`, where
+automated tests are waived but the look is not.
 
 ## Getting Started
 
 ### Prerequisites
 
 - [Git](https://git-scm.com/)
-- [Claude Code](https://code.claude.com/docs/en/setup) — the native installer is recommended (`npm install -g @anthropic-ai/claude-code` also works, on Node.js 22+)
-- [Python 3](https://www.python.org/) — reads `project.yaml` for every skill and hook; without it every setting silently falls back to its default
-- Bash — runs every hook; built into macOS and Linux, and on Windows it comes with [Git for Windows](https://git-scm.com/downloads/win)
-- **Recommended**: [jq](https://jqlang.github.io/jq/) (for hook validation)
+- Python 3 — reads `project.yaml`; every skill and hook uses it
+- Bash — runs the shared hooks (macOS, Linux, or Git Bash on Windows)
+- **Recommended**: `jq` for hook JSON parsing
 
-Hooks fail gracefully if optional tools are missing — you just lose validation — with one deliberate exception: a commit that stages data JSON is blocked when there is no Python to validate it.
+Pick one harness:
 
-### Setup
+- [Claude Code](https://code.claude.com/docs/en/setup) — the native installer or
+  `npm install -g @anthropic-ai/claude-code`
+- [OpenCode V2](https://opencode.ai/v2/docs/) — the native installer or
+  `npm install -g @opencode/cli`
 
-1. **Clone or use as template**:
+### OpenCode setup
+
+1. Clone or use this repository as a template.
+2. Open a terminal at the repository root — the folder holding `AGENTS.md`,
+   `opencode.jsonc`, and `project.yaml`.
+3. Start OpenCode and connect a provider:
+
    ```bash
-   git clone https://github.com/Donchitos/Claude-Code-Game-Studios.git my-game
-   cd my-game
+   opencode
    ```
 
-2. **Open Claude Code in the project's root folder** (the one holding
-   `CLAUDE.md` and `project.yaml`) and start a session:
-   ```bash
-   claude
-   ```
-   Starting it in a subfolder such as `src/` skips the project's hooks, deny
-   rules and ask-first permission mode.
+   Use `/connect` and `/models` before your first prompt. The studio does not
+   pin a model; with none selected, OpenCode falls back to a catalog default
+   that may not be available in your account. See
+   [`.opencode/docs/model-selection.md`](.opencode/docs/model-selection.md).
 
-3. **Run `/start`** — the system asks where you are (no idea, vague concept,
-   clear design, existing work) and guides you to the right workflow. No assumptions.
+4. Run `/start`.
 
-   Or jump directly to a specific skill if you already know what you need:
-   - `/brainstorm` — explore game ideas from scratch
-   - `/setup-engine godot 4.7` — configure your engine if you already know
-   - `/project-stage-detect` — analyze an existing project
+### Claude Code setup
+
+1. Open Claude Code at the repository root.
+2. Run `/start`.
+
+Starting in a subfolder such as `src/` skips the project's hooks and deny rules.
+
+### What `/start` asks
+
+The system asks where you are (no idea, vague concept, clear design, existing
+work) and guides you to the right workflow. It never runs the next step for you.
+
+Or jump directly to a specific workflow:
+
+- `/brainstorm` — explore game ideas from scratch
+- `/setup-engine godot 4.7` — configure your engine
+- `/project-stage-detect` — analyze an existing project
+
+## Open Models
+
+The OpenCode layer is designed for open-weight and local models:
+
+- **No model pins.** Every agent and command inherits the session model.
+- **Tool calling is required** for editing workflows. A text-only model can plan,
+  but it cannot run `/dev-story`.
+- **64k context recommended**, 32k practical minimum for the larger workflows.
+- Local provider examples for Ollama, LM Studio, vLLM, and any OpenAI-compatible
+  server are in [`.opencode/docs/model-selection.md`](.opencode/docs/model-selection.md).
+- Role-based overrides are possible, but optional; see the same document.
 
 ## Configuration
 
-`project.yaml` at the repo root is the single source of truth for how the
-studio behaves on your project — engine, naming conventions, and a `modes`
-block that controls how much process every skill enforces. `/start` writes it
-for you; you rarely need to hand-edit it.
+`project.yaml` at the repo root is the single source of truth for how the studio
+behaves on your project — engine, naming conventions, and a `modes` block that
+controls how much process every skill enforces. `/start` writes it for you.
 
 The one question that matters most is **`modes.rigor`** — `minimal`, `standard`,
-or `full`. It's a single front door over six separate knobs (`workflow` —
-which GDD sections are required, `docs.density`, `qa.level`,
-`story_granularity`, `review_mode` — how many director agents review your work,
-and `team.size`), so `/start` asks it once instead of six times:
+or `full`. It is a single front door over six knobs (`workflow`, `docs.density`,
+`qa.level`, `story_granularity`, `review_mode`, and `team.size`):
 
-- **`minimal`** (default) — jam-game speed. No GDDs required, terse docs, minimal QA evidence, solo review. `/start` → `/setup-engine` → `/brainstorm` (a one-page brief) → `/create-stories` → `/dev-story` ↔ `/story-done`.
-- **`standard`** — 5 required GDD sections, balanced doc depth, standard QA evidence, lean review.
-- **`full`** — all 8 GDD sections, thorough docs, full QA evidence on every story type, full director review.
+- **`minimal`** (default) — jam-game speed. No GDDs required, terse docs, minimal
+  QA evidence, solo review. `/start` → `/setup-engine` → `/brainstorm` (a
+  one-page brief) → `/create-stories` → `/dev-story` ↔ `/story-done`.
+- **`standard`** — 5 required GDD sections, balanced doc depth, standard QA
+  evidence, lean review.
+- **`full`** — all 8 GDD sections, thorough docs, full QA evidence, full director
+  review.
 
-`minimal` is the default because the heavier tier costs more to reach working
-code without producing a better result, and gives nothing back when someone new
-picks the project up. Raise it in one `/settings` call when your project grows
-— `/help` and `/gate-check` will suggest it when they see the signs.
-
-Two escape hatches keep one setting from being a blunt instrument.
-**`system_overrides`** holds a single system to a higher standard than the rest
-of the project — your combat system gets the full treatment while everything
-else stays light. **`testing.strict`** sets, per test type (logic, integration,
-visual, UI, config), whether missing evidence blocks a story or merely warns.
-
-Any of the six underlying knobs can still be set individually if you want a mix
-(e.g. `workflow: full` with `docs.density: terse` — comprehensive but compact).
-Two of them — `review_mode` (`full` / `lean` / `solo`) and `team.size` — are
-also **personal**: rigor sets the team-wide default, but you can override them
-per-developer in a gitignored `project.local.yaml` without touching the shared
-config. `modes.automation` (how often the AI pauses to ask before it acts) sits
-outside rigor and is likewise personally overridable.
-
-View or change any setting with the `/settings` skill:
+Use `/settings` to view or change any setting:
 
 ```
 /settings                              # view effective config
@@ -249,191 +240,160 @@ View or change any setting with the `/settings` skill:
 /settings --local modes.review_mode=solo   # write to project.local.yaml (just you)
 ```
 
-Full schema and per-setting behavior: `.claude/docs/effects-map.md`.
+Full schema and per-setting behavior: [`.claude/docs/effects-map.md`](.claude/docs/effects-map.md).
 
-## Upgrading
+### OpenCode configuration
 
-Already using an older version of this template? See [UPGRADING.md](UPGRADING.md)
-for step-by-step migration instructions, a breakdown of what changed between
-versions, and which files are safe to overwrite vs. which need a manual merge.
+`opencode.jsonc` controls the OpenCode adapter:
 
-## Project Structure
+- `default_agent: studio`
+- `experimental.subagent_depth: 3` — the director → lead → specialist chain
+- `experimental.todo: true` — a task list for multi-step workflows
+- `permissions` — ask-first shell, dangerous-command denies, `.env` and asset
+  binary protection
+- `instructions` — the OpenCode coordination, coding, and directory docs
 
-```
-CLAUDE.md                           # Master configuration
-.claude/
-  settings.json                     # Hooks, permissions, safety rules
-  agents/                           # 49 agent definitions (markdown + YAML frontmatter)
-  skills/                           # 74 slash commands (subdirectory per skill)
-  hooks/                            # 18 scripts (bash) — 15 event hooks, two helpers they
-                                    #   source (yaml-helper.sh, update-check.sh), and one
-                                    #   opt-in diagnostic you wire yourself
-  rules/                            # 14 path-scoped coding standards
-  statusline.sh                     # Status line script (context%, model, stage, epic breadcrumb)
-  docs/
-    workflow-catalog.yaml           # 7-phase pipeline definition (read by /help)
-    templates/                      # 62 document templates (+ per-section guidance)
-src/                                # Game source code (Godot). The code root is
-                                    #   ENGINE-SPECIFIC: Unity compiles only
-                                    #   Assets/, Unreal builds from Source/<Module>/
-assets/                             # Art, audio, VFX, shaders, data files
-design/                             # GDDs, narrative docs, level designs
-docs/                               # Technical documentation and ADRs
-tests/                              # Test suites (unit, integration, performance, playtest)
-tools/                              # Build and pipeline tools
-prototypes/                         # Throwaway prototypes (isolated from src/)
-production/                         # Sprint plans, milestones, release tracking
-studio-tests/                       # QA for the skills and agents themselves — see below
-```
-
-### Testing your customizations
-
-CCGS is a template you are meant to edit. `studio-tests/` is how
-you check that an edited or newly written skill still holds up — a catalog of all
-74 skills and 49 agents, per-category quality rubrics, behavioral specs, and
-templates for writing specs of your own.
-
-```
-/skill-test static [name]     # structural linter — 7 compliance checks
-/skill-test category [name]   # category-specific quality rubric
-/skill-test spec [name]       # behavioral spec assertions
-/skill-test audit             # coverage report across skills and agents
-/skill-improve [name]         # test-fix-retest loop; keeps or reverts on score change
-```
-
-It tests the *framework*, never your game — game tests live in `tests/`.
+Do not add a root `model` unless you want to pin the default. See
+[`.opencode/docs/opencode-setup.md`](.opencode/docs/opencode-setup.md) and
+[`.opencode/docs/permissions.md`](.opencode/docs/permissions.md).
 
 ## How It Works
 
 ### Agent Coordination
 
-Agents follow a structured delegation model:
-
-1. **Vertical delegation** — directors delegate to leads, leads delegate to specialists
-2. **Horizontal consultation** — same-tier agents can consult each other but can't make binding cross-domain decisions
-3. **Conflict resolution** — disagreements escalate up to the shared parent (`creative-director` for design, `technical-director` for technical)
-4. **Change propagation** — cross-department changes are coordinated by `producer`
-5. **Domain boundaries** — agents don't modify files outside their domain without explicit delegation
+1. **Vertical delegation** — directors delegate to leads, leads to specialists.
+2. **Horizontal consultation** — same-tier agents can consult but not make
+   binding cross-domain decisions.
+3. **Conflict resolution** — escalate to the shared parent (`creative-director`
+   for design, `technical-director` for technical).
+4. **Change propagation** — cross-department changes are coordinated by `producer`.
+5. **Domain boundaries** — agents don't modify files outside their domain without
+   explicit delegation.
 
 ### Collaborative, Not Autonomous
 
-This is **not** an auto-pilot system. Every agent follows a strict collaboration protocol:
+Every agent follows a strict collaboration protocol:
 
-1. **Ask** — agents ask questions before proposing solutions
-2. **Present options** — agents show 2-4 options with pros/cons
+1. **Ask** — ask questions before proposing solutions
+2. **Present options** — show 2–4 options with pros/cons
 3. **You decide** — the user always makes the call
-4. **Draft** — agents show work before finalizing
+4. **Draft** — show work before finalizing
 5. **Approve** — nothing gets written without your sign-off
 
-You stay in control. The agents provide structure and expertise, not autonomy.
-
-That is how a terminal session started at the project root behaves out of the
-box. The `guided` and `autonomous` automation settings, and Claude Code's own
-auto mode, trade some of these prompts for speed; see
-[setup-requirements.md](.claude/docs/setup-requirements.md) for the routes into
-auto mode.
+In OpenCode, structured choices use the `question` tool. Subagents return options
+to their caller; the caller puts them to you.
 
 ### Automated Safety
 
-**Hooks** run automatically on every session:
+The same hook scripts run in both harnesses:
 
 | Hook | Trigger | What It Does |
 |------|---------|--------------|
-| `validate-commit.sh` | PreToolUse (Bash, PowerShell) | Checks for hardcoded values, TODO format, JSON validity, design doc sections — exits early if the command is not `git commit` |
-| `validate-push.sh` | PreToolUse (Bash, PowerShell) | Warns on pushes to protected branches, and on `git tag`, `git merge`, `gh release`, `butler push` and `steamcmd +run_app_build` — exits early for any other command |
-| `validate-read.sh` | PreToolUse (Read) | Refuses a whole-file read of a design doc over 40 KB and answers with its headings, so the retry reads one section (`features.read_guard`) |
-| `validate-write.sh` | PreToolUse (Write/Edit) | Warns, never blocks, when a write would break a rule the skills state: a file they never overwrite, the config guard, the prototype boundary, a localization freeze |
-| `validate-registry.sh` | PreToolUse (Write/Edit) | Warns when a write to the entity or TR-ID registry would delete or renumber an entry, or set a status its header does not list |
-| `validate-assets.sh` | PostToolUse (Write/Edit) | Checks data-file JSON under `assets/`, `Assets/` or `Content/`, and asset naming in Godot's `assets/` only — exits early if the file is under none of them |
-| `session-start.sh` | Session open | Shows current branch and recent commits for orientation |
-| `detect-gaps.sh` | Session open | Detects fresh projects (suggests `/start`) and missing design docs when code or prototypes exist |
-| `pre-compact.sh` | Before compaction | Logs the compaction (its output does not reach Claude — `session-start.sh` restores context afterwards) |
-| `notify.sh` | Permission prompt, or idle about a minute | Shows Windows toast notification via PowerShell |
-| `session-stop.sh` | Every response end, in the background | Archives `active.md` to session log and records git activity |
-| `log-agent.sh` | Agent spawned | Audit trail start — logs subagent invocation |
-| `log-agent-stop.sh` | Agent stops | Audit trail stop — completes subagent record |
-| `validate-agent-artifact.sh` | Agent stops | Warns when a subagent stops without writing the file its brief named |
-| `validate-skill-change.sh` | PostToolUse (Write/Edit) | Advises running `/skill-test` after any `.claude/skills/` change |
+| `validate-commit.sh` | before shell / Bash | Hardcoded values, TODO format, JSON validity, design-doc sections |
+| `validate-push.sh` | before shell / Bash | Protected branches, tags, merges, releases, store uploads |
+| `validate-read.sh` | before read | Refuses a whole-file read of a design doc over 40 KB and returns headings |
+| `validate-write.sh` | before write/edit | Warns when a write would break a file, config, prototype, or localization rule |
+| `validate-registry.sh` | before write/edit | Warns when an entity or TR-ID registry edit deletes or renumbers an entry |
+| `validate-assets.sh` | after write/edit | Data JSON validity and asset naming |
+| `validate-skill-change.sh` | after write/edit | Advises running `/skill-test` after a skill change |
+| `session-start.sh` | session open, after compaction | Branch, commits, review mode, stage, active sprint, bugs, session state |
+| `detect-gaps.sh` | session open | Fresh-project and missing-doc detection |
+| `pre-compact.sh` | before compaction | Logs compaction |
+| `session-stop.sh` | response end / idle | Archives session state and git activity |
+| `notify.sh` | permission prompt / idle | Desktop notification (Claude Code; not ported to OpenCode) |
+| `log-agent*.sh` | subagent start/stop | Agent audit trail (Claude Code; not ported to OpenCode) |
+| `validate-agent-artifact.sh` | subagent stop | Warns when a named artifact is missing (Claude Code) |
 
-> **Note**: `validate-commit.sh`, `validate-push.sh`, `validate-read.sh`, `validate-write.sh`, `validate-registry.sh`, `validate-assets.sh` and `validate-skill-change.sh` fire on every Bash, PowerShell, Read, Write or Edit tool call and exit immediately (exit 0) when the command or file path is not relevant. This is normal hook behavior — not a performance concern.
-
-**Permission rules** in `settings.json` auto-allow test runs and block dangerous operations (force push, `rm -rf`, reading `.env` files) in both the Bash and PowerShell tools. Read-only commands such as `git status`, `git log` and `ls` need no rule: Claude Code runs them without asking. The `git` rules match anywhere after `git`, so a git command whose text only mentions `push` followed later by ` +` or ` -f`, `clean` followed by ` -f`, or `reset` followed by `--hard` — a commit message such as `git commit -m "push + pull"` included — is denied too: reword the message.
+OpenCode mapping and gaps: [`.opencode/docs/hooks-reference.md`](.opencode/docs/hooks-reference.md).
 
 ### Path-Scoped Rules
 
-Coding standards are automatically enforced based on file location. The paths
-below are Godot's. Each rule also matches the Unity and Unreal layouts: the code
-rules match C# under `Assets/**/Gameplay/` and C++ under `Source/**/Gameplay/` (and `Core`,
-`AI`, `Networking`, `UI`), data matches JSON under `Assets/**/Data/` and
-`Content/**/Data/`, shaders match by file type, and tests match
-C# under `Assets/Tests/` and C++ under `Source/**/Tests/`.
+Rules in `.claude/rules/` are enforced by path in Claude Code. In OpenCode, the
+adapter injects the matching rule when an agent first reads or edits a file under
+that path. See [`.opencode/docs/rules-reference.md`](.opencode/docs/rules-reference.md).
 
-| Path | Enforces |
-|------|----------|
-| `src/gameplay/**` | Data-driven values, delta time usage, no UI references |
-| `src/core/**` | Zero allocations in hot paths, thread safety, API stability |
-| `src/ai/**` | Performance budgets, debuggability, data-driven parameters |
-| `src/networking/**` | Server-authoritative, versioned messages, security |
-| `src/ui/**` | No game state ownership, localization-ready, accessibility |
-| `design/gdd/**` | Required sections per `modes.workflow`, formula format, edge cases |
-| `design/narrative/**` | Lore consistency, character voice, canon levels |
-| `assets/data/**/*.json` | JSON validity, naming conventions, schema rules |
-| `assets/shaders/**` | Naming conventions, performance targets, cross-platform rules |
-| `**/*.tscn`, `**/*.tres` | Scene and resource files changed in the editor where possible; safe hand-edit rules |
-| `tests/**` | Test naming, coverage requirements, fixture patterns |
-| `prototypes/**` | Relaxed standards, README required, hypothesis documented |
+## Project Structure
 
-## Design Philosophy
+```
+CLAUDE.md                           # Claude Code master configuration
+AGENTS.md                           # OpenCode master configuration
+opencode.jsonc                      # OpenCode config: agent, permissions, plugin, instructions
+project.yaml                        # Project config (source of truth for both harnesses)
+.claude/                            # Canonical studio layer + shared core
+  agents/                           # 49 agent definitions
+  skills/                           # 74 workflows (subdirectory per skill)
+  hooks/ scripts/                   # 18 hook scripts + 34 helpers
+  rules/                            # 14 path-scoped coding standards
+  docs/                             # 130 docs and templates
+.opencode/                          # Generated OpenCode adapter
+  agents/                           # 49 subagents + studio primary agent
+  skills/                           # 74 generated skills
+  commands/                         # 74 slash commands
+  plugins/ccgs/                     # Hook adapter and rule injection
+  docs/                             # OpenCode-specific guidance
+tools/                              # Build/pipeline tools + OpenCode generator and validator
+src/                                # Game source (Godot). Engine-specific; see docs
+assets/                             # Art, audio, VFX, shaders, data files
+design/                             # GDDs, narrative, level designs
+docs/                               # Technical documentation and ADRs
+tests/                              # Unit, integration, performance, playtest
+prototypes/                         # Throwaway prototypes (isolated from src/)
+production/                         # Sprint plans, milestones, release tracking
+studio-tests/                       # QA for the skills and agents themselves
+```
 
-This template is grounded in professional game development practices:
+## Testing Your Customizations
 
-- **MDA Framework** — Mechanics, Dynamics, Aesthetics analysis for game design
-- **Self-Determination Theory** — Autonomy, Competence, Relatedness for player motivation
-- **Flow State Design** — Challenge-skill balance for player engagement
-- **Bartle Player Types** — Audience targeting and validation
-- **Verification-Driven Development** — Tests first, then implementation
+`studio-tests/` checks that an edited or newly written skill still holds up — a
+catalog, per-category rubrics, behavioral specs, and templates.
+
+```
+/skill-test static [name]     # structural linter
+/skill-test category [name]   # category-specific quality rubric
+/skill-test spec [name]       # behavioral spec assertions
+/skill-test audit             # coverage report
+/skill-improve [name]         # test-fix-retest loop
+```
+
+For the OpenCode adapter:
+
+```bash
+python3 tools/sync-opencode.py --check
+python3 tools/validate-opencode.py
+```
 
 ## Customization
 
-This is a **template**, not a locked framework. Everything is meant to be customized:
+This is a **template**, not a locked framework:
 
-- **Add/remove agents** — delete agent files you don't need, add new ones for your domains
-- **Edit agent prompts** — tune agent behavior, add project-specific knowledge
-- **Modify skills** — adjust workflows to match your team's process
-- **Add rules** — create new path-scoped rules for your project's directory structure
-- **Tune hooks** — adjust validation strictness, add new checks
-- **Pick your engine** — use the Godot, Unity, or Unreal agent set (or none)
-- **Tune process weight** — `modes.rigor` and its underlying knobs in `project.yaml` (see [Configuration](#configuration)). Override per-run with `--review solo` on any skill.
+- **Add/remove agents** — edit `.claude/agents/`, regenerate, test both harnesses
+- **Edit agent prompts** — tune behavior and add project-specific knowledge
+- **Modify workflows** — edit `.claude/skills/`, regenerate
+- **Add rules** — create `.claude/rules/<name>.md` with `paths:` frontmatter
+- **Tune hooks** — edit the canonical script and wire the OpenCode mapping
+- **Pick your engine** — use the Godot, Unity, or Unreal set, and disable the rest
+- **Tune process weight** — `modes.rigor` and its underlying knobs in `project.yaml`
 
 ## Platform Support
 
-Primary development on **Windows 10** with Git Bash. The hooks and scripts are also tested on **macOS** — its stock bash 3.2 and BSD tools, with and without `jq` — and on **Linux**. All hooks use POSIX-compatible patterns (`grep -E`, not `grep -P`) and include fallbacks for missing tools. The `notify.sh` hook uses PowerShell for Windows toast notifications and is a no-op elsewhere — desktop notifications on macOS/Linux are not yet wired. Please file issues for any platform-specific breakage.
+Primary development is on Linux and Windows (Git Bash). The hooks and scripts are
+also tested on macOS — stock bash 3.2 and BSD tools, with and without `jq`. All
+hooks use POSIX-compatible patterns (`grep -E`, not `grep -P`) and fall back when
+optional tools are missing. `notify.sh` uses PowerShell for Windows toasts and is
+a no-op elsewhere.
 
 ## Community
 
-- **Discussions** — [GitHub Discussions](https://github.com/Donchitos/Claude-Code-Game-Studios/discussions) for questions, ideas, and showcasing what you've built
+- **Discussions** — [GitHub Discussions](https://github.com/Donchitos/Claude-Code-Game-Studios/discussions)
 - **Issues** — [Bug reports and feature requests](https://github.com/Donchitos/Claude-Code-Game-Studios/issues)
-
----
 
 ## Supporting This Project
 
-Claude Code Game Studios is free and open source. If it saves you time or helps you ship your game, consider supporting continued development:
+The upstream project is free and open source. If it saves you time, consider
+supporting continued development:
 
-<p>
-  <a href="https://www.buymeacoffee.com/donchitos3"><img src="https://img.shields.io/badge/Buy%20Me%20a%20Coffee-FFDD00?style=for-the-badge&logo=buy-me-a-coffee&logoColor=black" alt="Buy Me a Coffee"></a>
-  &nbsp;
-  <a href="https://github.com/sponsors/Donchitos"><img src="https://img.shields.io/badge/GitHub%20Sponsors-ea4aaa?style=for-the-badge&logo=githubsponsors&logoColor=white" alt="GitHub Sponsors"></a>
-</p>
-
-- **[Buy Me a Coffee](https://www.buymeacoffee.com/donchitos3)** — one-time support
-- **[GitHub Sponsors](https://github.com/sponsors/Donchitos)** — recurring support through GitHub
-
-Sponsorships help fund time spent maintaining skills, adding new agents, keeping up with Claude Code and engine API changes, and responding to community issues.
-
----
-
-*Built for Claude Code. Maintained and extended — contributions welcome via [GitHub Discussions](https://github.com/Donchitos/Claude-Code-Game-Studios/discussions).*
+- [Buy Me a Coffee](https://www.buymeacoffee.com/donchitos3)
+- [GitHub Sponsors](https://github.com/sponsors/Donchitos)
 
 ## License
 

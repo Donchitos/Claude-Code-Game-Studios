@@ -29,6 +29,7 @@ restore runs only on a yes, and writes back the copy recorded in Phase 5 (never
 Checked against the SKILL.md by `/skill-test spec` — no fixture needed.
 
 - [ ] Has required frontmatter fields: `name`, `description`, `argument-hint`, `user-invocable`, `allowed-tools`
+- [ ] Tells the user to regenerate the OpenCode adapter after editing the canonical skill
 - [ ] Has ≥2 phase headings
 - [ ] Phase 6 states both outcomes: "Score improved. Changes kept." and "Combined score did not improve."
 - [ ] Contains "May I write" collaborative protocol language before applying fixes

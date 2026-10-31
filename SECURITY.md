@@ -26,16 +26,21 @@ Include as much detail as possible:
 
 ## What Is In Scope
 
-CCGS is a **local development tool** — it installs shell hooks and coordinates
-AI agents that run directly on your machine. Security issues are primarily about
-contributed code that executes in users' environments without their awareness.
+Game Studios is a **local development tool** — it installs shell hooks and
+coordinates AI agents that run directly on your machine. The OpenCode adapter
+adds a plugin that invokes the same canonical hook scripts and injects
+path-scoped rules. Security issues are primarily about contributed code that
+executes in users' environments without their awareness.
 
 ### High Severity
-- Hooks (`.claude/hooks/*.sh`) that execute malicious or undisclosed shell
+- Hooks (`.claude/hooks/*.sh`) or the OpenCode plugin
+  (`.opencode/plugins/ccgs/`) that execute malicious or undisclosed shell
   commands on user machines
 - Skills or agents that exfiltrate environment variables, API keys, or secrets
-- Prompt injection via skill or agent definitions that causes Claude to bypass
+- Prompt injection via skill or agent definitions that causes the model to bypass
   safety measures or take unauthorized destructive actions
+- Generator changes that silently weaken the OpenCode permission posture or
+  remove a safety hook
 - Contributions that silently alter behavior in ways users cannot audit
 
 ### Medium Severity
@@ -46,9 +51,9 @@ contributed code that executes in users' environments without their awareness.
   approval step
 
 ### Out of Scope
-- The behavior of Claude or the Claude Code CLI itself
-  (report to [Anthropic](https://www.anthropic.com/security))
-- Bugs in the user's Claude Code installation or editor extension
+- The behavior of Claude, the Claude Code CLI, OpenCode, or the selected model
+  provider (report to the respective vendor)
+- Bugs in the user's Claude Code or OpenCode installation or editor extension
 - Theoretical vulnerabilities with no realistic attack path
 - Issues requiring physical access to the user's machine
 

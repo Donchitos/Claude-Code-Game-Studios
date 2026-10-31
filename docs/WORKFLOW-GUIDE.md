@@ -1,10 +1,11 @@
-# Claude Code Game Studios -- Complete Workflow Guide
+# Game Studios -- Complete Workflow Guide
 
 > **How to go from zero to a shipped game using the Agent Architecture.**
 >
 > This guide walks you through every phase of game development using the
-> 49-agent system, 74 slash commands, and 15 automated hooks. It assumes you
-> have Claude Code installed and are working from the project root.
+> 49-agent system, 74 slash commands, and 15 automated hooks. It works in
+> Claude Code and OpenCode; see `.opencode/docs/opencode-setup.md` for the
+> OpenCode setup. Work from the project root.
 >
 > The pipeline has 7 phases. At `rigor: standard` and `full`, each phase has
 > a formal gate (`/gate-check`) that must pass before you advance. At
@@ -39,7 +40,7 @@
 
 Before you start, make sure you have:
 
-- **Claude Code** installed and working
+- **Claude Code** or **OpenCode V2** installed and working
 - **Git** with Git Bash (Windows) or standard terminal (Mac/Linux)
 - **jq** (optional but recommended -- hooks fall back to `grep` if missing)
 - **Python 3** (required -- every skill and hook reads `project.yaml` through it; without it every setting silently falls back to its default)
@@ -71,11 +72,11 @@ This guided onboarding asks where you are and routes you to the right phase:
 
 ### Step 3: Verify Hooks Are Working
 
-Start a new Claude Code session. You should see output from the
+Start a new session in your harness. You should see output from the
 `session-start.sh` hook:
 
 ```
-=== Claude Code Game Studios -- Session Context ===
+=== Game Studios -- Session Context ===
 Branch: main
 Recent commits:
   abc1234 Initial commit

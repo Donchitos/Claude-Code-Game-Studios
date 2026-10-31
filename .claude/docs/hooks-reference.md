@@ -1,5 +1,9 @@
 # Active Hooks
 
+> **OpenCode users:** OpenCode maps these scripts through
+> `.opencode/plugins/ccgs/`. See `.opencode/docs/hooks-reference.md` for the event
+> mapping and the hooks that are not ported (notifications and agent audit).
+
 Hooks are configured in `.claude/settings.json` and fire automatically:
 
 | Hook | Event | Trigger | Action |

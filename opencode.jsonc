@@ -1,0 +1,126 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+
+  // The studio is model-agnostic. Leave `model` unset to use whatever model is
+  // selected in OpenCode, or uncomment one of the examples below.
+  //
+  // Local:
+  // "model": "ollama/qwen3-coder:30b",
+  // "model": "lmstudio/qwen/qwen3-coder-30b",
+  // "model": "vllm/Qwen/Qwen3-Coder-30B-A3B-Instruct",
+  //
+  // Hosted open-weight models:
+  // "model": "openrouter/qwen/qwen3-coder",
+  // "model": "openrouter/deepseek/deepseek-chat-v3.1",
+
+  "default_agent": "studio",
+
+  // Long-form studio rules are loaded alongside AGENTS.md.
+  "instructions": [
+    ".opencode/docs/coordination-rules.md",
+    ".opencode/docs/coding-standards.md",
+    ".opencode/docs/directory-structure.md"
+  ],
+
+  "experimental": {
+    // The default of 1 stops a subagent from starting another subagent. The
+    // studio hierarchy is primary -> director -> lead -> specialist.
+    "subagent_depth": 3,
+    // Replaces Claude Code's task tools for multi-step workflows.
+    "todo": true
+  },
+
+  "permissions": [
+    // Shell is ask-first. The allow rules below cover routine inspection and
+    // the shared studio helper scripts; deny rules last win over both.
+    { "action": "shell", "resource": "*", "effect": "ask" },
+
+    { "action": "shell", "resource": "git status*", "effect": "allow" },
+    { "action": "shell", "resource": "git log*", "effect": "allow" },
+    { "action": "shell", "resource": "git diff*", "effect": "allow" },
+    { "action": "shell", "resource": "git show*", "effect": "allow" },
+    { "action": "shell", "resource": "git branch --show-current*", "effect": "allow" },
+    { "action": "shell", "resource": "git branch --list*", "effect": "allow" },
+    { "action": "shell", "resource": "git tag --list*", "effect": "allow" },
+    { "action": "shell", "resource": "git rev-parse*", "effect": "allow" },
+    { "action": "shell", "resource": "ls*", "effect": "allow" },
+    { "action": "shell", "resource": "dir *", "effect": "allow" },
+    { "action": "shell", "resource": "pwd*", "effect": "allow" },
+    { "action": "shell", "resource": "uname -s*", "effect": "allow" },
+    { "action": "shell", "resource": "wc *", "effect": "allow" },
+    { "action": "shell", "resource": "echo *", "effect": "allow" },
+    { "action": "shell", "resource": "stat *", "effect": "allow" },
+    { "action": "shell", "resource": "file *", "effect": "allow" },
+    { "action": "shell", "resource": "du *", "effect": "allow" },
+
+    // Studio helpers. Quoted and unquoted forms are both allowed.
+    { "action": "shell", "resource": "bash .claude/scripts/*", "effect": "allow" },
+    { "action": "shell", "resource": "bash .claude/hooks/*", "effect": "allow" },
+    { "action": "shell", "resource": "bash *.claude/scripts/*", "effect": "allow" },
+    { "action": "shell", "resource": "bash *.claude/hooks/*", "effect": "allow" },
+    { "action": "shell", "resource": "bash .opencode/scripts/*", "effect": "allow" },
+
+    // Routine test/build commands.
+    { "action": "shell", "resource": "python -m pytest*", "effect": "allow" },
+    { "action": "shell", "resource": "python3 -m pytest*", "effect": "allow" },
+    { "action": "shell", "resource": "py -m pytest*", "effect": "allow" },
+    { "action": "shell", "resource": "pytest*", "effect": "allow" },
+    { "action": "shell", "resource": "npm test*", "effect": "allow" },
+    { "action": "shell", "resource": "bun test*", "effect": "allow" },
+    { "action": "shell", "resource": "godot --headless*", "effect": "allow" },
+    { "action": "shell", "resource": "mkdir -p production/*", "effect": "allow" },
+    { "action": "shell", "resource": "python3 tools/*", "effect": "allow" },
+
+    // Destructive shell commands.
+    { "action": "shell", "resource": "rm -rf*", "effect": "deny" },
+    { "action": "shell", "resource": "rm -fr*", "effect": "deny" },
+    { "action": "shell", "resource": "rm -r -f*", "effect": "deny" },
+    { "action": "shell", "resource": "rm -f -r*", "effect": "deny" },
+    { "action": "shell", "resource": "rm -Rf*", "effect": "deny" },
+    { "action": "shell", "resource": "rm -fR*", "effect": "deny" },
+    { "action": "shell", "resource": "rm --recursive --force*", "effect": "deny" },
+    { "action": "shell", "resource": "rm --force --recursive*", "effect": "deny" },
+    { "action": "shell", "resource": "git push --force*", "effect": "deny" },
+    { "action": "shell", "resource": "git push -f*", "effect": "deny" },
+    { "action": "shell", "resource": "git push *--force*", "effect": "deny" },
+    { "action": "shell", "resource": "git push * -f*", "effect": "deny" },
+    { "action": "shell", "resource": "git push * +*", "effect": "deny" },
+    { "action": "shell", "resource": "git push *-uf*", "effect": "deny" },
+    { "action": "shell", "resource": "git reset --hard*", "effect": "deny" },
+    { "action": "shell", "resource": "git clean*-f*", "effect": "deny" },
+    { "action": "shell", "resource": "git clean*--force*", "effect": "deny" },
+    { "action": "shell", "resource": "sudo *", "effect": "deny" },
+    { "action": "shell", "resource": "chmod 777*", "effect": "deny" },
+
+    // Secrets are also protected against shell paths, not only the read tool.
+    { "action": "shell", "resource": "*.env*", "effect": "deny" },
+
+    // Secrets and engine binaries.
+    { "action": "read", "resource": "*.env", "effect": "deny" },
+    { "action": "read", "resource": "*.env.*", "effect": "deny" },
+    { "action": "read", "resource": "*.env.example", "effect": "allow" },
+    { "action": "edit", "resource": "*.env", "effect": "deny" },
+    { "action": "edit", "resource": "*.env.*", "effect": "deny" },
+    { "action": "edit", "resource": "*.env.example", "effect": "allow" },
+    { "action": "edit", "resource": "*.uasset", "effect": "deny" },
+    { "action": "edit", "resource": "*.umap", "effect": "deny" },
+
+    // Generated OpenCode files are not edited by hand. Edit the canonical
+    // `.claude/` source and run `python3 tools/sync-opencode.py`.
+    { "action": "edit", "resource": ".opencode/agents/*", "effect": "deny" },
+    { "action": "edit", "resource": ".opencode/skills/*", "effect": "deny" },
+    { "action": "edit", "resource": ".opencode/commands/*", "effect": "deny" },
+
+    // Configuration changes deserve a pause.
+    { "action": "edit", "resource": "opencode.jsonc", "effect": "ask" },
+    { "action": "edit", "resource": ".claude/settings.json", "effect": "ask" },
+    { "action": "edit", "resource": ".claude/settings.local.json", "effect": "ask" },
+
+    // Keep reads and writes inside the project unless the user allows more.
+    { "action": "external_directory", "resource": "*", "effect": "ask" },
+
+    // Code Mode is optional. Denying it keeps the tool surface small and
+    // prevents a second route around file permissions.
+    { "action": "execute", "resource": "*", "effect": "deny" }
+  ]
+}

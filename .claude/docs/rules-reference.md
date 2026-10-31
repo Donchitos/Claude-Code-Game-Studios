@@ -1,5 +1,9 @@
 # Path-Specific Rules
 
+> **OpenCode users:** OpenCode has no native path-scoped rules; the adapter
+> injects them when a matching file is first read or edited. See
+> `.opencode/docs/rules-reference.md`.
+
 Rules in `.claude/rules/` carry `paths:` frontmatter. Claude Code loads a
 path-scoped rule **when it READS a file matching one of those globs** — not on
 every tool use, and not when it creates one.

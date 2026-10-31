@@ -1,14 +1,19 @@
 # Studio Tests
 
-Quality assurance infrastructure for the **Claude Code Game Studios** framework.
-Tests the skills and agents themselves — not any game built with them.
+Quality assurance infrastructure for the **Game Studios** framework. Tests the
+skills and agents themselves — not any game built with them.
 
-**This ships as part of the template, and it is meant to.** CCGS is a template
-you are expected to customize — edit a skill, add your own, retune an agent. This
-folder is how you check that what you changed still holds up: `catalog.yaml`
-tracks all 74 skills and 49 agents, `quality-rubric.md` defines per-category
-pass/fail metrics, and `templates/` gives you the spec format for anything new
-you write. Driven by `/skill-test` and `/skill-improve`.
+The studio is dual-harness: `.claude/` is canonical and `.opencode/` is a
+generated adapter. The behavioral specs in this folder describe the canonical
+workflows. OpenCode structural checks live in `studio-tests/opencode/` and in
+`tools/validate-opencode.py`.
+
+**This ships as part of the template, and it is meant to.** Game Studios is a
+template you are expected to customize — edit a skill, add your own, retune an
+agent. This folder is how you check that what you changed still holds up:
+`catalog.yaml` tracks all 74 skills and 49 agents, `quality-rubric.md` defines
+per-category pass/fail metrics, and `templates/` gives you the spec format for
+anything new you write. Driven by `/skill-test` and `/skill-improve`.
 
 > **If you remove it, two of the four `/skill-test` modes stop working.**
 >
@@ -30,9 +35,11 @@ you write. Driven by `/skill-test` and `/skill-improve`.
 ```
 studio-tests/
 ├── README.md              ← you are here
-├── CLAUDE.md              ← tells Claude how to use this framework
+├── CLAUDE.md              ← tells Claude Code how to use this framework
+├── AGENTS.md              ← the OpenCode mirror
 ├── catalog.yaml           ← master registry: all 74 skills + 49 agents, coverage tracking
 ├── quality-rubric.md      ← category-specific pass/fail metrics for /skill-test category
+├── opencode/              ← adapter checks and the dual-harness smoke checklist
 │
 ├── skills/                ← behavioral spec files for all 74 skills
 │   ├── gate/              ← gate category specs

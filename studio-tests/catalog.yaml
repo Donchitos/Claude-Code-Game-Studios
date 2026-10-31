@@ -1,5 +1,12 @@
 version: 2
 last_updated: ""
+opencode:
+  adapter: .opencode/
+  generator: tools/sync-opencode.py
+  validator: tools/validate-opencode.py
+  sync_check: python3 tools/sync-opencode.py --check
+  docs: .opencode/docs/
+  smoke: studio-tests/opencode/smoke.md
 skills:
   # Critical — gate skills that control phase transitions
   - name: gate-check

@@ -1,5 +1,8 @@
 # Game Studio Agent Architecture -- Quick Start Guide
 
+> **OpenCode users:** use `.opencode/docs/opencode-setup.md` and run `/start` in
+> OpenCode. The workflow names and command set are the same.
+
 ## What Is This?
 
 This is a complete Claude Code agent architecture for game development. It

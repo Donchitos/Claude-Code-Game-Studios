@@ -1,6 +1,6 @@
-# Gitignored files Claude Code copies into every worktree it creates: the
-# prototyper's, other isolated subagents' and `claude --worktree`. Only files
-# that match a line here AND are gitignored are copied (.gitignore syntax).
+# Gitignored files copied into every worktree: the prototyper's, other isolated
+# subagents', `claude --worktree`, and OpenCode worktrees. Only files that match
+# a line here AND are gitignored are copied (.gitignore syntax).
 # Local config only. Never list secrets (.env, keys, credentials): a worktree
 # copy is one more place for them to leak from.
 project.local.yaml

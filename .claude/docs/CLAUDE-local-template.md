@@ -1,5 +1,10 @@
 # CLAUDE.local.md Template
 
+> **OpenCode users:** OpenCode does not read `CLAUDE.local.md`. Use the global
+> `~/.config/opencode/opencode.json(c)`, `OPENCODE_CONFIG_CONTENT`, or a parent
+> `opencode.jsonc`; see `.opencode/docs/opencode-setup.md`.
+
+
 Copy this file to the project root as `CLAUDE.local.md` for personal overrides.
 This file is gitignored and will not be committed.
 

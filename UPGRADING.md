@@ -1,4 +1,4 @@
-# Upgrading Claude Code Game Studios
+# Upgrading Game Studios
 
 This guide covers upgrading your existing game project repo from one version
 of the template to the next.
@@ -18,6 +18,7 @@ of the template to the next.
 ## Table of Contents
 
 - [Upgrade Strategies](#upgrade-strategies)
+- [v1.2.0 → v1.3.0 (dual-harness / OpenCode)](#v120--v130-dual-harness--opencode)
 - [v1.1.3 → v1.2.0](#v113--v120)
 - [v1.1.2 → v1.1.3](#v112--v113)
 - [v1.1.1 → v1.1.2](#v111--v112)
@@ -29,6 +30,41 @@ of the template to the next.
 - [v0.3.0 → v0.4.0](#v030--v040)
 - [v0.2.0 → v0.3.0](#v020--v030)
 - [v0.1.0 → v0.2.0](#v010--v020)
+
+---
+
+## v1.2.0 → v1.3.0 (dual-harness / OpenCode)
+
+v1.3.0 adds an OpenCode V2 adapter without changing the Claude Code layer.
+`.claude/` stays canonical; `.opencode/` is generated.
+
+### If you use Claude Code only
+
+Nothing is required. The canonical agents, skills, hooks, rules, and docs are
+unchanged except for short cross-reference notes. Keep using `/start`.
+
+### If you use OpenCode
+
+1. Make sure Python 3 and OpenCode V2 are installed.
+2. Merge the new files: `AGENTS.md`, `opencode.jsonc`, `.opencode/`,
+   `tools/sync-opencode.py`, `tools/validate-opencode.py`, the nested
+   `AGENTS.md` files, and `.opencode/docs/`.
+3. Start OpenCode at the repository root and run `/start`.
+4. After editing any canonical agent or skill, run:
+
+   ```bash
+   python3 tools/sync-opencode.py
+   python3 tools/validate-opencode.py
+   ```
+
+5. If you have local edits inside `.claude/settings.json`, merge them into
+   `opencode.jsonc` permissions as well. The OpenCode adapter does not read the
+   Claude settings file.
+
+### If you maintain a fork
+
+Resolve conflicts in `.claude/` first, then regenerate `.opencode/`. Do not
+hand-merge generated agent, skill, or command files.
 
 ---
 

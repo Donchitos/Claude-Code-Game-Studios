@@ -1,5 +1,10 @@
 # Config Resolution
 
+> **OpenCode users:** the generated commands carry the same `resolve_config`
+> shell prelude as a command shell block, which runs before the prompt is
+> submitted. Permission handling and `settings.local.json` are Claude-only; see
+> `.opencode/docs/permissions.md` and `.opencode/docs/opencode-setup.md`.
+
 How a skill learns its effective settings. **One command, no prose chain.**
 
 ## The rule

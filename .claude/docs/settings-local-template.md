@@ -1,5 +1,11 @@
 # settings.local.json Template
 
+> **OpenCode users:** OpenCode has no project-local `settings.local.json`. Use the
+> global `~/.config/opencode/opencode.json(c)`, `OPENCODE_CONFIG_CONTENT`, or a
+> separate `opencode.jsonc` in a parent directory. See
+> `.opencode/docs/opencode-setup.md`.
+
+
 Create `.claude/settings.local.json` for personal overrides that should NOT
 be committed to version control. The shipped `.gitignore` already ignores it.
 

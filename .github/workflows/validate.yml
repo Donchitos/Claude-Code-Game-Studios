@@ -1,0 +1,29 @@
+name: validate
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  opencode-adapter:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+      - name: Generated OpenCode adapter is in sync
+        run: python3 tools/sync-opencode.py --check
+      - name: Validate OpenCode adapter
+        run: python3 tools/validate-opencode.py
+      - name: Check hook scripts parse
+        run: |
+          set -e
+          for script in .claude/hooks/*.sh .claude/scripts/*.sh; do
+            bash -n "$script"
+          done
+      - name: Build the OpenCode plugin
+        run: bun build .opencode/plugins/ccgs/index.ts --target=bun --outdir /tmp/ccgs-plugin

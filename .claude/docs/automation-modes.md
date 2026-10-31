@@ -1,5 +1,9 @@
 # Automation Modes — Shared Skill Pattern
 
+> **OpenCode users:** the modes are unchanged. `AskUserQuestion` maps to the
+> `question` tool; a dismissed question is not an answer. The generated skills
+> apply that mapping.
+
 This document defines the standard `modes.automation` pattern for every skill
 that uses `AskUserQuestion` or writes files. Skills reference this document
 instead of embedding the full mode-handling rules inline — eliminating drift

@@ -1,7 +1,12 @@
 # Studio Tests — Claude Instructions
 
-This folder is the quality assurance layer for the Claude Code Game Studios skill/agent
+This folder is the quality assurance layer for the Game Studios skill/agent
 framework. It is self-contained and separate from any game project.
+
+The framework is dual-harness. The specs here describe the canonical `.claude/`
+layer; the generated OpenCode adapter is checked by
+`studio-tests/opencode/`, `tools/sync-opencode.py --check`, and
+`tools/validate-opencode.py`.
 
 ## Key files
 
