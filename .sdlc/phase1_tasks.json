@@ -1,0 +1,1088 @@
+{
+  "schema_version": 1,
+  "revision": 3,
+  "developers": [
+    "alicomert",
+    "okanipk"
+  ],
+  "integration_owner": "alicomert",
+  "shared_paths": [
+    "src/lab/mechanics_lab.gd",
+    "src/lab/mechanics_lab.tscn",
+    "project.godot",
+    "src/data/lab_rules.gd",
+    "assets/data/lab_rules.tres"
+  ],
+  "tasks": [
+    {
+      "id": "P2-I01",
+      "owner": "alicomert",
+      "title": "Okan rol/yuk secici entegrasyonu",
+      "priority": 170,
+      "status": "in_progress",
+      "depends_on": [
+        "P1-I02",
+        "P1-O01",
+        "P1-O02",
+        "P1-O03",
+        "P1-O04",
+        "P1-O05",
+        "P1-O06",
+        "P1-O07",
+        "P1-O08",
+        "P1-O09",
+        "P1-O10",
+        "P1-O11",
+        "P1-O12",
+        "P1-O13"
+      ],
+      "branch": "feat/alicomert/p2-okan-integration",
+      "write_scopes": [
+        "project.godot",
+        "src/roles",
+        "src/data",
+        "src/combat",
+        "src/interaction",
+        "src/lab",
+        "src/player",
+        "src/ui",
+        "assets/data/roles",
+        "tests/unit",
+        "tests/integration",
+        ".sdlc/phase1_tasks.json",
+        "tools/sdlc/startup.py",
+        "tools/sdlc/test_startup.py",
+        "production/qa/okan-integration.md"
+      ],
+      "acceptance": [
+        "Okan 68f3cbf rol/yuk sistemi secici alinir; mevcut nisangah, aktif reload, Goz, menu ve feedback kaybolmaz.",
+        "Genel dash kaldirilir; UID referanslari tutarli; conflict marker kalmaz.",
+        "Otomatik testler ve eksik kalan gorsel testler durustce raporlanir; commit/push yok."
+      ],
+      "evidence": [],
+      "issue_url": null,
+      "roles": [
+        "lead-programmer",
+        "godot-specialist",
+        "qa-tester"
+      ],
+      "open_questions": []
+    },
+    {
+      "id": "P1-A01",
+      "owner": "alicomert",
+      "title": "P1-01 hareket, Space ziplama ve kamera temelini yeniden dogrula",
+      "priority": 10,
+      "status": "done",
+      "depends_on": [],
+      "branch": "feat/alicomert/p1-a01",
+      "write_scopes": [
+        "src/player",
+        "src/camera",
+        "src/data/movement_tuning.gd",
+        "assets/data/movement_default.tres",
+        "tests/unit/player/test_movement.gd",
+        "tests/unit/player/test_keyboard_bindings.gd",
+        "production/qa/p1-a01.md"
+      ],
+      "acceptance": [
+        "WASD normalize capraz, hizlanma/durma, fare yonu, Shift ve carpisma testleri; genel dash eklenmez.",
+        "Space tek yer ziplama; 45/75cm engel, yuksek duvar, tavan, havada tekrar, kamera yuksekligi; odak korumasi atlanmaz.",
+        "Kamera 55 derece, kenarda en cok 4m, C merkezleme; delta, odak kaybi, pause/reset; gercek pencere ve kullanici his onayi ayri kaydedilir."
+      ],
+      "evidence": [
+        "production/qa/p1-a01.md"
+      ],
+      "issue_url": null,
+      "roles": [
+        "godot-gdscript-specialist",
+        "qa-tester"
+      ],
+      "open_questions": []
+    },
+    {
+      "id": "P1-O01",
+      "owner": "okanipk",
+      "title": "P1-04A etkilesim modulunu ve teslim arayuzunu dogrula",
+      "priority": 10,
+      "status": "done",
+      "depends_on": [],
+      "branch": "feat/okanipk/p1-o01",
+      "write_scopes": [
+        "src/interaction",
+        "tests/unit/interaction",
+        "production/qa/p1-o01.md"
+      ],
+      "acceptance": [
+        "E kisa/uzun/birakma iptali, hold-toggle, menzil/LOS, hedef kaybi, tamamlanmis hedef ve tekrar istek testleri.",
+        "Kapi, terminal, kalkan istasyonu bagimsiz duzenekte test edilir; ana laboratuvar/proje dosyalari degistirilmez.",
+        "Hedef onceligi, ilerleme ve engellenme nedeni arayuzu alicomert'e verilir; moduller UI'yi dogrudan yonetmez."
+      ],
+      "evidence": [
+        "production/qa/p1-o01.md"
+      ],
+      "issue_url": null,
+      "roles": [
+        "godot-gdscript-specialist",
+        "qa-tester"
+      ],
+      "open_questions": []
+    },
+    {
+      "id": "P1-A02",
+      "owner": "alicomert",
+      "title": "P1-02 dort silah, atis ve doldurma davranisi",
+      "priority": 20,
+      "status": "done",
+      "depends_on": [
+        "P1-A01"
+      ],
+      "branch": "feat/alicomert/p1-a02",
+      "write_scopes": [
+        "src/combat",
+        "assets/data/weapons",
+        "tests/unit/player/test_combat.gd",
+        "tests/unit/player/test_combat_systems.gd",
+        "tests/unit/player/test_reload.gd",
+        "production/qa/p1-a02.md"
+      ],
+      "acceptance": [
+        "Sok, pompali, hafif tabanca ve karabina: isabet/raycast katmanlari, duvar arkasina hasar yok, pellets, cadence, hareket/tepme sacilmasi ve gecersiz girdi.",
+        "Son mermi ve R ayni 2sn reload yolunu kullanir; reload atis engeli, silah degistirme/olum iptali, pause, dolu ve bos reserve testleri.",
+        "Sinirsiz laboratuvar mermisi ve F7 sinirli ornek ayrilir; per-weapon magazin ve dost hasari kurallari korunur."
+      ],
+      "evidence": [
+        "production/qa/p1-a02.md"
+      ],
+      "issue_url": null,
+      "roles": [
+        "gameplay-programmer",
+        "godot-gdscript-specialist",
+        "qa-tester"
+      ],
+      "open_questions": []
+    },
+    {
+      "id": "P1-O02",
+      "owner": "okanipk",
+      "title": "P1-04 envanter, hizli slot ve esya kategorileri",
+      "priority": 20,
+      "status": "done",
+      "depends_on": [
+        "P1-O01"
+      ],
+      "branch": "feat/okanipk/p1-o02",
+      "write_scopes": [
+        "src/inventory",
+        "assets/data/items",
+        "tests/unit/inventory",
+        "production/qa/p1-o02.md"
+      ],
+      "acceptance": [
+        "Toplama/birakma/aktarma, dolu canta, slot/tekerlek secimi; kopya esya veya kaybolan miktar yok.",
+        "Tuketim, saldiri, yardimci, modul, garip kategorilerinin her birinde islevsel ornek ve omur sonu temizligi.",
+        "Model/komut/sinyal arayuzu teslim edilir; ortak HUD ve InputMap sadece entegrasyon gorevinde baglanir."
+      ],
+      "evidence": [
+        "production/qa/p1-o02.md"
+      ],
+      "issue_url": null,
+      "roles": [
+        "systems-designer",
+        "godot-gdscript-specialist",
+        "qa-tester"
+      ],
+      "open_questions": []
+    },
+    {
+      "id": "P1-A03",
+      "owner": "alicomert",
+      "title": "P1-04 tiklama yonlendirmesi ve baglamsal imlec",
+      "priority": 30,
+      "status": "done",
+      "depends_on": [
+        "P1-A02",
+        "P1-O02"
+      ],
+      "branch": "feat/alicomert/p1-a03",
+      "write_scopes": [
+        "src/input",
+        "src/ui",
+        "tests/unit/input",
+        "tests/unit/ui",
+        "production/qa/p1-a03.md"
+      ],
+      "acceptance": [
+        "Sol/sag tik press/hold/release silah-esya-yetenek hedeflemede tek eyleme gider; menu/pause/odak kaybinda atis olmaz.",
+        "Bos/silah/firlatma/etkilesim/engelli/partner/terminal/kasa/dusman/ping/yetenek imlecleri ve kisa neden; hedef onceligi sinanir.",
+        "Sag tik davranisi secili moda ait profilde tanimlanir; her silaha ayni automatic fire varsayilmaz; yeni davranis tasarimi onaya sunulur."
+      ],
+      "evidence": [
+        "production/qa/p1-a03.md"
+      ],
+      "issue_url": null,
+      "roles": [
+        "ui-programmer",
+        "ux-designer",
+        "godot-gdscript-specialist",
+        "qa-tester"
+      ],
+      "open_questions": []
+    },
+    {
+      "id": "P1-O03",
+      "owner": "okanipk",
+      "title": "P1-03 Yuk tasima ve firlat-yakala temeli",
+      "priority": 30,
+      "status": "done",
+      "depends_on": [
+        "P1-O02"
+      ],
+      "branch": "feat/okanipk/p1-o03",
+      "write_scopes": [
+        "src/objects",
+        "tests/unit/objects",
+        "production/qa/p1-o03.md"
+      ],
+      "acceptance": [
+        "Tasima/alma/birakma, atis yayi ve inis halkasi; menzil, engel ve iptal; fizik devir tesliminde kopyalama yok.",
+        "Yardimciyla at-yakala/kacirma, dusen esyayi yeniden toplama, pause/reset temizligi; kamera veya global time_scale ele gecirilmez.",
+        "Cekirdek sahibi/rol kurali P1-O04 karari oncesi genisletilmez; cekme davranisi bu gorevde uygulanmaz."
+      ],
+      "evidence": [
+        "production/qa/p1-o03.md"
+      ],
+      "issue_url": null,
+      "roles": [
+        "gameplay-programmer",
+        "godot-gdscript-specialist",
+        "qa-tester"
+      ],
+      "open_questions": []
+    },
+    {
+      "id": "P1-A04",
+      "owner": "alicomert",
+      "title": "P1-02 silah hissiyati ve hasar geri bildirimi",
+      "priority": 40,
+      "status": "done",
+      "depends_on": [
+        "P1-A02"
+      ],
+      "branch": "feat/alicomert/p1-a04",
+      "write_scopes": [
+        "src/combat",
+        "src/gameplay/gameplay_hooks.gd",
+        "src/gameplay/combat_juice_hook.gd",
+        "assets/data/feedback",
+        "tests/unit/player/test_gameplay_hooks.gd",
+        "production/qa/p1-a04.md"
+      ],
+      "acceptance": [
+        "Atis/isabet/hasar olaylarini ayir; gercek vurus feedback'i, tepme, namlu/vurus/kovan/yanki ses katmanlari ve doldurma pozu test edilir.",
+        "Kamera ve silah feedback'i cift tetiklenmez; yerel hit-stop hareket/girdi/dunya zamanini dondurmez.",
+        "Dusuk can ve efekt azaltma sinyalleri, reset ve gecersiz/nonfinite degerler test edilir; sayilar dis veri, hissiyat kullanici onayi bekler."
+      ],
+      "evidence": [
+        "production/qa/p1-a04.md"
+      ],
+      "issue_url": null,
+      "roles": [
+        "gameplay-programmer",
+        "sound-designer",
+        "godot-gdscript-specialist",
+        "qa-tester"
+      ],
+      "open_questions": []
+    },
+    {
+      "id": "P1-O04",
+      "owner": "okanipk",
+      "title": "P1-03 Kilit ve Yuk rol modulleri",
+      "priority": 40,
+      "status": "done",
+      "depends_on": [
+        "P1-O03"
+      ],
+      "branch": "feat/okanipk/p1-o04",
+      "write_scopes": [
+        "src/roles/lock",
+        "src/roles/carrier",
+        "assets/data/roles/lock.tres",
+        "assets/data/roles/carrier.tres",
+        "tests/unit/roles/lock",
+        "tests/unit/roles/carrier",
+        "production/qa/p1-o04.md"
+      ],
+      "acceptance": [
+        "Hack ilerleme/iptal/hareketsizlik, Sigorta Agi ve Kablo Gozu hedef turleri ve sureleri.",
+        "Yuk canta kapasitesi, duman/yem ve cekirdekle hiz/atis kisitlari; rol degisiminde pasifler kalici birikmez.",
+        "Cekirdek sahipligi/firlatma/eksik rol kurali onaylanip kanita yazilmadan gorev done olmaz."
+      ],
+      "evidence": [
+        "production/qa/p1-o04.md"
+      ],
+      "issue_url": null,
+      "roles": [
+        "game-designer",
+        "godot-gdscript-specialist",
+        "qa-tester"
+      ],
+      "open_questions": []
+    },
+    {
+      "id": "P1-A05",
+      "owner": "alicomert",
+      "title": "P1-03 Kirici ve Goz rol modulleri",
+      "priority": 50,
+      "status": "done",
+      "depends_on": [
+        "P1-A03",
+        "P1-A04"
+      ],
+      "branch": "feat/alicomert/p1-a05",
+      "write_scopes": [
+        "src/roles/breaker",
+        "src/roles/scout",
+        "assets/data/roles/breaker.tres",
+        "assets/data/roles/scout.tres",
+        "tests/unit/roles/breaker",
+        "tests/unit/roles/scout",
+        "production/qa/p1-a05.md"
+      ],
+      "acceptance": [
+        "Omuz Darbesi kirma/sersemletme/gurultu, Kalkan Duvari omru/yonu/dost atisi; genel dash yeniden eklenmez.",
+        "Drone giris/cikis ve savunmasiz govde, tarama bilgi omru/gurultusu; hizli kaldirma ve sessiz etkisizlestirme menzili.",
+        "Cooldown, kaynak, gecersiz hedef, rol degistirme ve reset; input/camera sahipligi arayuzleri teslim edilir."
+      ],
+      "evidence": [
+        "production/qa/p1-a05.md"
+      ],
+      "issue_url": null,
+      "roles": [
+        "game-designer",
+        "godot-gdscript-specialist",
+        "qa-tester"
+      ],
+      "open_questions": []
+    },
+    {
+      "id": "P1-O05",
+      "owner": "okanipk",
+      "title": "P1-04 kasa ve loot davranislari",
+      "priority": 50,
+      "status": "done",
+      "depends_on": [
+        "P1-O02",
+        "P1-O01"
+      ],
+      "branch": "feat/okanipk/p1-o05",
+      "write_scopes": [
+        "src/loot",
+        "assets/data/loot",
+        "tests/unit/loot",
+        "production/qa/p1-o05.md"
+      ],
+      "acceptance": [
+        "Kucuk/kilitli/agir/tuzakli/dusus kasalari ve anahtar/hack/kirma/ortak acma adaptorleri.",
+        "Dort nadirlik, alarm/isaret/geri sayim, kapasite dolu ve ayni kasaya cift istek: tek odul.",
+        "Seed'li ornek sonuc tekrar uretilebilir; rol adaptorleri sahte test doubles ile de test edilir."
+      ],
+      "evidence": [
+        "production/qa/p1-o05.md"
+      ],
+      "issue_url": null,
+      "roles": [
+        "systems-designer",
+        "godot-gdscript-specialist",
+        "qa-tester"
+      ],
+      "open_questions": []
+    },
+    {
+      "id": "P1-O06",
+      "owner": "okanipk",
+      "title": "P1-05 algi ve dusman durum makineleri",
+      "priority": 60,
+      "status": "done",
+      "depends_on": [
+        "P1-O05"
+      ],
+      "branch": "feat/okanipk/p1-o06",
+      "write_scopes": [
+        "src/ai",
+        "assets/data/enemies",
+        "tests/unit/ai",
+        "production/qa/p1-o06.md"
+      ],
+      "acceptance": [
+        "Gorus/ses/isik/iz, 0-100 suphe, duvar ve kapi sonumleme; telsizle bilgi yayilir, telepati yok.",
+        "Patrol/investigate/suspicious/engaged/search/return gecisleri; devriye/kalkan/telsiz/tarayici/cevre botu ornekleri.",
+        "Sessiz etkisizlestirme, yem yonelimi, siper/yan dolanma/bastirma/takviye karsi hamleleri ve reset."
+      ],
+      "evidence": [
+        "production/qa/p1-o06.md"
+      ],
+      "issue_url": null,
+      "roles": [
+        "ai-programmer",
+        "godot-gdscript-specialist",
+        "qa-tester"
+      ],
+      "open_questions": []
+    },
+    {
+      "id": "P1-A06",
+      "owner": "alicomert",
+      "title": "P1-07 kurtarma durumlari ve yardimci karakter",
+      "priority": 60,
+      "status": "done",
+      "depends_on": [
+        "P1-A05"
+      ],
+      "branch": "feat/alicomert/p1-a06",
+      "write_scopes": [
+        "src/recovery",
+        "src/team/helpers",
+        "tests/unit/recovery",
+        "tests/unit/team/helpers",
+        "production/qa/p1-a06.md"
+      ],
+      "acceptance": [
+        "Can/kalkan/sersemleme ile Sistem Coktu gecisi; surunme/ping/kaldirma, sureli yeniden dogma/esya kaybi/haklar.",
+        "Tek ve toplu cokme, yeniden tetikleme, izleyiciye gecis, yardimci rol degisimi ve reset testleri.",
+        "Yardimci kaniti gercek cok oyunculu veya ag kaniti sayilmaz."
+      ],
+      "evidence": [
+        "production/qa/p1-a06.md"
+      ],
+      "issue_url": null,
+      "roles": [
+        "gameplay-programmer",
+        "godot-gdscript-specialist",
+        "qa-tester"
+      ],
+      "open_questions": []
+    },
+    {
+      "id": "P1-O07",
+      "owner": "okanipk",
+      "title": "P1-05 alarm 0-4 ve fazli Sef provasi",
+      "priority": 70,
+      "status": "done",
+      "depends_on": [
+        "P1-O06"
+      ],
+      "branch": "feat/okanipk/p1-o07",
+      "write_scopes": [
+        "src/ai",
+        "src/world/alarm",
+        "assets/data/alarm",
+        "tests/unit/ai",
+        "tests/unit/world/alarm",
+        "production/qa/p1-o07.md"
+      ],
+      "acceptance": [
+        "Alarm 0-4 ve zaman/terminal azaltmasi, takviye/kapi kilitleme ve tahliye gecisleri.",
+        "Fazli Sef acik nokta ve karsi hamleleri solo tetiklenebilir; hasar/suphe degerleri dis veri.",
+        "Reset alarmi, spawnlari ve bekleyen zamanlayicilari temizler."
+      ],
+      "evidence": [
+        "production/qa/p1-o07.md"
+      ],
+      "issue_url": null,
+      "roles": [
+        "ai-programmer",
+        "godot-gdscript-specialist",
+        "qa-tester"
+      ],
+      "open_questions": []
+    },
+    {
+      "id": "P1-O08",
+      "owner": "okanipk",
+      "title": "P1-06 engeller ve P1-07 nesne ortak eylemleri",
+      "priority": 80,
+      "status": "done",
+      "depends_on": [
+        "P1-O07",
+        "P1-O03"
+      ],
+      "branch": "feat/okanipk/p1-o08",
+      "write_scopes": [
+        "src/world/obstacles",
+        "src/world/cooperative",
+        "assets/data/obstacles",
+        "tests/unit/world/obstacles",
+        "tests/unit/world/cooperative",
+        "production/qa/p1-o08.md"
+      ],
+      "acceptance": [
+        "Lazer, kayganlik, sikisan kapi, kamera/taret, elektrikli su, coken raf, GAZ ODASI; her birinde rol karsi hamlesi ve rol yokken alternatif.",
+        "Itme/yukseltme/ortak kasa/kalkan arkasi ve birakma/iptal yardimci arayuzu ile sinanir.",
+        "Dost hasari yok, itme/kayma/carpisma komik ama softlock yaratmaz; kullanicinin kaldirdigi engeller otomatik geri eklenmez."
+      ],
+      "evidence": [
+        "production/qa/p1-o08.md"
+      ],
+      "issue_url": null,
+      "roles": [
+        "game-designer",
+        "godot-gdscript-specialist",
+        "qa-tester"
+      ],
+      "open_questions": []
+    },
+    {
+      "id": "P1-A07",
+      "owner": "alicomert",
+      "title": "P1-07 kombo, Uyum ve takim iletisimi",
+      "priority": 70,
+      "status": "done",
+      "depends_on": [
+        "P1-A06",
+        "P1-O04",
+        "P1-O08"
+      ],
+      "branch": "feat/alicomert/p1-a07",
+      "write_scopes": [
+        "src/team/combos",
+        "src/team/communication",
+        "assets/data/team",
+        "tests/unit/team/combos",
+        "tests/unit/team/communication",
+        "production/qa/p1-a07.md"
+      ],
+      "acceptance": [
+        "Alti kombo ve 3sn pencere; Uyum ve Takim Hamlesi, cooldown ve tekrar olayla dolum somurusu yok.",
+        "Ping tekeri ve hazir/oylama provasi; yardimci ile iki tarafin birakma/iptal durumlari.",
+        "Nesne ortak eylemleri ve kurtarma olayi dogru kombo girdisi olur; ag islevi eklenmez."
+      ],
+      "evidence": [
+        "production/qa/p1-a07.md"
+      ],
+      "issue_url": null,
+      "roles": [
+        "gameplay-programmer",
+        "ui-programmer",
+        "qa-tester"
+      ],
+      "open_questions": []
+    },
+    {
+      "id": "P1-O09",
+      "owner": "okanipk",
+      "title": "P1-06 mutator uyumlulugu ve seedli uretim",
+      "priority": 90,
+      "status": "done",
+      "depends_on": [
+        "P1-O08"
+      ],
+      "branch": "feat/okanipk/p1-o09",
+      "write_scopes": [
+        "src/world/generation",
+        "src/world/mutators",
+        "assets/data/generation",
+        "tests/unit/world/generation",
+        "tests/unit/world/mutators",
+        "production/qa/p1-o09.md"
+      ],
+      "acceptance": [
+        "Karanlik/kaygan/yanki/kuculen/konveyor/sis/agir cekim/tek yon/ayna/sessizlik tek ve izinli birlesimler.",
+        "Iskelet/kaplama/mutator/engel/odul/olay, Garip Oda; ayni seed ayni plan, butce/uyumluluk, sonlu yeniden deneme, ulasilabilirlik.",
+        "Laboratuvar islevsel uretim provasi; tam operasyon uretimi ve 20-25dk denge iddiasi yok."
+      ],
+      "evidence": [
+        "production/qa/p1-o09.md"
+      ],
+      "issue_url": null,
+      "roles": [
+        "systems-designer",
+        "godot-gdscript-specialist",
+        "qa-tester"
+      ],
+      "open_questions": []
+    },
+    {
+      "id": "P1-O10",
+      "owner": "okanipk",
+      "title": "P1-06 Yonetmen temposunu gercek kabul testleriyle tamamla",
+      "priority": 100,
+      "status": "done",
+      "depends_on": [
+        "P1-O07"
+      ],
+      "branch": "feat/okanipk/p1-o10",
+      "write_scopes": [
+        "src/gameplay/director_pacing_hook.gd",
+        "src/world/director",
+        "assets/data/director",
+        "tests/unit/world/director",
+        "production/qa/p1-o10.md"
+      ],
+      "acceptance": [
+        "Ilk 120sn tepe yok; dusuk can/mermi/yerde partner toparlanma; ses/alarm/sure girdileri ve 4 tempo durumu.",
+        "Ayni olay ardisik cikmaz; oda basina bir buyuk+bir kucuk siniri, ilk oda sakin; her tehlikede on belirti.",
+        "Mevcut sinyal sinifi tamamlanmis Yonetmen sayilmaz; olay secimi/tetikleme ve dunya tuketicisi ayri test edilir."
+      ],
+      "evidence": [
+        "production/qa/p1-o10.md"
+      ],
+      "issue_url": null,
+      "roles": [
+        "systems-designer",
+        "godot-gdscript-specialist",
+        "qa-tester"
+      ],
+      "open_questions": []
+    },
+    {
+      "id": "P1-O11",
+      "owner": "okanipk",
+      "title": "P1-06 olay destesi ve temizlik",
+      "priority": 110,
+      "status": "done",
+      "depends_on": [
+        "P1-O10",
+        "P1-O05",
+        "P1-O08"
+      ],
+      "branch": "feat/okanipk/p1-o11",
+      "write_scopes": [
+        "src/world/events",
+        "assets/data/events",
+        "tests/unit/world/events",
+        "production/qa/p1-o11.md"
+      ],
+      "acceptance": [
+        "Yangin/devriye/kesinti/yanlis anons/kasa yagmuru/tasinmis kapi/kayip esya/asiri isinma/ikiz/konfeti elle tetiklenebilir.",
+        "Her olay on belirti/etki/karsi hamle/bitis-temizlik; zararsiz olay ayrimi, pause ve reset.",
+        "Sinyal tek basina teslim degil: gercek dunya sonucu ve kaynak temizligi kanitlanir."
+      ],
+      "evidence": [
+        "production/qa/p1-o11.md"
+      ],
+      "issue_url": null,
+      "roles": [
+        "game-designer",
+        "godot-gdscript-specialist",
+        "qa-tester"
+      ],
+      "open_questions": []
+    },
+    {
+      "id": "P1-O12",
+      "owner": "okanipk",
+      "title": "Cekme mekanigi tasarim karari",
+      "priority": 120,
+      "status": "done",
+      "depends_on": [
+        "P1-O03"
+      ],
+      "branch": "feat/okanipk/p1-o12",
+      "write_scopes": [
+        "src/objects",
+        "tests/unit/objects",
+        "production/qa/p1-o12.md"
+      ],
+      "acceptance": [
+        "Yakin nesne surukleme/uzaktan kanca/geri cagirma secenekleri kullaniciya gosterilir; onay yokken oyun kodu yazilmaz.",
+        "Onaylanan davranis icin menzil, agirlik, LOS, iptal, duvara takilma ve esya sahipligi testleri once belirlenir."
+      ],
+      "evidence": [
+        "production/qa/p1-o12.md"
+      ],
+      "issue_url": null,
+      "roles": [
+        "game-designer",
+        "gameplay-programmer",
+        "qa-tester"
+      ],
+      "open_questions": []
+    },
+    {
+      "id": "P1-O13",
+      "owner": "okanipk",
+      "title": "P1-08 kisa hedef-cekirdek-tahliye duzenegi",
+      "priority": 130,
+      "status": "done",
+      "depends_on": [
+        "P1-O04",
+        "P1-O09",
+        "P1-O11",
+        "P1-O12"
+      ],
+      "branch": "feat/okanipk/p1-o13",
+      "write_scopes": [
+        "src/world/scenario",
+        "tests/unit/world/scenario",
+        "production/qa/p1-o13.md"
+      ],
+      "acceptance": [
+        "Kisa hedef/cekirdek/tahliye, guvenli nokta, esya/olay/dusman reseti; ozet sayaclari.",
+        "Ayni seed tekrarlanabilir; hedef iptal/basarisizlik/cokme senaryolari, ulasilamaz tahliye veya kalici durum yok.",
+        "Ana sahneye baglanacak bagimsiz duzenek ve arayuz teslimi; gercek coop kaniti degildir."
+      ],
+      "evidence": [
+        "production/qa/p1-o13.md"
+      ],
+      "issue_url": null,
+      "roles": [
+        "level-designer",
+        "godot-gdscript-specialist",
+        "qa-tester"
+      ],
+      "open_questions": []
+    },
+    {
+      "id": "P1-A08",
+      "owner": "alicomert",
+      "title": "P1-08 erisilebilirlik ve ayar sunumu",
+      "priority": 80,
+      "status": "done",
+      "depends_on": [
+        "P1-A03",
+        "P1-A04",
+        "P1-A07"
+      ],
+      "branch": "feat/alicomert/p1-a08",
+      "write_scopes": [
+        "src/ui",
+        "src/input",
+        "src/camera",
+        "tests/unit/ui",
+        "tests/unit/input",
+        "production/qa/p1-a08.md"
+      ],
+      "acceptance": [
+        "Imlec boyut/renk/sembol, altyazi/yon, hold-toggle, remap ve zamanlama yardimi ayarlari gercekten degisir.",
+        "Efekt azaltma yeni kamera trauma/landing ve silah efektlerini de kapsar; reset eski efektleri tasimaz.",
+        "Yalniz renk ile bilgi yok; metin ve sembol karsiligi; goruntulu test ve kullanici hissiyat onayi ayri."
+      ],
+      "evidence": [
+        "production/qa/p1-a08.md"
+      ],
+      "issue_url": null,
+      "roles": [
+        "ui-programmer",
+        "ux-designer",
+        "qa-tester"
+      ],
+      "open_questions": []
+    },
+    {
+      "id": "P1-I01",
+      "owner": "alicomert",
+      "title": "Erken modulleri ana laboratuvara sirali entegre et",
+      "priority": 45,
+      "status": "done",
+      "depends_on": [
+        "P1-A03",
+        "P1-A04",
+        "P1-O03"
+      ],
+      "branch": "feat/alicomert/p1-i01",
+      "write_scopes": [
+        "src/lab/mechanics_lab.gd",
+        "src/lab/mechanics_lab.tscn",
+        "project.godot",
+        "src/data/lab_rules.gd",
+        "assets/data/lab_rules.tres",
+        "tests/integration/p1_core",
+        "production/qa/p1-i01.md"
+      ],
+      "acceptance": [
+        "Iki hattin API teslimleri gozden gecirilir; tek entegrator ortak sahne/InputMap/HUD baglantilarini yapar.",
+        "Atis/isabet/hasar ve kamera sinyalleri tek tuketiciye; esya hedefleme atisi yanlis tetiklemez.",
+        "Headless ve goruntulu regresyon ayri; klavye testi sessiz atlanmaz, odaksiz test NOT ASSESSED."
+      ],
+      "evidence": [
+        "production/qa/p1-i01.md"
+      ],
+      "issue_url": null,
+      "roles": [
+        "lead-programmer",
+        "godot-gdscript-specialist",
+        "qa-tester"
+      ],
+      "open_questions": []
+    },
+    {
+      "id": "P1-A09",
+      "owner": "alicomert",
+      "title": "P1-02 aktif sarjor degistirme (Active Reload)",
+      "priority": 85,
+      "status": "done",
+      "depends_on": [
+        "P1-A02"
+      ],
+      "branch": "feat/alicomert/p1-a09",
+      "write_scopes": [
+        "src/combat/player_combat.gd",
+        "src/ui/active_reload_bar.gd",
+        "tests/unit/player/test_active_reload.gd",
+        "production/qa/p1-a09.md"
+      ],
+      "acceptance": [
+        "Reload suresinde tatli nokta (sweet-spot %45-%75); dogru R basiminda aninda sarjor dolumu ve 3 mermiye +%25 hasar bonusu.",
+        "Erken veya gec basimda jam/tutukluk +0.5s gecikme cezasi; bos basimda normal reload degismez.",
+        "Birim testleri ve HUD gosterge entegrasyonu."
+      ],
+      "evidence": [
+        "production/qa/p1-a09.md"
+      ],
+      "issue_url": null,
+      "roles": [
+        "gameplay-programmer",
+        "godot-gdscript-specialist",
+        "qa-tester"
+      ],
+      "open_questions": []
+    },
+    {
+      "id": "P1-A10",
+      "owner": "alicomert",
+      "title": "P1-02 taktiksel lazer nisangahi (Tactical Laser Sight)",
+      "priority": 95,
+      "status": "done",
+      "depends_on": [
+        "P1-A04"
+      ],
+      "branch": "feat/alicomert/p1-a10",
+      "write_scopes": [
+        "src/combat/laser_sight.gd",
+        "tests/unit/player/test_laser_sight.gd",
+        "production/qa/p1-a10.md"
+      ],
+      "acceptance": [
+        "Silah namlusundan 3B hedefe uzanan dinamik lazer hatti.",
+        "Her silaha ozel renk (Tabanca kirmizi, Sok camgobegi, Pompali kehribar, Karabina zumrut yesili).",
+        "Engellere carpma noktasi ve mesafe sonumu; F6 efekt azaltma ile uyum."
+      ],
+      "evidence": [
+        "production/qa/p1-a10.md"
+      ],
+      "issue_url": null,
+      "roles": [
+        "gameplay-programmer",
+        "godot-gdscript-specialist",
+        "qa-tester"
+      ],
+      "open_questions": []
+    },
+    {
+      "id": "P1-A11",
+      "owner": "alicomert",
+      "title": "P1-05 dusman sendeletme ve baski (Flinch and Suppression)",
+      "priority": 105,
+      "status": "done",
+      "depends_on": [
+        "P1-O06"
+      ],
+      "branch": "feat/alicomert/p1-a11",
+      "write_scopes": [
+        "src/combat/enemy_bot.gd",
+        "tests/unit/player/test_flinch_suppression.gd",
+        "production/qa/p1-a11.md"
+      ],
+      "acceptance": [
+        "Agir hasarda (>=18) veya yuksek darbede saldiri iptali ve saldiri zamanlayicisinda +0.35s gecikme.",
+        "Yana sendeletme ivmesi; baski esiginde (suppression) hareket hizinda %40 azalma.",
+        "Birim testleri ile dogrulama."
+      ],
+      "evidence": [
+        "production/qa/p1-a11.md"
+      ],
+      "issue_url": null,
+      "roles": [
+        "gameplay-programmer",
+        "ai-programmer",
+        "qa-tester"
+      ],
+      "open_questions": []
+    },
+    {
+      "id": "P1-A12",
+      "owner": "alicomert",
+      "title": "P1-02 mermi carpma izleri ve seken kivilcimlar (Bullet Decals and Ricochets)",
+      "priority": 115,
+      "status": "done",
+      "depends_on": [
+        "P1-A04"
+      ],
+      "branch": "feat/alicomert/p1-a12",
+      "write_scopes": [
+        "src/combat/shot_feedback.gd",
+        "tests/unit/player/test_bullet_decals.gd",
+        "production/qa/p1-a12.md"
+      ],
+      "acceptance": [
+        "Mermilerin yuzeye carptigi noktalarda kalici mermi/yanik izleri (decals, max 32 havuz, 8sn omur).",
+        "Yuzey normaline gore yansiyan seken kivilcimlar (ricochet angle).",
+        "F5 sifirlamada tam temizlik ve birim test kaniti."
+      ],
+      "evidence": [
+        "production/qa/p1-a12.md"
+      ],
+      "issue_url": null,
+      "roles": [
+        "gameplay-programmer",
+        "sound-designer",
+        "qa-tester"
+      ],
+      "open_questions": []
+    },
+    {
+      "id": "P1-I02",
+      "owner": "alicomert",
+      "title": "Butun Faz1 mekaniklerini bagla ve karsilastirmali his testi",
+      "priority": 140,
+      "status": "done",
+      "depends_on": [
+        "P1-I01",
+        "P1-A08",
+        "P1-O13"
+      ],
+      "branch": "feat/alicomert/p1-i02",
+      "write_scopes": [
+        "src/lab/mechanics_lab.gd",
+        "src/lab/mechanics_lab.tscn",
+        "project.godot",
+        "src/data/lab_rules.gd",
+        "assets/data/lab_rules.tres",
+        "tests/integration/p1_full",
+        "production/qa/p1-i02.md"
+      ],
+      "acceptance": [
+        "Rol/esya/dusman/olay secimi, cooldown reset, dis veri ayari, tekrar kurulabilir laboratuvar; kisa hedef-cekirdek-tahliye provasi.",
+        "Tum P1 satirlari kanitla degerlendirilir; bilinmeyen, bloke ve calismayan testler acik kalir; sinyal varligi entegrasyon kaniti sayilmaz.",
+        "Iki geliÅŸtirici modullerinin beraber reset/pause/odak testleri; kullanici silah/hareket/etkilesim hissini ve Faz2 gecisini ayrica onaylar."
+      ],
+      "evidence": [
+        "production/qa/p1-i02.md"
+      ],
+      "issue_url": null,
+      "roles": [
+        "lead-programmer",
+        "qa-lead",
+        "qa-tester"
+      ],
+      "open_questions": []
+    }
+  ],
+  "integration_handoffs": [
+    {
+      "from_task": "P1-O01",
+      "to_task": "P2-I01",
+      "scopes": [
+        "src/interaction",
+        "tests/unit/interaction"
+      ],
+      "reason": "Project owner explicitly authorized selective integration of Okan 68f3cbf; completed scope only."
+    },
+    {
+      "from_task": "P1-O02",
+      "to_task": "P2-I01",
+      "scopes": [
+        "tests/unit/inventory"
+      ],
+      "reason": "Project owner explicitly authorized selective integration of Okan 68f3cbf; completed scope only."
+    },
+    {
+      "from_task": "P1-O03",
+      "to_task": "P2-I01",
+      "scopes": [
+        "tests/unit/objects"
+      ],
+      "reason": "Project owner explicitly authorized selective integration of Okan 68f3cbf; completed scope only."
+    },
+    {
+      "from_task": "P1-O04",
+      "to_task": "P2-I01",
+      "scopes": [
+        "assets/data/roles/carrier.tres",
+        "assets/data/roles/lock.tres",
+        "src/roles/carrier",
+        "src/roles/lock",
+        "tests/unit/roles/carrier",
+        "tests/unit/roles/lock"
+      ],
+      "reason": "Project owner explicitly authorized selective integration of Okan 68f3cbf; completed scope only."
+    },
+    {
+      "from_task": "P1-O05",
+      "to_task": "P2-I01",
+      "scopes": [
+        "tests/unit/loot"
+      ],
+      "reason": "Project owner explicitly authorized selective integration of Okan 68f3cbf; completed scope only."
+    },
+    {
+      "from_task": "P1-O06",
+      "to_task": "P2-I01",
+      "scopes": [
+        "tests/unit/ai"
+      ],
+      "reason": "Project owner explicitly authorized selective integration of Okan 68f3cbf; completed scope only."
+    },
+    {
+      "from_task": "P1-O07",
+      "to_task": "P2-I01",
+      "scopes": [
+        "tests/unit/ai",
+        "tests/unit/world/alarm"
+      ],
+      "reason": "Project owner explicitly authorized selective integration of Okan 68f3cbf; completed scope only."
+    },
+    {
+      "from_task": "P1-O08",
+      "to_task": "P2-I01",
+      "scopes": [
+        "tests/unit/world/cooperative",
+        "tests/unit/world/obstacles"
+      ],
+      "reason": "Project owner explicitly authorized selective integration of Okan 68f3cbf; completed scope only."
+    },
+    {
+      "from_task": "P1-O09",
+      "to_task": "P2-I01",
+      "scopes": [
+        "tests/unit/world/generation",
+        "tests/unit/world/mutators"
+      ],
+      "reason": "Project owner explicitly authorized selective integration of Okan 68f3cbf; completed scope only."
+    },
+    {
+      "from_task": "P1-O10",
+      "to_task": "P2-I01",
+      "scopes": [
+        "tests/unit/world/director"
+      ],
+      "reason": "Project owner explicitly authorized selective integration of Okan 68f3cbf; completed scope only."
+    },
+    {
+      "from_task": "P1-O11",
+      "to_task": "P2-I01",
+      "scopes": [
+        "tests/unit/world/events"
+      ],
+      "reason": "Project owner explicitly authorized selective integration of Okan 68f3cbf; completed scope only."
+    },
+    {
+      "from_task": "P1-O12",
+      "to_task": "P2-I01",
+      "scopes": [
+        "tests/unit/objects"
+      ],
+      "reason": "Project owner explicitly authorized selective integration of Okan 68f3cbf; completed scope only."
+    },
+    {
+      "from_task": "P1-O13",
+      "to_task": "P2-I01",
+      "scopes": [
+        "tests/unit/world/scenario"
+      ],
+      "reason": "Project owner explicitly authorized selective integration of Okan 68f3cbf; completed scope only."
+    }
+  ]
+}

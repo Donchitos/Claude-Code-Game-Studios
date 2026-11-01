@@ -1,0 +1,20 @@
+[gd_resource type="Resource" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/data/role_profile.gd" id="1_role"]
+
+[resource]
+script = ExtResource("1_role")
+role_id = &"yuk"
+display_name = "Yük"
+equipped_weapon = 0
+cargo_capacity = 8
+pickup_reach = 2.5
+throw_reach = 10.0
+throw_flight_time = 0.8
+throw_cooldown = 0.6
+core_speed_multiplier = 0.75
+utility_reach = 7.0
+utility_duration = 6.0
+utility_cooldown = 8.0
+smoke_radius = 2.0
+bait_noise_radius = 15.0

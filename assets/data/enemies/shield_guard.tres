@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="EnemyProfile" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/ai/enemy_profile.gd" id="1_profile"]
+
+[resource]
+script = ExtResource("1_profile")
+enemy_id = "shield_guard"
+display_name = "Kalkan Muhafızı"
+max_health = 100.0
+move_speed = 2.8
+attack_damage = 22.0
+attack_range = 1.4
+attack_cooldown = 1.6
+vision_range = 16.0
+vision_fov = 120.0
+hearing_range = 18.0
+has_shield = true
+shield_health = 60.0

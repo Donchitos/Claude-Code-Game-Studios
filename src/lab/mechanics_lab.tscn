@@ -1,0 +1,8 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://src/lab/mechanics_lab.gd" id="1_lab"]
+[ext_resource type="Resource" path="res://assets/data/movement_default.tres" id="2_tuning"]
+
+[node name="MechanicsLab" type="Node3D"]
+script = ExtResource("1_lab")
+tuning = ExtResource("2_tuning")

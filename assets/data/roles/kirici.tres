@@ -1,0 +1,22 @@
+[gd_resource type="Resource" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/data/role_profile.gd" id="1_role"]
+
+[resource]
+script = ExtResource("1_role")
+role_id = &"kirici"
+display_name = "Kırıcı"
+equipped_weapon = 2
+max_health = 150.0
+slow_walk_factor = 0.7
+break_reach = 2.5
+break_damage = 100.0
+break_stun = 1.5
+break_push = 0.8
+break_cooldown = 4.0
+shield_duration = 8.0
+shield_health = 200.0
+shield_cooldown = 12.0
+ability_noise_radius = 22.0
+footstep_noise_radius = 8.0
+shot_noise_multiplier = 1.5

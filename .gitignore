@@ -13,6 +13,11 @@ Desktop.ini
 .claude/settings.local.json
 CLAUDE.local.md
 project.local.yaml
+# Local-only coordination state; never publish another checkout's live leases.
+.sdlc/locks.json
+.sdlc/*.mutex
+.sdlc/*.tmp
+.sdlc/identity.local.json
 production/session-logs/
 # Ephemeral per-session checkpoint. directory-structure.md documents this as
 # gitignored; the rule was missing, so active.md would have been committed.
@@ -24,6 +29,10 @@ production/session-state/
 # Each is a separate checkout; staging everything would add it as an embedded
 # repository.
 .claude/worktrees/
+.cindy-worktrees/
+.agents/
+.codex/
+Yillik_Izin_Dilekcesi.*
 
 
 # === Local sandboxes and scratch work ===

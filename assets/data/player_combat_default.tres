@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="PlayerCombat" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/combat/player_combat.gd" id="1_combat"]
+
+[resource]
+script = ExtResource("1_combat")
+max_health = 100.0
+magazine_capacity = 7
+reload_duration = 2.0
+health_animation_duration = 0.25
+recoil_duration = 0.14
+recoil_distance = 0.10
+recoil_angle = 12.0
+flash_duration = 0.055

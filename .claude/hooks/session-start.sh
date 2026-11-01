@@ -54,6 +54,32 @@ fi
 
 echo "=== Claude Code Game Studios — Session Context ==="
 
+# Read-only Phase 1 routing. Failure must not swallow the recovery block below.
+# No native worker dispatch, remote sync, branch changes or file writes here.
+if [ -f "tools/sdlc/runner.py" ]; then
+    SDLC_PYTHON=()
+    if command -v python3 >/dev/null 2>&1; then
+        SDLC_PYTHON=(python3)
+    elif command -v python >/dev/null 2>&1; then
+        SDLC_PYTHON=(python)
+    elif command -v py >/dev/null 2>&1; then
+        SDLC_PYTHON=(py -3)
+    fi
+    if [ ${#SDLC_PYTHON[@]} -gt 0 ]; then
+        "${SDLC_PYTHON[@]}" -B -c '
+import subprocess, sys
+try:
+    r = subprocess.run([sys.executable, "-B", "tools/sdlc/runner.py", "start"], timeout=3)
+    if r.returncode:
+        print("[SDLC] Routing blocked/unavailable; no gameplay writes until resolved.")
+except (OSError, subprocess.TimeoutExpired) as exc:
+    print("[SDLC] Routing unavailable; no gameplay writes:", exc)
+' || echo "[SDLC] Python routing failed; no gameplay writes until manual start succeeds."
+    else
+        echo "[SDLC] Python 3 unavailable; routing unavailable, no gameplay writes."
+    fi
+fi
+
 # Current branch
 BRANCH=$(git rev-parse --abbrev-ref HEAD 2>/dev/null)
 if [ -n "$BRANCH" ]; then

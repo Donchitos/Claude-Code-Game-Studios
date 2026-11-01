@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="RoleBase" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/roles/role_base.gd" id="1_role"]
+
+[resource]
+script = ExtResource("1_role")
+role_id = "breaker"
+display_name = "Kırıcı"
+description = "Ağır zırhlı öncü. Omuz darbesiyle engelleri yıkar, portatif kalkan duvarı açar."
+ability_q_name = "Omuz Darbesi"
+ability_q_cooldown = 5.0
+ability_q_icon = "💥"
+ability_f_name = "Kalkan Duvarı"
+ability_f_cooldown = 12.0
+ability_f_icon = "🛡️"
+bonus_shield = 30.0
+bonus_speed_multiplier = 0.95
+noise_multiplier = 1.3

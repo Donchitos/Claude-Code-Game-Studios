@@ -1,0 +1,17 @@
+[gd_resource type="Resource" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/data/role_profile.gd" id="1_role"]
+
+[resource]
+script = ExtResource("1_role")
+role_id = &"kilit"
+display_name = "Kilit"
+hack_duration = 3.0
+hack_reach = 5.0
+hack_cooldown = 4.0
+fuse_reach = 6.0
+fuse_angle_degrees = 70.0
+fuse_duration = 6.0
+fuse_cooldown = 12.0
+cable_sight_reach = 8.0
+equipped_weapon = 1

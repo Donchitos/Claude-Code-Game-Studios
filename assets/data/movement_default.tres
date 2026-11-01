@@ -1,0 +1,29 @@
+[gd_resource type="Resource" script_class="MovementTuning" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/data/movement_tuning.gd" id="1_tuning"]
+
+[resource]
+script = ExtResource("1_tuning")
+move_speed = 6.0
+acceleration = 32.0
+deceleration = 40.0
+walk_multiplier = 0.4
+gravity = 24.0
+turn_sharpness = 13.2
+jump_height = 1.0
+jump_takeoff_duration = 0.1
+jump_landing_duration = 0.16
+jump_stretch = 0.16
+jump_squash = 0.18
+jump_pose_sharpness = 16.0
+jump_animation_strength = 1.0
+dash_speed = 15.0
+dash_duration = 0.17
+dash_cooldown = 0.9
+camera_height = 16.0
+camera_depth = 11.2
+camera_fov = 50.0
+camera_follow_sharpness = 8.0
+camera_edge_pan_enabled = true
+camera_edge_pan = 4.0
+camera_edge_threshold = 0.85

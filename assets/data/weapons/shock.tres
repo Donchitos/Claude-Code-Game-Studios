@@ -1,0 +1,16 @@
+[gd_resource type="Resource" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/combat/weapon_profile.gd" id="1_profile"]
+
+[resource]
+script = ExtResource("1_profile")
+display_name = "Şok tabancası"
+capacity = 8
+damage = 5
+distance = 9
+shot_interval = 0.4
+pellets = 1
+spread_degrees = 0
+noise_radius = 5
+stun_duration = 1.5
+tone_hz = 440

@@ -1,18 +1,27 @@
 # Claude Code Game Studios -- Game Studio Agent Architecture
 
-Indie game development managed through 49 coordinated Claude Code subagents.
+Indie game development managed through 49 coordinated specialist agents, operating under the universal AI-Native SDLC standard.
 Each agent owns a specific domain, enforcing separation of concerns and quality.
+
+## Global AI-Native SDLC & Multi-Agent Standards
+
+This project adheres to the universal vendor-neutral AI lifecycle and multi-agent specifications:
+- **Universal Multi-Agent Roster & Protocol**: @AGENTS.md
+- **Universal AI-Native SDLC 6-Phase Standard**: @SDLC.md
+- **Deterministic Validation & Runner**: `python tools/sdlc/runner.py test`
+- **Multi-Agent Task & Write-Scope Orchestrator**: `python tools/sdlc/orchestrator.py`
 
 ## Technology Stack
 
-- **Engine**: [CHOOSE: Godot 4 / Unity / Unreal Engine 5]
-- **Language**: [CHOOSE: GDScript / C# / C++ / Blueprint]
+- **Engine**: Godot 4.7.2 Stable (Forward+ / Jolt Physics)
+- **Language**: GDScript (Strict Static Typing, `@export`, Signal Contracts)
+- **Multiplayer**: High-Level Multiplayer (`ENetMultiplayerPeer`, Server-Authoritative Host, 2-4 Player Scaling, Hybrid Roles, Zero Friendly Fire)
 - **Version Control**: Git with trunk-based development
-- **Build System**: [SPECIFY after choosing engine]
-- **Asset Pipeline**: [SPECIFY after choosing engine]
+- **Test Runner**: Headless Engine Testing (`python -B tools/sdlc/runner.py test`)
+- **Automated Godot Skills Router**: `@AGENTS.md#7-godot-47-otomatik-yetenek-ve-uzmanlik-katalogu`
 
-> **Note**: Engine-specialist agents exist for Godot, Unity, and Unreal with
-> dedicated sub-specialists. Use the set matching your engine.
+> **Note**: Engine-specialist agents for Godot 4.7 automatically auto-load matching
+> skills based on task context without requiring manual user dispatch.
 
 ## Project Structure
 

@@ -3,6 +3,39 @@
 
 schema_version: 1
 
+project:
+  name: "Sector 9: Cold Protocol"
+  stage: "Concept"
+
+engine:
+  name: "Godot"
+  version: "4.7.2"
+  language: "GDScript"
+  rendering: "Forward+"
+  physics: "Jolt"
+
+specialists:
+  code: "godot-gdscript-specialist"
+  shader: "godot-shader-specialist"
+  ui: "godot-specialist"
+  additional: ["godot-gdextension-specialist"]
+
+naming:
+  classes: PascalCase
+  variables: snake_case
+  constants: SCREAMING_SNAKE
+  signals: past_tense
+  files: snake_case
+  scenes: snake_case
+
+commands:
+  run: '"godot-test/Godot_v4.7.2-stable_win64_console.exe" --path . --windowed --resolution 1280x720'
+  test: '"godot-test/Godot_v4.7.2-stable_win64_console.exe" --headless --path . --script res://tests/unit/player/test_movement.gd'
+  build: "[TO BE CONFIGURED]"
+
+# The game roadmap phase is not the studio pipeline stage.
+# Solo lab development does not certify co-op or production readiness.
+
 framework:
   version: 1.2.0
   last_upgraded: 2026-10-19

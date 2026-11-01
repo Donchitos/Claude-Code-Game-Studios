@@ -1,0 +1,14 @@
+[gd_resource type="Resource" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/data/lab_rules.gd" id="1_rules"]
+
+[resource]
+script = ExtResource("1_rules")
+interaction_reach = 2.5
+terminal_duration = 1.5
+hazard_damage = 15.0
+hazard_interval = 1.0
+hazard_stun = 0.25
+limited_reserve = 21
+camera_kick = 0.1
+impact_duration = 0.08

@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="ItemData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/inventory/item_data.gd" id="1_item"]
+
+[resource]
+script = ExtResource("1_item")
+id = "recoil_dampener"
+item_name = "Manyetik Namlu Modülü"
+category = 3
+max_stack = 1
+effect_value = 0.35
+icon = "🔧"
+description = "Silahın hareket saçılmasını ve geri tepmesini %35 azaltan modül."

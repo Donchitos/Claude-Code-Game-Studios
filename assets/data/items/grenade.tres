@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="ItemData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/inventory/item_data.gd" id="1_item"]
+
+[resource]
+script = ExtResource("1_item")
+id = "grenade"
+item_name = "Şok Bombası"
+category = 1
+max_stack = 4
+effect_value = 65.0
+icon = "💣"
+description = "Geniş alan etkili şok bombası. Düşmanları savurur ve sersemletir."

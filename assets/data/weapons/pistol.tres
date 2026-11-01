@@ -1,0 +1,16 @@
+[gd_resource type="Resource" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/combat/weapon_profile.gd" id="1_profile"]
+
+[resource]
+script = ExtResource("1_profile")
+display_name = "Tabanca"
+capacity = 7
+damage = 20
+distance = 22
+shot_interval = 0.2
+pellets = 1
+spread_degrees = 0
+noise_radius = 12
+stun_duration = 0
+tone_hz = 180

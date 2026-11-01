@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="RoleBase" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/roles/role_base.gd" id="1_role"]
+
+[resource]
+script = ExtResource("1_role")
+role_id = "scout"
+display_name = "Göz"
+description = "Hızlı ve sessiz keşif uzmanı. Keşif drone'u uçurur, alan taraması yapar."
+ability_q_name = "Keşif Drone'u"
+ability_q_cooldown = 8.0
+ability_q_icon = "🛸"
+ability_f_name = "Alan Taraması"
+ability_f_cooldown = 10.0
+ability_f_icon = "📡"
+bonus_shield = 0.0
+bonus_speed_multiplier = 1.15
+noise_multiplier = 0.6

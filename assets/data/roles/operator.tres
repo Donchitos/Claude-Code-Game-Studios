@@ -1,0 +1,8 @@
+[gd_resource type="Resource" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/data/role_profile.gd" id="1_role"]
+
+[resource]
+script = ExtResource("1_role")
+role_id = &"operator"
+display_name = "Operatör"
