@@ -77,7 +77,7 @@ Specific cases to check:
    around the old (assumed) behaviour.
 
 2. **Known engine limitations in ADRs**: If an ADR records a known engine limitation
-   (e.g. "Jolt ignores HingeJoint3D damp", "D3D12 is now the default backend"), check
+   (e.g. "Jolt ignores HingeJoint3D damp", "glow processes before tonemapping"), check
    GDDs that design mechanics around the affected feature.
 
 3. **Deprecated API conflicts**: If Phase 5 flagged a deprecated API used in an ADR,
