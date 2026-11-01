@@ -49,7 +49,7 @@ change behaviour or defaults. The guide lists no deprecations.
 |-----------|--------|---------|
 | Physics | Jolt is now the DEFAULT 3D physics engine | New projects use Jolt automatically. Existing projects keep their setting. Some HingeJoint3D properties (like `damp`) only work with GodotPhysics. |
 | Rendering | Glow processes BEFORE tonemapping | Was after tonemapping. Scenes with glow will look different. Adjust intensity/blend in WorldEnvironment. |
-| Rendering | D3D12 default on Windows | Was Vulkan. For better driver compatibility. |
+| Rendering | Windows default rendering backend | 4.6 announced D3D12 (was Vulkan, for better driver compatibility), but the default depends on version and settings — 4.7.2 (stable) was observed starting on Vulkan. |
 | Rendering | AgX tonemapper new controls | White point and contrast parameters added. |
 | Core | Quaternion initializes to identity | Was zero. Unlikely to affect most code but technically breaking. |
 | UI | Dual-focus system | Mouse/touch focus now separate from keyboard/gamepad focus. Visual feedback differs by input method. |

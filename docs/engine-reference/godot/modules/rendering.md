@@ -14,7 +14,7 @@ Last verified: 2026-10-17 (4.7 changes); 2026-02-12 (rest) | Engine: Godot 4.7
 - **`rendering/reflections/sky_reflections/roughness_layers`** default `7` → `8` (4.7 migration guide: https://docs.godotengine.org/en/stable/tutorials/migrating/upgrading_to_godot_4.7.html)
 
 ### 4.6 Changes
-- **D3D12 is the default rendering backend on Windows** (was Vulkan)
+- **Windows rendering backend**: 4.6 announced D3D12 as the default (was Vulkan), but the default depends on version and settings — 4.7.2 (stable) was observed starting on Vulkan
 - **Glow processes before tonemapping** (was after) — uses screen blending mode
 - **AgX tonemapper**: new white point and contrast controls
 - **SSR overhauled**: better realism, visual stability, and performance
@@ -34,14 +34,15 @@ Last verified: 2026-10-17 (4.7 changes); 2026-02-12 (rest) | Engine: Godot 4.7
 - **Particles `.restart()`**: Added optional `keep_seed` parameter
 
 ### 4.3 Changes (in training data)
-- **Compositor node**: `Compositor` + `CompositorEffect` for post-processing chains
+- **Compositor**: `Compositor` + `CompositorEffect` resources for post-processing chains — `Compositor` is a Resource assigned to the `compositor` property of `WorldEnvironment` or `Camera3D`, not a node
 
 ## Current API Patterns
 
 ### Post-Processing (4.3+)
 ```gdscript
-# Use Compositor node — NOT manual viewport shader chains
-# Add Compositor as child of WorldEnvironment or Camera3D
+# Use Compositor — NOT manual viewport shader chains
+# Compositor is a Resource: assign it to the `compositor` property of
+# WorldEnvironment or Camera3D (it cannot be added to the scene tree)
 # Create CompositorEffect resources for each post-process step
 ```
 
@@ -60,11 +61,12 @@ Project Settings → Rendering → Renderer:
 - Mobile: Optimized for mobile/low-end, limited features
 - Compatibility: OpenGL 3.3 / WebGL 2, broadest hardware support
 
-Windows default backend: D3D12 (was Vulkan pre-4.6)
+Windows default backend: depends on version and settings — 4.6 announced D3D12
+(was Vulkan pre-4.6), but 4.7.2 (stable) was observed starting on Vulkan
 ```
 
 ## Common Mistakes
-- Assuming Vulkan is the default backend on Windows (D3D12 since 4.6)
+- Assuming a fixed default rendering backend on Windows — it depends on version and settings (4.6 announced D3D12; 4.7.2 was observed starting on Vulkan)
 - Using manual viewport chains instead of Compositor for post-processing
 - Passing or expecting `Texture2D` in `Shader.set_default_texture_parameter()` /
   `get_default_texture_parameter()` (the type is `Texture` since 4.4 — the shading

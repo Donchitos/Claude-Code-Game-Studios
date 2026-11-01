@@ -30,7 +30,7 @@ version-qualified claim** — `NOT DETERMINED` means the gap is unknown, not abs
 | Version | Release | Risk Level | Key Theme |
 |---------|---------|------------|-----------|
 | 4.5 | Sep 2025 | HIGH | Accessibility (AccessKit), variadic args, @abstract, shader baker, SMAA |
-| 4.6 | Jan 2026 | HIGH | Jolt default, glow rework, D3D12 default on Windows, IK restored |
+| 4.6 | Jan 2026 | HIGH | Jolt default, glow rework, D3D12 rendering on Windows (default depends on version/settings — 4.7.2 observed Vulkan), IK restored |
 | 4.7 | Jun 2026 | HIGH | AreaLight3D, HDR output, Asset Store replaces the Asset Library, VirtualJoystick, Jolt soft-body and world-boundary changes, typed-return overrides |
 
 ## Before the Cutoff

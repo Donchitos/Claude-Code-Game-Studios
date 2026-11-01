@@ -80,7 +80,7 @@ This supplements (not replaces) the agent's built-in knowledge.
 
 ## Rendering (4.6)
 
-- **D3D12 is the default backend on Windows** (was Vulkan) — for better driver compatibility
+- **The Windows default rendering backend depends on version and settings** — 4.6 announced D3D12 (was Vulkan) for better driver compatibility, but 4.7.2 (stable) was observed starting on Vulkan
 - **Glow now processes before tonemapping** with screen blending mode — existing glow setups may look different
 - **SSR overhauled** — significant improvement in realism, stability, and performance
 - **AgX tonemapper** — new white point and contrast controls

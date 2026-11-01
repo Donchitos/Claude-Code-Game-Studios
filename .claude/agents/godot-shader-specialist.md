@@ -249,7 +249,8 @@ unverified rather than asserting it from memory.
 
 Key post-cutoff rendering changes: `AreaLight3D`, HDR output and `CanvasItem`
 lines drawn without an antialiasing feather (4.7), `LinearToSRGB` no longer
-clamping (4.7), D3D12 default on Windows (4.6), glow processes before
+clamping (4.7), the Windows rendering default depending on version and
+settings (4.6 announced D3D12; 4.7.2 was observed starting on Vulkan), glow processes before
 tonemapping (4.6), Shader Baker (4.5), SMAA 1x (4.5),
 stencil buffer (4.5), and `Shader.set_default_texture_parameter()` /
 `get_default_texture_parameter()` taking and returning `Texture` instead of
