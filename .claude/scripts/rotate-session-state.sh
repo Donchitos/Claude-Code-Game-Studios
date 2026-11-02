@@ -82,8 +82,13 @@ if [ "$DRY" = "1" ]; then
   exit 0
 fi
 
-mkdir -p "$LOGDIR" 2>/dev/null
+if ! mkdir -p "$LOGDIR" 2>/dev/null; then
+  echo "rotate-session-state: FAILED — cannot create $LOGDIR; $STATE is UNCHANGED" >&2
+  exit 1
+fi
 
+# The narrative must reach the archive before it can leave the active state.
+# A full disk, read-only log, or a directory at ARCHIVE must never discard it.
 {
   echo ""
   echo "---"
@@ -91,7 +96,10 @@ mkdir -p "$LOGDIR" 2>/dev/null
   echo "## Rotated from active.md on $STAMP ($NARRATIVE lines)"
   echo ""
   tail -n "+$((SPLIT + 1))" "$STATE"
-} >> "$ARCHIVE"
+} >> "$ARCHIVE" || {
+  echo "rotate-session-state: FAILED — could not append to $ARCHIVE; $STATE is UNCHANGED" >&2
+  exit 1
+}
 
 # Write the truncated state beside the file it replaces, not in a system temp
 # dir. `${TMPDIR:-/tmp}` assumes /tmp exists and is writable; where it is not,
