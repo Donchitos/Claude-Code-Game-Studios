@@ -371,8 +371,12 @@ def parse(lines):
                     # non-dash line still ends the list via the break below,
                     # so a sub-map after a list is unaffected.
                     item = pstripped[2:].strip()
-                    if item[:1] in ('"', "'") and item[-1:] == item[:1] and len(item) >= 2:
-                        item = item[1:-1]
+                    if item[:1] in ('"', "'"):
+                        # A comment may follow the closing quote. Resolve the
+                        # quoted scalar before ignoring that trailing comment,
+                        # just as get_yaml_key does for scalar settings.
+                        end = item.find(item[0], 1)
+                        item = item[1:end] if end >= 0 else item[1:]
                     else:
                         # Unquoted items take the same trailing-comment rule
                         # scalars take. Without it `- scope_changes  # ask`
