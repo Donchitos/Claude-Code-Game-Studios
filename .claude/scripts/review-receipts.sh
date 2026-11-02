@@ -140,12 +140,24 @@ norm_path() {
 
 # compare_stamp <file> <normalised path> <receipt>: one UNCHANGED / CHANGED /
 # NEW line for a file that exists. The LATEST stamp for the path wins
-# (append-only log); grep -F on the path avoids regex surprises from
-# dots/dashes in filenames.
+# (append-only log). Compare the complete path literally, so spaces and regex
+# characters in names cannot make a different file supply the stored hash.
 compare_stamp() {
   # The CR of a CRLF receipt goes first: on Linux and macOS it would stay on
   # the hash, and every path would read CHANGED.
-  _stored=$(grep -F "Reviewed-Content-Hash: $2 " "$3" 2>/dev/null | tail -1 | awk '{ sub(/\r$/, ""); print $NF }')
+  _stored=$(RR_PATH="$2" awk '
+    BEGIN { marker = "Reviewed-Content-Hash: " }
+    {
+      sub(/\r$/, "")
+      p = index($0, marker); if (!p) next
+      record = substr($0, p + length(marker)); sub(/[ \t]+$/, "", record)
+      if (record == ENVIRON["RR_PATH"]) { stored = ""; next }
+      if (!match(record, / [^ ]+$/)) next
+      path = substr(record, 1, RSTART - 1); hash = substr(record, RSTART + 1)
+      if (path == ENVIRON["RR_PATH"]) stored = hash
+    }
+    END { print stored }
+  ' "$3" 2>/dev/null)
   if [ -z "$_stored" ]; then
     printf 'NEW: %s\n' "$2"
     return 0
