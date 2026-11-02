@@ -421,6 +421,16 @@ else
     for _p in $(printf '%s' "$_AFTER" | LC_ALL=C grep -oE '(assets|Assets|Content)/[^[:space:]"'"'"';|&)]*'); do
         WT_FILES=$(printf '%s\n%s' "$WT_FILES" "$($_GIT diff --name-only -- "$_p" 2>/dev/null)")
     done
+    # No tokeniser to read an -a after a quoted message either: COMMIT_ARGS
+    # stops at the first quote, so `git commit -m "msg" -a` and `--all`
+    # committed every modified tracked file unchecked. Look for them in the
+    # text after `commit` with the quoted strings taken out, so a message
+    # that mentions -a is not read as one.
+    if printf '%s' "$_AFTER" \
+         | LC_ALL=C sed -E 's/"([^"\\]|\\.)*"//g'"; s/'[^']*'//g" \
+         | LC_ALL=C grep -qE '(^|[[:space:]])(-[ABDEGHIJKLMNOPQRTUVWXYZbdefghijklnopqrsvwxyz]*a[A-Za-z]*|--all)([[:space:]]|$)'; then
+        WT_FILES=$(printf '%s\n%s' "$WT_FILES" "$($_GIT diff --name-only 2>/dev/null)")
+    fi
     # No tokeniser to read a `git add`'s paths: take every change and new file.
     if git_segment add "$COMMAND" >/dev/null || git_segment stage "$COMMAND" >/dev/null; then
         WT_FILES=$(printf '%s\n%s\n%s' "$WT_FILES" "$($_GIT diff --name-only 2>/dev/null)" \
