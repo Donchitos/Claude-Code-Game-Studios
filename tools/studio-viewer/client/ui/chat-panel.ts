@@ -233,7 +233,7 @@ export class ChatPanel {
       "agent-card",
       element("div", "agent-card-head", element("span", "", "👥"), nameButton, element("span", "agent-card-status", "working…")),
       element("div", "agent-card-description", `${event.description}${from}`),
-      element("div", "agent-card-activity", "Heading to the briefing…"),
+      element("div", "agent-card-activity", "Receiving the task…"),
       event.prompt ? prompt : null,
     );
     this.agentCards.set(event.taskId, card);
@@ -289,7 +289,11 @@ export class ChatPanel {
         "div",
         "chat-welcome",
         element("strong", "", "Welcome to the studio."),
-        element("p", "", "Messages here go to a headless Claude Code session running in the project root. Every agent it delegates to walks to the lobby for a briefing, works at a desk, and reports back."),
+        element(
+          "p",
+          "",
+          "Messages here go to a headless Claude Code session running in the project root. When it delegates, the giver walks the task over to the agent's desk; agents tasked together meet in the Meeting Room; results are carried back when done.",
+        ),
         element("p", "", "Try /help or /start."),
       ),
     );

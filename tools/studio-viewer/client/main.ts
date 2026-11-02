@@ -100,7 +100,13 @@ function startGame(hello: HelloMessage): void {
     onSelect: (agentName) => inspector?.show(agentName),
     onReady: (readyScene) => {
       scene = readyScene;
-      Object.assign(window, { ccgsStudio: { scene: readyScene, game: readyScene.game } });
+      Object.assign(window, {
+        ccgsStudio: {
+          scene: readyScene,
+          game: readyScene.game,
+          replayEvent: (event: StudioEvent) => handleEvent(Date.now(), event),
+        },
+      });
       readyScene.setNight(night, false);
       const snapshot = pendingHello ?? hello;
       pendingHello = null;

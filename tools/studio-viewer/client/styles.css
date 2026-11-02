@@ -492,7 +492,8 @@ pre {
 
 .ticker-line {
   background: rgba(23, 21, 31, 0.82);
-  border: 1px solid var(--border);
+  color: #f6f2ea;
+  border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: 6px;
   padding: 3px 8px;
   font-size: 11.5px;

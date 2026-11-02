@@ -10,6 +10,21 @@ Claude Code session chat beside it.
 - **Right:** your chat with the main session. Messages go to a headless
   `claude` process running in the project root.
 
+## Screenshots
+
+| | |
+|---|---|
+| ![The whole studio by day](docs/screenshots/overview-day.png) | ![The whole studio at night](docs/screenshots/overview-night.png) |
+| The whole studio by day, before any work starts | The same studio at night, with four agents busy |
+| ![A kickoff meeting](docs/screenshots/meeting.png) | ![Claude handing over a task](docs/screenshots/handoff.png) |
+| Three agents tasked together meet and work at the table | Claude walks a task over to the Gameplay Programmer |
+| ![An agent working](docs/screenshots/working.png) | ![The lobby at night](docs/screenshots/lobby-night.png) |
+| A working agent: typing, lit monitor, live tool chip | The lobby at night: neon sign, fairy lights, Claude at reception |
+
+These screenshots were staged by replaying studio events in the page, not
+taken from a real Claude session, so no tokens were spent on them. A real
+session drives exactly the same animations.
+
 ## Run it
 
 ```bash
