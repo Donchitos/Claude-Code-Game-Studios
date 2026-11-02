@@ -82,7 +82,8 @@ echo "PRIOR_REVIEW: $last_review"
 base=$(git log -1 --format=%H -- "$last_review" 2>/dev/null)
 if [ -n "$base" ]; then
     changed=$( {
-        git diff --name-only "$base" -- "$GDD_GLOB" 2>/dev/null
+        # -z keeps committed paths unquoted too, including non-ASCII names.
+        git diff --name-only -z "$base" -- "$GDD_GLOB" 2>/dev/null | tr '\0' '\n'
         # -z emits NUL-delimited, unquoted paths; cut -c4- strips the fixed-width
         # "XY " status prefix. For a rename, -z emits new NUL old, so taking the
         # first of each pair gives the new name, which is what we want.
