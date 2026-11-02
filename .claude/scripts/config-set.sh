@@ -25,7 +25,11 @@
 # with `#`, or one holding ` #` would be cut or turned into a comment by YAML,
 # so it is refused (exit 2) rather than written. So is one that starts with a
 # quote: the readers drop the quotes, so give the value bare and config-set
-# quotes it where the file already quotes that key.
+# quotes it where the file already quotes that key. A plain value holding a
+# colon followed by space/tab or ending in a colon is quoted so it remains a
+# scalar, unless it is an intentional flow value starting with [ or {. A value
+# that needs quoting but cannot be quoted without reader-unsupported escapes
+# is refused (exit 2) before writing, including in a dry run.
 #
 # Where the facts come from, so nothing here is a second copy of them:
 #   enums and the local whitelist  the _yaml_helper_enums and
@@ -46,8 +50,9 @@
 # What the edit does (comments, other keys, line endings and a UTF-8 BOM kept):
 #   A  the key is set: its value is replaced, keeping quotes and an inline comment;
 #      a value holding the file's quote takes the other quote, and one holding
-#      both is written bare; when the key is set more than once the LAST one is
-#      edited, as every reader uses that one
+#      both is written bare only when it is safe as a plain value; double quotes
+#      never introduce backslash escapes. When the key is set more than once,
+#      the LAST one is edited, as every reader uses that one
 #   B  a parent block exists, the leaf does not: the leaf goes at the end of the
 #      deepest existing block, at that block's child indent, with any missing
 #      blocks between written out
@@ -132,6 +137,28 @@ case "$VALUE" in
   " "*|*" ") usage "the value has leading or trailing spaces, which YAML drops" ;;
   \"*|\'*) usage "the value starts with a quote, which the readers drop; give it without quotes (the file's own quoting is kept)" ;;
 esac
+
+# The readers do not decode YAML escapes. Pick a quote they can read literally;
+# keep intentional flow values and plain scalars that need no quoting unchanged.
+render_scalar() {
+  CS_VALUE="$VALUE" CS_QUOTE="$1" awk 'BEGIN {
+    v = ENVIRON["CS_VALUE"]; q = ENVIRON["CS_QUOTE"]
+    sq = sprintf("%c", 39); dq = "\""
+    need = (substr(v, 1, 1) != "[" && substr(v, 1, 1) != "{") && v ~ /:([ \t]|$)/
+    single = index(v, sq) == 0
+    double = index(v, dq) == 0 && index(v, "\\") == 0
+    if (q == sq && single) { print sq v sq; exit }
+    if (q == dq && double) { print dq v dq; exit }
+    if (q == "" && !need) { print v; exit }
+    if (single) { print sq v sq; exit }
+    if (double) { print dq v dq; exit }
+    if (!need) { print v; exit }
+    exit 2
+  }'
+}
+RENDERED=$(render_scalar "") || usage "the colon value cannot be quoted without escapes the readers do not support; edit the file by hand"
+RENDERED_SINGLE=$(render_scalar "'") || usage "the value cannot be represented by the readers"
+RENDERED_DOUBLE=$(render_scalar '"') || usage "the value cannot be represented by the readers"
 
 if [ -n "$ROOT_ARG" ]; then
   cd "$ROOT_ARG" 2>/dev/null || { echo "config-set: cannot read root $ROOT_ARG" >&2; exit 1; }
@@ -341,7 +368,8 @@ if [ ! -f "$TARGET" ]; then
   # A new local file: header (the line /settings Phase 5 writes), then the key
   # wrapped in its parent blocks, two spaces a level, as the shipped project.yaml
   # and every new block below are indented.
-  awk -v key="$KEY" -v val="$VALUE" 'BEGIN {
+  CS_RENDERED="$RENDERED" awk -v key="$KEY" 'BEGIN {
+    val = ENVIRON["CS_RENDERED"]
     print "# project.local.yaml — per-developer overrides (gitignored)"
     n = split(key, s, ".")
     for (i = 1; i <= n; i++) {
@@ -351,7 +379,7 @@ if [ ! -f "$TARGET" ]; then
   }' > "$NEW"
   LINE=$(awk 'END { print NR }' "$NEW")
 else
-  CS_KEY="$KEY" CS_VALUE="$VALUE" CS_STATUS="$STATUS" awk '
+  CS_KEY="$KEY" CS_VALUE="$VALUE" CS_STATUS="$STATUS" CS_RENDERED="$RENDERED" CS_SINGLE="$RENDERED_SINGLE" CS_DOUBLE="$RENDERED_DOUBLE" awk '
     # opens(s, n): when line s (at indent n, its leading spaces removed) opens
     # a block scalar (a value of | or >, with any indicators), the indent its
     # text must exceed; else -1. The rule yaml-get.awk reads by.
@@ -373,6 +401,7 @@ else
     { raw[NR] = $0 }
     END {
       key = ENVIRON["CS_KEY"]; val = ENVIRON["CS_VALUE"]; status = ENVIRON["CS_STATUS"]
+      scalar = ENVIRON["CS_RENDERED"]; single = ENVIRON["CS_SINGLE"]; double = ENVIRON["CS_DOUBLE"]
       nseg = split(key, seg, ".")
       depth = 0; blk = -1; crlf = (raw[1] ~ /\r$/); eol = crlf ? "\r" : ""
       # "\357\273\277" is the UTF-8 byte-order mark. It comes off line 1 here
@@ -437,27 +466,21 @@ else
         }
         if (last > T && !hasval[T]) { print "unsupported\t" T "\tblock" > status; exit 0 }
         if (last > T && text[T]) { print "unsupported\t" T "\ttext" > status; exit 0 }
-        if (curv[T] == val) action = "unchanged"
+        line = raw[T]; cr = (line ~ /\r$/); sub(/\r$/, "", line)
+        pre = substr(line, 1, colon[T]); after = substr(line, colon[T] + 1)
+        lead = after; sub(/[^ \t].*$/, "", lead); if (lead == "") lead = " "
+        a = after; sub(/^[ \t]+/, "", a)
+        q = substr(a, 1, 1)
+        nv = (q == "\"") ? double : ((q == "\047") ? single : scalar)
+        safe = (q == "\"" || q == "\047") ? nv == q val q : nv == val
+        if (curv[T] == val && safe) action = "unchanged"
         else {
           action = "replaced"
-          line = raw[T]; cr = (line ~ /\r$/); sub(/\r$/, "", line)
-          pre = substr(line, 1, colon[T]); after = substr(line, colon[T] + 1)
-          lead = after; sub(/[^ \t].*$/, "", lead); if (lead == "") lead = " "
-          a = after; sub(/^[ \t]+/, "", a)
-          q = substr(a, 1, 1); nv = val
           if (a == "") tail = ""
           else if (q == "#") tail = " " a
           else if (q == "\"" || q == "\047") {
             e = index(substr(a, 2), q)
             tail = (e > 0) ? substr(a, e + 2) : ""
-            # The readers end a quoted value at its first matching quote, so a
-            # value holding the quote the file uses takes the other one, and a
-            # value holding both is written bare (it cannot start with a quote:
-            # the usage check refuses that), which they read whole.
-            o = (q == "\"") ? "\047" : "\""
-            if (index(val, q) == 0) nv = q val q
-            else if (index(val, o) == 0) nv = o val o
-            else nv = val
           } else {
             # Keep an inline comment and the spaces before it; drop the old value.
             h = index(a, " #"); tail = ""
@@ -488,7 +511,7 @@ else
           block = ""
           for (i = m + 1; i <= nseg; i++) {
             pad = ""; for (j = 0; j < ci + 2 * (i - m - 1); j++) pad = pad " "
-            block = block (i > m + 1 ? "\n" : "") pad seg[i] ":" (i == nseg ? " " val : "") eol
+            block = block (i > m + 1 ? "\n" : "") pad seg[i] ":" (i == nseg ? " " scalar : "") eol
           }
           ins[last] = block; action = "inserted"; at = last + 1
         } else {
@@ -498,7 +521,7 @@ else
           block = ""
           for (i = 1; i <= nseg; i++) {
             pad = ""; for (j = 1; j < i; j++) pad = pad "  "
-            block = block (i > 1 ? "\n" : "") pad seg[i] ":" (i == nseg ? " " val : "") eol
+            block = block (i > 1 ? "\n" : "") pad seg[i] ":" (i == nseg ? " " scalar : "") eol
           }
           sep = (last > 0) ? eol "\n" : ""
           ins[last] = sep block; action = "added-block"; at = last + (last > 0 ? 2 : 1)
