@@ -795,16 +795,29 @@ session_state_enabled() {
   _yaml_helper_set_root
   for f in "$_YH_ROOT/project.local.yaml" "$_YH_ROOT/project.yaml"; do
     [ -f "$f" ] || continue
-    v=$(awk '
-      /^features:[[:space:]]*$/ { inf=1; next }
-      /^[^[:space:]#]/          { inf=0 }
-      inf && /^[[:space:]]+session_state:/ {
-        sub(/^[[:space:]]*session_state:[[:space:]]*/, "")
-        sub(/[[:space:]]*#.*$/, "")
-        gsub(/["'"'"']/, "")
-        print; exit
+    v=$(LC_ALL=C awk '
+      {
+        line = $0
+        if (NR == 1) sub(/^\357\273\277/, "", line)
+        sub(/\r$/, "", line)
+        if (line ~ /^features:[ \t]*(#.*)?$/) { inf=1; child=0; next }
+        if (line ~ /^[^ \t#]/) inf=0
+        if (!inf) next
+        text = line; sub(/^ +/, "", text)
+        if (text == "" || text ~ /^[#\t]/) next
+        indent = length(line) - length(text)
+        if (!child) child = indent
+        # Only direct children are feature settings. A nested map or a
+        # block scalar can contain the same words without setting the flag.
+        if (indent != child || text !~ /^session_state:/) next
+        sub(/^session_state:[ \t]*/, "", text)
+        sub(/[ \t]*#.*$/, "", text)
+        gsub(/["'"'"']/, "", text)
+        gsub(/[ \t]/, "", text)
+        value = text
       }
-    ' "$f" 2>/dev/null | tr -d '\r' | tr -d ' ')
+      END { print value }
+    ' "$f" 2>/dev/null)
     if [ -n "$v" ]; then
       [ "$v" = "off" ] && return 1
       return 0
