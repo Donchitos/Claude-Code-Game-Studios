@@ -10,6 +10,7 @@ import { displayName } from "../../shared/tool-summary.ts";
 import { AgentActor } from "./agent-actor.ts";
 import {
   FIRE_FRAMES,
+  PAINTING_VARIANTS,
   PLANT_VARIANTS,
   POSTER_VARIANTS,
   RAIN_FRAMES,
@@ -71,6 +72,21 @@ const RAIN_FRAME_MS = 110;
 const FAIRY_SPACING_PX = 12;
 const FAIRY_SWAG_PX = 48;
 const FAIRY_SAG_PX = 5;
+const CLOCK_TICK_MS = 1000;
+const WALL_LABEL_BLOCKERS = new Set<Furniture["kind"]>([
+  "painting",
+  "pinboard",
+  "wall-clock",
+  "wall-screen",
+  "neon-sign",
+  "poster",
+  "whiteboard",
+  "bookshelf",
+  "fireplace",
+  "tv",
+  "hanging-plant",
+]);
+const WALL_DECOR_CENTER_OFFSET = 5;
 const FLAT_SPRITES: Partial<Record<Furniture["kind"], { key: string; width: number }>> = {
   bookshelf: { key: "bookshelf", width: 32 },
   printer: { key: "printer", width: 16 },
@@ -121,6 +137,7 @@ export class StudioScene extends Phaser.Scene implements StudioCast {
   private readonly serverRacks: Phaser.GameObjects.Image[] = [];
   private readonly monitorGlows = new Map<Workstation, Phaser.GameObjects.Image>();
   private readonly rainSheets: Phaser.GameObjects.Sprite[] = [];
+  private readonly clockHands: Array<{ hands: Phaser.GameObjects.Graphics; x: number; y: number }> = [];
   private lighting!: StudioLighting;
   private cat: StudioCat | null = null;
   private selectionRing!: Phaser.GameObjects.Ellipse;
@@ -163,6 +180,8 @@ export class StudioScene extends Phaser.Scene implements StudioCast {
     this.director = new StudioDirector(this, this.options.config.timing);
     this.time.addEvent({ delay: 650, loop: true, callback: () => this.blinkServerRacks() });
     this.animateRain();
+    this.tickClocks();
+    this.time.addEvent({ delay: CLOCK_TICK_MS, loop: true, callback: () => this.tickClocks() });
     this.game.events.on(Phaser.Core.Events.POST_RENDER, () => this.options.overlay.sync(this.cameras.main));
     this.options.onReady(this);
   }
@@ -555,6 +574,31 @@ export class StudioScene extends Phaser.Scene implements StudioCast {
       case "hanging-plant":
         this.add.image(left + width / 2, top - 6, "hanging-plant").setOrigin(0.5, 0).setDepth(WALL_DECOR_DEPTH + 2);
         return;
+      case "painting":
+        this.add
+          .image(left + width / 2, top + WALL_DECOR_CENTER_OFFSET, `painting-${variantFor(piece.rect, PAINTING_VARIANTS)}`)
+          .setDepth(WALL_DECOR_DEPTH);
+        return;
+      case "pinboard":
+        this.add.image(left + width / 2, top + WALL_DECOR_CENTER_OFFSET, "pinboard").setDepth(WALL_DECOR_DEPTH);
+        return;
+      case "wall-clock":
+        this.drawWallClock(left + width / 2, top + WALL_DECOR_CENTER_OFFSET - 2);
+        return;
+      case "wall-screen":
+        this.drawGlowingWallPiece("wall-screen", left + width / 2, top + WALL_DECOR_CENTER_OFFSET, piece.color ?? "#7fc8ff", 0.12, 0.5);
+        return;
+      case "neon-sign":
+        this.drawGlowingWallPiece(
+          piece.rect.width >= 4 ? "neon-logo" : "neon-code",
+          left + width / 2,
+          top + WALL_DECOR_CENTER_OFFSET,
+          piece.color ?? "#ff6fa8",
+          0.25,
+          0.9,
+          true,
+        );
+        return;
       case "arcade":
         this.add.image(left, bottom, piece.color === "#4ab0d9" ? "arcade-blue" : "arcade-pink").setOrigin(0, 1).setDepth(bottom);
         return;
@@ -583,6 +627,46 @@ export class StudioScene extends Phaser.Scene implements StudioCast {
     const image = this.add.image(left + (width - flat.width) / 2, bottom, flat.key).setOrigin(0, 1).setDepth(bottom);
     if (piece.kind === "server-rack") this.serverRacks.push(image);
     if (piece.kind === "lamp") this.addLampGlow(left + width / 2, bottom);
+  }
+
+  private drawWallClock(centerX: number, centerY: number): void {
+    this.add.image(centerX, centerY, "wall-clock").setDepth(WALL_DECOR_DEPTH);
+    const hands = this.add.graphics().setDepth(WALL_DECOR_DEPTH + 0.5);
+    this.clockHands.push({ hands, x: centerX, y: centerY });
+  }
+
+  private tickClocks(): void {
+    const now = new Date();
+    const minuteAngle = ((now.getMinutes() + now.getSeconds() / 60) / 60) * Math.PI * 2;
+    const hourAngle = (((now.getHours() % 12) + now.getMinutes() / 60) / 12) * Math.PI * 2;
+    for (const clock of this.clockHands) {
+      clock.hands.clear();
+      clock.hands.lineStyle(1, 0x2a1c14, 1);
+      clock.hands.lineBetween(clock.x, clock.y, clock.x + Math.sin(hourAngle) * 2.5, clock.y - Math.cos(hourAngle) * 2.5);
+      clock.hands.lineStyle(1, 0xd97757, 1);
+      clock.hands.lineBetween(clock.x, clock.y, clock.x + Math.sin(minuteAngle) * 4, clock.y - Math.cos(minuteAngle) * 4);
+    }
+  }
+
+  private drawGlowingWallPiece(
+    key: string,
+    centerX: number,
+    centerY: number,
+    color: string,
+    dayGlow: number,
+    nightGlow: number,
+    tinted = false,
+  ): void {
+    const tint = colorNumber(color);
+    const image = this.add.image(centerX, centerY, key).setDepth(LIGHT_DEPTH - 1);
+    if (tinted) image.setTint(tint);
+    const glow = this.add
+      .image(centerX, centerY + 4, "glow")
+      .setScale(image.width / 40, 0.9)
+      .setTint(tint)
+      .setBlendMode(Phaser.BlendModes.ADD)
+      .setDepth(LIGHT_DEPTH);
+    this.lighting.addGlow(glow, dayGlow, nightGlow, { flicker: tinted ? 0.08 : 0.04, speed: tinted ? 0.02 : 0.004 });
   }
 
   private drawFireplace(left: number, bottom: number, width: number): void {
@@ -714,13 +798,38 @@ export class StudioScene extends Phaser.Scene implements StudioCast {
     return actor;
   }
 
+  private clearWallColumn(room: Room): number {
+    const wallRow = room.rect.row + 1;
+    const occupied = new Set<number>();
+    for (const piece of this.layout.furniture) {
+      if (piece.rect.row !== wallRow || !WALL_LABEL_BLOCKERS.has(piece.kind)) continue;
+      for (let column = piece.rect.column; column < piece.rect.column + piece.rect.width; column += 1) occupied.add(column);
+    }
+    for (const windowTile of this.layout.windows) {
+      if (windowTile.row === wallRow) {
+        occupied.add(windowTile.column);
+        occupied.add(windowTile.column + 1);
+      }
+    }
+    const center = Math.floor(room.rect.column + room.rect.width / 2);
+    const isClear = (column: number) =>
+      [-2, -1, 0, 1, 2].every((offset) => !occupied.has(column + offset)) &&
+      column - 2 > room.rect.column &&
+      column + 2 < room.rect.column + room.rect.width - 1;
+    for (let distance = 0; distance < room.rect.width / 2; distance += 1) {
+      if (isClear(center - distance)) return center - distance + 0.5;
+      if (isClear(center + distance)) return center + distance + 0.5;
+    }
+    return room.rect.column + room.rect.width / 2;
+  }
+
   private addWorldLabels(): void {
     const overlay = this.options.overlay;
     for (const room of this.layout.rooms) {
-      const centerX = (room.rect.column + room.rect.width / 2) * TILE_SIZE;
       const isOffice = room.kind === "director-office" || room.kind === "lead-office";
+      const labelColumn = isOffice ? room.rect.column + room.rect.width / 2 : this.clearWallColumn(room);
       const labelY = (room.rect.row + (isOffice ? room.rect.height - 1.4 : 1.3)) * TILE_SIZE;
-      overlay.addLabel(room.label, { x: centerX, y: labelY }, `room-label room-${room.kind}`, isOffice ? 1.1 : 0.3, room.accentColor);
+      overlay.addLabel(room.label, { x: labelColumn * TILE_SIZE, y: labelY }, `room-label room-${room.kind}`, isOffice ? 1.1 : 0.3, room.accentColor);
     }
     for (const podLabel of this.layout.podLabels) {
       const point = { x: (podLabel.tile.column + podLabel.width / 2) * TILE_SIZE, y: podLabel.tile.row * TILE_SIZE + 6 };

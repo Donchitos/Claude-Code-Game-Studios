@@ -667,9 +667,123 @@ function paintWindowSky(scene: Phaser.Scene, key: string, sky: [string, string, 
   });
 }
 
+export const PAINTING_VARIANTS = 3;
+
+const NEON_GLYPHS: Record<string, string[]> = {
+  C: [".###", "#...", "#...", "#...", "#...", "#...", ".###"],
+  G: [".###", "#...", "#...", "#.##", "#..#", "#..#", ".##."],
+  S: [".###", "#...", "#...", ".##.", "...#", "...#", "###."],
+  "<": ["...#", "..#.", ".#..", "#...", ".#..", "..#.", "...#"],
+  "/": ["...#", "...#", "..#.", "..#.", ".#..", "#...", "#..."],
+  ">": ["#...", ".#..", "..#.", "...#", "..#.", ".#..", "#..."],
+};
+
+function paintFrame(context: CanvasRenderingContext2D, width: number, height: number, color: string): void {
+  fill(context, shade(color, -0.35), 0, 0, width, height);
+  fill(context, color, 1, 1, width - 2, height - 2);
+  fill(context, shade(color, 0.3), 1, 1, width - 2, 1);
+}
+
+function paintWallDecor(scene: Phaser.Scene): void {
+  paintTexture(scene, "painting-0", 32, 20, (context) => {
+    paintFrame(context, 32, 20, "#c9a24a");
+    const sky = context.createLinearGradient(0, 3, 0, 17);
+    sky.addColorStop(0, "#ff9a5c");
+    sky.addColorStop(1, "#ffd8a8");
+    context.fillStyle = sky;
+    context.fillRect(3, 3, 26, 14);
+    fill(context, "#fff2c0", 20, 6, 4, 4);
+    fill(context, "#7a58a8", 3, 11, 9, 6);
+    fill(context, "#7a58a8", 9, 9, 6, 8);
+    fill(context, "#5a3f88", 14, 12, 15, 5);
+    fill(context, "#3f9a4e", 3, 15, 26, 2);
+  });
+  paintTexture(scene, "painting-1", 32, 20, (context) => {
+    paintFrame(context, 32, 20, "#3a2a20");
+    fill(context, "#f6efe2", 3, 3, 26, 14);
+    fill(context, "#e05a5a", 5, 5, 8, 8);
+    fill(context, "#5b8def", 15, 9, 10, 6);
+    fill(context, "#f2c14e", 20, 4, 5, 4);
+    fill(context, "#2a2340", 13, 5, 1, 10);
+  });
+  paintTexture(scene, "painting-2", 32, 20, (context) => {
+    paintFrame(context, 32, 20, "#9a6240");
+    fill(context, "#9fd9c6", 3, 3, 26, 14);
+    fill(context, "#f0a35a", 11, 8, 10, 7);
+    fill(context, "#f0a35a", 11, 5, 3, 3);
+    fill(context, "#f0a35a", 18, 5, 3, 3);
+    fill(context, "#2a1c14", 13, 9, 1, 1);
+    fill(context, "#2a1c14", 18, 9, 1, 1);
+    fill(context, "#ff7aa8", 15, 11, 2, 1);
+  });
+  paintTexture(scene, "pinboard", 32, 20, (context, random) => {
+    paintFrame(context, 32, 20, "#9a6240");
+    fill(context, "#c99a62", 2, 2, 28, 16);
+    speckle(context, random, "#b5864f", 30, 28, 16);
+    const notes = ["#ffe066", "#ff9ab0", "#9fe0ff", "#b8f0a0", "#ffffff"];
+    for (let note = 0; note < 6; note += 1) {
+      const column = 3 + (note % 3) * 9 + Math.floor(random() * 2);
+      const row = 3 + Math.floor(note / 3) * 7 + Math.floor(random() * 2);
+      fill(context, notes[note % notes.length]!, column, row, 6, 5);
+      fill(context, "#9aa3b5", column + 1, row + 2, 4, 1);
+      fill(context, note % 2 === 0 ? "#e05a3a" : "#5b8def", column + 2, row, 2, 1);
+    }
+  });
+  paintTexture(scene, "wall-clock", 14, 14, (context) => {
+    context.fillStyle = "#3a2a20";
+    context.beginPath();
+    context.arc(7, 7, 7, 0, Math.PI * 2);
+    context.fill();
+    context.fillStyle = "#fffaf0";
+    context.beginPath();
+    context.arc(7, 7, 5.5, 0, Math.PI * 2);
+    context.fill();
+    for (const [column, row] of [
+      [7, 2],
+      [12, 7],
+      [7, 12],
+      [2, 7],
+    ] as const) {
+      fill(context, "#3a2a20", column - 0.5, row - 0.5, 1, 1);
+    }
+  });
+  paintTexture(scene, "wall-screen", 48, 22, (context) => {
+    fill(context, "#1d1d26", 0, 0, 48, 20);
+    fill(context, "#13233a", 2, 2, 44, 16);
+    const columns = ["#5b8def", "#f2c14e", "#6fbf5a"];
+    columns.forEach((color, index) => {
+      const left = 4 + index * 14;
+      fill(context, "#2a3b58", left, 4, 12, 12);
+      for (let card = 0; card < 3 - index + 1; card += 1) fill(context, color, left + 1, 5 + card * 3, 10, 2);
+    });
+    fill(context, "#6fbf5a", 38, 3, 6, 2);
+    fill(context, "#1d1d26", 21, 20, 6, 2);
+  });
+  const neon = (key: string, text: string, width: number) =>
+    paintTexture(scene, key, width, 22, (context) => {
+      fill(context, "#241d33", 0, 1, width, 20);
+      fill(context, "#2f2742", 1, 2, width - 2, 1);
+      const glyphWidth = 4 * 2 + 3;
+      const startColumn = Math.floor((width - (text.length * glyphWidth - 3)) / 2);
+      [...text].forEach((character, index) => {
+        const rows = NEON_GLYPHS[character] ?? [];
+        rows.forEach((row, rowIndex) => {
+          [...row].forEach((symbol, columnIndex) => {
+            if (symbol !== "#") return;
+            const left = startColumn + index * glyphWidth + columnIndex * 2;
+            fill(context, "#ffffff", left, 4 + rowIndex * 2, 2, 2);
+          });
+        });
+      });
+    });
+  neon("neon-logo", "CCGS", 64);
+  neon("neon-code", "</>", 48);
+}
+
 export function createEnvironmentTextures(scene: Phaser.Scene): void {
   paintWorkProps(scene);
   paintCozyProps(scene);
+  paintWallDecor(scene);
   for (const [style, painter] of Object.entries(FLOOR_PAINTERS) as Array<[FloorStyle, Painter]>) {
     paintTexture(scene, floorTextureKey(style), 16, 16, painter);
   }

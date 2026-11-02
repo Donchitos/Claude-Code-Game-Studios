@@ -90,7 +90,12 @@ export type FurnitureKind =
   | "fireplace"
   | "armchair"
   | "beanbag"
-  | "hanging-plant";
+  | "hanging-plant"
+  | "painting"
+  | "pinboard"
+  | "wall-clock"
+  | "wall-screen"
+  | "neon-sign";
 
 export interface TilePoint {
   column: number;
@@ -513,7 +518,7 @@ function buildLeadOffices(
       },
       [tilePoint(left + 3, 11), tilePoint(left + 4, 11), tilePoint(left + 3, 18), tilePoint(left + 4, 18)],
     );
-    builder.addWindows(12, [left + 5]);
+    builder.addFurniture(index % 2 === 0 ? "painting" : "pinboard", rect(left + 5, 12, 2, 1), false, accentColor);
     builder.addFurniture("rug", rect(left + 2, 13, 4, 4), false, accentColor);
     const deskRect = rect(left + 3, 15, 2, 1);
     builder.addFurniture("desk", deskRect, true, accentColor);
@@ -584,7 +589,11 @@ function buildOpenFloor(builder: LayoutBuilder, agents: RosterAgent[], departmen
     },
     doors,
   );
-  builder.addWindows(21, [3, 14, 25, 35]);
+  builder.addFurniture("pinboard", rect(3, 21, 2, 1), false);
+  builder.addFurniture("wall-screen", rect(13, 21, 3, 1), false, "#6fbf5a");
+  builder.addFurniture("wall-clock", rect(20, 21, 1, 1), false);
+  builder.addFurniture("painting", rect(25, 21, 2, 1), false);
+  builder.addFurniture("pinboard", rect(35, 21, 2, 1), false);
   builder.addFurniture("poster", rect(10, 21, 1, 1), false, "#5b8def");
   builder.addFurniture("poster", rect(29, 21, 1, 1), false, "#d16ba5");
   builder.addFurniture("hanging-plant", rect(17, 21, 1, 1), false);
@@ -613,7 +622,9 @@ function buildEngineLab(builder: LayoutBuilder, agents: RosterAgent[], departmen
     },
     doors,
   );
-  builder.addWindows(21, [42, 52, 61]);
+  builder.addFurniture("neon-sign", rect(41, 21, 3, 1), false, "#4ac0ff");
+  builder.addFurniture("wall-screen", rect(51, 21, 3, 1), false, "#478cbf");
+  builder.addFurniture("pinboard", rect(61, 21, 2, 1), false);
   builder.addFurniture("poster", rect(45, 21, 1, 1), false, "#478cbf");
   builder.addFurniture("hanging-plant", rect(55, 21, 1, 1), false);
   builder.addFurniture("lamp", rect(64, 27, 1, 1), true);
@@ -643,7 +654,11 @@ function buildLobby(
     },
     [...doors, ...entranceDoors],
   );
-  builder.addWindows(36, [3, 12, 28, 37]);
+  builder.addFurniture("painting", rect(3, 36, 2, 1), false);
+  builder.addFurniture("wall-clock", rect(12, 36, 1, 1), false);
+  builder.addFurniture("neon-sign", rect(19, 36, 4, 1), false, "#ff6fa8");
+  builder.addFurniture("painting", rect(28, 36, 2, 1), false);
+  builder.addFurniture("pinboard", rect(37, 36, 2, 1), false);
   builder.addFurniture("rug", rect(11, 37, 20, 5), false, config.studioHeadColor);
   builder.addFurniture("welcome-mat", rect(19, 41, 4, 2), false);
   const deskRect = rect(17, 39, 8, 1);
@@ -694,7 +709,8 @@ function buildHotDesks(builder: LayoutBuilder, guestColor: string): { stations: 
     },
     [tilePoint(52, 35), tilePoint(53, 35)],
   );
-  builder.addWindows(36, [44, 60]);
+  builder.addFurniture("pinboard", rect(44, 36, 2, 1), false);
+  builder.addFurniture("wall-clock", rect(60, 36, 1, 1), false);
   builder.addFurniture("rug", rect(47, 37, 14, 5), false, "#9fd9c6");
   builder.addFurniture("lamp", rect(64, 38, 1, 1), true);
   builder.addFurniture("hanging-plant", rect(57, 36, 1, 1), false);

@@ -51,6 +51,31 @@ describe("buildStudioLayout", () => {
     expect(unreachable).toEqual([]);
   });
 
+  it("only puts windows in walls that face the outside of the building", () => {
+    const indoorWindows = layout.windows.filter((windowTile) => {
+      const wallRow = windowTile.row - 1;
+      const behindWall = layout.cells[wallRow - 1]?.[windowTile.column];
+      return behindWall !== undefined && behindWall !== "void";
+    });
+    expect(indoorWindows).toEqual([]);
+  });
+
+  it("decorates indoor walls instead, with something on every north wall that has no window", () => {
+    const wallDecor = new Set(["painting", "pinboard", "wall-clock", "wall-screen", "neon-sign", "poster", "whiteboard", "bookshelf"]);
+    const indoorRooms = layout.rooms.filter((room) => room.kind !== "closet" && room.rect.row > 0);
+    const undecorated = indoorRooms.filter(
+      (room) =>
+        !layout.furniture.some(
+          (piece) =>
+            wallDecor.has(piece.kind) &&
+            piece.rect.row === room.rect.row + 1 &&
+            piece.rect.column > room.rect.column &&
+            piece.rect.column < room.rect.column + room.rect.width,
+        ),
+    );
+    expect(undecorated.map((room) => room.id)).toEqual([]);
+  });
+
   it("keeps every seat inside the studio grid", () => {
     for (const [, spot] of allSpots()) {
       expect(spot.tile.column).toBeGreaterThanOrEqual(0);
