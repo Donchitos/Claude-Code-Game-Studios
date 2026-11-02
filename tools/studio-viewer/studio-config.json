@@ -1,0 +1,183 @@
+{
+  "studioHeadLabel": "Claude · Studio Head",
+  "studioHeadColor": "#d97757",
+  "userLabel": "You",
+  "userColor": "#4f7cac",
+  "departments": [
+    {
+      "id": "leadership",
+      "label": "Leadership",
+      "color": "#e0a93b",
+      "zone": "open-floor",
+      "agents": [
+        "creative-director",
+        "technical-director",
+        "producer"
+      ]
+    },
+    {
+      "id": "programming",
+      "label": "Programming",
+      "color": "#5b8def",
+      "zone": "open-floor",
+      "agents": [
+        "lead-programmer",
+        "gameplay-programmer",
+        "engine-programmer",
+        "ai-programmer",
+        "network-programmer",
+        "tools-programmer",
+        "ui-programmer"
+      ]
+    },
+    {
+      "id": "design",
+      "label": "Design",
+      "color": "#3fb59a",
+      "zone": "open-floor",
+      "agents": [
+        "game-designer",
+        "systems-designer",
+        "level-designer",
+        "economy-designer",
+        "ux-designer",
+        "live-ops-designer"
+      ]
+    },
+    {
+      "id": "art",
+      "label": "Art & Access",
+      "color": "#d16ba5",
+      "zone": "open-floor",
+      "agents": [
+        "art-director",
+        "technical-artist",
+        "accessibility-specialist"
+      ]
+    },
+    {
+      "id": "audio",
+      "label": "Audio",
+      "color": "#9b6bd1",
+      "zone": "open-floor",
+      "agents": [
+        "audio-director",
+        "sound-designer"
+      ]
+    },
+    {
+      "id": "narrative",
+      "label": "Narrative",
+      "color": "#c9874a",
+      "zone": "open-floor",
+      "agents": [
+        "narrative-director",
+        "writer",
+        "world-builder"
+      ]
+    },
+    {
+      "id": "quality",
+      "label": "QA & Ops",
+      "color": "#6fbf5a",
+      "zone": "open-floor",
+      "agents": [
+        "qa-lead",
+        "qa-tester",
+        "performance-analyst",
+        "devops-engineer",
+        "analytics-engineer",
+        "security-engineer"
+      ]
+    },
+    {
+      "id": "release",
+      "label": "Release & Community",
+      "color": "#e06c5a",
+      "zone": "open-floor",
+      "agents": [
+        "release-manager",
+        "localization-lead",
+        "community-manager",
+        "prototyper"
+      ]
+    },
+    {
+      "id": "godot",
+      "label": "Godot",
+      "color": "#478cbf",
+      "zone": "engine-lab",
+      "agents": [
+        "godot-specialist",
+        "godot-gdscript-specialist",
+        "godot-csharp-specialist",
+        "godot-shader-specialist",
+        "godot-gdextension-specialist"
+      ]
+    },
+    {
+      "id": "unity",
+      "label": "Unity",
+      "color": "#9aa3b5",
+      "zone": "engine-lab",
+      "agents": [
+        "unity-specialist",
+        "unity-dots-specialist",
+        "unity-shader-specialist",
+        "unity-addressables-specialist",
+        "unity-ui-specialist"
+      ]
+    },
+    {
+      "id": "unreal",
+      "label": "Unreal",
+      "color": "#4a4f7a",
+      "zone": "engine-lab",
+      "agents": [
+        "unreal-specialist",
+        "ue-gas-specialist",
+        "ue-blueprint-specialist",
+        "ue-replication-specialist",
+        "ue-umg-specialist"
+      ]
+    },
+    {
+      "id": "guests",
+      "label": "Contractors",
+      "color": "#8d939c",
+      "zone": "hot-desks",
+      "agents": []
+    }
+  ],
+  "timing": {
+    "walkTilesPerSecond": 10,
+    "dispatchQuietMs": 12000,
+    "speechBubbleMs": 5000,
+    "toolBubbleMs": 2600,
+    "meetingTurnMs": 1800,
+    "meetingArrivalTimeoutMs": 25000,
+    "ambientMinDelayMs": 25000,
+    "ambientMaxDelayMs": 70000,
+    "maxAmbientWalkers": 5
+  },
+  "visuals": {
+    "tiltDegrees": 22,
+    "perspectiveFactor": 1.8,
+    "tiltShift": {
+      "radiusPx": 4,
+      "band": 0.22
+    },
+    "vignetteStrength": 0.28,
+    "saturation": 0.12,
+    "sunbeamAlpha": 0.16,
+    "sunbeamTint": "#ffe2a0",
+    "sunbeamLengthTiles": 6,
+    "lampGlowAlpha": 0.22,
+    "rain": true,
+    "dayWarmthColor": "#ffd9b0",
+    "dayWarmthAlpha": 0.18,
+    "nightShadeColor": "#2a3166",
+    "nightShadeAlpha": 0.62,
+    "nightGlowBoost": 2.4
+  }
+}
