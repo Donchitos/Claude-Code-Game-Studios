@@ -198,11 +198,25 @@ TODAY="$TODAY" awk "$AWK_LIB"'
   { sub(/\r$/, "") }
   /^sprint:/ { sprint = val($0) } /^start:/ { start = d8(val($0)) } /^end:/ { end_ = d8(val($0)) }
   /^updated:/ { upd = d8(val($0)) }
-  /^stories:/ { ins = 1; next }
+  /^stories:/ { ins = 1; item_depth = -1; next }
   /^[^ \t#-]/ { ins = 0 }
-  ins && /^[ \t]*- / { ns++ }
-  ins && /^[ \t]*(- )?status:/ { st[ns] = val($0) }
-  ins && /^[ \t]*(- )?priority:/ { pr[ns] = val($0) }
+  ins {
+    match($0, /^ */); depth = RLENGTH
+    item = ($0 ~ /^ *- / && (item_depth < 0 || depth == item_depth))
+    if (item) {
+      item_depth = depth; ns++
+      match($0, /^ *- +/); field_depth = RLENGTH
+      content = substr($0, field_depth + 1)
+      if (content ~ /^(#|$)/ || content ~ /^([&!][^ \t]+[ \t]*)+(#.*)?$/) field_depth = -1
+    }
+    if (!item && field_depth < 0 && depth > item_depth && $0 !~ /^ *(#|$)/)
+      field_depth = depth
+    if (ns && (item || depth == field_depth)) {
+      field = substr($0, (item ? field_depth : depth) + 1)
+      if (field ~ /^status:/) st[ns] = val(field)
+      if (field ~ /^priority:/) pr[ns] = val(field)
+    }
+  }
   END {
     today = ENVIRON["TODAY"]
     printf "sprint\t%s\nstart\t%s\nend\t%s\ntoday\t%s\n", (sprint == "" ? "-" : sprint), (start == "" ? "-" : start), (end_ == "" ? "-" : end_), today
