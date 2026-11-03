@@ -160,6 +160,14 @@ set the `spec:` field on its entry under `agents:` in `catalog.yaml`, and run
 
 ---
 
+## Shell helper regressions
+
+Run the bug-count path fixtures directly, without an engine, Python or jq:
+
+```bash
+bash studio-tests/scripts/bug-stats-paths.sh
+```
+
 ## Removing this framework
 
 No hook or import in the main project depends on this folder, but `/skill-test`
