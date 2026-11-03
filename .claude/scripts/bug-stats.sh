@@ -23,7 +23,8 @@
 # A bug file is BUG-<number>.md, the name /bug-report gives it (bug-0003.md,
 # in any case, too): a /bug-triage report (bug-triage-<date>.md) or other
 # notes named bug-*.md are not bugs. A file found twice, through folders that
-# overlap, is read once; an empty one is a bug with no fields, so it is open.
+# overlap (including relative and absolute aliases), is read once; an empty
+# one is a bug with no fields, so it is open.
 #
 # What it reads from each file (the header block /bug-report writes):
 #   ID, Title, Severity, Priority, Status, Reported and System, as `**Field**:`
@@ -88,6 +89,7 @@ if [ -n "$ROOT_ARG" ]; then
 else
   cd "$(dirname "$0")/../.." 2>/dev/null || { echo "bug-stats: cannot reach the repo root" >&2; exit 1; }
 fi
+PROJECT_ROOT=$(pwd -P)
 
 # BUG-<number>.md: -iname keeps a lowercase bug-0003.md, the digit keeps out
 # bug-triage-<date>.md.
@@ -101,7 +103,14 @@ else
     [ -n "$d" ] || continue
     # A Windows path's backslashes as slashes, so its file names read alike.
     case "$d" in [A-Za-z]:\\*) d=$(printf '%s' "$d" | sed 's|\\|/|g') ;; esac
-    LIST="$LIST$(find "${d%/}" -type f -iname 'bug-[0-9]*.md' 2>/dev/null)$NL"
+    # Resolve directory aliases before find: production, an absolute path to
+    # it, and production/qa/.. must give the same spelling to each bug file.
+    d=$(cd "$d" 2>/dev/null && pwd -P) || continue
+    case "$d" in
+      "$PROJECT_ROOT") d=. ;;
+      "$PROJECT_ROOT"/*) d=./${d#"$PROJECT_ROOT"/} ;;
+    esac
+    LIST="$LIST$(find "$d" -type f -iname 'bug-[0-9]*.md' 2>/dev/null)$NL"
   done <<EOF
 $DIRS
 EOF
