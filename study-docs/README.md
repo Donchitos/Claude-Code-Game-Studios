@@ -57,6 +57,8 @@
 | 22 | [Claude Code Memory 机制与 active.md 分工](file:///workspace/study-docs/22-Claude-Code-Memory机制与active.md分工.md) | 为什么不用 Auto Memory 而用 active.md？ | CLAUDE.md + Auto Memory 双轨、Auto Memory 六条局限、三层分工模型、契约 vs 背景、迁移指南 |
 | 23 | [上下文体系与逻辑流程总览](file:///workspace/study-docs/23-上下文体系与逻辑流程总览.md) | 数据体系长什么样？skill 怎么消费数据、派 agent？ | 9 环文档链、每 skill 读写派总表、按图索骥双向索引、4 条数据设计原则 |
 | W1 | [workflow/技能与智能体映射指南](file:///workspace/study-docs/workflow/技能与智能体映射指南.md) | 做一个游戏要用哪些技能、哪些智能体？为什么？ | 7 阶段×技能×智能体全景表、design-system 13 行路由表、dev-story 程序员路由表、9 个 team 班底、总监评审团、15 个核心智能体速查 |
+| W2 | [workflow/配置体系与rigor心智模型](file:///workspace/study-docs/workflow/配置体系与rigor心智模型.md) | docs.density、modes.rigor 是什么？配置从哪来？ | 主开关+6子旋钮+5独立配置心智模型、三档rigor展开表、resolve_config解析链、provenance来源、project.yaml vs local |
+| W3 | [workflow/skill-rules/ 73个技能规则抽取](file:///workspace/study-docs/workflow/skill-rules/README.md) | WORKFLOW-GUIDE 每个技能的规则怎么抽取来复用？ | 73 份 AGENTS.md 移植版文档（统一六节结构）、十类索引、三种组装策略（拿通用规则/拿流程线/整套移植） |
 
 ---
 
