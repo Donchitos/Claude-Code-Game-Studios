@@ -28,6 +28,8 @@
 #   code_root       the same answer and source label as resolve_code_root in
 #                   .claude/hooks/yaml-helper.sh; never defaults to src
 #   source_files    `unknown` when code_root is unset: unknown is not zero
+#   origin_url      raw origin URL from .git/config; a .git pointer file uses
+#                   Git to locate the readable config, reported as its source
 #   stage_yaml      project.stage in project.yaml as written (even if invalid)
 #   stage_txt       first non-blank line of production/stage.txt as written
 #   stage           the resolved stage: a valid stage_yaml, else a valid
@@ -200,13 +202,23 @@ PROTO=$(count prototypes -mindepth 1 -maxdepth 1 -type d)
 SPRINT=$(count production/sprints -maxdepth 1 -type f -name '*.md')
 MILE=$(count production/milestones -maxdepth 1 -type f -name '*.md')
 
-ORIGIN=""
-if [ -f .git/config ]; then
+ORIGIN=""; ORIGIN_CONFIG=".git/config"
+if [ -f .git ] && command -v git >/dev/null 2>&1; then
+  ORIGIN_CONFIG=$(
+    # --root selected this cwd. A caller's repository variables must not
+    # redirect this metadata lookup to a different checkout.
+    unset GIT_DIR GIT_WORK_TREE GIT_COMMON_DIR GIT_INDEX_FILE \
+          GIT_OBJECT_DIRECTORY GIT_ALTERNATE_OBJECT_DIRECTORIES \
+          GIT_CEILING_DIRECTORIES GIT_DISCOVERY_ACROSS_FILESYSTEM
+    command git rev-parse --git-path config 2>/dev/null
+  ) || ORIGIN_CONFIG=""
+fi
+if [ -f "$ORIGIN_CONFIG" ]; then
   ORIGIN=$(awk '
     { sub(/\r$/, "") }
     /^[ \t]*\[/ { inorigin = ($0 ~ /^[ \t]*\[remote "origin"\]/); next }
     inorigin && /^[ \t]*url[ \t]*=/ { sub(/^[ \t]*url[ \t]*=[ \t]*/, ""); sub(/[ \t]+$/, ""); print; exit }
-  ' .git/config)
+  ' "$ORIGIN_CONFIG")
 fi
 
 row root "$ROOT" -
@@ -221,7 +233,7 @@ row story "$STORY" "production/epics/**/story-*.md"
 row prototype "$PROTO" "prototypes/*/"
 row sprint "$SPRINT" "production/sprints/*.md"
 row milestone "$MILE" "production/milestones/*.md"
-row origin_url "$ORIGIN" "$( [ -f .git/config ] && echo .git/config || echo absent )"
+row origin_url "$ORIGIN" "$( [ -f "$ORIGIN_CONFIG" ] && printf '%s' "$ORIGIN_CONFIG" || echo absent )"
 stage_rows
 
 # help/SKILL.md Step 2's ladder, most advanced match first. 10 is help's own
