@@ -1,0 +1,175 @@
+# UE 5.8 技术实现团队 — 工作流目录(3 阶段精简版)
+# 沿袭原项目 workflow-catalog.yaml,7 阶段压缩为 3 阶段,砍掉所有非技术域阶段。
+
+version: 1
+engine: "Unreal Engine 5.8"
+knowledge_source: "Context7 MCP"
+
+# ─────────────────────────────────────────────────────────────
+# 阶段定义
+# ─────────────────────────────────────────────────────────────
+
+phases:
+
+  # ── 阶段 A:技术准备 ──
+  technical-setup:
+    label: "Technical Setup"
+    description: "固化技术契约、写 ADR、生成主架构与规则清单"
+    next_phase: requirements-breakdown
+    steps:
+      - id: setup-engine
+        command: /setup-engine
+        required: true
+        repeatable: false
+        description: "轻量引擎配置:UE 5.8 + Context7 预填,只问 5 项"
+        artifact:
+          glob: ".claude/docs/technical-preferences.md"
+          must_contain: "Engine: Unreal Engine 5.8"
+      - id: architecture-decision
+        command: /architecture-decision
+        required: true
+        repeatable: true
+        description: "写 ADR(≥3 个 Foundation 层),Step 1 调 Context7 查域内 API"
+        artifact:
+          glob: "docs/architecture/adr-*.md"
+          min_count: 3
+      - id: create-architecture
+        command: /create-architecture
+        required: true
+        repeatable: false
+        description: "主架构文档,需求来源为 tr-registry(索引 feature spec)"
+        artifact:
+          glob: "docs/architecture/architecture.md"
+      - id: create-control-manifest
+        command: /create-control-manifest
+        required: true
+        repeatable: false
+        description: "从 ADR 生成扁平程序员规则表"
+        artifact:
+          glob: "docs/architecture/control-manifest.md"
+      - id: architecture-review
+        command: /architecture-review
+        required: true
+        repeatable: false
+        description: "验证 ADR 覆盖度/依赖顺序/引擎兼容(引擎兼容改用 Context7)"
+        artifact:
+          glob: "docs/architecture/architecture-review-*.md"
+
+  # ── 阶段 B:需求拆解 ──
+  requirements-breakdown:
+    label: "Requirements Breakdown"
+    description: "把用户 feature spec 拆成 epic 和 story"
+    next_phase: implementation
+    steps:
+      - id: create-epics
+        command: /create-epics
+        required: true
+        repeatable: true
+        description: "按架构模块拆 epic,需求来源为 feature spec"
+        artifact:
+          glob: "production/epics/*/EPIC.md"
+          min_count: 1
+      - id: create-stories
+        command: /create-stories
+        required: true
+        repeatable: true
+        description: "epic 拆 story,每 story 带 TR-ID/验收标准/依赖"
+        artifact:
+          glob: "production/epics/**/*.md"
+          min_count: 2
+
+  # ── 阶段 C:实现循环(可重复) ──
+  implementation:
+    label: "Implementation"
+    description: "story 实现闭环 + 复杂功能多 agent 编排"
+    next_phase: null
+    steps:
+      - id: story-readiness
+        command: /story-readiness
+        required: false
+        repeatable: true
+        description: "实现前校验 story 就绪(QL-STORY-READY 门)"
+      - id: dev-story
+        command: /dev-story
+        required: true
+        repeatable: true
+        description: "核心主链:7 Phase 加载上下文→路由→实现→测试→汇总"
+      - id: code-review
+        command: /code-review
+        required: false
+        repeatable: true
+        description: "架构+质量+ADR 合规审查(LP-CODE-REVIEW 门)"
+      - id: story-done
+        command: /story-done
+        required: true
+        repeatable: true
+        description: "验收标准核对、关单"
+      - id: qa-plan
+        command: /qa-plan
+        required: false
+        repeatable: true
+        description: "每个 epic/sprint 的测试计划"
+      - id: team-feature
+        required: false
+        repeatable: true
+        description: "复杂功能多 agent 并行编排(6 阶段,Phase 3 并行 4 agent)"
+      - id: gate-check
+        command: /gate-check
+        required: false
+        repeatable: true
+        description: "阶段切换前技术门禁(只过 TD-PHASE-GATE)"
+
+# ─────────────────────────────────────────────────────────────
+# 入口 skill(跨阶段)
+# ─────────────────────────────────────────────────────────────
+
+entry_points:
+  - id: start
+    command: /start
+    description: "首次入门:检测项目状态,路由到正确阶段"
+  - id: help
+    command: /help
+    description: "读本目录,告诉你下一步该跑哪个 skill"
+
+# ─────────────────────────────────────────────────────────────
+# 阶段切换规则
+# ─────────────────────────────────────────────────────────────
+
+phase_transitions:
+  - from: technical-setup
+    to: requirements-breakdown
+    gate: TD-PHASE-GATE
+    required_artifacts:
+      - ".claude/docs/technical-preferences.md"
+      - "docs/architecture/architecture.md"
+      - "docs/architecture/control-manifest.md"
+      - "docs/architecture/architecture-review-*.md"
+  - from: requirements-breakdown
+    to: implementation
+    gate: TD-PHASE-GATE
+    required_artifacts:
+      - "production/epics/*/EPIC.md"
+      - "production/epics/**/*.md"
+
+# ─────────────────────────────────────────────────────────────
+# 文件即状态机
+# ─────────────────────────────────────────────────────────────
+
+state_files:
+  - path: "production/stage.txt"
+    values: ["technical-setup", "requirements-breakdown", "implementation"]
+  - path: "production/review-mode.txt"
+    values: ["full", "lean", "solo"]
+  - path: "production/session-state/active.md"
+    description: "当前会话状态,dev-story 每轮追加"
+
+# ─────────────────────────────────────────────────────────────
+# 可选 skill(本版本不含,可后续扩展)
+# ─────────────────────────────────────────────────────────────
+
+optional_skills:
+  - "/test-setup — 测试框架脚手架"
+  - "/smoke-check — 冒烟测试"
+  - "/regression-suite — 回归测试"
+  - "/project-stage-detect — 褐地项目阶段检测"
+  - "/adopt — 褐地项目格式审计"
