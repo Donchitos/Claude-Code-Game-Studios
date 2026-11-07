@@ -69,7 +69,7 @@ is_date() {
   esac
   [ "$_d" -ge 1 ] && [ "$_d" -le "$_n" ]
 }
-is_num() { case "$1" in ''|*[!0-9.]*|*.*.*) return 1 ;; esac; return 0; }
+is_num() { case "$1" in ''|.|*[!0-9.]*|*.*.*) return 1 ;; esac; return 0; }
 
 CMD=""; ROOT_ARG=""; TODAY=""; PLACES=0; ARGS=""
 NL='
