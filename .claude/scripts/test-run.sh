@@ -106,7 +106,7 @@
 # Rule ids: timeout, runner-unavailable, godot:no-gdunit4, godot:0, godot:0-zero,
 # godot:101, godot:100, godot:105, godot:103, godot:104, godot:1, godot:1-no-import,
 # unity:no-test-framework, unity:0, unity:zero-tests, unity:no-count,
-# unity:no-results, unity:2, unity:1, unity:3, unity:4, unity:other,
+# unity:no-results, unity:result-fail, unity:2, unity:1, unity:3, unity:4, unity:other,
 # unreal:mac-unsourced, unreal:build-failed, unreal:result-fail,
 # unreal:no-tests-matched, unreal:pass, unreal:other-nonzero, web:0, web:nonzero,
 # web:pass, web:failed, web:zero-tests, web:build-failed, web:no-browser,
@@ -302,8 +302,11 @@ elif [ -n "$CFG_TEST" ]; then CMD="$CFG_TEST"; CMD_SRC="commands.test"; fi
 # A Unity results file named in the command is the one to read and to delete first.
 if [ "$ENGINE" = unity ] && [ "$CMD_SRC" != default ]; then
   # -E: BSD sed has no \| in a basic regex.
-  named=$(printf '%s\n' "$CMD" | sed -n -E 's/.*-testResults[ =]*("[^"]*"|[^ ]*).*/\1/p' | head -1)
-  named=${named#\"}; named=${named%\"}
+  named=$(printf '%s\n' "$CMD" | sed -n -E "s/.*-testResults[ =]*(\"[^\"]*\"|'[^']*'|[^ ]*).*/\\1/p" | head -1)
+  case "$named" in
+    \"*\") named=${named#\"}; named=${named%\"} ;;
+    \'*\') named=${named#\'}; named=${named%\'} ;;
+  esac
   [ -n "$named" ] && RESULTS="$named"
 fi
 # Web's two halves: the table's npm test over the web scaffold's test:unit and
@@ -603,6 +606,7 @@ case "$ENGINE" in
       0) if [ ! -f "$RESULTS" ]; then set_rule unity:no-results "exit 0 but no results file was written"
          elif [ -z "$total" ]; then set_rule unity:no-count "exit 0, but the results file has no <test-run> testcasecount, so no test was counted"
          elif [ "$total" = 0 ]; then set_rule unity:zero-tests "testcasecount is 0: no test was compiled or run"
+         elif [ "${failed:-0}" -gt 0 ]; then set_rule unity:result-fail "the results file reports failed tests despite command exit 0"
          else set_rule unity:0 "exit 0: every test passed"; fi ;;
       2) set_rule unity:2 "a test failed" ;;
       1) set_rule unity:1 "the project did not compile (see the editor log for error CS lines)" ;;
