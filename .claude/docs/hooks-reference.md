@@ -67,3 +67,10 @@ evaluated and not adopted, for the reasons given.
 
 Hook reference documentation: `.claude/docs/hooks-reference/`
 Hook input schema documentation: `.claude/docs/hooks-reference/hook-input-schemas.md`
+
+## Shared YAML configuration
+
+`yaml-helper.sh` reads quoted block-list items with trailing comments as their
+quoted value. For example, `- "file_deletions" # confirm first` keeps
+`file_deletions` in `modes.automation_always_ask`; the comment and quotes are
+not part of the category name. A `#` inside the quotes remains data.
