@@ -161,17 +161,27 @@ printf '%s\n' "$FILES" | FORMAT="$FORMAT" SHOWRUNS="$SHOWRUNS" ALL="$ALL" awk '
       ARGV[ARGC++] = av
     }
   }
-  # The format of one file: NUnit if any <test-case, else JUnit if any
-  # <testcase, else Unreal if any "Test Completed. Result={", else text.
-  function detect(f,    l, nu, ju, un) {
-    nu = 0; ju = 0; un = 0
+  # Detect actual XML elements with the same scanner used for result parsing,
+  # so comments, CDATA and quoted tag contents cannot change the format.
+  # Logs without XML test markers stay on the original cheap text scan.
+  function detect(f,    l, candidate, un, result) {
+    candidate = 0; un = 0
     while ((getline l < f) > 0) {
-      if (index(l, "<test-case") > 0) nu = 1
-      else if (index(l, "<testcase") > 0) ju = 1
+      if (index(l, "<test-case") > 0 || index(l, "<testcase") > 0) candidate = 1
       if (index(l, "Test Completed. Result={") > 0) un = 1
     }
     close(f)
-    return nu ? "nunit" : (ju ? "junit" : (un ? "unreal" : "text"))
+    if (!candidate) return un ? "unreal" : "text"
+    detecting = 1; detect_nu = 0; detect_ju = 0
+    pend = ""; skipterm = ""
+    while ((getline l < f) > 0) {
+      sub(/\r$/, "", l)
+      xml_line(l)
+    }
+    close(f)
+    result = detect_nu ? "nunit" : (detect_ju ? "junit" : (un ? "unreal" : "text"))
+    detecting = 0; pend = ""; skipterm = ""
+    return result
   }
   function trim(s) { sub(/^[ \t]+/, "", s); sub(/[ \t]+$/, "", s); return s }
   # XML entities in an id; &amp; last so &amp;lt; stays &lt;.
@@ -224,6 +234,11 @@ printf '%s\n' "$FILES" | FORMAT="$FORMAT" SHOWRUNS="$SHOWRUNS" ALL="$ALL" awk '
     name = substr(t, closing ? 3 : 2)
     sub(/[ \t\/>].*$/, "", name)
     selfc = (substr(t, length(t) - 1, 1) == "/")
+    if (detecting) {
+      if (!closing && name == "test-case") detect_nu = 1
+      else if (!closing && name == "testcase") detect_ju = 1
+      return
+    }
     if (cf == "nunit") {
       if (!closing && name == "test-case") {
         id = attr(t, "fullname"); if (id == "") id = attr(t, "name")
