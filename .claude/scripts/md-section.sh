@@ -182,7 +182,8 @@ AWK_PROG='
       if (closes(line, infence)) infence = ""
       next
     }
-    f = fence_of(line)
+    # Fence-looking lines inside an HTML comment are comment content.
+    f = incomment ? "" : fence_of(line)
     if (f != "") { infence = f; text[NR] = 1; next }
     # HTML comments: what is left of the line outside them. A line that starts
     # inside a comment, or opens one, is never a heading. A <!-- inside a code
