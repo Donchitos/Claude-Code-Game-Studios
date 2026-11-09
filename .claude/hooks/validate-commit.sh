@@ -658,6 +658,14 @@ if [ -n "$DESIGN_FILES" ]; then
         *)       REQUIRED="Overview|Detailed|Edge Cases|Dependencies|Acceptance Criteria" ;;
     esac
 
+    # standard skips Tuning Knobs unless workflow_overrides forces it
+    # (tuning_knobs: true -- design-system 1-parse-arguments.md). Resolve it
+    # the same way as the tier above; empty resolves to "not forced".
+    TUNING_KNOBS=""
+    if [ "$_VC_HELPER" = 1 ]; then
+        TUNING_KNOBS=$(resolve_setting workflow_overrides.tuning_knobs 2>/dev/null | cut -f1)
+    fi
+
     if [ -n "$REQUIRED" ] && [ -z "$_VC_PY" ]; then
         # A skipped step announces itself (obligation 3, as below). Handing the
         # scan to a `python` that is not there printed nothing, which read as a
@@ -677,7 +685,14 @@ if [ -n "$DESIGN_FILES" ]; then
         # a heading check, and tightening it here would silently change which
         # documents warn -- a behaviour change smuggled inside a performance
         # fix. If that wants tightening it should be its own change with its
-        # own test.
+        # own test. The sections the tier lists do not repeat are checked on
+        # top of the tier list and are heading-anchored like
+        # gdd-structure-check.sh: design-system 1-parse-arguments.md makes
+        # Summary required at every checked tier ("read every list as Summary,
+        # plus:"), and 4-section-design.md keys Visual/Audio and Game Feel on
+        # the systems-index Category and requires Cross-References when
+        # Dependencies names another GDD (#133 problem 1). Heading anchoring
+        # there does not change which documents the substring half warns on.
         #
         # It reads what the commit takes, as the JSON check above does: the
         # staged copy ("I"), or the working copy for a file this command adds
@@ -687,10 +702,11 @@ if [ -n "$DESIGN_FILES" ]; then
                      $0 != "" { print (($0 in wt) ? "W" : "I"), $0 }' \
                      <(printf '%s\n' "$WT_FILES") <(printf '%s\n' "$DESIGN_FILES") \
           | CCGS_VC_PREFIX="$_VC_PREFIX" "$_VC_PY" -c '
-import sys, os, subprocess
+import sys, os, re, subprocess
 argv = sys.argv
 required = [x for x in argv[1].split("|") if x]
 workflow = argv[2]
+tuning_knobs = argv[3].strip().lower() in ("1", "true", "yes", "on") if len(argv) > 3 else False
 items = [l.split("\t", 1) for l in sys.stdin.buffer.read().decode("utf-8").splitlines() if "\t" in l]
 staged = [p for mode, p in items if mode == "I"]
 # Paths are project-relative; the index names them from the repository top.
@@ -708,6 +724,66 @@ if staged:
             size = int(head[2])
             blobs[p] = raw[pos:pos + size]
             pos += size + 1
+
+def read_path(path):
+    # The systems index is read for context, not validated: prefer the staged
+    # copy (what this commit takes), else the working copy.
+    try:
+        raw = subprocess.run(["git", "cat-file", "blob", ":" + prefix + path],
+                             stdout=subprocess.PIPE, stderr=subprocess.DEVNULL)
+        if raw.returncode == 0:
+            return raw.stdout.decode("utf-8", "replace")
+    except OSError:
+        pass
+    try:
+        with open(path, "rb") as fh:
+            return fh.read().decode("utf-8", "replace")
+    except OSError:
+        return ""
+
+def slug(name):
+    return re.sub(r"[^a-z0-9]+", "-", name.lower()).strip("-")
+
+INDEX = read_path("design/gdd/systems-index.md")
+
+def category_of(stem, index_text):
+    # The Category column of systems-index.md (nine values; 4-section-design.md
+    # keys the conditional sections on it).
+    for line in index_text.splitlines():
+        if not line.lstrip().startswith("|"):
+            continue
+        cells = [c.strip() for c in line.strip().strip("|").split("|")]
+        if len(cells) < 3:
+            continue
+        if "design/gdd/%s.md" % stem in line or slug(re.sub(r"\s*\(inferred\)", "", cells[1])) == stem:
+            return cells[2].strip().strip("*").lower()
+    return None
+
+def section_body(text, pattern):
+    # Body of the first heading matching pattern, down to the next heading of
+    # the same or a higher level.
+    m = re.search(r"^(#+)[ \t]+([0-9]+[.)]?[ \t]*)?(?:" + pattern + r")", text, re.I | re.M)
+    if not m:
+        return None
+    rest = text[m.end():]
+    nxt = re.search(r"^#{1,%d}[ \t]" % len(m.group(1)), rest, re.M)
+    return rest[:nxt.start()] if nxt else rest
+
+def names_another_gdd(body):
+    # The rule (4-section-design.md): Cross-References is required whenever the
+    # Dependencies section names another GDD; naming nothing is written as a
+    # "None" sentence or left as the placeholder.
+    if body is None:
+        return False
+    lines = [l.strip() for l in body.splitlines()]
+    lines = [l for l in lines if l and l.lower() != "[to be designed]"]
+    if not lines:
+        return False
+    return re.match(r"^\W*none\b", lines[0], re.I) is None
+
+def heading_present(text, pattern):
+    return re.search(r"^##+[ \t]+([0-9]+[.)]?[ \t]*)?(?:" + pattern + r")", text, re.I | re.M) is not None
+
 out = []
 for mode, path in items:
     if not path.endswith(".md"):
@@ -724,15 +800,44 @@ for mode, path in items:
                 data = fh.read()
         except OSError:
             continue
-    body = data.decode("utf-8", "replace").lower()
-    for section in required:
-        if section.lower() not in body:
-            out.append("DESIGN: %s missing section required at workflow=%s: %s"
-                       % (path, workflow, section))
+    body = data.decode("utf-8", "replace")
+    low = body.lower()
+    checks = [(s, "substring", s, "") for s in required]
+    # The rule list the tier lists do not repeat (design-system 1-parse-arguments):
+    # Summary is required at every checked tier and is not one of the 8. It is
+    # checked as a heading, not a substring: the word "summary" in prose must
+    # not stand in for the section /review-all-gdds reads.
+    checks.append(("Summary", "heading", "summary", ""))
+    stem = os.path.basename(path)[:-3]
+    cat = category_of(stem, INDEX)
+    # Category-conditional sections (design-system 4-section-design.md):
+    # Visual/Audio for Gameplay, UI, Narrative and Audio; Game Feel for Gameplay
+    # and UI. Unknown category (no systems-index row) does not force them.
+    if cat in ("gameplay", "ui", "narrative", "audio"):
+        checks.append(("Visual/Audio", "heading", "visual/audio",
+                       " (required for category %s)" % cat))
+    if cat in ("gameplay", "ui"):
+        checks.append(("Game Feel", "heading", "game feel",
+                       " (required for category %s)" % cat))
+    if names_another_gdd(section_body(body, "dependencies")):
+        checks.append(("Cross-References", "heading", "cross[- ]references",
+                       " (required: Dependencies names another GDD)"))
+    # standard: Tuning Knobs is skipped unless workflow_overrides forces it
+    # (tuning_knobs: true), which the caller resolved into argv[3].
+    if tuning_knobs and workflow == "standard":
+        checks.append(("Tuning Knobs", "substring", "Tuning Knobs", ""))
+    for label, how, pattern, why in checks:
+        if how == "heading":
+            hit = heading_present(body, pattern)
+        else:
+            hit = pattern.lower() in low
+        if not hit:
+            out.append("DESIGN: %s missing section required at workflow=%s: %s%s"
+                       % (path, workflow, label, why))
 if out:
     # Bytes, not text -- see the CRLF note in the JSON scan above.
     sys.stdout.buffer.write(("\n".join(out) + "\n").encode("utf-8"))
-' "$REQUIRED" "$WORKFLOW" > "$TMP_DESIGN" 2>/dev/null
+' "$REQUIRED" "$WORKFLOW" "$TUNING_KNOBS" > "$TMP_DESIGN" 2>/dev/null
         if [ -z "$TMP_DESIGN" ]; then
             # Obligation 3 of .claude/rules/skill-authoring.md: a skipped step
             # announces itself. Silence here is indistinguishable from a GDD
