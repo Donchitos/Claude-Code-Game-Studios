@@ -1,0 +1,26 @@
+{
+  "name": "ccgs-studio-viewer",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "2D pixel studio that shows the CCGS agents at work, with the main Claude Code session chat beside it.",
+  "scripts": {
+    "studio": "node --import tsx server/index.ts",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "dompurify": "3.4.17",
+    "marked": "15.0.12",
+    "phaser": "3.90.0",
+    "vite": "6.4.5",
+    "ws": "8.18.3"
+  },
+  "devDependencies": {
+    "@types/node": "22.20.5",
+    "@types/ws": "8.18.1",
+    "tsx": "4.19.4",
+    "typescript": "5.9.3",
+    "vitest": "3.2.7"
+  }
+}

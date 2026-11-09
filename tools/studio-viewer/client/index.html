@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>CCGS Studio</title>
+  </head>
+  <body>
+    <div id="app">
+      <section id="studio-pane" aria-label="Studio floor">
+        <header id="top-bar"></header>
+        <div id="studio-stage">
+          <div id="studio-diorama">
+            <div id="studio-canvas"></div>
+          </div>
+          <div id="studio-overlay" aria-hidden="true"></div>
+          <aside id="inspector" hidden></aside>
+          <div id="activity-ticker" aria-live="polite"></div>
+        </div>
+      </section>
+      <div id="pane-resizer" role="separator" aria-orientation="vertical" title="Drag to resize the chat"></div>
+      <section id="chat-pane" aria-label="Main session chat"></section>
+    </div>
+    <script type="module" src="./main.ts"></script>
+  </body>
+</html>
