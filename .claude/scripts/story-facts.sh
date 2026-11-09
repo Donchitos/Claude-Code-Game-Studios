@@ -115,12 +115,26 @@ case "$SCOPE" in
         sub(/[ \t]+#.*$/, "", s); sub(/[ \t]+$/, "", s); return s
       }
       { sub(/\r$/, "") }
-      /^stories:/ { in_s = 1; next }
+      /^stories:/ { in_s = 1; item_depth = -1; item_seen = 0; next }
       /^[^ \t#-]/ { if (in_s) { emit(); in_s = 0 } }
       function emit() { if (f != "") printf "%s\t%s\n", f, (st == "" ? "-" : st); f = ""; st = "" }
-      in_s && /^[ \t]*- / { emit() }
-      in_s && /^[ \t]*(- )?file:/ { f = val($0) }
-      in_s && /^[ \t]*(- )?status:/ { st = val($0) }
+      in_s {
+        match($0, /^ */); depth = RLENGTH
+        item = ($0 ~ /^ *- / && (item_depth < 0 || depth == item_depth))
+        if (item) {
+          emit(); item_depth = depth; item_seen = 1
+          match($0, /^ *- +/); field_depth = RLENGTH
+          content = substr($0, field_depth + 1)
+          if (content ~ /^(#|$)/ || content ~ /^([&!][^ \t]+[ \t]*)+(#.*)?$/) field_depth = -1
+        }
+        if (!item && field_depth < 0 && depth > item_depth && $0 !~ /^ *(#|$)/)
+          field_depth = depth
+        if (item_seen && (item || depth == field_depth)) {
+          field = substr($0, (item ? field_depth : depth) + 1)
+          if (field ~ /^file:/) f = val(field)
+          if (field ~ /^status:/) st = val(field)
+        }
+      }
       END { if (in_s) emit() }
     ' "$YAML")
     LIST=$(printf '%s\n' "$SPRINT" | cut -f1 | awk 'NF') ;;
