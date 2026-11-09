@@ -26,6 +26,10 @@ as hook JSON (`hook_warn` in `yaml-helper.sh`); only a problem that must be fixe
 now exits 2, and the read guard's refusal. See `hooks-reference/hook-input-schemas.md` for why stderr is not
 enough.
 
+`features.session_state` controls the recovery pipeline. Its lightweight lookup
+accepts a comment after `features:`, ignores a UTF-8 BOM, and reads only direct
+children of that mapping; text inside notes does not change the setting.
+
 ### Subagent cost visibility
 
 The three hooks above form one chain. `log-agent.sh` writes a record per spawn
