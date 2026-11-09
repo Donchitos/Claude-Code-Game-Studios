@@ -1,0 +1,2 @@
+# Independent YAML oracle for script regression tests; not a runtime dependency.
+PyYAML==6.0.3
