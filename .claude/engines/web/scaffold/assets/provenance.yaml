@@ -1,0 +1,12 @@
+# Where each file in assets/ came from, one entry per file, added with it. The field names are the
+# same as a one-shot's provenance record, so a grown game's entries carry over.
+# The game imports its assets in the code, so this file never enters a build.
+# - path: assets/hit.wav      # relative to the project root
+#   origin: ai                # ai | bought | cc0 | you | outsourced | template | plugin | licensed | code | unknown
+#   tool: "what made or fetched it: the generator, or the script for code"
+#   model: "the model ID, when a model made it or an AI wrote its code"
+#   source: {vendor: "who made or sold it", product: "its name", url: "where from"}   # a download
+#   licence: {id: CC0-1.0}    # a download: the SPDX id where one exists
+#   date: 2026-01-31
+#   ships: true               # false for a file only the build uses
+#   placeholder: true         # until it is replaced, with _ph before the extension; leave the line out otherwise

@@ -62,7 +62,6 @@ No gate IDs assigned.
 - References the 4.5→4.6 migration guide from the VERSION.md verified sources list
 - Reads the 4.5 → 4.6 table in `docs/engine-reference/godot/breaking-changes.md` and states explicitly that it has no GDExtension-specific row, with the caveat to verify against the official changelog
 - Still surfaces the listed 4.6 changes that reach native code: `Quaternion` now initializes to identity (it was zero)
-- Flags the D3D12 default on Windows (4.6 change) as potentially relevant for GDExtension rendering code
 - Provides a checklist of what to verify after upgrading
 
 ---

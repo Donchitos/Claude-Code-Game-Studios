@@ -13,21 +13,30 @@ Flow State, Bartle Player Types). Use whichever engine set matches your project.
 
 ## The Default Path: Rigor Minimal
 
-`modes.rigor` defaults to `minimal` (`/start` infers it from what you describe and shows it
-before saving; `/settings` changes it any time). At `minimal` the path to code is four steps:
+The main path starts with a game, not an engine:
 
-1. `/setup-engine` -- configure the engine
-2. `/brainstorm` -- writes the one-page `design/game-brief.md`, in place of the
-   concept doc, systems decomposition and per-system GDDs
-3. `/create-stories` -- turns the brief's MVP list into stories under
-   `production/epics/<slug>/`; the brief's build order is the plan, so there is
-   no `/create-epics` or `/sprint-plan`
-4. `/dev-story` then `/story-done`, story by story -- `/story-done` names the
-   next story, and `/help` knows this route
+1. `/prototype` (or just say "make me a game") -- a few quick questions, then the
+   one-page `design/game-brief.md` and a playable browser game built from it, played
+   and screenshotted before it is handed over
+2. Play it, then ask for changes in plain words ("make the jump higher") -- each
+   change is checked, and you accept or undo it
+3. Grow it -- say "grow it" when you like the game, and `/prototype` turns it into a
+   web project at the project root
+4. One feature a sitting: say the next feature in your own words, and `/prototype` builds it, checks what it touched and asks to keep it as a commit --
+   stories (`/create-stories`, then `/dev-story` and `/story-done`) only when you
+   ask for them, or in studio mode; `/next-step` knows this route
+
+`/setup-engine` is for an engine other than web (Godot, Unity, Unreal), or for later; with
+an engine set, `/prototype` builds a throwaway prototype in it instead. `/prototype --spike`
+is the quick test of one mechanic. `/brainstorm` helps when you have no idea yet.
+
+`modes.rigor` defaults to `minimal` (`/start` infers it from what you describe and shows it
+before saving; `/project-settings` changes it any time). At `minimal` the one-page brief
+stands in for the concept doc, systems decomposition and per-system GDDs.
 
 Nothing at `minimal` runs `/gate-check`, so `project.stage` stays at Concept.
 Every skill still runs at any tier. The trade: no GDDs catch design problems
-before code. Raise rigor with `/settings` when the game outgrows the brief;
+before code. Raise rigor with `/project-settings` when the game outgrows the brief;
 `standard` and `full` are the longer pipelines under
 [First Steps for a New Project](#first-steps-for-a-new-project).
 
@@ -101,7 +110,7 @@ Ask yourself: "What department would handle this in a real studio?"
 | Command | What it does |
 |---------|-------------|
 | `/start` | First-time onboarding — asks where you are, guides you to the right workflow |
-| `/help` | Context-aware "what do I do next?" — reads your current phase and artifacts |
+| `/next-step` | Context-aware "what do I do next?" — reads your current phase and artifacts |
 | `/project-stage-detect` | Analyze project state, detect stage, identify gaps |
 | `/setup-engine` | Configure engine + version, populate reference docs |
 | `/adopt` | Brownfield audit and migration plan for existing projects |
@@ -143,14 +152,15 @@ Ask yourself: "What department would handle this in a real studio?"
 | `/retrospective` | Runs sprint/milestone retrospective |
 | `/bug-report` | Structured bug report creation |
 | `/playtest-report` | Creates or analyzes playtest feedback |
+| `/cut` | Proposes cuts and a polish list to finish the game; dates for a game to sell |
 | `/onboard` | Generates onboarding docs for a role |
 | `/release-checklist` | Validates pre-release checklist |
 | `/launch-checklist` | Complete launch readiness validation |
-| `/changelog` | Generates changelog from git history |
+| `/write-changelog` | Generates changelog from git history |
 | `/patch-notes` | Generate player-facing patch notes |
 | `/hotfix` | Emergency fix with audit trail |
 | `/day-one-patch` | Prepare a focused day-one patch for known issues discovered after gold master |
-| `/prototype` | Concept prototype — validate core idea before writing GDDs (Phase 1) |
+| `/prototype` | A few questions, a one-page brief, then a playable browser game you'd build on, or a throwaway engine prototype when an engine is set (Phase 1) |
 | `/vertical-slice` | Production-quality end-to-end build — validate full game loop (Phase 4) |
 | `/localize` | Localization scan, extract, validate |
 | `/team-combat` | Orchestrate full combat team pipeline |
@@ -240,16 +250,18 @@ If you already know what you need, jump directly to the relevant path:
    what excites you, what you've played, your constraints
    - Generates 3 concepts, helps you pick one, defines core loop and pillars
    - Produces a game concept document and recommends an engine
-2. **Set up the engine** — Run `/setup-engine` (uses the brainstorm recommendation)
+2. **Validate the concept** — Run `/design-review design/gdd/game-concept.md`
+   (or `design/game-brief.md`, if `/brainstorm` wrote the one-page brief)
+3. **Play it first** — Run `/prototype design/gdd/game-concept.md`: with no engine set,
+   it builds the concept as a playable browser game, to test that the core idea is fun
+   before you write GDDs. With an engine set, it builds a throwaway prototype in that
+   engine instead. `/prototype --spike [mechanic]` is the quick test of one mechanic
+4. **Set up the engine** — Run `/setup-engine` (uses the brainstorm recommendation)
    - Configures CLAUDE.md, detects knowledge gaps, populates reference docs
    - Writes engine, naming conventions, and performance budgets to `project.yaml`
      (the source of truth), mirrored to `.claude/docs/technical-preferences.md`
    - If the engine version is newer than the LLM's training data, it fetches
      current docs from the web so agents suggest correct APIs
-3. **Validate the concept** — Run `/design-review design/gdd/game-concept.md`
-   (or `design/game-brief.md`, if `/brainstorm` wrote the one-page brief)
-4. **Prototype the mechanic** — Run `/prototype [core-mechanic]` (1 day at most) to
-   test that the core idea is fun before you write GDDs
 5. **Decompose into systems** — Run `/map-systems` to map all systems and dependencies
 6. **Design each system** — Run `/design-system [system-name]` (or `/map-systems next`)
    to write GDDs in dependency order, informed by the prototype findings
@@ -300,7 +312,7 @@ project.yaml                       -- Machine-readable project config (engine, m
 .claude/
   settings.json                    -- Claude Code hooks and project settings
   agents/                          -- 49 agent definitions (YAML frontmatter)
-  skills/                          -- 74 slash command definitions (YAML frontmatter)
+  skills/                          -- 75 slash command definitions (YAML frontmatter)
   hooks/                           -- 15 event hooks (.sh, wired by settings.json) + yaml-helper.sh, update-check.sh
   rules/                           -- 14 path-specific rule files
   docs/
@@ -310,7 +322,7 @@ project.yaml                       -- Machine-readable project config (engine, m
     coordination-rules.md          -- Agent coordination rules
     context-management.md          -- Context budgets and compaction instructions
     directory-structure.md         -- Project directory layout
-    workflow-catalog.yaml          -- 7-phase pipeline definition (read by /help)
+    workflow-catalog.yaml          -- 7-phase pipeline definition (read by /next-step)
     setup-requirements.md          -- System prerequisites (Git Bash, jq, Python)
     settings-local-template.md     -- Personal settings.local.json guide
     CLAUDE-local-template.md       -- Personal CLAUDE.local.md guide (gitignored overrides)

@@ -126,7 +126,7 @@ remove or back up the other, then re-run `--dry-run`.
 
 1. Spot-check `project.yaml` against your old `technical-preferences.md` —
    engine, naming, and performance values in particular.
-2. Run `/settings` to see the effective config the way skills will read it.
+2. Run `/project-settings` to see the effective config the way skills will read it.
 3. Everything else in the framework works identically whether or not you've
    run `--finalize` — there's no rush.
 

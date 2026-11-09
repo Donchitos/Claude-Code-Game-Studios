@@ -85,13 +85,13 @@ modes exist to eliminate.
 
 | Trigger (crossing) | Direction | Detectable signal | Suggested action |
 |---|---|---|---|
-| Project grew past its band | ↑ raise | System-GDD count crosses ~9, or the code root (`src/`, `Assets/` or `Source/`) crosses the Production threshold, while rigor is `minimal` | "You're at N systems on `rigor: minimal` — most projects this size run `standard`. Revisit? → `/settings`" |
+| Project grew past its band | ↑ raise | System-GDD count crosses ~9, or the code root (`src/`, `Assets/` or `Source/`) crosses the Production threshold, while rigor is `minimal` | "You're at N systems on `rigor: minimal` — most projects this size run `standard`. Revisit? → `/project-settings`" |
 | Stage advanced into Production | ↑ raise | `/gate-check` PASS into Production while rigor is `minimal` | Same, offered once at the gate |
-| User sounds overwhelmed by process | ↓ lower | Phrases like "too many steps", "so much documentation", "overwhelmed" — *and* rigor is not already `minimal` | "If the required-doc list feels heavy, a lower rigor trims it → `/settings modes.rigor=standard`" |
-| Chosen rigor mismatches described scope | flag once | Onboarding pick contradicts the Phase-2 description | State it in one sentence, offer `/settings`, do not re-ask |
+| User sounds overwhelmed by process | ↓ lower | Phrases like "too many steps", "so much documentation", "overwhelmed" — *and* rigor is not already `minimal` | "If the required-doc list feels heavy, a lower rigor trims it → `/project-settings modes.rigor=standard`" |
+| Chosen rigor mismatches described scope | flag once | Onboarding pick contradicts the Phase-2 description | State it in one sentence, offer `/project-settings`, do not re-ask |
 
 **Frequency guard:** the crossing *is* the gate. Because the hosts (`/gate-check` on
-PASS, `/help` on request) are themselves infrequent, no persistent "already nudged"
+PASS, `/next-step` on request) are themselves infrequent, no persistent "already nudged"
 state is needed — but never emit the same suggestion twice in one session.
 
 ---
@@ -101,9 +101,9 @@ state is needed — but never emit the same suggestion twice in one session.
 | Skill | Moment | Sections used |
 |---|---|---|
 | `/start` | Phase 4 — inferring rigor for the card | § 2 (presets), § 3 (seed from concept) |
-| `/help` | escalation footer when user sounds stuck/overwhelmed | § 4 (lower trigger) |
+| `/next-step` | escalation footer when the user sounds overwhelmed, or the project has outgrown its tier | § 4 (lower and raise triggers) |
 | `/gate-check` | on PASS into a new stage | § 4 (raise trigger) |
-| `/settings` | view output — further reading | § 2 (choosing a value) |
+| `/project-settings` | view output — further reading | § 2 (choosing a value) |
 
 These skills each carry a **one-line pointer** to this doc.
 
@@ -114,6 +114,6 @@ These skills each carry a **one-line pointer** to this doc.
 - **Recommend, don't dictate.** State the suggestion and the reason in one line;
   the user decides. (`collaborative`/`guided` require this; even `autonomous`
   treats a rigor change as a `schema_changes` decision and asks.)
-- **Always route to `/settings`** — never edit `project.yaml` as a side effect of a
+- **Always route to `/project-settings`** — never edit `project.yaml` as a side effect of a
   recommendation.
 - **One line, then stop.** A nudge is a nudge, not a lecture.

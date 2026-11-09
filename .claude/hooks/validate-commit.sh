@@ -34,6 +34,13 @@ fi
 # Receives JSON on stdin with tool_input.command
 # Exit 0 = allow, Exit 2 = block (stderr shown to Claude)
 #
+# FAILS OPEN, ON PURPOSE. settings.json leaves this hook's onFailure unset
+# (Claude Code's default, "continue"): a timeout, a crash or a missing bash
+# reports the failure and lets the call through. "block" would turn one slow
+# shell start into a refusal of EVERY Bash and PowerShell call, since the hook
+# runs on all of them, not just commits. A failure skips only the staged-JSON
+# check for that one call; a check that runs and cannot validate still blocks.
+#
 # Input schema (PreToolUse for Bash):
 # { "tool_name": "Bash", "tool_input": { "command": "git commit -m ..." } }
 
@@ -44,8 +51,10 @@ INPUT=$(cat)
 # cost (the early exit is the shell start-up alone).
 # Tested only after the "tool_input" key: matching the whole payload also
 # tests cwd and transcript_path, so a project path containing "GitHub" or
-# "digital" never took this exit and paid the full parse on every call.
-case "$INPUT" in *'"tool_input"'*[Gg][Ii][Tt]*) ;; *) exit 0 ;; esac
+# "digital" never took this exit and paid the full parse on every call. Only a
+# commit is checked, so "commit" must follow "git": `git status`, `.gitignore`
+# and `.github` leave here too.
+case "$INPUT" in *'"tool_input"'*[Gg][Ii][Tt]*[Cc][Oo][Mm][Mm][Ii][Tt]*) ;; *) exit 0 ;; esac
 
 # Parse command -- use jq if available, fall back to grep. The fallback's string
 # body is (\\.|[^"\\])* so an escaped quote (-m \"msg\") does not end it early.
@@ -421,6 +430,16 @@ else
     for _p in $(printf '%s' "$_AFTER" | LC_ALL=C grep -oE '(assets|Assets|Content)/[^[:space:]"'"'"';|&)]*'); do
         WT_FILES=$(printf '%s\n%s' "$WT_FILES" "$($_GIT diff --name-only -- "$_p" 2>/dev/null)")
     done
+    # No tokeniser to read an -a after a quoted message either: COMMIT_ARGS
+    # stops at the first quote, so `git commit -m "x" -a` committed every
+    # modified tracked file unchecked. Take the quoted strings
+    # out, so a message that says -a is not one, and stop at the first command
+    # separator, so a later `git tag -a` is not the commit's.
+    if printf '%s' "$_AFTER" | tr '\n' ';' \
+         | LC_ALL=C sed -E 's/"([^"\\]|\\.)*"/""/g'"; s/'[^']*'/''/g; s/[;&|].*//" \
+         | LC_ALL=C grep -qE '(^|[[:space:]])(-[ABDEGHIJKLMNOPQRTUVWXYZbdefghijklnopqrsvwxyz]*a[A-Za-z]*|--all)([[:space:]]|$)'; then
+        WT_FILES=$(printf '%s\n%s' "$WT_FILES" "$($_GIT diff --name-only 2>/dev/null)")
+    fi
     # No tokeniser to read a `git add`'s paths: take every change and new file.
     if git_segment add "$COMMAND" >/dev/null || git_segment stage "$COMMAND" >/dev/null; then
         WT_FILES=$(printf '%s\n%s\n%s' "$WT_FILES" "$($_GIT diff --name-only 2>/dev/null)" \
@@ -617,7 +636,7 @@ if [ -f .claude/hooks/yaml-helper.sh ]; then
 fi
 
 # design/gdd/ also holds governance and registry files that are not system
-# GDDs and have none of these sections, so they warned on every commit (#133).
+# GDDs and have none of these sections, so they warned on every commit.
 # Skip the names not_a_system_gdd() skips in gdd-structure-check.sh and
 # review-scope.sh; keep the three lists the same. Only top-level files count as
 # system GDDs: archive/ and reviews/ copies under design/gdd/ are not checked.
@@ -750,12 +769,11 @@ fi
 # the normal case and not an error.
 # --- resolve the code root before either scan below ------------------------
 #
-# Both scans used to be hardcoded to `^src/gameplay/` and `^src/`. Per
-# .claude/docs/directory-structure.md, `src/` is the GODOT row of the code-root
-# table -- Unity compiles only `Assets/`, Unreal builds only from `Source/`. So
-# on two of the three supported engines both greps matched nothing on every
-# commit, both checks silently did not run, and the hook exited 0. A scan that
-# cannot run and a scan that found nothing produced the identical artifact.
+# Both scans use the resolved code root. Per .claude/docs/directory-structure.md,
+# `src/` is the GODOT row of the code-root table -- Unity compiles only `Assets/`,
+# Unreal builds only from `Source/` -- so a hardcoded `src/` would match nothing
+# there. A scan that cannot run and a scan that found nothing would produce the
+# identical artifact.
 #
 # The `/gameplay/` narrowing is dropped rather than translated: it describes a
 # Godot source layout and has no Unity or Unreal equivalent, so keeping it would
@@ -764,11 +782,12 @@ fi
 # is what actually keeps it precise -- without it, a Unity commit would drag
 # `.meta`, `.asset` and `.prefab` YAML (all full of `speed: 5`) into a scan
 # meant for code, and a hook that cries wolf gets muted rather than fixed.
-CODE_ROOT=""; CODE_ROOT_SRC="unset"
+CODE_ROOT=""; CODE_ROOT_SRC="unset"; CODE_ROOT_WHY=""
 if [ "$_VC_HELPER" = 1 ]; then
     _CR=$(resolve_code_root 2>/dev/null)
     CODE_ROOT=$(printf '%s' "$_CR" | cut -f1)
     CODE_ROOT_SRC=$(printf '%s' "$_CR" | cut -f2)
+    CODE_ROOT_WHY=$(printf '%s' "$_CR" | cut -f3)
 fi
 
 # Obligation 3 of .claude/rules/skill-authoring.md -- a skipped step announces
@@ -776,13 +795,19 @@ fi
 # docs-only or config-only commit stays quiet and the notice keeps its meaning.
 if [ -z "$CODE_ROOT" ]; then
     if echo "$STAGED" | grep -qiE '\.(gd|cs|cpp|cc|hpp|h|c|py|js|ts|rs|java|kt|lua|gdshader|shader|hlsl)$'; then
-        WARNINGS="$WARNINGS\nSKIPPED: source files are staged but no code root could be resolved (engine.name unset, and the tree does not name one unambiguously). The hardcoded-value and TODO-owner scans did NOT run. Run /setup-engine, or set engine.name in project.yaml."
+        if [ "$CODE_ROOT_SRC" = invalid ]; then
+            WARNINGS="$WARNINGS\nSKIPPED: source files are staged but the code root is invalid ($CODE_ROOT_WHY). The hardcoded-value and TODO-owner scans did NOT run. Fix engine.code_root in project.yaml, or remove it to use the engine's folder."
+        else
+            WARNINGS="$WARNINGS\nSKIPPED: source files are staged but no code root could be resolved (engine.name unset, and the tree does not name one unambiguously). The hardcoded-value and TODO-owner scans did NOT run. Run /setup-engine, or set engine.name in project.yaml."
+        fi
     fi
 fi
 
+# code_root_filter, not grep "^$CODE_ROOT/": a root of `.` (a flat web game)
+# would read as the regex ^./ and match the wrong files.
 CODE_FILES=""
 [ -n "$CODE_ROOT" ] && CODE_FILES=$(echo "$STAGED" \
-    | grep -E "^${CODE_ROOT}/" \
+    | code_root_filter "$CODE_ROOT" \
     | grep -iE '\.(gd|cs|cpp|cc|hpp|h|c|py|js|ts|rs|java|kt|lua)$')
 if [ -n "$CODE_FILES" ]; then
     HARDCODED=$(printf '%s\n' "$CODE_FILES" | tr '\n' '\0' \
@@ -800,7 +825,7 @@ fi
 # literal marker rather than a numeric pattern, so it does not misfire on
 # serialized asset YAML the way the hardcoded-value scan would.
 SRC_FILES=""
-[ -n "$CODE_ROOT" ] && SRC_FILES=$(echo "$STAGED" | grep -E "^${CODE_ROOT}/")
+[ -n "$CODE_ROOT" ] && SRC_FILES=$(echo "$STAGED" | code_root_filter "$CODE_ROOT")
 if [ -n "$SRC_FILES" ]; then
     UNOWNED=$(printf '%s\n' "$SRC_FILES" | tr '\n' '\0' \
         | xargs -0 grep -lE '(TODO|FIXME|HACK)[^(]' 2>/dev/null || true)

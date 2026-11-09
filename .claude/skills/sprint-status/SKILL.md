@@ -59,7 +59,7 @@ at `balanced` (`rigor: standard`), **AC-sized** at `fine`.
        never Next.
     3. Every story `Complete` (or `Done`) → "Build order done: [M] of [M]
        stories complete." Offer three ways on: play the build; add the next
-       stories from the brief with `/create-stories`; or `/settings` to raise
+       stories from the brief with `/create-stories`; or `/project-settings` to raise
        `modes.rigor` if the game has outgrown a one-page brief.
     4. `STORIES none` — no story files at all → "No stories yet. Run
        `/create-stories` to turn the brief's build order into stories."

@@ -4,7 +4,7 @@ description: "Implements one story in code with tests, following its ADRs. Use w
 argument-hint: "[story-path]"
 user-invocable: true
 disable-model-invocation: true
-allowed-tools: Read, Glob, Grep, Write, Edit, Agent, AskUserQuestion, Bash(bash "*/.claude/skills/dev-story/../../hooks/yaml-helper.sh" resolve_config *), Bash(bash .claude/scripts/story-facts.sh *), Bash(bash .claude/scripts/adr-status.sh *), Bash(bash .claude/scripts/md-section.sh *), Bash(bash .claude/scripts/session-state.sh *), Bash(bash .claude/scripts/review-receipts.sh hash *), Bash(godot *), Bash(mkdir -p production/qa/evidence/*)
+allowed-tools: Read, Glob, Grep, Write, Edit, Agent, AskUserQuestion, Bash(bash "*/.claude/skills/dev-story/../../hooks/yaml-helper.sh" resolve_config *), Bash(bash .claude/scripts/story-facts.sh *), Bash(bash .claude/scripts/adr-status.sh *), Bash(bash .claude/scripts/md-section.sh *), Bash(bash .claude/scripts/session-state.sh *), Bash(bash .claude/scripts/review-receipts.sh hash *), Bash(godot *), Bash(mkdir -p production/qa/evidence/*), Bash(npm run smoke), Bash(npm run build:single), Bash(bash .claude/scripts/page-shot.sh *), Bash(bash .claude/scripts/one-shot-grow.sh replay *), Bash(bash .claude/scripts/one-shot-grow.sh accept *)
 model: sonnet
 ---
 
@@ -28,7 +28,7 @@ write the code and tests under the code root and test root
 (`.claude/docs/code-root-resolution.md`). The session checkpoint and the evidence
 stamp are written without an ask.
 **Next:** `/story-done [story-path]`; at `standard` and `full`, `/code-review
-[files]` first.
+[files]` first. `/dev-story` and `/story-done` start only when the person types them, so never offer to start one as an option: print it as a line to type.
 
 Asks follow `.claude/docs/automation-modes.md` (collaborative always asks, guided
 asks on major choices, autonomous logs and goes on; `automation_always_ask`
@@ -42,7 +42,7 @@ Checklist (copy it and tick as you go):
 - [ ] Phase 3: story marked In Progress (one ask)
 - [ ] Phase 4: programmer and engine specialist chosen
 - [ ] Phase 5: work handed out with a full brief
-- [ ] Phase 6: finished? parse check, run and look, one Run result line
+- [ ] Phase 6: finished? parse check, run and look, one Run result line; a grown game's same-seed run
 - [ ] Phase 7: summary, ## Files, checkpoint, closing block
 ```
 
@@ -147,7 +147,10 @@ from a GDScript one, which `engine.name` cannot), plus `shader` when the story
 touches shaders or materials and `ui` for a UI story; `primary` (the generic engine
 specialist) when `code` is `unset`. Name no specialist from memory: the line is the project's
 choice. Every value `unset` and no `primary`: say "No engine specialist configured"
-and go on without one.
+and go on without one. On Web there is no engine specialist: `primary` is
+`lead-programmer`, and the engine check below goes to it, against
+`docs/engine-reference/web/`. Say so in one line ("Web: engine check by
+lead-programmer against docs/engine-reference/web/").
 
 ## Phase 5: Hand out the work
 
@@ -177,10 +180,14 @@ paste whole documents into it.
   - `full`: the same, and "every criterion must be covered: `/story-done` blocks on
     any untested one."
 - **Output:** the files created or changed, the test functions written, any
-  question or blocker, and whether it finished.
+  question or blocker, whether it finished, and every choice it made that the
+  story and its design did not say (a value, a timing, a colour, a case nobody
+  named, a word on the screen), one line each with where it is.
 - **Boundaries:** write code only under the resolved code root and tests only under
   the test root. Code root unresolved: write nothing and report it. Touch no file
   outside the story's scope: report the need instead. Doc comments on public APIs.
+  New gameplay values go in the game's data file (`data/config.json` on a grown game, with
+  a line each in `data/config-notes.md`), never as literals in the code.
   An architectural choice the ADR does not cover: report the plan, don't decide it.
   No helper or abstraction for a one-time use, no error handling for cases that
   cannot happen (validate at input and data-file boundaries only), and general logic,
@@ -229,6 +236,16 @@ command, the exit code and any error lines:
   run-tests.sh` is not the editor), else `engine.path`, else `godot`. Never search the disk for
   one: when none of the three runs, the check is not verified.
 - **Unity, Unreal:** read `references/engine-checks.md`.
+- **Web:** the game's own smoke script, whenever `package.json` has a `smoke`
+  script: `npm run smoke`, after every story, a grown game's too. The scaffold's is
+  the type check (`tsc --noEmit`) and the single-file build, then Playwright's
+  `@boot` test on it. An `error TS` line names a file that does not compile; a
+  failing `@boot` means the page did not start. `npm run build:single` alone (the
+  same-seed run's first step) is not this check: it shows nothing about the page
+  starting. Never `commands.run`: it is a dev server and never exits. No
+  `node_modules/`: `parse NOT VERIFIED — npm ci has not run`. No `smoke` script (an
+  existing project, `/setup-engine web`): its `commands.smoke`, else its build,
+  which shows the code compiles and nothing about the page starting.
 - **No engine executable:** `parse NOT VERIFIED — engine binary not available`.
   Never infer from reading the code that it parses.
 
@@ -251,7 +268,34 @@ minimal`. Report exactly one line, plain text starting `Run result:` (no bold:
 Only the feel half of a Visual/Feel criterion (timing, weight) is DEFERRED to
 `/team-qa`: a still cannot show it.
 
-This skill pre-approves `godot` on PATH. An engine run through `engine.path` or
+**A grown game: the same-seed run.** A game grown from a one-shot has a folder
+`production/qa/evidence/grow-<name>/` with a `replay.args` file in it: the grow step played
+the game from one seed with the same inputs and kept that run. After every story, whatever
+its type and after the parse check's `npm run smoke`, play it again: `npm run build:single`, then
+`bash .claude/scripts/one-shot-grow.sh replay <name> --as story`. It plays the built game
+the same way, takes a screenshot (`story.png` in that folder) and compares the run with the
+last one the person accepted (its `against` row: `accepted`, else the grow step's
+`reference`). Open `story.png` beside that run's screenshot (`accepted.png` or
+`reference.png`), then report one line, plain text starting `Same-seed run:`:
+
+- **`match yes`:** `Same-seed run: SAME — nothing broke`, with the screenshot's path.
+- **`match no`:** the story changed how the game plays. Never pass over it, in any
+  automation mode: show the person, in plain words, what the `no` row and the `was` row
+  under it say (a scene, a value, the screen), with both screenshots, and ask: "This story
+  changed the same-seed run: [what changed]. Is that what the story meant?" Options: Yes, it
+  is meant — later stories are compared with this run / No — something broke, leave the
+  story open. Yes: `bash .claude/scripts/one-shot-grow.sh accept <name>`, then
+  `Same-seed run: CHANGED, accepted — [what changed]`. No: `Same-seed run: CHANGED, not
+  accepted — [what changed]`, and the story is INCOMPLETE until it is fixed.
+- **An `errors` row above 0** that the compared run did not have is a change too: ask the
+  same way.
+- **`not_assessed`, or `match not_assessed`:** `Same-seed run: NOT ASSESSED — [its
+  reason]`; still open the screenshot when there is one.
+
+No such folder: the game was not grown, and there is no `Same-seed run:` line.
+
+This skill pre-approves `godot` on PATH, and on Web `npm run smoke`,
+`npm run build:single`, `page-shot.sh` and the same-seed run. An engine run through `engine.path` or
 the executable `commands.test` names asks first: the user approves it once, or
 adds `Bash(<that executable> *)` to `.claude/settings.local.json`.
 
@@ -272,6 +316,7 @@ adds `Bash(<that executable> *)` to `.claude/settings.local.json`.
 **Deviations**: [None | files outside scope, an accepted dependency or version risk]
 **Engine risks**: [None | the specialist's findings]
 **Blockers**: [None | each]
+**Own calls**: [None | each choice the story and its design did not make, with where it is: `/story-done` asks you to keep or change each]
 ```
 
 At `qa.level: standard` and `full`, add: "Run your test suite and confirm the new
@@ -299,6 +344,8 @@ this when the Phase 3 ask was declined.
 **Blocked on:** [nothing, or the blocker]
 **Files in progress:** [changed files, comma-separated]
 **Run result:** [OBSERVED — … | NOT VERIFIED — … | N/A — …, as in the closing block: /story-done reads it here]
+**Same-seed run:** [a grown game only: SAME — … | CHANGED, accepted — … | CHANGED, not accepted — … | NOT ASSESSED — …]
+**Own calls:** [the programmer's calls beyond the design, or none]
 **Open questions:** [none, or one line each]
 ```
 
@@ -306,11 +353,13 @@ this when the Phase 3 ask was declined.
 is printed: print it nowhere else in the reply. The Next step goes by the tier you stated in Phase 1 (the `workflow` line,
 never `rigor` or `qa.level`). The Next step: at `minimal`, `/story-done [path]`. At `standard` and `full`,
 `/code-review [files]`, then `/story-done [path]`. INCOMPLETE: `/dev-story [path]`
-to resume. BLOCKED: the action that unblocks it (`/architecture-decision accept
+to resume. A same-seed run changed and not accepted is INCOMPLETE too: `/dev-story [path]`
+after the fix. BLOCKED: the action that unblocks it (`/architecture-decision accept
 ADR-NNNN`, the dependency to finish, the diff to review).
 
 ```
 Story: [path] — [Implemented | INCOMPLETE — <breakage> | BLOCKED — <reason>]
 Run result: [OBSERVED — … | NOT VERIFIED — … | N/A — …]
+Same-seed run: [a grown game only, as in Phase 6]
 Next step: [Implemented, Tier: workflow minimal → /story-done [path] | Implemented, Tier: workflow standard or full → /code-review [changed files], then /story-done [path] | INCOMPLETE → /dev-story [path] to resume | BLOCKED → the unblocking action]
 ```

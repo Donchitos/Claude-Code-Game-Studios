@@ -11,6 +11,7 @@
 - Godot 4
 - Unity: Edit Mode, then Play Mode as a second run
 - Unreal Engine: build first, commands per OS, macOS
+- Web: two halves, read apart
 - Unknown engine / not configured
 - Test runner not available here
 - Build check (the WAIVED path only)
@@ -156,6 +157,35 @@ Read the output, not the exit code: a failing test and a run that matched nothin
   not be found`) → FAIL: no test ran. The exception: the editor never started (exit 126 or 127, `command not found`) — that is the runner not being
   available, below, and `NOT ASSESSED`.
 
+**Web** — `commands.test` is `npm test`: Vitest, then Playwright on the
+single-file build. Run it through the helper, which runs the two halves one
+after the other and reads each apart:
+```bash
+bash .claude/scripts/test-run.sh web
+```
+Its `rule` row gives the verdict:
+- **`web:pass`** — every half that ran exited 0: PASS, with the `tests` row's count.
+- **`web:failed`** — a test failed in the half it names: FAIL, with the `failed` rows.
+- **`web:build-failed`** — `build:single` failed (an `error TS` line, the
+  `evidence` row), so Playwright ran nothing: FAIL.
+- **`web:zero-tests`** — a half found no tests (Vitest `No test files found`,
+  Playwright `No tests found`; each exits 1): `NOT ASSESSED — no tests found`.
+- **`web:no-browser`** — the browser did not start, so no browser test ran:
+  `NOT ASSESSED — no browser`, naming the line. The browser is the one
+  `page-shot.sh --which` prints (the `browser` row; `-` is none found).
+- **`web:nonzero`** — another non-zero exit: FAIL. No `node_modules/`: the runner
+  is not available here (below) until `npm ci` runs.
+
+Another `commands.test` (an existing project's own, which `/setup-engine web`
+records) runs through the same helper. Its `runner` row names what it reaches:
+Vitest, Jest and Playwright are read by their output, with the rules above
+(`web:pass`, `web:failed`, `web:zero-tests`, `web:nonzero`); `runner other` is
+read by exit code only. `web:0` (that, or no summary line read) is a PASS that
+cannot tell a run of zero tests from a full one, so say so in the report;
+`web:nonzero` is a FAIL.
+`web:no-test-script` (package.json has no test script, or npm's placeholder):
+`NOT ASSESSED — no tests found`.
+
 **Unknown engine / not configured:**
 "Engine not configured in `project.yaml` or
 `.claude/docs/technical-preferences.md`. Run `/setup-engine` to specify the
@@ -172,7 +202,7 @@ Confirm test results from your local IDE
 or CI pipeline. Until you do, the verdict is NOT ASSESSED — not FAIL, and not
 a pass either: nothing has been observed about this build yet."
 
-Do not treat NOT RUN as an automatic FAIL. Record it, and let the developer's
+Do not treat NOT RUN as an automatic FAIL. Record it, and let the person's
 manual confirmation in Phase 4 resolve it. Until that confirmation arrives the
 verdict is **NOT ASSESSED** (see the verdict rules in Phase 5), which ranks
 above both pass values and below FAIL. An unrun suite is not a healthy build; it

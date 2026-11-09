@@ -5,18 +5,14 @@
 
 ## Phase 1: Define the Question
 
-Every `AskUserQuestion` call follows `.claude/docs/automation-modes.md`
-(collaborative asks always · guided major-only · autonomous logs and proceeds;
-`automation_always_ask` categories always prompt).
-
 **Check for spike mode:** If `--spike` was passed, skip to the **Spike Mode** section
 at the bottom of this skill.
 
-**Check for a carry-forward note:** Glob `prototypes/*/PIVOT-NOTE.md`. If one
+**Check for a carry-forward note:** look for `prototypes/*/PIVOT-NOTE.md`. If one
 exists for this concept (or an earlier version of it), read it and start from its
 revised hypothesis instead of forming one from scratch — say which note you used.
 
-Then, unless `--spike` sent you to Spike Mode, use `AskUserQuestion` to confirm
+Then, unless `--spike` sent you to Spike Mode, ask with the question tool to confirm
 intent before proceeding — with or without a carry-forward note:
 
 - **Prompt**: "How would you like to use this prototype session?"

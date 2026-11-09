@@ -193,7 +193,7 @@ polished enough for unguided testing.
 ## Phase 5: Playtest Debrief
 
 The loop is demonstrable. Before writing the report, collect structured observations
-from actually playing it. Do NOT skip to report generation — the report is only as
+from actually playing it. Do not skip to report generation — the report is only as
 good as the observations you capture here.
 
 Say exactly this:
@@ -409,10 +409,12 @@ checkpoint is where to resume — and, after asking, update REPORT.md and its
 
 ### Important Constraints
 
-- Vertical slice code must NEVER be refactored into production — it is reference only
-- Production code must NEVER import from `prototypes/`
+- Slice code skipped the standards, so it stays reference only: production code is
+  not refactored from it and does not import from `prototypes/`
 - If recommendation is PROCEED, production implementation is written from scratch
   using the slice as a design reference only
+- This is the engine route. A browser one-shot does not go through a slice to become the game:
+  it grows in place from `/prototype`.
 - Scope cuts are acceptable; quality cuts are not — a low-quality slice proves nothing
 - Total effort: 1–3 weeks. If longer, scope is too large — cut the slice, not the quality.
 - Day 3 sunk cost rule: if the full game loop cycle is not demonstrable by then,

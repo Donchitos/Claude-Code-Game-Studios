@@ -4,7 +4,7 @@ description: "Closes a finished story: verifies each acceptance criterion, check
 argument-hint: "[story-file-path] [--review full|lean|solo]"
 user-invocable: true
 disable-model-invocation: true
-allowed-tools: Read, Glob, Grep, Write, Edit, AskUserQuestion, Agent, Bash(bash "*/.claude/skills/story-done/../../hooks/yaml-helper.sh" resolve_config *), Bash(bash .claude/scripts/story-facts.sh *), Bash(bash .claude/scripts/story-status.sh*), Bash(bash .claude/scripts/adr-status.sh *), Bash(bash .claude/scripts/md-section.sh *), Bash(bash .claude/scripts/review-receipts.sh check *), Bash(bash .claude/scripts/session-state.sh *), Bash(git status --porcelain*)
+allowed-tools: Read, Glob, Grep, Write, Edit, AskUserQuestion, Agent, Bash(bash "*/.claude/skills/story-done/../../hooks/yaml-helper.sh" resolve_config *), Bash(bash .claude/scripts/story-facts.sh *), Bash(bash .claude/scripts/story-status.sh*), Bash(bash .claude/scripts/adr-status.sh *), Bash(bash .claude/scripts/md-section.sh *), Bash(bash .claude/scripts/review-receipts.sh check *), Bash(bash .claude/scripts/session-state.sh *), Bash(git status --porcelain*), Bash(git add -- *), Bash(git commit -m *)
 model: sonnet
 ---
 
@@ -24,9 +24,11 @@ and the story is marked Complete only on the user's yes.
 
 **Writes, after the user's yes:** the story file (`Status`, `Last Updated`, a
 `## Completion Notes` section) and its `production/sprint-status.yaml` entry;
-`docs/tech-debt-register.md` only when the user picks that option. The session
+`docs/tech-debt-register.md` only when the user picks that option; at `minimal`, the
+brief's Features line the story finished; the story's row in its `EPIC.md`. The close
+question names each file it will change. The session
 checkpoint is written at the end of every run, whatever the verdict.
-**Next:** the next story (Phase 8).
+**Next:** the next story (Phase 8). `/dev-story` and `/story-done` start only when the person types them, so never offer to start one as an option: print it as a line to type.
 
 Asks follow `.claude/docs/automation-modes.md` (collaborative always asks, guided
 asks on major choices, autonomous logs and goes on; `automation_always_ask`
@@ -39,7 +41,7 @@ Checklist (copy it and tick as you go):
 - [ ] Phase 2: what the story is checked against, loaded for its tier
 - [ ] Phase 3: each criterion verified, traceability table built
 - [ ] Phase 4: test evidence and run result checked
-- [ ] Phase 5: deviations and scope checked
+- [ ] Phase 5: deviations and scope checked; the AI's own calls kept or changed by the person
 - [ ] Phase 6: review gates run, or their skip noted
 - [ ] Phase 7: report and verdict shown; close asked
 - [ ] Phase 8: next story named, checkpoint written, closing block printed
@@ -120,8 +122,12 @@ Take each acceptance criterion in turn:
 - **Asked:** behaviour ("the player takes damage when…"), feel, and performance
   criteria. Never mark one passed from reading the code: the code says what should
   happen, not what the build does. Up to four per ask: "Does [criterion]?" Options:
-  Yes — passes / No — fails / Not tested yet. `Not tested yet` is UNTESTED, and
-  keeps the verdict at best NOT ASSESSED until someone checks it.
+  Yes — passes / No — fails / I'll check it when I play / Not tested yet.
+  `I'll check it when I play` is `DEFERRED — requires playtest session`: it does not
+  block. `Not tested yet` is UNTESTED, and keeps the verdict at best NOT ASSESSED until
+  someone checks it. On a grown game, a criterion the same-seed run's screenshot plainly
+  shows is seen on screen (below) and is not asked: `production/qa/evidence/grow-<name>/`
+  `story.png`, or the image `/dev-story`'s OBSERVED line names, once you opened it.
 - **Seen on screen:** a criterion about something visible is covered by a retained
   image under `production/qa/evidence/[story-slug]/` (`[story-slug]`: the story
   file's name without `.md`) that you opened and saw it in.
@@ -182,6 +188,14 @@ advisory, "confirm the build was launched and looked at". A user's "Yes — pass
 to an on-screen criterion with no retained image is an assertion, not an
 observation: a gap at the gate level.
 
+**A grown game's same-seed run, every story type.** When
+`production/qa/evidence/grow-<name>/replay.args` exists, take the `Same-seed run:` line
+from the same checkpoint or Completion Notes. `SAME` or `CHANGED, accepted`: note it. `CHANGED, not accepted`: BLOCKING in every mode,
+"this story changed how the game plays and the change was not accepted: fix it, then
+`/dev-story [path]` plays the run again". No line: NOT ASSESSED, "the same-seed run was not
+played after this story: `/dev-story [path]` plays it". `NOT ASSESSED — <reason>`: advisory,
+with the reason.
+
 ## Phase 5: Deviations and scope
 
 Run, by tier (`minimal` skips 1 and 3):
@@ -197,7 +211,8 @@ Run, by tier (`minimal` skips 1 and 3):
 4. **Hardcoded values** in the changed files.
 5. **Scope:** the files the story lists under `## Files` against the code and test
    files changed (`git status --porcelain`). A changed file the list does not name
-   is OUT OF SCOPE. A story with no `## Files` section: use the checkpoint's
+   is OUT OF SCOPE. Leave out a file that a `Complete` story in the same epic lists under its
+   `## Files`: it is that story's work, not committed yet. A story with no `## Files` section: use the checkpoint's
    **Files in progress** when its Current task names this story; else report
    `Scope: NOT ASSESSED — the story lists no files`. A clean working tree: report
    `Scope: not checked — no uncommitted changes to compare`.
@@ -205,6 +220,30 @@ Run, by tier (`minimal` skips 1 and 3):
 Each deviation is **BLOCKING** (contradicts the GDD or ADR), **ADVISORY** (drifts
 but works the same; the user decides) or **OUT OF SCOPE** (for awareness). State
 them as facts; the user judges them.
+
+**The AI's own calls.** Building a story means choosing things its design never
+said: a value, a timing, a colour, what happens in a case nobody named, a word on
+the screen. Those are the AI's calls, not the person's, and each one is shown
+before the story closes. Read the story's changed files (the `## Files` list, or
+the Scope step's list) beside what the story is built against (its criteria, and
+the GDD or the brief), and take the `**Own calls:**` line from the `/dev-story`
+checkpoint when its Current task names this story. List each choice a player
+could notice, or a later story would have to agree with, that none of those says,
+one plain line each with where it is: "Coins fall at 70 a second
+(`data/config.json`); the brief names no speed." Code layout and names are not
+calls. Then ask about each, in every automation mode, and wait for the answers
+before Phase 6: the report shows each answer, and a call with no answer is not
+kept. The question: "Keep this, or change it?"
+Options: Keep it / Change it — say how. Several calls can share one question with
+one option each to keep, and a free answer for the rest.
+
+- **Kept:** recorded on the story on close (step 2 of the close).
+- **Changed:** a BLOCKING item, "[call]: change it to [the person's words]". The
+  story stays open; `/dev-story [path]` makes the change, and the next
+  `/story-done` lists the calls again.
+- **None found:** say `Own calls: none beyond the design`, naming what was read.
+- **No changed files to read** (none listed and a clean tree): `Own calls: NOT
+  ASSESSED — no changed files to read`, a NOT ASSESSED item.
 
 ## Phase 6: Review gates
 
@@ -241,9 +280,13 @@ exists yet.
 ### Test Evidence
 **Required**: [what the type needs at this qa.level, or "waived at qa.level minimal"]
 **Found**: [YES — path | NO — BLOCKING | NO — ADVISORY]
+**Same-seed run**: [a grown game only: the line /dev-story gave, or NOT ASSESSED — not played after this story]
 
 ### Deviations
 [NONE, or each: BLOCKING / ADVISORY / OUT OF SCOPE — description — reference]
+
+### Own calls
+[each call: kept | change to <the person's words> (BLOCKING) · or "none beyond the design" · or NOT ASSESSED — why]
 
 ### Review
 **Reviewed by**: [value]
@@ -257,7 +300,8 @@ exists yet.
 2. **NOT ASSESSED:** a criterion could not be evaluated: it names no observable
    outcome, the user answered "Not tested yet", a review gate returned NOT ASSESSED
    and its input was not supplied, evidence exists but cannot be read, or the GDD
-   or ADR a deviation would be judged against is missing. Name each one and what
+   or ADR a deviation would be judged against is missing, or the own calls could
+   not be read. Name each one and what
    would settle it. It outranks the two passes and never hides a failure.
 3. **COMPLETE WITH NOTES:** every criterion passes or is DEFERRED, with advisory
    items listed. Information lines are not advisory items: the evidence-stamp
@@ -287,14 +331,29 @@ close.
    **Deviations**: [None, or the advisory ones]
    **Test Evidence**: [path, or "waived at qa.level minimal", or "none required"]
    **Reviewed by**: [value]
+   **Same-seed run**: [a grown game only: the line as /dev-story gave it]
+
+   ## Calls beyond the design
+   - [each call the person kept, with where it is] · kept [date]
    ```
+   With no calls, the section reads `- none beyond the design`.
 3. "Close and log as tech debt": read `references/tech-debt-row.md` and add one
    row per advisory deviation.
 4. `production/sprint-status.yaml`, when it exists: this story's entry gets
    `status: done` and `completed: [date]`, and the top-level `updated` gets today.
    The close answer covers it.
-5. Print a suggested commit: `git add [the changed code and test files] [story path]`
-   and `git commit -m "feat: [story title] ([TR-ID])"`.
+5. At `workflow: minimal`, when the story's Requirement reads `Brief MVP feature N`
+   and it is the last story for item N that is not `Complete`, set that Features line in
+   `design/game-brief.md` to `[x]`; a `deepen — <system>` story ticks the Features line
+   that names its system, when one does. The brief is the design record that `/next-step`,
+   `/create-stories` and `/cut` read.
+6. On close, set this story's Status cell in `production/epics/[epic-slug]/EPIC.md`'s
+   Stories table to `Complete`, when the table lists it.
+7. Ask "Commit this story? (`feat: [story title]`)" with `Yes, commit` / `Not now`, in
+   every mode, so each closed story is a point the person can go back to. On a yes, run
+   git add -- [the story's `## Files` paths] [story path] (with any other file this close
+   changed), then `git commit -m "feat: [story title] ([TR-ID])"`. Never `git add -A` or
+   `.`: other changes stay out of it. The yes is the instruction a commit needs.
 
 **On "Don't close yet":** change no story file. List what the user flagged. Never
 fix a failing criterion yourself: report it and ask what to do.
@@ -319,7 +378,8 @@ all, not even as an option: it is not on that path. With no sprint plan at
 `workflow: standard` or `full`, add "Run `/story-readiness [path]` first."
 
 - Only `COMPLETE N of N`: every story is built. Offer: play the build and note what
-  feels wrong; add stories from the brief with `/create-stories`; or `/settings` to
+  feels wrong; say what to add next, in your own words, and `/create-stories` adds it to the
+  brief's Features (with your yes) and makes its stories; or `/project-settings` to
   raise `modes.rigor` if the game has outgrown its brief.
 - Only `BLOCKED`, `OTHER` or `NO_STATUS` lines left: there is no Next Up, and the
   build order is **not** done. Name each story with its blocker, `Draft` or `no

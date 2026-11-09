@@ -18,6 +18,7 @@ of the template to the next.
 ## Table of Contents
 
 - [Upgrade Strategies](#upgrade-strategies)
+- [v1.2.0 → v1.3.0](#v120--v130)
 - [v1.1.3 → v1.2.0](#v113--v120)
 - [v1.1.2 → v1.1.3](#v112--v113)
 - [v1.1.1 → v1.1.2](#v111--v112)
@@ -170,6 +171,211 @@ Best when: you didn't use git to set up the template (just downloaded a zip).
    file the list marks as yours, such as `.claude/docs/technical-preferences.md`.
 3. For files under **"Merge carefully"**, open both versions side-by-side
    and manually merge the structural changes while keeping your content.
+
+---
+
+## v1.2.0 → v1.3.0
+
+**Released:** 2026-11-09
+**Commit range:** `v1.2.0..v1.3.0`
+**Key themes:** "Make me a game": a few questions, a one-page brief and a
+browser game built from it, then change it after play, grow it and finish it
+with `/cut`; Web as an engine; the studio's agents and document ladder called
+studio mode; three skills renamed; hooks that stay out of the way on Windows
+without Git Bash
+
+### What Changed
+
+| Category | Changes |
+|----------|---------|
+| **Make me a game** | `/prototype` asks one round of questions from the genre's sheet, writes `design/game-brief.md`, and on Build it builds a browser game in `prototypes/<name>/` in your session. A few scripted key presses check it before handover: the small check (it opens, responds, keeps your words, draws every figure) and the brief checklist (every brief line built and working, or marked not assessed). It writes no report: the handover card is the record. The first build is offered a commit and the tag `one-shot/<name>` |
+| **The brief** | `.claude/docs/templates/game-brief.md` gains In your words, Look and references, First minute, Challenge, Your systems, Keep, Avoid and Out of scope. A brief written by 1.2.0 still works: the one-shot asks for or fills what it lacks |
+| **Your references** | An optional `references/` folder at the project root (images, screenshots, sounds, and `references/notes.md` with take, avoid or use lines) shapes the look; pasted images are saved there on Build it. Without the folder nothing changes |
+| **Change after play** | Each change you ask for is checked against Keep, Avoid and Out of scope, written into the game, checked by the light check (a short scripted run and shots of what the change touched, including a small window), and on your yes committed as "iteration N: <what>". You can go back to any iteration or the first build |
+| **Tweak panel** | An add-on, not in the first build: asked to tune, `/prototype` adds `tune.js` (backquote key or `?tune`, a slider for each `config.js` value), and pastes the saved values back through `one-shot-tune.sh` |
+| **Share** | `one-shot-share.sh` makes `prototypes/<name>/dist/` without the panel and working files; `itch-zip.sh` zips a grown game's build for itch.io; `.claude/docs/share-link.md` says how to share it |
+| **Bring a game in** | `/prototype --from <path>` copies a browser game you have into `prototypes/<name>/` as it is, tagged `baseline/<name>`; `/reverse-document brief` writes a brief from a game's code |
+| **Grow** | On PROCEED a one-shot can grow into a Vite and TypeScript web project at the project root, proven by a same-seed run and tagged `grown/<name>`. Then `/create-stories` (skeleton first from Your systems; asks what to add once every Feature is built), `/dev-story` (the same-seed run and smoke script after every story) and `/story-done` (your keep-or-change on the AI's own calls, the brief's Features ticked, the story's own files committed) |
+| **New skill** | `/cut` proposes cuts and a polish list to finish the game; a game to sell gets a date and a feature freeze. 75 skills |
+| **Genre data** | New `.claude/genres/`: `chipsets.yaml` and 69 genre sheets, `mashups.md`, `art-direction.md`, `online-and-devices.md` and `sources.md`, the framework's data `/prototype` reads |
+| **Web engine** | `engine.name: Web` is a value. New `.claude/engines/`: `engines.tsv`, the one table every engine switch reads (code, test and asset folders, default commands), its README and the web starter files. `/setup-engine` offers web first to a new project with no engine named; an existing project keeps its engine. `docs/engine-reference/web/` is new |
+| **New settings** | Optional, `project.yaml` only: `engine.code_root` and `engine.test_root` (your own code and test folders; `.` is a flat web game) and `project.goal` (nine values; `/start` writes it on Save them). A project without them works as before |
+| **Studio mode** | `/start` and `/next-step` lead with make a game, change it after play and grow it; the agents, `team-*` pipelines and design documents are presented as studio mode. A project with design documents and nothing to play is offered a playable from its concept doc first |
+| **Renamed skills** | `/help` is `/next-step`, `/settings` is `/project-settings`, `/changelog` is `/write-changelog`. The old names still work, as shims that run the new skill with its own model and grants. `release-manager` preloads `write-changelog` |
+| **Skill folds** | `/design-system` drafts under each specialist's lens in the conversation instead of starting agents, and `/art-bible` does too except Sections 1-4 and 9 (still `art-director`); `/architecture-review` takes the engine specialist's look itself; `/code-review` keeps one engine helper. Modes and verdict words are unchanged |
+| **Hooks** | Every hook command in `settings.json` has a new form: with no Git Bash on Windows, each exits 0 without running and session start prints a warning, instead of every Read, Write, Edit and shell call being refused. On bash nothing changes. Session start's timeout is 20 seconds. `notify.sh` prints before it starts PowerShell. 11 hooks changed, none new |
+| **Permissions** | `settings.json` allows 28 more rules: the read-only framework scripts and `yaml-helper.sh`'s seven read functions, so a skill's own scripts stop asking again after its first question. `deny` is unchanged |
+| **Engine import** | The template's `CLAUDE.md` imports no engine reference until an engine is set; `/setup-engine`, the grow and `/project-settings engine.name` write the line, and session start warns when an engine is set and nothing is imported |
+| **Docs** | `model-tiers.md` names Sonnet 5.5 and Haiku 5.5. The Godot reference says Vulkan is the Windows default and Compositor is a resource. Each engine's `VERSION.md` says the May 2025 cutoff is a floor: a newer model may know more. Agent and skill wording changed with no change in behaviour |
+
+---
+
+### Files: Safe to Overwrite
+
+**Existing files to overwrite (no user content), and new files to add:**
+```
+.claude/hooks/*.sh                           ← take the whole folder: 11 hooks
+                                               changed, none new. Take
+                                               .claude/scripts/ in the same
+                                               step: the hooks call its helpers
+.claude/scripts/**                           ← 19 new helper scripts, 19 changed
+.claude/statusline.sh
+.claude/skills/**                            ← 4 new skill folders (cut,
+                                               next-step, project-settings,
+                                               write-changelog) and new
+                                               references/ files; if you edited
+                                               a skill, see Merge Carefully
+.claude/agents/*.md                          ← 38 changed; if you edited one,
+                                               see Merge Carefully
+.claude/docs/**                              ← EXCEPT technical-preferences.md,
+                                               which is yours and unchanged in
+                                               1.3.0. Includes the new
+                                               templates/one-shot-lean/ starter
+.claude/rules/prototype-code.md             ← a one-shot's rules beside the
+                                               engine and paper prototype's
+.claude/rules/test-standards.md              ← Web's test naming added
+.claude/genres/**                            ← new: the genre data /prototype
+                                               reads to make a game (the genre
+                                               sheets, mashups, art direction
+                                               and their sources). No user content;
+                                               take the whole folder
+.claude/engines/**                           ← new: the engine table
+                                               (engines.tsv: each engine's code,
+                                               test and asset folders and
+                                               default commands) and the Web
+                                               engine's starter files. No user
+                                               content; your own folders go in
+                                               project.yaml (engine.code_root,
+                                               engine.test_root)
+docs/WORKFLOW-GUIDE.md
+docs/CLAUDE.md
+docs/skill-flow-diagrams.md
+docs/migration-guide-v1.1.md
+docs/engine-reference/README.md
+docs/engine-reference/web/                   ← new
+docs/engine-reference/godot/                 ← the Vulkan and Compositor fixes;
+                                               keep your VERSION.md if you
+                                               edited it
+docs/engine-reference/unity/VERSION.md       ← the knowledge-cutoff line; keep
+docs/engine-reference/unreal/VERSION.md        yours if you edited it
+SECURITY.md                                  ← which 1.x releases get fixes
+README.md, CHANGELOG.md, UPGRADING.md        ← keep your README if it is your
+                                               game's
+studio-tests/                                ← three specs renamed with their
+                                               skills and one new (cut); if you
+                                               wrote specs there, see Merge
+                                               Carefully
+```
+
+With Strategy A2, also check out what this release changes outside `.claude`
+(your README aside): `git checkout template/main -- studio-tests docs/WORKFLOW-GUIDE.md docs/CLAUDE.md docs/skill-flow-diagrams.md docs/migration-guide-v1.1.md docs/engine-reference/README.md docs/engine-reference/web docs/engine-reference/godot docs/engine-reference/unity/VERSION.md docs/engine-reference/unreal/VERSION.md SECURITY.md`.
+
+Take `.claude/hooks/` and `.claude/scripts/` together, and before the
+`settings.json` step below: the new allow rules and the 1.3.0 skills name
+scripts 1.2.0 did not have.
+
+---
+
+### Files: Merge Carefully
+
+**Strategy A:** the merge has already made these changes wherever git could,
+which is every file you never edited. Check each item instead of making it
+again. The steps are for files that conflicted, and for Strategies A2 and C.
+
+**`.claude/settings.json`** — if you have not edited it, overwrite it with the
+shipped file. If you have:
+
+- Take `.claude/hooks/` and `.claude/scripts/` (Safe to Overwrite) first: an
+  entry pointing at a missing script fails every time it fires.
+- Replace every `"command"` line under `hooks` with the shipped one. Each
+  changed form, from `bash "$CLAUDE_PROJECT_DIR/.claude/hooks/<name>.sh"` to
+  `` echo `# <#` >/dev/null; bash "$CLAUDE_PROJECT_DIR/.claude/hooks/<name>.sh"; exit $? #> ; exit 0 ``,
+  and session start's entry also prints the no-Git-Bash warning. Bash runs the
+  hook as before; PowerShell, which Claude Code uses on Windows when it finds
+  no Git Bash, reads the bash part as a comment and exits 0. A hook of your own
+  needs the same form to stay safe on a machine without Git Bash: with a plain
+  `bash "..."` command, every call its matcher covers is refused there.
+- Under `"SessionStart"`, change `session-start.sh`'s `"timeout"` from `10`
+  to `20`.
+- Add the 28 new lines to `allow`: each one that begins
+  `Bash(bash .claude/scripts/` or `Bash(bash .claude/hooks/yaml-helper.sh` in
+  the shipped file. They are read-only scripts and subcommands; scripts that
+  write or run your code are not among them.
+- Nothing under `deny` changes.
+
+**`project.yaml`** — optionally set `framework.version: 1.3.0`; the update
+alert compares against the version stamp in `.claude/hooks/update-check.sh`,
+which arrives with the hooks folder. Three new keys are optional, and a project
+without them works as before:
+
+- `engine.code_root` and `engine.test_root`: set them only when your code or
+  tests are not in the engine's usual folder (`.claude/engines/engines.tsv`).
+  A value that cannot be used (no such folder, different capitals, `..`, an
+  absolute path, a framework folder) makes every code check report NOT
+  ASSESSED with the reason, at session start and in the commit check; it never
+  falls back to the engine's folder. Fix or remove the key.
+- `project.goal`: `/start` writes it when you save its card;
+  `/project-settings project.goal=<value>` sets it. Only the nine listed values
+  are accepted.
+
+`engine.name: Web` is a new engine value. The shipped `project.yaml`'s comment
+now names `/project-settings`.
+
+**`CLAUDE.md`** — the Engine Version Reference comment changed, and the
+template ships with no import line under it. If your project has an engine set,
+keep your `@docs/engine-reference/<engine>/VERSION.md` line. If it has none
+set, you may remove the Godot line the template used to ship, so a project
+with no engine stops loading Godot's reference. Session start warns when an
+engine is set and nothing is imported; `/setup-engine` or
+`/project-settings engine.name=<engine>` writes the line.
+
+**`.gitignore`** — unchanged in 1.3.0. It already ignores `dist/` and
+`node_modules/`, which a shared one-shot and a grown game make.
+
+**`.claude/skills/` and the renamed skills** — `help/`, `settings/` and
+`changelog/` are now shims that run `/next-step`,
+`/project-settings` and `/write-changelog`. If you edited one of the old
+skills, make your edit again in the new skill's folder, then take the shim:
+an edited old `SKILL.md` conflicts with it. A `skillOverrides` entry, a
+permission rule or your own skill that names `/help`, `/settings` or
+`/changelog` needs the new name. Take `/prototype`
+whole: its one-shot files are new and it calls new scripts. If you edited
+`/art-bible`, `/design-system`, `/architecture-review` or `/code-review`, make
+your edit again on the new text: the steps that started agents now read a
+`references/lens-*.md` file. If you keep your own copy of any other skill,
+take the shipped `allowed-tools:` line into it.
+
+**`.claude/agents/`** — 38 agent files changed in wording, with no change in
+behaviour; `release-manager` now preloads `write-changelog` instead of
+`changelog`. Take the folder; if you edited an agent, make your edit again on
+the new text, and in an edited `release-manager.md` change `changelog` to
+`write-changelog` in its skills list.
+
+**`studio-tests/`** — the specs for the three renamed skills moved with them
+(see Files: Delete), `catalog.yaml` names the new paths and adds `cut`. If you
+wrote specs of your own, keep them and take the new catalog entries into yours.
+
+**Your game brief** — a `design/game-brief.md` written by 1.2.0 needs no
+change. `/prototype` reads MVP as Features, Label and Art direction as Look and
+references, and Reference game as Games you love / don't, and asks only for
+what it still lacks.
+
+**On Windows** — install Git for Windows if you have not: without Git Bash
+the hooks now skip themselves instead of refusing every call, so their checks
+are off until it is there.
+
+---
+
+### Files: Delete
+
+```
+studio-tests/skills/sprint/changelog.md    → renamed studio-tests/skills/sprint/write-changelog.md
+studio-tests/skills/utility/help.md        → renamed studio-tests/skills/utility/next-step.md
+studio-tests/skills/utility/settings.md    → renamed studio-tests/skills/utility/project-settings.md
+```
+
+Nothing else 1.2.0 shipped is removed. Keep `.claude/skills/help/`,
+`settings/` and `changelog/`: they are the shims above.
 
 ---
 

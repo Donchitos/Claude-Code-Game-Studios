@@ -1,9 +1,9 @@
 ---
 name: reverse-document
-description: "Generate missing design or architecture docs from existing implementation — works backwards from code and prototypes."
-argument-hint: "<type> <path> (e.g., 'design src/gameplay/combat' or 'architecture Assets/Scripts/Core')"
+description: "Writes missing design or architecture docs, or a game's brief, from code. Use when code or prototypes have no docs."
+argument-hint: "<type> <path> (e.g., 'design src/gameplay/combat', 'architecture Assets/Scripts/Core' or 'brief prototypes/my-game')"
 user-invocable: true
-allowed-tools: Read, Glob, Grep, Write, Edit, Bash(bash "*/.claude/skills/reverse-document/../../hooks/yaml-helper.sh" resolve_config *)
+allowed-tools: Read, Glob, Grep, Write, Edit, Bash(bash "*/.claude/skills/reverse-document/../../hooks/yaml-helper.sh" resolve_config *), Bash(bash .claude/scripts/game-read.sh *)
 model: sonnet
 # Read-only diagnostic skill — no specialist agent delegation needed
 ---
@@ -12,7 +12,7 @@ model: sonnet
 
 This skill analyzes existing implementation (code, prototypes, systems) and generates
 appropriate design or architecture documentation. Use this when:
-- You built a feature without writing a design doc first
+- You built a feature without writing a design document first
 - You inherited a codebase without documentation
 - You prototyped a mechanic and need to formalize it
 - You need to document "why" behind existing code
@@ -29,6 +29,10 @@ appropriate design or architecture documentation. Use this when:
 - `design` → Generate a game design document (GDD section)
 - `architecture` → Generate an Architecture Decision Record (ADR)
 - `concept` → Generate a concept document from prototype
+- `brief` → The one-page brief of a browser game someone already made (an `.html` file or a
+  folder with `index.html`), its Features marked built. **Read `references/from-a-game.md` now
+  and follow it**: it takes the place of Phases 2 to 7 for a game. For any other type, do not
+  load it.
 
 **Path**: Directory or file to analyze, under the code root — `src/` Godot,
 `Assets/` Unity, `Source/<Module>/` Unreal (`.claude/docs/code-root-resolution.md`)
@@ -40,7 +44,7 @@ appropriate design or architecture documentation. Use this when:
 !`bash "${CLAUDE_SKILL_DIR}/../../hooks/yaml-helper.sh" resolve_config --keys workflow,system_overrides,automation`
 
 **Automation mode**: Resolve `modes.automation` (`project.local.yaml` →
-`project.yaml` → default `collaborative`). Every `AskUserQuestion` call and
+`project.yaml` → default `collaborative`). Every question and
 every file write follows `.claude/docs/automation-modes.md`
 (collaborative asks always · guided major-only · autonomous logs and proceeds;
 `automation_always_ask` categories always prompt).
@@ -71,7 +75,7 @@ generated — see Phase 5. Semantics of each tier are in
 
 **Read and understand the code/prototype**:
 
-**For design docs (GDD):**
+**For design documents (GDD):**
 - Identify mechanics, rules, formulas
 - Extract gameplay values (damage, cooldowns, ranges)
 - Find state machines, ability systems, progression
@@ -94,7 +98,7 @@ generated — see Phase 5. Semantics of each tier are in
 
 ## Phase 3: Ask Clarifying Questions
 
-**DO NOT** just describe the code. **ASK** about intent:
+Ask about intent; the person can read the code already:
 
 **Design questions**:
 - "I see a [resource] system that depletes during [activity]. Was this for:
@@ -166,7 +170,7 @@ UNCLEAR INTENT AREAS:
 2. [Mechanic] — core pillar or supporting feature?
 3. [Value] scaling — intentional design or needs tuning?
 
-Before I draft the design doc, could you clarify these points?
+Before I draft the design document, could you clarify these points?
 ```
 
 > **Every section above may be empty, and an empty one must say so.** Write
@@ -200,6 +204,7 @@ Based on type, use appropriate template:
 | `design` | `templates/design-doc-from-implementation.md` | `design/gdd/[system-name].md` |
 | `architecture` | `templates/architecture-doc-from-code.md` | `docs/architecture/[decision-name].md` |
 | `concept` | `templates/concept-doc-from-prototype.md` | `prototypes/[name]/CONCEPT.md` or `design/concepts/[name].md` |
+| `brief` | `.claude/docs/templates/game-brief.md` (`references/from-a-game.md`) | `prototypes/[name]/brief.md`, and `design/game-brief.md` |
 
 **The `design` output scales with the workflow tier** (resolved in Phase 1):
 - **`full`** — generate a full 8-section GDD.
@@ -212,7 +217,7 @@ Based on type, use appropriate template:
   reverse-engineered system write
   `design/[system-name]-brief.md`.
 
-(`architecture` and `concept` outputs are tier-independent.)
+(`architecture`, `concept` and `brief` outputs are tier-independent.)
 
 **Draft structure**:
 - Capture **what exists** (mechanics, patterns, implementation)
@@ -251,7 +256,7 @@ side effect of the next edit.
 
 **Collaborative protocol**:
 ```
-I've drafted the [system-name] design doc based on your code and clarifications.
+I've drafted the [system-name] design document based on your code and clarifications.
 
 [Show key sections: Overview, Mechanics, Formulas, Design Intent]
 
@@ -310,7 +315,7 @@ FOLLOW-UP RECOMMENDED:
 3. Implement missing edge cases:
    - Stamina depletion mid-combo behavior
    - Stagger state during dodge
-4. Extend design doc when weapon variety is implemented
+4. Extend the design document when weapon variety is implemented
 
 Would you like me to tackle any of these now?
 ```
@@ -334,7 +339,7 @@ Would you like me to tackle any of these now?
 ```
 User: /reverse-document design <code root>/gameplay/[system]
 
-Agent: I'll analyze your [system] implementation to create a design doc.
+Agent: I'll analyze your [system] implementation to create a design document.
        [Reads code, discovers mechanics, formulas]
 
 Agent: I've analyzed <code root>/gameplay/[system]/. Here's what I found:
@@ -349,7 +354,7 @@ User: 1. [Resource] is for pacing, prevent [unwanted behavior]
       2. [Mechanic] is core — I want [design intent]
       3. Yeah, exponential is too much, should be linear
 
-Agent: Perfect, that clarifies the vision. Let me draft the design doc.
+Agent: Perfect, that clarifies the vision. Let me draft the design document.
        [Shows draft with clarified intent]
 
        May I write this to design/gdd/[system-name].md?

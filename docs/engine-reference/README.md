@@ -6,14 +6,18 @@ has a cutoff date** and game engines update frequently.
 
 ## Why This Exists
 
-Claude's training data has a knowledge cutoff (currently May 2025). Game engines
-like Godot, Unity, and Unreal ship updates that introduce breaking API changes,
+Claude's training data has a knowledge cutoff (May 2025 is the floor; a newer
+model may know more). Game engines
+like Godot, Unity, and Unreal, and the web toolchain (Vite, TypeScript and the
+game libraries), ship updates that introduce breaking API changes,
 new features, and deprecated patterns. Without these reference files, agents will
 suggest outdated code.
 
 ## Structure
 
-Each engine gets its own directory:
+Each engine gets its own directory: `godot/`, `unity/`, `unreal/` and `web/`,
+named as `engine.name` in lower case. The web folder pins a toolchain rather
+than one engine, and has a page per library instead of `modules/`:
 
 ```
 <engine>/
@@ -21,7 +25,10 @@ Each engine gets its own directory:
 ├── breaking-changes.md     # API changes between versions, organized by risk level
 ├── deprecated-apis.md      # "Don't use X → Use Y" lookup tables
 ├── current-best-practices.md  # New practices not in model training data
-└── modules/                # Per-subsystem quick references (~150 lines max each)
+├── PLUGINS.md              # Unity and Unreal only: index of the plugin pages
+├── plugins/                # Unity and Unreal only: one page per plugin
+│   └── ...
+└── modules/                # Per-subsystem quick references, one subsystem per file
     ├── rendering.md
     ├── physics.md
     └── ...
@@ -57,7 +64,7 @@ Engine-specialist agents are instructed to:
 ### Quality Rules
 
 - Every file must have a "Last verified: YYYY-MM-DD" date
-- Keep module files under 150 lines (context budget)
+- One subsystem per module file; there is no fixed length
 - Include code examples showing correct/incorrect patterns
 - Link to official documentation URLs for verification
 - Only document things that differ from the model's training data

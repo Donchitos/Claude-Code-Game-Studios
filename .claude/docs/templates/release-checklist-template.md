@@ -1,4 +1,5 @@
 ## Release Checklist: [Version] -- [Platform]
+
 Generated: [Date]
 
 ### Codebase Health

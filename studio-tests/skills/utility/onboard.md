@@ -16,7 +16,7 @@ design doc). If every input is ABSENT
 the whole verdict is `NOT ASSESSED — NO DATA`, naming what was missing. Otherwise
 it fills the `# Onboarding: [Role/Area]` template, presents it, and asks "May I
 write this to `production/onboarding/onboard-[role]-[date].md`?". The verdict is
-**COMPLETE**, followed by next steps pointing to `/sprint-status` and `/help`. No
+**COMPLETE**, followed by next steps pointing to `/sprint-status` and `/next-step`. No
 director gates apply.
 
 ---
@@ -29,7 +29,7 @@ Checked against the SKILL.md by `/skill-test spec` — no fixture needed.
 - [ ] Has ≥2 phase headings
 - [ ] Contains verdict keywords: COMPLETE, NOT ASSESSED
 - [ ] Contains "May I write" language before saving the onboarding document
-- [ ] Has a next-step handoff suggesting `/sprint-status` and `/help`
+- [ ] Has a next-step handoff suggesting `/sprint-status` and `/next-step`
 
 ---
 
@@ -73,14 +73,14 @@ Fixture defaults.
 4. Skill presents the document, then asks "May I write this to
    `production/onboarding/onboard-gameplay-programmer-[date].md`?"
 5. On approval it writes the file (creating the directory if needed); verdict is
-   COMPLETE, with `/sprint-status` and `/help` as next steps
+   COMPLETE, with `/sprint-status` and `/next-step` as next steps
 
 **Assertions:**
 - [ ] The agent definition for the named role is read
 - [ ] The code root `src/` is scanned for this programmer role
 - [ ] The document uses the `# Onboarding: [Role/Area]` template sections
 - [ ] The document is presented before the "May I write" ask naming `production/onboarding/onboard-gameplay-programmer-[date].md`
-- [ ] Verdict is COMPLETE and next steps name `/sprint-status` and `/help`
+- [ ] Verdict is COMPLETE and next steps name `/sprint-status` and `/next-step`
 
 ---
 
@@ -194,7 +194,7 @@ Fixture defaults.
 - [ ] Scans only the area that matches the role
 - [ ] Records each input as FOUND or ABSENT; ABSENT-backed sections read `NOT ASSESSED — NO DATA`
 - [ ] Presents the document before asking "May I write" to `production/onboarding/onboard-[role]-[date].md`
-- [ ] Ends with verdict COMPLETE and the `/sprint-status` / `/help` next steps — or, when every input is absent, stops at `NOT ASSESSED — NO DATA` naming what produces each missing input
+- [ ] Ends with verdict COMPLETE and the `/sprint-status` / `/next-step` next steps — or, when every input is absent, stops at `NOT ASSESSED — NO DATA` naming what produces each missing input
 
 ---
 

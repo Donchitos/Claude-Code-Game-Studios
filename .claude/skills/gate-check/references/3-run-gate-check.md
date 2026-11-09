@@ -104,7 +104,7 @@ A report whose `Focus:` line names one pass only (a `consistency` or
 `design-theory` run) is treated the same way: the other pass never ran.
 
 ### Quality Checks
-- For test checks: Run the test suite via `Bash` if a test runner is configured.
+- For test checks: run the test suite if a test runner is configured.
   **If no runner is configured, that is `NOT ASSESSED`, not a silent skip** — see
   the trigger in the verdict section. A gate that ran no tests found no test
   failures, which is not the same as passing.
@@ -162,7 +162,7 @@ A report whose `Focus:` line names one pass only (a `consistency` or
 
   Only these three values are recognized. Surface anything else to the user and
   fall back to `warn` rather than guessing.
-- For localization checks: `Grep` for hardcoded strings in the **code root** (resolve per `.claude/docs/code-root-resolution.md`). **If the code root is unresolved, report `NOT ASSESSED — code root unresolved` rather than zero hits.**
+- For localization checks: search for hardcoded strings in the **code root** (resolve per `.claude/docs/code-root-resolution.md`). **If the code root is unresolved, report `NOT ASSESSED — code root unresolved` rather than zero hits.**
 
 ### Cross-Reference Checks
 - Compare `design/gdd/` documents against implementations in the **code root**

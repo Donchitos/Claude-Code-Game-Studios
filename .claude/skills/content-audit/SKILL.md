@@ -171,7 +171,7 @@ on a Unity project and reports them NOT STARTED.
 
 **Levels / Areas / Maps:**
 - Glob `assets/**/*.tscn`, `assets/**/*.unity`, `assets/**/*.umap`
-- Glob the **code root** for scene files: `*.tscn` (Godot), `*.unity` (Unity); on Unreal, `Content/**/*.umap` instead (above). Resolve the root per `.claude/docs/code-root-resolution.md`. **If the code root is unresolved, report `NOT ASSESSED — code root unresolved` rather than zero hits.**
+- Glob the **code root** for scene files: `*.tscn` (Godot), `*.unity` (Unity); on Unreal, `Content/**/*.umap` instead (above). Web has no scene files: its levels are data files in a `levels/` folder under `data/` or `assets/data/`. Resolve the root per `.claude/docs/code-root-resolution.md`. **If the code root is unresolved, report `NOT ASSESSED — code root unresolved` rather than zero hits.**
 - Look for scene files in subdirectories named `levels/`, `areas/`, `maps/`,
   `worlds/`, `stages/`
 - Count unique files that appear to be level/scene definitions (not UI scenes)

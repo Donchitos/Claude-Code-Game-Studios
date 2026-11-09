@@ -3,7 +3,7 @@ name: skill-test
 description: "Validate skill files for structural compliance and behavioral correctness. Four modes: static linter, spec, category rubric, audit."
 argument-hint: "static [skill-name | all] | spec [skill-or-agent-name] | category [skill-or-agent-name | all] | audit"
 user-invocable: true
-allowed-tools: Read, Glob, Grep, Write, Bash(bash "*/.claude/skills/skill-test/../../hooks/yaml-helper.sh" resolve_config *), Bash(bash .claude/scripts/agent-check.sh*), Bash(bash .claude/scripts/compat-inventory.sh*)
+allowed-tools: Read, Glob, Grep, Write, Edit, Bash(bash "*/.claude/skills/skill-test/../../hooks/yaml-helper.sh" resolve_config *), Bash(bash .claude/scripts/agent-check.sh*), Bash(bash .claude/scripts/compat-inventory.sh*)
 model: sonnet
 ---
 
@@ -66,7 +66,7 @@ Then go on with `studio-tests/`.
 (`.claude/agents/[name].md`). With no catalog entry, use whichever of those two
 files exists. Only when neither exists, report "'[name]' is neither a skill in
 `.claude/skills/` nor an agent in `.claude/agents/`." and stop. A name that is
-also an ordinary word is still a name: `/skill-test spec help` tests the `/help`
+also an ordinary word is still a name: `/skill-test spec help` tests the `/next-step`
 skill, never a request for this skill's usage.
 
 The 7 checks lint SKILL.md structure, so they are skills-only. Given an agent
@@ -116,14 +116,14 @@ description or body promises a review, audit, check, gate, or readiness
 judgement.
 
 **WARN** (never FAIL) if none are present and the skill's output is an artifact
-or a value rather than a judgement. `/settings` is the reference case: it prints
+or a value rather than a judgement. `/project-settings` is the reference case: it prints
 and writes configuration and has no verdict to give. Do not invent one to
 satisfy this check.
 
 > A narrower list — gate verdicts only, hard FAIL on anything else — would wrongly
 > fail skills for reasons that are not their fault: `/prototype` and
 > `/vertical-slice` advertise `PROCEED`/`PIVOT`/`KILL` in their own descriptions,
-> `/adopt` and `/security-audit` rank by severity, and `/settings` has no verdict
+> `/adopt` and `/security-audit` rank by severity, and `/project-settings` has no verdict
 > by design. A linter that produces false failures on legitimate patterns stops
 > being trusted.
 
@@ -248,7 +248,7 @@ not be read or parsed, or its checks could not run — name the reason).
 
 For `static all`, produce a summary table then list any non-compliant skills:
 ```
-=== Skill Static Check: All 74 Skills ===
+=== Skill Static Check: All 75 Skills ===
 
 Skill                  | Result       | Issues
 -----------------------|--------------|-------
@@ -278,7 +278,7 @@ whose frontmatter does not parse is a different case: Check 1 fails on it (see
 above), so it is reported **NON-COMPLIANT**, not NOT ASSESSED — the defect is in
 the skill, not in the linter's access to it.
 
-**And state the denominator.** `All 74 Skills` in the header must be the number
+**And state the denominator.** `All 75 Skills` in the header must be the number
 actually examined, not the number that exist: report `[N] of [M] skills checked`
 whenever they differ. A summary whose counts silently sum to less than its own
 title is the failure this skill is supposed to catch in others.
@@ -541,6 +541,8 @@ not the catalog, is the covered set (`.claude/rules/skill-authoring.md` §5:
 gates derive their covered set, they do not enumerate it). Compare both globs
 against the catalog's `skills:`/`agents:` entries and report any skill or agent
 missing from the catalog by name, so an uncatalogued one cannot drop out silently.
+Skip the old-name aliases (`changelog`, `help`, `settings`, each described as
+"Old name of …"): they are not in the catalog and are not gaps.
 
 ### Step 3 — Build Skill Coverage Table
 
@@ -564,8 +566,8 @@ For each agent in catalog's `agents:` section:
 === Skill Test Coverage Audit ===
 Date: [date]
 
-SKILLS (74 total)
-Specs written: 73 (99%) | Never static tested: 74 | Never category tested: 74
+SKILLS (75 total)
+Specs written: 75 (100%) | Never static tested: 75 | Never category tested: 75
 
 Skill                  | Cat      | Has Spec | Last Static | S.Result | Last Cat | C.Result | Priority
 -----------------------|----------|----------|-------------|----------|----------|----------|----------
@@ -585,7 +587,7 @@ technical-director     | director   | YES      | never       | —      | never 
 Top 5 Priority Gaps (skills with no spec, critical/high priority):
 (none if all specs are written)
 
-Skill coverage:  73/74 specs (99%)
+Skill coverage:  75/75 specs (100%)
 Agent coverage:  49/49 specs (100%)
 ```
 

@@ -4,8 +4,8 @@
 schema_version: 1
 
 framework:
-  version: 1.2.0
-  last_upgraded: 2026-10-19
+  version: 1.3.0
+  last_upgraded: 2026-11-09
 
 # NOTE: this template ships with no `modes:` block, and the six knobs below must
 # never be added to one.
@@ -22,6 +22,6 @@ framework:
 # settings it writes.
 #
 # Per-developer preferences belong in `project.local.yaml` (gitignored), not
-# here. `/settings --local <key>=<value>` writes there; `/settings <key>=<value>`
+# here. `/project-settings --local <key>=<value>` writes there; `/project-settings <key>=<value>`
 # edits this file. See `.claude/docs/config-resolution.md` for the full
 # precedence order.

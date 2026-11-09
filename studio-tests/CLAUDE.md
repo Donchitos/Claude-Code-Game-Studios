@@ -7,7 +7,7 @@ framework. It is self-contained and separate from any game project.
 
 | File | Purpose |
 |------|---------|
-| `catalog.yaml` | Master registry for all 74 skills and 49 agents. Contains category, spec path, and last-test tracking fields. Always read this first when running any test command. |
+| `catalog.yaml` | Master registry for all 75 skills and 49 agents. Contains category, spec path, and last-test tracking fields. Always read this first when running any test command. |
 | `quality-rubric.md` | Category-specific pass/fail metrics. Read the matching `###` section for the skill's category when running `/skill-test category`. |
 | `skills/[category]/[name].md` | Behavioral spec for a skill — 5 or more test cases + protocol compliance assertions. |
 | `agents/[tier]/[name].md` | Behavioral spec for an agent — 5 or more test cases + protocol compliance assertions. |
@@ -41,7 +41,7 @@ analysis    → consistency-check, balance-check, content-audit, code-review,
 team        → team-combat, team-narrative, team-audio, team-level, team-ui,
               team-qa, team-release, team-polish, team-live-ops
 sprint      → sprint-plan, sprint-status, milestone-review, retrospective,
-              changelog, patch-notes
+              write-changelog, patch-notes
 utility     → all remaining skills
 ```
 
@@ -127,7 +127,7 @@ correct the spec toward the right behavior, not toward what the skill currently 
 
 ## This folder is deletable
 
-Nothing in `.claude/` imports from here, and every other CCGS skill and agent works
+Nothing in `.claude/` imports from here, and every other Claude Code Game Studios skill and agent works
 without it — but `/skill-test` and `/skill-improve` read it by path. Without it,
 `/skill-test static` still works, `/skill-test spec` and `/skill-test category`
 stop working, `/skill-test audit` reports that no catalog exists, and

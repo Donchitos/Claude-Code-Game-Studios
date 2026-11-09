@@ -1,0 +1,189 @@
+<!doctype html>
+<!-- PROTOTYPE - NOT FOR PRODUCTION -->
+<!-- Question: @QUESTION@ -->
+<!-- Date: @DATE@ -->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>@TITLE@</title>
+<style>
+  html, body { margin: 0; height: 100%; background: #000; overflow: hidden; }
+  body { font-variant-numeric: tabular-nums; }
+  canvas { display: block; margin: 0 auto; }
+</style>
+</head>
+<body>
+<canvas id="game"></canvas>
+<script src="config.js"></script>
+<script>
+'use strict';
+// The one-shot's starter: only what the checks read. Keep the fixed step, the clock hook,
+// window.game and the play and figures scenes. Everything else is the game's own: replace
+// what is marked "the game", and draw every figure in the brief's look, in 2D or with three.js.
+
+// ---- Built to be checked ----------------------------------------------------------------
+const params = new URLSearchParams(location.search);
+const tune = new Proxy({}, { get: (_, k) => CONFIG[k].value }); // live: tune.speed is CONFIG.speed.value
+const STEP = 1 / 60;            // simulation step in seconds; motion is per second, never per frame
+const W = 1280, H = 720;        // logical size; a pixel look lowers it and sets PIXEL
+const PIXEL = false;            // pixel looks: whole-number scale, no smoothing
+const FONT = 'sans-serif';      // the brief's look picks the type
+const TITLE = '@TITLE@';
+const CONTROLS = ['Arrows: move', 'Space: act', 'P: pause', 'M: mute']; // shown on the title screen
+const clock = window.GAME_CLOCK || { now: () => performance.now() / 1000 }; // a check may inject one
+const CHEAP = params.get('render') === 'cheap'; // a headless shot or check: 3D draws cheap; players never see it
+let seed;
+function rng() { // mulberry32; every gameplay random call reads this, never Math.random
+  seed = (seed + 0x6D2B79F5) | 0;
+  let t = Math.imul(seed ^ (seed >>> 15), seed | 1);
+  t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+  return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+}
+const events = []; // window.game.events: anything the game wants a run to see
+
+// ---- Screen ---------------------------------------------------------------------------
+const canvas = document.getElementById('game');
+const ctx = canvas.getContext('2d');
+function fit() { // fills the window at any size and pixel ratio
+  const k = Math.min(innerWidth / W, innerHeight / H);
+  const s = PIXEL ? Math.max(1, Math.floor(k)) : k;
+  const r = PIXEL ? 1 : s * (devicePixelRatio || 1);
+  canvas.width = Math.round(W * r); canvas.height = Math.round(H * r);
+  canvas.style.width = Math.round(W * s) + 'px'; canvas.style.height = Math.round(H * s) + 'px';
+  canvas.style.marginTop = Math.max(0, Math.floor((innerHeight - H * s) / 2)) + 'px';
+  canvas.style.imageRendering = PIXEL ? 'pixelated' : 'auto';
+  ctx.setTransform(r, 0, 0, r, 0, 0); ctx.imageSmoothingEnabled = !PIXEL;
+}
+addEventListener('resize', fit); fit();
+function clear(c) { ctx.fillStyle = c; ctx.fillRect(0, 0, W, H); }
+function text(s, x, y, size, c, align = 'center') {
+  ctx.fillStyle = c; ctx.font = `${size}px ${FONT}`; ctx.textAlign = align;
+  ctx.textBaseline = 'middle'; ctx.fillText(s, x, y);
+}
+
+// ---- Input: keys by position (event.code), OS key repeat ignored ------------------------
+const down = new Set(), hit = new Set();
+const pressed = code => hit.has(code); // true for one step after the key goes down
+addEventListener('keydown', e => {
+  startAudio();
+  if (!e.repeat) { down.add(e.code); hit.add(e.code); }
+  if (e.code === 'Space' || e.code.startsWith('Arrow')) e.preventDefault();
+});
+addEventListener('keyup', e => down.delete(e.code));
+addEventListener('pointerdown', () => startAudio());
+addEventListener('blur', () => down.clear());
+
+// ---- Audio: started on first input, mute on M --------------------------------------------
+let audio = null, muted = false;
+function startAudio() {
+  if (!audio) {
+    const ac = window.GAME_AUDIO || new (window.AudioContext || window.webkitAudioContext)(); // a check may inject one
+    const out = ac.createGain(); out.gain.value = muted ? 0 : tune.volume;
+    out.connect(ac.destination); audio = { ac, out };
+  }
+  if (audio.ac.state === 'suspended') audio.ac.resume();
+}
+function setMuted(m) { muted = m; if (audio) audio.out.gain.value = m ? 0 : tune.volume; }
+addEventListener('tune', () => setMuted(muted)); // the tweak panel (an add-on), when added, moved a value: the volume follows
+function tone(freq, dur, type = 'square', vol = 0.3) {
+  if (!audio || muted) return;
+  const t = audio.ac.currentTime, o = audio.ac.createOscillator(), g = audio.ac.createGain();
+  o.type = type; o.frequency.value = freq;
+  g.gain.setValueAtTime(vol, t); g.gain.exponentialRampToValueAtTime(0.001, t + dur);
+  o.connect(g).connect(audio.out); o.start(t); o.stop(t + dur);
+}
+
+// ---- Scenes: keep only the day-one screens the brief calls for ----------------------------
+// title: always. pause: real-time games. over: hard failure. results: a game with an end.
+// figures: every enemy kind and unit side by side, for the outline check (?scene=figures).
+// The checks look for play by name.
+let scene, state;
+function reset() {
+  seed = Number(params.get('seed')) || CONFIG.seed;
+  // state.gained: what this run gained or learned, the high the ending shows.
+  state = { t: 0, score: 0, gained: '' }; // the game
+}
+const scenes = {
+  figures: {
+    update(dt) { state.t += dt; },
+    draw() { clear('#000'); /* the game: each enemy kind and unit, its name under it, in play's look */ },
+  },
+  title: {
+    update() { if (pressed('Enter') || pressed('Space')) { reset(); scene = 'play'; } },
+    draw() {
+      clear('#111'); text(TITLE, W / 2, H / 3, 64, '#fff');
+      CONTROLS.forEach((c, i) => text(c, W / 2, H / 2 + i * 40, 28, '#ccc'));
+      text('Enter to start', W / 2, H - 60, 28, '#fff');
+    },
+  },
+  play: {
+    update(dt) {
+      if (pressed('KeyP') || pressed('Escape')) { scene = 'pause'; return; }
+      state.t += dt; // the game
+    },
+    draw() {
+      clear('#000'); /* the game: the world, every figure drawn in the brief's look */
+      text(`${state.score}`, 24, 32, 28, '#fff', 'left'); /* the HUD */
+    },
+  },
+  pause: {
+    update() { if (pressed('KeyP') || pressed('Escape')) scene = 'play'; },
+    draw() { scenes.play.draw(); text('Paused', W / 2, H / 2, 48, '#fff'); },
+  },
+  over: {
+    update() { if (pressed('KeyR') || pressed('Enter')) { reset(); scene = 'play'; } },
+    draw() {
+      scenes.play.draw(); text(state.gained || 'Game over', W / 2, H / 2 - 24, 48, '#fff');
+      text('R to restart', W / 2, H / 2 + 40, 28, '#ccc');
+    },
+  },
+  results: {
+    update() { if (pressed('Enter')) { reset(); scene = 'play'; } },
+    draw() {
+      scenes.play.draw(); text(state.gained || `Score ${state.score}`, W / 2, H / 2 - 24, 48, '#fff');
+      text(`Score ${state.score}: Enter to play again`, W / 2, H / 2 + 40, 28, '#ccc');
+    },
+  },
+};
+
+// ---- Loop: fixed step, frame time clamped ---------------------------------------------
+function step() {
+  if (pressed('KeyM')) { setMuted(!muted); hit.delete('KeyM'); }
+  scenes[scene].update(STEP); hit.clear();
+}
+let last, acc = 0, ALPHA = 1; // ALPHA: how far the frame is between the last two steps
+function tick() {
+  const now = clock.now();
+  acc += Math.min(now - last, 0.25); last = now; // a stall never fast-forwards the game
+  while (acc >= STEP) { step(); acc -= STEP; }
+  ALPHA = acc / STEP; // draw between steps, so the view never judders
+  drawFrame();
+}
+function drawFrame() { scenes[scene].draw(); }
+function frame() { tick(); requestAnimationFrame(frame); }
+// A headless browser on a time budget runs timers but almost no animation frames: a timer
+// ticks when no frame has come for 100 ms on a visible page; a hidden tab stays paused.
+function timer() { if (document.visibilityState === 'visible' && clock.now() - last > 0.1) tick(); }
+
+// ---- What a check can read and drive (?manual=1 stops the loop; players never see it) ----
+window.game = {
+  get scene() { return scene; },
+  get state() { return state; },
+  press(code) { hit.add(code); },
+  hold(code, on) { on ? down.add(code) : down.delete(code); },
+  get events() { return events; }, // the loop steps; a check empties it
+  step(n = 1, draw = true, alpha = 1) {
+    for (let i = 0; i < n; i++) step();
+    if (draw) { ALPHA = alpha; drawFrame(); }
+  },
+};
+
+reset();
+scene = params.get('scene') || 'title';
+last = clock.now();
+if (params.get('manual') === '1') drawFrame();
+else { requestAnimationFrame(frame); setInterval(timer, 50); }
+</script>
+</body>
+</html>

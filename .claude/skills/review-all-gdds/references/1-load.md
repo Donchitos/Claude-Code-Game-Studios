@@ -77,7 +77,7 @@ Read whole (small, and every part is used):
 
 1. `design/gdd/game-concept.md` — game vision, core loop, MVP definition (or
    `design/game-brief.md`, the one-page brief that replaces it at `rigor: minimal` —
-   pitch, core loop, MVP list)
+   pitch, core loop, Features list)
 2. `design/gdd/game-pillars.md` if it exists — design pillars and anti-pillars
 3. `design/gdd/systems-index.md` — authoritative system list, layers, dependencies, status
 

@@ -104,7 +104,7 @@ wrong value diagnosable — `review_mode: solo (rigor:minimal)` when `project.ya
 
 | Step | Source | Applies to |
 |---|---|---|
-| 1 | `project.local.yaml` | any setting on the `/settings --local` whitelist (12 keys — `modes.review_mode`, `modes.automation`, `modes.automation_always_ask`, `team.size`, all five `testing.strict.*`, `performance.enforce`, `features.*`) |
+| 1 | `project.local.yaml` | any setting on the `/project-settings --local` whitelist (15 keys — `modes.review_mode`, `modes.automation`, `modes.automation_always_ask`, `team.size`, all five `testing.strict.*`, `performance.enforce`, `features.session_state`, `features.token_budget_warn_at`, `features.read_guard`, `features.read_guard_kb`, `updates.check`) |
 | 2 | `project.yaml` | all keys |
 | 3 | legacy plain-text mirror | `modes.review_mode` → `production/review-mode.txt`; `project.stage` → `production/stage.txt` |
 | 4 | **`modes.rigor` expansion** | the six knobs `rigor` fronts — `modes.workflow`, `docs.density`, `qa.level`, `modes.story_granularity`, `modes.review_mode`, `team.size` |
@@ -127,10 +127,10 @@ default rather than propagating a nonsense mode into every skill.
 > never written down anywhere — it follows the project's rigor level and will
 > move if that level moves.
 
-> **Read scope == write whitelist.** Anything `/settings --local` may *write*
+> **Read scope == write whitelist.** Anything `/project-settings --local` may *write*
 > is also *read* during resolution. If the read scope were ever narrower,
-> `/settings --local modes.review_mode=solo` would write a value
-> that `/settings` accepted and displayed and every skill then ignored. The
+> `/project-settings --local modes.review_mode=solo` would write a value
+> that `/project-settings` accepted and displayed and every skill then ignored. The
 > test suite asserts the two lists stay in step — adding a setting to one
 > without the other reproduces that bug.
 >
@@ -139,7 +139,7 @@ default rather than propagating a nonsense mode into every skill.
 > implementation gap, not a design.
 
 > **A key OUTSIDE the whitelist, hand-written into `project.local.yaml`, is
-> reported rather than swallowed.** `/settings --local` refuses to
+> reported rather than swallowed.** `/project-settings --local` refuses to
 > write one, but the file exists to be edited by hand, so that path needs its own
 > guard. `modes.rigor: full` written there is a real key with a legal value, so
 > `validate_yaml_enum` passes it — and then resolution never consults the local
@@ -184,7 +184,7 @@ these six to the lean row. That default was `standard`; it changed because the
 heavier tier costs more to reach working code without producing a better
 result. See the rationale block above `_yaml_helper_defaults`
 in `.claude/hooks/yaml-helper.sh` for the reasoning and the ordering
-constraint. Raising the tier is one question in `/start` or one `/settings`
+constraint. Raising the tier is one question in `/start` or one `/project-settings`
 call, and `settings-guidance.md § 4`'s upward triggers are written to fire from
 this starting state. (`team.size` is the one knob the flip does not move:
 `minimal` and `standard` both yield `individual`, and only `full` opts into the
@@ -224,7 +224,7 @@ those never migrated.
 
 ## Derived lines (named only)
 
-Six more lines answer steps skills would otherwise work out by hand. Each prints
+Seven more lines answer steps skills would otherwise work out by hand. Each prints
 **only when named** in `--keys`; the full block never includes them. Each value carries its source in parentheses, and YAML `null`
 or `~` reads as unset (the reader returns them as strings, which are not empty).
 
@@ -232,10 +232,11 @@ or `~` reads as unset (the reader returns them as strings, which are not empty).
 |---|---|
 | `gate_level` | The gate level per story type: `testing.strict.<type>` (`project.local.yaml`, then `project.yaml`), then the plain `testing.strict: true\|false`, then the default table in `coding-standards.md`. `gate_level: logic=blocking(default) integration=advisory(project.yaml) visual=blocking(default) ui=blocking(default) config=advisory(default; /smoke-check: blocking)` |
 | `engine_values` | `engine.name`, `.version` and `.language`, each falling back to `technical-preferences.md` (its Engine line holds name and version together). `engine_values: name=Godot(project.yaml) version=4.7(project.yaml) language=GDScript(project.yaml)` |
-| `specialists` | The engine specialists: `primary` from the engine, the rest from the `specialists` block, where `null` is unset and never an agent name; `technical-preferences.md` only when the block is absent. `specialists: primary=godot-specialist(engine.name) code=godot-gdscript-specialist shader=unset ui=godot-specialist additional=none (project.yaml; unset = skip that specialist)` |
+| `specialists` | The engine specialists: `primary` from the engine (Web, which has no specialist, is `lead-programmer`), the rest from the `specialists` block, where `null` is unset and never an agent name; `technical-preferences.md` only when the block is absent. `specialists: primary=godot-specialist(engine.name) code=godot-gdscript-specialist shader=unset ui=godot-specialist additional=none (project.yaml; unset = skip that specialist)` |
 | `review_gate` | Whether a skill's own director gate and the PHASE-GATEs run at the resolved `review_mode` (`director-gates.md`): `solo` none, `lean` the PHASE-GATEs only, `full` all. `review_gate: skill-gates=skip phase-gates=run (review_mode lean, rigor:standard; a --review flag overrides)` |
 | `input_methods` | The input methods from the `platform` block, each listed once: keyboard/mouse when `PC` or `Web` is a target, gamepad and touch when their support is Full or Partial, plus the primary input, where a primary input such as `Keyboard`, `Controller` or `Touchscreen` is read as keyboard/mouse, gamepad or touch; else `technical-preferences.md`'s Input Methods line. `input_methods: keyboard/mouse, gamepad (project.yaml platform; primary: Gamepad)` |
 | `perf_budgets` | The four `performance.*` budgets (`target_framerate`, `frame_budget_ms`, `draw_call_limit`, `memory_ceiling_mb`), from `project.yaml` only: they are not locally overridable. `perf_budgets: target_framerate=60 frame_budget_ms=16.67 draw_call_limit=unset memory_ceiling_mb=unset (project.yaml)` |
+| `engine_row` | The engine's row of `.claude/engines/engines.tsv`: the resolved code and test roots (`engine.code_root` and `engine.test_root` beat the row; a bad value is `invalid(<why>)`), the asset root and the four default commands, `-` where the table has none. An engine the table does not name, or none, reads nothing from it. The project's own `commands.*` still win where a skill runs a command. `engine_row: engine=Web(project.yaml) code_root=src(engine.name) test_root=tests(engine.name) asset_root=assets run="npm run dev" build="npm run build" test="npm test" smoke="npm run smoke" (.claude/engines/engines.tsv; - = not in the table)` |
 
 ## Failure modes
 
@@ -282,7 +283,7 @@ is not: the key is present but resolves to nothing, which is also what a key
 with an empty value does on purpose (the "Key present, value empty" row above),
 and `resolve_config` does not tell the two apart. When a setting seems ignored,
 check the structure of its key in the file: one scalar on the key's own line and
-no list under it. `/settings` shows the value that is actually in effect.
+no list under it. `/project-settings` shows the value that is actually in effect.
 
 Merging a repeated block and taking the last value of a repeated key are fixed
 rules here, but most other YAML tools keep only the last block. Combine repeated
@@ -292,7 +293,7 @@ blocks rather than rely on the merge.
 
 `resolve_config` is also safe to call from a hook, but session-start does **not**
 call it. The block would cost tokens on every session whether or not any skill
-needs config, and it would go stale mid-session as `/settings` writes land. The
+needs config, and it would go stale mid-session as `/project-settings` writes land. The
 per-skill body call is fresher and only loads where it is used. Session start
 still prints the resolved review mode and any schema errors, which is the part a
 human reads.
@@ -304,9 +305,9 @@ every failure mode above are covered by the framework's own test suite under
 `tests/`, along with the `modes.rigor` expansion and its precedence in both
 directions. Two properties are asserted that are easy to lose:
 
-- The local **read** scope and the `/settings --local` **write** whitelist stay
-  in step. If they drift, `/settings` accepts and displays a value that every
+- The local **read** scope and the `/project-settings --local` **write** whitelist stay
+  in step. If they drift, `/project-settings` accepts and displays a value that every
   skill then ignores.
 - The expansion is *reachable* (`/start` asks about it) and *legible*
-  (`/settings` reports derived values rather than "(not set)"). A correct
+  (`/project-settings` reports derived values rather than "(not set)"). A correct
   expansion nobody is asked about and no view displays would be worth nothing.

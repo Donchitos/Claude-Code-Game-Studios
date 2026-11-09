@@ -1,17 +1,22 @@
 # Available Skills (Slash Commands)
 
-74 slash commands organized by phase. Type `/` in Claude Code to access any of them.
+75 slash commands organized by phase. Type `/` in Claude Code to access any of them.
+
+> **Renamed in 1.3.0:** `/help` is now `/next-step`, `/settings` is now
+> `/project-settings` and `/changelog` is now `/write-changelog`, because other
+> AI tools keep those three names for commands of their own. The old names still
+> work: each prints one line naming the new name, then runs it.
 
 ## Onboarding & Navigation
 
 | Command | Purpose |
 |---------|---------|
 | `/start` | First-time onboarding — asks where you are, then guides you to the right workflow |
-| `/help` | Context-aware "what do I do next?" — reads current stage and surfaces the required next step |
+| `/next-step` | Context-aware "what do I do next?" — reads current stage and surfaces the required next step |
 | `/project-stage-detect` | Full project audit — detect phase, identify existence gaps, recommend next steps |
 | `/setup-engine` | Configure engine + version, detect knowledge gaps, populate version-aware reference docs |
 | `/adopt` | Brownfield format audit — checks internal structure of existing GDDs/ADRs/stories, produces migration plan |
-| `/settings` | View or change project config — the effective merged values, or a local override in `project.local.yaml` |
+| `/project-settings` | View or change project config — the effective merged values, or a local override in `project.local.yaml` |
 
 ## Game Design
 
@@ -101,6 +106,7 @@
 | `/bug-triage` | Read all open bugs, re-evaluate priority vs. severity, assign owner and label |
 | `/reverse-document` | Generate design or architecture docs from existing implementation |
 | `/playtest-report` | Generate a structured playtest report or analyze existing playtest notes |
+| `/cut` | Finish the game: proposes cuts from the brief and what is built (you pick each), keeps a polish list, and for a game to sell records a release date and a feature freeze |
 
 ## Release
 
@@ -108,7 +114,7 @@
 |---------|---------|
 | `/release-checklist` | Generate and validate a pre-release checklist for the current build |
 | `/launch-checklist` | Complete launch readiness validation across all departments |
-| `/changelog` | Auto-generate changelog from git commits and sprint data |
+| `/write-changelog` | Auto-generate changelog from git commits and sprint data |
 | `/patch-notes` | Generate player-facing patch notes from git history and internal data |
 | `/hotfix` | Emergency fix workflow with audit trail, bypassing normal sprint process |
 | `/day-one-patch` | Prepare a focused day-one patch for known issues discovered after gold master but before or at public launch |
@@ -117,7 +123,7 @@
 
 | Command | Purpose |
 |---------|---------|
-| `/prototype` | Concept prototype — throwaway build right after brainstorm to validate core idea (Phase 1) |
+| `/prototype` | A few questions, a one-page brief, then a playable browser game built from it at the session's effort and given a short scripted check before handover; with an engine set, a throwaway engine or paper prototype (Phase 1) |
 | `/vertical-slice` | Pre-Production validation — production-quality end-to-end build before committing to Production (Phase 4) |
 | `/onboard` | Generate contextual onboarding document for a new contributor or agent |
 | `/localize` | Localization workflow: string extraction, validation, translation readiness |
@@ -140,19 +146,19 @@ Coordinate multiple agents on a single feature area:
 
 ## Overlap with Claude Code's bundled skills
 
-Claude Code ships its own skills, and one name collides with CCGS's.
+Claude Code ships its own skills, and one name collides with Claude Code Game Studios'.
 
 | You type | You get | Use it for |
 |---------|---------|-----------|
-| `/code-review` | **CCGS's** — project skills take the bare name | Architectural review against this project's coding standards, SOLID, testability and the control manifest. Knows about ADRs, stories and `docs/architecture/`. |
-| `/review` | **Claude Code's bundled** review — the alias of its `/code-review`, which CCGS's skill shadows | Reviewing a pull request or a plain diff for correctness bugs, with no knowledge of CCGS's design documents or gates. |
+| `/code-review` | **Claude Code Game Studios'** — project skills take the bare name | Architectural review against this project's coding standards, SOLID, testability and the control manifest. Knows about ADRs, stories and `docs/architecture/`. |
+| `/review` | **Claude Code's bundled** review — the alias of its `/code-review`, which Claude Code Game Studios' skill shadows | Reviewing a pull request or a plain diff for correctness bugs, with no knowledge of Claude Code Game Studios' design documents or gates. |
 
-Both are useful; they answer different questions. Reach for the CCGS one during
+Both are useful; they answer different questions. Reach for the Claude Code Game Studios one during
 `/dev-story` and before `/story-done`, because it checks the things the gates
 later check. Reach for the bundled one when you want a general review of a diff
 that has nothing to do with a story.
 
-CCGS does **not** turn the bundled skills off. `disableBundledSkills` would
+Claude Code Game Studios does **not** turn the bundled skills off. `disableBundledSkills` would
 remove all of them, including `/debug`, `/security-review` and `/simplify`,
 which are worth keeping. If you want a bundled skill hidden, use
 `skillOverrides` in your own `.claude/settings.local.json` rather than disabling

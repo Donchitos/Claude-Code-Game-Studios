@@ -4,7 +4,8 @@
 
 `/setup-engine` pins the project's engine, version and language. It accepts
 `[engine]`, `[engine] [version]`, `refresh`, `upgrade [old] [new]`, or no
-argument for guided selection. For Godot it asks which language (GDScript, C#
+argument for guided selection: an existing project keeps its engine, and a new
+one with no engine named is offered web first. For Godot it asks which language (GDScript, C#
 or Both) before showing the Technology Stack. It then:
 
 - writes the Technology Stack and the `ENGINE-REFERENCE-IMPORT` line to
@@ -33,7 +34,7 @@ Checked against the SKILL.md by `/skill-test spec` — no fixture needed.
 - [ ] Has ≥2 phase headings
 - [ ] Contains verdict keyword: COMPLETE
 - [ ] Contains "May I write" language before writing `CLAUDE.md` and before writing the `project.yaml` blocks
-- [ ] Has a next-step handoff (Section 12 prints one tier-matched Next-Steps list, e.g. `/brainstorm` at `minimal`)
+- [ ] Has a next-step handoff (Section 12 prints one Next-Steps list in `/next-step`'s order: `/prototype` first when there is no game yet, studio mode added at `standard` and `full`)
 
 ---
 
@@ -280,6 +281,91 @@ Fixture defaults.
 - [ ] No engine, language or version is picked on the user's behalf
 - [ ] The question is asked again in plain text
 - [ ] No file is written before an answer arrives
+
+---
+
+### Case 9: An existing web project — recorded as it is, no game file changed
+
+**Fixture:**
+- A git repository holding a web game committed before Claude Code Game Studios: `package.json`
+  (scripts `dev`, `build` = `webpack --config webpack/config.prod.js`, `test` =
+  `jest`), `package-lock.json`, `src/`, `tests/score.test.js`, webpack and Jest in
+  `devDependencies`, Phaser in `dependencies`, no `tsconfig.json`, no
+  `window.game`; Claude Code Game Studios' files added in a later commit; no `node_modules/`
+- Variant A — `package.json` has `"workspaces": ["packages/*"]`
+
+**Input:** `/setup-engine web`
+
+**Expected behavior:**
+1. Reads the project with `web-detect.sh` and never runs `web-scaffold.sh`
+2. Shows the record before writing: npm (from `package-lock.json`); `npm run dev`,
+   `npm run build`, `npm test`, smoke = the build; `src/` and `tests/` (nothing
+   extra to write); JavaScript; webpack and its version; Jest; Phaser; hook absent
+3. Says the reference describes the template's versions, not this project's
+4. On a yes, writes only `CLAUDE.md`, `technical-preferences.md` and
+   `project.yaml` (`engine.name: "Web"`, webpack's version, `commands`; no
+   `rendering`, no `physics`)
+5. Asks before `npm ci`, then runs the build and `test-run.sh web`
+   (`runner jest`) and keeps one screenshot of the build's `index.html` with
+   `--file-access`
+6. Offers the hook as one question with `Not now` recommended; adds nothing
+   unasked
+7. Variant A: says monorepos are not covered and stops, writing nothing
+
+**Assertions:**
+- [ ] `git status` after the run lists no file from the game's own commit
+- [ ] No scaffold file is copied and no `npm install` runs
+- [ ] The commands written are the project's own scripts in npm's form
+- [ ] The hook is not added without a yes
+- [ ] Variant A writes no file
+
+---
+
+### Case 10: A new project, no engine named — web is offered first
+
+**Fixture:**
+- Fresh project: no `engine` block, no `project.godot`, no `ProjectSettings/`,
+  no `*.uproject`, no `package.json`; no concept or brief
+- Variant A — `design/game-brief.md` says the game is for console and names no engine
+
+**Input:** `/setup-engine`
+
+**Expected behavior:**
+1. One line before the question says when Godot, Unity or Unreal fit better
+   (a big 3D game, a console or phone-store release, an engine already known)
+2. The engine question lists `Web (Recommended)` first, then Godot, Unity and
+   Unreal Engine 5; "help me choose" is still open
+3. On Web, the skill follows `references/web.md` (the scaffold, W2-W7)
+4. Variant A: Web is still listed first but not marked Recommended; Unity or
+   Unreal is, and the one line says why from the brief ("console")
+
+**Assertions:**
+- [ ] Web is the first option, and marked `(Recommended)` in the base case
+- [ ] The one line on Godot, Unity and Unreal comes before the question
+- [ ] Nothing is written before the user picks
+- [ ] Variant A: Web first, not Recommended; the line cites the brief's console
+
+---
+
+### Case 11: An existing project keeps its engine — web is never offered over it
+
+**Fixture:**
+- Variant A — `project.yaml` has `engine.name: "Godot"` (4.7)
+- Variant B — no `engine` block, but `project.godot` is at the repo root
+
+**Input:** `/setup-engine`
+
+**Expected behavior:**
+1. Variant A: says the engine is Godot and carries on with Godot, as
+   `/setup-engine godot`; no engine question
+2. Variant B: says it found `project.godot` and carries on with Godot
+3. Neither variant offers web or another engine, and neither writes `engine.name`
+   as anything but Godot
+
+**Assertions:**
+- [ ] No engine question is asked and web is not offered
+- [ ] `project.yaml`'s `engine.name` is Godot after the run
+- [ ] The output names what told it the engine (`project.yaml` or `project.godot`)
 
 ---
 

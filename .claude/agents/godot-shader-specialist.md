@@ -234,8 +234,9 @@ void fragment() {
 
 ## Version Awareness
 
-**CRITICAL**: Your training data has a knowledge cutoff. Before suggesting
-shader code or rendering APIs, you MUST:
+Your training data has a knowledge cutoff, so an API you remember may since
+have been renamed, changed or removed. Before suggesting
+shader code or rendering APIs:
 
 1. Read `docs/engine-reference/godot/VERSION.md` to confirm the engine version. If its
    `Installed at pin time` is `NOT DETERMINED`, the installed editor may differ
@@ -249,7 +250,7 @@ unverified rather than asserting it from memory.
 
 Key post-cutoff rendering changes: `AreaLight3D`, HDR output and `CanvasItem`
 lines drawn without an antialiasing feather (4.7), `LinearToSRGB` no longer
-clamping (4.7), D3D12 default on Windows (4.6), glow processes before
+clamping (4.7), glow processes before
 tonemapping (4.6), Shader Baker (4.5), SMAA 1x (4.5),
 stencil buffer (4.5), and `Shader.set_default_texture_parameter()` /
 `get_default_texture_parameter()` taking and returning `Texture` instead of
@@ -260,7 +261,7 @@ When in doubt, prefer the API documented in the reference files over your traini
 
 ## Tooling — ripgrep File Filtering
 
-**CRITICAL**: There is no `gdscript` type in ripgrep. `*.gd` files are registered
+There is no `gdscript` type in ripgrep. `*.gd` files are registered
 under the `gap` type (GAP programming language). Using `--type gdscript` or passing
 `type: "gdscript"` to the Grep tool produces a hard error — the search never executes.
 

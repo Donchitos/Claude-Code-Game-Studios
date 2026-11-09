@@ -82,16 +82,44 @@ if [ "$DRY" = "1" ]; then
   exit 0
 fi
 
-mkdir -p "$LOGDIR" 2>/dev/null
-
-{
+# The narrative must be safe in the archive before it leaves active.md. An
+# unchecked `>> "$ARCHIVE"` failed -- a directory at the archive path, a file
+# where the log folder goes, a full disk -- and the script went on to replace
+# active.md, losing the only copy of the narrative. So the new
+# archive is written to a temp file beside it, checked to end with the
+# narrative, and moved into place; active.md is not touched until that worked.
+archive_failed() {
+  [ -n "${ATMP:-}" ] && rm -f "$ATMP"
+  echo "rotate-session-state: FAILED — $1" >&2
+  echo "  $STATE is UNCHANGED; nothing was rotated." >&2
+  exit 1
+}
+mkdir -p "$LOGDIR" 2>/dev/null || archive_failed "cannot create $LOGDIR"
+[ -d "$LOGDIR" ] || archive_failed "$LOGDIR is not a folder"
+if [ -e "$ARCHIVE" ] && [ ! -f "$ARCHIVE" ]; then
+  archive_failed "$ARCHIVE exists and is not a file"
+fi
+ATMP=$(mktemp "$LOGDIR/.ccgs-archive-XXXXXX" 2>/dev/null) || ATMP=""
+[ -n "$ATMP" ] || archive_failed "cannot create a temporary file in $LOGDIR"
+if ! {
+  if [ -f "$ARCHIVE" ]; then cat "$ARCHIVE" || exit 1; fi
   echo ""
   echo "---"
   echo ""
   echo "## Rotated from active.md on $STAMP ($NARRATIVE lines)"
   echo ""
   tail -n "+$((SPLIT + 1))" "$STATE"
-} >> "$ARCHIVE"
+} > "$ATMP"; then
+  archive_failed "could not write $ATMP"
+fi
+# The temp file must end with the narrative, byte for byte (counted in bytes,
+# so a last line with no newline is compared too).
+NBYTES=$(tail -n "+$((SPLIT + 1))" "$STATE" | wc -c | tr -d ' ')
+if ! tail -n "+$((SPLIT + 1))" "$STATE" | cmp -s - <(tail -c "$NBYTES" "$ATMP"); then
+  archive_failed "the archive copy in $ATMP does not match the narrative"
+fi
+mv -f "$ATMP" "$ARCHIVE" 2>/dev/null || archive_failed "could not move $ATMP to $ARCHIVE"
+ATMP=""
 
 # Write the truncated state beside the file it replaces, not in a system temp
 # dir. `${TMPDIR:-/tmp}` assumes /tmp exists and is writable; where it is not,

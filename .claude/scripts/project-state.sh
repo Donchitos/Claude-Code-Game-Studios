@@ -4,7 +4,7 @@
 # architecture and production files exist, what stage the project says it is
 # at, and which phase the files on disk point to.
 #
-# Replaces the hand-run checks in /help (stage to phase, the artifact ladder),
+# Replaces the hand-run checks in /next-step (stage to phase, the artifact ladder),
 # /start (engine, concept, code root, counts, origin), /adopt, /onboard,
 # /day-one-patch, /project-stage-detect and /gate-check's read-back of the stage.
 #
@@ -26,8 +26,9 @@
 #   engine          engine.name: project.local.yaml, then project.yaml, then
 #                   the legacy `Engine:` line of .claude/docs/technical-preferences.md
 #   code_root       the same answer and source label as resolve_code_root in
-#                   .claude/hooks/yaml-helper.sh; never defaults to src
-#   source_files    `unknown` when code_root is unset: unknown is not zero
+#                   .claude/hooks/yaml-helper.sh; never defaults to src. A bad
+#                   engine.code_root prints `-` and `invalid: <reason>`
+#   source_files    `unknown` when code_root is unset or invalid: unknown is not zero
 #   stage_yaml      project.stage in project.yaml as written (even if invalid)
 #   stage_txt       first non-blank line of production/stage.txt as written
 #   stage           the resolved stage: a valid stage_yaml, else a valid
@@ -107,7 +108,7 @@ stage_rows() {
   if [ -n "$sy" ] && is_stage "$sy"; then stage="$sy"; src="project.yaml"
   elif [ -n "$st" ] && is_stage "$st"; then stage="$st"; src="production/stage.txt"
   fi
-  # help/SKILL.md Step 2's map from a stage name to a workflow-catalog phase key.
+  # next-step/SKILL.md Step 2's map from a stage name to a workflow-catalog phase key.
   case "$stage" in
     "Concept") phase="concept" ;;
     "Systems Design") phase="systems-design" ;;
@@ -157,13 +158,12 @@ if [ -z "$ENGINE" ] && [ -f "$LEGACY" ]; then
   esac
   [ -n "$ENGINE" ] && { ESRC="$LEGACY"; CSRC="$LEGACY"; }
 fi
-# The code root each engine's own toolchain builds from
-# (.claude/docs/directory-structure.md): Godot src/, Unity Assets/, Unreal Source/.
-case "$(printf '%s' "$ENGINE" | tr '[:upper:]' '[:lower:]')" in
-  godot) CODE_ROOT="src" ;;
-  unity) CODE_ROOT="Assets" ;;
-  unreal*) CODE_ROOT="Source" ;;
-esac
+# The code root each engine's own toolchain builds from, from the engine table
+# (Godot src/, Unity Assets/, Unreal Source/, Web src/): the one reader,
+# engine-row.awk, which resolve_code_root uses too.
+if [ -n "$ENGINE" ] && [ -f "$HERE/engine-row.awk" ] && [ -f "$HERE/../engines/engines.tsv" ]; then
+  CODE_ROOT=$(awk -F'\t' -v engine="$ENGINE" -v col=code_root -f "$HERE/engine-row.awk" "$HERE/../engines/engines.tsv")
+fi
 if [ -z "$CODE_ROOT" ]; then
   # No usable engine: believe the tree only when exactly one root is present.
   # Names are compared exactly against the listing, never with `[ -d Assets ]`,
@@ -176,12 +176,84 @@ if [ -z "$CODE_ROOT" ]; then
   if [ "$n" = 1 ]; then CODE_ROOT="$found"; CSRC="detected"; else CSRC=""; fi
 fi
 
+# resolve_code_root's step 0, applied last here so the engine row is unchanged:
+# engine.code_root in project.yaml (never project.local.yaml) beats the engine's
+# folder, and a bad value leaves the root unset with its reason, never the
+# engine's folder. code_root_check is _yh_code_root_check in yaml-helper.sh,
+# copied: keep the two the same.
+CODE_ROOT_SKIP=".claude .git production design docs tests studio-tests prototypes tools node_modules dist"
+CODE_ROOT_DENY=".claude .git production design docs tests studio-tests prototypes"
+TAB=$(printf '\t')
+code_root_check() {
+  local base="$1" v="$2" rest seg parent out first lo d actual
+  v=$(printf '%s' "$v" | tr -d '\r')
+  case "$v" in ""|"["*|"~"|null|Null|NULL) return 0 ;; esac
+  case "$v" in *\\*) printf "\tengine.code_root: use / not \\\\ in '%s'" "$v"; return 0 ;; esac
+  case "$v" in /*|"~"*|[A-Za-z]:*) printf "\tengine.code_root: absolute path '%s'" "$v"; return 0 ;; esac
+  while :; do case "$v" in */) v="${v%/}" ;; ./*) v="${v#./}" ;; *) break ;; esac; done
+  [ -z "$v" ] && v="."
+  [ "$v" = "." ] && { printf '.'; return 0; }
+  case "/$v/" in */../*) printf "\tengine.code_root: '..' not allowed in '%s'" "$v"; return 0 ;; esac
+  case "/$v/" in */./*|*//*) printf "\tengine.code_root: '%s' is not a plain folder path" "$v"; return 0 ;; esac
+  first="${v%%/*}"; lo=$(printf '%s' "$first" | tr '[:upper:]' '[:lower:]')
+  for d in $CODE_ROOT_DENY; do
+    [ "$lo" = "$d" ] && { printf "\tengine.code_root: framework folder '%s'" "$first"; return 0; }
+  done
+  parent="$base"; rest="$v"; out=""
+  while [ -n "$rest" ]; do
+    seg="${rest%%/*}"
+    if [ "$seg" = "$rest" ]; then rest=""; else rest="${rest#*/}"; fi
+    if [ ! -d "$parent/$seg" ]; then
+      # A case-sensitive disk (Linux, some macOS) has no "$seg" spelled with other capitals:
+      # name the spelling on disk, as a case-insensitive disk does below.
+      actual=$(ls -1A "$parent" 2>/dev/null | LC_ALL=C grep -Fxi -- "$seg" | head -1)
+      if [ -n "$actual" ] && [ -d "$parent/$actual" ]; then
+        printf "\tengine.code_root: spelled '%s' on disk, not '%s'" "${out:+$out/}$actual" "${out:+$out/}$seg"; return 0
+      fi
+      printf "\tengine.code_root: no folder '%s'" "${out:+$out/}$seg"; return 0
+    fi
+    if ! ls -1A "$parent" 2>/dev/null | LC_ALL=C grep -Fxq -- "$seg"; then
+      actual=$(ls -1A "$parent" 2>/dev/null | LC_ALL=C grep -Fxi -- "$seg" | head -1)
+      printf "\tengine.code_root: spelled '%s' on disk, not '%s'" "${out:+$out/}$actual" "${out:+$out/}$seg"; return 0
+    fi
+    out="${out:+$out/}$seg"; parent="$parent/$seg"
+  done
+  printf '%s' "$out"
+}
+CRERR=""
+if [ -f project.yaml ]; then
+  ov=""
+  # Bash only until the key is seen: most projects never set it.
+  while IFS= read -r line || [ -n "$line" ]; do
+    case "$line" in *code_root*:*) ov=1; break ;; esac
+  done < project.yaml
+  if [ -n "$ov" ]; then
+    chk=$(code_root_check . "$(yaml_get project.yaml engine.code_root)")
+    case "$chk" in
+      "") ;;
+      "$TAB"*) CODE_ROOT=""; CSRC="invalid"; CRERR="${chk#"$TAB"}" ;;
+      *) CODE_ROOT="$chk"; CSRC="engine.code_root" ;;
+    esac
+  fi
+fi
+
 if [ -n "$CODE_ROOT" ]; then
-  # The source extensions detect-gaps.sh check 1 counts.
-  SRC_FILES=$(count "$CODE_ROOT" -type f \( -name '*.gd' -o -name '*.cs' -o -name '*.cpp' \
-              -o -name '*.c' -o -name '*.h' -o -name '*.hpp' -o -name '*.rs' -o -name '*.py' \
-              -o -name '*.js' -o -name '*.ts' \))
+  # The source extensions detect-gaps.sh check 1 counts. A root of `.` (a flat
+  # web game) does not enter the CODE_ROOT_SKIP folders at the top.
+  set -- -type f \( -name '*.gd' -o -name '*.cs' -o -name '*.cpp' \
+         -o -name '*.c' -o -name '*.h' -o -name '*.hpp' -o -name '*.rs' -o -name '*.py' \
+         -o -name '*.js' -o -name '*.ts' \)
+  if [ "$CODE_ROOT" = "." ]; then
+    set -- \) -prune -o \( "$@" \) -print
+    for d in $CODE_ROOT_SKIP; do set -- -o -path "./$d" "$@"; done
+    shift
+    SRC_FILES=$(find . \( "$@" 2>/dev/null | wc -l | tr -d ' ')
+  else
+    SRC_FILES=$(count "$CODE_ROOT" "$@")
+  fi
   SSRC="$CODE_ROOT"
+elif [ "$CSRC" = invalid ]; then
+  SRC_FILES="unknown"; SSRC="code_root invalid"
 else
   SRC_FILES="unknown"; SSRC="code_root unset"
 fi
@@ -211,7 +283,7 @@ fi
 
 row root "$ROOT" -
 row engine "$ENGINE" "${ESRC:-unset}"
-row code_root "$CODE_ROOT" "${CSRC:-unset}"
+if [ "$CSRC" = invalid ]; then row code_root "" "invalid: $CRERR"; else row code_root "$CODE_ROOT" "${CSRC:-unset}"; fi
 row source_files "$SRC_FILES" "$SSRC"
 row concept "$CONCEPT" "$( [ -n "$CONCEPT" ] && echo found || echo absent )"
 row systems_index "$SYSIDX" "$( [ -n "$SYSIDX" ] && echo found || echo absent )"
@@ -224,7 +296,7 @@ row milestone "$MILE" "production/milestones/*.md"
 row origin_url "$ORIGIN" "$( [ -f .git/config ] && echo .git/config || echo absent )"
 stage_rows
 
-# help/SKILL.md Step 2's ladder, most advanced match first. 10 is help's own
+# next-step/SKILL.md Step 2's ladder, most advanced match first. 10 is next-step's own
 # threshold for "the code root has real code in it".
 SRC_MIN=10
 NOTE=""

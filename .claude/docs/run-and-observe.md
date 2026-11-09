@@ -23,7 +23,9 @@ engine has a native way.
 
 1. **Launch windowed** at a fixed resolution — `1280x720` unless the project
    says otherwise — using `commands.run` from `project.yaml`. Never the
-   headless / batch / null-RHI flag: those exist to *skip* rendering.
+   headless / batch / null-RHI flag: those exist to *skip* rendering. The one
+   exception is a browser game: headless Chrome and Edge render real frames
+   (the Web row below).
 2. **Launch straight into the scene or map the story touched.** A feature that
    is only reachable through the main menu and three clicks is a feature the
    run will not reach. Stories should be written so their surface is reachable
@@ -53,6 +55,39 @@ engine has a native way.
 | Godot 4 | `godot --path . --windowed --resolution 1280x720 <scene>.tscn` | `--write-movie <path>.png --quit-after <N>` | beside the given path, `<name>00000000.png` … | `--headless` | **none** |
 | Unity 6 | built player `.exe -screen-width 1280 -screen-height 720 -screen-fullscreen 0 --scene <Name>` | `ScreenCapture.CaptureScreenshot(<abs path>)` from a bootstrap script | the absolute path you pass | `-batchmode`, `-nographics` | one MonoBehaviour |
 | Unreal 5 | `MSYS_NO_PATHCONV=1 "<UE root>/Engine/Binaries/Win64/UnrealEditor.exe" "$(pwd -W 2>/dev/null || pwd)/<Game>.uproject" <MapURL> -game -windowed -ResX=1280 -ResY=720` | `HighResShot 1280x720 filename=<abs path>` console command | the path you pass (else `Saved/Screenshots/WindowsEditor/`) | `-nullrhi`, `-unattended` alone | one actor or `-ExecCmds` |
+| Web (a browser game) | `bash .claude/scripts/page-shot.sh <page>.html <path>.png --query <state>`; a web project's page is `dist-single/index.html`, after `npm run build:single` | the same command: headless Chrome, Edge or Chromium | the path you pass | `commands.run` (a dev server) | **none** |
+
+### Web — headless Chrome or Edge
+
+```
+bash .claude/scripts/page-shot.sh index.html production/qa/evidence/shop-panel/01-shop-open.png --query scene=shop --wait 2000
+```
+
+**A web project (`engine.name: Web`)** is shot from its single-file build, never
+from the dev server (`commands.run` never exits): `npm run build:single`, then
+`page-shot.sh dist-single/index.html <path>.png --query <state>`. A page opened
+from disk cannot load the folder build's module script; the single file has
+everything inlined. A one-shot is shot as it is, from its own `index.html`. An
+existing project with no `build:single` (`/setup-engine web`, W1) is shot from
+its own build's `index.html` with `--file-access`, so its module scripts and its
+own image and data loads work from disk; a build that asks for files from the
+root (`/assets/…`, Vite's default `base`) still cannot run from disk, and that
+look is `NOT VERIFIED`.
+
+Headless is allowed here and only here: a headless browser draws the page with
+its real renderer, where an engine's headless mode swaps in a dummy one.
+`--wait` is page time before the picture, so 2000 is two seconds of play. The
+script prints the page's console and an `uncaught` count beside the picture;
+with no browser found it prints `not_assessed`, which is `NOT VERIFIED`.
+Reach the state with the address (`--query scene=shop`). The browser sets the
+window to its final size just before the picture: a page that draws only once
+must draw again on `resize`, or the picture is blank. WebGL uses the machine's
+GPU; `--software` draws it in software (SwiftShader), the same with a GPU or
+none, and is what the self-check's runs use. In software a 3D page that draws
+every frame is about forty times slower. `--profile <dir>` keeps the browser profile, so a second run finds what the
+page saved. A one-shot's small check plays a few scripted keys this way
+(`/prototype`), a short run of minutes; how the game plays is the person's
+check, not headless's.
 
 ### Godot 4 — zero scaffold
 
@@ -183,7 +218,25 @@ and save it. It needs a visible desktop and the game window on top, and it
 captures whatever is there — it cannot be told "the shop panel". Use it when the
 engine-native path is unavailable, and say so in the run result. Linux CI with
 no display needs `xvfb-run` in front of the launch; `--headless` is not a
-substitute.
+substitute. Inside Claude Code's sandbox `xvfb-run` fails too: see below.
+
+### Inside Claude Code's sandbox (Linux, WSL2)
+
+With Claude Code's sandbox on, a shell command on Linux or WSL2 cannot open a
+Unix socket, and a game window needs one to reach the screen. Godot stops with
+`Unable to create DisplayServer, all display drivers failed`, an engine's window
+is refused the same way, and Chrome stops with `socket() failed: Operation not
+permitted`. That is the sandbox, not the game.
+
+- **An engine:** run that one launch again outside the sandbox (the Bash tool's
+  `dangerouslyDisableSandbox`). Claude Code asks you first, as for any command
+  outside the sandbox; everything else stays inside it. Refused, or turned off
+  with `allowUnsandboxedCommands: false`:
+  `Run result: NOT VERIFIED — the sandbox refused the game's window`.
+- **A web page:** `page-shot.sh` falls back to a headless shell, which runs in
+  the sandbox. When it finds none, its `not_assessed` row says so: install one
+  once, outside the sandbox, since it goes to your home folder:
+  `npx playwright install chromium-headless-shell`. Then take the shot again.
 
 ## The `Run result:` line
 

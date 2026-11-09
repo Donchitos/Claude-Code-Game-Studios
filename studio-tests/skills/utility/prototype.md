@@ -2,13 +2,37 @@
 
 ## Skill Summary
 
-`/prototype [concept] [--path html|engine|paper] [--review full|lean|solo]
-[--spike]` runs a throwaway concept prototype before GDDs are written. It first
+`/prototype [what to make] [--path html|engine|paper] [--review full|lean|solo]
+[--spike]` has two routes, chosen by `engine.name` with no question asked.
+
+**The one-shot** (no engine set, `engine.name: web`, or `--path html`): one round
+of questions drawn from the matched genre sheets (`.claude/genres/chipsets.yaml`
+rows, `chipsets/<name>.md`), then a one-page brief shown as the card: Look and
+references, First minute, Challenge, Features and the rest of the brief template,
+with the Effort (high), Engine, Guessed and Writes lines under it and Build it /
+Change something; nothing is written before Build it. This session builds it at
+its own effort (a builder only when the person names another effort, "build it at
+medium") and `one-shot-new.sh` makes `prototypes/<name>/` (`index.html`,
+`config.js` with every tuning value, `assets/provenance.yaml`; the tweak panel
+`tune.js` only when the person asks to tune). Then the small check: a few scripted
+keys through `one-shot-check.sh --keys`, no robot player, four rows (boots, shot,
+brief words, emoji and outlines), one fix round for text that is too small,
+overlapping or off screen and screens that freeze, and the brief checklist marks
+each brief line pass, missing, broken or not assessed. With no engine set,
+the browser game is built and handed over first whatever is asked at the card; an
+engine wish is the card's Engine line and the handover's Next line.
+The results go into `evidence/check-run.yaml` through `one-shot-check.sh
+--record`. The handover asks before committing and tagging `one-shot/<name>`, shows
+the handover card, and goes on to the debrief (Phase 6).
+
+**The engine or paper prototype** (an engine named) is a throwaway concept
+prototype before GDDs are written. It first
 confirms intent with `AskUserQuestion` (Prototype this concept / Skip — concept
 already proven / Mid-production spike), forms a falsifiable hypothesis ("If the
 player [does X], they will feel [Y] — we will know this is true if [Z]") and asks
-for the riskiest assumption. It picks an HTML, Engine or Paper path (genre table,
-recommendation pre-stated), presents a 3–5 bullet plan, asks to record it as a
+for the riskiest assumption. It picks an Engine or Paper path (genre table,
+recommendation pre-stated; the browser sketch is a third, non-recommended option
+that continues at the one-shot's card), presents a 3–5 bullet plan, asks to record it as a
 checkpoint in `production/session-state/active.md`, then asks "May I create the prototype
 directory at `prototypes/[concept-name]-concept/` and begin implementation?".
 Every prototype file starts with a `PROTOTYPE - NOT FOR PRODUCTION` header in
@@ -295,11 +319,157 @@ Fixture defaults.
 
 ---
 
+### Case 8: The one-shot — no engine set, Build it
+
+**Fixture:**
+- `project.yaml` has no `engine:` block; no `design/game-brief.md`; no `prototypes/`
+- Chrome or Edge is installed; review mode `solo`
+- The user answers "you pick" to the quick questions, Build it at the card, then
+  Commit and tag
+
+**Input:** `/prototype a lighthouse keeper relighting beacons in a storm`
+
+**Expected behavior:**
+1. No route or path question. One plain-text message asks one round of at most
+   about eight questions drawn from the matched genre sheets, each with its usual
+   answer so "you pick" works, with no question tool; what the typed line already
+   answers is not asked, and after the reply there is no second round
+2. The skill matches the genre on `.claude/genres/chipsets.yaml`'s rows and
+   reads only the matched sheets in `chipsets/`, drawing the questions from them
+3. The card is the whole brief, with Look and references, First minute and
+   Challenge filled and the "you pick" answers marked *(provisional)*, then
+   `Effort: high ...`, `Engine: web (guessed)`, a Guessed line and
+   `Writes: design/game-brief.md, prototypes/<name>/`, then asks Build it /
+   Change something; nothing is written before the answer
+4. After Build it: `design/game-brief.md` is written from the brief template, with
+   the typed words and the answers under `## In your words`, every Features item
+   `[ ]` and Keep empty; `bash .claude/scripts/one-shot-new.sh` makes the folder
+5. This session builds the game at its own effort; a builder runs only when the
+   person named another effort, and the handover's Effort line says which
+6. Before the handover the small check has run: `evidence/self-check.tsv`,
+   `evidence/play.png` and `evidence/figures.png` exist, and no `bot.js` is written
+7. Every tuning number is a `config.js` entry with value, min, max and step, read
+   through `tune.<name>`; no `Math.random` in game code
+8. Before the handover card, the brief's Features are marked `[x]` for what the
+   build has, in `design/game-brief.md` and `prototypes/<name>/brief.md`
+9. The handover asks before committing and tagging `one-shot/<name>`; the card
+   says "Not yet played by a person"; then the Phase 6 debrief starts
+
+**Assertions:**
+- [ ] Before the card, the only ask is one plain-text message with the quick questions the typed line left open, and none is asked twice
+- [ ] The "you pick" answers are marked *(provisional)* in the brief the card shows
+- [ ] The built Features are `[x]` in the brief before the commit
+- [ ] No file is written before Build it
+- [ ] No robot player (no `bot.js`) and no probe or test file of the session's own is written
+- [ ] `config.js` holds every tuning value; game code has no `Math.random`
+- [ ] The commit and the tag happen only after their ask
+- [ ] The handover names what was checked and what was not assessed
+
+---
+
+### Case 9: The one-shot's small check catches a frozen screen
+
+**Fixture:**
+- As Case 8, with Chrome or Edge installed
+- The first build freezes after its start key: the screen stops changing while keys go in
+
+**Input:** `/prototype a lighthouse keeper relighting beacons in a storm`, then Build it
+
+**Expected behavior:**
+1. Before handover the skill runs `bash .claude/scripts/one-shot-check.sh prototypes/<name>
+   --keys "<inputs>"` (what leaves the title, then a few seconds of the game's own keys) and
+   writes no `bot.js`
+2. The `stuck` row fails; the skill fixes the screen in its one fix round and runs the check
+   once more; what still fails goes on the card as "Still broken: <row>: <what>"
+3. No agent plays the game: no qa-tester, reviewer or art review runs
+4. The card carries the small check's rows and ends "Not yet played by a person"
+
+**Assertions:**
+- [ ] `evidence/self-check.tsv` and `evidence/play.png` are kept
+- [ ] A failed row is fixed and checked once more, or named on the card as Still broken
+- [ ] The check refuses a third run in a round; a later fix is checked with the one run it needs
+- [ ] With no browser, the rows that could not run are *not assessed* by name, never passed
+
+---
+
+### Case 10: An engine wish waits for play
+
+**Fixture:**
+- As Case 8 (no engine set), with Chrome or Edge installed and Godot installed
+- At the card the person says "I have Godot installed, use that if it's better"
+
+**Input:** `/prototype a lighthouse keeper relighting beacons in a storm`, then the Godot line, then Build it
+
+**Expected behavior:**
+1. The card's Engine line reads `Engine: web now; Godot after you've played it`; `/setup-engine`
+   does not run, and the browser game is built in `prototypes/<name>/index.html`
+2. The small check runs as in Case 9; no review agent runs
+3. The card carries the Next line naming `/setup-engine` Godot after play; a promised piece the
+   build lacks is on Still to do
+
+**Assertions:**
+- [ ] No `/setup-engine` before the handover; an `index.html` is handed over
+- [ ] No game-designer review, no look-first step and no review agent run
+
+---
+
+### Case 11: A 3D game that saves records its small check
+
+**Fixture:**
+- As Case 8, with Chrome or Edge installed
+- The ask names a 3D game that remembers a best time; the brief's Look is a 3D look
+
+**Input:** `/prototype a 3D marble run against the clock that remembers your best time`, then Build it
+
+**Expected behavior:**
+1. The small check's rows name the WebGL renderer (software in a headless browser is fine) and a
+   `saved` row with the key the game keeps for next time
+2. Before the card the skill runs `one-shot-check.sh prototypes/<name> --record boots=<r>
+   shot=<r> outlines=<r>`, and `evidence/check-run.yaml` holds `kind: check-run/1`
+3. What the check could not run (its sound, for one) is on the card as *not assessed* with why
+
+**Assertions:**
+- [ ] No row is recorded `not-applicable`, and a `not_run` carries its why
+- [ ] `state.staged` is set only when the brief's Intent line holds *staged failure*
+- [ ] The game never changes for a check: no code that looks for a headless browser, and its
+      sound is what the brief asks for; a check that cannot run is *not assessed* on the card,
+      never probed
+
+---
+
+### Case 12: A copy of a named game gets one question and is never built
+
+**Fixture:**
+- As Case 8: no `engine:` block, no `design/game-brief.md`, no `project.goal`
+- The user picks "an original game in the genre", then Build it at the card
+
+**Input:** `/prototype a Pac-Man clone with the same UI: arrow keys, eat every dot to clear the maze, a ghost touching you costs a life`
+
+**Expected behavior:**
+1. Before anything else, one question: "An original game in the genre of Pac-Man, or Pac-Man
+   with your own twist?"
+2. The words answer the rest, so no other question is asked before the card
+3. The brief's Avoid line holds "Pac-Man's name, art, characters and UI"; the copy is never built
+
+**Assertions:**
+- [ ] One question before the card, and only that one
+- [ ] The Avoid line is in the brief; the built game uses none of Pac-Man's name, art, characters or UI
+- [ ] Variant: "a maze chase like Pac-Man, but you are a ghost" (named as a reference): no copy question
+- [ ] Variant: "an original Pac-Man" (a new label on a copy): the same one question
+- [ ] Variant: `design/game-brief.md` exists, written by `/brainstorm`: no questions; the card reads the brief, and `Writes:` names only `prototypes/<name>/`
+
+---
+
 ## Protocol Compliance
 
-- [ ] Confirms intent with `AskUserQuestion` before building (unless `--spike`)
-- [ ] Forms a falsifiable hypothesis and stops if the concept is too vague to form one
-- [ ] Presents the plan and gets confirmation before building
+- [ ] One-shot: no route question; at most one plain-text round of quick questions, only for what the person's words leave open; the card comes before any write, and only an explicit Build it goes on
+- [ ] One-shot: only the autonomous automation mode asks no quick question; a run with no question tool still asks the open ones in plain text, and Build it as a numbered list
+- [ ] One-shot: asks before committing and tagging `one-shot/<name>`
+- [ ] One-shot: the small check runs before handover with no robot player; a row it could not run is *not assessed* by name, never passed
+- [ ] One-shot: no review agent, art review or cold play run; the person's play is the test
+- [ ] Engine and paper route: confirms intent with `AskUserQuestion` before building (unless `--spike`)
+- [ ] Engine and paper route: forms a falsifiable hypothesis and stops if the concept is too vague to form one
+- [ ] Engine and paper route: presents the plan and gets confirmation before building
 - [ ] Asks before creating `prototypes/[concept-name]-concept/` and before writing REPORT.md (with its `prototypes/index.md` row), PIVOT-NOTE.md or GRAVEYARD.md
 - [ ] In spike mode, asks before creating the spike folder and before writing `SPIKE-NOTE.md` and `active.md`
 - [ ] Keeps prototype files under `prototypes/`, each with the `PROTOTYPE - NOT FOR PRODUCTION` header in its own comment syntax

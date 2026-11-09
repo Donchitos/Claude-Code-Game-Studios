@@ -10,7 +10,7 @@ Agent: `art-director` | Model tier: session (inherit) | Domain: Visual identity,
 - Art bible path (`design/art/art-bible.md`)
 - Game pillars and core fantasy
 - Platform and performance constraints (`platform.*` and `performance.*` from `project.yaml`, falling back to `.claude/docs/technical-preferences.md`)
-- Visual identity anchor chosen during brainstorm (from `design/gdd/game-concept.md`; if there is no `design/gdd/game-concept.md`, pass the "Art & audio direction" line of `design/game-brief.md` instead)
+- Visual identity anchor chosen during brainstorm (from `design/gdd/game-concept.md`; if there is no `design/gdd/game-concept.md`, pass the Label line of `design/game-brief.md` instead, "Art & audio direction" in older briefs)
 
 **Prompt**:
 > "Review this art bible for completeness and internal consistency. Does the color

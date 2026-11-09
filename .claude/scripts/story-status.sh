@@ -1,6 +1,6 @@
 #!/bin/bash
 # story-status.sh -- the story files' Status lines, in the order the minimal
-# route takes them. Injected into /help and /sprint-status before the model reads
+# route takes them. Injected into /next-step and /sprint-status before the model reads
 # either skill:
 #
 #   !`bash "${CLAUDE_SKILL_DIR}/../../scripts/story-status.sh"`
@@ -32,6 +32,10 @@
 # the value's leading word, in any case, is Complete or Done: `Done.` counts,
 # `Not Done` and `Completed` do not -- so the two cannot disagree on "done".
 # Builtins and one awk -- no Python, no per-file process.
+
+case "${1:-}" in
+  -h|--help) sed -n '2,/^$/p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
+esac
 
 # The project root is two levels above this file: the injected command runs from
 # wherever the skill's shell starts, which need not be the root.

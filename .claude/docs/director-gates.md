@@ -66,7 +66,7 @@ Review intensity controls whether gates run.
 same values); `project.yaml` wins when both are present. `/start` never writes
 it: left unset, it follows `modes.rigor` (`minimal` → `solo`, `standard` →
 `lean`, `full` → `full`). Set it explicitly only with
-`/settings modes.review_mode=<value>`.
+`/project-settings modes.review_mode=<value>`.
 
 **Per-run override**: any gate-using skill accepts `--review [full|lean|solo]`,
 overriding the global config for that run only.

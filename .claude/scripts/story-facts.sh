@@ -3,7 +3,7 @@
 # story, and with --lint the story-readiness rules each story trips.
 #
 # Replaces the hand-run story reads in /story-readiness, /story-done and
-# /dev-story. story-status.sh still prints the route order /help and
+# /dev-story. story-status.sh still prints the route order /next-step and
 # /sprint-status inject; the status column here applies its rule word for
 # word, so the two never disagree.
 #

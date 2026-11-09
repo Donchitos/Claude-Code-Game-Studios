@@ -407,7 +407,7 @@ The `full` column of the file-check table has its own STOP rule, so the
 
 **Assertions:**
 - [ ] No "Implementation Complete" and no `Status:` change past `In Progress`
-- [ ] The checkpoint's **Next step** is `/dev-story [story-path]` to resume — never `/story-done`, which `/help` reads as "the work is written"
+- [ ] The checkpoint's **Next step** is `/dev-story [story-path]` to resume — never `/story-done`, which `/next-step` reads as "the work is written"
 
 ---
 

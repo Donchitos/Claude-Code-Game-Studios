@@ -6,9 +6,13 @@
 ## Phase 9: Summary and Next Steps
 
 Output a summary: the hypothesis, the result, and the final recommendation.
-Link to `prototypes/[concept-name]-concept/REPORT.md`.
+Link to `[folder]/REPORT.md`.
+
+`[folder]` is the prototype's folder, `prototypes/[concept-name]-concept/`. A one-shot's verdict
+is One-shot 3's, section 3.
 
 **If PROCEED:**
+
 Your concept prototype validated the core idea. Now design it properly, informed by
 what you just learned.
 
@@ -24,9 +28,6 @@ Recommended path (in order, `standard`/`full`):
    in the Tuning Knobs and Formulas sections
 6. `/review-all-gdds` — cross-system consistency check
 
-**Note:** If you used the HTML path and feel is still uncertain, consider running
-a quick engine path prototype targeting feel before writing GDDs.
-
 **If PIVOT:**
 
 Before routing to the next prototype, capture the carry-forward note. Ask these
@@ -35,7 +36,7 @@ two questions (plain text, one at a time):
 1. "What specifically worked in this prototype that we should preserve in the next version?"
 2. "What is the single most important thing to change?"
 
-Ask: "May I write this to `prototypes/[concept-name]-concept/PIVOT-NOTE.md`?"
+Ask: "May I write this to `[folder]/PIVOT-NOTE.md`?"
 
 If yes, write the file with: original hypothesis, what to keep, what to change, and
 the revised hypothesis for the next prototype. The next `/prototype` run picks it
@@ -77,7 +78,7 @@ This file exists so the same mistake doesn't get made twice on the next concept.
 There is no fun evidence yet, so PROCEED, PIVOT and KILL are all unreachable —
 report NOT ASSESSED and stop here rather than guess.
 
-- Play it, then run `/prototype [same concept]` again
+- Play it, then come back and say you've played it: the debrief runs then
 - The report and the concept index row read NOT ASSESSED until a playtest happens
 
 ---

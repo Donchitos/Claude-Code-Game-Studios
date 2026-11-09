@@ -17,6 +17,8 @@
 After updating CLAUDE.md, create or update `.claude/docs/technical-preferences.md` with
 engine-appropriate defaults. Read the existing template first, then fill in:
 
+**Web:** the values are in `references/web.md` (W3).
+
 ### Engine & Language Section
 - Fill from the engine choice made in step 4
 
@@ -70,7 +72,7 @@ For **Primary Input**, use the dominant input for the game genre:
 >   yet — the brief comes next — so this can't be derived."
 > - Options: the plausible inputs for that platform, plus
 >   `Leave as [TO BE CONFIGURED]` — a legitimate answer here, revisited via
->   `/settings` once the brief exists.
+>   `/project-settings` once the brief exists.
 >
 > Gamepad Support and Touch Support still come from the platform table above;
 > only Primary Input depends on genre.
@@ -89,7 +91,7 @@ Example filled section:
 ```
 
 ### Remaining Sections
-- **Performance Budgets**: Use `AskUserQuestion`:
+- **Performance Budgets**: Ask:
   - Prompt: "Should I set default performance budgets now, or leave them for later?"
   - Options: `[A] Set defaults now (60fps, 16.6ms frame budget, engine-appropriate draw call limit)` / `[B] Leave as [TO BE CONFIGURED] — I'll set these when I know my target hardware`
   - If [A]: populate with the suggested defaults. If [B]: leave as placeholder.
@@ -100,10 +102,10 @@ Example filled section:
   > `.claude/docs/coding-standards.md`, which names the same runner.** Naming GUT
   > here would have the skill recommend one framework and configure another in the
   > same run.
-- **Forbidden Patterns**: Leave as placeholder — do NOT pre-populate.
-- **Allowed Libraries**: Leave as placeholder — do NOT pre-populate dependencies the project does not currently need. Only add a library here when it is actively being integrated, not speculatively.
+- **Forbidden Patterns**: Leave as placeholder — do not pre-populate.
+- **Allowed Libraries**: Leave as placeholder — do not pre-populate dependencies the project does not currently need. Only add a library here when it is actively being integrated, not speculatively.
 
-> **Guardrail**: Never add speculative dependencies to Allowed Libraries. For example, do NOT add GodotSteam unless Steam integration is actively beginning in this session. Post-launch integrations should be added to Allowed Libraries when that work begins, not during engine setup.
+> **Guardrail**: Never add speculative dependencies to Allowed Libraries. For example, do not add GodotSteam unless Steam integration is actively beginning in this session. Post-launch integrations should be added to Allowed Libraries when that work begins, not during engine setup.
 
 ### Engine Specialists Routing
 

@@ -49,8 +49,9 @@
 #   LONG <path> <lines>
 #
 # Exit codes: 0 scanned (whatever it found, none included); 1 the root cannot
-# be read; 2 usage error; 3 no PATH given and the code root is unset (prints
-# scanned_files 0 code_root unset). Reads only; never writes, never prompts.
+# be read; 2 usage error; 3 no PATH given and the code root is unset or invalid
+# (prints scanned_files 0 code_root unset, or code_root invalid for a bad
+# engine.code_root). Reads only; never writes, never prompts.
 #
 # bash 3.2 and BWK awk safe, no Python.
 
@@ -60,7 +61,7 @@ LC_ALL=C
 export LC_ALL
 
 HERE="$(cd "$(dirname "$0")" && pwd)"
-ROOT_ARG=""; LONG=500; PATHS=""; EXCL=""
+ROOT_ARG=""; LONG=500; PATHS=""; EXCL=""; SKIP_TOP=""
 NL='
 '
 while [ $# -gt 0 ]; do
@@ -84,23 +85,50 @@ fi
 
 if [ -z "$PATHS" ]; then
   [ -f "$HERE/project-state.sh" ] || { echo "code-markers: $HERE/project-state.sh is missing; pass a PATH" >&2; exit 1; }
-  CR=$(bash "$HERE/project-state.sh" --root . | awk -F'\t' '$1 == "code_root" { print $2 }')
+  CRROW=$(bash "$HERE/project-state.sh" --root . | awk -F'\t' '$1 == "code_root" { print $2 "\t" $3 }')
+  CR=$(printf '%s' "$CRROW" | cut -f1)
+  case "$(printf '%s' "$CRROW" | cut -f2)" in
+    invalid:*)
+      printf 'scanned_files\t0\tcode_root invalid\n'
+      echo "code-markers: the code root is $(printf '%s' "$CRROW" | cut -f2); fix engine.code_root in project.yaml or pass a PATH" >&2
+      exit 3 ;;
+  esac
   if [ -z "$CR" ] || [ "$CR" = "-" ]; then
     printf 'scanned_files\t0\tcode_root unset\n'
     echo "code-markers: the code root is unset (no engine set and no single src/, Assets/ or Source/); pass a PATH" >&2
     exit 3
   fi
   PATHS="$CR$NL"
+  # A root of `.` (a flat web game) leaves out the framework's own folders, and
+  # find does not enter them. The same list as CODE_ROOT_SKIP in yaml-helper.sh.
+  CODE_ROOT_SKIP=".claude .git production design docs tests studio-tests prototypes tools node_modules dist"
+  [ "$CR" = "." ] && SKIP_TOP="$CODE_ROOT_SKIP"
 fi
+
+# src_find DIR -- the source files under DIR. For `.` with SKIP_TOP set, the
+# folders it names at the top are pruned, not walked and filtered afterwards.
+src_find() {
+  local d
+  set -- "$1" -type f \( -name '*.gd' -o -name '*.cs' -o -name '*.cpp' -o -name '*.cc' -o -name '*.c' \
+    -o -name '*.h' -o -name '*.hpp' -o -name '*.rs' -o -name '*.py' -o -name '*.js' -o -name '*.ts' \
+    -o -name '*.lua' -o -name '*.java' -o -name '*.kt' \)
+  if [ "$1" = "." ] && [ -n "$SKIP_TOP" ]; then
+    shift
+    set -- \) -prune -o \( "$@" \) -print
+    for d in $SKIP_TOP; do set -- -o -path "./$d" "$@"; done
+    shift   # the first -o
+    find . \( "$@" 2>/dev/null
+  else
+    find "$@" 2>/dev/null
+  fi
+}
 
 LIST=""
 while IFS= read -r p; do
   [ -n "$p" ] || continue
   # A Windows path's backslashes as slashes, so its file names read alike.
   case "$p" in [A-Za-z]:\\*) p=$(printf '%s' "$p" | sed 's|\\|/|g') ;; esac
-  LIST="$LIST$(find "$p" -type f \( -name '*.gd' -o -name '*.cs' -o -name '*.cpp' -o -name '*.cc' -o -name '*.c' \
-    -o -name '*.h' -o -name '*.hpp' -o -name '*.rs' -o -name '*.py' -o -name '*.js' -o -name '*.ts' \
-    -o -name '*.lua' -o -name '*.java' -o -name '*.kt' \) 2>/dev/null)$NL"
+  LIST="$LIST$(src_find "$p")$NL"
 done <<EOF
 $PATHS
 EOF

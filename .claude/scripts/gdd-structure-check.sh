@@ -31,6 +31,10 @@
 #   loot.md   ABSENT:  Player Fantasy,Formulas,Tuning Knobs
 #   loot.md   PLACEHOLDER: Edge Cases
 
+case "${1:-}" in
+  -h|--help) sed -n '2,/^$/p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
+esac
+
 set -u
 
 cd "$(dirname "$0")/../.." || { echo "gdd-structure-check: cannot reach repo root" >&2; exit 1; }

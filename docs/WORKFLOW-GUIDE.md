@@ -3,7 +3,7 @@
 > **How to go from zero to a shipped game using the Agent Architecture.**
 >
 > This guide walks you through every phase of game development using the
-> 49-agent system, 74 slash commands, and 15 automated hooks. It assumes you
+> 49-agent system, 75 slash commands, and 15 automated hooks. It assumes you
 > have Claude Code installed and are working from the project root.
 >
 > The pipeline has 7 phases. At `rigor: standard` and `full`, each phase has
@@ -11,7 +11,7 @@
 > `rigor: minimal` -- the default -- nothing requires a gate; see
 > [The Default Path](#the-default-path-rigor-minimal). The authoritative
 > phase sequence is defined in `.claude/docs/workflow-catalog.yaml` and read
-> by `/help`.
+> by `/next-step`.
 
 ---
 
@@ -61,10 +61,12 @@ If this is your first session:
 
 This guided onboarding asks where you are and routes you to the right phase:
 
-- **Path A** -- No idea yet: routes to `/brainstorm`
-- **Path B** -- Vague idea: routes to `/brainstorm` with seed
-- **Path C** -- Clear concept: routes to `/brainstorm` to write it down, or
-  straight to `/setup-engine`
+- **Path A** -- Make me a game (playable in your browser): routes to `/prototype`,
+  which asks a few quick questions and builds a browser game
+- **Path B** -- An idea, or none yet: routes to `/brainstorm`, with your idea as
+  the seed when you have one
+- **Path C** -- Clear concept: routes to `/prototype` to build it now (with no
+  engine set), `/brainstorm` to write it down, or straight to `/setup-engine`
 - **Path D** -- Existing work: routes to `/setup-engine` when no engine is set
   and there is no more than a concept; otherwise to `/project-stage-detect`,
   then `/adopt` for brownfield migration
@@ -90,7 +92,7 @@ make sure the hook paths are correct for your OS.
 At any point, run:
 
 ```
-/help
+/next-step
 ```
 
 This reads your current phase from `project.stage` in `project.yaml` (falling
@@ -128,7 +130,7 @@ docs/                 # Technical documentation
   api/                # API documentation
   postmortems/        # Post-mortems
 tests/                # Test suites
-prototypes/           # Throwaway prototypes
+prototypes/           # One-shot browser games and throwaway engine prototypes
 production/           # Sprint plans, milestones, releases
   sprints/
   milestones/
@@ -150,26 +152,36 @@ production/           # Sprint plans, milestones, releases
 
 ## The Default Path: Rigor Minimal
 
-`modes.rigor` defaults to `minimal` (`/start` infers the tier from your description and shows it
-before saving; `/settings` changes it any time). At `minimal` the path to code is four steps:
+The main path starts with a game, not an engine:
 
-1. `/setup-engine` -- configure the engine
-2. `/brainstorm` -- writes the one-page `design/game-brief.md`, which replaces
-   the full concept doc, the systems decomposition and the per-system GDDs
-3. `/create-stories` -- turns the brief's MVP list and build order into stories
-   under `production/epics/<slug>/`. No `/create-epics`, no `/sprint-plan`: the
-   brief's build order is the plan
-4. `/dev-story` then `/story-done`, story by story. `/story-done` names the
-   next story, and `/help` knows this route
+1. `/prototype` (or just say "make me a game") -- a few quick questions, then the
+   one-page `design/game-brief.md` and a playable browser game built from it, played
+   and screenshotted before it is handed over
+2. Play it, then ask for changes in plain words ("make the jump higher"). Each
+   change is checked, and you accept or undo it
+3. Grow it: say "grow it" when you like the game, and `/prototype` turns it into a
+   web project at the project root
+4. One feature a sitting: say the next feature in your own words, and `/prototype` builds it, checks what it touched and asks to keep it as a commit.
+   Stories (`/create-stories`, then `/dev-story` and `/story-done`) only when you
+   ask for them, or in studio mode. `/next-step` knows this route
+
+`/setup-engine` is for an engine other than web (Godot, Unity, Unreal), or for later;
+with an engine set, `/prototype` builds a throwaway prototype in it instead.
+`/prototype --spike` is the quick test of one mechanic. `/brainstorm` helps when you
+have no idea yet.
+
+`modes.rigor` defaults to `minimal` (`/start` infers the tier from your description and shows it
+before saving; `/project-settings` changes it any time). At `minimal` the one-page brief
+replaces the full concept doc, the systems decomposition and the per-system GDDs.
 
 Nothing on this path runs `/gate-check`, so `project.stage` stays at Concept --
 that is expected. Every skill still runs at any tier; rigor changes what is
 required, not what is allowed.
 
 The trade: there are no GDDs to catch design problems before they reach code.
-Raise rigor with `/settings` when the game outgrows a one-page brief -- several
+Raise rigor with `/project-settings` when the game outgrows a one-page brief -- several
 systems that affect each other, a design someone else implements, a team, or a
-firm release date. Existing files stay where they are, and `/help` shows what
+firm release date. Existing files stay where they are, and `/next-step` shows what
 the new tier requires next.
 
 The rest of this guide describes the `standard`/`full` pipeline.
@@ -196,7 +208,7 @@ with defined pillars and a player journey. This is where you figure out
                                                                    |
                                                                    v
                                                              /prototype
-                                                       (concept prototype — 1 day max)
+                                                  (browser game, or a 1-day engine prototype)
                                                         PROCEED ↓     PIVOT → /brainstorm
                                                                    |
                                                                    v (PROCEED)
@@ -726,12 +738,12 @@ fantasy within a few minutes, without developer guidance?
 **What it builds:** A near-production-quality playable build covering at least
 one complete [start → challenge → resolution] cycle. Uses real architecture
 layers, real naming conventions, no hardcoded values — but not final art or
-audio. This is not a throwaway like the concept prototype; it demonstrates
+audio. Unlike an engine concept prototype, it is not thrown away; it demonstrates
 production pipeline feasibility.
 
-**Note on concept prototyping:** If you ran `/prototype` in Phase 1 (Concept),
-you already validated the core idea is fun. The vertical slice now validates
-you can build it properly. They answer different questions. If you skipped the
+**Note on concept prototyping:** If you ran `/prototype` in Phase 1 (Concept)
+and its verdict was PROCEED, you have played the core idea and judged it worth
+building. The vertical slice now validates you can build it properly. They answer different questions. If you skipped the
 concept prototype, now is a reasonable time to run one first before investing
 in the full slice.
 
@@ -1045,7 +1057,7 @@ performance, balance, accessibility, audio, visual polish, and playtesting.
   prioritize       performance + art +
   debt items       audio + UX + QA
 
-  /security-audit  -->  /localize qa  -->  /release-checklist  -->  /changelog
+  /security-audit  -->  /localize qa  -->  /release-checklist  -->  /write-changelog
                         (per language)                           + /patch-notes
   Release readiness: the Polish -> Release gate checks all four.
 ```
@@ -1173,7 +1185,7 @@ Generates player-friendly patch notes from git history and sprint data.
 Translates developer language into player language.
 
 ```
-/changelog v1.0.0
+/write-changelog v1.0.0
 ```
 
 Generates an internal changelog (more technical, for the team).
@@ -1316,8 +1328,8 @@ default rigor, `rigor: minimal`, gives `solo`.
 | `lean` | Directors only at phase transitions (`/gate-check`) | `rigor: standard` | Experienced devs |
 | `solo` | No director reviews | `rigor: minimal` | Solo projects, game jams, prototypes |
 
-**Change it** with `/settings modes.review_mode=lean` (written to `project.yaml`;
-an explicit value wins over rigor), or `/settings --local modes.review_mode=full`
+**Change it** with `/project-settings modes.review_mode=lean` (written to `project.yaml`;
+an explicit value wins over rigor), or `/project-settings --local modes.review_mode=full`
 for your machine only. `/start` does not set it.
 
 **Override for a single run** without changing your setting:
@@ -1436,7 +1448,7 @@ checkpoint comes back when the conversation is summarised.
 
 **Sprint status tracking:** `production/sprint-status.yaml` is the
 machine-readable story tracker. Written by `/sprint-plan` (init) and
-`/story-done` (status updates). Read by `/sprint-status`, `/help`, and
+`/story-done` (status updates). Read by `/sprint-status`, `/next-step`, and
 `/story-done` (next story). Eliminates fragile markdown scanning.
 
 ### Brownfield Adoption
@@ -1495,7 +1507,7 @@ entering:
 When a gate passes — or you accept a CONCERNS verdict's risks — `project.stage`
 in `project.yaml` is updated (only then; a FAIL never advances it) — mirrored to
 `production/stage.txt`. At `standard` and `full` the stage drives
-the status line and `/help`; at `minimal` they follow the brief and stories
+the status line and `/next-step`; at `minimal` they follow the brief and stories
 instead.
 
 ### Reverse Documentation
@@ -1590,18 +1602,18 @@ conflicts go to `producer`.
 
 ## Appendix B: Slash Command Quick-Reference
 
-### All 74 Commands by Category
+### All 75 Commands by Category
 
 #### Onboarding and Navigation (7)
 
 | Command | Purpose | Phase |
 |---------|---------|-------|
 | `/start` | Guided onboarding, routes to right workflow | Any (first session) |
-| `/help` | Context-aware "what do I do next?" | Any |
+| `/next-step` | Context-aware "what do I do next?" | Any |
 | `/project-stage-detect` | Full project audit to determine current phase | Any |
 | `/setup-engine` | Configure engine, pin version, set preferences | 1 |
 | `/adopt` | Brownfield audit and migration plan | Any (existing projects) |
-| `/settings` | View or change project config (rigor, review mode, ...) | Any |
+| `/project-settings` | View or change project config (rigor, review mode, ...) | Any |
 | `/skill-improve` | Improve a skill via test-fix-retest loop | Any |
 
 #### Game Design (6)
@@ -1676,7 +1688,7 @@ conflicts go to `producer`.
 | `/test-flakiness` | Detect non-deterministic tests from CI logs | 5-6 |
 | `/skill-test` | Validate skill files for structural and behavioral correctness | Any |
 
-#### Production Management (6)
+#### Production Management (7)
 
 | Command | Purpose | Phase |
 |---------|---------|-------|
@@ -1685,6 +1697,7 @@ conflicts go to `producer`.
 | `/bug-report` | Structured bug report creation | 5+ |
 | `/bug-triage` | Re-evaluate open bugs for priority, severity, and owner | 5+ |
 | `/playtest-report` | Structured playtest session report | 4-6 |
+| `/cut` | Cuts and a polish list to finish the game; a freeze date for a game to sell | 5-6 |
 | `/onboard` | Onboard a new team member | Any |
 
 #### Release (6)
@@ -1693,7 +1706,7 @@ conflicts go to `producer`.
 |---------|---------|-------|
 | `/release-checklist` | Pre-release validation | 6 |
 | `/launch-checklist` | Full cross-department launch readiness | 7 |
-| `/changelog` | Auto-generate internal changelog | 6 |
+| `/write-changelog` | Auto-generate internal changelog | 6 |
 | `/patch-notes` | Player-facing patch notes | 6 |
 | `/hotfix` | Emergency fix workflow | 7+ |
 | `/day-one-patch` | Scoped patch for issues found after gold master | 7+ |
@@ -1702,7 +1715,7 @@ conflicts go to `producer`.
 
 | Command | Purpose | Phase |
 |---------|---------|-------|
-| `/prototype` | Concept prototype — validate core idea before GDDs | 1 |
+| `/prototype` | A playable browser game, or a throwaway engine prototype | 1 |
 | `/art-bible` | Guided Art Bible authoring — visual identity spec | 1-4 |
 | `/vertical-slice` | Production-quality end-to-end build before Production | 4 |
 | `/localize` | String extraction and validation | 6-7 |
@@ -1809,7 +1822,7 @@ conflicts go to `producer`.
 2. /security-audit (the release gate reads the newest report)
 3. /localize qa for every language you ship
 4. /release-checklist all
-5. /changelog and /patch-notes (drafts; /team-release finalizes them)
+5. /write-changelog and /patch-notes (drafts; /team-release finalizes them)
 6. /gate-check release (verify Polish is complete and the game is ready to release)
 7. /launch-checklist (full cross-department validation)
 8. /team-release (coordinate the release)
@@ -1821,8 +1834,8 @@ conflicts go to `producer`.
 ### Workflow 8: "I'm lost / don't know what to do next"
 
 ```
-1. /help (reads your phase, checks artifacts, tells you what's next)
-2. If /help doesn't help: /project-stage-detect (full audit)
+1. /next-step (reads your phase, checks artifacts, tells you what's next)
+2. If /next-step doesn't help: /project-stage-detect (full audit)
 3. If stage seems wrong: /gate-check at the transition you think you're at
 ```
 
@@ -1851,7 +1864,7 @@ conflicts go to `producer`.
    shader. Do not ask `qa-tester` to make design decisions. The hierarchy
    exists for a reason.
 
-6. **Run /help when uncertain.** It reads your actual project state and tells
+6. **Run /next-step when uncertain.** It reads your actual project state and tells
    you the single most important next step.
 
 7. **Run `/design-review` before handing designs to programmers.** This

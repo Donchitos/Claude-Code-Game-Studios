@@ -47,7 +47,7 @@ and `/story-readiness` + `/dev-story`.
 - Every story file has a `Type:` field — one of: Logic, Integration, Visual/Feel, UI, Config/Data
 - Every story file has a `Manifest Version:` field matching the date from `docs/architecture/control-manifest.md`'s header at time of writing — at `minimal`, `N/A (minimal — no control manifest)`
 - Every story file has a `## Test Evidence` section stating the expected evidence location for its type
-- Every story file has a `## Acceptance Criteria` section with at least one checkbox item copied from the GDD — at `minimal`, derived from `design/game-brief.md` (its Player goal & fail state and the MVP feature the story implements)
+- Every story file has a `## Acceptance Criteria` section with at least one checkbox item copied from the GDD — at `minimal`, derived from `design/game-brief.md` (its Goal & fail state and the Features item the story implements)
 - Every story file has a `## Dependencies` section naming each story it needs by path (may say "None" but is never omitted)
 - Every story file has a `## Files` section listing the code and test files it is planned to create or change; `/dev-story` replaces the list with the files it changed, and `/story-done` checks scope against it
 - The EPIC.md `## Stories` table is updated with a row per story including `#`, `Story` title, `Type`, `Status`, and `ADR`

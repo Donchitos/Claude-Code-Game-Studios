@@ -30,7 +30,7 @@ them without asking. Your rules add to the shipped ones in
 
 Claude Code has several permission modes. The shipped `.claude/settings.json`
 starts terminal sessions in `default`; to start in another, set
-`permissions.defaultMode` here. "One setting CCGS does ship" in
+`permissions.defaultMode` here. "One setting Claude Code Game Studios does ship" in
 `setup-requirements.md` lists what that can and cannot change. You can also
 switch during a session. Suggested for game dev:
 

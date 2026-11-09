@@ -33,7 +33,7 @@ Checked against the SKILL.md by `/skill-test spec` — no fixture needed.
 - [ ] Has ≥2 phase headings
 - [ ] Contains verdict keyword: COMPLETE (in both the Lean Brief flow and the full flow)
 - [ ] Contains "May I write" language for both `design/game-brief.md` and `design/gdd/game-concept.md`
-- [ ] Has a next-step handoff at the end (`/map-systems` in the full flow's design-first steps; `/create-stories` in the Lean Brief flow)
+- [ ] Has a next-step handoff at the end (`/map-systems` in the full flow's design-first steps; in the Lean Brief flow `/prototype` with no engine set, `/create-stories` with one)
 - [ ] Documents 4 director gates in full mode: CD-PILLARS, AD-CONCEPT-VISUAL, TD-FEASIBILITY, PR-SCOPE
 - [ ] Documents a named skip note for each gate in lean and solo modes
 
@@ -164,12 +164,14 @@ Fixture defaults.
 **Expected behavior:**
 1. Tier branch: `minimal` → Lean Brief flow; Phases 1–5 are skipped
 2. From the hint, proposes 2–3 one-line concepts and asks one question to pick or combine
-3. Fills the brief fields conversationally (pitch, core loop, player goal & fail
-   state, MVP, out of scope, build order) and presents the brief for one confirmation
+3. Fills the brief fields conversationally (In your words, pitch, genre, controls,
+   label, question, hooks, core loop, goal & fail state, Features, out of scope,
+   avoid, build order, and the one-liners) and presents the brief for one confirmation
 4. Asks "Brief is ready. May I write it to `design/game-brief.md`?" with
    `[A] Yes — write it` / `[B] Revise a field first`
-5. Next steps: `/create-stories`, then `/dev-story`; `/setup-engine` is NOT listed
-   because `engine.name` is set
+5. Next steps: `/create-stories`, then `/dev-story`, then one line naming
+   `/prototype --path html` as a browser sketch, not recommended; `/setup-engine`
+   is NOT listed because `engine.name` is set
 6. Verdict is COMPLETE
 
 **Assertions:**
@@ -177,6 +179,8 @@ Fixture defaults.
 - [ ] 2–3 one-line concepts are proposed (not the full 9-field concept cards)
 - [ ] No director agent is spawned
 - [ ] Next steps list `/create-stories` and `/dev-story`, not `/map-systems` or `/setup-engine`
+- [ ] The browser sketch is one line, said to be not recommended, and is not a question
+- [ ] The brief has `## Features` (every item `[ ]`), `## Avoid` and `## Keep` (empty), not `## MVP`
 - [ ] Verdict is COMPLETE
 
 ---
@@ -234,6 +238,63 @@ Fixture defaults.
 
 ---
 
+### Case 7: Lean Brief With No Engine — ends on `/prototype`, typed by the person
+
+**Fixture:**
+- `project.yaml` has no `engine:` block and no `modes` block (`workflow` → `minimal`)
+- No `design/game-brief.md`
+- The user types the hint below, picks a concept, and adds "no combat, it should
+  be calm"; "you pick" for the rest; then `[A] Yes — write it`
+
+**Input:** `/brainstorm a lighthouse keeper in a storm`
+
+**Expected behavior:**
+1. The Lean Brief flow runs as in Case 4
+2. `## In your words` holds "a lighthouse keeper in a storm" and "no combat, it
+   should be calm" exactly as typed; the concept lines the skill proposed are not
+   there, only which one was picked
+3. "no combat" is an Avoid line; Question, Hooks and Kill condition are proposed
+   and marked *(guessed)* where the user did not give them
+4. Next steps name one step: "Type `/prototype` to build it."; `/setup-engine`,
+   `/create-stories` and `/dev-story` are not listed
+5. Verdict is COMPLETE
+
+**Assertions:**
+- [ ] In your words is the user's text word for word, never a summary
+- [ ] "no combat" appears under `## Avoid`
+- [ ] The brief has the template's Question, Hooks and Kill condition lines
+- [ ] The only next step is `/prototype`, and the skill does not start it (no Skill tool call): a typed `/brainstorm` runs on its own model
+- [ ] Variant — `engine.name: web`: the same single `/prototype` step
+
+---
+
+### Case 8: Market Lines — sourced or "not researched", never from memory
+
+**Fixture:**
+- `modes.workflow: standard` (pinned: the full flow carries the market lines);
+  review mode `solo`
+- No web search is run and the user gives no figures
+- The user picks a concept, then answers `No preference — help me decide` to the
+  engine question
+
+**Input:** `/brainstorm cozy farming`
+
+**Expected behavior:**
+1. A concept's Why It Could Work that gives a market reason, and every market risk
+   in Phase 6, cites a source or says "not researched"
+2. No sales figure, player count or market size is given from memory
+3. The concept written from the game-concept template carries the same marks
+4. With no engine named, Phase 8 recommends prototype-first with `/prototype` as
+   its first step, says "Type `/prototype` to build it." and does not start it
+
+**Assertions:**
+- [ ] Every market claim has a source or the words "not researched"
+- [ ] No number about the market appears without a source
+- [ ] Phase 8's first prototype-first step is `/prototype`, before `/setup-engine`
+- [ ] Variant — the user names Godot: Phase 8 adds one line naming `/prototype --path html` as a browser sketch, not recommended
+
+---
+
 ## Protocol Compliance
 
 - [ ] Checks `workflow` before anything else and runs exactly one flow
@@ -242,7 +303,8 @@ Fixture defaults.
 - [ ] Gates spawn at their own points in full mode (CD-PILLARS + AD-CONCEPT-VISUAL together; TD-FEASIBILITY; PR-SCOPE)
 - [ ] In the full flow (`workflow: standard` / `full`), all 4 gates are skipped in lean and solo modes, each noted by name; the Lean Brief flow spawns no gate at all
 - [ ] Asks "May I write" before writing `design/game-brief.md` or `design/gdd/game-concept.md`
-- [ ] Ends with Verdict COMPLETE and the tier's next-step handoff
+- [ ] Ends with Verdict COMPLETE and the tier's next-step handoff, and never starts `/prototype` itself
+- [ ] Writes the person's own words to In your words unchanged, and every removal they name to Avoid
 
 ---
 

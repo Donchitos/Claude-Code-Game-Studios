@@ -243,4 +243,38 @@ test reusing a class name fails to link
 Test name: "<Project>.[System].[Scenario]"
 ```
 
+#### Web (`Engine: Web`)
+
+**Run the helper; do not write these files by hand.** `/setup-engine web` copied
+the web scaffold, and the Playwright config here must be that scaffold's file:
+
+```bash
+bash .claude/scripts/test-scaffold.sh web --dry-run   # Phase 2: the plan
+bash .claude/scripts/test-scaffold.sh web             # after the approval
+```
+
+It creates `tests/README.md`, `production/qa/evidence/.gitkeep`,
+`tests/unit/.gitkeep`, `tests/integration/.gitkeep`, `playwright.config.ts` (the
+scaffold's own), `.github/workflows/tests.yml` (Phase 4) and
+`tests/smoke/critical-paths.md` (Phase 5), and leaves every file that exists
+(`EXISTS`): after `/setup-engine web`, the Playwright config and the example
+tests are already there. Report each `NEEDS` row: no `package.json` means
+`/setup-engine web` has not run; `npm_install` means `npm ci` has not.
+
+The two test tools are kept apart. Vitest runs `tests/unit/**/*.test.ts` (the
+rules in `src/game/`, in Node, no browser); Playwright runs `tests/integration/`
+against `dist-single/index.html`, opened from disk, with the browser
+`.claude/scripts/page-shot.sh --which` prints. The commands:
+
+```bash
+npm test              # Vitest, then Playwright
+npm run smoke         # build:single, then the @boot test
+bash .claude/scripts/test-run.sh web   # both halves, each run and read apart
+```
+
+Each half exits 0 when every test passed and non-zero when one failed. A half
+with no test file exits 1: Vitest prints `No test files found` and Playwright
+`No tests found`. That is not a failing test and not a pass: report it as not
+assessed, no tests found.
+
 ---

@@ -1,0 +1,25 @@
+{
+  "name": "web-game",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "engines": {
+    "node": "^22.12 || ^24 || >=26"
+  },
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc --noEmit && vite build",
+    "build:single": "tsc --noEmit && vite build --mode single",
+    "test": "npm run test:unit && npm run test:e2e",
+    "test:unit": "vitest run",
+    "test:e2e": "npm run build:single && playwright test",
+    "smoke": "npm run build:single && playwright test --grep @boot"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.64.1",
+    "typescript": "7.0.2",
+    "vite": "8.3.4",
+    "vite-plugin-singlefile": "2.3.3",
+    "vitest": "5.0.5"
+  }
+}

@@ -17,11 +17,11 @@ If Godot was chosen, ask the user which language to use **before** showing the p
 >
 > Which will this project primarily use?"
 
-Record the choice. It determines the CLAUDE.md template, naming conventions, specialist routing, and which agent is spawned for code files throughout the project.
+Record the choice. It determines the CLAUDE.md template, naming conventions, specialist routing, and which agent writes code files throughout the project.
 
 ### Primary Language (Unreal)
 
-If Unreal was chosen, ask via `AskUserQuestion`: "Will most gameplay logic live in
+If Unreal was chosen, ask: "Will most gameplay logic live in
 C++ or in Blueprints?" — `[A] C++ (Blueprints for tuning and prototyping)` /
 `[B] Blueprint-primary (C++ only where needed)`. Default to C++ if the user has no
 preference. The answer sets `engine.language` (`"C++"` or `"Blueprint"`).
@@ -45,6 +45,8 @@ Update the Technology Stack section, replacing the `[CHOOSE]` placeholders with 
 - **Asset Pipeline**: Unity Asset Import Pipeline + Addressables
 ```
 
+**For Web** — the four lines in `references/web.md` (W3).
+
 **For Unreal:**
 ```markdown
 - **Engine**: Unreal Engine [version]
@@ -58,16 +60,19 @@ The Language line follows the primary-language answer above: the first form for
 ### Engine reference import
 
 In the same CLAUDE.md write, set the **Engine Version Reference** import to the
-chosen engine. Find the line marked `ENGINE-REFERENCE-IMPORT` (an
-`@docs/engine-reference/<engine>/VERSION.md` line under its comment) and Edit it
-to point at the configured engine:
+chosen engine. Find the `ENGINE-REFERENCE-IMPORT` comment. With an
+`@docs/engine-reference/<engine>/VERSION.md` line under it, Edit that line to point
+at the configured engine; a line already pointing there is left as it is. With
+none (the template ships with no import until an engine is set), insert the line
+on its own right after the comment's closing `-->`:
 - Godot → `@docs/engine-reference/godot/VERSION.md`
 - Unity → `@docs/engine-reference/unity/VERSION.md`
 - Unreal → `@docs/engine-reference/unreal/VERSION.md`
+- Web → `@docs/engine-reference/web/VERSION.md`
 
 This keeps a Unity or Unreal project from loading the Godot reference in every
-session. It is idempotent — re-running `/setup-engine` for a different
-engine rewrites the same line. (The target `docs/engine-reference/<engine>/`
+session, and a project with no engine from loading any. It is idempotent —
+re-running `/setup-engine` for a different engine rewrites the same line. (The target `docs/engine-reference/<engine>/`
 directory is created in Section 7, Populate Engine Reference Docs, if it does not yet exist.)
 
 ---

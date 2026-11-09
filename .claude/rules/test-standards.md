@@ -22,6 +22,10 @@ paths:
     that filter in `commands.test` uses: the project name, or the distinct root
     `/setup-engine` chose when the project's name is also an engine area
     (`Audio`, `Core`, `Input`, …) — name tests under whichever it is
+  - **Web (Vitest, Playwright):** file `[module].test.ts` under `tests/unit/`
+    (Vitest) or `[system].spec.ts` under `tests/integration/` (Playwright),
+    test `'[scenario] [expected]'` in plain words —
+    `it('keeps the square inside the field')`
 - Every test must have a clear arrange/act/assert structure
 - Unit tests must not depend on external state (filesystem, network, database)
 - Integration tests must clean up after themselves

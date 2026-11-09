@@ -1,4 +1,4 @@
-> Gate definition, loaded by `/gate-check` for the TARGET PHASE ONLY.
+> Gate definition, loaded by `/gate-check` for the target stage only.
 > Never load the other five — one gate applies per invocation.
 
 

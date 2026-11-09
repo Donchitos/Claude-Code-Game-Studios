@@ -200,10 +200,14 @@ fi
 if [ -f .claude/hooks/yaml-helper.sh ] && ! command -v resolve_code_root >/dev/null 2>&1; then
     . .claude/hooks/yaml-helper.sh 2>/dev/null
 fi
-if command -v resolve_code_root >/dev/null 2>&1; then
-    CODE_ROOT=$(resolve_code_root 2>/dev/null | cut -f1)
-else
-    CODE_ROOT=""
+_SS_CR=""
+command -v resolve_code_root >/dev/null 2>&1 && _SS_CR=$(resolve_code_root 2>/dev/null)
+CODE_ROOT=$(printf '%s' "$_SS_CR" | cut -f1)
+# A bad engine.code_root is said here, once a session: every code check after
+# this reports NOT ASSESSED until it is fixed.
+if [ "$(printf '%s' "$_SS_CR" | cut -f2)" = invalid ]; then
+    echo ""
+    echo "Code root: NOT ASSESSED ($(printf '%s' "$_SS_CR" | cut -f3)). Fix engine.code_root in project.yaml, or remove it to use the engine's folder."
 fi
 # Source files only, binaries skipped. Unity's code root is Assets/, which also
 # holds every texture, model and audio file: an unfiltered grep read all of
@@ -212,10 +216,24 @@ fi
 # "Binary file ... matches" line as a TODO.
 if [ -n "$CODE_ROOT" ] && [ -d "$CODE_ROOT" ]; then
     _SS_SRC=(--include='*.gd' --include='*.cs' --include='*.cpp' --include='*.h' --include='*.hpp'
-             --include='*.c' --include='*.py' --include='*.rs' --include='*.lua')
+             --include='*.c' --include='*.py' --include='*.rs' --include='*.lua'
+             --include='*.js' --include='*.ts')
     # tr: BSD wc (macOS) right-aligns its count, and these are printed as-is.
-    TODO_COUNT=$(grep -rI "${_SS_SRC[@]}" "TODO" "$CODE_ROOT/" 2>/dev/null | wc -l | tr -d ' ')
-    FIXME_COUNT=$(grep -rI "${_SS_SRC[@]}" "FIXME" "$CODE_ROOT/" 2>/dev/null | wc -l | tr -d ' ')
+    if [ "$CODE_ROOT" = "." ]; then
+        # The project root itself (a flat web game): the files outside the
+        # framework's folders, listed by code_root_find, not a grep -r of
+        # everything. JavaScript counts here, as it is the whole game.
+        _SS_FILES=$(code_root_find . -type f \( -name '*.js' -o -name '*.ts' -o -name '*.gd' -o -name '*.cs' \
+                    -o -name '*.cpp' -o -name '*.h' -o -name '*.hpp' -o -name '*.c' -o -name '*.py' -o -name '*.rs' -o -name '*.lua' \))
+        TODO_COUNT=0; FIXME_COUNT=0
+        if [ -n "$_SS_FILES" ]; then
+            TODO_COUNT=$(printf '%s\n' "$_SS_FILES" | tr '\n' '\0' | xargs -0 grep -I "TODO" /dev/null 2>/dev/null | wc -l | tr -d ' ')
+            FIXME_COUNT=$(printf '%s\n' "$_SS_FILES" | tr '\n' '\0' | xargs -0 grep -I "FIXME" /dev/null 2>/dev/null | wc -l | tr -d ' ')
+        fi
+    else
+        TODO_COUNT=$(grep -rI "${_SS_SRC[@]}" "TODO" "$CODE_ROOT/" 2>/dev/null | wc -l | tr -d ' ')
+        FIXME_COUNT=$(grep -rI "${_SS_SRC[@]}" "FIXME" "$CODE_ROOT/" 2>/dev/null | wc -l | tr -d ' ')
+    fi
     if [ "$TODO_COUNT" -gt 0 ] || [ "$FIXME_COUNT" -gt 0 ]; then
         echo ""
         echo "Code health: ${TODO_COUNT} TODOs, ${FIXME_COUNT} FIXMEs in ${CODE_ROOT}/"
@@ -223,9 +241,11 @@ if [ -n "$CODE_ROOT" ] && [ -d "$CODE_ROOT" ]; then
 fi
 
 # --- engine reference vs configured engine -----------------------------------
-# /setup-engine is the only thing that rewrites CLAUDE.md's ENGINE-REFERENCE-IMPORT
-# line. Edit engine.name in project.yaml by hand and the import keeps loading the
-# previous engine's reference as project instructions -- every session, silently.
+# /setup-engine, the grow's record step and /project-settings write CLAUDE.md's
+# ENGINE-REFERENCE-IMPORT line; the template ships with none until an engine is
+# set. Edit engine.name in project.yaml by hand and the import keeps loading the
+# previous engine's reference as project instructions -- every session, silently --
+# or, with no line yet, loads none.
 # An OBSERVATION, never an action (CLAUDE.md): it reports, the user decides.
 # Printed BEFORE the session state: hook output past 10,000 characters is cut
 # to a preview, so a warning below a long checkpoint could be lost.
@@ -246,6 +266,13 @@ if [ -f project.yaml ] && [ -f CLAUDE.md ]; then
         echo "   CLAUDE.md imports        : docs/engine-reference/$ERI/VERSION.md"
         echo "   Every session is loading the $ERI reference on a $CFG project."
         echo "   Fix: re-run /setup-engine, or edit the ENGINE-REFERENCE-IMPORT line."
+    elif [ -z "$ERI" ] && [ -n "$CFG" ] && [ -f "docs/engine-reference/$CFG/VERSION.md" ]          && grep -q 'ENGINE-REFERENCE-IMPORT' CLAUDE.md 2>/dev/null; then
+        echo ""
+        echo "!! NO ENGINE REFERENCE IMPORTED"
+        echo "   project.yaml engine.name : $CFG"
+        echo "   CLAUDE.md imports no docs/engine-reference/<engine>/VERSION.md."
+        echo "   Fix: re-run /setup-engine, or add @docs/engine-reference/$CFG/VERSION.md"
+        echo "   on the line under the ENGINE-REFERENCE-IMPORT comment."
     fi
 fi
 

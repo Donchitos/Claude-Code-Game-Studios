@@ -41,6 +41,10 @@ fi
 
 INPUT=$(cat)
 
+# Only files under .claude/skills/ are named. Leave before any parsing when the
+# tool input never says skills: this hook runs on every Write and Edit.
+case "$INPUT" in *'"tool_input"'*[Ss][Kk][Ii][Ll][Ll][Ss]*) ;; *) exit 0 ;; esac
+
 # Parse file path -- use jq if available, fall back to grep
 if command -v jq >/dev/null 2>&1; then
     FILE_PATH=$(echo "$INPUT" | jq -r '.tool_input.file_path // empty')

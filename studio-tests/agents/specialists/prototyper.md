@@ -22,11 +22,11 @@
 **Input**: "Prototype a card-drawing mechanic in 2 hours. The core question: does drawing 3 cards per turn with hand-size limit of 7 feel good? I need something to test in a playtest today."
 **Expected behavior**:
 - States the falsifiable hypothesis ("If the player draws 3 cards per turn with a hand limit of 7, they will feel [Y] — evidenced by [Z]") and the riskiest assumption before building
-- Recommends a prototype path with rationale — a card mechanic where timing precision is not the question points to the HTML or Paper path, not the Engine path
+- Recommends a prototype path with rationale — a card mechanic where timing precision is not the question points to the Paper path or a browser build, not the Engine path
 - Proposes scope in 3–5 bullets (deck, draw N, hand limit 7, a minimal state display) and gets confirmation before building
-- Output goes to `prototypes/card-draw-concept/` (e.g., a single self-contained `prototype.html` that opens by double-click, or `rules.md` + `play-log.md` on the Paper path); every code file starts with the `PROTOTYPE - NOT FOR PRODUCTION` header naming the question and date
+- Output goes to `prototypes/card-draw-concept/` (`rules.md` + `play-log.md` on the Paper path, or a browser build in the one-shot's folder from `bash .claude/scripts/one-shot-new.sh`, opening by double-click); every code file starts with the `PROTOTYPE - NOT FOR PRODUCTION` header naming the question and date
 - Code prioritizes speed over correctness: no unit tests, no doc comments required, global state is acceptable; no menus or polish
-- Does NOT implement production patterns (dependency injection, signals, data-driven config) unless they take less time than not using them
+- Does NOT implement production patterns (dependency injection, signals) unless they take less time than not using them; a browser build still keeps its tuning values in `config.js`
 - Asks "May I write this to [filepath]?" before writing
 
 ### Case 2: Out-of-domain request — production-grade implementation

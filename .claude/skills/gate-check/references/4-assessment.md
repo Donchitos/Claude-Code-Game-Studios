@@ -43,8 +43,9 @@ decides *whether* the panel runs, `workflow` decides *how wide* it is.
 - `lean` → run the panel (phase gates always run in lean mode — this is their purpose).
 - `full` → run the panel.
 
-**Axis 2 — `workflow` decides the panel width.** Directors are Opus-tier, so the
-panel is sized to the project rather than fixed at four. The gate still runs at
+**Axis 2 — `workflow` decides the panel width.** `creative-director`,
+`technical-director` and `producer` are Opus-tier, and `art-director` runs on
+the session's model, so the panel is sized to the project rather than fixed at four. The gate still runs at
 every tier; only its breadth scales:
 
 | `workflow` | Panel | Directors |
@@ -89,8 +90,8 @@ gate files:
   `workflow: minimal`, pass the Build order in `design/game-brief.md` as the plan — that
   tier has no sprint plan.
 - **AD-PHASE-GATE**: the art and visual artifacts present, the Visual Identity
-  Anchor (from `design/gdd/game-concept.md`, else the "Art & audio direction"
-  line of `design/game-brief.md`), and the art bible path.
+  Anchor (from `design/gdd/game-concept.md`, else the Label line of
+  `design/game-brief.md`, "Art & audio direction" in older briefs), and the art bible path.
 
 Tell each director to read any GDD, ADR or the art bible by section: find the
 headings with the Grep tool (pattern `^#`, content mode) and Read those

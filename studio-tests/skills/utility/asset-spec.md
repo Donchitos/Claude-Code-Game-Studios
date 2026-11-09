@@ -184,7 +184,7 @@ Fixture defaults.
 
 **Fixture:**
 - `project.yaml` has no `modes` block (review mode resolves to `solo` via `modes.rigor: minimal`)
-- `design/game-brief.md` exists with an Art & audio direction line
+- `design/game-brief.md` exists with a Label line
 - No `design/art/art-bible.md`
 - No character profile for `hero` in `design/narrative/` or `design/assets/entity-inventory.md`
 

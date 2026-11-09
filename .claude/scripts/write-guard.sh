@@ -157,7 +157,7 @@ rel() {
 }
 tsv() { printf '%s' "$1" | tr '\t\n' '  '; }
 
-# The engine names project.yaml may hold, and each engine's code root
+# The engine name project.yaml holds, and its code root from the engine table
 # (directory-structure.md, "The code root is engine-specific").
 engine_name() {
   [ -f project.yaml ] || return 0
@@ -165,13 +165,12 @@ engine_name() {
   YG_PATH=engine.name awk -f "$HERE/yaml-get.awk" project.yaml
 }
 ENGINE=$(engine_name | tr 'A-Z' 'a-z')
-case "$ENGINE" in
-  godot) ROOTS="src" ;;
-  unity) ROOTS="Assets" ;;
-  unreal) ROOTS="Source" ;;
-  # Unset or unknown: the three roots, so no rule is skipped for want of one.
-  *) ROOTS="src Assets Source" ;;
-esac
+ROOTS=""
+if [ -n "$ENGINE" ] && [ -f "$HERE/engine-row.awk" ] && [ -f "$HERE/../engines/engines.tsv" ]; then
+  ROOTS=$(awk -F'\t' -v engine="$ENGINE" -v col=code_root -f "$HERE/engine-row.awk" "$HERE/../engines/engines.tsv")
+fi
+# Unset or unknown: the three roots, so no rule is skipped for want of one.
+[ -n "$ROOTS" ] || ROOTS="src Assets Source"
 
 APPLIED=""
 applied() { APPLIED="${APPLIED:+$APPLIED,}$1"; }
@@ -192,9 +191,9 @@ rule_overwrite() {
   [ "$TOOL" = Write ] || return 0
   [ -f "$1" ] || return 0
   _w=$(overwrite_why "$1")
-  # Where /test-setup writes: the test roots of the three engines, CI and the
-  # QA evidence folder. Other paths never ask test-scaffold.sh.
-  case "$1" in tests/*|.github/*|production/qa/*|Assets/Tests/*|Source/*) ;; *) _w="${_w:--}" ;; esac
+  # Where /test-setup writes: the test roots of the four engines, CI, the QA
+  # evidence folder and the web Playwright config. Other paths never ask test-scaffold.sh.
+  case "$1" in tests/*|.github/*|production/qa/*|Assets/Tests/*|Source/*|playwright.config.ts) ;; *) _w="${_w:--}" ;; esac
   [ "$_w" = "-" ] && return 0
   if [ -z "$_w" ]; then
     # The files /test-setup creates, as test-scaffold.sh lists them per engine.
@@ -203,7 +202,7 @@ rule_overwrite() {
       return 0
     fi
     _engines="$ENGINE"
-    case "$_engines" in godot|unity|unreal) ;; *) _engines="godot unity unreal" ;; esac
+    case "$_engines" in godot|unity|unreal|web) ;; *) _engines="godot unity unreal web" ;; esac
     for _e in $_engines; do
       if bash "$HERE/test-scaffold.sh" --root . "$_e" --list 2>/dev/null | grep -qxF "$1"; then
         _w="/test-setup only creates the files that are missing"; break

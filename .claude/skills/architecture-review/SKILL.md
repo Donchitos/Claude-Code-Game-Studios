@@ -3,7 +3,7 @@ name: architecture-review
 description: "Traceability matrix mapping GDD requirements to ADRs. Finds gaps, cross-ADR conflicts, engine compatibility. PASS/CONCERNS/NOT ASSESSED/FAIL."
 argument-hint: "[focus: full | coverage | consistency | engine | rtm | single-gdd path/to/gdd.md]"
 user-invocable: true
-allowed-tools: Read, Glob, Grep, Write, Edit, Agent, AskUserQuestion, Bash(bash "*/.claude/skills/architecture-review/../../hooks/yaml-helper.sh" resolve_config *), Bash(bash .claude/scripts/review-receipts.sh check *), Bash(bash .claude/scripts/review-receipts.sh hash *), Bash(bash .claude/scripts/adr-dep-graph.sh*), Bash(bash .claude/scripts/registry.sh validate*)
+allowed-tools: Read, Glob, Grep, Write, Edit, AskUserQuestion, Bash(bash "*/.claude/skills/architecture-review/../../hooks/yaml-helper.sh" resolve_config *), Bash(bash .claude/scripts/review-receipts.sh check *), Bash(bash .claude/scripts/review-receipts.sh hash *), Bash(bash .claude/scripts/adr-dep-graph.sh*), Bash(bash .claude/scripts/registry.sh validate*)
 model: opus
 ---
 
@@ -15,6 +15,9 @@ The architecture review validates that the complete body of architectural decisi
 covers all game design requirements, is internally consistent, and correctly targets
 the project's pinned engine version. It is the quality gate between Technical Setup
 and Pre-Production.
+
+**This skill spawns no agents.** Phase 5's engine specialist look runs here,
+from `references/lens-engine.md`.
 
 **Argument modes:**
 - **No argument / `full`**: Full review — all phases
@@ -77,17 +80,13 @@ Every `AskUserQuestion` call follows `.claude/docs/automation-modes.md`
 
 ## Error Recovery Protocol
 
-**First, verify the artifact.** If the return contract named a path, check the
+**First, verify the artifact.** When a phase names a file it writes, check the
 path exists before treating the phase as done — **a named artifact that is not
-on disk is a failed phase, however fluent the response reads.** An agent can
-burn a full phase and return a plausible preamble having written nothing, which
-is neither BLOCKED nor an error nor "fails to complete", so the trigger below
-never fires. Resume it naming the unmet contract; the context is
-usually still there.
+on disk is a failed phase, however fluent the response reads.**
 
-If any spawned agent returns BLOCKED, errors, or fails to complete: **surface it
-immediately, don't proceed past a dependency it blocks, and always produce a
-partial report** (retry scope here = fewer GDDs / single-system). Full procedure:
+If a phase is blocked or cannot finish: **surface it immediately, don't proceed
+past a dependency it blocks, and always produce a partial report** (retry scope
+here = fewer GDDs / single-system). Full procedure:
 `.claude/docs/error-recovery-protocol.md`.
 
 ---

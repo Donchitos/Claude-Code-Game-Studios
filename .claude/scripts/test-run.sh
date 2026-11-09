@@ -13,7 +13,7 @@
 # /smoke-check, which also decides what an unmatched exit code means.
 #
 # Usage: bash .claude/scripts/test-run.sh <engine> [options]
-#   <engine>            godot, unity or unreal (any case)
+#   <engine>            godot, unity, unreal or web (any case)
 #   --cmd COMMAND       the test command to run, instead of project.yaml's
 #                       commands.test or the engine's default
 #   --exe PATH          the editor executable (default: the one commands.test
@@ -24,8 +24,12 @@
 #   --timeout SECONDS   default 900; 1800 for unreal
 #   --os windows|linux|macos
 #                       unreal only: default is read from `uname -s`
-#   --filter ROOT       unreal only: the automation test root (default: the
-#                       .uproject's name); read one test name when unsure
+#   --filter ROOT       unreal: the automation test root (default: the
+#                       .uproject's name); read one test name when unsure.
+#                       web, with its two halves: a file or folder under
+#                       tests/unit/ runs Vitest on it alone, one under
+#                       tests/integration/ runs Playwright on it alone, and an
+#                       @tag runs Playwright's tests with that tag
 #   --no-build          unreal only: skip the build that comes first
 #   --tool T            force the timeout tool: timeout, gtimeout, perl or none (the
 #                       tests use this to reach the perl and no-tool paths)
@@ -50,15 +54,29 @@
 # against the last good binaries or not load at all. A check that fails runs
 # nothing and prints why. The import and the build each have a row saying what
 # runs, or why it does not, and their output goes to its own log (pre_log), so
-# nothing they print is read as the tests' output.
+# nothing they print is read as the tests' output. web has no step before the
+# tests. When its test command is the engine table's (npm test, from
+# commands.test or by default) and package.json has the web scaffold's
+# test:unit (Vitest) and test:e2e (Playwright) scripts, the two halves run one
+# after the other, whatever the first did, each under the timeout, and each is
+# read apart:
+# Vitest (npm run test:unit) and Playwright (npm run test:e2e: build:single,
+# then the browser). Any other web command is read by the runners it reaches
+# (the `runner` row): the command, and for a package manager's script (npm test,
+# pnpm run x, yarn x, bun run x) package.json's scripts, three deep. Vitest, Jest
+# and Playwright are read by their zero-tests line, summary and failing tests;
+# any other runner by its exit code only, which the `runner` and `rule` rows
+# say. A package manager's test command over a package.json with no test script
+# (or npm's placeholder, "no test specified") runs nothing: web:no-test-script.
 #
 # Output: TSV, in this order (a row that cannot apply is left out).
-#   engine      <Godot|Unity|Unreal>
+#   engine      <Godot|Unity|Unreal|Web>
 #   exe         <path|->  <commands.test|engine.path|path|--exe|->
 #   command     <--cmd|commands.test|default>  <the command>
 #   import      <command> | - <skipped: why>                godot, before the tests
 #   build       <command> | - <skipped: why>                unreal, before the tests
 #   timeout     <seconds>  <timeout|gtimeout|perl|none>
+#   runner      <vitest,jest,playwright|other>  <read from>   web, any other command
 #   precheck    <what>  <present|absent>
 #   import_exit, build_exit   <code>                        when it ran
 #   import_timed_out, build_timed_out   <yes|no>            when it ran
@@ -66,10 +84,20 @@
 #   exit        <code of the test command>
 #   timed_out   <yes|no>
 #   results_file  <path>  <present|absent>                  unity
-#   zero_tests  <yes|no|unknown>  <the marker line, or ->   godot, unity, unreal
+#   zero_tests  <yes|no|unknown>  <the marker line, or ->   godot, unity, unreal, web halves
+#                                                           (yes when either half found none);
+#                                                           web by exit code (runner other): `unknown`
 #   tests       total=<n> passed=<n> failed=<n>             unity (the <test-run> element),
-#                                                           unreal (Result={...} lines);
+#                                                           unreal (Result={...} lines), web
+#                                                           halves (summed);
 #                                                           godot: `-  not sourced`
+#   web halves, before the run:
+#   half        <unit|e2e>  <command> | - <skipped: why>
+#   browser     <path|->  page-shot.sh --which              the browser Playwright launches
+#   and after it, per half (unit_..., e2e_...):
+#   <h>_exit, <h>_timed_out, <h>_zero_tests <yes|no> <marker>,
+#   <h>_tests total=<n> passed=<n> failed=<n>, <h>_log <path>; e2e_build <ok|failed>,
+#   e2e_browser <started|failed> <the line>
 #   failed      <a line naming a failing test>  (up to 10, then `failed_more <n>`)
 #   evidence    <a line that backs the rule>
 #   rule        <id>  <what that row of the ladder says>     `-` when no row fits
@@ -80,7 +108,9 @@
 # unity:no-test-framework, unity:0, unity:zero-tests, unity:no-count,
 # unity:no-results, unity:2, unity:1, unity:3, unity:4, unity:other,
 # unreal:mac-unsourced, unreal:build-failed, unreal:result-fail,
-# unreal:no-tests-matched, unreal:pass, unreal:other-nonzero.
+# unreal:no-tests-matched, unreal:pass, unreal:other-nonzero, web:0, web:nonzero,
+# web:pass, web:failed, web:zero-tests, web:build-failed, web:no-browser,
+# web:no-test-script.
 #
 # Exit codes: 0 the helper finished (whatever the tests did: read the rows);
 # 1 cannot read the root or write the log; 2 usage error; 3 unknown engine.
@@ -121,7 +151,8 @@ case "$(printf '%s' "$ENGINE_ARG" | tr 'A-Z' 'a-z')" in
   godot) ENGINE=godot; ENAME=Godot ;;
   unity) ENGINE=unity; ENAME=Unity ;;
   unreal) ENGINE=unreal; ENAME=Unreal ;;
-  *) echo "test-run: '$ENGINE_ARG' is not an engine this knows (godot, unity, unreal)" >&2; exit 3 ;;
+  web) ENGINE=web; ENAME=Web ;;
+  *) echo "test-run: '$ENGINE_ARG' is not an engine this knows (godot, unity, unreal, web)" >&2; exit 3 ;;
 esac
 case "$PLATFORM" in editmode|playmode) ;; *) usage "--platform is editmode or playmode" ;; esac
 case "$OS_ARG" in ""|windows|linux|macos) ;; *) usage "--os is windows, linux or macos" ;; esac
@@ -169,6 +200,7 @@ else
   elif [ -n "$ENGINE_PATH" ] && { [ "$ENGINE" = unreal ] && [ -d "$ENGINE_PATH" ] || { [ "$ENGINE" != unreal ] && exe_ok "$ENGINE_PATH"; }; }; then EXE="$ENGINE_PATH"; EXE_SRC="engine.path"
   elif [ "$ENGINE" = godot ] && exe_ok godot; then EXE="godot"; EXE_SRC="path"
   elif [ "$ENGINE" = unity ] && exe_ok Unity; then EXE="Unity"; EXE_SRC="path"
+  elif [ "$ENGINE" = web ] && exe_ok npm; then EXE="npm"; EXE_SRC="path"
   fi
 fi
 printf 'exe\t%s\t%s\n' "${EXE:--}" "$EXE_SRC"
@@ -231,6 +263,13 @@ is_timeout() {
 ABS=$(pwd -W 2>/dev/null || pwd)
 RESULTS=""; BUILD=""; CMD=""; CMD_SRC="default"; PRE_FAIL=""; PRE_ID=""; PRE_WHY=""
 case "$ENGINE" in
+  web)
+    # The engine table's test command (.claude/engines/engines.tsv).
+    if [ -f "$HERE/engine-row.awk" ] && [ -f "$HERE/../engines/engines.tsv" ]; then
+      CMD=$(awk -F'\t' -v engine=web -v col=test -f "$HERE/engine-row.awk" "$HERE/../engines/engines.tsv")
+    fi
+    [ -n "$CMD" ] && CMD="$CMD 2>&1"
+    ;;
   godot)
     CMD="\"${EXE:-godot}\" --headless -s -d --remote-debug tcp://127.0.0.1:0 res://addons/gdUnit4/bin/GdUnitCmdTool.gd -a res://tests --ignoreHeadlessMode 2>&1"
     ;;
@@ -267,6 +306,65 @@ if [ "$ENGINE" = unity ] && [ "$CMD_SRC" != default ]; then
   named=${named#\"}; named=${named%\"}
   [ -n "$named" ] && RESULTS="$named"
 fi
+# Web's two halves: the table's npm test over the web scaffold's test:unit and
+# test:e2e scripts. A filter goes to the half it names.
+HALVES=0; UNIT_CMD=""; E2E_CMD=""; UNIT_WHY=""; E2E_WHY=""
+PJ_FLAT=""
+[ "$ENGINE" = web ] && [ -f package.json ] && [ -f "$HERE/json-flat.awk" ] && PJ_FLAT=$(awk -f "$HERE/json-flat.awk" package.json | tr -d '\r')
+# pj_script NAME -- package.json's script of that name, or empty.
+pj_script() { printf '%s\n' "$PJ_FLAT" | awk -F'\t' -v n="$1" '$1 == "scripts" && $2 == n { print $3; exit }'; }
+# script_runs SCRIPT WORD -- whether the script names that command word.
+script_runs() { printf ' %s ' "$(pj_script "$1")" | grep -qE "[ /&;|(]$2[ ;&|)]"; }
+if [ "$ENGINE" = web ] && { [ "$CMD_SRC" = default ] || [ "$CFG_TEST" = "npm test" ]; } && [ "$CMD_SRC" != --cmd ] \
+   && script_runs test:unit vitest && script_runs test:e2e playwright; then
+  HALVES=1
+  TROOT=$(yget engine.test_root); TROOT=${TROOT:-tests}; TROOT=${TROOT%/}
+  case "$FILTER" in
+    "") UNIT_CMD="npm run test:unit"; E2E_CMD="npm run test:e2e" ;;
+    *\'*) usage "a web --filter cannot hold a single quote" ;;
+    "$TROOT"/unit|"$TROOT"/unit/*)
+      UNIT_CMD="npm run test:unit -- '$FILTER'"; E2E_WHY="skipped: the filter names a Vitest test" ;;
+    "$TROOT"/integration|"$TROOT"/integration/*)
+      E2E_CMD="npm run test:e2e -- '$FILTER'"; UNIT_WHY="skipped: the filter names a Playwright test" ;;
+    @*) E2E_CMD="npm run test:e2e -- --grep '$FILTER'"; UNIT_WHY="skipped: the filter is a Playwright tag" ;;
+    *) usage "a web --filter is a path under $TROOT/unit/ or $TROOT/integration/, or an @tag" ;;
+  esac
+elif [ "$ENGINE" = web ] && [ -n "$FILTER" ]; then
+  usage "a web --filter needs the npm test command and package.json's test:unit and test:e2e scripts"
+fi
+# Any other web command: the runners it reaches, read from the command and, for
+# a package manager's script (npm test, pnpm run x, yarn x, bun run x), from
+# package.json's scripts two deep. Vitest, Jest and Playwright are read by their
+# output; any other runner by its exit code only.
+WEB_RUNNERS=""; WEB_RSRC=""; NO_TEST_SCRIPT=""
+if [ "$ENGINE" = web ] && [ "$HALVES" = 0 ] && [ -n "$CMD" ]; then
+  _c=${CMD% 2>&1}
+  # pm_script TEXT -- the script names a package manager runs in TEXT.
+  pm_script() {
+    printf '%s\n' "$1" | grep -oE '(^|[;&|( ])(npm|pnpm|yarn|bun) (run |run-script )?[A-Za-z0-9:_.-]+' \
+      | awk '{ n = $NF; if (n == "t" || n == "tst") n = "test"; print n }'
+  }
+  _txt="$_c"; _t="$_c"; _named=""
+  for _depth in 1 2 3; do
+    _next=""
+    for _n in $(pm_script "$_t"); do
+      [ "$_depth" = 1 ] && _named="${_named:-$_n}"
+      _v=$(pj_script "$_n"); [ -n "$_v" ] && _next="$_next ; $_v"
+    done
+    [ -n "$_next" ] || break
+    _txt="$_txt$_next"; _t="$_next"
+  done
+  if [ "$_named" = test ] && [ -n "$PJ_FLAT" ]; then
+    _ts=$(pj_script test)
+    if [ -z "$_ts" ]; then NO_TEST_SCRIPT="package.json has no test script"
+    else case "$_ts" in *"no test specified"*) NO_TEST_SCRIPT="package.json's test script is npm's placeholder: $_ts" ;; esac; fi
+  fi
+  for _r in vitest jest playwright; do
+    printf ' %s ' "$_txt" | grep -qE "[ /&;|(\"']$_r[ ;&|)\"']" && WEB_RUNNERS="${WEB_RUNNERS:+$WEB_RUNNERS }$_r"
+  done
+  if [ -n "$_named" ] && [ -n "$PJ_FLAT" ]; then WEB_RSRC="the command, and package.json's scripts.$_named"
+  else WEB_RSRC="the command"; fi
+fi
 # The step before the tests: Godot's import, Unreal's build.
 PRE_NAME=""; PRE_CMD=""; PRE_WHY=""
 case "$ENGINE" in
@@ -284,6 +382,18 @@ esac
 if [ -n "$PRE_CMD" ]; then printf '%s\t%s\n' "$PRE_NAME" "$PRE_CMD"
 elif [ -n "$PRE_NAME" ]; then printf '%s\t-\t%s\n' "$PRE_NAME" "$PRE_WHY"; fi
 printf 'timeout\t%s\t%s\n' "$TIMEOUT" "$TOOL"
+if [ "$HALVES" = 1 ]; then
+  if [ -n "$UNIT_CMD" ]; then printf 'half\tunit\t%s\n' "$UNIT_CMD"; else printf 'half\tunit\t-\t%s\n' "$UNIT_WHY"; fi
+  if [ -n "$E2E_CMD" ]; then printf 'half\te2e\t%s\n' "$E2E_CMD"; else printf 'half\te2e\t-\t%s\n' "$E2E_WHY"; fi
+  if [ -n "$E2E_CMD" ]; then
+    _br=$(bash "$HERE/page-shot.sh" --which 2>/dev/null | tr -d '\r')
+    printf 'browser\t%s\tpage-shot.sh --which\n' "${_br:--}"
+  fi
+fi
+if [ "$ENGINE" = web ] && [ "$HALVES" = 0 ] && [ -n "$CMD" ]; then
+  if [ -n "$WEB_RUNNERS" ]; then printf 'runner\t%s\t%s\n' "$(printf '%s' "$WEB_RUNNERS" | tr ' ' ',')" "$WEB_RSRC"
+  else printf 'runner\tother\tno Vitest, Jest or Playwright in %s: read by exit code only\n' "$WEB_RSRC"; fi
+fi
 
 # --- prechecks ----------------------------------------------------------------
 ran_no() { printf 'ran\tno\t%s\n' "$2"; printf 'rule\t%s\t%s\n' "$1" "$3"; exit 0; }
@@ -305,6 +415,9 @@ case "$ENGINE" in
       printf 'precheck\tmacos test command\tabsent\n'
       ran_no unreal:mac-unsourced "no sourced Unreal test command on macOS and no commands.test" "no sourced Unreal test command on macOS: set commands.test"
     fi ;;
+  web)
+    [ -n "$CMD" ] || ran_no runner-unavailable "no test command (--cmd, commands.test or the engine table)" "no test command was found, so the tests could not be run here"
+    [ -z "$NO_TEST_SCRIPT" ] || ran_no web:no-test-script "$NO_TEST_SCRIPT" "the project has no test script, so no test ran" ;;
 esac
 if [ -z "$EXE" ] && [ "$CMD_SRC" = default ]; then
   ran_no runner-unavailable "no editor executable (commands.test, engine.path, PATH)" "the engine executable was not found, so the tests could not be run here"
@@ -317,6 +430,83 @@ if [ -z "$LOG" ]; then
 fi
 : > "$LOG" 2>/dev/null || { echo "test-run: cannot write the log $LOG" >&2; exit 1; }
 [ "$ENGINE" = unity ] && [ -n "$RESULTS" ] && rm -f "$RESULTS"
+
+# --- web: the two halves, each run and read apart --------------------------------
+if [ "$HALVES" = 1 ]; then
+  ESC=$(printf '\033')
+  # hl_first HALF PATTERN -- the half's first output line matching the extended regex.
+  hl_first() { grep -E -m 1 "$2" "$LOG.$1" 2>/dev/null | head -1 | sed 's/^[[:blank:]]*//'; }
+  # hl_num HALF PATTERN -- the number before the word in the half's first line
+  # with "<n> <word>", e.g. "2 passed".
+  hl_num() { _l=$(grep -E -m 1 "$2" "$LOG.$1" 2>/dev/null); printf '%s\n' "$_l" | sed -n -E "s/.*[^0-9]([0-9]+) $3.*/\\1/p; s/^([0-9]+) $3.*/\\1/p" | head -1; }
+  # list_failed_web PATTERN FILE -- up to 10 failing tests as `failed` rows, then the overflow.
+  list_failed_web() {
+    n=$(grep -E -c "$1" "$2" 2>/dev/null); n=${n:-0}
+    grep -E "$1" "$2" 2>/dev/null | head -10 | sed 's/^[[:blank:]]*//' | while IFS= read -r l; do printf 'failed\t%s\n' "$l"; done
+    [ "$n" -gt 10 ] && printf 'failed_more\t%s\n' "$((n - 10))"
+    return 0
+  }
+  ANY_TIMED=no; FIRST_BAD=0; TOT=0; TPASS=0; TFAIL=0; ZERO=""; FAILED_HALVES=""
+  BUILD_BAD=""; BROWSER_BAD=""
+  printf 'ran\tyes\t-\n'
+  for H in unit e2e; do
+    if [ "$H" = unit ]; then HC="$UNIT_CMD"; else HC="$E2E_CMD"; fi
+    [ -n "$HC" ] || continue
+    : > "$LOG.$H"
+    # NO_COLOR, and the colour codes that still come stripped, so the lines read plainly.
+    run_timed "$TIMEOUT" "NO_COLOR=1 $HC 2>&1" 2>&1 | sed "s/${ESC}\\[[0-9;]*[A-Za-z]//g" | tr -d '\r' > "$LOG.$H"
+    HCODE=${PIPESTATUS[0]}
+    cat "$LOG.$H" >> "$LOG"
+    HT=no; is_timeout "$HCODE" && { HT=yes; ANY_TIMED=yes; }
+    printf '%s_exit\t%s\n%s_timed_out\t%s\n' "$H" "$HCODE" "$H" "$HT"
+    [ "$HCODE" = 0 ] || [ "$FIRST_BAD" != 0 ] || FIRST_BAD=$HCODE
+    if [ "$H" = unit ]; then
+      zm=$(hl_first unit 'No test files found')
+      tl=$(hl_first unit '^[[:blank:]]*Tests[[:blank:]]')
+      np=$(hl_num unit '^[[:blank:]]*Tests[[:blank:]]' passed); nf=$(hl_num unit '^[[:blank:]]*Tests[[:blank:]]' failed)
+      failpat='^[[:blank:]]*FAIL[[:blank:]]'
+    else
+      zm=$(hl_first e2e 'No tests found')
+      np=$(hl_num e2e '^[[:blank:]]*[0-9]+ passed' passed); nf=$(hl_num e2e '^[[:blank:]]*[0-9]+ failed' failed)
+      failpat='^[[:blank:]]*[0-9]+\) '
+      bl=$(hl_first e2e 'browserType\.launch|Executable doesn.t exist|Failed to launch')
+      if [ -n "$bl" ]; then printf 'e2e_browser\tfailed\t%s\n' "$bl"; BROWSER_BAD="$bl"
+      elif grep -qE '^Running [0-9]+ tests? using' "$LOG.e2e"; then printf 'e2e_browser\tstarted\t-\n'; fi
+      # No "Running" line and no zero-tests line: build:single failed before Playwright ran.
+      if [ "$HCODE" != 0 ] && [ -z "$zm" ] && ! grep -qE '^Running [0-9]+ tests? using' "$LOG.e2e"; then
+        printf 'e2e_build\tfailed\n'; BUILD_BAD=$(hl_first e2e 'error TS[0-9]+|error during build|[Ee]rror:')
+        [ -n "$BUILD_BAD" ] && printf 'evidence\t%s\n' "$BUILD_BAD"; BUILD_BAD=${BUILD_BAD:-build:single failed}
+      else printf 'e2e_build\tok\n'; fi
+    fi
+    np=${np:-0}; nf=${nf:-0}
+    if [ -n "$zm" ]; then printf '%s_zero_tests\tyes\t%s\n' "$H" "$zm"; ZERO="${ZERO:-$zm}"; else printf '%s_zero_tests\tno\t-\n' "$H"; fi
+    printf '%s_tests\ttotal=%s passed=%s failed=%s\n' "$H" "$((np + nf))" "$np" "$nf"
+    printf '%s_log\t%s\n' "$H" "$LOG.$H"
+    TOT=$((TOT + np + nf)); TPASS=$((TPASS + np)); TFAIL=$((TFAIL + nf))
+    [ "$nf" -gt 0 ] && FAILED_HALVES="$FAILED_HALVES ${H}"
+  done
+  printf 'exit\t%s\n' "$FIRST_BAD"
+  printf 'timed_out\t%s\n' "$ANY_TIMED"
+  if [ -n "$ZERO" ]; then printf 'zero_tests\tyes\t%s\n' "$ZERO"; else printf 'zero_tests\tno\t-\n'; fi
+  printf 'tests\ttotal=%s passed=%s failed=%s\n' "$TOT" "$TPASS" "$TFAIL"
+  for H in unit e2e; do
+    [ -f "$LOG.$H" ] || continue
+    if [ "$H" = unit ]; then list_failed_web '^[[:blank:]]*FAIL[[:blank:]]' "$LOG.unit"
+    else list_failed_web '^[[:blank:]]*[0-9]+\) ' "$LOG.e2e"; fi
+  done
+  _names() { printf '%s' "$1" | sed 's/^ //; s/unit/Vitest/; s/e2e/Playwright/; s/ / and /'; }
+  if [ "$ANY_TIMED" = yes ]; then RID=timeout; RTX="the run did not complete: timed out after ${TIMEOUT}s, so nothing was verified"
+  elif [ -n "$BROWSER_BAD" ]; then RID=web:no-browser; RTX="the browser did not start, so Playwright ran no test: $BROWSER_BAD"
+  elif [ -n "$BUILD_BAD" ]; then RID=web:build-failed; RTX="build:single failed, so Playwright ran no test: $BUILD_BAD"
+  elif [ -n "$FAILED_HALVES" ]; then RID=web:failed; RTX="a test failed in $(_names "$FAILED_HALVES")"
+  elif [ -n "$ZERO" ]; then RID=web:zero-tests; RTX="a half found no tests ($ZERO), which is not a pass"
+  elif [ "$FIRST_BAD" = 126 ] || [ "$FIRST_BAD" = 127 ]; then RID=runner-unavailable; RTX="the test command did not start (command not found or not executable)"
+  elif [ "$FIRST_BAD" != 0 ]; then RID=web:nonzero; RTX="a half exited $FIRST_BAD with no failed test, zero-tests line or build error read"
+  else RID=web:pass; RTX="exit 0 in each half that ran; tests passed: ${TPASS}"; fi
+  printf 'rule\t%s\t%s\n' "$RID" "$RTX"
+  printf 'log\t%s\n' "$LOG"
+  exit 0
+fi
 PRE_LOG=""; PRE_CODE=""; PRE_TIMED=no
 if [ -n "$PRE_CMD" ]; then
   PRE_LOG="$LOG.pre"
@@ -340,8 +530,15 @@ if [ "$PRE_NAME" = build ] && [ -n "$PRE_CMD" ] && [ "$PRE_CODE" != 0 ]; then
   printf 'pre_log\t%s\n' "$PRE_LOG"
   exit 0
 fi
-run_timed "$TIMEOUT" "$CMD" > "$LOG" 2>&1
-CODE=$?
+if [ "$ENGINE" = web ]; then
+  # NO_COLOR, and the colour codes that still come stripped, so the lines read plainly.
+  ESC=$(printf '\033')
+  run_timed "$TIMEOUT" "export NO_COLOR=1; $CMD" 2>&1 | sed "s/${ESC}\\[[0-9;]*[A-Za-z]//g" | tr -d '\r' > "$LOG"
+  CODE=${PIPESTATUS[0]}
+else
+  run_timed "$TIMEOUT" "$CMD" > "$LOG" 2>&1
+  CODE=$?
+fi
 printf 'ran\tyes\t-\n'
 printf 'exit\t%s\n' "$CODE"
 TIMED=no
@@ -426,6 +623,44 @@ case "$ENGINE" in
     elif [ "$CODE" = 126 ] || [ "$CODE" = 127 ]; then set_rule runner-unavailable "the editor did not start (command not found or not executable)"
     elif [ "$CODE" = 0 ] && [ "$nok" -gt 0 ]; then set_rule unreal:pass "exit 0 with Result={Success} lines"
     elif [ "$CODE" != 0 ]; then set_rule unreal:other-nonzero "a non-zero exit with no Result={Fail} line and no 'no tests matched': no test ran"
+    fi ;;
+  web)
+    if [ -z "$WEB_RUNNERS" ]; then
+      printf 'zero_tests\tunknown\tthe web test command is read by its exit code only\n'
+      case "$CODE" in
+        0) set_rule web:0 "exit 0: the test command passed (read by exit code only, so a run of zero tests looks the same)" ;;
+        126|127) set_rule runner-unavailable "the test command did not start (command not found or not executable)" ;;
+        *) set_rule web:nonzero "the test command failed (exit $CODE; read by exit code only)" ;;
+      esac
+    else
+      # Each runner's zero-tests line, summary and failing-test lines, from its
+      # real output (Vitest 5, Jest 30, Playwright 1.64).
+      # num_before PATTERN WORD -- the number before WORD on the first line matching PATTERN.
+      num_before() { first_line "$1" | sed -n -E "s/.*[^0-9]([0-9]+) $2.*/\\1/p; s/^([0-9]+) $2.*/\\1/p" | head -1; }
+      zm=""; np=0; nf=0; nsf=0; FPAT=""
+      for _r in $WEB_RUNNERS; do
+        case "$_r" in
+          vitest) _z=$(first_line 'No test files found'); _p=$(num_before '^[[:blank:]]*Tests[[:blank:]]+[0-9]' passed)
+                  _f=$(num_before '^[[:blank:]]*Tests[[:blank:]]+[0-9]' failed); _fp='^[[:blank:]]*FAIL[[:blank:]]' ;;
+          jest)   _z=$(first_line '^No tests found, exiting with code'); _p=$(num_before '^Tests:[[:blank:]]' passed)
+                  _f=$(num_before '^Tests:[[:blank:]]' failed); _fp='^[[:blank:]]*● '
+                  _s=$(num_before '^Test Suites:[[:blank:]]' failed); nsf=$((nsf + ${_s:-0})) ;;
+          playwright) _z=$(first_line '^Error: No tests found'); _p=$(num_before '^[[:blank:]]*[0-9]+ passed' passed)
+                  _f=$(num_before '^[[:blank:]]*[0-9]+ failed' failed); _fp='^[[:blank:]]*[0-9]+\) ' ;;
+        esac
+        zm="${zm:-$_z}"; np=$((np + ${_p:-0})); nf=$((nf + ${_f:-0}))
+        FPAT="${FPAT:+$FPAT|}$_fp"
+      done
+      if [ -n "$zm" ]; then printf 'zero_tests\tyes\t%s\n' "$zm"; else printf 'zero_tests\tno\t-\n'; fi
+      printf 'tests\ttotal=%s passed=%s failed=%s\n' "$((np + nf))" "$np" "$nf"
+      list_failed "$FPAT" "$LOG"
+      _rn=$(printf '%s' "$WEB_RUNNERS" | sed 's/vitest/Vitest/; s/jest/Jest/; s/playwright/Playwright/; s/ /, /g')
+      if [ "$nf" -gt 0 ] || [ "$nsf" -gt 0 ]; then set_rule web:failed "a test failed ($_rn)"
+      elif [ -n "$zm" ]; then set_rule web:zero-tests "no tests found ($zm), which is not a pass"
+      elif [ "$CODE" = 126 ] || [ "$CODE" = 127 ]; then set_rule runner-unavailable "the test command did not start (command not found or not executable)"
+      elif [ "$CODE" = 0 ] && [ "$np" -gt 0 ]; then set_rule web:pass "exit 0; tests passed: $np ($_rn)"
+      elif [ "$CODE" = 0 ]; then set_rule web:0 "exit 0, but no $_rn summary line was read, so a run of zero tests looks the same"
+      else set_rule web:nonzero "the test command failed (exit $CODE) with no failed test or zero-tests line read ($_rn)"; fi
     fi ;;
 esac
 if [ "$TIMED" = yes ]; then set_rule timeout "the run did not complete: timed out after ${TIMEOUT}s, so nothing was verified"; fi

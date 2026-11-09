@@ -1,0 +1,90 @@
+# Sources
+
+Every source key in a genre sheet resolves here, for example `[celeste-1]`. No build loads this
+file.
+
+Each entry: **[key]** author, *title*, year. URL · kind of source.
+
+- **[amplitude-1]** Joe Robinson, *How Endless Legend 2 raises the tide*, Xbox Wire, 2025, with Derek Paxton (Amplitude). https://news.xbox.com/en-us/2025/09/11/how-endless-legend-2-raises-the-tide-on-turn-based-strategy-games/ · interview
+- **[angry-birds-1]** Pocket Gamer, *Exclusive: the making of an Angry Birds level*, with Arttu Mäki (level designer). https://www.pocketgamer.com/angry-birds/exclusive-the-making-of-an-angry-birds-level/ · interview
+- **[ashwell-1]** Sam Kabo Ashwell, *Standard Patterns in Choice-Based Games*, 2015. https://heterogenoustasks.wordpress.com/2015/01/26/standard-patterns-in-choice-based-games/ · designer blog
+- **[box2d-1]** Erin Catto, Box2D documentation (*Hello Box2D*, *Simulation*) and Box2D 2.4.1 `b2_common.h`. https://box2d.org/documentation/hello.html · https://raw.githubusercontent.com/erincatto/box2d/v2.4.1/include/box2d/b2_common.h · engine docs and code
+- **[browder-1]** Michael McWhertor, *The Sacrifices of StarCraft II Made In The Name of Sports*, Kotaku, 2011, on Dustin Browder's GDC talk. https://kotaku.com/the-sacrifices-of-starcraft-ii-made-in-the-name-of-spor-5777029 · talk report, secondhand
+- **[browder-2]** Adam Biessener, interview with Dustin Browder (StarCraft II design director), Game Informer, 2010. https://gameinformer.com/b/features/archive/2010/04/08/an-extensive-interview-with-starcraft-ii-design-director · interview
+- **[civ-manual-1]** MicroProse, *Sid Meier's Civilization* manual, 1991, CivFanatics transcription. https://civfanatics.com/content/civ1/manual/civ1_man.htm · original manual, fan transcription
+- **[clicker-heroes-1]** Playsaurus, *Offline progression in Clicker Heroes*. https://blog.clickerheroes.com/offline-progression-in-clicker-heroes/ · developer blog
+- **[dark-room-1]** PocketGamer.biz, *Shedding light: the making of A Dark Room*, with Amir Rajan (iOS developer). https://www.pocketgamer.biz/shedding-light-the-making-of-a-dark-room/ · interview
+- **[dark-souls-manual-1]** FromSoftware and Namco Bandai, *Dark Souls* Xbox 360 manual, archive.org OCR. https://archive.org/download/dark-souls_manual_xbox360/Dark%20Souls_djvu.txt · manual · raw (OCR): "There are 10 classes from which to choose." (the control list read by the gatherer; OCR garbles some labels)
+- **[dodonpachi-1]** Shmuplations, *DoDonPachi* developer interview (Cave), translated. https://shmuplations.com/dodonpachi/ · interview, translated
+- **[doom-manual-1]** id Software, *DOOM* manual, archive.org OCR. https://archive.org/download/doom-manual/Doom-Manual_djvu.txt · manual · raw (OCR): "Some of the monsters you'll face aren't shown here." · "Imps: ... They heave balls o' fire down your throat" · "Barons of Hell: Tough as a dump truck"
+- **[emshort-2]** Emily Short, *Small-Scale Structures in CYOA*, 2016. https://www.emshort.blog/2016/11/05/small-scale-structures-in-cyoa/ · designer blog
+- **[fiedler-1]** Glenn Fiedler, *Fix Your Timestep!*, Gaffer On Games, 2004. https://gafferongames.com/post/fix_your_timestep/ · developer blog
+- **[gag-2]** Game Accessibility Guidelines, *Allow players to progress through text prompts at their own pace*. https://gameaccessibilityguidelines.com/full-list/ · guidelines
+- **[gradius-manual-1]** Konami, *Gradius* NES manual (US, 1986), archive.org OCR. https://archive.org/download/Gradius-Manual-NES-US-1986/Gradius-Manual-NES-US-1986_djvu.txt · manual · raw (OCR): "Choose the appropriate power boost considering the stage you are in at the time."
+- **[graze-counter-1]** Tech-Gaming, *Gunning and Grazing with Bikkuri Software* (Necobi Shirogane). https://www.tech-gaming.com/qa-bikkuri_software/ · developer Q&A
+- **[gungeon-1]** Dave Crooks (Dodge Roll), interviewed by Ian Miles Cheong, Gameranx, 2016. https://gameranx.com/features/id/48447/article/enter-the-gungeon-interview-with-dodge-rolls-dave-crooks-the-past-present-and-future/ · interview
+- **[gungeon-2]** Dave Crooks (Dodge Roll), *Q&A: The guns and dungeons of Enter the Gungeon*, Game Developer, 2016. https://www.gamedeveloper.com/design/q-a-the-guns-and-dungeons-of-i-enter-the-gungeon- · interview · raw: "There are 190 guns in the game." · "There are 21 bosses in the game total." · "In the first chamber you can flip tables, roll explosive barrels, and drop chandeliers."
+- **[harvest-moon-manual-1]** Natsume, *Harvest Moon: Back to Nature* US manual, 2000, archive.org OCR. https://archive.org/stream/Harvest_Moon_Back_to_Nature_2000_Natsume_US_SLUS-01115/Harvest_Moon_Back_to_Nature_2000_Natsume_US_SLUS-01115_djvu.txt · original manual
+- **[hearthstone-1]** Blizzard, BlizzCon 2013 Hearthstone fireside chat recap (Eric Dodds, Ben Brode). https://hearthstone.blizzard.com/en-us/blog/11524460 · official blog
+- **[hiddenfolks-1]** Adriaan de Jongh and Sylvain Tegroeg, *Hidden Folks* press kit. https://hiddenfolks.com/press/hidden-folks-1 · developer press kit
+- **[hiddenfolks-2]** Adriaan de Jongh and Sylvain Tegroeg, *Hidden Folks* press kit, on hints. https://hiddenfolks.com/press/hidden-folks-1 · developer press kit
+- **[hiddenfolks-3]** Adriaan de Jongh, interview by Chris Priestman, *Building thousands of tiny interactions into Hidden Folks*, Game Developer, 2017. https://web.archive.org/web/20221206084617/https://www.gamedeveloper.com/design/building-thousands-of-tiny-interactions-into-i-hidden-folks-i- · interview (archived copy)
+- **[hiddenfolks-4]** Adriaan de Jongh, *Hidden Folks* game site. https://hiddenfolks.com/ · developer site
+- **[hiddenfolks-5]** Adriaan de Jongh and Martin Kvale, *Announcing the Factory update, part 2*, 2017. https://store.steampowered.com/news/posts/?appids=435400&enddate=1497450198&feed=steam_community_announcements · developer post
+- **[inscryption-2]** Daniel New, *How Magic, Myst and Pokémon inspired Inscryption*, Thumbsticks, 2022, with Daniel Mullins. https://www.thumbsticks.com/magic-myst-pokemon-inspire-inscryption/ · interview
+- **[into-the-breach-1]** Subset Games: *Road to the IGF: Subset Games' Into the Breach* (Justin Ma), 2018, and *Into the Breach* patch notes. https://gamedeveloper.com/game-platforms/road-to-the-igf-subset-games-i-into-the-breach-i- · https://store.steampowered.com/news/app/590380 · interview, official patch notes
+- **[isaac-2]** Edmund McMillen, developer blog (a 2011 post, date read from the search page, not the post itself). https://edmundmcmillen.blogspot.com/search?q=enemies · developer blog · raw: "The 4 core rooms will ALWAYS appear in a map" · "their contents, enemies, look, design and any "surprises" within them are randomly picked from a slew of alternates."
+- **[iwata-ac-2]** Nintendo, *Iwata Asks: Animal Crossing: City Folk*. https://iwataasks.nintendo.com/interviews/wii/accf/0/1/ · developer interview
+- **[johnson-2]** Soren Johnson, *Analysis: Sid Meier's Key Design Lessons*, Game Developer, 2009. https://www.gamedeveloper.com/game-platforms/analysis-sid-meier-s-key-design-lessons · developer column
+- **[johnson-3]** Soren Johnson, *Old World Designer Notes #11: The End*, 2021. https://www.designer-notes.com/old-world-designer-notes-11-the-end/ · developer blog
+- **[johnson-4]** Soren Johnson, *GD Column 1: Seven Deadly Sins for Strategy Games*, 2008. https://www.designer-notes.com/?p=106 · developer column
+- **[kahoot-1]** Daria Golubeva, *How to make a kahoot game*, Kahoot!, 2021. https://kahoot.com/blog/2021/01/28/how-to-create-kahoot-tips-teachers/ · developer guide
+- **[kahoot-2]** Daria Golubeva, *7 Kahoot! features to tailor lesson dynamics*, Kahoot!, 2020. https://kahoot.com/blog/2020/10/06/control-lesson-dynamics-with-kahoot/ · developer guide
+- **[kahoot-3]** Kahoot!, *How points work*. https://support.kahoot.com/hc/en-us/articles/115002303908-How-points-work · official docs
+- **[kahoot-4]** Kahoot!, *Kahoot solo: How to play by yourself on the web platform*. https://support.kahoot.com/hc/en-us/articles/115003173007-Kahoot-solo-How-to-play-by-yourself-on-the-web-platform · official docs
+- **[kahoot-5]** Kahoot!, *Tips for hosting a live game*. https://support.kahoot.com/hc/en-us/articles/360039900153-Tips-for-hosting-a-live-game · official docs
+- **[kahoot-6]** Kahoot!, *Live game settings*. https://support.kahoot.com/hc/en-us/articles/115016055107-Live-game-settings · official docs
+- **[letterpress-1]** Solebon, *How to Play: Letterpress*, word rules. https://www.letterpressapp.com/how-to-play.html · official rules
+- **[letterpress-2]** Solebon, *How to Play: Letterpress*, playing a word once. https://www.letterpressapp.com/how-to-play.html · official rules
+- **[letterpress-3]** Solebon, *Support: Letterpress*, the word validator. https://www.letterpressapp.com/support.html · official docs
+- **[letterpress-4]** Solebon, *Dictionary: Letterpress*. https://www.letterpressapp.com/dictionary.html · official docs
+- **[limbo-5]** Game Developer, *GDC Europe: Limbo's Carlsen on making players your worst enemy and your best friend*, 2010. https://www.gamedeveloper.com/game-platforms/gdc-europe-i-limbo-i-s-carlsen-on-making-players-your-worst-enemy-and-your-best-friend · talk report, secondhand
+- **[matter-1]** liabru, Matter.js `src/core/Runner.js`. https://raw.githubusercontent.com/liabru/matter-js/master/src/core/Runner.js · engine source
+- **[mechabellum-1]** Game River, *Mechabellum* Steam page. https://store.steampowered.com/app/669330/Mechabellum/ · developer game description
+- **[miyazaki-1]** Hidetaka Miyazaki, interview, PlayStation Blog (before Dark Souls' release). https://blog.playstation.com/?p=44673 · interview · raw: "We want users to think, "if I avoid this enemy, maybe I can overcome him."" · "I want to expand the range and variety of all the enemies"
+- **[mtg-starter-1]** Wizards of the Coast, *The Reimagined New Player Experience, From Start To Finish*, WPN, 2020. https://wpn.wizards.com/en/news/reimagined-new-player-experience-start-finish · official news
+- **[nex-machina-1]** Engadget, *Nex Machina* interview and preview, with Harry Krueger (Housemarque), 2016. https://www.engadget.com/2016-12-03-nex-machina-housemarque-resogun-sequel-interview-preview.html · interview
+- **[pecorella-1]** Anthony Pecorella (Kongregate), *The Math of Idle Games*, parts I-III, Game Developer, 2016-2017. https://www.gamedeveloper.com/design/the-math-of-idle-games-part-i · developer articles
+- **[pecorella-2]** Anthony Pecorella, *Quest for Progress*, GDC Europe 2016 slides. https://www.slideshare.net/slideshow/quest-for-progress-gdc-europe-2016/65405507 · talk slides
+- **[polytopia-1]** Cubed3, interview with Christian Lövstedt (Midjiwan), 2025. https://www.cubed3.com/features/interviews/interview-with-midjiwan-ceo-christian-lovstedt-on-the-battle-of-polytopia · interview
+- **[renpy-1]** Ren'Py, documentation (preferences, config, GUI, saving) and the new-project `options.rpy` and `gui.rpy`. https://www.renpy.org/doc/html/config.html · https://raw.githubusercontent.com/renpy/renpy/master/gui/game/options.rpy · engine docs and defaults
+- **[rosewater-1]** Mark Rosewater, *Ten Things Every Game Needs, Part 1*, Making Magic, 2011. https://magic.wizards.com/en/news/making-magic/ten-things-every-game-needs-part-1-2011-10-24 · developer column
+- **[rosewater-2]** Mark Rosewater, *Big-Picture Questions, Part 2*, Making Magic. https://magic.wizards.com/en/news/making-magic/big-picture-questions-part-2 · developer column
+- **[rosewater-3]** Mark Rosewater, *New World Order*, Making Magic, 2011. https://magic.wizards.com/en/news/making-magic/new-world-order-2011-12-05 · developer column
+- **[runeterra-1]** Riot Games, *Let's Talk About Mana*, Legends of Runeterra support. https://support.riotgames.com/legends-of-runeterra/gameplay/let-s-talk-about-mana · official docs
+- **[shelley-1]** Bruce Shelley, *Guidelines for Developing Successful Games*, Game Developer, 2001. https://gamedeveloper.com/production/guidelines-for-developing-successful-games · developer article
+- **[shelley-2]** Game Developer, *GCDC: Age of Empires, the retrospective*, with Bruce Shelley, 2007. https://www.gamedeveloper.com/game-platforms/gcdc-i-age-of-empires-i-the-retrospective · panel report, secondhand
+- **[significant-bits-1]** Radek Koncewicz, *The 1-Pixel Collision Box*, Significant Bits, 2009. https://significant-bits.com/the-1-pixel-collision-box · designer blog
+- **[sine-mora-1]** Nintendo UK, interview on *Sine Mora EX* with Brandon Sheffield, 2017. https://nintendo.com/en-gb/News/2017/June/Interview-Combining-classic-and-modern-shoot-em-up-action-on-Nintendo-Switch-with-Sine-Mora-EX-1240077.html · interview
+- **[slay-7]** Mega Crit, *Slay the Spire* Steam store page. https://store.steampowered.com/app/646570/ · store page · raw: "350+ fully implemented cards." · "Four characters that each have their own unique set of cards."
+- **[snap-1]** Neil Long, *Second Dinner's Ben Brode reveals Marvel Snap's recipe for success*, Mobilegamer, 2023. https://www.mobilegamer.biz/second-dinners-ben-brode-reveals-marvel-snaps-recipe-for-success-literally/ · talk report, secondhand
+- **[spellingbee-1]** The New York Times, *Spelling Bee* help. https://thenewyorktimeshelpcenter.helpjuice.com/360011158491-New-York-Times-Games/23675493312404-Spelling-Bee · publisher docs
+- **[stardew-2]** ConcernedApe, *Stardew Valley 1.4 update: full changelog*. https://www.stardewvalley.net/stardew-valley-1-4-update-full-changelog/ · official patch notes
+- **[street-fighter-2]** Capcom, *Street Fighter II* SNES manual (US), archive.org OCR. https://archive.org/download/street-fighter-ii-usa/Street%20Fighter%20II%20(USA)_djvu.txt · manual · raw (OCR): "Eight fighters from across the globe" · "This jab is very" · "This strong does a" · "This fierce punch" · "SPECIAL MOVES" (per fighter)
+- **[superautopets-1]** Team Wood Games, *Super Auto Pets* Steam page, custom packs. https://store.steampowered.com/app/1714040/Super_Auto_Pets/ · developer game description
+- **[superautopets-2]** Team Wood Games, *Super Auto Pets* Steam page, your own pace. https://store.steampowered.com/app/1714040/Super_Auto_Pets/ · developer game description
+- **[teamfighttactics-1]** Riot Games, *What is Teamfight Tactics?*, 2021. https://teamfighttactics.leagueoflegends.com/en-us/news/game-updates/what-is-teamfight-tactics/ · official guide
+- **[teamfighttactics-2]** Riot_Mort, Llord Llama and Statikk (Riot Games), */dev: Teamfight Tactics: Galaxies Systems Update*, 2020. https://teamfighttactics.leagueoflegends.com/en-au/news/dev/dev-teamfight-tactics-galaxies-systems-update/ · developer blog
+- **[teamfighttactics-3]** Riot_Mort (Riot Games), */dev: TFT: Rise of the Elements Learnings*, 2020. https://teamfighttactics.leagueoflegends.com/en-gb/news/dev/dev-tft-rise-of-the-elements-learnings/ · developer blog
+- **[teamfighttactics-4]** Riot Games, *Teamfight Tactics patch 11.23 notes*, 2021. https://teamfighttactics.leagueoflegends.com/en-us/news/game-updates/teamfight-tactics-patch-11-23-notes/ · official patch notes
+- **[telltale-1]** Kevin Bruner (Telltale Games), *Classic Postmortem: The Walking Dead*, Game Developer, 2013. https://www.gamedeveloper.com/design/classic-postmortem-telltale-games-the-walking-dead-2012 · postmortem
+- **[tiberian-sun-1]** Rade Stojsavljevic (Westwood), *Postmortem: Command and Conquer: Tiberian Sun*, Game Developer, 2000. https://www.gamedeveloper.com/design/postmortem-westwood-studios-command-and-conquer-tiberian-sun · postmortem
+- **[vampire-survivors-1]** poncle, *Vampire Survivors* and *Vampire Crawlers* patch notes and posts, 2022-2026. https://store.steampowered.com/news/app/1794680 · official patch notes and developer posts
+- **[victoria-3-1]** Paradox Interactive, *Victoria 3 Dev Diary #74: UX Improvements*, 2023. https://www.paradoxinteractive.com/games/victoria-3/news/dev-diary-74-ux-improvements · developer diary
+- **[wada-1]** Game Developer, *GDC 2012: How Harvest Moon almost didn't happen*, with Yasuhiro Wada. https://www.gamedeveloper.com/business/gdc-2012-how-i-harvest-moon-i-almost-didn-t-happen · talk report, secondhand
+- **[wordwheel-1]** Zynga, *Zynga Announces Daily Word Wheel*, 2020. https://www.zynga.com/blog/zynga-announces-daily-word-wheel-a-new-voice-based-puzzle-game-based-on-words-with-friends-exclusively-for-google-nest-devices/ · publisher announcement
+- **[wyatt-1]** Patrick Wyatt, *The StarCraft path-finding hack*, Code of Honor, 2013. https://www.codeofhonor.com/blog/the-starcraft-path-finding-hack · developer blog
+- **[yarn-1]** Yarn Spinner, `LinePresenter.lettersPerSecond`, API reference 3.1. https://docs.yarnspinner.dev/3.1/api/csharp/yarn.unity/yarn.unity.linepresenter/yarn.unity.linepresenter.letterspersecond · engine docs
+- **[zelda-manual-1]** Nintendo, *The Legend of Zelda* NES manual (US, 1987), archive.org OCR. https://archive.org/download/The-Legend-of-Zelda-Manual-NES-US-1987/The-Legend-of-Zelda-Manual-NES-US-1987_djvu.txt · manual · raw (OCR): "Find the map of the nine labyrinths & the compass." (the enemy entries counted from its two lists)
+- **[zun-1]** OneMillionPower, *Talking with ZUN from the Touhou Series*, translated. https://www.onemillionpower.com/?p=3402 · interview, translated
+- **[zun-2]** Touhou Garakuta, interview with ZUN, translated. https://en.touhougarakuta.com/article/specialtaidan_zun_hiroyuki_5-en/ · interview, translated

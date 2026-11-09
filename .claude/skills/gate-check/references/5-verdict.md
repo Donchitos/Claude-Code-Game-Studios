@@ -37,7 +37,7 @@
 
 ### Verdict: [PASS / NOT ASSESSED / CONCERNS / FAIL]
 - **PASS**: All required artifacts present, all quality checks passing
-- **CONCERNS**: Minor gaps exist but can be addressed during the next phase —
+- **CONCERNS**: Minor gaps exist but can be addressed during the next stage —
   the stage advances only if the user explicitly accepts them (Section 6)
 - **FAIL**: Critical blockers must be resolved before advancing
 - **NOT ASSESSED**: One or more required checks could not be run at all — name
@@ -132,7 +132,7 @@ For a **PASS** draft:
 
 For a **CONCERNS** draft:
 - "Could any listed CONCERN be elevated to a blocker given the project's current state?"
-- "Is the concern resolvable within the next phase, or does it compound over time?"
+- "Is the concern resolvable within the next stage, or does it compound over time?"
 - "Did I soften any FAIL condition into a CONCERN to avoid a harder verdict?"
 - "Are there artifacts I didn't check that could reveal additional blockers?"
 - "Do all the CONCERNS together create a blocking problem even if each is minor alone?"
@@ -145,7 +145,7 @@ For a **FAIL** draft:
 - "Is the fail condition resolvable, or does it indicate a deeper design problem?"
 
 **Step 2 — Answer each question** independently.
-Do NOT reference the draft verdict text — re-check specific files or ask the user.
+Do not reference the draft verdict text — re-check specific files or ask the user.
 
 **Step 3 — Revise if needed:**
 - If any answer reveals a missed blocker → upgrade verdict (PASS→CONCERNS or CONCERNS→FAIL)

@@ -7,10 +7,16 @@ allowed-tools: Read, Glob, Grep, Write, Edit, Agent, AskUserQuestion, Bash(bash 
 model: sonnet
 ---
 
-!`bash "${CLAUDE_SKILL_DIR}/../../hooks/yaml-helper.sh" resolve_config --keys review_mode,review_gate,automation,workflow,docs.density,story_granularity,qa.level,system_overrides`
+!`bash "${CLAUDE_SKILL_DIR}/../../hooks/yaml-helper.sh" resolve_config --keys review_mode,review_gate,automation,workflow,docs.density,story_granularity,qa.level,system_overrides,engine_values,engine_row`
 
 Resolved above — use as-is; `--review` overrides `review_mode`. No block →
 defaults in `.claude/docs/config-resolution.md`.
+
+**Engine and roots** come from the `engine_values` and `engine_row` lines, never from
+anything else in context. `name=unset` means no engine is set: never assume one (not
+Godot, not web). The Engine field reads `not set (/setup-engine picks one; web for a new
+project)`, test paths take no engine's naming, and code and test roots are the ones
+`engine_row` gives (`unset` stays `unset`, per `.claude/docs/code-root-resolution.md`).
 
 Ask with the question tool. Without one, list the options numbered and end your turn
 to wait. A skipped or dismissed question is not an answer: ask again in plain text.
@@ -85,7 +91,8 @@ named.
 ### `minimal`: build the epic from the brief
 
 1. **No `design/game-brief.md`:** stop. "There is no brief to build stories from
-   yet: run `/brainstorm` first; it writes the one-page brief." When the code root
+   yet: run `/prototype` and say the game in one line; it writes the one-page brief and a
+   first build (`/brainstorm` first if you have no idea yet)." When the code root
    already holds the game (10 or more source files), name `/reverse-document design
    [code root]` instead.
 2. Read `design/game-brief.md` in full (one page).
@@ -94,13 +101,46 @@ named.
    - `production/epics/<slug>/EPIC.md` exists: it is the epic. Use its scope, still
      traced to the brief, and never rewrite it.
    - It does not: draft one, written in Phase 7 only after the Phase 6 ask names
-     it. Goal = the brief's one-sentence pitch; scope = its MVP feature list;
-     order = its **Build order**. Keep it terse.
+     it. Goal = the brief's pitch; scope = its Features list (MVP in briefs from
+     before 1.3.0); order = its **Build order**. Keep it terse.
    - Stories already in the folder (a return visit): never rewrite an existing
      `story-*.md`. Add stories only for brief items they do not cover, or new ones
      the user names, and number on from the highest existing `story-NNN`.
-4. **One story per MVP feature, in Build order**, each traced to the brief. No
-   story is blocked on ADR grounds: this tier has none.
+4. **One story per Features item not built yet (`[ ]`), in Build order**, each
+   traced to the brief. An item marked `[x]` is built already (the one-shot made
+   it): it gets no story, and the Phase 6 summary names it. An older brief's MVP
+   items are all unbuilt. No story is blocked on ADR grounds: this tier has none.
+   **Nothing left to build** (every Features item `[x]` or cut, and no `thin
+   stand-in` or `later` system without its stories): never write 0 stories. A
+   grown game is often here, since the one-shot built every item. Say "Every
+   feature in the brief is built." Ask what to add next, in their own words. Then
+   ask "May I add these to the brief's Features as `[ ]` items: <each item, one
+   line>?" and write them into `design/game-brief.md` only on a yes. They are
+   now the unbuilt items: go on from here with them. With nobody to ask (the
+   autonomous automation mode), write nothing and stop with that line and "say
+   what to add next".
+   A `## Your systems` list changes the order:
+   - **No `## Your systems` list** (or only its blank line): Build order.
+   - **A `## Your systems` list** (lines `- <system> · in the slice`, `· thin
+     stand-in` or `· later`, perhaps ending *(guessed)*): skeleton first, so the
+     whole game stands up thin before any one part grows. Three steps, in this
+     order:
+     1. **Core:** the unbuilt Features items for the core loop and the `in the
+        slice` systems, in Build order.
+     2. **Every system thin:** one story for each `later` system that makes it
+        there and wired to the rest, at its simplest, in the list's order; an
+        unbuilt `(thin stand-in)` Features item goes here too.
+     3. **Deepen, one system at a time:** one story for each `thin stand-in` and
+        `later` system that builds it out in full, in the list's order, one system
+        per story. Its criteria come from that system's design doc,
+        `design/gdd/<system>.md`, never from its bare name: with no doc yet, the
+        one criterion is "built out as `design/gdd/<system>.md` describes", and
+        `/design-system <system>` writes that doc before the story is built.
+
+     Each story's header names its step: `> **Build step**: core`, `thin —
+     <system>` or `deepen — <system>`. A Features item that names a system goes in
+     that system's step. Thin and deepen stories for a `later` system build what
+     Out of scope put off: the Phase 6 list says so, and the person can drop any.
 
 Read no GDD, control manifest, TR registry or ADR at `minimal`. Go to Phase 3.
 
@@ -213,11 +253,11 @@ ADRs: ADR-0001 Accepted · ADR-0002 Accepted · ADR-0004 Proposed   (every ADR, 
 
 Story 001: [title] — Logic — ADR-0001 — Ready — Estimate M
   Covers: TR-[system]-001 ([one-line requirement])
-  Test required: tests/unit/[system]/[slug]_test.[ext]
+  Test required: [test root]/unit/[system]/[the engine's test file name]
 
 Story 002: [title] — Integration — ADR-0004 — BLOCKED (ADR-0004 is Proposed) — Estimate L
   Covers: TR-[system]-002, TR-[system]-003
-  Test required: tests/integration/[system]/[slug]_test.[ext]
+  Test required: [test root]/integration/[system]/[the engine's test file name]
 
 Story 003: [title] — Visual/Feel — ADR-0001 — Ready — Estimate S
   Covers: TR-[system]-004
@@ -227,9 +267,17 @@ Story 003: [title] — Visual/Feel — ADR-0001 — Ready — Estimate S
 QL-STORY-READY: [skipped — Solo mode | its verdicts]
 ```
 
-At `minimal`, each line traces to `Brief MVP feature N`, there is no ADRs line, and
-there is one story per MVP feature: no extra stories for brief items outside the
-MVP list. Then
+At `qa.level: minimal`, a Logic or Integration story's `Test required:` line reads
+`Test: waived at qa.level minimal` instead: `/dev-story` writes no test there.
+
+At `minimal`, each line traces to `Brief MVP feature N` (N is the item's number in
+the brief's Features list), there is no ADRs line, and there is one story per
+unbuilt Features item: no extra stories for brief items outside the list, except
+the thin and deepen stories a `## Your systems` list adds. Those trace to `Brief
+Your systems: <system>`, and the list is shown under three headings in order,
+`Core`, `Every system thin` and `Deepen, one system at a time`, with one line under
+the last: "Each deepen story starts with `/design-system <system>` when that system
+has no design doc yet." Then
 ask: "May I write these [N] stories to `production/epics/[epic-slug]/`, and
 [create | update] `production/epics/[epic-slug]/EPIC.md` and update
 `production/epics/index.md`?" Options: Yes, write all [N] / Not yet, I want to
@@ -252,13 +300,14 @@ exactly:
 | Field | Value at `minimal` |
 |---|---|
 | GDD | `design/game-brief.md` |
-| Requirement | `Brief MVP feature N`, never a TR-ID |
+| Requirement | `Brief MVP feature N`, or `Brief Your systems: <system>` for a thin or deepen story; never a TR-ID |
+| Build step | with a `## Your systems` list only: `core`, `thin — <system>` or `deepen — <system>`, as Phase 2 set it |
 | ADR Governing Implementation, ADR Decision Summary, ADR Version | `N/A (minimal — no ADRs)` |
 | Manifest Version, Control Manifest Rules | `N/A (minimal — no control manifest)` |
-| Engine | `engine.name` + `engine.version` |
+| Engine | `engine.name` + `engine.version`; with no engine set, `not set (/setup-engine picks one; web for a new project)` |
 | Risk | the level `docs/engine-reference/<engine>/VERSION.md` gives the pinned version (its timeline row, or its overall rating). No file or no level: `NOT ASSESSED (no VERSION.md risk rating)`, never a guess. `/dev-story` reads NOT ASSESSED as HIGH |
 | Engine Notes | `none (no ADR engine-compatibility analysis at minimal)` |
-| Acceptance Criteria | from the brief's **Player goal & fail state** and the MVP feature, made concrete and testable; never invented from a bare bullet |
+| Acceptance Criteria | from the brief's **Goal & fail state** (Player goal & fail state in older briefs) and the Features item, made concrete and testable; never invented from a bare bullet |
 
 At every tier:
 - **QA Test Cases:** when the review was skipped, write
@@ -269,7 +318,10 @@ At every tier:
 - **Estimate:** the size from Phase 6, with any change the user made.
 - **Dependencies:** name each story this one needs by its path.
 - **Files:** the code and test files the story is planned to create or change,
-  under the code root and test root. `/dev-story` replaces them with the real list.
+  under the code root and test root `engine_row` gives, each test named as
+  `.claude/rules/test-standards.md` says for the engine. A root that is `unset`
+  is written `[code root unset: no engine set]` or `[test root unset: no engine set]`,
+  never `src/` or `tests/` by guess. `/dev-story` replaces them with the real list.
 
 ### `EPIC.md`
 
@@ -295,12 +347,13 @@ the epic's total after this run. When the file does not exist, say so:
 
 ## Phase 8: Close
 
-If other epics in `production/epics/` have no stories, list them. Then ask:
-"[N] stories written to `production/epics/[epic-slug]/`. What next?" Options, those
-that apply:
+Say "[N] stories written to `production/epics/[epic-slug]/`." and print the
+next command as a line: "Type `/dev-story [first-story-path]` to build the first
+one." at `minimal`, "Run `/story-readiness [first-story-path]` first." otherwise.
+`/dev-story` and `/story-done` start only when the person types them, so never offer to start one as an option: print it as a line to type.
+If other epics in `production/epics/` have no stories, list them. Then, when an
+option below other than stopping applies, ask "What next?" with those that apply:
 
-- Start implementing: `/dev-story [first-story-path]` at `minimal`,
-  `/story-readiness [first-story-path]` otherwise (recommended)
 - Create stories for [next epic]: `/create-stories [slug]` (only when an epic has
   none)
 - Plan the sprint: `/sprint-plan new` (only when every epic has stories; never at

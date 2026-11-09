@@ -5,6 +5,7 @@
 > **Layer**: [Foundation / Core / Feature / Presentation]
 > **Type**: [Logic | Integration | Visual/Feel | UI | Config/Data]
 > **Estimate**: [S | M | L, or hours — /create-stories proposes one]
+> **Build step**: [core | thin — <system> | deepen — <system>; only when the brief lists Your systems, else leave this line out]
 > **Manifest Version**: [date from control-manifest.md header]
 > **Last Updated**: [set by /dev-story when implementation begins]
 

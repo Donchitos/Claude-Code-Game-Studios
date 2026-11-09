@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 # config-set.sh — set one key in project.yaml or project.local.yaml, after the
-# checks /settings makes before a write, and read the value back.
+# checks /project-settings makes before a write, and read the value back.
 #
-# Replaces /settings Phases 1b, 4 and 5 done by hand: the enum check, the local
+# Replaces /project-settings Phases 1b, 4 and 5 done by hand: the enum check, the local
 # whitelist, the base-file check, the reserved-setting warning (a `grep -B14`
 # over effects-map.md), the shadow warning, and the edit Cases A-D.
 #
@@ -294,7 +294,7 @@ if [ "$EXIT" != 0 ]; then
   exit "$EXIT"
 fi
 
-# base check: local overrides need a base, and /settings never creates project.yaml.
+# base check: local overrides need a base, and /project-settings never creates project.yaml.
 if [ ! -f project.yaml ]; then
   echo "config-set: project.yaml is missing, so there is nothing to set or override. Run /start to create one first." >&2
   exit 6
@@ -338,7 +338,7 @@ STATUS="$NEW.status"
 ACTION=""; LINE="-"; DUPS=""
 if [ ! -f "$TARGET" ]; then
   ACTION="created"
-  # A new local file: header (the line /settings Phase 5 writes), then the key
+  # A new local file: header (the line /project-settings Phase 5 writes), then the key
   # wrapped in its parent blocks, two spaces a level, as the shipped project.yaml
   # and every new block below are indented.
   awk -v key="$KEY" -v val="$VALUE" 'BEGIN {

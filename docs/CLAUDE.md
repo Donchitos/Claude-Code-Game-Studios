@@ -30,4 +30,4 @@ ADR Dependencies, Engine Compatibility, GDD Requirements Addressed
 Version-pinned engine API snapshots. **Always check here before using any
 engine API** — the LLM's training data predates the pinned engine version.
 
-Current engine: see `docs/engine-reference/<engine>/VERSION.md` (`<engine>` is `godot`, `unity` or `unreal`, matching `engine.name` in `project.yaml`)
+Current engine: see `docs/engine-reference/<engine>/VERSION.md` (`<engine>` is `godot`, `unity`, `unreal` or `web`, matching `engine.name` in `project.yaml`)

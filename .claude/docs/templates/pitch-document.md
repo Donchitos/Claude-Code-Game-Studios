@@ -22,7 +22,9 @@ mechanic, and what makes it special.]
 ## Why Now?
 
 [Why is this the right game at the right time? Market trends, audience gaps,
-technology enablers, cultural relevance.]
+technology enablers, cultural relevance. Each market claim names its source (a
+link, a report, a store page) or says "not researched": a trend or a number
+from memory is stale or invented.]
 
 ---
 
@@ -33,7 +35,9 @@ technology enablers, cultural relevance.]
 
 **Secondary**: [Adjacent audience who would also enjoy this]
 
-**Market Size**: [Estimated TAM based on comparable titles]
+**Comparable sales**: [A range from the Comparable Titles below, with their
+sources: e.g. "similar games sold 20k-150k copies on Steam". Or "not researched".
+No total-market (TAM) figure: it says nothing about what this game will sell.]
 
 ---
 
@@ -41,9 +45,9 @@ technology enablers, cultural relevance.]
 
 | Title | Similarity | Our Differentiation | Commercial Performance |
 | ---- | ---- | ---- | ---- |
-| [Game 1] | [What's similar] | [What's different/better] | [Revenue/units if known] |
-| [Game 2] | [What's similar] | [What's different/better] | [Performance] |
-| [Game 3] | [What's similar] | [What's different/better] | [Performance] |
+| [Game 1] | [What's similar] | [What's different/better] | [Units or revenue, with its source, or "not researched"] |
+| [Game 2] | [What's similar] | [What's different/better] | [Sourced, or "not researched"] |
+| [Game 3] | [What's similar] | [What's different/better] | [Sourced, or "not researched"] |
 
 ---
 

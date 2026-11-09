@@ -29,7 +29,7 @@
 # so), which would announce the release you already have. This file is replaced
 # with the rest of .claude/hooks/ on every upgrade, so its number is the
 # framework actually installed.
-UPDATE_CHECK_VERSION="1.2.0"
+UPDATE_CHECK_VERSION="1.3.0"
 UPDATE_CHECK_REPO="Donchitos/Claude-Code-Game-Studios"
 
 # This file's absolute path, taken before anything changes directory, so the
@@ -117,7 +117,7 @@ update_check_notice() {
   fi
 
   if [ -n "$latest" ] && _update_check_newer "$latest" "$UPDATE_CHECK_VERSION"; then
-    echo "Update: Claude Code Game Studios $latest is out (this project has $UPDATE_CHECK_VERSION). What changed and how to upgrade: https://github.com/$UPDATE_CHECK_REPO/releases/latest — to stop this notice: /settings --local updates.check=false"
+    echo "Update: Claude Code Game Studios $latest is out (this project has $UPDATE_CHECK_VERSION). What changed and how to upgrade: https://github.com/$UPDATE_CHECK_REPO/releases/latest — to stop this notice: /project-settings --local updates.check=false"
   fi
   return 0
 }

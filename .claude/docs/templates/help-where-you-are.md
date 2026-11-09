@@ -1,5 +1,7 @@
 ## Where You Are: [Phase Label]
 
+Studio mode (`workflow: [value]`): the design documents, agents and `team-*` pipelines. It fits a team, a long project, or someone who wants the paperwork.
+
 **In progress:** [from active.md, if any]
 
 ### ✓ Done
@@ -19,4 +21,4 @@ Command: `[/command]`
 - [Next required step name] (`/command`)
 
 ---
-Approaching **[next phase]** gate → run `/gate-check` when ready.
+Approaching the **[next stage]** stage gate → run `/gate-check` when ready.

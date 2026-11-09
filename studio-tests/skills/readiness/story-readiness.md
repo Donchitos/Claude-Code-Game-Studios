@@ -128,7 +128,7 @@ Fixture defaults.
 - [ ] Output identifies the missing Acceptance Criteria specifically, with a `Fix:` line proposing measurable criteria
 - [ ] No ADR, TR-ID or manifest gap is flagged — Architecture Completeness is N/A at `minimal`
 - [ ] The story is not BLOCKED: nothing requires outside action (no missing/DRAFT dependency, no unowned UNRESOLVED question)
-- [ ] Variant — the same `minimal` story with acceptance criteria traced to `design/game-brief.md`'s MVP feature (no `design/gdd/` path): "GDD requirement referenced" passes — the brief stands in for the GDD at `minimal`
+- [ ] Variant — the same `minimal` story with acceptance criteria traced to a Features item of `design/game-brief.md` (no `design/gdd/` path): "GDD requirement referenced" passes — the brief stands in for the GDD at `minimal`
 - [ ] Variant — the story also names `ADR-0005`, whose `## Status` is `Proposed`: the verdict is BLOCKED at `minimal` too — the referenced-ADR rule is the one Architecture Completeness item that is not N/A
 
 ---

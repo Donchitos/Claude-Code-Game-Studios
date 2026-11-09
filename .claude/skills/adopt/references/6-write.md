@@ -107,7 +107,7 @@ and `project.yaml`'s header comment both state.
 Report the value the bootstrap above resolved instead: "Review mode resolves to
 `[value]` — from `modes.rigor`, unless something pins it." If the user wants a
 different depth, point them to changing `modes.rigor`, or to pinning it on purpose
-with `/settings --local modes.review_mode=<full|lean|solo>` (a personal override in
+with `/project-settings --local modes.review_mode=<full|lean|solo>` (a personal override in
 `project.local.yaml`).
 
 ---

@@ -246,8 +246,9 @@ Fixture defaults.
 - `project.yaml`: `engine.name: Godot`, `engine.version: "4.6"`, and no `modes`
   keys — `modes.rigor` defaults to `minimal`, so `workflow`, `qa.level` and the
   review mode resolve to `minimal` / `minimal` / `solo`
-- `design/game-brief.md` with working title "Lantern Keeper", a Player goal & fail
-  state, 2 MVP features and a Build order
+- `design/game-brief.md` with working title "Lantern Keeper", a Goal & fail state,
+  3 Features items (the first `[x]`, built by the one-shot; the other two `[ ]`)
+  and a Build order
 - `docs/engine-reference/godot/VERSION.md` is absent
 - No `production/epics/` directory
 
@@ -258,7 +259,8 @@ Fixture defaults.
    nothing stops for the absent GDD, ADRs, control manifest or TR registry
 2. Drafts `production/epics/lantern-keeper/EPIC.md` without writing it
 3. Notes "QL-STORY-READY skipped — Solo mode."
-4. Presents 2 stories, one per MVP feature in Build order, and asks once to write
+4. Presents 2 stories, one per unbuilt Features item in Build order, names the
+   built first item as needing no story, and asks once to write
    them and create `production/epics/lantern-keeper/EPIC.md` (no `index.md` — it
    does not exist)
 5. Writes `EPIC.md` and both stories; prints `Epics index not updated:
@@ -268,15 +270,17 @@ Fixture defaults.
 
 **Assertions:**
 - [ ] Nothing, `EPIC.md` included, is written before the single write ask, and that ask names `EPIC.md`
-- [ ] Each story reads `Requirement: Brief MVP feature N`, `N/A (minimal — no ADRs)` in its ADR fields and `N/A (minimal — no control manifest)` as its Manifest Version
+- [ ] Each story reads `Requirement: Brief MVP feature N` (N is 2 and 3, the items' numbers in the Features list), `N/A (minimal — no ADRs)` in its ADR fields and `N/A (minimal — no control manifest)` as its Manifest Version
+- [ ] No story is written for the `[x]` item
+- [ ] Variant — a brief from before 1.3.0 with `## MVP` and 2 items: both are read as unbuilt Features, 2 stories
 - [ ] Each story's Risk is `NOT ASSESSED (no VERSION.md risk rating)` — never a guessed level
 - [ ] Each QA Test Cases section reads the "N/A — no qa-lead specs at this tier…" line
 - [ ] The index line names `production/epics/index.md`, not the systems index
 
 **Fixture (return visit):**
 - As above after that run: `production/epics/lantern-keeper/` holds `EPIC.md` (a
-  2-row Stories table), `story-001-…` and `story-002-…`; the brief now lists a 3rd
-  MVP feature
+  2-row Stories table), `story-001-…` and `story-002-…`; the brief now lists a 4th
+  Features item, `[ ]`
 
 **Expected behavior (return visit):**
 1. Reads the existing stories and `EPIC.md`; drafts one story for the new feature

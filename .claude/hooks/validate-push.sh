@@ -37,7 +37,8 @@ fi
 # /team-release describe; which segments count is
 # `.claude/scripts/write-guard.sh git`, the helper twin) -- as hook JSON on
 # stdout, the only channel the user or Claude sees on exit 0.
-# Exit 0 = allow (the normal permission flow still applies), Exit 2 = block
+# It warns and never blocks: every path exits 0 (the normal permission flow
+# still applies).
 #
 # Input schema (PreToolUse for Bash):
 # { "tool_name": "Bash", "tool_input": { "command": "git push origin main" } }
@@ -50,9 +51,11 @@ INPUT=$(cat)
 # Tested only after the "tool_input" key: matching the whole payload also
 # tests cwd and transcript_path, so a project path containing "GitHub" or
 # "digital" never took this exit and paid the full parse on every call. `gh`
-# must start a word, or "through " and "high " paid it too.
+# must start a word, or "through " and "high " paid it too. Only git push, tag
+# and merge are checked, so one of them must follow "git": `git status`,
+# `.gitignore` and `.github` leave here too.
 case "$INPUT" in
-  *'"tool_input"'*[Gg][Ii][Tt]*|*'"tool_input"'*butler*|*'"tool_input"'*steamcmd*|*'"tool_input"'*[!A-Za-z0-9_.-]gh[\ .]*) ;;
+  *'"tool_input"'*[Gg][Ii][Tt]*[Pp][Uu][Ss][Hh]*|*'"tool_input"'*[Gg][Ii][Tt]*[Tt][Aa][Gg]*|*'"tool_input"'*[Gg][Ii][Tt]*[Mm][Ee][Rr][Gg][Ee]*|*'"tool_input"'*butler*|*'"tool_input"'*steamcmd*|*'"tool_input"'*[!A-Za-z0-9_.-]gh[\ .]*) ;;
   *) exit 0 ;;
 esac
 

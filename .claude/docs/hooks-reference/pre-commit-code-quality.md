@@ -3,7 +3,7 @@
 ## Trigger
 
 Runs before any commit that modifies files under the code root — `src/`
-(Godot), `Assets/` (Unity) or `Source/` (Unreal); see
+(Godot, Web), `Assets/` (Unity) or `Source/` (Unreal); see
 `.claude/docs/code-root-resolution.md`.
 
 ## Purpose
@@ -22,13 +22,17 @@ values that should be data-driven.
 # The code root depends on the engine; resolve it the way the shipped commit
 # check does. An unresolved root is reported, never guessed as src/.
 . "$(git rev-parse --show-toplevel)/.claude/hooks/yaml-helper.sh"
-CODE_ROOT=$(resolve_code_root | cut -f1)
+_CR=$(resolve_code_root)
+CODE_ROOT=$(printf '%s' "$_CR" | cut -f1)
 if [ -z "$CODE_ROOT" ]; then
-    echo "SKIPPED: no code root (set engine.name in project.yaml) — code checks did not run."
+    # Field 3 holds the reason when engine.code_root is set but unusable.
+    echo "SKIPPED: no code root $(printf '%s' "$_CR" | cut -f3) — code checks did not run. Set engine.name, or fix engine.code_root, in project.yaml."
     exit 0
 fi
 
-CODE_FILES=$(git diff --cached --name-only --diff-filter=ACM | grep -E "^$CODE_ROOT/")
+# code_root_filter, not grep "^$CODE_ROOT/": a root of `.` (a flat web game)
+# would read as the regex ^./ and match the wrong files.
+CODE_FILES=$(git diff --cached --name-only --diff-filter=ACM | code_root_filter "$CODE_ROOT")
 
 EXIT_CODE=0
 

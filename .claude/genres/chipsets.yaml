@@ -1,0 +1,244 @@
+# Chipsets: the genres. The card reads it once per game to match the genres and their sheets.
+# The builder never loads this file. A chipset is a genre and its sheet, chipsets/<name>.md, of
+# the genre's first-minute defaults and feels. Its name, is and matches lines are matched by
+# meaning, never shown as a menu. A sheet's source keys resolve in sources.md; no sheet line is
+# a number to trust. A later system names the step that
+# builds it, in the person's words: change it after play (one ask after play, in the one-shot);
+# grow it (more than a one-shot holds: levels, a roster, a career, progress kept between
+# sessions); add it as a feature (a system of its own, built after growing, from the brief's
+# Features); otherwise there is no tested way to build it yet, and the line says so with one phrase,
+# "→ not tested yet: ask for it after play and the AI will try it untested". What it cannot
+# build at all says "→ needs a server: not built yet" (shared leaderboards, ghost replays, daily
+# challenges, any other online play) or "→ not built yet" (paid boosts and ads). Phone touch
+# controls are built from the person's words but unchecked, so they say "→ not tested yet".
+# variety: a combat chipset's first-slice floor of enemy kinds (each attacks or moves
+# differently; bosses and elites count), scaled down from its best games' rosters to one level;
+# the brief's Features names it, never fewer than the person names.
+# Every entry is a hypothesis: the genres, their matches and the floors are the model's reading
+# of the genre's best games, not measured.
+
+chipsets:
+  platformer:
+    is: Run and jump past hazards; the jump is the core verb
+    matches: 2D or 3D platformer, jump-and-run, a game like Celeste or Mario
+    variety: {enemies: 2}  # hypothesis only; +1 kind a level
+  puzzle-platformer:
+    is: Platforming where each level is a puzzle to solve
+    matches: perspective puzzle, two characters solving it together, a game like Braid, Limbo, Fez or Monument Valley
+  metroidvania:
+    is: A connected 2D map opened up by new abilities
+    matches: a game like Hollow Knight, Metroid or Castlevania
+    variety: {enemies: 3}  # zelda-manual-1
+  shoot-em-up:
+    is: One craft dodges and fires across a scrolling screen
+    matches: shmup, bullet hell, danmaku, scrolling shooter, a game like Ikaruga, Gradius or Touhou
+    variety: {enemies: 4}  # gradius-manual-1
+  twin-stick-shooter:
+    is: Top-down; one stick moves, the other aims
+    matches: top-down shooter, arena shooter on one screen, a game like Geometry Wars or Robotron
+    variety: {enemies: 4}  # none found: hypothesis only
+  first-person-shooter:
+    is: Shooting through the character's eyes in 3D
+    matches: FPS, third-person shooter, boomer shooter, mech or warfare shooter, a game like DOOM, Halo or Gears of War
+    variety: {enemies: 3}  # doom-manual-1
+  fighting:
+    is: Head to head with a move set, life bars and rounds
+    matches: versus fighter, platform fighter, a game like Street Fighter, Tekken or Smash Bros
+    variety: {enemies: 1}  # street-fighter-2; one opponent with a full set of moves
+  beat-em-up:
+    is: Brawl with many enemies along a scrolling stage
+    matches: brawler, side-scrolling brawler, a game like Streets of Rage or Castle Crashers
+    variety: {enemies: 3}  # hypothesis
+  action-roguelite:
+    is: Real-time runs that end in death; progress carries over
+    matches: roguelite, run-based action, buildcraft, a game like Hades, Dead Cells or Enter the Gungeon
+    variety: {enemies: 4}  # isaac-2 gungeon-2; a mini-boss or a boss
+  traditional-roguelike:
+    is: Turn-based dungeon crawl, generated levels, permanent death
+    matches: roguelike, permadeath dungeon, a game like NetHack, Brogue or Shiren the Wanderer
+    variety: {enemies: 4}  # hypothesis only
+  survivors-like:
+    is: Auto-attack hordes; the player moves and picks a build
+    matches: bullet heaven, horde survival, auto-shooter, a game like Vampire Survivors or Brotato
+    variety: {enemies: 4}  # vampire-survivors-1; a boss or an elite wave counts
+  roguelike-deckbuilder:
+    is: Build a deck from rewards on a generated map; death ends the run
+    matches: deckbuilder, dice-builder, a game like Slay the Spire, Balatro or Monster Train
+    variety: {enemies: 4}  # slay-7 isaac-2; one an elite, each its own intents
+  tower-defense:
+    is: Place towers to stop waves before they reach the goal
+    matches: TD, lane defence, a game like Bloons TD, Kingdom Rush or Plants vs. Zombies
+  idle-incremental:
+    is: Numbers grow exponentially, then reset for permanent bonuses
+    matches: idle, clicker, incremental, a game like Cookie Clicker, AdVenture Capitalist or Universal Paperclips
+  endless-runner:
+    is: The character runs forever; the player jumps, slides or turns
+    matches: runner, infinite runner, auto-runner, a game like Subway Surfers, Temple Run or Canabalt
+  turn-based-strategy:
+    is: Armies and cities moved a turn at a time on a map
+    matches: strategy, 4X, grand strategy, wargame, empire builder, a game like Civilization, Polytopia or Crusader Kings
+  tactical-rpg:
+    is: Grid battles fought by a party that grows between fights
+    matches: tactics, turn-based tactics, squad game, a game like XCOM, Fire Emblem, Into the Breach or Advance Wars
+    variety: {enemies: 3}  # into-the-breach-1; more is not always better
+  board-and-abstract:
+    is: Chess, go and other board games, with an AI opponent
+    matches: board game, chess, checkers, classic card games like solitaire or poker, a game like Chess, Go or Catan
+  turn-based-jrpg:
+    is: Party battles fought in turns chosen from a menu
+    matches: RPG, JRPG, turn-based RPG, party RPG, a game like Final Fantasy, Dragon Quest or Chrono Trigger
+    variety: {enemies: 3}  # hypothesis only
+  action-rpg:
+    is: Real-time fighting by hand; levels, gear and builds set the numbers
+    matches: ARPG, looter, loot game, Diablo-like, looter shooter, a game like Diablo, Path of Exile or Borderlands
+    variety: {enemies: 3}  # dark-souls-manual-1 miyazaki-1
+  survival-horror:
+    is: A weak player, scarce resources; fleeing matters as much as fighting
+    matches: horror, top-down horror, camera-watching horror, a game like Resident Evil, Silent Hill or Five Nights at Freddy's
+  racing:
+    is: Drive a vehicle to finish first, or to wreck the others
+    matches: driving, kart racer, drift game, time trial, car combat, a delivery against the clock, a game like Mario Kart, Burnout or Crazy Taxi
+  arcade-sports:
+    is: A sport stripped down to fast, exaggerated play
+    matches: sports, sports sim, football, basketball, tennis, a game like NBA Jam, Mario Tennis or Windjammers
+  survival-crafting:
+    is: Gather and craft against hunger and threats, and build a base
+    matches: survival, crafting, base building, underwater survival, a game like Don't Starve, Valheim, Subnautica or Minecraft survival
+  colony-sim:
+    is: Colonists' needs and moods drive a small settlement's stories
+    matches: colony management, a game like RimWorld, Dwarf Fortress or Oxygen Not Included
+  management-tycoon:
+    is: Run a business or a place (tycoon), balancing money, staff and customers
+    matches: tycoon, management, business sim, shop or restaurant sim, theme park, trading, economy sim, a game like RollerCoaster Tycoon or Two Point Hospital
+  farming-life-sim:
+    is: Farm through the seasons and build a life in a small town
+    matches: farming, life sim, social sim, cozy village life, a game like Stardew Valley, Animal Crossing or The Sims
+  city-builder:
+    is: Grow a city from empty land, balancing housing, jobs and services
+    matches: city building, town or settlement builder, a game like SimCity, Cities Skylines or Townscaper
+  falling-block-puzzle:
+    is: Falling pieces placed so rows or groups clear before the stack tops out
+    matches: tile matching, match-three, falling blocks, casual puzzle, a game like Tetris, Puyo Puyo or Bejeweled
+  grid-puzzle:
+    is: Push blocks onto targets (Sokoban); a wrong push can make it unsolvable
+    matches: puzzle, block pushing, Sokoban, a game like Baba Is You or Stephen's Sausage Roll
+  visual-novel:
+    is: A story in text boxes over art, with choices and several endings
+    matches: VN, dating sim, otome, interactive fiction, text adventure, choose your own adventure, a game like 80 Days, Monster Prom or Zork
+  point-and-click:
+    is: Explore drawn scenes, click items, solve puzzles to move the story on
+    matches: graphic adventure, adventure game, escape room, exploration puzzle adventure, a game like Monkey Island, Myst or Machinarium
+  rhythm:
+    is: Press inputs in time with a song
+    matches: music game, rhythm action, a game like Guitar Hero, Beat Saber, Crypt of the NecroDancer or osu!
+  creature-collector:
+    is: Catch creatures, train a team and battle with it
+    matches: monster tamer, catch-and-train RPG, collect-them-all, a game like Pokémon, Temtem or Cassette Beasts
+  action-adventure:
+    is: Explore a world, fight by hand and solve its puzzles to open new places
+    matches: adventure, open world, exploration, Zelda-like, third-person action, riding across a world, a game like Zelda, Okami or Tunic
+  character-action:
+    is: Stylish melee in 3D, with combos, dodges and a rank for style
+    matches: hack and slash, character action, superhero, cinematic action, martial arts, a game like Devil May Cry, Bayonetta or Sifu
+    variety: {enemies: 3}  # from beat-em-up and action-rpg; hypothesis
+  soulslike:
+    is: Hard, deliberate fights; death drops what you carry near a rest point you return to
+    matches: souls-like, boss rush, boss fights, monster hunting, a game like Dark Souls, Elden Ring or Monster Hunter
+    variety: {enemies: 3}  # dark-souls-manual-1 miyazaki-1
+  stealth:
+    is: Get past or take out guards unseen by reading their routines
+    matches: stealth action, heist, infiltration, social stealth, immersive sim, a game like Thief, Hitman or Dishonored
+  walking-sim:
+    is: Walk through a place and find its story, with little or no challenge
+    matches: walking simulator, narrative exploration, story-driven, first-person adventure, a game like Firewatch, Gone Home or What Remains of Edith Finch
+  detective:
+    is: Gather clues and reason out what happened
+    matches: mystery, investigation, deduction, thriller, a time loop where knowledge carries over, a game like Return of the Obra Dinn, Her Story or Outer Wilds
+  sandbox:
+    is: An open space of materials and tools to make, break or play with, and no set goal
+    matches: creative sandbox, physics sandbox, destruction sandbox, voxel building, crime sandbox, a game like Minecraft creative, Garry's Mod or Teardown
+  physics-puzzle:
+    is: Aim, launch or place things and let physics solve the level
+    matches: physics game, launch-and-topple, mini-golf, golf, a game like Angry Birds, Cut the Rope or World of Goo
+  logic-puzzle:
+    is: Pure deduction on a grid of clues, from picture logic to mines
+    matches: logic game, nonogram, picross, minesweeper, sudoku, a game like Picross or Minesweeper
+  factory-automation:
+    is: Build machines and belts that make things on their own, then scale them up
+    matches: automation, factory builder, logistics, transport network, trains, a game like Factorio, shapez or Mini Metro
+  flight:
+    is: Fly a plane, glider or ship through the air or space
+    matches: flight sim, gliding, dogfight, spaceflight, space exploration, space trading, a game like Star Fox, Pilotwings or Elite
+  sailing:
+    is: Sail a ship with the wind, explore the sea and fight other ships
+    matches: naval combat, pirate ships, boats, a game like Sea of Thieves or Sid Meier's Pirates!
+  card-battler:
+    is: Duel an opponent with a deck of cards built before the match
+    matches: card game, collectible card game, CCG, TCG, a game like Hearthstone, Marvel Snap or Inscryption
+  real-time-strategy:
+    is: Gather, build a base and command an army in real time
+    matches: RTS, real-time tactics, a game like StarCraft, Age of Empires or Command & Conquer
+  dungeon-crawler:
+    is: A party explores a grid dungeon in first person, step by step
+    matches: blobber, grid crawler, first-person dungeon, a game like Legend of Grimrock or Etrian Odyssey
+  party-game:
+    is: Short rounds several people play on one screen, for laughs
+    matches: party game, local multiplayer, couch multiplayer, minigames, microgames, physics comedy, a game like Mario Party, WarioWare or Gang Beasts
+  co-op:
+    is: Two or more players work together against the game
+    matches: cooperative, co-op horror, horde shooter, PvE missions, a game like Overcooked, Deep Rock Galactic or It Takes Two
+  competitive-multiplayer:
+    is: Players compete head to head, each trying to beat the others
+    matches: multiplayer, PvP, versus, arena shooter, competitive shooter, a game like Quake, Rocket League or TowerFall
+  async-multiplayer:
+    is: Players change each other's games without playing at the same time
+    matches: asynchronous multiplayer, play by mail, ghost races, messages left for others, turns taken over days, a game like Words With Friends or Death Stranding
+  moba:
+    is: Two teams of heroes push lanes to destroy the other base
+    matches: MOBA, lane pusher, hero brawler, a game like League of Legends or Dota
+  battle-royale:
+    is: Many players drop onto a shrinking map; the last one standing wins
+    matches: last one standing, a game like Fortnite, PUBG or Tetris 99
+  mmo:
+    is: A persistent world shared by many players at once
+    matches: MMORPG, online world, live service, a game like World of Warcraft or RuneScape
+  extraction:
+    is: Go in, grab loot and get out alive; die and lose what you carried
+    matches: extraction shooter, full-loot PvP, raid, a game like Escape from Tarkov, Hunt Showdown or Dark and Darker
+  fishing:
+    is: Cast, wait, hook and reel in fish, and fill a log of catches
+    matches: fishing, hunting, a game like Dredge, Ridiculous Fishing or Stardew Valley's fishing
+  mining:
+    is: Dig down, collect ore, sell it and upgrade to dig deeper
+    matches: digging, dig-down, a game like Motherload, SteamWorld Dig or Dome Keeper
+  pet-raising:
+    is: Raise and care for a creature that grows from how you treat it
+    matches: virtual pet, creature raising, creature simulation, a game like Tamagotchi, Neko Atsume or Viva Piñata
+  cozy-cleanup:
+    is: Clean, tidy, sort or decorate a space until it looks right
+    matches: cleaning sim, power washing, unpacking, organizing, decorating, cozy, a game like PowerWash Simulator, Unpacking or A Little to the Left
+  arcade-classic:
+    is: A single-screen arcade game played for a high score
+    matches: arcade, score attack, snake, maze chase, breakout, block breaker, asteroids, invaders, a growth game, a game like Pac-Man, Snake or Breakout
+  parkour:
+    is: Move fluidly through 3D spaces with vaults, wall runs, climbs and slides
+    matches: traversal, climbing, movement shooter, speedrun, a game like Mirror's Edge, Titanfall or Jusant
+  skate-and-surf:
+    is: Ride a board or a wave, chain tricks and keep a line going for score
+    matches: skateboarding, surfing, snowboarding, BMX, momentum sports, a game like Tony Hawk's Pro Skater, SSX or OlliOlli
+  level-maker:
+    is: Build levels with an editor and play them; the editor is the toy
+    matches: level editor, game creation, UGC, maker, modding, a game like Super Mario Maker, LittleBigPlanet or Dreams
+  auto-battler:
+    is: Buy units, arrange a team on a board and watch it fight on its own
+    matches: autobattler, auto chess, a game like Super Auto Pets, Teamfight Tactics or Mechabellum
+    variety: {enemies: 3}  # hypothesis
+  word-game:
+    is: Make or find words from letters under a set of word rules
+    matches: word puzzle, anagram, word guessing, a game like Wordle, Scrabble, Letterpress or Spelling Bee
+  trivia-quiz:
+    is: Answer factual questions against a clock or other players
+    matches: trivia, quiz show, buzzer game, a game like Kahoot, Trivia Murder Party or You Don't Know Jack
+  hidden-object:
+    is: Find listed items or characters in a cluttered scene
+    matches: seek and find, picture search, a game like Hidden Folks, Mystery Case Files or Where's Waldo

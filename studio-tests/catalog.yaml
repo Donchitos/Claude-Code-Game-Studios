@@ -1,7 +1,7 @@
 version: 2
 last_updated: ""
 skills:
-  # Critical — gate skills that control phase transitions
+  # Critical — the phase gate, the design and architecture reviews, story readiness and done
   - name: gate-check
     spec: studio-tests/skills/gate/gate-check.md
     last_static: ""
@@ -179,7 +179,7 @@ skills:
     priority: high
     category: analysis
 
-  # Medium — team and sprint management skills
+  # Medium — sprint planning and status, and the team skills
   - name: sprint-plan
     spec: studio-tests/skills/sprint/sprint-plan.md
     last_static: ""
@@ -301,7 +301,7 @@ skills:
     priority: medium
     category: team
 
-  # Low — analysis, reporting, utility skills
+  # Medium, then low — skill testing first, then authoring, analysis, sprint reporting and utility skills
   - name: skill-test
     spec: studio-tests/skills/utility/skill-test.md
     last_static: ""
@@ -335,8 +335,8 @@ skills:
     priority: low
     category: utility
 
-  - name: help
-    spec: studio-tests/skills/utility/help.md
+  - name: next-step
+    spec: studio-tests/skills/utility/next-step.md
     last_static: ""
     last_static_result: ""
     last_spec: ""
@@ -599,6 +599,17 @@ skills:
     priority: low
     category: utility
 
+  - name: cut
+    spec: studio-tests/skills/utility/cut.md
+    last_static: ""
+    last_static_result: ""
+    last_spec: ""
+    last_spec_result: ""
+    last_category: ""
+    last_category_result: ""
+    priority: low
+    category: utility
+
   - name: playtest-report
     spec: studio-tests/skills/utility/playtest-report.md
     last_static: ""
@@ -632,8 +643,8 @@ skills:
     priority: low
     category: sprint
 
-  - name: changelog
-    spec: studio-tests/skills/sprint/changelog.md
+  - name: write-changelog
+    spec: studio-tests/skills/sprint/write-changelog.md
     last_static: ""
     last_static_result: ""
     last_spec: ""
@@ -808,8 +819,8 @@ skills:
     priority: low
     category: utility
 
-  - name: settings
-    spec: studio-tests/skills/utility/settings.md
+  - name: project-settings
+    spec: studio-tests/skills/utility/project-settings.md
     last_static: ""
     last_static_result: ""
     last_spec: ""
