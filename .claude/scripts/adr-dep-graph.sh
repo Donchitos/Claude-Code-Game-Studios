@@ -66,9 +66,9 @@ else
     ADR_DIR="docs/architecture"
 fi
 
-# Normalise any adr reference (filename or "ADR-0003") to `adr-0003`.
+# Normalise the filename or bare reference, never an ID in a parent directory.
 adr_id() {
-    printf '%s' "$1" | grep -oiE 'adr-[0-9]+' | head -1 | tr 'A-Z' 'a-z'
+    printf '%s' "${1##*/}" | grep -oiE 'adr-[0-9]+' | head -1 | tr 'A-Z' 'a-z'
 }
 
 adr_files=$(find "$ADR_DIR" -maxdepth 1 -name 'adr-*.md' -type f 2>/dev/null \
