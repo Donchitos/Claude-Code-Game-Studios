@@ -1,0 +1,35 @@
+# Keeps ONE open issue (label: template-update) saying a template release is
+# waiting to be merged. A newer release rewrites that issue; merging closes it.
+#   - In the studio template repo: watches upstream (Donchitos) releases.
+#   - In a game repo: watches studio template releases (studio-v*).
+# Logic: tools/template-update-check.sh. Setup and merge steps: STUDIO.md.
+name: Template update check
+
+on:
+  schedule:
+    - cron: "23 7 * * 1"   # Mondays 07:23 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+concurrency:
+  group: template-update-check
+  cancel-in-progress: false
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0   # full history: "already merged?" is an ancestry check
+
+      - name: Check for a template release and update the issue
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          TEMPLATE_REPO: ${{ vars.TEMPLATE_REPO }}   # optional override (owner/name)
+        run: bash tools/template-update-check.sh

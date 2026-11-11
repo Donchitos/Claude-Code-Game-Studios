@@ -11,7 +11,7 @@ older releases are not supported.
 
 Use GitHub's private vulnerability reporting instead:
 
-**[Report a vulnerability →](https://github.com/Donchitos/Claude-Code-Game-Studios/security/advisories/new)**
+**[Report a vulnerability →](https://github.com/Dont-Know-Studios/Claude-Code-Game-Studios/security/advisories/new)**
 
 Include as much detail as possible:
 - Description of the vulnerability and what it affects

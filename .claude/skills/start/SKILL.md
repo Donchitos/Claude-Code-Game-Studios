@@ -3,9 +3,11 @@ name: start
 description: "Guides a first-time user through onboarding and picks the right workflow. Use when the user is new, just cloned or installed the studio, has no idea or engine yet, asks where to begin, or wants to bring in an existing game. A request for a game itself ('make me a game where...') is /prototype's."
 argument-hint: "[no arguments]"
 user-invocable: true
-allowed-tools: Read, Glob, Grep, AskUserQuestion, Skill, Bash(bash .claude/scripts/project-state.sh*), Bash(bash .claude/scripts/set-stage.sh *), Bash(bash .claude/scripts/config-set.sh *)
+allowed-tools: Read, Glob, Grep, AskUserQuestion, Skill, Bash(bash .claude/scripts/project-state.sh*), Bash(bash .claude/scripts/set-stage.sh *), Bash(bash .claude/scripts/config-set.sh *), Bash(bash "*/.claude/skills/start/../../scripts/studio-check.sh" --guard)
 model: sonnet
 ---
+
+!`bash "${CLAUDE_SKILL_DIR}/../../scripts/studio-check.sh" --guard`
 
 # Guided Onboarding
 

@@ -3,6 +3,18 @@
 Indie game development managed through 49 coordinated Claude Code subagents.
 Each agent owns a specific domain, enforcing separation of concerns and quality.
 
+## Dont-Know-Studios: one repo per game
+
+This framework is distributed as the Dont-Know-Studios **studio template**
+(`STUDIO.md`; repo and version in `.claude/studio.conf`). **Games are never
+built in the template repo.** If `origin` is the studio template and the user
+wants to start a game (any wording, `/start` and `/prototype` included), run
+`/new-game` first: it gives the game its own repo, cloned with history so studio
+updates merge cleanly. Never suggest GitHub's "Use this template" button.
+`bash .claude/scripts/studio-check.sh` reports which repo this is. In a game
+repo (`origin` is the game's, `template` is the studio's) this section needs
+nothing: studio updates arrive as one `template-update` issue.
+
 ## Technology Stack
 
 - **Engine**: [CHOOSE: Web / Godot 4 / Unity / Unreal Engine 5]

@@ -830,6 +830,18 @@ skills:
     priority: low
     category: utility
 
+  # Dont-Know-Studios studio addition (STUDIO.md)
+  - name: new-game
+    spec: studio-tests/skills/utility/new-game.md
+    last_static: ""
+    last_static_result: ""
+    last_spec: ""
+    last_spec_result: ""
+    last_category: ""
+    last_category_result: ""
+    priority: medium
+    category: utility
+
 agents:
   # Tier 1 Directors
   - name: creative-director

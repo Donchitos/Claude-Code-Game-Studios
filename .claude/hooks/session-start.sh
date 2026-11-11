@@ -121,11 +121,24 @@ if [ -f ".claude/hooks/yaml-helper.sh" ]; then
     fi
 fi
 
+# --- Studio notices (Dont-Know-Studios; STUDIO.md) ---
+# In the studio template repo: one line saying games are built in their own repo
+# (/new-game). In a game: the update alert for studio releases, which replaces
+# the upstream one below — games take studio releases, never upstream directly.
+if [ -f .claude/hooks/studio-session.sh ]; then
+    . .claude/hooks/studio-session.sh
+    STUDIO_LINE=$(studio_session_notice 2>/dev/null)
+    if [ -n "$STUDIO_LINE" ]; then
+        echo ""
+        echo "$STUDIO_LINE"
+    fi
+fi
+
 # --- Update alert ---
 # One line when a newer release is out. It reads a cache that a background job
 # refreshes at most once a day, so this hook makes no network call and never
 # waits for one. `updates.check: false` turns it off (effects-map.md).
-if [ -f .claude/hooks/update-check.sh ]; then
+if [ ! -f .claude/hooks/studio-session.sh ] && [ -f .claude/hooks/update-check.sh ]; then
     . .claude/hooks/update-check.sh
     UPDATE_LINE=$(update_check_notice 2>/dev/null)
     if [ -n "$UPDATE_LINE" ]; then

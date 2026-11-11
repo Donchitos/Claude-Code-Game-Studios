@@ -116,10 +116,13 @@ Hooks fail gracefully if optional tools are missing — you just lose validation
 
 ### Setup
 
-1. **Clone or use as template**:
+1. **Start the game in its own repo** — Dont-Know-Studios: run `/new-game` in a
+   checkout of the studio template, or see [`STUDIO.md`](STUDIO.md). Never use
+   GitHub's "Use this template" button: it drops the history studio updates
+   merge on.
    ```bash
-   git clone https://github.com/Donchitos/Claude-Code-Game-Studios.git my-game
-   cd my-game
+   bash tools/new-game.sh my-game https://github.com/Dont-Know-Studios/my-game.git
+   cd ../my-game
    ```
 
 2. **Open Claude Code in the project's root folder** (the one holding
