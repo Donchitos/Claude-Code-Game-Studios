@@ -18,7 +18,21 @@ defaults in `.claude/docs/config-resolution.md`.
 ## Phase 0: Parse Arguments and Context Check
 
 
-See `.claude/docs/director-gates.md` for the full check pattern. Individual gate definitions live in `.claude/docs/director-gates/[gate-id].md` — the spawned agent reads its own gate file; do not read it in the parent session.
+See `.claude/docs/director-gates.md` for the standard rules. This skill runs its one gate, AD-ART-BIBLE, itself (Phase 5) and reads `.claude/docs/director-gates/ad-art-bible.md` as its checklist.
+
+**Who drafts what.** `art-director` is spawned for Sections 1–4 and Section 9
+only: those drafts scored better from the agent than from this conversation.
+Nothing else spawns — not Sections 5–8 and not the AD-ART-BIBLE sign-off, even
+when the person asks for "the art director's" review: those checks are in the
+lens and the gate file, and you apply them here.
+
+**You draft Sections 5–8 yourself, through their lenses.** What the art-director,
+UX and technical-art specialists brought is in `references/`: read
+`references/lens-art-director.md` before the first of those sections, and
+`lens-ux-designer.md` at Section 7 and `lens-technical-artist.md` at Section 8
+only. Read each once; it stays in context for the rest of the run. Outside
+Sections 7 and 8, do not load `references/lens-ux-designer.md` or
+`references/lens-technical-artist.md`.
 
 
 Every `AskUserQuestion` call follows `.claude/docs/automation-modes.md`
@@ -46,7 +60,7 @@ and limit. If neither exists, fail with:
 > "No game concept found. Run `/brainstorm` first — the art bible is authored after the game concept is approved."
 
 Extract from game-concept.md (from the brief: working title, pitch, "Who it's for /
-what they feel" line and "Art & audio direction" line — it has no pillars, Visual
+what they feel" line and Label line, "Art & audio direction" in older briefs — it has no pillars, Visual
 Identity Anchor or platform):
 - Game title (working title)
 - Core fantasy and elevator pitch
@@ -128,11 +142,11 @@ Use `AskUserQuestion` with two tabs:
     sections 1–4 as the useful-if-you-want-it option rather than defaulting to 9.
   - `workflow_overrides.art_bible_strict: true` → **Full bible** regardless of tier.
 
-  This is the single biggest cost lever in this skill: every authored section
-  carries a specialist spawn, so authoring 9 sections where the tier requires 4
-  more than doubles the run for artifacts nothing downstream will check.
+  This is the single biggest cost lever in this skill: authoring 9 sections
+  where the tier requires 4 more than doubles the run for artifacts nothing
+  downstream will check.
 - Tab **"References"** — "Do you have reference games, films, or art that define the visual direction?"
-  (Free text — let the user type specific titles. Do NOT preset options here.)
+  (Free text — let the user type specific titles. Do not preset options here.)
 
 If the game-concept.md has a Visual Identity Anchor section, note it:
 > "Found a visual identity anchor from brainstorm: '[anchor name] — [one-line rule]'. I'll use this as the foundation for the art bible."
@@ -246,44 +260,38 @@ These sections translate the visual identity into concrete production rules. The
 
 ### Section 5: Character Design Direction
 
-**Agent delegation for Sections 5–6 — one call, issued here.** Both sections
-need the **same agent with the same input** (`sections 1–4`), so a second call
-would only re-send the whole visual identity. Spawn `art-director` once with
-sections 1–4 and ask for both:
+**Sections 5–6 — one draft, made here.** Both sections build on the same
+input (sections 1–4), so draft both now, under the lens:
 
-1. **Character design direction** — "Cover: visual archetype for the player character (if any), distinguishing feature rules per character type (how do players tell enemies/NPCs/allies apart at a glance?), expression/pose style targets (stiff/expressive/realistic/exaggerated), and LOD philosophy (how much detail is preserved at game camera distance?)."
-2. **Environment design language** — "Cover: architectural style and its relationship to the world's culture/history, texture philosophy (painted vs. PBR vs. stylized — why this choice for this game?), prop density rules (sparse/dense — what drives the choice per area type?), and environmental storytelling guidelines (what visual details should tell the story without text?)."
+1. **Character design direction** — cover: visual archetype for the player character (if any), distinguishing feature rules per character type (how do players tell enemies/NPCs/allies apart at a glance?), expression/pose style targets (stiff/expressive/realistic/exaggerated), and LOD philosophy (how much detail is preserved at game camera distance?).
+2. **Environment design language** — cover: architectural style and its relationship to the world's culture/history, texture philosophy (painted vs. PBR vs. stylized — why this choice for this game?), prop density rules (sparse/dense — what drives the choice per area type?), and environmental storytelling guidelines (what visual details should tell the story without text?).
 
 Require characters and environments to be **legible against each other** — a
 character silhouette must read against the environment texture density the same
-brief defines. Return two separately labelled blocks.
+draft defines. Hold two separately labelled blocks.
 
 Present **Section 5** first, approve, write to file, then Section 6.
 
 ### Section 6: Environment Design Language
 
-**Draft source**: the Sections 5–6 delegation issued under Section 5 — use the
-environment block it returned. Do not spawn again.
+**Draft source**: the Sections 5–6 draft made under Section 5 — use its
+environment block. Do not draft again from scratch.
 
 Write the approved section to file.
 
 ### Section 7: UI/HUD Visual Direction
 
-**Agent delegation**: Spawn in parallel:
-- **`art-director`**: Visual style for UI — diegetic vs. screen-space HUD, typography direction (font personality, weight, size hierarchy), iconography style (flat/outlined/illustrated/photorealistic), animation feel for UI elements
-- **`ux-designer`**: UX alignment check — does the visual direction support the interaction patterns this game requires? Flag any conflicts between art direction and readability/accessibility needs.
+**Two views, written separately.** First draft the **art view** under the art lens: diegetic vs. screen-space HUD, typography direction (font personality, weight, size hierarchy), iconography style (flat/outlined/illustrated/photorealistic), animation feel for UI elements. Then read `references/lens-ux-designer.md` and write the **UX view** as its own block: does the visual direction support the interaction patterns this game requires? Flag any conflict between the art direction and readability/accessibility needs.
 
-Collect both. If they conflict (e.g., art-director wants elaborate diegetic UI but ux-designer flags it would reduce combat readability), surface the conflict explicitly with both positions. Do NOT silently resolve — use `AskUserQuestion` to let the user decide.
+Show both blocks. If they conflict (e.g., the art view wants elaborate diegetic UI but the UX view finds it would reduce combat readability), surface the conflict explicitly with both positions. Do not silently resolve — use `AskUserQuestion` to let the user decide.
 
 Write the approved section to file.
 
 ### Section 8: Asset Standards
 
-**Agent delegation**: Spawn in parallel:
-- **`art-director`**: File format preferences, naming convention direction, texture resolution tiers, LOD level expectations, export settings philosophy
-- **`technical-artist`**: Engine-specific hard constraints — poly count budgets per asset category, texture memory limits, material slot counts, importer constraints, anything from the performance budgets (`performance.*` in `project.yaml`, falling back to `.claude/docs/technical-preferences.md`)
+**Two views, written separately.** First draft the **art view** under the art lens: file format preferences, naming convention direction, texture resolution tiers, LOD level expectations, export settings philosophy. Then read `references/lens-technical-artist.md` and write the **technical view** as its own block: engine-specific hard constraints — poly count budgets per asset category, texture memory limits, material slot counts, importer constraints, anything from the performance budgets (`performance.*` in `project.yaml`, falling back to `.claude/docs/technical-preferences.md`).
 
-If any art preference conflicts with a technical constraint (e.g., art-director wants 4K textures but performance budget requires 2K for mobile), surface the conflict explicitly with both positions — the ideal and the constrained standard, and the tradeoff. Do NOT silently resolve it — use `AskUserQuestion` to let the user pick (options: the ideal standard, the constrained standard, or document both and let per-asset judgment apply). Ambiguity in asset standards is where production costs are born.
+If any art preference conflicts with a technical constraint (e.g., art-director wants 4K textures but performance budget requires 2K for mobile), surface the conflict explicitly with both positions — the ideal and the constrained standard, and the tradeoff. Do not silently resolve it — use `AskUserQuestion` to let the user pick (options: the ideal standard, the constrained standard, or document both and let per-asset judgment apply). Ambiguity in asset standards is where production costs are born.
 
 Write the approved section to file.
 
@@ -301,12 +309,12 @@ Write the approved section to file.
 
 ## Phase 5: Art Director Sign-Off
 
-**Review mode check** — apply before spawning AD-ART-BIBLE:
+**Review mode check** — apply before running AD-ART-BIBLE:
 - `solo` → skip. Note: "AD-ART-BIBLE skipped — Solo mode." Then record the skip
   (below) and proceed to Phase 6.
 - `lean` → skip (not a PHASE-GATE). Note: "AD-ART-BIBLE skipped — Lean mode."
   Then record the skip (below) and proceed to Phase 6.
-- `full` → spawn as normal.
+- `full` → run it as below.
 
 On either skip, ask "May I record the skipped sign-off in
 `design/art/art-bible.md`'s header?" and, on yes, replace the header's
@@ -314,19 +322,21 @@ On either skip, ask "May I record the skipped sign-off in
 `> **Art Director Sign-Off (AD-ART-BIBLE)**: SKIPPED [date] — [solo|lean] mode`
 — the gate accepts either form as a recorded sign-off.
 
-After all sections are complete (or the scoped set from Phase 1 is complete), spawn `art-director` via `Agent` using gate **AD-ART-BIBLE** (`.claude/docs/director-gates/ad-art-bible.md`).
+After all sections are complete (or the scoped set from Phase 1 is complete), run gate **AD-ART-BIBLE** yourself, in this conversation — do not spawn `art-director` or any agent for it; the gate file's note that a spawned agent reads it, and director-gates.md's spawn steps, do not apply in this skill: read `.claude/docs/director-gates/ad-art-bible.md` and apply its Prompt as a checklist to the bible as written on disk (re-read it by section; do not judge from memory of your drafts), with the sign-off rules in `references/lens-art-director.md`. Name the section behind every finding. Look hardest for what is missing (a UI palette, a backup cue, a budget), not only at what is there.
 
-Pass: the art bible path (`design/art/art-bible.md`); the game pillars and core
+Its inputs: the art bible path (`design/art/art-bible.md`); the game pillars and core
 fantasy; the platform and performance constraints (`platform.*` and
 `performance.*` from `project.yaml`, falling back to
 `.claude/docs/technical-preferences.md`); and the visual identity anchor. When
-Phase 0 read the one-page brief, pass its pitch and "what they feel" line as the
-pillars and fantasy, and its "Art & audio direction" line as the anchor.
+Phase 0 read the one-page brief, use its pitch and "what they feel" line as the
+pillars and fantasy, and its Label line ("Art & audio direction" in older briefs) as the anchor.
+Print the verdict token first, on its own line (`AD-ART-BIBLE: APPROVE`), then the findings.
 
 Handle verdict per standard rules in `director-gates.md`.
-On `Revise flagged items`, or to resolve a REJECT, the section's own specialist
-— `art-director`, with `ux-designer` for Section 7 and `technical-artist` for
-Section 8 — re-drafts each flagged section, which is then presented, approved
+On `Revise flagged items`, or to resolve a REJECT, re-draft each flagged
+section the way it was first drafted — `art-director` for Sections 1–4 and 9; its
+lens for 5–8, plus the UX lens for Section 7 and the technical-art lens for
+Section 8, both views shown again — which is then presented, approved
 and written like any other section before `REVISED [date]` is recorded.
 A `NOT ASSESSED` answer is never an approval: name the missing input, then
 supply it and re-run the gate, or record `NOT ASSESSED`.
@@ -377,16 +387,16 @@ Assign letters A, B, C… only to the options actually included. Mark the most l
 `autonomous` modes, see `.claude/docs/automation-modes.md` — the rules below
 describe what collaborative mode requires, not universal behavior.
 
-Every section follows: **Question → Options → Decision → Draft (from art-director agent) → Approval → Write to file**
+Every section follows: **Question → Options → Decision → Draft (`art-director` for 1–4 and 9; its lens for 5–8) → Approval → Write to file**
 
-- Never draft a section yourself — every section's content comes from the
-  relevant specialist. One delegation may cover several sections (2–4 share a
-  call, as do 5–6), but no section may be written from the orchestrator's own
-  judgement instead of an agent's.
+- Never draft a section from taste alone — Sections 1–4 and 9 come from
+  `art-director`; Sections 5–8 are drafted under their lenses in `references/`
+  and pass those checks before they are shown. One draft may cover several
+  sections (2–4 share a call; 5–6 are drafted together).
 - Write each section to file immediately after approval — do not batch **the
-  writes or the approvals**. Batching applies only to the delegation call; the
+  writes or the approvals**. Batching applies only to the drafting; the
   user still sees, approves and commits one section at a time.
-- Surface all agent disagreements to the user — never silently resolve conflicts between art-director and technical-artist
+- Surface every conflict between views to the user — art vs UX at Section 7, art vs technical limits at Section 8 — never silently resolve one
 - The art bible is a constraint document: it restricts future decisions in exchange for visual coherence. Every section should feel like it narrows the solution space productively.
 
 ---

@@ -148,7 +148,7 @@ Pass: the structured report content, game pillars and core fantasy (from
 `design/gdd/game-concept.md`), the specific hypothesis being tested. **If
 `game-concept.md` does not exist** — expected at `minimal`, where
 `design/game-brief.md` replaces it — the brief has no pillars: pass its
-one-sentence pitch and its "Who it's for / what they feel" line instead, and say
+pitch and its "Who it's for / what they feel" line instead, and say
 they stand in for pillars. If neither document exists, say so in the prompt:
 *"No pillars available — assess against the hypothesis alone."* A director gate
 handed silence about pillars will invent them.

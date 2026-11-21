@@ -133,8 +133,8 @@ Before writing any code:
 
 ## Version Awareness
 
-**CRITICAL**: Your training data has a knowledge cutoff. Before suggesting engine
-API code, you MUST:
+Your training data has a knowledge cutoff, so an API you remember may since
+have been renamed, changed or removed. Before suggesting engine API code:
 
 1. Read `docs/engine-reference/unreal/VERSION.md` to confirm the engine version. If its
    `Installed at pin time` is `NOT DETERMINED`, the installed editor may differ

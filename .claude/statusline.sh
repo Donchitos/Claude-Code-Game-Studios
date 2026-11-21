@@ -134,8 +134,10 @@ if [ -z "$stage" ]; then
   if [ "$helper" = true ] && command -v resolve_code_root >/dev/null 2>&1; then
     code_root=$(cd "$cwd" 2>/dev/null && resolve_code_root 2>/dev/null | cut -f1)
   fi
+  # code_root_find is find, except that a root of `.` (a flat web game) does not
+  # enter the framework's folders, so prototypes/, tests/ and tools/ never count.
   if [ -n "$code_root" ] && [ -d "$cwd/$code_root" ]; then
-    src_count=$(find "$cwd/$code_root" -type f \( -name "*.gd" -o -name "*.cs" -o -name "*.cpp" -o -name "*.h" -o -name "*.py" -o -name "*.rs" -o -name "*.lua" -o -name "*.tscn" -o -name "*.tres" \) 2>/dev/null | head -n 10 | wc -l | tr -d ' ')
+    src_count=$(cd "$cwd" 2>/dev/null && code_root_find "$code_root" -type f \( -name "*.gd" -o -name "*.cs" -o -name "*.cpp" -o -name "*.h" -o -name "*.py" -o -name "*.rs" -o -name "*.lua" -o -name "*.tscn" -o -name "*.tres" \) | head -n 10 | wc -l | tr -d ' ')
   fi
 
   # Check for ADRs (signals Pre-Production phase)
@@ -240,7 +242,7 @@ if [ "$_wf" = "minimal" ]; then
       # `Status: X`, then match the value's leading word EXACTLY, in any case:
       # a substring match on *Done* counted "Not Done". The word ends at the
       # first non-letter, so `Done.` and `Complete, verified` count -- the
-      # rule story-status.sh applies, which /help and /sprint-status read.
+      # rule story-status.sh applies, which /next-step and /sprint-status read.
       # `|| [ -n ]` reads a last line with no newline, which read -r drops.
       _l="${_line%$'\r'}"; _l="${_l#"${_l%%[![:space:]]*}"}"; _l="${_l#> }"; _l="${_l#- }"; _l="${_l//\*/}"
       case "$_l" in

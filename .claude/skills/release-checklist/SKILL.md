@@ -196,7 +196,7 @@ subsection, and repeating them here would hand an `itch` project Steamworks rows
 > deliberate choice, not an oversight — do not "fix" it by inventing a `mobile`
 > tier, which is the exact wrong vocabulary the `cert_tier` rule warns against.
 
-**Certification — emit ONLY the block matching `platform.cert_tier`** (resolved in
+**Certification — emit only the block matching `platform.cert_tier`** (resolved in
 the resolved-config block at the top of this skill). Do not emit this subsection's other blocks, and do not fall back to
 emitting all of them because the platform argument was `all`.
 
@@ -317,6 +317,6 @@ If yes, write the file, creating the directory if needed.
 
 ## Phase 6: Next Steps
 
-- Draft the changelog or patch notes (`/changelog`, `/patch-notes`) if not done — the release gate checks them.
+- Draft the changelog or patch notes (`/write-changelog`, `/patch-notes`) if not done — the release gate checks them.
 - Run `/gate-check release` — the Polish → Release gate reads this checklist.
 - After a PASS: `/launch-checklist`, then coordinate the release via `/team-release`.

@@ -8,6 +8,10 @@ The output is `design/gdd/game-concept.md`, written from the game-concept templa
 Ask at each phase; never generate the whole concept silently. You facilitate, the user decides.
 Write the analysis in your reply first, then ask with short option labels.
 
+**Market lines.** A claim about the market (a game's sales or players, a trend, an audience's
+size, why now) is stale or invented when it comes from memory. Every one cites its source (a
+link, or what the user gave), or says "not researched". Never a number from memory.
+
 ## Start
 
 1. The text typed after the skill name may hold a genre or theme hint (`roguelike`, `cozy
@@ -44,7 +48,8 @@ Generate **three** distinct concepts from the brief, each in a different directi
 
 Each concept has: Working Title · Elevator Pitch (1-2 sentences, passes the 10-second test) · Core
 Verb · Core Fantasy · Unique Hook ("like X, and also Y") · Primary MDA Aesthetic · Estimated Scope
-(small / medium / large) · Why It Could Work (one sentence) · Biggest Risk (one sentence).
+(small / medium / large) · Why It Could Work (one sentence, from the design; a market reason
+follows Market lines above) · Biggest Risk (one sentence).
 
 Present all three, then ask one question with these five options: "Which concept resonates with
 you? You can pick one, combine elements, or ask for fresh directions." `Concept 1 — [Title]` /
@@ -109,7 +114,7 @@ bible.
 
 Using Bartle's types and the Quantic Foundry model: the primary player who will love it
 (Achievers, Explorers, Socializers, Competitors, Creators, Storytellers), the secondary appeal, who
-it is not for, and successful games that serve the same player.
+it is not for, and games that serve the same player (their success is a market line, above).
 
 ## Phase 6: Scope and feasibility
 
@@ -124,7 +129,8 @@ it is not for, and successful games that serve the same player.
   with your concept and platform." Make no recommendation here.
 - Art pipeline and how labour-heavy it is; content scope (levels, items, hours); the MVP (the
   smallest build that tests whether the core loop is fun); the biggest technical, design and market
-  risks; scope tiers (full vision, and what ships if time runs out).
+  risks (market risks follow Market lines above); scope tiers (full vision, and what ships if time
+  runs out).
 
 **Review mode** before TD-FEASIBILITY: `solo` or `lean` prints `TD-FEASIBILITY skipped — Solo
 mode.` (or `Lean mode`) and goes on to the scope tiers. `full`: after the technical risks, hand the
@@ -186,6 +192,13 @@ List every step, in order.
 3. PROCEED: `/art-bible`, then design-first steps 5-10 with what the prototype taught
 4. PIVOT: `/brainstorm` again with the learnings
 5. After design and architecture, `/vertical-slice` before committing to sprints
+
+With no engine named in Phase 6, prototype-first is the recommended path, and its first step is
+`/prototype` instead: a playable browser game from the concept, before any engine.
+Say "Type `/prototype` to build it." and do not start it yourself: a typed `/brainstorm` runs its
+turn on this skill's model, and the build must run on the session's. With an engine named, add
+one line: "`/prototype --path html` makes a browser sketch first; not recommended, since the game
+is rebuilt in [engine]."
 
 Then a summary: the pitch, pillars, primary player type, engine preference, biggest risk and the
 file path. End with the line `Verdict: COMPLETE — game concept written.`

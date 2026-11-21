@@ -14,8 +14,7 @@ Desktop.ini
 CLAUDE.local.md
 project.local.yaml
 production/session-logs/
-# Ephemeral per-session checkpoint. directory-structure.md documents this as
-# gitignored; the rule was missing, so active.md would have been committed.
+# Ephemeral per-session checkpoint; never committed.
 production/session-state/
 .scratch/
 # Per-agent working memory written at runtime — not release material
@@ -31,7 +30,6 @@ examples/
 sandbox/
 sandboxes/
 tests/sandboxes/
-qa-sandbox/
 
 # === Runtime Artifacts (auto-generated, start empty on fresh clone) ===
 # Created on first use by /consistency-check and /architecture-review
@@ -54,7 +52,7 @@ dist/
 *.app
 
 # === Engine: Godot ===
-# Two subtleties, both of which produced a silently-wrong rule before this:
+# Two subtleties:
 #  1. A pattern with an internal `/` is anchored to THIS directory, so `.godot/*`
 #     would only match a top-level `.godot` and miss `examples/<game>/.godot`.
 #     `**/` makes it match at any depth.

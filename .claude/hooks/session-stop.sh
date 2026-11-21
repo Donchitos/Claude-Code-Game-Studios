@@ -165,8 +165,8 @@ if [ ! -t 0 ] && [ -f "$AUDIT_LOG" ]; then
                 done
                 echo ""
                 echo "Each spawn is a fresh context window that re-reads its own inputs."
-                echo "To reduce this: lower \`modes.review_mode\` (\`/settings modes.review_mode=solo\`)"
-                echo "or \`modes.rigor\` (\`/settings modes.rigor=minimal\`)."
+                echo "To reduce this: lower \`modes.review_mode\` (\`/project-settings modes.review_mode=solo\`)"
+                echo "or \`modes.rigor\` (\`/project-settings modes.rigor=minimal\`)."
             } > "$SESSION_LOG_DIR/session-cost.md" 2>/dev/null
             # No echo: a Stop hook's stdout reaches only the debug log, and
             # this hook runs async, so nothing would ever read it.

@@ -6,7 +6,7 @@
 player-facing patch notes. Before reading any history it classifies recent
 commits as Game or Framework / maintenance (Unclear counts as Framework), uses
 only the Game commits, and says how many of how many it used. It gathers change
-data from `production/releases/[version]/changelog.md`, the version's entry in
+data from `production/releases/[version]/write-changelog.md`, the version's entry in
 `docs/CHANGELOG.md`, and — as a fallback — `git log` from the previous release
 tag. It checks for a tone guide (`.claude/docs/technical-preferences.md`,
 `docs/PATCH-NOTES-STYLE.md`, `design/community/tone-guide.md`) and a patch-notes
@@ -103,7 +103,7 @@ Fixture defaults.
 2. Skill finds no changelog source and uses `git log` from `v0.3.0` to HEAD as
    the fallback
 3. Skill does NOT stop with BLOCKED — the "No changelog data found … Run
-   `/changelog [version]` first" path requires the git history to be empty or
+   `/write-changelog [version]` first" path requires the git history to be empty or
    unavailable as well
 4. Skill generates notes from the Game commits only
 5. Skill asks "May I write" before writing
@@ -237,13 +237,13 @@ Fixture defaults.
 1. The sampled log is empty, so the provenance check is skipped — there is
    nothing to classify
 2. Phase 2 finds no changelog source and no git history; skill outputs "No
-   changelog data found for v0.4.0. Run `/changelog v0.4.0` first to generate
+   changelog data found for v0.4.0. Run `/write-changelog v0.4.0` first to generate
    the internal changelog, then re-run `/patch-notes v0.4.0`."
 3. Nothing is generated or written; verdict BLOCKED
 
 **Assertions:**
 - [ ] The "does not appear to belong to" provenance stop is NOT shown — an empty history is not a wrong history
-- [ ] Output contains "No changelog data found for v0.4.0" and recommends `/changelog v0.4.0`
+- [ ] Output contains "No changelog data found for v0.4.0" and recommends `/write-changelog v0.4.0`
 - [ ] No notes are generated, no "May I write" prompt appears, and no file is written
 - [ ] Verdict is BLOCKED
 
@@ -252,7 +252,7 @@ Fixture defaults.
 ## Protocol Compliance
 
 - [ ] Runs the provenance check before reading history, uses only Game commits, and says how many were used
-- [ ] Reads the version's changelog entry (`production/releases/[version]/changelog.md`, `docs/CHANGELOG.md`) before falling back to `git log`
+- [ ] Reads the version's changelog entry (`production/releases/[version]/write-changelog.md`, `docs/CHANGELOG.md`) before falling back to `git log`
 - [ ] Filters entries to player-facing items only, and lists the excluded internal changes for review
 - [ ] Rewrites entries in plain language without internal IDs
 - [ ] Always asks "May I write" before writing patch notes

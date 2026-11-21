@@ -1,9 +1,9 @@
 ---
 name: setup-engine
-description: "Configure engine and version. Pins it in CLAUDE.md; WebSearch fills reference docs when the version is beyond LLM training data."
+description: "Sets up and pins the engine version: web for a new project unless Godot, Unity or Unreal is named. Use to choose or upgrade it."
 argument-hint: "[engine] | [engine version] | refresh | upgrade [old-version] [new-version] | no args for guided selection"
 user-invocable: true
-allowed-tools: Read, Glob, Grep, Write, Edit, WebSearch, WebFetch, Agent, AskUserQuestion, Bash(bash "*/.claude/skills/setup-engine/../../hooks/yaml-helper.sh" resolve_config *), Bash(godot --version), Bash(godot --headless --path . --import), Bash(command -v godot), Bash(uname -s), Bash(bash .claude/scripts/project-coherence.sh*)
+allowed-tools: Read, Glob, Grep, Write, Edit, WebSearch, WebFetch, Agent, AskUserQuestion, Bash(bash "*/.claude/skills/setup-engine/../../hooks/yaml-helper.sh" resolve_config *), Bash(godot --version), Bash(godot --headless --path . --import), Bash(command -v godot), Bash(uname -s), Bash(bash .claude/scripts/project-coherence.sh*), Bash(node --version), Bash(npm ci*), Bash(npm run build*), Bash(bash .claude/scripts/web-scaffold.sh*), Bash(bash .claude/scripts/web-detect.sh*), Bash(pnpm install --frozen-lockfile*), Bash(yarn install --frozen-lockfile*), Bash(yarn install --immutable*), Bash(bun install --frozen-lockfile*), Bash(pnpm run build*), Bash(yarn run build*), Bash(bun run build*), Bash(bash .claude/scripts/test-run.sh web*), Bash(bash .claude/scripts/page-shot.sh *)
 model: sonnet
 ---
 
@@ -24,13 +24,22 @@ artifact this skill expects and the finish path it recommends in §12:
 
 If the block did not render (shell preprocessing disabled), assume `minimal` (the default).
 
+Ask with the question tool. Without one, list the options numbered and end your turn
+to wait. A skipped or dismissed question is not an answer: ask again in plain text.
+
 ## 1. Parse Arguments
 
-Four modes:
+Modes:
 
 - **Full spec**: `/setup-engine godot 4.7` — engine and version provided
 - **Engine only**: `/setup-engine unity` — engine provided, version will be looked up
-- **No args**: `/setup-engine` — fully guided mode (engine recommendation + version)
+- **Web**: `/setup-engine web` — a browser game with Vite and TypeScript, at the
+  versions the web scaffold pins, or an existing web project (a `package.json`),
+  recorded as it is. **Read `references/web.md` now and follow it**:
+  it replaces Sections 3, 6, 7 and 7.5 for Web and gives the values Sections 4, 5
+  and 5.5 write
+- **No args**: `/setup-engine` — guided mode: an existing project keeps its engine;
+  a new one is offered web first (Section 2)
 - **Refresh**: `/setup-engine refresh` — update reference docs (see Section 10)
 - **Upgrade**: `/setup-engine upgrade [old-version] [new-version]` — migrate to a new engine version (see Section 11)
 
@@ -74,6 +83,9 @@ Four modes:
 
 ## 9. Update Agent Instructions
 
+On Web there is no engine specialist agent: skip this section and say so
+(`references/web.md`, W7).
+
 Ask: "May I add a Version Awareness section to the engine specialist agent files?" before making any edits.
 
 For the chosen engine's specialist agents, verify they have a
@@ -84,7 +96,7 @@ The section should instruct the agent to:
 1. Read `docs/engine-reference/<engine>/VERSION.md`
 2. Check deprecated APIs before suggesting code
 3. Check breaking changes for relevant version transitions
-4. Use WebSearch to verify uncertain APIs
+4. Search the web to verify uncertain APIs
 
 ---
 
@@ -94,7 +106,7 @@ If invoked as `/setup-engine refresh`:
 
 1. Read the existing `docs/engine-reference/<engine>/VERSION.md` to get
    the current engine and version
-2. Use WebSearch to check for:
+2. Search the web for:
    - New engine releases since last verification
    - Updated migration guides
    - Newly deprecated APIs
@@ -114,15 +126,15 @@ If invoked as `/setup-engine refresh`:
 
 ## Guardrails
 
-- NEVER guess an engine version — always verify via WebSearch or user confirmation
-- `project.yaml` is the primary config store (v1.1). Always dual-write engine
+- Check the engine version (web search or the user's word): a guessed pin breaks APIs
+- `project.yaml` is the primary config store. Always dual-write engine
   config to BOTH `project.yaml` (primary) and `technical-preferences.md` (legacy
   mirror). If the two ever diverge, `project.yaml` is authoritative.
-- NEVER overwrite existing reference docs without asking — append or update
+- Ask before overwriting reference docs (they hold checked notes); append or update
 - If reference docs already exist for a different engine, ask before replacing
 - Always show the user what you're about to change before making CLAUDE.md edits
-- If WebSearch returns ambiguous results, show the user and let them decide
-- When the user chose **GDScript**: copy the GDScript CLAUDE.md template from **A1** in `references/godot-language-config.md` exactly. NEVER add "C++ via GDExtension" to the Language field. GDScript projects may use GDExtension, but it is not a primary project language. The `godot-gdextension-specialist` in the routing table is available for when native extensions are needed — it does not make C++ a project language.
+- If a web search returns ambiguous results, show the user and let them decide
+- When the user chose **GDScript**: copy the GDScript CLAUDE.md template from **A1** in `references/godot-language-config.md` exactly. Do not add "C++ via GDExtension" to the Language field. GDScript projects may use GDExtension, but it is not a primary project language. The `godot-gdextension-specialist` in the routing table is available for when native extensions are needed — it does not make C++ a project language.
 
 ---
 

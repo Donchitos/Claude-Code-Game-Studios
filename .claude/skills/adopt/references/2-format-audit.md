@@ -54,7 +54,8 @@ informational):
   hint, not the test); Player Fantasy and Tuning Knobs are advisory.
 - **`minimal`** — GDDs are not expected; audit `design/game-brief.md` instead,
   against `.claude/docs/templates/game-brief.md`: each of the six required fields
-  present and not a placeholder; the three one-liners advisory. Any GDD that
+  present and not a placeholder (a brief from before 1.3.0 has MVP for Features);
+  its other lines advisory. Any GDD that
   does exist is checked at the `standard` bar, advisorily.
 
 The script's 8 canonical labels are: Overview, Player Fantasy, Detailed Rules,

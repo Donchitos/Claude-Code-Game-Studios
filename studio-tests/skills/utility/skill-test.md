@@ -166,7 +166,7 @@ Fixture defaults.
 ### Case 4: Audit Mode — Coverage Table of All Skills and Agents
 
 **Fixture:**
-- `.claude/skills/` contains 75 skill directories; 74 have a spec at the path
+- `.claude/skills/` contains 74 skill directories; 73 have a spec at the path
   their catalog entry names (in the sandbox, one skill's catalog `spec:` is
   emptied and its spec file removed — every live skill has a spec)
 - `catalog.yaml` has an `agents:` section with 49 entries, all with specs
@@ -182,7 +182,7 @@ Fixture defaults.
    `studio-tests/skills/`), last static/category dates and
    results, category, priority
 4. Separate SKILLS and AGENTS tables, a Top 5 Priority Gaps list, and the lines
-   `Skill coverage: 74/75 specs (99%)` and `Agent coverage: 49/49 specs (100%)`
+   `Skill coverage: 73/74 specs (99%)` and `Agent coverage: 49/49 specs (100%)`
 5. No verdict line; the output ends with the offer to run `static all`,
    `category all` or `spec [name]`
 
@@ -264,7 +264,7 @@ Fixture defaults.
 ### Case 7: Static All — an unreadable skill is NOT ASSESSED and counted
 
 **Fixture:**
-- `.claude/skills/` holds 75 skill directories; one `SKILL.md` cannot be
+- `.claude/skills/` holds 74 skill directories; one `SKILL.md` cannot be
   read (the Read call fails — permission denied), so none of its checks can
   start. (A file that is read but whose frontmatter does not parse is a
   different case: Check 1 fails and it is NON-COMPLIANT.)
@@ -272,15 +272,15 @@ Fixture defaults.
 **Input:** `/skill-test static all`
 
 **Expected behavior:**
-1. The 74 readable skills are checked and listed with their Result
+1. The 73 readable skills are checked and listed with their Result
 2. The unreadable skill appears in the table as `NOT ASSESSED`, with the
    reason — not omitted, not COMPLIANT
-3. The header states the denominator, `74 of 75 skills checked`, and the
+3. The header states the denominator, `73 of 74 skills checked`, and the
    Summary line counts the NOT ASSESSED skill
 
 **Assertions:**
 - [ ] The unreadable skill's Result is NOT ASSESSED, with a reason
-- [ ] The header or summary reads `74 of 75 skills checked`
+- [ ] The header or summary reads `73 of 74 skills checked`
 - [ ] The Summary counts sum to the skills in the table
 
 ---

@@ -2,8 +2,8 @@
 
 ## Supported Versions
 
-Only the `main` branch receives security fixes. Forks and older releases are
-not supported.
+Security fixes go to the newest 1.3.x release only. Forks and
+older releases are not supported.
 
 ## Reporting a Vulnerability
 

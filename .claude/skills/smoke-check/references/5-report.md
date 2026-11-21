@@ -133,11 +133,11 @@ Any platform with one or more FAIL checks contributes to the overall FAIL verdic
 
 **PASS WITH WARNINGS** if ALL of:
 - Automated tests PASS or PASS WITH WARNINGS, WAIVED at `qa.level: minimal`, or
-  NOT RUN **and the developer has confirmed the result from their local IDE or CI**
+  NOT RUN **and the person has confirmed the result from their local IDE or CI**
 - All Batch 1 and Batch 2 smoke checks PASS
 - At least one warning: a Logic/Integration story with MISSING test evidence,
   a runner warning on a passing suite (gdUnit4 101 — orphan nodes leaked), or
-  a NOT RUN suite the developer confirmed
+  a NOT RUN suite the person confirmed
 
 **PASS** if ALL of:
 - Automated tests PASS, or WAIVED (`qa.level: minimal` and no game tests exist —
@@ -158,7 +158,7 @@ finding and must not be demoted behind one that did not run.
 The rule below — **never treat NOT RUN as an automatic FAIL** — still holds:
 NOT ASSESSED is not a FAIL, and it ranks below one. But an unrun suite never
 resolves to a *pass* verdict while waiting for a confirmation that may never
-come. Confirmed NOT RUN (the developer reports the
+come. Confirmed NOT RUN (the person reports the
 result from their own IDE or CI) still lands at PASS WITH WARNINGS, because
 somebody did look.
 

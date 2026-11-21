@@ -53,6 +53,11 @@ fi
 
 INPUT=$(cat)
 
+# Only files under assets/, Assets/ or Content/ are checked. Leave before any
+# parsing when the tool input names none of them: this hook runs on every Write
+# and Edit, and jq, sed and pwd -W are most of its cost.
+case "$INPUT" in *'"tool_input"'*[Aa]ssets[/\\]*|*'"tool_input"'*Content[/\\]*) ;; *) exit 0 ;; esac
+
 # Parse file path -- use jq if available, fall back to grep
 if command -v jq >/dev/null 2>&1; then
     FILE_PATH=$(echo "$INPUT" | jq -r '.tool_input.file_path // empty')

@@ -91,6 +91,10 @@
 # The LATEST stamp wins: receipt files are append-only logs, so the last
 # occurrence of a path is the most recent review of it.
 
+case "${1:-}" in
+  -h|--help) sed -n '2,/^$/p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
+esac
+
 set -u
 export LC_ALL=C
 

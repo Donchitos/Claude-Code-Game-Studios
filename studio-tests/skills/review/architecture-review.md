@@ -36,8 +36,9 @@ Checked against the SKILL.md by `/skill-test spec` — no fixture needed.
 ## Director Gate Checks
 
 None. This skill resolves no `review_mode` (its config block requests only
-`automation` and `workflow`) and spawns no director gate. The only agent it
-spawns is the primary engine specialist in Phase 5. The architecture sign-off
+`automation` and `workflow`) and spawns no director gate, and no agent at all:
+the primary engine specialist's second look in Phase 5 runs in
+the conversation from `references/lens-engine.md`. The architecture sign-off
 gates (TD-ARCHITECTURE, LP-FEASIBILITY) belong to `/create-architecture`, not to
 this skill.
 
@@ -80,7 +81,7 @@ Fixture defaults.
    "Loaded [N] GDDs, [M] ADRs, engine: Godot 4.6"
 3. Skill extracts TR-IDs (reusing any existing `tr-registry.yaml` IDs) and builds the matrix
 4. Skill runs `bash .claude/scripts/adr-dep-graph.sh` and prints the recommended implementation order from its `ORDER:` row
-5. Skill runs the engine audit and consults `godot-specialist`
+5. Skill runs the engine audit and the engine specialist look (the Godot section of `references/lens-engine.md`)
 6. Report ends with `### Verdict: PASS`
 7. Phase 8 asks what to write; Phase 9 offers `/gate-check pre-production`
 
@@ -173,20 +174,21 @@ Fixture defaults.
 **Case 5a — engine configured:** Case 1 fixture (`engine.name: Godot`)
 
 **Expected behavior:**
-1. After the Phase 5 engine audit, skill spawns `godot-specialist` via `Agent`,
-   passing the engine-specific ADRs, the engine reference docs and the audit findings
+1. After the Phase 5 engine audit, the skill reads `references/lens-engine.md` and
+   applies its Godot section to the engine-specific ADRs, with the engine reference
+   docs and the audit findings; no agent is spawned
 2. The specialist's findings appear under `### Engine Specialist Findings` and count toward the verdict
 
 **Assertions (5a):**
-- [ ] The specialist is resolved from `engine.name` (Godot → `godot-specialist`)
-- [ ] It is spawned after the engine audit, with the audit findings in its prompt
+- [ ] The lens section is resolved from `engine.name` (Godot → the Godot section; Web → the lead programmer's section)
+- [ ] It runs after the engine audit and confirms or challenges the audit findings; no `Agent` call
 - [ ] Output includes an `### Engine Specialist Findings` section
 - [ ] No director gate (TD-ARCHITECTURE, LP-FEASIBILITY or any other gate ID) is spawned or mentioned
 
 **Case 5b — no engine configured:** as Case 1, except `engine.name` is unset in `project.yaml` and `technical-preferences.md` is still `[TO BE CONFIGURED]`
 
 **Assertions (5b):**
-- [ ] No engine specialist is spawned
+- [ ] No engine specialist look runs and no agent is spawned
 - [ ] Output records `Engine validation: NOT ASSESSED — no engine configured` rather than omitting the step
 - [ ] The verdict is NOT ASSESSED, not PASS — the engine audit is part of the `full` scope and had no pinned engine to check against, even though every requirement is covered
 

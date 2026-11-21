@@ -13,10 +13,13 @@ Based on the engine detected and the existing state, present a plan:
 I will create the following (skipping any that already exist):
 
 tests/
-  unit/           — Isolated unit tests for formulas, state, and logic   (Godot only)
-  integration/    — Cross-system tests and save/load round-trips         (Godot only)
+  unit/           — Isolated unit tests for formulas, state, and logic   (Godot, Web)
+  integration/    — Cross-system tests and save/load round-trips         (Godot, Web)
   smoke/          — Critical path test list (15-minute manual gate)
   README.md       — Test framework documentation
+
+[Web: unit/ holds Vitest tests and integration/ Playwright tests; the helper
+ test-scaffold.sh web makes the files and adds playwright.config.ts]
 
 [Unity/Unreal: unit and integration tests go under the engine's test root
  instead — Unity Assets/Tests/EditMode|PlayMode/, Unreal

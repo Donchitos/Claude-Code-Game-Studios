@@ -1,8 +1,8 @@
-# Skill Test Spec: /changelog
+# Skill Test Spec: /write-changelog
 
 ## Skill Summary
 
-`/changelog` is a Sonnet-tier skill that generates two changelogs — an internal
+`/write-changelog` is a Sonnet-tier skill that generates two changelogs — an internal
 one and a player-facing one — from the git commits since the last release tag.
 Before using the injected history it classifies every commit as Game or
 Framework / maintenance (Unclear counts as Framework), uses only the Game
@@ -60,7 +60,7 @@ Fixture defaults.
   stories whose task IDs appear in the commit messages
 - `docs/CHANGELOG.md` does not yet exist
 
-**Input:** `/changelog`
+**Input:** `/write-changelog`
 
 **Expected behavior:**
 1. Skill classifies the injected commits as Game or Framework / maintenance and
@@ -92,7 +92,7 @@ Fixture defaults.
 - The injected tag list is empty
 - `docs/CHANGELOG.md` does not exist
 
-**Input:** `/changelog`
+**Input:** `/write-changelog`
 
 **Expected behavior:**
 1. Skill finds no tag to anchor the range
@@ -121,7 +121,7 @@ Fixture defaults.
   "fix player clipping through ledge", "add footstep sounds", "level tweaks",
   "combat cleanup"
 
-**Input:** `/changelog`
+**Input:** `/write-changelog`
 
 **Expected behavior:**
 1. Skill categorizes every commit by what it changed, whether or not it has a
@@ -150,7 +150,7 @@ Fixture defaults.
 - `docs/CHANGELOG.md` already exists with sections for `v0.2.0` and `v0.3.0`
 - New Game commits exist since the `v0.3.0` tag
 
-**Input:** `/changelog`
+**Input:** `/write-changelog`
 
 **Expected behavior:**
 1. Skill compiles new entries for the period since `v0.3.0`
@@ -175,7 +175,7 @@ Fixture defaults.
 - Git history has Game commits since the last tag
 - `project.yaml` sets `modes.review_mode: full`
 
-**Input:** `/changelog`
+**Input:** `/write-changelog`
 
 **Expected behavior:**
 1. Skill compiles both changelogs; no director gate is spawned (the skill
@@ -200,7 +200,7 @@ Fixture defaults.
   runner" — and none names a game system in `design/` or the code root
 - `docs/CHANGELOG.md` does not exist
 
-**Input:** `/changelog`
+**Input:** `/write-changelog`
 
 **Expected behavior:**
 1. Skill classifies every injected commit: 0 Game, 30 Framework / maintenance
@@ -223,7 +223,7 @@ Fixture defaults.
   blocks are empty
 - `docs/CHANGELOG.md` does not exist
 
-**Input:** `/changelog`
+**Input:** `/write-changelog`
 
 **Expected behavior:**
 1. The injected commit list is empty, so the provenance check is skipped —
@@ -259,5 +259,5 @@ Fixture defaults.
   instead of widening the range) is not tested.
 - Merge commits vs. squash commits are not explicitly differentiated in
   these tests; implementation detail of the git log parsing phase.
-- The `/patch-notes` skill should be run after `/changelog` for player-facing
+- The `/patch-notes` skill should be run after `/write-changelog` for player-facing
   output; that handoff is verified in the patch-notes spec.

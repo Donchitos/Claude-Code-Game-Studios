@@ -1,11 +1,11 @@
-# Skill Test Spec: /settings
+# Skill Test Spec: /project-settings
 
 ## Skill Summary
 
-`/settings` shows and changes project configuration. It has four forms:
-`/settings` (view-all: every effective setting with its source), `/settings
-<key>` (view-one), `/settings <key>=<value>` (write to `project.yaml`) and
-`/settings --local <key>=<value>` (write a personal override to the gitignored
+`/project-settings` shows and changes project configuration. It has four forms:
+`/project-settings` (view-all: every effective setting with its source), `/project-settings
+<key>` (view-one), `/project-settings <key>=<value>` (write to `project.yaml`) and
+`/project-settings --local <key>=<value>` (write a personal override to the gitignored
 `project.local.yaml`). Anything else, including an empty key or value, prints
 the usage block. It runs on the Sonnet model and reads every value through
 `yaml-helper.sh` (`resolve_setting`, `get_yaml_key`, `is_locally_overridable`,
@@ -38,7 +38,7 @@ Checked against the SKILL.md by `/skill-test spec` — no fixture needed.
 
 ## Director Gate Checks
 
-None. `/settings` is a configuration utility. No director gates apply.
+None. `/project-settings` is a configuration utility. No director gates apply.
 
 ---
 
@@ -59,7 +59,7 @@ Fixture defaults.
 - `project.yaml`:
   ```yaml
   framework:
-    version: 1.2.0
+    version: 1.3.0
   modes:
     rigor: full
     automation: collaborative
@@ -74,7 +74,7 @@ Fixture defaults.
     automation: autonomous
   ```
 
-**Input:** `/settings`
+**Input:** `/project-settings`
 
 **Expected behavior:**
 1. Reports both files present and `Schema validation: ok`
@@ -105,11 +105,11 @@ Fixture defaults.
 **Fixture:**
 - `project.yaml` sets `modes.rigor: standard` and no `qa.level`
 
-**Input:** `/settings qa.level`
+**Input:** `/project-settings qa.level`
 
 **Expected behavior:**
 1. Prints `Effective value: standard` and `Source: derived from rigor: standard`
-2. Adds the line `Set explicitly with: /settings qa.level=<value>   (an explicit value wins over rigor)`
+2. Adds the line `Set explicitly with: /project-settings qa.level=<value>   (an explicit value wins over rigor)`
 3. `Locally overridden: no`; the whitelist line reads `locked — project-wide`
 
 **Assertions:**
@@ -132,7 +132,7 @@ Fixture defaults.
   ```
 - The user answers `[A] Yes, write`
 
-**Input:** `/settings modes.rigor=standard`
+**Input:** `/project-settings modes.rigor=standard`
 
 **Expected behavior:**
 1. `validate_enum_value modes.rigor standard` passes
@@ -160,7 +160,7 @@ Fixture defaults.
 **Fixture:**
 - `project.yaml` sets `modes.review_mode: lean`
 
-**Input:** `/settings modes.review_mode=chaotic`
+**Input:** `/project-settings modes.review_mode=chaotic`
 
 **Expected behavior:**
 1. `validate_enum_value` returns 1; its message is shown verbatim:
@@ -179,15 +179,15 @@ Fixture defaults.
 **Fixture:**
 - `project.yaml` sets `engine.name: Godot`; no `project.local.yaml`
 
-**Input:** `/settings --local engine.name=Unity`
+**Input:** `/project-settings --local engine.name=Unity`
 
 **Expected behavior:**
 1. `is_locally_overridable engine.name` returns 1
-2. One line: ``engine.name cannot be locally overridden — it's a project-wide setting. Use `/settings engine.name=Unity` (no `--local`) to change it for the whole team.``
+2. One line: ``engine.name cannot be locally overridden — it's a project-wide setting. Use `/project-settings engine.name=Unity` (no `--local`) to change it for the whole team.``
 3. The skill exits without writing
 
 **Assertions:**
-- [ ] The refusal names the `/settings <key>=<value>` route
+- [ ] The refusal names the `/project-settings <key>=<value>` route
 - [ ] No approval question is asked
 - [ ] No `project.local.yaml` is created
 
@@ -200,7 +200,7 @@ Fixture defaults.
   `project.local.yaml`
 - The user answers `[A] Yes, write`
 
-**Input:** `/settings --local modes.automation=autonomous`
+**Input:** `/project-settings --local modes.automation=autonomous`
 
 **Expected behavior:**
 1. The whitelist and enum checks pass
@@ -224,8 +224,8 @@ Fixture defaults.
   was written — re-derive it with the skill's own grep)
 - `project.yaml` does not set that key; the user answers `[A] Yes, write`
 
-**Input:** `/settings accessibility.target=standard`, then `/settings`, then
-`/settings accessibility.target`
+**Input:** `/project-settings accessibility.target=standard`, then `/project-settings`, then
+`/project-settings accessibility.target`
 
 **Expected behavior:**
 1. The write prints, before the approval question: "Note: `accessibility.target`
@@ -252,7 +252,7 @@ Fixture defaults.
 - `project.local.yaml` sets `modes.review_mode: solo`
 - The user answers `[A] Yes, write`
 
-**Input:** `/settings modes.review_mode=full`
+**Input:** `/project-settings modes.review_mode=full`
 
 **Expected behavior:**
 1. Before the approval question: "Note: this setting is currently locally
@@ -275,8 +275,8 @@ Fixture defaults.
 **Fixture:**
 - `project.yaml` exists
 
-**Input:** `/settings --local modes.automation=` (and, separately,
-`/settings =full`)
+**Input:** `/project-settings --local modes.automation=` (and, separately,
+`/project-settings =full`)
 
 **Expected behavior:**
 1. The empty value (or empty key) routes to Phase 6

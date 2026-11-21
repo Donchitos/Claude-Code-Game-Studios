@@ -50,6 +50,16 @@ if [ -f "project.yaml" ] && [ -f ".claude/hooks/yaml-helper.sh" ]; then
   if [ -n "$ENGINE_NAME" ]; then
     FRESH_PROJECT=false
   fi
+  # A project that names its own code root (engine.code_root, often `.` for a
+  # flat web game with no engine set) is set up, whatever its folders are
+  # called. The source-file test below only looks in src/, Assets/ and Source/.
+  # A key that is set but unusable (`<TAB>invalid<TAB><reason>`) counts too: the
+  # project named a code root, and session-start already says NOT ASSESSED for it.
+  if [ "$FRESH_PROJECT" = true ]; then
+    case "$(resolve_code_root 2>/dev/null)" in
+      *"	engine.code_root"|"	invalid	"*) FRESH_PROJECT=false ;;
+    esac
+  fi
 fi
 if [ "$FRESH_PROJECT" = true ] && [ -f ".claude/docs/technical-preferences.md" ]; then
   ENGINE_LINE=$(grep -E "^[[:space:]]*-[[:space:]]+\*\*Engine\*\*:" .claude/docs/technical-preferences.md 2>/dev/null)
@@ -175,18 +185,20 @@ fi
 #
 # Resolved AFTER the fresh-project early-exit, so a brand-new project never
 # pays for the lookup.
-if command -v resolve_code_root >/dev/null 2>&1; then
-  CODE_ROOT=$(resolve_code_root 2>/dev/null | cut -f1)
-else
-  CODE_ROOT=""
-fi
+_DG_CR=""
+command -v resolve_code_root >/dev/null 2>&1 && _DG_CR=$(resolve_code_root 2>/dev/null)
+CODE_ROOT=$(printf '%s' "$_DG_CR" | cut -f1)
 
 # A doc check that cannot locate the code root has not established that there
 # are no gaps -- it has established nothing (obligation 1 and 3 of
 # .claude/rules/skill-authoring.md). Announce it, once, and only when the checks
 # would otherwise have had somewhere to look.
 if [ "$DOC_CHECKS" = true ] && [ -z "$CODE_ROOT" ]; then
-  if [ -d src ] || [ -d Assets ] || [ -d Source ]; then
+  if [ "$(printf '%s' "$_DG_CR" | cut -f2)" = invalid ]; then
+    echo "ℹ️  NOT CHECKED: the code root is invalid ($(printf '%s' "$_DG_CR" | cut -f3))."
+    echo "    Checks 1, 3 and 4 (design and architecture docs for existing code) did NOT run."
+    echo "    Suggested action: fix engine.code_root in project.yaml, or remove it to use the engine's folder"
+  elif [ -d src ] || [ -d Assets ] || [ -d Source ]; then
     echo "ℹ️  NOT CHECKED: code exists but the code root is ambiguous (engine.name unset, and the tree does not name one unambiguously)."
     echo "    Checks 1, 3 and 4 (design and architecture docs for existing code) did NOT run."
     echo "    Suggested action: /setup-engine, or set engine.name in project.yaml"
@@ -196,7 +208,8 @@ fi
 # --- Check 1: Substantial codebase but sparse design docs ---
 if [ -n "$CODE_ROOT" ] && [ -d "$CODE_ROOT" ]; then
   # Count source files (cross-platform, handles Windows paths)
-  SRC_FILES=$(find "$CODE_ROOT" -type f \( -name "*.gd" -o -name "*.cs" -o -name "*.cpp" -o -name "*.c" -o -name "*.h" -o -name "*.hpp" -o -name "*.rs" -o -name "*.py" -o -name "*.js" -o -name "*.ts" \) 2>/dev/null | wc -l)
+  # code_root_find is find, except that a root of `.` skips the framework's folders.
+  SRC_FILES=$(code_root_find "$CODE_ROOT" -type f \( -name "*.gd" -o -name "*.cs" -o -name "*.cpp" -o -name "*.c" -o -name "*.h" -o -name "*.hpp" -o -name "*.rs" -o -name "*.py" -o -name "*.js" -o -name "*.ts" \) | wc -l)
 else
   SRC_FILES=0
 fi
@@ -233,8 +246,8 @@ if [ -d "prototypes" ]; then
       # Normalize path separators for Windows
       proto_dir=$(echo "$proto_dir" | sed 's|\\|/|g')
 
-      # Check for README.md or CONCEPT.md
-      if [ ! -f "${proto_dir}/README.md" ] && [ ! -f "${proto_dir}/CONCEPT.md" ]; then
+      # Check for README.md or CONCEPT.md; a one-shot from /prototype keeps its brief.md instead
+      if [ ! -f "${proto_dir}/README.md" ] && [ ! -f "${proto_dir}/CONCEPT.md" ] && [ ! -f "${proto_dir}/brief.md" ]; then
         proto_name=$(basename "$proto_dir")
         UNDOCUMENTED_PROTOS+=("$proto_name")
       fi
@@ -243,7 +256,7 @@ if [ -d "prototypes" ]; then
     if [ ${#UNDOCUMENTED_PROTOS[@]} -gt 0 ]; then
       echo "⚠️  GAP: ${#UNDOCUMENTED_PROTOS[@]} undocumented prototype(s) found:"
       for proto in "${UNDOCUMENTED_PROTOS[@]}"; do
-        echo "    - prototypes/$proto/ (no README or CONCEPT doc)"
+        echo "    - prototypes/$proto/ (no README, CONCEPT doc or brief)"
       done
       echo "    Suggested action: /reverse-document concept prototypes/[name]"
     fi
@@ -307,7 +320,7 @@ fi
 #
 # Only a /gate-check PASS (or a CONCERNS whose risks you accepted) advances
 # the stage. A project that writes stories and game code without running one
-# keeps reporting `Concept` to the status line, to /help, and to every gate
+# keeps reporting `Concept` to the status line, to /next-step, and to every gate
 # checklist that branches on stage.
 #
 # This is an OBSERVATION, never a write. CLAUDE.md is explicit that the stage
@@ -318,7 +331,7 @@ fi
 #
 # Not at `minimal`: nothing on that path runs /gate-check, so a stage that never
 # moves is the design, not a gap. The status line shows story progress there
-# instead, and /help routes by the brief -- telling the user to run /gate-check
+# instead, and /next-step routes by the brief -- telling the user to run /gate-check
 # contradicted both.
 STAGE=""
 if [ "$WORKFLOW" != "minimal" ] && [ -f .claude/hooks/yaml-helper.sh ]; then

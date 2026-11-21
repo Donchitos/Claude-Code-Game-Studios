@@ -38,13 +38,13 @@
 #     Uses CWD-relative paths.
 #
 #   is_locally_overridable <dotted.path>
-#     Whitelist check for the /settings --local flag. Returns 0 if the
+#     Whitelist check for the /project-settings --local flag. Returns 0 if the
 #     setting is on the personal-experience whitelist (13 settings per
 #     effects-map.md), 1 otherwise. Locked settings cannot be locally
 #     overridden because they affect on-disk artifacts.
 #
 #   validate_enum_value <dotted.path> <value>
-#     Single-key version of validate_yaml_enum — for /settings to check
+#     Single-key version of validate_yaml_enum — for /project-settings to check
 #     a pending write before committing it to disk. Returns 0 if the
 #     key has no enum constraint OR the value is in the enum set.
 #     Returns 1 (with error on stderr) if the key is enum-typed and the
@@ -544,8 +544,9 @@ team.size::individual|small|studio
 performance.enforce::warn|block|off
 platform.cert_tier::none|itch|steam|console
 accessibility.target::none|standard|aaa
-engine.name::Godot|Unity|Unreal
+engine.name::Godot|Unity|Unreal|Web
 project.stage::Concept|Systems Design|Technical Setup|Pre-Production|Production|Polish|Release
+project.goal::jam|learn|hobby|portfolio|sell|early_access|publisher|mobile|other
 testing.strict.logic::true|false
 testing.strict.integration::true|false
 testing.strict.visual::true|false
@@ -634,7 +635,7 @@ EOF
 #   resolve_setting never consults the local file for that path, so the
 #   setting is discarded in total silence and the user sees the default they
 #   were trying to override. Nothing else checks the key's LOCATION.
-#   /settings --local already refuses these; only the hand-edited file is
+#   /project-settings --local already refuses these; only the hand-edited file is
 #   unguarded, and hand-editing is what the file is for.
 #
 #   WARNS, NEVER RECONCILES — the same shape as the stage-mirror check.
@@ -1080,7 +1081,7 @@ sys.exit(1 if errors else 0)
 PYEOF
 }
 
-# Validate a single pending value for /settings writes. Looks up
+# Validate a single pending value for /project-settings writes. Looks up
 # the key in _yaml_helper_enums; if found, checks value membership. If
 # the key has no enum constraint, returns 0 (no validation applies).
 # Returns 1 with stderr error on invalid value.
@@ -1218,9 +1219,9 @@ EOF
 # The heavier tier costs more to reach working code without producing a better
 # result, and gives nothing back when a new contributor picks the project up. A
 # default that costs more and does not repay is the wrong default, and it is
-# what every user who never opens /settings would receive.
+# what every user who never opens /project-settings would receive.
 #
-# Raising rigor is one question in /start and one `/settings` call, and
+# Raising rigor is one question in /start and one `/project-settings` call, and
 # settings-guidance.md's upward triggers ("system-GDD count crosses ~9",
 # "gate-check PASS into Production while rigor is minimal") are written to fire
 # from exactly this starting state. The cost of under-running is one prompt.
@@ -1280,7 +1281,7 @@ EOF
   return 0
 }
 
-# The rigor level currently in effect (for source labels and /settings).
+# The rigor level currently in effect (for source labels and /project-settings).
 _yaml_helper_rigor_level() {
   _yaml_helper_set_root
   local level=""
@@ -1297,9 +1298,9 @@ project.stage::production/stage.txt"
 
 # Which keys consult project.local.yaml DURING RESOLUTION.
 #
-# This list MUST equal the `/settings --local` write whitelist. If resolution
-# consults project.local.yaml for a narrower set than /settings will write to
-# it, `/settings --local modes.review_mode=solo` writes a value that /settings
+# This list MUST equal the `/project-settings --local` write whitelist. If resolution
+# consults project.local.yaml for a narrower set than /project-settings will write to
+# it, `/project-settings --local modes.review_mode=solo` writes a value that /project-settings
 # accepts and displays, and that every skill then ignores. A write
 # list and a read list that disagree is not a design; it is a bug with a
 # plausible-looking symptom.
@@ -1415,10 +1416,142 @@ resolve_setting() {
   printf '%s\t%s' "$val" "$src"
 }
 
+# The folders a code root of `.` (the project root itself: a flat web game) never
+# scans -- the framework's own, throwaway work, and build output. The same line
+# is in project-state.sh and code-markers.sh; keep the three the same.
+CODE_ROOT_SKIP=".claude .git production design docs tests studio-tests prototypes tools node_modules dist"
+# The folders engine.code_root may not name: the framework's own or throwaway.
+CODE_ROOT_DENY=".claude .git production design docs tests studio-tests prototypes"
+
+# The engine table, .claude/engines/engines.tsv: each engine's code, test and
+# asset roots and its default commands (web-folder-design.md section 3). Found
+# beside this file, not under the project root, so a helper sourced from another
+# checkout reads its own table. No spawn here: this file is sourced by every hook.
+_yh_self="${BASH_SOURCE[0]:-}"
+case "$_yh_self" in */*) _YH_DIR="${_yh_self%/*}" ;; *) _YH_DIR="." ;; esac
+case "$_YH_DIR" in /*|[A-Za-z]:*) ;; *) _YH_DIR="$PWD/$_YH_DIR" ;; esac
+_YH_ENGINES="$_YH_DIR/../engines/engines.tsv"
+_YH_ENGINE_ROW="$_YH_DIR/../scripts/engine-row.awk"
+
+# _yh_engine_cell NAME COLUMN -- one cell of NAME's row: empty for a `-` cell, an
+# engine the table does not name, or a missing table (read as an unknown engine).
+_yh_engine_cell() {
+  [ -n "$1" ] && [ -f "$_YH_ENGINES" ] && [ -f "$_YH_ENGINE_ROW" ] || return 0
+  awk -F'\t' -v engine="$1" -v col="$2" -f "$_YH_ENGINE_ROW" "$_YH_ENGINES" 2>/dev/null
+}
+
+# _yh_code_root_check ROOT VALUE [KEY [DENY]] -- checks an engine.code_root value
+# (or engine.test_root's, named by KEY, with DENY in place of CODE_ROOT_DENY) against
+# the tree at ROOT. Prints the folder when it can be used, a TAB then the reason
+# when it cannot, and nothing when the value is not set (empty, a [...]
+# placeholder, or YAML's own null: ~, null, Null, NULL). Spelling is checked
+# against each parent's listing, because on Windows and default macOS
+# `[ -d scripts ]` is also true for Scripts/, which a Linux CI run would then
+# not find. The same function is in project-state.sh.
+_yh_code_root_check() {
+  local base="$1" v="$2" key="${3:-engine.code_root}" deny="${4-$CODE_ROOT_DENY}" rest seg parent out first lo d actual
+  v=$(printf '%s' "$v" | tr -d '\r')
+  case "$v" in ""|"["*|"~"|null|Null|NULL) return 0 ;; esac
+  case "$v" in *\\*) printf "\t$key: use / not \\\\ in '%s'" "$v"; return 0 ;; esac
+  case "$v" in /*|"~"*|[A-Za-z]:*) printf "\t$key: absolute path '%s'" "$v"; return 0 ;; esac
+  while :; do case "$v" in */) v="${v%/}" ;; ./*) v="${v#./}" ;; *) break ;; esac; done
+  [ -z "$v" ] && v="."
+  [ "$v" = "." ] && { printf '.'; return 0; }
+  case "/$v/" in */../*) printf "\t$key: '..' not allowed in '%s'" "$v"; return 0 ;; esac
+  case "/$v/" in */./*|*//*) printf "\t$key: '%s' is not a plain folder path" "$v"; return 0 ;; esac
+  first="${v%%/*}"; lo=$(printf '%s' "$first" | tr '[:upper:]' '[:lower:]')
+  for d in $deny; do
+    [ "$lo" = "$d" ] && { printf "\t$key: framework folder '%s'" "$first"; return 0; }
+  done
+  parent="$base"; rest="$v"; out=""
+  while [ -n "$rest" ]; do
+    seg="${rest%%/*}"
+    if [ "$seg" = "$rest" ]; then rest=""; else rest="${rest#*/}"; fi
+    if [ ! -d "$parent/$seg" ]; then
+      # A case-sensitive disk (Linux, some macOS) has no "$seg" spelled with other capitals:
+      # name the spelling on disk, as a case-insensitive disk does below.
+      actual=$(ls -1A "$parent" 2>/dev/null | LC_ALL=C grep -Fxi -- "$seg" | head -1)
+      if [ -n "$actual" ] && [ -d "$parent/$actual" ]; then
+        printf "\t$key: spelled '%s' on disk, not '%s'" "${out:+$out/}$actual" "${out:+$out/}$seg"; return 0
+      fi
+      printf "\t$key: no folder '%s'" "${out:+$out/}$seg"; return 0
+    fi
+    if ! ls -1A "$parent" 2>/dev/null | LC_ALL=C grep -Fxq -- "$seg"; then
+      actual=$(ls -1A "$parent" 2>/dev/null | LC_ALL=C grep -Fxi -- "$seg" | head -1)
+      printf "\t$key: spelled '%s' on disk, not '%s'" "${out:+$out/}$actual" "${out:+$out/}$seg"; return 0
+    fi
+    out="${out:+$out/}$seg"; parent="$parent/$seg"
+  done
+  printf '%s' "$out"
+}
+
+# code_root_filter ROOT -- repo-relative paths on stdin, those under ROOT on
+# stdout (a leading ./ removed). For ROOT `.`, every path outside the
+# CODE_ROOT_SKIP folders. Callers use it in place of `grep "^$ROOT/"`, which
+# for `.` would read as the regex `^./` and match the wrong files.
+code_root_filter() {
+  awk -v root="${1%/}" -v skip="$CODE_ROOT_SKIP" '
+    BEGIN { n = split(skip, s, " ") }
+    { p = $0; sub(/\r$/, "", p); sub(/^\.\//, "", p); if (p == "") next }
+    root != "." { if (index(p, root "/") == 1) print p; next }
+    { top = p; sub(/\/.*/, "", top)
+      if (top != p) for (i = 1; i <= n; i++) if (top == s[i]) next
+      print p }'
+}
+
+# code_root_find ROOT FIND-TESTS... -- `find ROOT FIND-TESTS... -print`, except
+# that for ROOT `.` the CODE_ROOT_SKIP folders at the top are not entered.
+code_root_find() {
+  local root="${1%/}" d; shift
+  if [ "$root" != "." ]; then find "$root" "$@" 2>/dev/null; return 0; fi
+  set -- \) -prune -o \( "$@" \) -print
+  for d in $CODE_ROOT_SKIP; do set -- -o -path "./$d" "$@"; done
+  shift   # the first -o
+  find . \( "$@" 2>/dev/null
+}
+
+# _yh_engine_name -- the engine name the code and test roots are read for, into
+# _YH_ENAME, and where it came from into _YH_ESRC (engine.name, project.local.yaml
+# or the legacy file; empty when unset). Variables, not output: no subshell.
+_yh_engine_name() {
+  local legacy
+  _YH_ENAME=""; _YH_ESRC=""
+  # 1. The configured engine, through the normal chain.
+  if [ -f "$_YH_ROOT/project.local.yaml" ]; then
+    _YH_ENAME=$(get_yaml_key "$_YH_ROOT/project.local.yaml" engine.name 2>/dev/null)
+    [ -n "$_YH_ENAME" ] && _YH_ESRC="project.local.yaml"
+  fi
+  if [ -z "$_YH_ENAME" ] && [ -f "$_YH_ROOT/project.yaml" ]; then
+    _YH_ENAME=$(get_yaml_key "$_YH_ROOT/project.yaml" engine.name 2>/dev/null)
+    [ -n "$_YH_ENAME" ] && _YH_ESRC="engine.name"
+  fi
+
+  # 2. The legacy mirror. `/setup-engine` wrote an `Engine:` line here before
+  #    project.yaml existed, and workflow-catalog's `engine-setup` step still
+  #    accepts it as an `any_of` alternative — so a v1.0 project that never
+  #    migrated resolves rather than falling through to "unset".
+  legacy="$_YH_ROOT/.claude/docs/technical-preferences.md"
+  if [ -z "$_YH_ENAME" ] && [ -f "$legacy" ]; then
+    _YH_ENAME=$(grep -iE '^[[:space:]]*[-*]?[[:space:]]*\*{0,2}Engine\*{0,2}[[:space:]]*:' "$legacy" 2>/dev/null \
+            | head -1 | sed 's/.*://' | tr -d '\r' \
+            | sed 's/^[[:space:]]*//; s/[[:space:]].*$//; s/\*//g')
+    case "$_YH_ENAME" in
+      *"[TO BE CONFIGURED]"*|"["*) _YH_ENAME="" ;;
+    esac
+    [ -n "$_YH_ENAME" ] && _YH_ESRC=".claude/docs/technical-preferences.md"
+  fi
+
+  return 0
+}
+
 # Resolve the ENGINE-SPECIFIC code root.
-#   prints: "<dir>\t<source>"
-#   source: engine.name | <legacy path> | detected | unset
+#   prints: "<dir>\t<source>", or "\tinvalid\t<reason>" for a bad engine.code_root
+#   source: engine.code_root | engine.name | <legacy path> | detected | unset | invalid
 #   exit:   always 0
+#
+# A bad engine.code_root never falls back to the engine's folder: a typo for
+# scripts/ that quietly read src/ would scan nothing and look clean, which is
+# the bug the override exists to fix.
 #
 # WHY THIS EXISTS. `.claude/docs/directory-structure.md` is explicit that the
 # code root is not a style preference but a hard toolchain constraint: Unity
@@ -1444,39 +1577,33 @@ resolve_setting() {
 # scan half of it and report a pass.
 resolve_code_root() {
   _yaml_helper_set_root
-  local ename="" src="" root="" legacy="" found="" d n=0
+  local ename="" src="" root="" found="" d n=0 ov="" chk="" line tab
+  tab=$(printf '\t')
 
-  # 1. The configured engine, through the normal chain.
-  if [ -f "$_YH_ROOT/project.local.yaml" ]; then
-    ename=$(get_yaml_key "$_YH_ROOT/project.local.yaml" engine.name 2>/dev/null)
-    [ -n "$ename" ] && src="project.local.yaml"
-  fi
-  if [ -z "$ename" ] && [ -f "$_YH_ROOT/project.yaml" ]; then
-    ename=$(get_yaml_key "$_YH_ROOT/project.yaml" engine.name 2>/dev/null)
-    [ -n "$ename" ] && src="engine.name"
-  fi
-
-  # 2. The legacy mirror. `/setup-engine` wrote an `Engine:` line here before
-  #    project.yaml existed, and workflow-catalog's `engine-setup` step still
-  #    accepts it as an `any_of` alternative — so a v1.0 project that never
-  #    migrated resolves rather than falling through to "unset".
-  legacy="$_YH_ROOT/.claude/docs/technical-preferences.md"
-  if [ -z "$ename" ] && [ -f "$legacy" ]; then
-    ename=$(grep -iE '^[[:space:]]*[-*]?[[:space:]]*\*{0,2}Engine\*{0,2}[[:space:]]*:' "$legacy" 2>/dev/null \
-            | head -1 | sed 's/.*://' | tr -d '\r' \
-            | sed 's/^[[:space:]]*//; s/[[:space:]].*$//; s/\*//g')
-    case "$ename" in
-      *"[TO BE CONFIGURED]"*|"["*) ename="" ;;
-    esac
-    [ -n "$ename" ] && src=".claude/docs/technical-preferences.md"
+  # 0. The project's own override, engine.code_root. project.yaml only:
+  #    engine.* is shared by the whole team (effects-map.md), so a value in
+  #    project.local.yaml is not read, and validate_local_scope reports it.
+  #    The read loop is bash only: a project that never sets the key starts no
+  #    interpreter here, and this runs in three hooks.
+  if [ -f "$_YH_ROOT/project.yaml" ]; then
+    while IFS= read -r line || [ -n "$line" ]; do
+      case "$line" in *code_root*:*) ov=1; break ;; esac
+    done < "$_YH_ROOT/project.yaml"
+    if [ -n "$ov" ]; then
+      ov=$(get_yaml_key "$_YH_ROOT/project.yaml" engine.code_root 2>/dev/null)
+      chk=$(_yh_code_root_check "$_YH_ROOT" "$ov")
+      case "$chk" in
+        "") ;;
+        "$tab"*) printf '\tinvalid\t%s' "${chk#"$tab"}"; return 0 ;;
+        *) printf '%s\tengine.code_root' "$chk"; return 0 ;;
+      esac
+    fi
   fi
 
-  case "$(printf '%s' "$ename" | tr '[:upper:]' '[:lower:]')" in
-    godot)   root="src" ;;
-    unity)   root="Assets" ;;
-    unreal*) root="Source" ;;
-    *)       root="" ;;
-  esac
+  # 1-2. The configured engine, then the legacy mirror; its folder from the
+  #      engine table (Godot src, Unity Assets, Unreal Source, Web src).
+  _yh_engine_name; ename="$_YH_ENAME"; src="$_YH_ESRC"
+  root=$(_yh_engine_cell "$ename" code_root)
 
   # 3. No usable engine value — believe the tree, but only if it is unambiguous.
   #    Names are compared exactly, against the directory listing: `[ -d Assets ]`
@@ -1493,6 +1620,36 @@ resolve_code_root() {
 
   [ -z "$src" ] && src="unset"
   printf '%s\t%s' "$root" "$src"
+}
+
+# Resolve the engine's TEST root (web-folder-design.md section 3).
+#   prints: "<dir>\t<source>", or "\tinvalid\t<reason>" for a bad engine.test_root
+#   source: engine.test_root | engine.name | <legacy path> | unset | invalid
+# engine.test_root in project.yaml beats the engine's row, with engine.code_root's
+# checks, except that it may name tests/. Unset, the engine's row decides; an
+# unknown or unset engine has none (never a guessed tests/).
+CODE_ROOT_DENY_TESTS=".claude .git production design docs studio-tests prototypes"
+resolve_test_root() {
+  _yaml_helper_set_root
+  local ov="" chk="" line root tab
+  tab=$(printf '\t')
+  if [ -f "$_YH_ROOT/project.yaml" ]; then
+    while IFS= read -r line || [ -n "$line" ]; do
+      case "$line" in *test_root*:*) ov=1; break ;; esac
+    done < "$_YH_ROOT/project.yaml"
+    if [ -n "$ov" ]; then
+      ov=$(get_yaml_key "$_YH_ROOT/project.yaml" engine.test_root 2>/dev/null)
+      chk=$(_yh_code_root_check "$_YH_ROOT" "$ov" engine.test_root "$CODE_ROOT_DENY_TESTS")
+      case "$chk" in
+        "") ;;
+        "$tab"*) printf '\tinvalid\t%s' "${chk#"$tab"}"; return 0 ;;
+        *) printf '%s\tengine.test_root' "$chk"; return 0 ;;
+      esac
+    fi
+  fi
+  _yh_engine_name
+  root=$(_yh_engine_cell "$_YH_ENAME" test_root)
+  if [ -n "$root" ]; then printf '%s\t%s' "$root" "$_YH_ESRC"; else printf '\tunset'; fi
 }
 
 # List the child key names of a mapping node (one per line). get_yaml_key
@@ -1596,7 +1753,7 @@ PYEOF
 # docs.density, story_granularity, qa.level, team.size, project.stage,
 # automation_always_ask, engine, testing.strict, system_overrides; and, only when
 # named, the derived lines gate_level, engine_values, specialists, review_gate,
-# input_methods, perf_budgets.
+# input_methods, perf_budgets, engine_row.
 resolve_config() {
   _yaml_helper_set_root
   local want=""
@@ -1776,7 +1933,7 @@ EOF
   #   2. No provenance. Every other line names its source; this one printed a
   #      bare value with a `${pe:+}` suffix that expands to nothing -- a
   #      provenance tag someone started and never finished. The key is on the
-  #      `/settings --local` whitelist and the docs stress that a teammate's
+  #      `/project-settings --local` whitelist and the docs stress that a teammate's
   #      stricter local setting "is meant to bite on their machine only", so
   #      "did this FAIL come from the project or from my own project.local.yaml"
   #      is exactly the question the line has to answer.
@@ -1946,6 +2103,9 @@ EOF
       godot)   sp_primary="godot-specialist" ;;
       unity)   sp_primary="unity-specialist" ;;
       unreal*) sp_primary="unreal-specialist" ;;
+      # No web specialist: engine work on Web goes to lead-programmer,
+      # against docs/engine-reference/web/.
+      web)     sp_primary="lead-programmer" ;;
       *)       sp_primary="" ;;
     esac
     sp_psrc="engine.name"
@@ -1966,6 +2126,46 @@ EOF
       [ -z "$sp_code$sp_shader$sp_ui$sp_add" ] && sp_src="no specialists block"
     fi
     echo "specialists: primary=$(_rc_tag "$sp_primary" "$sp_psrc") code=${sp_code:-unset} shader=${sp_shader:-unset} ui=${sp_ui:-unset} additional=${sp_add:-none} ($sp_src; unset = skip that specialist)"
+  fi
+
+  # engine_row: the engine's row of .claude/engines/engines.tsv, for a skill that
+  # needs the engine's folders or default commands. code_root and test_root are
+  # the resolved ones (engine.code_root and engine.test_root beat the row, and a
+  # bad value is invalid with its reason); asset_root and the four commands are
+  # the table's, `-` where it has none. The project's own commands.* still win
+  # where a skill runs a command. Same engine-name chain as resolve_code_root.
+  local er_row er_t er_cr er_tr er_e er_out f er_i
+  if _rc_named engine_row; then
+    er_t=$(printf '\t')
+    _yh_engine_name
+    er_row=""; [ -n "$_YH_ENAME" ] && er_row=$(_yh_engine_cell "$_YH_ENAME" "")
+    case "$_YH_ESRC" in engine.name) er_e="project.yaml" ;; *) er_e="$_YH_ESRC" ;; esac
+    if [ -z "$_YH_ENAME" ]; then er_e="unset"
+    elif [ -z "$er_row" ]; then er_e="$_YH_ENAME($er_e; not in the table)"
+    else er_e="$_YH_ENAME($er_e)"; fi
+    _rc_root() {  # "<dir>\t<src>" or "\tinvalid\t<why>" or "\t<src>" -> dir(src) | invalid(why) | unset
+      case "$1" in
+        "$er_t"invalid"$er_t"*) printf 'invalid(%s)' "${1#"$er_t"invalid"$er_t"}" ;;
+        "$er_t"*|"") printf unset ;;
+        *) printf '%s(%s)' "${1%%"$er_t"*}" "${1#*"$er_t"}" ;;
+      esac
+    }
+    er_cr=$(_rc_root "$(resolve_code_root)"); er_tr=$(_rc_root "$(resolve_test_root)")
+    er_out=""
+    if [ -n "$er_row" ]; then
+      er_row="${er_row#*"$er_t"}${er_t}"   # drop the engine column; split on tabs (no cell is empty)
+      for er_i in code_root test_root asset_root run build test smoke; do
+        f="${er_row%%"$er_t"*}"; er_row="${er_row#*"$er_t"}"
+        case "$er_i" in
+          code_root|test_root) ;;
+          asset_root) er_out="$er_out asset_root=$f" ;;
+          *) if [ "$f" = "-" ]; then er_out="$er_out $er_i=-"; else er_out="$er_out $er_i=\"$f\""; fi ;;
+        esac
+      done
+    else
+      er_out=" asset_root=- run=- build=- test=- smoke=-"
+    fi
+    echo "engine_row: engine=$er_e code_root=$er_cr test_root=$er_tr$er_out (.claude/engines/engines.tsv; - = not in the table)"
   fi
 
   # review_gate: whether a skill's own director gate runs, and whether the

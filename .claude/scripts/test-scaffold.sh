@@ -13,7 +13,7 @@
 #
 # Usage: bash .claude/scripts/test-scaffold.sh ENGINE [--dry-run | --list] [--root DIR]
 #          [--module NAME] [--project NAME] [--date YYYY-MM-DD]
-#   ENGINE          godot, unity or unreal (the engine.name values, in any case;
+#   ENGINE          godot, unity, unreal or web (the engine.name values, in any case;
 #                   UE5 is not one)
 #   --dry-run       print what would be created (WOULD_CREATE), write nothing
 #   --list          print the project-relative paths this engine's scaffold
@@ -34,6 +34,8 @@
 #   unity    Assets/Tests/EditMode/EditModeTests.asmdef,
 #            Assets/Tests/PlayMode/PlayModeTests.asmdef
 #   unreal   Source/<Module>/Private/Tests/README.md
+#   web      tests/unit/.gitkeep, tests/integration/.gitkeep, playwright.config.ts
+#            (the web scaffold's own, .claude/engines/web/scaffold/)
 #   all      .github/workflows/tests.yml, tests/smoke/critical-paths.md
 # The skill asks Godot's two test folders to hold a .gdignore_placeholder file;
 # Godot knows no such name (.gdignore would hide the folder from the editor and
@@ -91,11 +93,11 @@ while [ $# -gt 0 ]; do
     *) [ -z "$ENGINE" ] || usage "one engine at a time, got $ENGINE and $1"; ENGINE="$1"; shift ;;
   esac
 done
-[ -n "$ENGINE" ] || usage "no engine: godot, unity or unreal"
+[ -n "$ENGINE" ] || usage "no engine: godot, unity, unreal or web"
 ENG=$(printf '%s' "$ENGINE" | tr '[:upper:]' '[:lower:]')
 case "$ENG" in
-  godot|unity|unreal) ;;
-  *) usage "engine must be godot, unity or unreal (the engine.name values), got $ENGINE" ;;
+  godot|unity|unreal|web) ;;
+  *) usage "engine must be godot, unity, unreal or web (the engine.name values), got $ENGINE" ;;
 esac
 # A module or project name goes into paths and file text: letters, digits and _ only.
 for _n in "$MODULE_ARG" "$PROJECT_ARG"; do
@@ -144,8 +146,11 @@ case "$ENG" in
   godot) ENGNAME=Godot ;;
   unity) ENGNAME=Unity ;;
   unreal) ENGNAME=Unreal ;;
+  web) ENGNAME=Web ;;
 esac
 if [ -n "$VER" ]; then ENGTXT="$ENGNAME $VER"; else ENGTXT="$ENGNAME [version]"; fi
+# Web's engine.version is the bundler's (Vite for a new project).
+[ "$ENG" != web ] || { if [ -n "$VER" ]; then ENGTXT="Web (Vite $VER)"; else ENGTXT="Web (Vite [version])"; fi; }
 # Godot CI needs a full release such as 4.7.2; "4.7" is not one.
 GODOTVER="[FULL GODOT VERSION, e.g. 4.7.2]"
 case "$VER" in
@@ -169,6 +174,7 @@ list_paths() {
     godot) echo tests/unit/.gitkeep; echo tests/integration/.gitkeep ;;
     unity) echo Assets/Tests/EditMode/EditModeTests.asmdef; echo Assets/Tests/PlayMode/PlayModeTests.asmdef ;;
     unreal) echo "$UNREAL_README" ;;
+    web) echo tests/unit/.gitkeep; echo tests/integration/.gitkeep; echo playwright.config.ts ;;
   esac
   echo "$CI"
   echo "$SMOKE"
@@ -553,6 +559,116 @@ jobs:
 TPL_CI_UNREAL
 }
 
+tpl_readme_web() {
+  cat <<'TPL_README_WEB'
+# Test Infrastructure
+
+**Engine**: @ENGINE@
+**Test Framework**: Vitest (the rules) and Playwright (the game in a browser)
+**CI**: `.github/workflows/tests.yml`
+**Setup date**: @DATE@
+
+## Directory Layout
+
+```
+tests/
+  unit/           # Vitest: the rules in src/game/, run in Node with no browser
+  integration/    # Playwright: the single-file build in a browser, driven through window.game
+  smoke/          # Critical path test list for /smoke-check gate
+```
+
+```
+production/qa/
+  evidence/       # Screenshot logs and manual test sign-off records
+```
+
+> **Manual evidence lives under `production/qa/evidence/`, not `tests/`** — that
+> is where every consumer reads it.
+
+## Running Tests
+
+```bash
+npm test              # Vitest, then Playwright
+npm run test:unit     # Vitest only
+npm run test:e2e      # build:single, then Playwright
+npm run smoke         # build:single, then the @boot test
+```
+
+Playwright opens `dist-single/index.html` from disk (`npm run build:single`
+makes it), so no server and no port are needed. It launches the browser
+`.claude/scripts/page-shot.sh --which` prints, the one every check uses. With
+none, install one, once: `npx playwright install chromium-headless-shell`.
+Each half exits 0 when every test passed and non-zero when one failed. A half
+with no test file fails too: Vitest prints `No test files found` and Playwright
+`No tests found`; neither is a pass.
+
+## Test Naming
+
+Names follow the engine's language (`.claude/rules/test-standards.md`):
+- **Web**: file `[module].test.ts` (Vitest) or `[system].spec.ts` (Playwright),
+  test `'[scenario] [expected]'` — `rules.test.ts` → `it('keeps the square inside the field')`
+
+## Story Type → Test Evidence
+
+| Story Type | Required Evidence | Location |
+|---|---|---|
+| Logic | Automated unit test — must pass | `tests/unit/[system]/` |
+| Integration | Integration test OR playtest doc | `tests/integration/[system]/` |
+| Visual/Feel | Screenshot + lead sign-off | `production/qa/evidence/` |
+| UI | Retained screenshot of each screen touched | `production/qa/evidence/` |
+| Config/Data | Smoke check pass | `production/qa/smoke-*.md` |
+
+## CI
+
+Tests run automatically on every push to `main` and on every pull request.
+A failed test suite blocks merging. CI runs `npm ci`, then `npm test`, with
+the runner's Chrome.
+TPL_README_WEB
+}
+
+tpl_ci_web() {
+  cat <<'TPL_CI_WEB'
+name: Automated Tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    name: Run Vitest and Playwright Tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Set up Node
+        uses: actions/setup-node@v7
+        with:
+          node-version: 24
+
+      # npm ci installs exactly what package-lock.json pins.
+      - name: Install
+        run: npm ci
+
+      # Playwright launches the runner's Chrome, the browser
+      # .claude/scripts/page-shot.sh finds, so no browser is downloaded.
+      - name: Run Tests
+        run: npm test
+
+      - name: Upload Test Results
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: test-results
+          path: test-results/
+          if-no-files-found: ignore
+TPL_CI_WEB
+}
+
 tpl_smoke() {
   cat <<'TPL_SMOKE'
 # Smoke Test: Critical Paths
@@ -653,13 +769,15 @@ render() {
 content_of() {
   case "$1" in
     "$README")
-      case "$ENG" in godot) tpl_readme_godot ;; unity) tpl_readme_unity ;; unreal) tpl_readme_unreal ;; esac | render ;;
+      case "$ENG" in godot) tpl_readme_godot ;; unity) tpl_readme_unity ;; unreal) tpl_readme_unreal ;; web) tpl_readme_web ;; esac | render ;;
     "$CI")
-      case "$ENG" in godot) tpl_ci_godot ;; unity) tpl_ci_unity ;; unreal) tpl_ci_unreal ;; esac | render ;;
+      case "$ENG" in godot) tpl_ci_godot ;; unity) tpl_ci_unity ;; unreal) tpl_ci_unreal ;; web) tpl_ci_web ;; esac | render ;;
     "$SMOKE") tpl_smoke ;;
     Assets/Tests/EditMode/EditModeTests.asmdef) tpl_asmdef_edit ;;
     Assets/Tests/PlayMode/PlayModeTests.asmdef) tpl_asmdef_play ;;
     Source/*/Private/Tests/README.md) tpl_unreal_tests_readme | render ;;
+    # The web scaffold's own file, so /setup-engine web and /test-setup write the same one.
+    playwright.config.ts) cat "$HERE/../engines/web/scaffold/playwright.config.ts" ;;
     *) : ;;
   esac
 }
@@ -682,6 +800,11 @@ while IFS= read -r p; do
     Source/*/Private/Tests/README.md)
       if [ -z "$MOD_NAME" ]; then
         printf 'SKIPPED\t%s\tno module name: pass --module or keep one .uproject in the root\n' "$p"
+        NSKIP=$((NSKIP + 1)); continue
+      fi ;;
+    playwright.config.ts)
+      if [ ! -f "$HERE/../engines/web/scaffold/playwright.config.ts" ]; then
+        printf 'SKIPPED\t%s\tthe web scaffold is missing (.claude/engines/web/scaffold/)\n' "$p"
         NSKIP=$((NSKIP + 1)); continue
       fi ;;
   esac
@@ -738,6 +861,15 @@ case "$ENG" in
     fi
     if made "$CI"; then
       need ue_root "$CI" "set UE_ROOT on the self-hosted Windows runner"
+    fi ;;
+  web)
+    if [ ! -f package.json ]; then
+      need package_json package.json "no package.json: /setup-engine web makes the project first"
+    else
+      for _pk in vitest @playwright/test; do
+        grep -q "\"$_pk\"" package.json || need "$_pk" package.json "add $_pk at the version docs/engine-reference/web/VERSION.md pins"
+      done
+      [ -d node_modules ] || need npm_install node_modules "npm ci (it runs third-party install scripts and needs the network: ask first)"
     fi ;;
 esac
 

@@ -115,7 +115,7 @@ lowers READY by itself.
 
 - [ ] **Requirement traced**: the story names its `design/gdd/` file and quotes or
   links a specific rule or criterion from it, not just the file name. At
-  `minimal`: `design/game-brief.md` and the MVP feature the story implements.
+  `minimal`: `design/game-brief.md` and the Features item the story implements.
   A named design document that does not exist: NOT ASSESSED.
 - [ ] **Self-contained**: the acceptance criteria say what done means without
   opening the GDD.

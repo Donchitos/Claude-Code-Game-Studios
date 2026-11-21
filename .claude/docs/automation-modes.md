@@ -5,7 +5,7 @@ that uses `AskUserQuestion` or writes files. Skills reference this document
 instead of embedding the full mode-handling rules inline — eliminating drift
 when the pattern needs updating.
 
-**Scope**: 68 skills across authoring, review, team orchestration,
+**Scope**: 69 skills across authoring, review, team orchestration,
 implementation, and utility categories. Any skill that gates a decision
 through `AskUserQuestion` or writes files should follow this pattern.
 
@@ -57,7 +57,7 @@ the right rule.
 
 **Default**: `collaborative`. New projects start here.
 
-**Set by**: `/start`, `/settings`.
+**Set by**: `/start`, `/project-settings`.
 
 ---
 

@@ -3,7 +3,7 @@
 # against what is actually on disk.
 #
 # Replaces the "Use Glob and Read to verify files exist and have meaningful
-# content" loop in /gate-check (and the equivalent hand-scans in /help and
+# content" loop in /gate-check (and the equivalent hand-scans in /next-step and
 # /project-stage-detect). workflow-catalog.yaml already encodes `glob`,
 # `pattern`, `min_count` and `any_of` per step; nothing consumed it
 # deterministically, so the model re-derived the same answers by opening files.

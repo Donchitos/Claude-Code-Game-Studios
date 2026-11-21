@@ -12,7 +12,7 @@
 │   └── engine-reference/        # Curated engine API snapshots (version-pinned)
 ├── tests/                       # Game test suites (unit, integration, performance, playtest)
 ├── tools/                       # Build and pipeline tools (ci, build, asset-pipeline)
-├── prototypes/                  # Throwaway prototypes (outside the code root)
+├── prototypes/                  # One-shot games, throwaway prototypes (outside the code root)
 ├── production/                  # Production management (sprints, milestones, releases)
 │   ├── session-state/           # Ephemeral session state (active.md — gitignored)
 │   └── session-logs/            # Session audit trail (gitignored)
@@ -21,7 +21,7 @@
 
 ## The code root is engine-specific
 
-**Two of the three supported engines will not build a project whose code sits in
+**Two of the four supported engines will not build a project whose code sits in
 `src/`.** This is not a style preference — it is a hard constraint of the engine's
 own toolchain:
 
@@ -30,6 +30,7 @@ own toolchain:
 | **Godot** | `src/` | No constraint — Godot loads from `res://` anywhere under the project root. |
 | **Unity** | `Assets/` | Unity compiles **only** `Assets/` and `Packages/`. Code outside them is invisible to the compiler. |
 | **Unreal** | `Source/<Module>/` | UnrealBuildTool discovers modules under `Source/`; content lives in `Content/`. A module elsewhere is not built. |
+| **Web** | `src/` | No constraint — Vite builds what `index.html` imports. |
 
 **Resolve the code root from `engine.name` before writing any source file.** A
 path shown as `src/…` alone is a Godot example: read it as *"the code root"* and
@@ -42,5 +43,9 @@ substitute the row above. `src/` is the table's Godot row, not a universal path.
 | **Godot** | `tests/unit/`, `tests/integration/` | — |
 | **Unity** | `Assets/Tests/EditMode/`, `Assets/Tests/PlayMode/` | not compiled: "0 tests, Passed" |
 | **Unreal** | `Source/<Module>/Private/Tests/` | not built: "No automation tests matched" |
+| **Web** | `tests/unit/` (Vitest), `tests/integration/` (Playwright) | — |
+
+The rows are the engine table, `.claude/engines/engines.tsv`; `engine.code_root`
+and `engine.test_root` override them.
 
 Read `tests/unit/[system]/` (or `integration/`) anywhere as the test root plus `[System]/`.

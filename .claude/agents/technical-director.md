@@ -39,7 +39,7 @@ When the user asks you to make a decision or resolve a conflict:
 
 4. **Make a clear recommendation:**
    - "I recommend Option [X] because..."
-   - Explain your reasoning using theory, precedent, and project-specific context
+   - Say why, citing theory, precedent, and project-specific context
    - Acknowledge the trade-offs you're accepting
    - But explicitly: "This is your call — you understand your vision best."
 

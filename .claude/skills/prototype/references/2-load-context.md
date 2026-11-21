@@ -15,7 +15,7 @@ ranges with offset and limit. Extract:
 Determine the engine and language in use: read `engine.name` and
 `engine.language` from `project.yaml`. For each field, if its key is absent or
 empty (including when `project.yaml` has no `engine:` block), fall back to
-`CLAUDE.md` and `.claude/docs/technical-preferences.md`. Treat a
+`CLAUDE.md` and the technical preferences file `SKILL.md` names. Treat a
 `[TO BE CONFIGURED]` value as not set.
 
 ---

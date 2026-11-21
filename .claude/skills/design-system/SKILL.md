@@ -3,7 +3,7 @@ name: design-system
 description: "Section-by-section GDD authoring for one system — walks through each required section, cross-references dependencies."
 argument-hint: "<system-name> [--review full|lean|solo]"
 user-invocable: true
-allowed-tools: Read, Glob, Grep, Write, Edit, Agent, AskUserQuestion, TaskCreate, TaskGet, TaskList, TaskUpdate, Bash(bash "*/.claude/skills/design-system/../../hooks/yaml-helper.sh" resolve_config *), Bash(bash .claude/scripts/registry.sh *)
+allowed-tools: Read, Glob, Grep, Write, Edit, AskUserQuestion, TaskCreate, TaskGet, TaskList, TaskUpdate, Bash(bash "*/.claude/skills/design-system/../../hooks/yaml-helper.sh" resolve_config *), Bash(bash .claude/scripts/registry.sh *)
 model: sonnet
 ---
 
@@ -13,6 +13,11 @@ Resolved above — use as-is; `--review` overrides `review_mode`. No block →
 defaults in `.claude/docs/config-resolution.md`.
 
 # Design System
+
+**This skill spawns no agents** — not for a section and not for the
+CD-GDD-ALIGN sign-off, even when the person asks for a specialist's or "the
+creative director's" view: what each specialist checked is in a lens file in
+`references/`, and you apply it here. (The agent files exist for other skills.)
 
 When this skill is invoked:
 
@@ -36,10 +41,13 @@ When this skill is invoked:
 
 **Read `references/5-post-design.md` now and follow it** — this phase's steps are in that file, not here. Read it again if the conversation was compacted or resumed during this phase.
 
-## 6. Specialist Agent Routing
+## 6. Specialist Routing
 
-This skill delegates to specialist agents for domain expertise. The main session
-orchestrates the overall flow; agents provide expert content.
+The section steps look at the work through specialists' lenses
+(`references/lens-creative-director.md`, `references/lens-systems-designer.md`,
+`references/lens-qa-lead.md` and `references/lens-specialists.md`, each read when
+its step says); this table picks which roles' lenses a system's Section C uses.
+You run the flow and apply each lens yourself.
 
 **Rows here are finer-grained than the nine `Category` values on purpose** — the
 right specialist for combat is not the right specialist for pathfinding, and both
@@ -59,9 +67,9 @@ actually does. Every category has at least one row, so nothing falls through.
 | `Narrative` | Dialogue/quests/lore |
 | `Meta` | Foundation/Infrastructure (analytics, tutorial plumbing) · UI systems (accessibility options screens) |
 
-If two rows fit, spawn the union of their Primary agents and say why.
+If two rows fit, use the union of their Primary roles and say why.
 
-| System type | Primary Agent | Supporting Agent(s) |
+| System type | Primary role | Supporting role(s) |
 |----------------|---------------|---------------------|
 | **Foundation/Infrastructure** (event bus, save/load, scene mgmt, service locator) | `systems-designer` | `gameplay-programmer` (feasibility), `engine-programmer` (engine integration) |
 | Combat, damage, health | `game-designer` | `systems-designer` (formulas), `ai-programmer` (enemy AI), `art-director` (hit feedback visual direction, VFX intent) |
@@ -77,13 +85,11 @@ If two rows fit, spawn the union of their Primary agents and say why.
 | Visual effects, particles, shaders | `game-designer` | `art-director` (VFX visual direction), `technical-artist` (performance budget, shader complexity), `systems-designer` (trigger/state integration) |
 | Character systems (stats, archetypes) | `game-designer` | `art-director` (character visual archetype), `narrative-director` (character arc alignment), `systems-designer` (stat formulas) |
 
-**When delegating via the `Agent` tool**:
-- Provide: system name, game concept summary, dependency GDD excerpts, the specific
-  section being worked on, and what question needs expert input
-- The agent returns analysis/proposals to the main session
-- The main session presents the agent's output to the user via `AskUserQuestion`
-- The user decides; the main session writes to file
-- Agents do NOT write to files directly — the main session owns all file writes
+**When applying a lens**:
+- Look at the system name, concept summary, dependency GDD excerpts and the section
+  in hand through that role, and write its view as its own block named by role
+- Present the views, and any conflict between them, to the user via `AskUserQuestion`
+- The user decides; you write to file
 
 ---
 

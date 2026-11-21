@@ -235,7 +235,7 @@ Using the GDD **already loaded in Phase 1** — do not re-read it — identify e
 | Multiplayer, sync, replication | `network-programmer` |
 | Audio cues, music triggers | `audio-director` |
 | Performance, draw calls, memory | `performance-analyst` |
-| Engine-specific patterns or APIs | Primary engine specialist (`<engine>-specialist` from `engine.name` — Godot→`godot-specialist`, Unity→`unity-specialist`, Unreal→`unreal-specialist`; fall back to the Primary line of `## Engine Specialists` in `technical-preferences.md`) |
+| Engine-specific patterns or APIs | Primary engine specialist (`<engine>-specialist` from `engine.name` — Godot→`godot-specialist`, Unity→`unity-specialist`, Unreal→`unreal-specialist`, Web→`lead-programmer`; fall back to the Primary line of `## Engine Specialists` in `technical-preferences.md`) |
 | Acceptance criteria, test coverage | `qa-lead` |
 | Data schema, resource structure | `systems-designer` |
 | Any gameplay system | `game-designer` (always) |
@@ -246,12 +246,13 @@ These are the most common baselines — but not required for pure UI specs, audi
 
 ### Step 2 — Spawn all relevant specialists in parallel
 
-**CRITICAL: `Agent` in this skill spawns a SUBAGENT — a separate independent Claude session
-with its own context window. It is NOT task tracking. Do NOT simulate specialist
-perspectives internally. Do NOT reason through domain views yourself. You MUST issue
-actual `Agent` calls. A simulated review is not a specialist review.**
+`Agent` in this skill spawns a subagent: a separate Claude session with its own
+context window, not task tracking. Issue real `Agent` calls rather than writing the
+specialists' views yourself. A specialist starting from a fresh context catches what
+this session has already taken for granted, so a simulated review is not a
+specialist review.
 
-Issue all `Agent` calls simultaneously. Do NOT spawn one at a time.
+Issue all `Agent` calls simultaneously. Do not spawn one at a time.
 
 **Prompt each specialist adversarially:**
 > "Here is the GDD for [system] and the main review's structural findings so far.
@@ -279,7 +280,7 @@ After all specialists respond, spawn `creative-director` as the **senior reviewe
 
 ### Step 4 — Surface disagreements
 
-If specialists disagree with each other or with the creative-director, do NOT silently pick one view. Present the disagreement explicitly in Phase 4 so the user can adjudicate.
+If specialists disagree with each other or with the creative-director, do not silently pick one view. Present the disagreement explicitly in Phase 4 so the user can adjudicate.
 
 Mark every finding with its source: `[game-designer]`, `[economy-designer]`, `[creative-director]` etc.
 

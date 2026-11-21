@@ -55,10 +55,6 @@ waiting for a post-play debrief. Best for UI/UX and onboarding clarity. Silent
 observation is still better for testing raw feel; think-aloud changes how people
 play slightly but gives much richer data about why they're confused.
 
-**HTML prototype?** itch.io, Reddit (r/playmygame), and Discord (GMTK, Brackeys)
-let you reach strangers today at zero cost — see the distribution options in the
-HTML path section above.
-
 **Testing AI, NPC, or complex system behavior before writing the code?** Use the
 **Wizard of Oz** technique: one person plays normally while a second person secretly
 controls the NPC, enemy, or system behavior in real time — making the decisions a
@@ -77,14 +73,8 @@ After writing the initial code:
 
 Iterate until the prototype is playable. Each loop:
 1. User runs → reports errors or observations
-2. Agent fixes errors or adjusts the mechanic
+2. You fix errors or adjust the mechanic
 3. Repeat until playable or sunk cost rule triggers
-
-### HTML path: single output
-
-Write a single `prototype.html` to `prototypes/[concept-name]-concept/`. Include
-all styles, logic, and assets inline. The file must be openable by double-clicking
-with no server required.
 
 ### Paper path: document + log
 

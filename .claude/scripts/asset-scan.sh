@@ -20,7 +20,7 @@
 #          [--budget KEY=SIZE ...] [--max-dim N] [--sample-rates LIST]
 #          [--name-regex ERE] [--files]
 #   --root DIR          the project; defaults to the repo this script is in
-#   --engine E          godot, unity or unreal (default: engine.name from
+#   --engine E          godot, unity, unreal or web (default: engine.name from
 #                       project.local.yaml, then project.yaml, as content-count.sh)
 #   --category C        keep one category: on godot a folder of assets/ (art,
 #                       audio, vfx, shaders or data); on unity and unreal the
@@ -232,18 +232,25 @@ if [ -z "$RAW" ] || [ "$RAW" = "-" ]; then
   exit 3
 fi
 LOW=$(printf '%s' "$RAW" | tr '[:upper:]' '[:lower:]')
-# The asset root per engine is the skill's Phase 2: assets/ on Godot, Assets/ on
-# Unity, Content/ on Unreal.
+# cell COLUMN -- the engine's cell of the engine table (engine-row.awk), empty for `-`.
+ETAB="$HERE/../engines/engines.tsv"
+[ -f "$ETAB" ] && [ -f "$HERE/engine-row.awk" ] || { echo "asset-scan: the engine table $ETAB or engine-row.awk is missing" >&2; exit 1; }
+cell() { awk -F'\t' -v engine="$RAW" -v col="$1" -f "$HERE/engine-row.awk" "$ETAB"; }
+# The asset root per engine is the skill's Phase 2, from the engine table:
+# assets/ on Godot and Web, Assets/ on Unity, Content/ on Unreal. The rules
+# below differ per engine, so the engine keeps its own case.
 case "$LOW" in
-  godot) ENG=godot; ROOTDIR=assets ;;
-  unity) ENG=unity; ROOTDIR=Assets ;;
-  unreal*) ENG=unreal; ROOTDIR=Content ;;
+  godot) ENG=godot ;;
+  unity) ENG=unity ;;
+  unreal*) ENG=unreal ;;
+  web) ENG=web ;;
   *)
-    if [ "$ESRC" = flag ]; then usage "--engine takes godot, unity or unreal, got $RAW"; fi
+    if [ "$ESRC" = flag ]; then usage "--engine takes godot, unity, unreal or web, got $RAW"; fi
     printf 'engine\t%s\t%s\n' "$RAW" "$ESRC"
-    echo "asset-scan: engine $RAW has no asset rules here (godot, unity or unreal)" >&2
+    echo "asset-scan: engine $RAW has no asset rules here (godot, unity, unreal or web)" >&2
     exit 3 ;;
 esac
+ROOTDIR=$(cell asset_root)
 if [ "$ENG" = godot ] && [ -n "$CATF" ]; then
   case "$CATF" in
     art|audio|vfx|shaders|data) ;;
@@ -459,7 +466,8 @@ fi
     if (eng == "godot") printf "outside_scope\t%d\tfiles under assets/ outside art, audio, vfx, shaders and data\n", nout
     if (eng == "godot") { nx = split(".import .uid .gitkeep", xl, " ") }
     else if (eng == "unity") { nx = split(".meta .cs .asmdef .gitkeep", xl, " ") }
-    else { nx = 2; xl[1] = "not .uasset or .umap"; xl[2] = ".gitkeep" }
+    else if (eng == "unreal") { nx = 2; xl[1] = "not .uasset or .umap"; xl[2] = ".gitkeep" }
+    else { nx = 1; xl[1] = ".gitkeep" }
     for (i = 1; i <= nx; i++) printf "excluded\t%s\t%d\n", xl[i], xc[xl[i]]
 
     # --- per-file facts, in path order (the listing arrives sorted) ---
@@ -509,6 +517,7 @@ fi
     else if (havefile != 1) { ratest = "not_run"; rated = "file is not installed" }
     else { ratest = "ran"; rated = (nra > 0) ? ("file -b; allowed " ENVIRON["RATES"]) : "file -b; no --sample-rates flag given, none compared" }
     if (nodata != "") { orphst = "not_run"; orphd = nodata }
+    else if (eng == "web") { orphst = "not_run"; orphd = "no reference syntax is defined for " eng }
     else if (eng != "godot") { orphst = "not_run"; orphd = "references live in scenes, prefabs and other assets, not in code" }
     else if (srcn == 0) { orphst = "not_run"; orphd = "no source files under src/" }
     else { orphst = "ran"; orphd = ncorp " files searched for res:// paths" }

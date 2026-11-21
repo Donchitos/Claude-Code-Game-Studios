@@ -9,7 +9,8 @@ Check whether the engine version is likely beyond the LLM's training data.
 
 **Known approximate coverage** — the same figures the shipped
 `docs/engine-reference/*/VERSION.md` files record:
-- LLM knowledge cutoff: **May 2025**
+- LLM knowledge cutoff: **May 2025**, a floor: a newer model may know more, but
+  the comparison below still uses May 2025
 - Godot: training data likely covers up to ~4.3
 - Unity: training data likely covers up to ~2022 LTS (2022.3)
 - Unreal: training data likely covers up to ~5.3
@@ -26,6 +27,9 @@ Check whether the engine version is likely beyond the LLM's training data.
 > one above, do not trust the table.** Say so, and treat the engine version as
 > `HIGH RISK` regardless of the comparison — a cutoff the model does not have is
 > not a cutoff that was met.
+
+**Web** is HIGH RISK: every version the scaffold pins is newer than the model's
+training (`references/web.md`, W4).
 
 Compare the user's chosen version against these baselines:
 

@@ -1,6 +1,6 @@
 # Godot Rendering — Quick Reference
 
-Last verified: 2026-10-17 (4.7 changes); 2026-02-12 (rest) | Engine: Godot 4.7
+Last verified: 2026-10-21 (Windows driver default, Compositor); 2026-10-17 (4.7 changes); 2026-02-12 (rest) | Engine: Godot 4.7
 
 ## What Changed Since ~4.3 (LLM Cutoff)
 
@@ -14,7 +14,7 @@ Last verified: 2026-10-17 (4.7 changes); 2026-02-12 (rest) | Engine: Godot 4.7
 - **`rendering/reflections/sky_reflections/roughness_layers`** default `7` → `8` (4.7 migration guide: https://docs.godotengine.org/en/stable/tutorials/migrating/upgrading_to_godot_4.7.html)
 
 ### 4.6 Changes
-- **D3D12 is the default rendering backend on Windows** (was Vulkan)
+- **Windows driver default is still Vulkan.** D3D12 is opt-in: set `rendering/rendering_device/driver.windows` to `d3d12`, or pass `--rendering-driver d3d12` (Godot source, main/main.cpp at 4.6, 4.7 and 4.7.2)
 - **Glow processes before tonemapping** (was after) — uses screen blending mode
 - **AgX tonemapper**: new white point and contrast controls
 - **SSR overhauled**: better realism, visual stability, and performance
@@ -34,15 +34,22 @@ Last verified: 2026-10-17 (4.7 changes); 2026-02-12 (rest) | Engine: Godot 4.7
 - **Particles `.restart()`**: Added optional `keep_seed` parameter
 
 ### 4.3 Changes (in training data)
-- **Compositor node**: `Compositor` + `CompositorEffect` for post-processing chains
+- **`Compositor` resource**: `Compositor` + `CompositorEffect` for post-processing chains. Both are `Resource`s, not nodes
+  (Godot source, `class Compositor : public Resource` in scene/resources/compositor.h at 4.6 and 4.7.2)
 
 ## Current API Patterns
 
 ### Post-Processing (4.3+)
 ```gdscript
-# Use Compositor node — NOT manual viewport shader chains
-# Add Compositor as child of WorldEnvironment or Camera3D
-# Create CompositorEffect resources for each post-process step
+# Use a Compositor resource — NOT manual viewport shader chains.
+# Compositor is a Resource, not a node: assign it to the `compositor`
+# property of a WorldEnvironment or Camera3D; it never enters the scene tree.
+# (Godot source at 4.6 and 4.7.2: `class Compositor : public Resource` in
+# scene/resources/compositor.h; `set_compositor` in scene/3d/world_environment.h
+# and scene/3d/camera_3d.h)
+var compositor := Compositor.new()
+compositor.compositor_effects = [MyEffect.new()]  # MyEffect extends CompositorEffect
+$WorldEnvironment.compositor = compositor
 ```
 
 ### Anti-Aliasing Options (4.6)
@@ -60,11 +67,14 @@ Project Settings → Rendering → Renderer:
 - Mobile: Optimized for mobile/low-end, limited features
 - Compatibility: OpenGL 3.3 / WebGL 2, broadest hardware support
 
-Windows default backend: D3D12 (was Vulkan pre-4.6)
+Windows default driver: Vulkan; D3D12 only when `rendering/rendering_device/driver.windows`
+is set to `d3d12` (Godot source, main/main.cpp at 4.6, 4.7 and 4.7.2)
 ```
 
 ## Common Mistakes
-- Assuming Vulkan is the default backend on Windows (D3D12 since 4.6)
+- Assuming D3D12 is the default driver on Windows (it is Vulkan through 4.7.2; D3D12 is opt-in)
+- Adding `Compositor` to the scene tree as a node (it is a `Resource`; assign it to the `compositor` property;
+  Godot source, scene/resources/compositor.h, scene/3d/world_environment.h and scene/3d/camera_3d.h at 4.6 and 4.7.2)
 - Using manual viewport chains instead of Compositor for post-processing
 - Passing or expecting `Texture2D` in `Shader.set_default_texture_parameter()` /
   `get_default_texture_parameter()` (the type is `Texture` since 4.4 — the shading

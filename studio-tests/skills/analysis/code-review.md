@@ -7,9 +7,10 @@ files. It reads the target files and the project coding standards (Phase 1),
 resolves the engine specialists from `project.yaml` (Phase 2), checks compliance
 with any referenced ADR by reading only its `## Decision` and `## Consequences`
 sections (Phase 3), then evaluates six standards checks, architecture and SOLID,
-and game-specific concerns (Phases 4–6). Applicable engine specialists — and
-`qa-tester` for Logic/Integration stories — are spawned in parallel, and every
-specialist finding is recorded with file/line, evidence and a VERIFIED /
+and game-specific concerns (Phases 4–6). With an engine set, one fresh-context
+helper of the Primary specialist's type reviews the files through
+`references/lens-engine.md`; the skill checks testability against the story itself,
+and records every engine finding with file/line, evidence and a VERIFIED /
 UNVERIFIED confidence (Phase 7). The report (Phase 8) ends in a verdict, first
 match wins: CHANGES REQUIRED, NOT ASSESSED (nothing to review, the engine
 specialist review did not run, or a report section — such as ADR Compliance on a
@@ -34,8 +35,8 @@ Checked against the SKILL.md by `/skill-test spec` — no fixture needed.
 
 ## Director Gate Checks
 
-None. Code review invokes no director gates in any review mode. It does spawn
-engine specialists and `qa-tester` as reviewers (Phase 7); those are not gates.
+None. Code review invokes no director gates in any review mode. Its one engine
+helper (Phase 7) is a reviewer, not a gate.
 
 ---
 
@@ -70,16 +71,16 @@ Fixture defaults.
 1. Skill reads the source file and the coding standards
 2. Skill finds the `ADR-0004` reference in the file header
 3. Skill greps the ADR's `^## ` headings, then reads only the `## Decision` and `## Consequences` spans
-4. `godot-gdscript-specialist` is spawned via `Agent` for the `.gd` file; `shader: null` and `ui: null` are treated as unset and not spawned
+4. One engine helper of the Primary specialist's type (`godot-specialist`) is started for the `.gd` file with `references/lens-engine.md`; `shader: null` and `ui: null` are treated as unset and their blocks left out
 5. Report shows ADR Compliance: COMPLIANT, Standards Compliance: 6/6 passing, Engine Specialist Findings: CLEAN, Testability: `N/A — no story path given`, and a Positive Observations section
 6. Verdict is APPROVED
 7. Phase 9 `AskUserQuestion` offers [A] Run `/story-done` and [B] Stop here
 
 **Assertions:**
 - [ ] The ADR is read with a heading map and bounded reads of `## Decision` and `## Consequences`, not an unbounded full read
-- [ ] `godot-gdscript-specialist` is spawned for the `.gd` file; no agent named `null` is spawned
+- [ ] Exactly one engine helper is started for the `.gd` file; no agent named `null` is started
 - [ ] Standards Compliance reads `6/6 passing` and ADR Compliance reads COMPLIANT
-- [ ] Testability reads `N/A — no story path given`; no `qa-tester` is spawned without a story
+- [ ] Testability reads `N/A — no story path given`; no `qa-tester` is started (testability is the skill's own step)
 - [ ] Positive Observations section is present
 - [ ] Verdict is APPROVED and Phase 9 offers `/story-done` or stop
 - [ ] No file is written or edited
@@ -157,14 +158,14 @@ Fixture defaults.
 1. Skill records its inputs as FOUND / ABSENT; the target source files are ABSENT
 2. Every required input is ABSENT, so the skill stops before producing review sections
 3. Output reports `NOT ASSESSED — NO DATA` as the whole verdict, naming `src/networking/` as missing
-4. No specialist or `qa-tester` agent is spawned
+4. No engine helper or `qa-tester` agent is started
 5. No review section is filled in, and the result is not presented as APPROVED
 
 **Assertions:**
 - [ ] Skill does not crash when the path does not exist
 - [ ] Output names the attempted path `src/networking/`
 - [ ] Verdict is `NOT ASSESSED — NO DATA`, not APPROVED
-- [ ] No specialist agent is spawned when there is nothing to review
+- [ ] No engine helper is started when there is nothing to review
 
 ---
 
@@ -179,7 +180,7 @@ Fixture defaults.
 **Expected behavior:**
 1. Phase 2 finds no engine configured and skips the engine specialist steps
 2. Output records `Engine validation: NOT ASSESSED — no engine configured (engine.name unset in project.yaml)`
-3. Engine Specialist Findings reads `N/A — no engine configured`; no engine specialist is spawned
+3. Engine Specialist Findings reads `N/A — no engine configured`; no engine helper is started
 4. Standards Compliance lists the "Configuration values loaded from data files" failure with line 31, and the fix is listed under Required Changes
 5. Verdict is CHANGES REQUIRED — the known defect outranks the skipped engine review, which the report still names
 6. No director gate is invoked in any review mode
@@ -187,7 +188,7 @@ Fixture defaults.
 
 **Assertions:**
 - [ ] Output contains the `Engine validation: NOT ASSESSED — no engine configured` line
-- [ ] Engine Specialist Findings reads `N/A — no engine configured` and no engine specialist agent is spawned
+- [ ] Engine Specialist Findings reads `N/A — no engine configured` and no engine helper is started
 - [ ] The hardcoded value is reported under Standards Compliance with its line reference
 - [ ] Verdict is CHANGES REQUIRED, not NOT ASSESSED and never APPROVED
 - [ ] No director gate is invoked, even with review mode `full`
@@ -204,7 +205,7 @@ Fixture defaults.
 **Input:** `/code-review src/gameplay/loot_table.gd`
 
 **Expected behavior:**
-1. Phase 2 records `Engine validation: NOT ASSESSED — no engine configured`; no engine specialist is spawned
+1. Phase 2 records `Engine validation: NOT ASSESSED — no engine configured`; no engine helper is started
 2. Nothing is listed under Required Changes or Suggestions
 3. Verdict is NOT ASSESSED, naming the engine specialist review that did not run
 4. Phase 9 offers the NOT ASSESSED options, naming `/setup-engine` as the way to make the review complete
@@ -241,8 +242,9 @@ Fixture defaults.
 ## Protocol Compliance
 
 - [ ] Reads the target file(s) and the coding standards before reviewing (Phase 1)
-- [ ] Reads the `specialists` block from `project.yaml`, falling back to `technical-preferences.md`; a `null` specialist is skipped, never spawned
-- [ ] Every specialist finding in the report carries file/line, evidence, and VERIFIED or `UNVERIFIED — specialist claim`
+- [ ] Reads the `specialists` block from `project.yaml`, falling back to `technical-preferences.md`; a `null` specialist is skipped, never named as an agent
+- [ ] Every engine finding in the report carries file/line, evidence, and VERIFIED or `UNVERIFIED — reviewer claim`
+- [ ] Phase 7 starts at most one agent, the engine helper, and checks its `helper-result/1` result before reading it; testability never starts `qa-tester`
 - [ ] Does not edit any source files (read-only skill)
 - [ ] No director gates are invoked
 - [ ] Verdict, first match: CHANGES REQUIRED, NOT ASSESSED, APPROVED WITH SUGGESTIONS, APPROVED — never an approval when the engine specialist review did not run or any report section reads NOT ASSESSED
@@ -255,6 +257,7 @@ Fixture defaults.
 
 - Batch review of a directory is not tested separately; the same checks apply
   file by file.
-- The `qa-tester` testability review (Logic and Integration stories, story path
-  passed as the last argument) is not given its own case.
+- The testability step (Logic and Integration stories, story path passed as the
+  last argument; Visual/Feel and UI stories' manual steps) is not given its own
+  case here.
 - Test-file existence checks are the domain of `/test-evidence-review`.

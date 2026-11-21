@@ -134,7 +134,7 @@ _VW_MSG=$(printf '%s\n' "$_VW_OUT" | VW_MAX="$_VW_MAX" VW_GOT="$_VW_GOT" VW_TOOL
   $1 == "OVERWRITE" { say("It replaces " $2 ", which is never overwritten: " $3 ". Edit it in place, or ask first.") }
   $1 == "ENUM" { say($2 " line " $6 ": " $3 " is " $4 ", not one of " $5 ".") }
   $1 == "NOT_LOCAL" { say($2 " line " $4 ": " $3 " cannot be set locally, so resolution ignores it; it belongs in project.yaml.") }
-  $1 == "REVIEW_MODE" { say("It sets the review mode (" $3 ") in " $2 ". That pins it past what modes.rigor would choose; fine if you set it through /settings.") }
+  $1 == "REVIEW_MODE" { say("It sets the review mode (" $3 ") in " $2 ". That pins it past what modes.rigor would choose; fine if you set it through /project-settings.") }
   $1 == "PROTOTYPE_HEADER" { say($2 " lacks its " $3 " header in its first lines.") }
   $1 == "PROTOTYPE_IMPORT" { say($2 " line " $4 ($3 == "into-production" ? " reaches from prototypes/ into the code root: " : " reaches from the code root into prototypes/: ") $5) }
   $1 == "FREEZE" { say("The string freeze is ACTIVE (" $3 ", called " $4 "): record this change under Post-Freeze Changes there, or lift the freeze first.") }

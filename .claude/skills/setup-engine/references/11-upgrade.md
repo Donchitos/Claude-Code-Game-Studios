@@ -25,7 +25,7 @@ file.
 
 ### Step 2 — Fetch Migration Guide
 
-Use WebSearch and WebFetch to locate the official migration guide between
+Search the web for the official migration guide between
 `old-version` and `new-version`:
 
 - Search: `"[engine] [old-version] to [new-version] migration guide"`
@@ -41,7 +41,7 @@ any "must migrate" items.
 Scan the **code root** (resolve per `.claude/docs/code-root-resolution.md`) for code that uses APIs known to be deprecated or changed in the
 target version:
 
-- Use Grep to search for deprecated API names extracted from the migration
+- Search it for deprecated API names extracted from the migration
   guide (e.g., old function names, removed node types, changed property names)
 - List each file that matches, with the specific API reference found
 

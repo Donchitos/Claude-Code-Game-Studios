@@ -5,28 +5,35 @@ These show what runs before and after each skill, and what artifacts flow betwee
 
 ---
 
-## Default Path: Rigor Minimal (Four Steps to Code)
+## Default Path: Rigor Minimal (Make a Game First)
 
-`modes.rigor: minimal` is the default. The one-page brief is the design record and
-its build order is the plan, so there is no epic planning, sprint or phase gate to run.
-Every skill below still runs at any tier; rigor changes what is required, not what
-is allowed. `/help` follows this route at `minimal`.
+`modes.rigor: minimal` is the default. The main path starts with a playable game, not an
+engine. The one-page brief is the design record and its build order is the plan, so there
+is no epic planning, sprint or phase gate to run. Every skill below still runs at any tier;
+rigor changes what is required, not what is allowed. `/next-step` follows this route at
+`minimal`.
 
 ```
 MINIMAL PATH (modes.rigor: minimal — the default; no /gate-check, stage stays Concept)
-  /setup-engine ───────────────────────────────────────────────► project.yaml + CLAUDE.md
-  /brainstorm ─────────────────────────────────────────────────► design/game-brief.md (one page)
-        │                                                          (replaces concept doc, systems index, GDDs)
+  /prototype ("make me a game") ───────────────────────────────► design/game-brief.md (one page)
+        │                                                          + prototypes/[name]/ (playable browser game)
         ▼
-  /create-stories ─────────────────────────────────────────────► production/epics/[slug]/story-*.md
-        │                                                          (brief's build order is the plan —
-        │                                                           no /create-epics, no /sprint-plan)
-        ▼ (one story at a time, in build order)
-  /dev-story [story] ──────────────────────────────────────────► routes to correct programmer agent
-  /story-done [story] ─────────────────────────────────────────► story closed + next story named
+  play it · ask for changes in plain words ───────────────────► each change checked, accepted or undone
         │
-        └── back to /dev-story until every story is Complete, then:
-              play the build · /create-stories for more · /settings to raise rigor
+        ▼ (you like it)
+  /prototype, say "grow it" ───────────────────────────────────► web project at the project root (engine: Web)
+        │
+        ▼ (one feature a sitting)
+  say the next feature to /prototype ──────────────────────────► built, its touched parts checked,
+        │                                                        kept as a commit or undone
+        │
+        └── again for the next feature; /cut when it is close to finished
+
+  Stories only when you ask for them, or in studio mode:
+  /create-stories → /dev-story ↔ /story-done (the brief's build order is the plan)
+
+  Side roads: /setup-engine for an engine other than web, or later · /prototype --spike
+  for a quick test of one mechanic · /brainstorm when there is no idea yet
 ```
 
 The overview below is the `standard`/`full` pipeline.
@@ -133,7 +140,7 @@ PHASE 6: POLISH
   /security-audit ─────────────────────────────────────────────► production/security/security-audit-[date]-[scope].md
   /localize qa ────────────────────────────────────────────────► production/localization/loc-qa-[locale]-[date].md
   /release-checklist ──────────────────────────────────────────► production/releases/release-checklist-[version].md
-  /changelog ──────────────────────────────────────────────────► docs/CHANGELOG.md
+  /write-changelog ──────────────────────────────────────────────────► docs/CHANGELOG.md
   /patch-notes ────────────────────────────────────────────────► docs/patch-notes/[version].md (draft)
   /gate-check ─────────────────────────────────────────────────► PASS → advance to release
         │
@@ -334,7 +341,7 @@ How a story gets from backlog to closed (summary view):
 /bug-triage ────────────────────────────────────────────────────► open bugs re-prioritized + assigned
 
 [Meta — harness validation]
-/skill-test [lint|spec|catalog] ────────────────────────────────► skill file structural + behavioral check
+/skill-test [static|spec|category|audit] ───────────────────────► skill file structural + behavioral check
 ```
 
 ---
@@ -395,5 +402,5 @@ For projects with existing work (use `/start` option D or run directly):
 | Running QA for a sprint | `/qa-plan` → `/smoke-check` → `/regression-suite` |
 | Bug backlog needs sorting | `/bug-triage` |
 | Extended stability testing | `/soak-test` |
-| Not sure | `/help` |
+| Not sure | `/next-step` |
 | Existing project | `/adopt` |

@@ -6,13 +6,8 @@
 ## Phase 6: Playtest Debrief
 
 The prototype is built. Now hand it to the user and capture what they actually
-experienced. Do NOT skip to report generation — the report is only as good as the
+experienced. Do not skip to report generation — the report is only as good as the
 observations you collect here.
-
-**For HTML path:** Say exactly this:
-> "The prototype is ready. Open `prototypes/[name]-concept/prototype.html` in your
-> browser and play it. Take as long as you need. Don't rush through it — try to
-> approach it the way a new player would. Come back here when you're done."
 
 **For Engine path:** The multi-turn iteration loop already captured errors and
 behavior. Now ask for the overall assessment:
@@ -30,8 +25,8 @@ one from how the build looks: the recommendation is **NOT ASSESSED — built, no
 played**. Write the report with that verdict (Phase 7, asking first) and name the
 next step — play it, then re-run this debrief.
 
-Once the user returns, ask these questions **one at a time** — wait for each answer
-before asking the next:
+Once the user returns, ask these questions **one at a
+time** — wait for each answer before asking the next:
 
 1. **Hypothesis check:**
    > "The hypothesis was: [restate the hypothesis from Phase 1]. Did it hold up —

@@ -59,7 +59,13 @@ fi
 # notification that never appears.
 MESSAGE_SAFE=$(printf '%s' "$MESSAGE" | head -c 200 | sed "s/'/''/g")
 
-# Show Windows balloon tip notification (works on all Windows 10/11 without extra modules)
+# Print first, then spawn: the line is the hook's output and must not wait on,
+# or interleave with, the background child.
+echo "Notification: $MESSAGE_SAFE"
+
+# Show Windows balloon tip notification (works on all Windows 10/11 without extra modules).
+# Both stdout and stderr are detached, so the backgrounded child holds no pipe
+# that Claude Code waits on.
 powershell.exe -NonInteractive -WindowStyle Hidden -Command "
   Add-Type -AssemblyName System.Windows.Forms
   \$notify = New-Object System.Windows.Forms.NotifyIcon
@@ -70,6 +76,4 @@ powershell.exe -NonInteractive -WindowStyle Hidden -Command "
   \$notify.ShowBalloonTip(5000)
   Start-Sleep -Seconds 6
   \$notify.Dispose()
-" 2>/dev/null &
-
-echo "Notification: $MESSAGE_SAFE"
+" >/dev/null 2>&1 &

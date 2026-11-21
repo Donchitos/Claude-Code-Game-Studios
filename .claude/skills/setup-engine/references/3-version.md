@@ -5,16 +5,19 @@
 
 ## 3. Look Up Current Version
 
+**Web:** no lookup and no editor probe: `references/web.md`, W2 (Node and the
+pinned versions).
+
 Once the engine is chosen:
 
 - If version was provided, use it
-- If no version provided, use WebSearch to find the latest stable release:
+- If no version provided, search the web for the latest stable release:
   - Search: `"[engine] latest stable version [current year]"`
   - Confirm with the user: "The latest stable [engine] is [version]. Use this?"
 
 ### Check the chosen version against what is actually installed
 
-A version found by web search is what exists, not what the developer has. Pinning
+A version found by web search is what exists, not what the user has. Pinning
 one they cannot run means every later instruction — build, test, smoke, the
 engine reference docs — targets an engine that is not on the machine.
 

@@ -15,7 +15,7 @@ decides the QA coverage gate (QL-TEST-COVERAGE) and the code review step
 `solo`). It produces a COMPLETE / COMPLETE WITH NOTES / NOT ASSESSED / BLOCKED
 verdict and, only after an `AskUserQuestion` choice, updates the story file,
 optionally appends to `docs/tech-debt-register.md`, and surfaces the next story —
-with no sprint plan, from `bash .claude/scripts/story-status.sh`, the list `/help`
+with no sprint plan, from `bash .claude/scripts/story-status.sh`, the list `/next-step`
 and `/sprint-status` read, run after the story file is written. It says what a
 screenshot shows only after opening it, and asks about behaviour criteria rather
 than reading them off the code.

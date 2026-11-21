@@ -1,6 +1,6 @@
 ---
 name: gate-check
-description: "Ready to advance between development phases? PASS/CONCERNS/NOT ASSESSED/FAIL with blockers and required artifacts. 'Can we move to production?'"
+description: "Ready to advance between development stages? PASS/CONCERNS/NOT ASSESSED/FAIL with blockers and required artifacts. 'Can we move to production?'"
 argument-hint: "[target-phase: systems-design | technical-setup | pre-production | production | polish | release] [--review full|lean|solo]"
 user-invocable: true
 allowed-tools: Read, Glob, Grep, Write, Edit, Agent, AskUserQuestion, Bash(bash "*/.claude/skills/gate-check/../../hooks/yaml-helper.sh" resolve_config *), Bash(bash .claude/scripts/artifact-check.sh *), Bash(bash .claude/scripts/gdd-structure-check.sh*), Bash(bash .claude/scripts/adr-dep-graph.sh*), Bash(bash .claude/scripts/set-stage.sh *)
@@ -84,7 +84,7 @@ get `individual`).
 - **No argument**: Auto-detect current stage using the same heuristics as
   `/project-stage-detect`, then **confirm with the user before running**:
 
-  Use `AskUserQuestion`:
+  Ask with the question tool:
   - Prompt: "Detected stage: **[current stage]**. Running gate for [Current] → [Next] transition. Is this correct?"
   - Options:
     - `[A] Yes — run this gate`
@@ -147,7 +147,7 @@ This skill follows the collaborative design principle:
    what to do next; only the stage write is bound to it (Section 6)
 5. **Get approval**: "May I write this gate check report to production/gate-checks/?"
 6. **Never auto-fix**: If required artifacts are missing, report the FAIL verdict and
-   name the skill to run (e.g. "run `/test-setup`"). Do NOT create missing files or
+   name the skill to run (e.g. "run `/test-setup`"). Do not create missing files or
    re-run the gate automatically. Creating files to manufacture a PASS defeats the
    gate's purpose.
 

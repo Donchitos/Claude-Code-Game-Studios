@@ -8,6 +8,283 @@ existing project on the older config files.
 
 ---
 
+## [1.3.0] — 2026-11-09
+
+**"Make me a game" is the main road: `/prototype` asks a few questions, writes a
+one-page brief, builds a browser game from it, checks it against the brief,
+and fixes what the check finds before you get it.** After you play it, you
+change it by asking, and when you like it you grow it into a real web project
+and build on it one feature at a time. Web is an engine, and the agents, the
+`team-*` pipelines and the design-document ladder are now called studio mode.
+A minor release. [UPGRADING.md](UPGRADING.md#v120--v130) lists the new
+folders, the `settings.json` changes and the three renamed skill specs.
+
+**What is shown, and what is not yet.** The first build is the tested part: in
+a blind comparison the brief written from Claude Code Game Studios' questions was picked over a
+hand-written brief for all three game ideas tried, and all six games built from
+the two kinds of brief were ones the tester would build on. Growing was shown
+on one game, a one-shot grown through six stories into a game the tester would
+keep building. The engine route and deepening one system in a design document
+are built but not yet shown in a test like these.
+
+### Make me a game
+
+**`/prototype` asks a few questions, writes a one-page brief, and builds a
+first playable game you'd build on.** Say "make me a game" with your idea. It
+asks one round of questions picked from the genre (with the usual answer shown,
+so "you pick" works), and writes `design/game-brief.md` with how it looks, its
+first minute and its challenge. You say Build it. The game is built from the
+brief in your session, as a browser game in `prototypes/<name>/` that opens
+with a double-click: no emoji art, no copy of another game, your words kept,
+and not trivially easy. A short scripted check runs before you get it. Then you change it
+by asking, add a tweak panel when you want to tune it yourself, share it, or
+grow it into a real project.
+
+- **The questions.** One round of at most about eight, from the genre's sheet:
+  the choices that shape the game, how it should feel, how it looks, how hard
+  it is, the goal, and whether you want a slice of the game or a quick test of
+  one mechanic (a quick test goes to `/prototype --spike`). A vague idea ("a
+  racing game") gets two or three one-line pitches first; "none of these" gets
+  new ones, and what you said against the old ones is kept as an Avoid line.
+  Two genres in one idea are combined system by system, and the brief says
+  which genre leads each. Online play, VR, a phone or a console gets one plain
+  line on what is built instead. Asked for a copy of a named game, it asks one
+  question (an original game in that genre, or that game with your own twist)
+  and never builds the copy.
+- **The brief** (`.claude/docs/templates/game-brief.md`) has new sections:
+  In your words (kept exactly as you typed it), Look and references, First
+  minute, Challenge, Your systems (each system you named, marked in the slice,
+  a thin stand-in or later), Keep, Avoid and Out of scope. Each field it filled for
+  you is marked guessed, inferred or provisional. A brief written by an older
+  release still works: its missing sections are asked for or filled.
+- **Your references.** Images, screenshots and sounds you drop into a
+  `references/` folder at the project root, with a line each in
+  `references/notes.md` (take, avoid, or use), shape the look; an image you
+  paste is saved there on Build it. A project without the folder is unchanged.
+- **The build** runs in your session, with no extra reports or tests. A builder agent runs it only when you name another
+  effort ("build it at medium"). Every tuning value goes into `config.js`, so you
+  can tune it with sliders. Asked how long it has been building, it reads the
+  clock rather than guessing.
+- **A short check runs before you get it.** The first build writes no
+  robot player and never tunes the difficulty by a script: your play is the
+  check. A few scripted key presses in a headless browser show the game opens
+  with no errors and responds, one screenshot of play is looked at against the
+  brief, and four rows check it boots, keeps your words and draws every figure
+  with no emoji. Text that is too small, overlapping or off screen and screens
+  that freeze are fixed in one round; anything left is listed as still broken. The brief
+  checklist marks every line of the brief pass, missing, broken or not
+  assessed, from the screenshots and the game's code. The handover card shows all of it, what is
+  still broken, what was guessed and the true effort, and ends "Not yet played
+  by a person".
+- **Commit and tag.** The first build is offered a commit and the tag
+  `one-shot/<name>`, the point every later change can go back to.
+- **Change it after play.** Each change you ask for is checked against the
+  brief's Keep, Avoid and Out of scope lines first. A big ask is made all at
+  once, and is split into rounds you play in between only when you ask. A change does what you asked: a bigger rework only when you ask for
+  one. Tuning goes into `config.js`. Before you
+  accept, a light check runs, not the full check again: a few
+  scripted key presses play the game once and it screenshots what the change
+  touched (changed text or screens again in a small window); a balance change
+  is checked by your next play. Each change you accept is one commit, "iteration N:
+  <what>". "Go back to iteration 2" or to the first build is a checkpoint too. A Keep line can pin a
+  value (`pins: <key> <value>`) that the check compares with `config.js`. Hating
+  it after play offers fix, pivot or kill on that game. A change, love it or
+  hate it said in a new session still reaches `/prototype`.
+- **Too easy gets a new rule.** "Too easy" or "every part is the same" after play
+  adds at least one rule that raises the pressure or gives a new choice (a threat
+  that escalates, a chase, a new hazard or tool) before any number moves. The
+  brief's Out of scope lists only what you can do later (grow it, add it as a
+  feature, change it after play, needs a server), not what is untested.
+- **The tweak panel** is added when you ask to tune: `tune.js` opens on the
+  backquote key, or `?tune` in the address, with a slider for each value in
+  `config.js`. Save copies a short block; pasted back to `/prototype`, it is
+  written into `config.js` with a feel-log line for each value by
+  `one-shot-tune.sh`. It works on a page opened from your computer or
+  localhost.
+- **Share it.** Asked to share or export a one-shot, `/prototype` runs
+  `one-shot-share.sh`, which makes `prototypes/<name>/dist/` without the tweak
+  panel and the working files. `.claude/docs/share-link.md` says how to put a
+  game on a hidden itch.io page or a web link, and `itch-zip.sh` zips a grown
+  game's build for itch.io and checks it against itch.io's limits.
+- **Bring your own game in.** `/prototype --from <path>` (or `/start`, when it
+  finds a game) copies a browser game you already have into
+  `prototypes/<name>/` byte for byte, commits it, tags it `baseline/<name>`,
+  screenshots it untouched and writes its brief from what it shows, so it can be
+  changed and grown like a one-shot. The original is only read.
+  `/reverse-document brief` writes a brief from any game's code, with its built
+  features marked done.
+
+### Grow it
+
+- **On PROCEED, a one-shot can grow into a web project** at the project root:
+  Vite and TypeScript, its values in data files, a rule under test, the four
+  commands (`npm run dev`, `build`, `test`, `smoke`), and a same-seed run that
+  proves it still plays the same. One question asks keep iterating or grow it.
+  Each step is its own commit and the result is tagged `grown/<name>`; the
+  one-shot's folder is copied from and never changed. It needs Node.js and
+  downloads the web tools from npm.
+- **After the grow, one feature a sitting.** Say the next feature in your own words:
+  `/prototype` builds it, runs the smoke script and the same-seed run, and asks to keep it
+  as a commit. Stories, epics and gates only when you ask for them, or in studio mode.
+- **Stories, when you ask for them.** `/create-stories` builds the skeleton first from the
+  brief's Your systems list. When every Feature is built, it asks what to add
+  and adds it to the brief with your yes, instead of writing no stories.
+  `/dev-story` plays the same-seed run and the game's own smoke script after
+  every story and shows any change before the story can close. `/story-done`
+  lists the AI's own calls beyond the design for you to keep or change, ticks
+  the story's Features line in the brief, sets its row in `EPIC.md` and asks to
+  commit the story's own files. `/next-step` names `/design-system` first when
+  the next story deepens a system with no design document, and names studio
+  mode once, as a suggestion, when a grown game passes about nine stories or
+  Features.
+- **`/cut`, a new skill,** proposes cuts and a polish list to finish the game
+  from its brief and what is built, and you pick each cut. A game to sell,
+  for early access or for a publisher also gets a target date and a feature
+  freeze. Its helpers are `cut-read.sh` and `cut-apply.sh`.
+
+### Added
+
+- **Genre sheets.** `.claude/genres/` holds what `/prototype` asks and builds
+  from: `chipsets.yaml` and a sheet for each of 69 genres in `chipsets/`, each
+  with the choices that shape a game, its feel lines, its card defaults and what
+  comes later. `mashups.md` says how two genres combine, `art-direction.md` how
+  a look is written and offered, `online-and-devices.md` what is built for an
+  online, VR, phone or console ask, and `sources.md` lists the public sources
+  the sheets cite. No user content: the folder is the framework's.
+- **Web is an engine.** `engine.name: Web` is a value, and every place that
+  switches on the engine reads one table, `.claude/engines/engines.tsv` (each
+  engine's code, test and asset folders and default commands), explained in
+  `.claude/engines/README.md`. `/setup-engine` offers web first to a new
+  project that names no engine, and asks one question, the starter: nothing
+  extra, three.js, Phaser or PixiJS. An existing web project is recorded as it
+  is, with none of its files changed. The web scaffold has build, single-file
+  build, Vitest and Playwright commands, and `docs/engine-reference/web/` has
+  pinned versions, toolchain changes and pages for three.js, Phaser 4 and
+  PixiJS 8. An existing project keeps its engine.
+- **`engine.code_root` and `engine.test_root`** (optional, `project.yaml` only)
+  name the project's own code and test folders when they are not the engine's
+  usual ones; `.` is the project root, for a flat web game. A value that cannot
+  be used makes every code check report NOT ASSESSED with the reason (at
+  session start, in the commit check's SKIPPED line, in `project-state.sh`'s
+  `invalid` row, and as `code-markers.sh` exit 3), and never falls back to the
+  engine's folder.
+- **`project.goal`**: jam, learn, hobby, portfolio, sell, early_access,
+  publisher, mobile or other. `/start` guesses it from what you say, shows it
+  on its card and writes it only on Save them; `config-set.sh` refuses other
+  values. The one-shot card shows it, and `/cut` reads it. A project without it
+  is unchanged.
+- **Read-only framework scripts run without asking, all session.** Claude Code
+  applies a skill's `allowed-tools` only in the turn that starts it, so a
+  skill's own scripts asked again after its first question. `settings.json` adds
+  28 allow rules: the scripts and subcommands that only read and print
+  (`Bash(bash .claude/scripts/<name>.sh *)`) and `yaml-helper.sh`'s seven read
+  functions. Scripts that write or run your code keep their skill's own grant,
+  and the deny list is unchanged.
+- **19 new helper scripts** in `.claude/scripts/`: the one-shot's
+  (`one-shot-new.sh`, `one-shot-check.sh`, `one-shot-run.sh` with
+  `one-shot-driver.js`, `one-shot-tune.sh`, `one-shot-share.sh`,
+  `one-shot-grow.sh`, `page-shot.sh`, `references-save.sh`, `vendor-three.sh`),
+  the door's (`door-in.sh`, `game-read.sh`), the web engine's
+  (`web-detect.sh`, `web-scaffold.sh`, `engine-row.awk`, `json-flat.awk`),
+  `/cut`'s two and `itch-zip.sh`. Each prints observations, not verdicts, and
+  each shell script among them has `--help`. They need only bash and awk, except: the screenshots and
+  played runs need Chrome, Edge or Chromium (without one, the checks say not
+  assessed), `one-shot-driver.js` runs in that browser, `vendor-three.sh` and
+  the grow need Node.js and npm, and `itch-zip.sh` needs `zip` or Python.
+  `references-save.sh` reads Claude Code's session log, so elsewhere it
+  reports not assessed and the card asks for the file.
+- **The one-shot's starter**, `.claude/docs/templates/one-shot-lean/`
+  (`index.html` and `config.js`, with the tweak panel's `tune.js` beside them,
+  copied in only when you ask to tune).
+
+### Changed
+
+- **`/start` and `/next-step` lead with making a game,** changing it after play
+  and growing it; the agents, the `team-*` pipelines and the design-document
+  ladder are presented as studio mode, with when it fits. "Make me a game" is
+  `/start`'s first answer, and its idea route can build the game there and
+  then. A project with design documents and nothing to play is offered a
+  playable built from its concept doc first, and with no engine set,
+  `/prototype` comes before `/setup-engine`. `/brainstorm` hands a picked
+  concept straight to `/prototype`. `/start`'s card gains a Change something
+  answer.
+- **`/prototype` with an engine set** offers the browser sketch as one option at
+  its path question, not recommended; the engine and paper prototypes are
+  otherwise as before. A one-shot made before an engine was set is never offered
+  a move to it.
+- **Three skills renamed:** `/help` is `/next-step`, `/settings` is
+  `/project-settings`, `/changelog` is `/write-changelog`, because the old names
+  clash with commands other AI tools keep for themselves. The old names still
+  work: each says the new name once and runs the new skill with its own model
+  and grants. `release-manager` now preloads `write-changelog`. A
+  `skillOverrides` entry or permission rule naming an old skill needs the new
+  name.
+- **Four skills do their specialists' work themselves.** `/design-system`
+  drafts every section in the conversation under each specialist's lens
+  (`references/lens-*.md`) instead of starting eight agents; `/art-bible` does
+  the same except Sections 1-4 and 9, which still go to `art-director`, whose
+  drafts there scored better; `/architecture-review` takes the engine specialist's look
+  itself; `/code-review` keeps one engine helper and checks testability itself.
+  Their modes, headings and verdict words are unchanged, and the agent files
+  stay.
+- **Every hook command in `settings.json` has a new form,** so a Windows
+  machine without Git Bash skips the hooks instead of refusing every Read,
+  Write, Edit and shell call: session start prints a warning to install Git for
+  Windows, and the read, write and commit checks are off until then. On bash
+  the hooks run exactly as before. Session start's timeout is 20 seconds (was
+  10). The commit, push, asset and skill-change hooks leave sooner on a call
+  that is not theirs.
+- **`CLAUDE.md` imports no engine reference until an engine is set.**
+  `/setup-engine`, the grow's record step and `/project-settings engine.name`
+  write the import line, and session start warns when an engine is set and
+  nothing is imported.
+- **`notify.sh`** prints its line before it starts PowerShell, and detaches it.
+- **`model-tiers.md`** names the models the pins resolve to today: Sonnet 5.5
+  and Haiku 5.5.
+- **Wording in agents and skills,** with no change in behaviour: rules say
+  their reason instead of shouting, skills name their own reference files so
+  each loads only when needed, and plain words in the skills 1.3.0 touched.
+
+### Fixed
+
+- **Rotating the session state can no longer lose its notes.** When the dated
+  log file could not be written (a folder in its place, or a file where
+  `production/session-logs/` goes), `rotate-session-state.sh` still replaced
+  `active.md`, and the only copy of the narrative was gone. The log is now
+  written to a temporary file, checked, and moved into place before
+  `active.md` changes; otherwise the script stops and says `active.md` is
+  unchanged (#158, reported by @rudycelekli — thanks for the report).
+- **`git commit -m "message" -a` is checked on a machine without Python.**
+  The commit check missed an `-a` or `--all` after a quoted message, so every
+  changed data file went in unchecked. It now finds them, and still ignores an
+  `-a` inside the message or in a later command (#155, reported by
+  @rudycelekli — thanks for the report).
+- **The Godot reference says Vulkan is the Windows default and Compositor is a
+  resource.** It said Direct3D 12 became the default in 4.6 and told agents to
+  add Compositor as a child node; Compositor is assigned to the `compositor`
+  property of a WorldEnvironment or Camera3D, and the rendering sample now does
+  that (#143, reported by @mamonbleau — thanks for the report).
+- **Five skills that change a file in place list `Edit` in `allowed-tools`:**
+  `/team-qa`, `/review-all-gdds`, `/write-changelog`, `/localize` and
+  `/skill-test` granted only Write, so the step stopped on a permission prompt
+  or became a whole-file rewrite (#156, reported by @rudycelekli — thanks for
+  the report).
+- **`/create-stories` on a project with no engine set** wrote Godot 4.7 in a
+  story's Engine field. It now says no engine is set and points to
+  `/setup-engine`, and writes an unset code or test folder as unset.
+- **`/create-stories` says "Test: waived at qa.level minimal"** for a Logic or
+  Integration story at that level, as `/dev-story` does, not "Test required".
+- **The next story command is printed for you to type.** `/create-stories`
+  and `/story-done` offered "Start implementing: /dev-story" as an option,
+  which could only end in "you have to type it".
+- **`/dev-story`'s programmer brief sends new gameplay values to the data
+  file,** not literals in the code.
+- **On a grown game, `/story-done` counts what the run's screenshot plainly
+  shows,** and a behaviour check you have not played yet can wait: "I'll check it when I
+  play" marks it DEFERRED for a playtest instead of holding the verdict.
+
+---
+
 ## [1.2.0] — 2026-10-19
 
 **The story skills are rebuilt around shared helper scripts, a read guard stops
@@ -1100,7 +1377,7 @@ Code 2.1.281 to 2.1.284, on Windows, Linux (bash 5 and 3.2) and macOS. **If you 
 
 - **Skills no longer abort before they start.** In 1.1.0, every skill that reads
   your config began with a shell command Claude Code refuses to run unless it is
-  explicitly approved. In the permission mode CCGS ships with (`default`), 66 of
+  explicitly approved. In the permission mode Claude Code Game Studios ships with (`default`), 66 of
   the 74 skills stopped before doing anything, from any subdirectory of your
   project, and whenever Claude invoked a skill on its own — in auto mode too.
   Each skill now runs the config lookup as one plain command and pre-approves
@@ -1129,7 +1406,7 @@ studio production no longer have to carry the same overhead.
 
 ### Added
 
-- **Sessions start in ask-before-write mode.** CCGS sets Claude Code's
+- **Sessions start in ask-before-write mode.** Claude Code Game Studios sets Claude Code's
   permission mode to `default` in the project settings, so a terminal session
   started at the project root asks before writing, even if your own Claude Code
   config runs in an auto-accept mode. It sets the starting mode only: resuming a
@@ -1167,7 +1444,7 @@ studio production no longer have to carry the same overhead.
   the `project.godot` the engine needs to open what those steps produce — until
   it did, the path delivered real source files with no project to load them, and
   the claim above was not true. **Unity and Unreal projects must still be created
-  in their own editor first**; CCGS will not fabricate one, because it cannot
+  in their own editor first**; Claude Code Game Studios will not fabricate one, because it cannot
   source what those files should contain.
 
 - **`modes.review_mode`** — how many director agents review your work.
@@ -1205,7 +1482,7 @@ studio production no longer have to carry the same overhead.
   at session start if you have old config files and no `project.yaml`.
 
 - **Recommendations for how much process your project needs.** Describe the
-  game you're making and CCGS suggests a level, instead of asking you to guess
+  game you're making and Claude Code Game Studios suggests a level, instead of asking you to guess
   what "standard" means for a weekend jam versus a two-year production.
 
 ### Changed

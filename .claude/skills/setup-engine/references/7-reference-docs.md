@@ -12,6 +12,9 @@
 - If WITHIN training data (LOW RISK):
 - If BEYOND training data (MEDIUM or HIGH RISK):
 
+**Web:** the reference ships complete; compare it with the scaffold and write
+nothing (`references/web.md`, W4).
+
 ### First: does a reference set already exist for this engine?
 
 **Check before doing anything else.** The template ships
@@ -87,7 +90,7 @@ docs are optional but can be added later if agents suggest incorrect APIs.
 Run `/setup-engine refresh` to populate full reference docs at any time.
 ```
 
-Do NOT create breaking-changes.md, deprecated-apis.md, etc. — they would
+Do not create breaking-changes.md, deprecated-apis.md, etc. — they would
 add context cost with minimal value.
 
 ### If BEYOND training data (MEDIUM or HIGH RISK):

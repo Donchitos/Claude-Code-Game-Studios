@@ -28,7 +28,7 @@ before Phase 2 and stop if it fails.
 2. **Classify every commit in the range, one at a time**, into exactly one of:
    - **Game** — changes the game the player plays: mechanics, content, balance,
      art, audio, UI, a bug in any of those.
-   - **Framework / maintenance** — changes CCGS itself or the project's tooling:
+   - **Framework / maintenance** — changes Claude Code Game Studios itself or the project's tooling:
      subjects naming skills, hooks, agents, the test plan, CI, the framework's
      own docs. **Excluded from player-facing notes, but not a reason to stop.**
    - **Unclear** — treat as framework. A commit you cannot confidently place is
@@ -78,17 +78,15 @@ If no version is provided, ask the user before proceeding.
 
 ## Phase 2: Gather Change Data
 
-- Read the internal changelog at `production/releases/[version]/changelog.md` if it exists
-- Also check `docs/CHANGELOG.md` for the relevant version entry
+- Read the version's entry in `docs/CHANGELOG.md`, the changelog `/write-changelog` writes, if it has one
 - Run `git log` between the previous release tag and current tag/HEAD as a fallback
 - Read sprint retrospectives in `production/sprints/` for context
 - Read any balance change documents in `design/balance/`
 - Read bug fix records from QA if available
 
-**If no changelog data is available** (neither `production/releases/[version]/changelog.md`
-nor a `docs/CHANGELOG.md` entry for this version exists, and git log is empty or unavailable):
+**If no changelog data is available** (no `docs/CHANGELOG.md` entry for this version, and git log is empty or unavailable):
 
-> "No changelog data found for [version]. Run `/changelog [version]` first to generate the
+> "No changelog data found for [version]. Run `/write-changelog [version]` first to generate the
 > internal changelog, then re-run `/patch-notes [version]`."
 
 Verdict: **BLOCKED** — stop here without generating notes.

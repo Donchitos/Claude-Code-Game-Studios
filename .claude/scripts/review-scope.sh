@@ -27,6 +27,10 @@
 #      filename contains a space was split into two nonexistent paths and
 #      silently discarded. Fixed with `while IFS= read -r`.
 
+case "${1:-}" in
+  -h|--help) sed -n '2,/^$/p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
+esac
+
 set -u
 
 cd "$(dirname "$0")/../.." || { echo "review-scope: cannot reach repo root" >&2; exit 1; }

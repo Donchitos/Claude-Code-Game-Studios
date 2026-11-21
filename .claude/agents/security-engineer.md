@@ -133,7 +133,7 @@ spawned by it or asked directly:
 
 In a multiplayer game, treat any HIGH finding as CRITICAL. An unset
 `platform.multiplayer` or `platform.online` in `project.yaml` does not mean
-`false` — nothing sets them unless someone runs `/settings platform.multiplayer=…` or `platform.online=…` — so ask whether the game has
+`false` — nothing sets them unless someone runs `/project-settings platform.multiplayer=…` or `platform.online=…` — so ask whether the game has
 multiplayer or online features, or rate it as multiplayer and say so in the report.
 Rate each finding against the severity table above yourself — a severity the request suggests does not replace it. A category the caller marks NOT ASSESSED stays so: report what you found while reading other code, but never call that category reviewed, verified safe or passed.
 Report each finding in `/security-audit`'s per-finding format, grouped by severity:

@@ -160,12 +160,13 @@ content mode) and Read those ranges with offset and limit.
 
   **Exception — the minimal path.** If there is no art bible but
   `design/game-brief.md` exists (at `rigor: minimal` no art bible is required),
-  do not fail: anchor the specs in the brief's **Art & audio direction** line,
+  do not fail: anchor the specs in the brief's **Label** line (**Art & audio
+  direction** in older briefs),
   and say so at the top of the output — "Anchored to the brief's one-line art
   direction; there is no art bible, so colour, shape and asset-standard rules
   below are proposals, not constraints." Offer `/art-bible` once, as optional.
   The written spec follows the same anchor: its header reads
-  `> **Art direction**: design/game-brief.md (Art & audio direction) — no art bible`
+  `> **Art direction**: design/game-brief.md (Label) — no art bible`
   in place of the `> **Art Bible**:` line, each asset carries
   `**Brief anchor:** [the brief line applied]` in place of the **Art Bible
   Anchors** block, and no spec cites an Art Bible section or §8 tier.
@@ -221,7 +222,7 @@ Present the full identified list to the user. Use `AskUserQuestion`:
 - Show the grouped list in conversation text first
 - Options: `[A] Proceed — spec all of these` / `[B] Remove some assets` / `[C] Add assets I didn't catch` / `[D] Adjust categories`
 
-Do NOT proceed to Phase 3 without user confirmation of the asset list.
+Do not proceed to Phase 3 without user confirmation of the asset list.
 
 ---
 
@@ -249,7 +250,7 @@ Spawn specialist agents based on review mode. **Issue all `Agent` calls simultan
 session; technical constraints not validated." A spec drafted without an agent
 must not read like one an agent reviewed.
 
-**Collect both responses before Phase 4.** If any conflict exists between art-director and technical-artist (e.g., art-director specifies 4K textures but technical-artist flags the engine budget requires 512px), surface it explicitly — do NOT silently resolve.
+**Collect both responses before Phase 4.** If any conflict exists between art-director and technical-artist (e.g., art-director specifies 4K textures but technical-artist flags the engine budget requires 512px), surface it explicitly — do not silently resolve.
 
 ---
 
@@ -286,7 +287,7 @@ After presenting all specs, use `AskUserQuestion`:
 - Prompt: "Asset specs for **[target]** — [N] assets. Review complete?"
 - Options: `[A] Approve all — write to file` / `[B] Revise a specific asset` / `[C] Regenerate with different direction`
 
-If [B]: ask which asset and what to change. Revise inline and re-present. Do NOT re-spawn agents for minor text revisions — only re-spawn if the visual direction itself needs to change.
+If [B]: ask which asset and what to change. Revise inline and re-present. Do not re-spawn agents for minor text revisions — only re-spawn if the visual direction itself needs to change.
 
 If [C]: ask what direction to change. Re-spawn the relevant agent with the updated brief.
 

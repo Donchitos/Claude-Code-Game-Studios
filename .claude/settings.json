@@ -12,7 +12,35 @@
     "allow": [
       "Bash(dir *)",
       "Bash(python -m pytest *)",
-      "Bash(py -m pytest *)"
+      "Bash(py -m pytest *)",
+      "Bash(bash .claude/scripts/artifact-check.sh *)",
+      "Bash(bash .claude/scripts/adr-status.sh *)",
+      "Bash(bash .claude/scripts/adr-dep-graph.sh *)",
+      "Bash(bash .claude/scripts/agent-check.sh *)",
+      "Bash(bash .claude/scripts/compat-inventory.sh *)",
+      "Bash(bash .claude/scripts/cut-read.sh *)",
+      "Bash(bash .claude/scripts/game-read.sh *)",
+      "Bash(bash .claude/scripts/gdd-structure-check.sh *)",
+      "Bash(bash .claude/scripts/md-section.sh list *)",
+      "Bash(bash .claude/scripts/md-section.sh extract *)",
+      "Bash(bash .claude/scripts/md-section.sh status *)",
+      "Bash(bash .claude/scripts/project-coherence.sh *)",
+      "Bash(bash .claude/scripts/project-state.sh *)",
+      "Bash(bash .claude/scripts/registry.sh *)",
+      "Bash(bash .claude/scripts/review-receipts.sh check *)",
+      "Bash(bash .claude/scripts/review-receipts.sh hash *)",
+      "Bash(bash .claude/scripts/review-scope.sh *)",
+      "Bash(bash .claude/scripts/story-facts.sh *)",
+      "Bash(bash .claude/scripts/story-status.sh *)",
+      "Bash(bash .claude/scripts/web-detect.sh *)",
+      "Bash(bash .claude/scripts/write-guard.sh *)",
+      "Bash(bash .claude/hooks/yaml-helper.sh resolve_config *)",
+      "Bash(bash .claude/hooks/yaml-helper.sh get_yaml_key *)",
+      "Bash(bash .claude/hooks/yaml-helper.sh get_effective_yaml_key *)",
+      "Bash(bash .claude/hooks/yaml-helper.sh resolve_setting *)",
+      "Bash(bash .claude/hooks/yaml-helper.sh is_locally_overridable *)",
+      "Bash(bash .claude/hooks/yaml-helper.sh validate_enum_value *)",
+      "Bash(bash .claude/hooks/yaml-helper.sh validate_yaml_enum *)"
     ],
     "deny": [
       "Bash(rm -rf *)",
@@ -154,12 +182,12 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/session-start.sh\"",
-            "timeout": 10
+            "command": "echo `# <#` >/dev/null; bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/session-start.sh\"; exit $? #> ; echo 'Claude Code Game Studios hooks are off: Claude Code found no Git Bash, so the checks on reads, writes and commits are skipped this session. Install Git for Windows (https://git-scm.com/download/win) and restart Claude Code. See .claude/docs/setup-requirements.md.'; exit 0",
+            "timeout": 20
           },
           {
             "type": "command",
-            "command": "bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/detect-gaps.sh\"",
+            "command": "echo `# <#` >/dev/null; bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/detect-gaps.sh\"; exit $? #> ; exit 0",
             "timeout": 10
           }
         ]
@@ -171,12 +199,12 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/validate-commit.sh\"",
+            "command": "echo `# <#` >/dev/null; bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/validate-commit.sh\"; exit $? #> ; exit 0",
             "timeout": 15
           },
           {
             "type": "command",
-            "command": "bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/validate-push.sh\"",
+            "command": "echo `# <#` >/dev/null; bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/validate-push.sh\"; exit $? #> ; exit 0",
             "timeout": 10
           }
         ]
@@ -186,12 +214,12 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/validate-registry.sh\"",
+            "command": "echo `# <#` >/dev/null; bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/validate-registry.sh\"; exit $? #> ; exit 0",
             "timeout": 15
           },
           {
             "type": "command",
-            "command": "bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/validate-write.sh\"",
+            "command": "echo `# <#` >/dev/null; bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/validate-write.sh\"; exit $? #> ; exit 0",
             "timeout": 15
           }
         ]
@@ -201,7 +229,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/validate-read.sh\"",
+            "command": "echo `# <#` >/dev/null; bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/validate-read.sh\"; exit $? #> ; exit 0",
             "timeout": 10
           }
         ]
@@ -213,12 +241,12 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/validate-assets.sh\"",
+            "command": "echo `# <#` >/dev/null; bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/validate-assets.sh\"; exit $? #> ; exit 0",
             "timeout": 10
           },
           {
             "type": "command",
-            "command": "bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/validate-skill-change.sh\"",
+            "command": "echo `# <#` >/dev/null; bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/validate-skill-change.sh\"; exit $? #> ; exit 0",
             "timeout": 5
           }
         ]
@@ -230,7 +258,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/notify.sh\"",
+            "command": "echo `# <#` >/dev/null; bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/notify.sh\"; exit $? #> ; exit 0",
             "timeout": 10
           }
         ]
@@ -242,7 +270,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/pre-compact.sh\"",
+            "command": "echo `# <#` >/dev/null; bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/pre-compact.sh\"; exit $? #> ; exit 0",
             "timeout": 10
           }
         ]
@@ -254,7 +282,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/session-stop.sh\"",
+            "command": "echo `# <#` >/dev/null; bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/session-stop.sh\"; exit $? #> ; exit 0",
             "timeout": 10,
             "async": true
           }
@@ -267,7 +295,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/log-agent.sh\"",
+            "command": "echo `# <#` >/dev/null; bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/log-agent.sh\"; exit $? #> ; exit 0",
             "timeout": 5
           }
         ]
@@ -279,12 +307,12 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/log-agent-stop.sh\"",
+            "command": "echo `# <#` >/dev/null; bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/log-agent-stop.sh\"; exit $? #> ; exit 0",
             "timeout": 5
           },
           {
             "type": "command",
-            "command": "bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/validate-agent-artifact.sh\"",
+            "command": "echo `# <#` >/dev/null; bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/validate-agent-artifact.sh\"; exit $? #> ; exit 0",
             "timeout": 10
           }
         ]

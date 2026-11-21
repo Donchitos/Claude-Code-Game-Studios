@@ -55,16 +55,14 @@ Read over 40 KB is refused. Verify:
 
 ### 5a-bis: Creative Director Pillar Review
 
-**Review mode check** — apply before spawning CD-GDD-ALIGN:
+**Review mode check** — apply before running CD-GDD-ALIGN:
 - `solo` → skip. Note: "CD-GDD-ALIGN skipped — Solo mode." Proceed to Step 5b.
 - `lean` → skip (not a PHASE-GATE). Note: "CD-GDD-ALIGN skipped — Lean mode." Proceed to Step 5b.
-- `full` → spawn as normal.
+- `full` → run it as below.
 
-Before finalizing the GDD, spawn `creative-director` via `Agent` using gate **CD-GDD-ALIGN** (`.claude/docs/director-gates/cd-gdd-align.md`).
+Before finalizing the GDD, run gate **CD-GDD-ALIGN** yourself, in this conversation — do not spawn `creative-director` or any agent for it; the gate file's note that a spawned agent reads it, and the gate index's spawn steps, do not apply in this skill. Read `.claude/docs/director-gates/cd-gdd-align.md` and apply its Prompt as a checklist, with the CD-GDD-ALIGN part of `references/lens-creative-director.md`, to the GDD as written on disk (re-read it by section), against the game pillars (from `design/gdd/game-concept.md` or `design/gdd/game-pillars.md`; if there is neither, the pitch and "what they feel" line of `design/game-brief.md`), the MDA aesthetics target, and the GDD's Player Fantasy section — or, when this tier did not author one, say so. Name the section behind every finding.
 
-Pass: completed GDD file path, game pillars (from `design/gdd/game-concept.md` or `design/gdd/game-pillars.md`; if there is neither, the pitch and "what they feel" line of `design/game-brief.md`), MDA aesthetics target, and the GDD's Player Fantasy section — or, when this tier did not author one, say so.
-
-Handle verdict per the standard rules in `director-gates.md`.
+Handle the verdict (APPROVE / CONCERNS / REJECT) per the standard rules in `director-gates.md`.
 On `Revise flagged items`, or to resolve a REJECT, each flagged section runs its
 section cycle again — its specialist consulted as that section's review-mode
 check says — and is re-approved through its "Approve the [Section Name]
@@ -195,6 +193,10 @@ Update `production/session-state/active.md` with:
 - Next: [suggest next system from design order]
 
 ### 5f: Suggest Next Steps
+
+At `workflow: minimal`, when a story sent you here (a `deepen — <system>` story), say
+"Next: type `/dev-story <that story>`" and ask nothing: leave out `/consistency-check` and
+`/gate-check` unless the person asks for them. Otherwise:
 
 Use `AskUserQuestion`:
 - "What's next?"

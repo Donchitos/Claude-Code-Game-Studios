@@ -32,7 +32,7 @@ Tailor batches 2 and 3 to the actual systems identified from the sprint or QA
 plan. Replace bracketed placeholders with real mechanic names from the current
 sprint's stories.
 
-Use `AskUserQuestion` to batch-verify. Keep to at most 3 calls.
+Ask with the question tool to batch-verify. Keep to at most 3 calls.
 
 **Batch 1 — Core stability (always run):** one call, two questions — an empty
 failure list means nothing unless somebody launched the build.

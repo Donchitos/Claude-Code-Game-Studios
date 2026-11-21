@@ -1,0 +1,5 @@
+engine	code_root	test_root	asset_root	run	build	test	smoke
+Godot	src	tests	assets	godot --path . --windowed --resolution 1280x720	-	godot --headless -s -d --remote-debug tcp://127.0.0.1:0 res://addons/gdUnit4/bin/GdUnitCmdTool.gd -a res://tests --ignoreHeadlessMode	godot --headless --quit-after 5
+Unity	Assets	Assets/Tests	Assets	-	-	-	-
+Unreal	Source	Source/<Module>/Private/Tests	Content	-	-	-	-
+Web	src	tests	assets	npm run dev	npm run build	npm test	npm run smoke

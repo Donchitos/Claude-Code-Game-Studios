@@ -1,4 +1,4 @@
-> Gate definition, loaded by `/gate-check` for the TARGET PHASE ONLY.
+> Gate definition, loaded by `/gate-check` for the target stage only.
 > Never load the other five — one gate applies per invocation.
 
 
@@ -7,7 +7,7 @@
 
 **Required Artifacts:**
 - [ ] All features from milestone plan are implemented
-- [ ] Content is complete (all levels, assets, dialogue referenced in design docs exist)
+- [ ] Content is complete (all levels, assets, dialogue referenced in design documents exist)
 - [ ] Localization strings are externalized (no hardcoded player-facing text in the code root)
 - [ ] QA test plan exists (`/qa-plan` output in `production/qa/`)
 - [ ] QA sign-off report exists (`/team-qa` output — APPROVED or APPROVED WITH CONDITIONS)

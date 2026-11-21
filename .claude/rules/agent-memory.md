@@ -30,7 +30,7 @@ used to record something the user declined to have written.
 This is the failure this file exists to prevent, and this repo is unusually
 exposed to it.
 
-**CCGS ships as a template the user clones *as their game*.** So on day one every
+**Claude Code Game Studios ships as a template the user clones *as their game*.** So on day one every
 agent observes the same things — no game code, no GDDs, no engine configured, no
 `tests/performance/` — and every one of those observations is **guaranteed to
 stop being true**. A memory reading *"this repo is the framework, not a game;
@@ -48,7 +48,7 @@ So:
   A reader with no other context must be able to tell whether the note still
   holds.
 - **Never record absence of a game, of assets, of tests or of config as a
-  settled property of the project.** Those are the states CCGS exists to move a
+  settled property of the project.** Those are the states Claude Code Game Studios exists to move a
   user out of.
 
 ## Disclose the write

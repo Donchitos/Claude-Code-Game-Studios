@@ -3,7 +3,8 @@
 > Part of `/prototype`. `SKILL.md` names when to read this file; the settings it
 > resolved and the rules under its later headings still apply here.
 
-**Triggered by:** `--spike` flag OR "Mid-production spike" entry choice in Phase 1.
+**Triggered by:** `--spike` flag, "Mid-production spike" entry choice in Phase 1, or a quick
+test of one mechanic picked at the one-shot's questions (`one-shot-1-card.md` section 3).
 
 **Purpose:** Test a specific technical or design question mid-production, without
 the overhead of a full concept prototype workflow. No GDD prerequisites. No phase
@@ -18,9 +19,10 @@ gate implications. Hard cap: ~4 hours.
 
 **Spike Mode workflow (replaces Phases 1–9):**
 
-1. **Define the spike question** (plain text, not a widget): "What specific question does this spike answer? Give me one sentence: 'Can we [do X] using [approach Y]?'"
+1. **Define the spike question** (plain text, not a widget). From the one-shot's questions,
+   their words are the spike question: ask it again only when they named no mechanic. Otherwise: "What specific question does this spike answer? Give me one sentence: 'Can we [do X] using [approach Y]?'"
 
-2. **Choose path** — same AskUserQuestion widget as Phase 3 (HTML / Engine / Paper).
+2. **Choose path** — with an engine named, the path question from Phase 3. With no engine set, the spike is a browser build in the one-shot's folder shape, under the spike's own folder name.
 
 3. **Scope** — maximum 2-3 bullet points. One mechanic, one technical question, nothing else.
 

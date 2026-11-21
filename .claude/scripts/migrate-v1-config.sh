@@ -26,6 +26,10 @@
 # deliberately. That is why --finalize is a separate invocation and not a flag
 # on the same run.
 
+case "${1:-}" in
+  -h|--help) sed -n '2,/^$/p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
+esac
+
 set -u
 export LC_ALL=C
 
@@ -165,7 +169,8 @@ yaml_num() { { [ -z "$1" ] || ! is_num "$1"; } && printf 'null' || printf '%s' "
 re_quote() { printf '%s' "$1" | sed 's/[][\\.*^$(){}?+|/]/\\&/g'; }
 
 trim_line() {
-  sed -e 's/\r//g' -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//' "$1" | head -1
+  # tr, not sed: BSD sed (macOS) reads \r as a plain r and deletes every r.
+  tr -d '\r' < "$1" | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//' | head -1
 }
 
 # --- preflight --------------------------------------------------------------
@@ -297,7 +302,7 @@ fi
 if [ -f "$REVIEW_TXT" ]; then
   REVIEW=$(trim_line "$REVIEW_TXT")
   [ -z "$REVIEW" ] && warn "$REVIEW_TXT is empty — modes.review_mode left unset, so modes.rigor supplies it"
-  # The consequential direction, which went unreported until it was measured.
+  # The consequential direction:
   # An explicit modes.review_mode OUTRANKS the modes.rigor expansion -- that is
   # deliberate, so a genuine v1.0 choice survives migration. But it means rigor
   # can never move review depth on this project again, and the user is told
@@ -445,7 +450,7 @@ if [ -f "$TP" ]; then
       "") ;;
       *) manual "Custom section \`## $h\` in $TP — not migrated, integrate by hand" ;;
     esac
-  done < <(grep -E '^## ' "$TP" | sed 's/^## //; s/\r$//')
+  done < <(grep -E '^## ' "$TP" | tr -d '\r' | sed 's/^## //')
 fi
 [ -f "$TP" ] && manual "Forbidden Patterns and Allowed Libraries stay in $TP — they have no project.yaml equivalent"
 
@@ -454,7 +459,7 @@ fi
 # read, so a migrated project lands on `minimal` — fewer required GDD sections,
 # terser docs, lighter test evidence, no director panels. That is a behaviour
 # change the upgrader never chose; say so in the one artifact they read first.
-warn "modes.rigor is not written — v1.1 defaults it to \`minimal\`, which is lighter than v1.0 behaved (v1.0 matched \`standard\`). To keep v1.0's process level, add \`modes: { rigor: standard }\` to project.yaml or run \`/settings modes.rigor=standard\`"
+warn "modes.rigor is not written — v1.1 defaults it to \`minimal\`, which is lighter than v1.0 behaved (v1.0 matched \`standard\`). To keep v1.0's process level, add \`modes: { rigor: standard }\` to project.yaml or run \`/project-settings modes.rigor=standard\`"
 manual "Decide \`modes.rigor\`: leave unset for the lighter v1.1 default, or pin \`standard\` to keep v1.0's process level"
 
 # Report the STRING keys that land in the file as `null`, which the numeric
@@ -569,7 +574,7 @@ fi
   echo "schema_version: 1"
   echo ""
   echo "framework:"
-  echo "  version: 1.2.0"
+  echo "  version: 1.3.0"
   echo ""
   # Emit `project:` only when there is a stage to put in it -- same rule as the
   # `modes:` block below. Writing `stage: null` produced a file that FAILED THIS
@@ -710,7 +715,7 @@ mkdir -p production 2>/dev/null
   echo "\`modes.automation\`, \`docs.density\`, \`qa.level\`, \`team.size\`,"
   echo "\`modes.story_granularity\`, \`testing.strict\`."
   echo ""
-  echo "Run \`/settings\` to see the effective values, or \`/start\` to be asked."
+  echo "Run \`/project-settings\` to see the effective values, or \`/start\` to be asked."
   echo ""
   # `modes.review_mode` is NOT new in v1.1, so the paragraph above does not
   # cover it. Call the omission out by name: this table is the artifact the

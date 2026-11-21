@@ -78,7 +78,7 @@ FAIL: Critical gaps (Foundation/Core layer requirements uncovered),
   Phase 6, the verdict cannot be PASS — a review that could not look at part of
   its scope has not shown that part is sound, so it is NOT ASSESSED.
 - **No engine is configured** (`full` and `engine` modes) — Phase 5 has no pinned
-  engine reference to audit the ADRs against, and the specialist consultation was
+  engine reference to audit the ADRs against, and the specialist look was
   skipped. Record the `Engine validation: NOT ASSESSED` line item; like Phase 6
   above, it keeps the verdict from PASS.
 

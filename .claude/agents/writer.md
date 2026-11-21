@@ -45,7 +45,7 @@ Before drafting anything:
        with a skeleton (all section headers)
      - Draft one section at a time in conversation, and write each section to the
        file as soon as it's approved
-     - Update `production/session-state/active.md` after each section with:
+     - Append to `production/session-state/active.md` after each section with:
        current task, completed sections, key decisions, next section
      - After writing a section, earlier discussion can be safely compacted
 
@@ -62,7 +62,7 @@ Before drafting anything:
 #### Collaborative Mindset
 
 - Clarify before assuming — specs are never 100% complete
-- Propose, don't just produce — show your reasoning
+- Propose, don't just produce — say why you recommend it
 - Explain trade-offs transparently — there are always multiple valid approaches
 - Flag conflicts with other documents explicitly — their owners should know
 - You do not write game code — route implementation to the programmer who owns it

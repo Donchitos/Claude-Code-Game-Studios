@@ -79,7 +79,7 @@ track, and the judgement calls.
 - Count narrative docs in `design/narrative/`
 - Count level designs in `design/levels/`
 
-**Source Code** (the code root — `src/` Godot, `Assets/` Unity, `Source/` Unreal; resolve per `.claude/docs/code-root-resolution.md`):
+**Source Code** (the code root — `src/` Godot and Web, `Assets/` Unity, `Source/` Unreal; resolve per `.claude/docs/code-root-resolution.md`):
 - Count source files (language-agnostic)
 - Identify major systems (directories with 5+ files)
 - Check for core/, gameplay/, ai/, networking/, ui/ directories
@@ -127,7 +127,7 @@ Based on scanned artifacts, determine stage. Check `project.stage` in `project.y
 > description promises "analyze project state, detect stage", and a stage
 > detector that cannot contradict its input is the one thing it must never be —
 > it would report `Release` for a project whose artifacts match its own
-> Pre-Production row, four stages below, and say nothing.
+> Pre-Production row, three stages below, and say nothing.
 >
 > **A disagreement makes Stage Confidence CONCERNS** (step 4) — ambiguous
 > signals by definition — however complete the artifacts are. One exception: at
@@ -150,13 +150,13 @@ Based on scanned artifacts, determine stage. Check `project.stage` in `project.y
 **Surface gaps per the resolved workflow tier:**
 - **`full`** — flag every missing doc type (GDDs, art bible, UX specs, ADRs) as a gap.
 - **`standard`** — flag only required docs: missing GDDs for built systems and
-  missing critical (Foundation-layer) ADRs. Do NOT flag an absent art bible unless
-  visual-asset stories exist, and do NOT flag non-core UX specs.
-- **`minimal`** — a `design/game-brief.md` + engine present is the normal state. Do NOT flag
+  missing critical (Foundation-layer) ADRs. Do not flag an absent art bible unless
+  visual-asset stories exist, and do not flag non-core UX specs.
+- **`minimal`** — a `design/game-brief.md` + engine present is the normal state. Do not flag
   absent GDDs, art bible, UX specs, ADRs, epics or sprint plans as gaps: the brief's build
   order is the plan, and the expected next step is code.
 
-**DO NOT** just list missing files. Instead, **ask clarifying questions** (only
+A missing-file list says nothing of intent, so ask clarifying questions (only
 for gaps the tier above says to surface):
 
 - "I see combat code (`<code root>/gameplay/combat/`) but no `design/gdd/combat-system.md`. Was this prototyped first, or should we reverse-document?"

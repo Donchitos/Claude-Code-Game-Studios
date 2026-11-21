@@ -1,5 +1,5 @@
 # Workflow Catalog
-# Used by /help to determine where a user is and what comes next.
+# Used by /next-step to determine where a user is and what comes next.
 #
 # Artifact checks:
 #   glob: file glob pattern — complete if ≥1 file matches (or min_count)
@@ -14,14 +14,14 @@
 # required: false → optional enhancement (shown as OPTIONAL)
 # repeatable: true → runs multiple times (one per system, story, etc.)
 #
-# Phase gates (/gate-check): verdicts are ADVISORY — they guide the decision
-# but never hard-block advancement. The user always decides whether to proceed.
+# Phase gates (/gate-check): a FAIL or NOT ASSESSED never advances the stage.
+# Otherwise the verdict is advice: the user decides whether to proceed.
 
 # Tier paths: a tier whose route is not the phase ladder. At `workflow: minimal`
 # nothing on the path runs /gate-check, so project.stage never leaves Concept —
 # and walking the Concept phase names the concept doc, art bible and systems map
 # (all REQUIRED there) as blockers on a project that already has stories.
-# /help reads paths.minimal instead of the ladder at that tier. Same step schema
+# /next-step reads paths.minimal instead of the ladder at that tier. Same step schema
 # as phases; artifact-check.sh reports a path only when asked with --path <id>.
 
 paths:
@@ -38,7 +38,7 @@ paths:
         artifact:
           any_of:
             - glob: "project.yaml"
-              pattern: 'name:[[:space:]]*"?(Godot|Unity|Unreal)'
+              pattern: 'name:[[:space:]]*"?(Godot|Unity|Unreal|Web)'
             - glob: ".claude/docs/technical-preferences.md"
               pattern: '\*\*Engine\*\*: [^[]'
         description: "Configure the engine and pin its version"
@@ -49,7 +49,7 @@ paths:
         required: true
         artifact:
           glob: "design/game-brief.md"
-        description: "One page: pitch, MVP features, build order. Replaces the concept doc, art bible, systems map and GDDs at this tier"
+        description: "One page: pitch, features, build order. Replaces the concept doc, art bible, systems map and GDDs at this tier"
 
       - id: create-stories
         name: "Stories"
@@ -57,7 +57,7 @@ paths:
         required: true
         artifact:
           glob: "production/epics/*/story-*.md"
-        description: "One story per MVP feature, in build order. No /create-epics or /sprint-plan at this tier"
+        description: "One story per feature not built yet, in build order. No /create-epics or /sprint-plan at this tier"
 
       - id: implement
         name: "Build the Next Story"
@@ -88,10 +88,21 @@ phases:
         required: false
         description: "Explore the game concept using MDA, verb-first, and player psychology frameworks"
 
+      - id: game-concept
+        name: "Game Concept Document"
+        command: /brainstorm
+        required: true
+        artifact:
+          glob: "design/gdd/game-concept.md"
+        description: "Formalize concept with pillars, MDA analysis, and scope tiers"
+
       - id: engine-setup
         name: "Engine Setup"
         command: /setup-engine
         required: true
+        # After the concept doc: playable first, engine last. With design docs and
+        # no prototypes/*/index.html, /next-step names /prototype before this step
+        # when no engine (or web) is set.
         # engine.name in project.yaml is the primary source; technical-
         # preferences.md is the legacy fallback. Either one completes the step.
         # /setup-engine writes the value quoted (`name: "Godot"`), so the quote
@@ -101,21 +112,13 @@ phases:
         artifact:
           any_of:
             - glob: "project.yaml"
-              pattern: 'name:[[:space:]]*"?(Godot|Unity|Unreal)'
+              pattern: 'name:[[:space:]]*"?(Godot|Unity|Unreal|Web)'
             # technical-preferences.md writes "- **Engine**: Godot 4.7", so the
             # pattern must clear the bold markers. The [^[] guard rejects the
             # "[TO BE CONFIGURED]" placeholder.
             - glob: ".claude/docs/technical-preferences.md"
               pattern: '\*\*Engine\*\*: [^[]'
         description: "Configure engine, pin version, set naming conventions and performance budgets"
-
-      - id: game-concept
-        name: "Game Concept Document"
-        command: /brainstorm
-        required: true
-        artifact:
-          glob: "design/gdd/game-concept.md"
-        description: "Formalize concept with pillars, MDA analysis, and scope tiers"
 
       - id: design-review-concept
         name: "Concept Review"
@@ -281,12 +284,16 @@ phases:
         command: /prototype
         required: false
         artifact:
-          # /prototype writes prototypes/[name]-concept/REPORT.md. The `-concept`
-          # suffix matters: /vertical-slice writes the same REPORT.md basename
-          # under `-vertical-slice`, so a bare `prototypes/*/REPORT.md` here
-          # would let either step satisfy the other.
-          glob: "prototypes/*-concept/REPORT.md"
-          min_count: 1
+          # /prototype writes prototypes/[name]-concept/REPORT.md for an engine
+          # or paper prototype, or prototypes/<name>/REPORT.md for the engine
+          # route's browser sketch; a make-a-game one-shot writes none. /vertical-slice writes
+          # the same basename under `-vertical-slice`, so a bare
+          # `prototypes/*/REPORT.md` would let either step satisfy the other:
+          # the second alternative also needs the concept report's own title.
+          any_of:
+            - glob: "prototypes/*-concept/REPORT.md"
+            - glob: "prototypes/*/REPORT.md"
+              pattern: '^# Concept Prototype Report:'
         description: "Build a throwaway prototype to validate the core mechanic is fun before committing to full production. Recommended for first-time mechanics or high-risk design decisions. Solo devs with proven concepts may skip."
 
       - id: create-epics
@@ -478,7 +485,7 @@ phases:
 
       - id: changelog
         name: "Changelog"
-        command: /changelog
+        command: /write-changelog
         required: true
         description: "Internal changelog from commits, sprints, and design docs. The release gate needs the changelog or the patch notes drafted"
 

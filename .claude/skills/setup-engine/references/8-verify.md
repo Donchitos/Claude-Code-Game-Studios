@@ -15,8 +15,8 @@ Read `CLAUDE.md` and confirm the line under the marker reads:
 @docs/engine-reference/<engine>/VERSION.md
 ```
 
-with `<engine>` the engine just configured. If it still points at a different
-engine, Section 4 did not complete — go back and finish it rather than patching
+with `<engine>` the engine just configured. If there is no such line, or it still
+points at a different engine, Section 4 did not complete — go back and finish it rather than patching
 the line here.
 
 > **Why this is a check and not a second write.** Repeating the edit here with

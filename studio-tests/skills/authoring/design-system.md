@@ -57,16 +57,17 @@ target and the GDD's Player Fantasy section (or a statement that the tier did no
 author one). The verdict is recorded in the GDD Status header as
 `> **Creative Director Review (CD-GDD-ALIGN)**: APPROVED [date] / CONCERNS (accepted) [date] / REVISED [date] / NOT ASSESSED [date] — [missing input]`.
 
-- `full` → spawned.
+- `full` → run in the conversation, never as a spawn.
 - `lean` → skipped (not a PHASE-GATE). Note: "CD-GDD-ALIGN skipped — Lean mode."
 - `solo` → skipped. Note: "CD-GDD-ALIGN skipped — Solo mode."
 
-Per-section specialist spawns (not director gates) have their own checks:
+Per-section specialist steps (not director gates; each reads a lens in
+`references/lens-*.md`, and none spawns an agent) have their own checks:
 `solo` skips them all; `lean` skips them except for Sections D (Formulas) and
 H (Acceptance Criteria), Section G (Tuning Knobs) when Section D defines a
 formula whose knobs interact, and Visual/Audio when the system's visual feedback
 is central to it (a `Gameplay` or `UI` system whose events the player reads to
-play); `full` spawns them. Every skipped spawn prints the section's note naming
+play); `full` runs them. Every skipped step prints the section's note naming
 the agent and the mode, e.g. "`creative-director` not consulted — Lean mode.
 Review manually before production."
 
@@ -98,19 +99,19 @@ Fixture defaults.
 2. "Ready to start designing combat?" is asked
 3. "May I create the skeleton file at `design/gdd/combat.md`?" — on yes, the skeleton is written with all 8 required sections plus the template's other sections, each holding `[To be designed]`; `production/session-state/active.md` is updated
 4. Sections A–H are walked in order; each draft is followed in the same response by "Approve the [Section Name] section?" with `[A] Approve — write it to file` / `[B] Make changes — describe what to fix` / `[C] Start over`
-5. Section B consults `creative-director`; Section C spawns the Combat row's `game-designer` plus supporting agents in parallel; Section D spawns `systems-designer`; Section E `systems-designer`; Section H `qa-lead`
+5. Section B applies the creative-director lens (2-3 framings); Section C shows one view per role from the Combat row (`game-designer` plus supporting roles) before drafting; Sections D and E apply the systems-designer lens; Section H the qa-lead lens; no agent is spawned
 6. Each approved section is written immediately by an Edit whose `old_string` includes the section heading; `active.md` is updated after each
 7. Visual/Audio and Game Feel are treated as required (Gameplay category) — not offered as skippable
 8. `## Summary` is authored after the other sections; Step 5a reads the GDD back from file
-9. CD-GDD-ALIGN spawns once and returns APPROVE; the Status header records `APPROVED [date]`
+9. CD-GDD-ALIGN runs once, in the conversation, and returns APPROVE; the Status header records `APPROVED [date]`
 10. The completion summary directs the user to run `/design-review design/gdd/combat.md` in a fresh session
 
 **Assertions:**
 - [ ] The skeleton is written only after the "May I create the skeleton file" approval, and contains all 8 required section headers
 - [ ] Every section draft is followed in the same response by the "Approve the [Section Name] section?" widget
 - [ ] Each section is written individually, immediately after its approval, by an Edit anchored on its heading
-- [ ] Section C's specialists come from the routing table's Combat row and are spawned in parallel before drafting
-- [ ] CD-GDD-ALIGN spawns once, after all sections and the Summary are written — not per section
+- [ ] Section C's role views come from the routing table's Combat row, each shown as its own block before drafting
+- [ ] CD-GDD-ALIGN runs once, without a spawn, after all sections and the Summary are written — not per section
 - [ ] The verdict is recorded as `> **Creative Director Review (CD-GDD-ALIGN)**: APPROVED [date]`
 - [ ] `/design-review` is directed to a fresh session and never offered inline
 
@@ -160,7 +161,7 @@ Fixture defaults.
 **Input:** `/design-system stamina` (reaching Step 5a-bis)
 
 **Expected behavior:**
-1. `creative-director` is spawned with gate CD-GDD-ALIGN and passed the GDD path, the game pillars, the MDA aesthetics target and the GDD's Player Fantasy section
+1. Gate CD-GDD-ALIGN is run in the conversation (no spawn) against the GDD on disk, the game pillars, the MDA aesthetics target and the GDD's Player Fantasy section
 2. (a) The CONCERNS are surfaced via `AskUserQuestion` with the standard options: `Revise flagged items` / `Accept and proceed` / `Discuss further`
 3. (a) If "Revise flagged items": Detailed Design runs its section cycle again — its specialists consulted first — and is approved through "Approve the Detailed Design section?" before it is written; the Status header records `REVISED [date]`
 4. (a) If "Accept and proceed": the Status header records `CONCERNS (accepted) [date]`
@@ -178,7 +179,7 @@ Fixture defaults.
 
 ---
 
-### Case 4: Lean and Solo Modes — Gate skipped once; specialist spawns follow their own checks
+### Case 4: Lean and Solo Modes — Gate skipped once; specialist steps follow their own checks
 
 **Fixture:**
 - `design/gdd/game-concept.md` and `design/gdd/systems-index.md` exist; the system is `stamina` (`Category: Gameplay`); no `design/gdd/stamina.md`
@@ -190,18 +191,18 @@ Fixture defaults.
 **Input:** `/design-system stamina`
 
 **Expected behavior:**
-1. (a) Sections B, C, E and G are drafted without specialist spawns, and each prints its note with the mode, e.g. "`creative-director` not consulted — Lean mode. Review manually before production."
-2. (a) Section D still spawns `systems-designer`, Section H `qa-lead`, and Visual/Audio `art-director` — stamina's feedback is central to play
+1. (a) Sections B, C, E and G are drafted without their specialist steps, and each prints its note with the mode, e.g. "`creative-director` not consulted — Lean mode. Review manually before production."
+2. (a) Section D still applies the `systems-designer` lens, Section H `qa-lead`'s, and Visual/Audio `art-director`'s — stamina's feedback is central to play
 3. (a) At Step 5a-bis: "CD-GDD-ALIGN skipped — Lean mode." — printed once, not per section
-4. (b) No specialist or director agent is spawned; each section whose spawn was skipped carries its note, e.g. "`creative-director` not consulted — Solo mode. Review manually before production."
+4. (b) No specialist step or director gate runs; each section whose step was skipped carries its note, e.g. "`creative-director` not consulted — Solo mode. Review manually before production."
 5. (b) At Step 5a-bis: "CD-GDD-ALIGN skipped — Solo mode."
 6. In both scenarios every section still requires the "Approve the [Section Name] section?" approval before it is written
 
 **Assertions:**
-- [ ] (a) In lean mode Sections B, C, E and G are drafted without their specialists, while Sections D and H and Visual/Audio still spawn theirs
-- [ ] (a) Each lean-skipped spawn prints a "not consulted — Lean mode" note naming its agent — none is skipped silently
+- [ ] (a) In lean mode Sections B, C, E and G are drafted without their specialists, while Sections D and H and Visual/Audio still run theirs
+- [ ] (a) Each lean-skipped step prints a "not consulted — Lean mode" note naming its agent — none is skipped silently
 - [ ] (a) The CD-GDD-ALIGN skip note appears once, at Step 5a-bis
-- [ ] (b) In solo mode no agent is spawned, and each skipped specialist leaves a "not consulted — Solo mode" note
+- [ ] (b) In solo mode no specialist step runs, and each skipped specialist leaves a "not consulted — Solo mode" note
 - [ ] (b) The skip note reads "CD-GDD-ALIGN skipped — Solo mode."
 - [ ] Per-section user approval is required in both modes
 
@@ -317,7 +318,7 @@ Fixture defaults.
 - [ ] The skeleton is created only after "May I create the skeleton file at `design/gdd/[system-name].md`?"
 - [ ] In collaborative mode every section draft is followed by its approval widget, and no section is written without approval
 - [ ] Sections are written incrementally, and `production/session-state/active.md` is updated after each
-- [ ] Specialist spawns follow the per-section review-mode checks; every skipped spawn leaves a "not consulted" note naming the agent and the mode, in lean as in solo
+- [ ] Specialist steps follow the per-section review-mode checks; no agent is ever spawned; every skipped step leaves a "not consulted" note naming the agent and the mode, in lean as in solo
 - [ ] CD-GDD-ALIGN runs once in full mode after all sections; lean and solo print a skip note naming the gate and mode
 - [ ] `/design-review` is directed to a fresh session and never run or offered inline
 - [ ] Reads each phase's `references/N-*.md` file before doing that phase, and again after a compaction or resume during it

@@ -51,6 +51,10 @@
 #   - The Depends On row is read as adr-status.sh reads it: every ADR-N on the
 #     row is an edge, and the value cell decides placeholder versus none.
 
+case "${1:-}" in
+  -h|--help) sed -n '2,/^$/p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
+esac
+
 set -u
 
 # Default to the repo's ADR dir; an explicit arg (absolute or CWD-relative, used

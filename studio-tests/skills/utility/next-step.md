@@ -1,10 +1,10 @@
-# Skill Test Spec: /help
+# Skill Test Spec: /next-step
 
 ## Skill Summary
 
-`/help` tells the user where they are in the pipeline and the one thing to do
+`/next-step` tells the user where they are in the pipeline and the one thing to do
 next. It is read-only and declares the Haiku tier (`model: haiku`), which is
-used only when the user types `/help` in Manual mode — in auto mode, or when
+used only when the user types `/next-step` in Manual mode — in auto mode, or when
 Claude starts the skill itself, the session model runs it
 (`.claude/docs/model-tiers.md`). Before it runs, it is handed the resolved
 config block (`project.stage`, `workflow`) and the output of
@@ -43,7 +43,7 @@ Checked against the SKILL.md by `/skill-test spec` — no fixture needed.
 
 ## Director Gate Checks
 
-None. `/help` is a read-only navigation skill. No director gates apply.
+None. `/next-step` is a read-only navigation skill. No director gates apply.
 
 ---
 
@@ -69,7 +69,7 @@ Fixture defaults.
   `blocker` field
 - `production/session-state/active.md` has a STATUS block naming the in-progress story
 
-**Input:** `/help`
+**Input:** `/next-step`
 
 **Expected behavior:**
 1. Skill takes `project.stage: Production` and `workflow: standard` from the config block
@@ -86,6 +86,7 @@ Fixture defaults.
 
 **Assertions:**
 - [ ] Heading reads `## Where You Are: Production`
+- [ ] Under the heading, one line labels the path studio mode (`workflow: standard`), says it fits a team, a long project or someone who wants the paperwork; no step changes
 - [ ] `production/sprint-status.yaml` is read; the in-progress story is surfaced as currently active
 - [ ] The blocked story appears with its `blocker` field
 - [ ] Exactly one `→ Next up (REQUIRED)` step is shown (not a list of all skills)
@@ -105,7 +106,7 @@ Fixture defaults.
 - No `design/gdd/game-concept.md`, no `design/art/art-bible.md`, no
   `design/gdd/systems-index.md`, no sprint files
 
-**Input:** `/help`
+**Input:** `/next-step`
 
 **Expected behavior:**
 1. Skill maps `Concept` to the catalog phase `concept`
@@ -134,7 +135,7 @@ Fixture defaults.
 - `design/gdd/game-concept.md` and `design/gdd/systems-index.md` exist
 - No `docs/architecture/adr-*.md`, no `production/epics/**/story-*.md`, code root empty
 
-**Input:** `/help`
+**Input:** `/next-step`
 
 **Expected behavior:**
 1. Config block reports `project.stage` as not set
@@ -167,7 +168,7 @@ Fixture defaults.
 - No `design/gdd/gdd-cross-review-*.md`
 - The catalog's `design-review` step has no artifact check (`NO_CHECK`)
 
-**Input:** `/help just finished design-review, not sure what's next`
+**Input:** `/next-step just finished design-review, not sure what's next`
 
 **Expected behavior:**
 1. The argument is read as the step the user just finished (Step 5), not as a topic filter
@@ -175,7 +176,7 @@ Fixture defaults.
 3. `→ Next up (REQUIRED)` is Cross-GDD Review via `/review-all-gdds`
 4. "not sure" is confusion language, so the Step 9 "Need more detail?" block is
    appended with `/project-stage-detect`, `/gate-check` and `/start`
-5. The `/settings` rigor line is NOT shown: the user does not sound overwhelmed by
+5. The `/project-settings` rigor line is NOT shown: the user does not sound overwhelmed by
    process and the project has not outgrown `standard` (no `settings-guidance.md § 4` trigger fires)
 6. Verdict is COMPLETE
 
@@ -183,7 +184,7 @@ Fixture defaults.
 - [ ] Per-System Design Review is treated as done because the user named it
 - [ ] `→ Next up` is Cross-GDD Review via `/review-all-gdds`
 - [ ] Escalation block lists `/project-stage-detect`, `/gate-check` and `/start`
-- [ ] No `/settings` rigor-change line appears
+- [ ] No `/project-settings` rigor-change line appears
 - [ ] Verdict is COMPLETE
 
 ---
@@ -200,7 +201,7 @@ Fixture defaults.
   **Next step:** `/dev-story` on it) nor the git log (no commit mentions
   story-002) says story-002's implementation is written
 
-**Input:** `/help`
+**Input:** `/next-step`
 
 **Expected behavior:**
 1. `workflow: minimal` sends the skill past the rest of Step 2; `project.stage`
@@ -236,7 +237,7 @@ Fixture defaults.
   **Next step:** `/story-done production/epics/core/story-002.md` (what
   `/dev-story` writes when it finishes a story)
 
-**Input:** `/help`
+**Input:** `/next-step`
 
 **Expected behavior:**
 1. Step 3 runs at `minimal` and finds the checkpoint's next step
@@ -258,7 +259,7 @@ Fixture defaults.
 - As Case 5, except `story-002.md` is `Status: Blocked` (its file says it waits
   on the art for the player sprite) and `story-003.md` is `Status: Draft`
 
-**Input:** `/help I'm stuck`
+**Input:** `/next-step I'm stuck`
 
 **Expected behavior:**
 1. The injected list has no `IN_REVIEW`, `IN_PROGRESS` or `TODO` line: story-002
@@ -292,7 +293,7 @@ Fixture defaults.
   `production/epics/`
 - Run A: `src/` holds 12 `.gd` files. Run B: `src/` holds 3 `.gd` files
 
-**Input:** `/help`
+**Input:** `/next-step`
 
 **Expected behavior:**
 1. `workflow: minimal` goes to Step 4m; `artifact-check.sh --path minimal` reports
@@ -311,6 +312,57 @@ Fixture defaults.
 - [ ] Run B's `→ Next up` is `/brainstorm`
 - [ ] The 10-source-file threshold decides between them: 12 files route to `/reverse-document`, 3 files do not
 - [ ] No phase label, concept doc, art bible, systems map or `/gate-check` is presented as required
+- [ ] Verdict is COMPLETE, and no file is written
+
+### Case 9: Minimal path, no engine — the main path comes first
+
+**Fixture:**
+- `project.yaml` has no `engine` key and no `modes` block (`workflow` resolves to
+  `minimal`)
+- Run A: nothing under `prototypes/`. Run B: `prototypes/flood-racer/index.html`
+  exists (a one-shot game was made)
+
+**Input:** `/next-step`
+
+**Expected behavior:**
+1. Step 4m; `artifact-check.sh --path minimal` reports `engine-setup` not PRESENT
+2. Run A: no game made yet, so `→ Next up` is `/prototype` (make a game), with
+   `/setup-engine` under "Coming up after that"
+3. Run B: the game is made, so one line says to play it and ask for changes in
+   plain words, and `→ Next up` is `/setup-engine` to grow it into a project
+4. Verdict is COMPLETE
+
+**Assertions:**
+- [ ] Run A's `→ Next up` is `/prototype`, not `/setup-engine`
+- [ ] Run B's `→ Next up` is `/setup-engine`, with the change-it-after-play line above it
+- [ ] No studio-mode line, phase label or `/gate-check` appears at `minimal`
+- [ ] Variant — nothing under `prototypes/`, but `src/` holds 12 source files: `→ Next up` is `/setup-engine`, as before this change (an existing codebase is not sent to `/prototype`)
+- [ ] Verdict is COMPLETE, and no file is written
+
+---
+
+### Case 10: Minimal path, an engine set, no brief — the main path still comes first
+
+**Fixture:**
+- `project.yaml` has `engine.name: Godot` and no `modes` block (`workflow`
+  resolves to `minimal`); no `design/game-brief.md`; `src/` holds 2 files
+- Run A: nothing under `prototypes/`. Run B: `prototypes/flood-racer-concept/`
+  exists (an engine prototype was made; it writes no brief)
+
+**Input:** `/next-step`
+
+**Expected behavior:**
+1. Step 4m; `engine-setup` is PRESENT and `game-brief` is not
+2. Run A: `→ Next up` is `/prototype` (say the game in one line; on an engine, a
+   quick throwaway build), with `/brainstorm` under "Coming up after that" for
+   someone with no idea yet
+3. Run B: `→ Next up` is `/brainstorm`, which writes the one-page brief
+4. Verdict is COMPLETE
+
+**Assertions:**
+- [ ] Run A's `→ Next up` is `/prototype`, not `/brainstorm`
+- [ ] Run B's `→ Next up` is `/brainstorm` (a made prototype is not sent back to `/prototype`)
+- [ ] Variant — `src/` holds 12 source files: `→ Next up` is `/reverse-document design src`, as in Case 8
 - [ ] Verdict is COMPLETE, and no file is written
 
 ---
@@ -335,6 +387,6 @@ Fixture defaults.
   Case 2 runs at `full` only so that the art bible is required, and does not
   assert that listing.
 - The minimal path's "every story Complete" branch (three ways on: play the
-  build, `/create-stories`, `/settings`) is not separately tested.
+  build, `/create-stories`, `/project-settings`) is not separately tested.
 - The `/reverse-document` route for a built game with no brief is Case 8; the code
   root for Unity (`Assets/`) and Unreal (`Source/<Module>/`) is not given a fixture.

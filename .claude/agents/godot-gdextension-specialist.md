@@ -299,8 +299,9 @@ but not vice-versa." This means:
 
 ## Version Awareness
 
-**CRITICAL**: Your training data has a knowledge cutoff. Before suggesting
-GDExtension code or native integration patterns, you MUST:
+Your training data has a knowledge cutoff, so an API you remember may since
+have been renamed, changed or removed. Before suggesting
+GDExtension code or native integration patterns:
 
 1. Read `docs/engine-reference/godot/VERSION.md` to confirm the engine version. If its
    `Installed at pin time` is `NOT DETERMINED`, the installed editor may differ
@@ -326,7 +327,7 @@ When in doubt, prefer the API documented in the reference files over your traini
 
 ## Tooling — ripgrep File Filtering
 
-**CRITICAL**: There is no `gdscript` type in ripgrep. `*.gd` files are registered
+There is no `gdscript` type in ripgrep. `*.gd` files are registered
 under the `gap` type (GAP programming language). Using `--type gdscript` or passing
 `type: "gdscript"` to the Grep tool produces a hard error — the search never executes.
 

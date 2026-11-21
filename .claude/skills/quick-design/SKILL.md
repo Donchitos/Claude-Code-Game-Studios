@@ -89,8 +89,9 @@ content mode) and Read those ranges with offset and limit.
   dependency tier check." and continue.
 - Check `design/quick-specs/` for any prior quick specs that touched this
   system — avoid contradicting them.
-- If this is a Tuning change, also check `assets/data/` for the data file that
-  holds the relevant values.
+- If this is a Tuning change, also check `assets/data/` (`data/config.json` in
+  a web game) for the data file that holds the relevant values, and write that
+  file's path in the spec in place of `assets/data/[file]`.
 
 Report what was found: "Found GDD at [path]. Relevant section: [section name].
 Prior quick specs for this system: [each path, and whether it agrees or

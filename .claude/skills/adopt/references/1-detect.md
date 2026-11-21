@@ -50,7 +50,7 @@ If the project appears fresh (no artifacts at all), use `AskUserQuestion`:
    `## Detailed Design`; an ADR `## Status` with `## Decision`; a story
    `## Acceptance Criteria` with a `Status` line; a concept doc
    `## Elevator Pitch` or `## Game Pillars`; a brief `## Core loop` with
-   `## MVP`.
+   `## Features` (`## MVP` in briefs from before 1.3.0).
 3. Show what was found, grouped by type, each with the place every skill reads
    it from: GDD → `design/gdd/[name].md`; ADR →
    `docs/architecture/adr-NNNN-[name].md`; story →

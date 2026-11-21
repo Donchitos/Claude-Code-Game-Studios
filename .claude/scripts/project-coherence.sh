@@ -30,6 +30,10 @@
 # and always exits 0. The reader decides. A check that cannot run says so by
 # name — silence is never treated as agreement.
 
+case "${1:-}" in
+  -h|--help) sed -n '2,/^$/p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
+esac
+
 set -u
 export LC_ALL=C
 
@@ -95,6 +99,17 @@ fi
 ENGINE_LC="$(printf '%s' "$ENGINE" | tr 'A-Z' 'a-z')"
 VERFILE="docs/engine-reference/$ENGINE_LC/VERSION.md"
 
+# Web: the bundler the project builds with (web-detect.sh's first bundler row),
+# so an existing project on webpack or Parcel is read as itself, not as Vite.
+WEB_BNAME=Vite; WEB_BPKG=vite
+if [ "$ENGINE_LC" = web ] && [ -f package.json ] && [ -f .claude/scripts/web-detect.sh ]; then
+  WEB_BROW="$(bash .claude/scripts/web-detect.sh --root . 2>/dev/null | awk -F'\t' '$1 == "bundler" { print $2 "\t" $3; exit }')"
+  case "$WEB_BROW" in
+    -*|"") ;;
+    *) WEB_BNAME="${WEB_BROW%%	*}"; WEB_BPKG="${WEB_BROW#*	}" ;;
+  esac
+fi
+
 # --- 1. VERSION.md carries a recorded installed-version probe -----------------
 if [ ! -f "$VERFILE" ]; then
   skipped "pinned-reference checks — $VERFILE does not exist"
@@ -103,8 +118,16 @@ else
             | sed -E 's/^\| \*\*Engine Version\*\* \| *//; s/ *\|$//')"
   INSTALLED_ROW="$(grep -E '^\| \*\*Installed at pin time\*\* \|' "$VERFILE" \
             | sed -E 's/^\| \*\*Installed at pin time\*\* \| *//; s/ *\|$//')"
+  # Web pins a toolchain, not one engine: engine.version is the bundler's, so the
+  # pin is the vite row of VERSION.md's pinned table, and the installed version
+  # is each project's own (check 3 reads node_modules).
+  if [ "$ENGINE_LC" = web ] && [ -z "$PINNED" ]; then
+    PINNED="$(grep -E '^\| `vite` \|' "$VERFILE" | head -1 | awk -F'|' '{ gsub(/ /, "", $3); print $3 }')"
+  fi
 
-  if [ -z "$INSTALLED_ROW" ]; then
+  if [ "$ENGINE_LC" = web ] && printf '%s' "$INSTALLED_ROW" | grep -qE '^PER PROJECT'; then
+    skipped "pinned-vs-installed at pin time — $VERFILE pins the template, and each web project installs its own versions; the installed-bundler check below reads them"
+  elif [ -z "$INSTALLED_ROW" ]; then
     differs "$VERFILE has no 'Installed at pin time' row. /setup-engine is required to write one; its absence means the probe result was never recorded, not that the versions agree."
   elif printf '%s' "$INSTALLED_ROW" | grep -qE 'NOT DETERMINED'; then
     skipped "pinned-vs-installed — $VERFILE records '$INSTALLED_ROW'. A probe that did not run has not established a match."
@@ -117,7 +140,9 @@ else
   # release (4.6.1, 6000.3.23f1) and the pin the series (Godot 4.6, Unity 6.3
   # LTS). Unity numbers the same editor two ways -- 6000.3 is marketed as 6.3.
   WANT2="$(vmm "$VERSION")"; GOT2="$(vmm "$PINNED")"
-  if [ -z "$PINNED" ]; then
+  if [ "$ENGINE_LC" = web ] && [ "$WEB_BPKG" != vite ]; then
+    skipped "project.yaml version vs pinned reference — the project builds with $WEB_BNAME, and $VERFILE pins the template's Vite; engine.version is $WEB_BNAME's"
+  elif [ -z "$PINNED" ]; then
     skipped "project.yaml version vs pinned reference — no Engine Version row in $VERFILE"
   elif [ -z "$VERSION" ]; then
     skipped "project.yaml version vs pinned reference — project.yaml has no engine.version"
@@ -211,6 +236,14 @@ case "$ENGINE_LC" in
       [ -n "$UMAJ" ] && [ -n "$UMIN" ] && PROBE="$UMAJ.$UMIN${UPAT:+.$UPAT} (Engine/Build/Build.version)"
     fi
     ;;
+  web)
+    # engine.version holds the bundler's version (Vite for a new project), so
+    # the installed one is the version node_modules/<bundler>/package.json records.
+    if [ "$WEB_BPKG" != - ] && [ -f "node_modules/$WEB_BPKG/package.json" ]; then
+      WV="$(grep -m1 -oE '"version"[[:space:]]*:[[:space:]]*"[^"]*"' "node_modules/$WEB_BPKG/package.json" | sed -E 's/.*"([^"]*)"$/\1/')"
+      [ -n "$WV" ] && PROBE="$WV (node_modules/$WEB_BPKG/package.json)"
+    fi
+    ;;
 esac
 
 if [ -z "$PROBE" ]; then
@@ -218,6 +251,12 @@ if [ -z "$PROBE" ]; then
     skipped "declared version vs installed binary — no Unity editor at the path in commands.test or in the Hub folder for engine.version. A probe that could not run has not established absence."
   elif [ "$ENGINE_LC" = "godot" ]; then
     skipped "declared version vs installed binary — no Godot executable found (commands.test, engine.path, PATH). A probe that could not run has not established absence."
+  elif [ "$ENGINE_LC" = "web" ]; then
+    if [ "$WEB_BPKG" = - ]; then
+      skipped "declared version vs installed bundler — $WEB_BNAME has no package in node_modules to read. A probe that could not run has not established absence."
+    else
+      skipped "declared version vs installed bundler — no node_modules/$WEB_BPKG/package.json (the dependencies are not installed). A probe that could not run has not established absence."
+    fi
   elif [ "$ENGINE_LC" = "unreal" ]; then
     skipped "declared version vs installed engine — no readable Engine/Build/Build.version under engine.path, the editor in commands.test, the launcher folder for the .uproject's EngineAssociation, or UnrealEditor-Cmd on PATH. A probe that could not run has not established absence."
   else

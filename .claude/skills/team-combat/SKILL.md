@@ -83,7 +83,7 @@ enforced.**
 - **ai-programmer** — Implement NPC/enemy AI behavior for the feature
 - **technical-artist** — Create VFX, shader effects, and visual feedback
 - **sound-designer** — Define audio events, impact sounds, and ambient combat audio
-- **engine specialist** (primary) — Validate architecture and implementation patterns are idiomatic for the engine (the primary specialist is `<engine>-specialist` from `engine.name` — Godot→`godot-specialist`, Unity→`unity-specialist`, Unreal→`unreal-specialist`; fall back to the Primary line of `## Engine Specialists` in `technical-preferences.md`)
+- **engine specialist** (primary) — Validate architecture and implementation patterns are idiomatic for the engine (the primary specialist is `<engine>-specialist` from `engine.name` — Godot→`godot-specialist`, Unity→`unity-specialist`, Unreal→`unreal-specialist`, Web→`lead-programmer`; fall back to the Primary line of `## Engine Specialists` in `technical-preferences.md`)
 - **qa-tester** — Write test cases and validate the implementation
 
 ## How to Delegate

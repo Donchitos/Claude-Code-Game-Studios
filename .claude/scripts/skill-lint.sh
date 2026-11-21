@@ -5,7 +5,7 @@
 # and what its argument hint says. Checks 1-7 of /skill-test static.
 #
 # Replaces the by-hand reading of checks 1-7 over a skill's SKILL.md and its
-# references/, the counting that goes wrong across 74 skills.
+# references/, the counting that goes wrong across 75 skills.
 #
 # OBSERVATIONS, NEVER VERDICTS (CLAUDE.md, "Helpers in .claude/scripts/"). It
 # prints what it found, check by check, and nothing here is a PASS, WARN or

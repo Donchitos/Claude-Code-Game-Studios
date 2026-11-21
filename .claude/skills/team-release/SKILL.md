@@ -11,7 +11,7 @@ model: sonnet
 **Argument check:** If no version number is provided:
 1. Read `production/session-state/active.md` and the most recent file in `production/milestones/` (if they exist) to infer the target version.
 2. If a version is found: report "No version argument provided — inferred [version] from milestone data. Proceeding." Then confirm with `AskUserQuestion`: "Releasing [version]. Is this correct?"
-3. If no version is discoverable: use `AskUserQuestion` to ask "What version number should be released? (e.g., v1.0.0)" and wait for user input before proceeding. Do NOT default to a hardcoded version string.
+3. If no version is discoverable: use `AskUserQuestion` to ask "What version number should be released? (e.g., v1.0.0)" and wait for user input before proceeding. Do not default to a hardcoded version string.
 
 When this skill is invoked, orchestrate the release team through a structured pipeline.
 
@@ -230,7 +230,7 @@ Before tagging or deploying, use `AskUserQuestion`:
 
 Only after explicit approval, delegate to **release-manager** + **devops-engineer**:
 - Tag the release in version control
-- Finalize the changelog drafted in Polish (`/changelog`), adding what changed since the gate
+- Finalize the changelog drafted in Polish (`/write-changelog`), adding what changed since the gate
 - Deploy to staging for final smoke test
 - Deploy to production (only if the user approved production above)
 - Human team action: Monitor dashboards and error rates for 48 hours post-release. Schedule a follow-up retrospective using `/retrospective` at the 48-hour mark.

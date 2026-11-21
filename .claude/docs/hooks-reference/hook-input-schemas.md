@@ -161,7 +161,7 @@ no one**. Print a JSON object on stdout instead:
 - **Leave out `permissionDecision`** unless you mean it: on PreToolUse, `"allow"`
   skips the user's permission prompt.
 
-CCGS hooks use `hook_warn` from `.claude/hooks/yaml-helper.sh`, which builds this
+Claude Code Game Studios hooks use `hook_warn` from `.claude/hooks/yaml-helper.sh`, which builds this
 object and escapes the message without needing `jq`:
 
 ```bash

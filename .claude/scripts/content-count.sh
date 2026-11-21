@@ -22,8 +22,8 @@
 #                   entities.yaml's entities and items sections, read through
 #                   registry.sh, deprecated ones left out
 #   found [--engine E] [--files]
-#                   content files on disk for the engine (godot, unity or
-#                   unreal; default: engine.name as project-state.sh reads it)
+#                   content files on disk for the engine (godot, unity,
+#                   unreal or web; default: engine.name as project-state.sh reads it)
 #   band FOUND SPECIFIED
 #                   the percentage and status band of one pair
 #   gap             rows `system<TAB>type<TAB>specified<TAB>found` on stdin:
@@ -294,16 +294,28 @@ if [ -z "$RAW" ] || [ "$RAW" = "-" ]; then
   exit 3
 fi
 LOW=$(printf '%s' "$RAW" | tr '[:upper:]' '[:lower:]')
+# cell COLUMN -- the engine's cell of the engine table (engine-row.awk), empty for `-`.
+ETAB="$HERE/../engines/engines.tsv"
+[ -f "$ETAB" ] && [ -f "$HERE/engine-row.awk" ] || { echo "content-count: the engine table $ETAB or engine-row.awk is missing" >&2; exit 1; }
+cell() { awk -F'\t' -v engine="$RAW" -v col="$1" -f "$HERE/engine-row.awk" "$ETAB"; }
+# The rules below differ per engine, so the engine keeps its own case.
 case "$LOW" in
-  godot) ENG=godot; ROOTS="assets src" ;;
-  unity) ENG=unity; ROOTS="assets Assets" ;;
-  unreal*) ENG=unreal; ROOTS="assets Content" ;;
+  godot) ENG=godot ;;
+  unity) ENG=unity ;;
+  unreal*) ENG=unreal ;;
+  web) ENG=web ;;
   *)
-    if [ "$ESRC" = flag ]; then usage "--engine takes godot, unity or unreal, got $RAW"; fi
+    if [ "$ESRC" = flag ]; then usage "--engine takes godot, unity, unreal or web, got $RAW"; fi
     printf 'engine\t%s\t%s\n' "$RAW" "$ESRC"
-    echo "content-count: engine $RAW has no content rules here (godot, unity or unreal)" >&2
+    echo "content-count: engine $RAW has no content rules here (godot, unity, unreal or web)" >&2
     exit 3 ;;
 esac
+# The roots, from the engine table: assets/, then the engine's asset root
+# (Unity Assets/, Unreal Content/), or its code root where that asset root is
+# assets/ itself (Godot src/, Web src/). Web's data files sit in data/.
+AROOT=$(cell asset_root); CROOT=$(cell code_root)
+if [ "$AROOT" = assets ]; then ROOTS="assets $CROOT"; else ROOTS="assets $AROOT"; fi
+[ "$ENG" = web ] && ROOTS="assets data $CROOT"
 printf 'engine\t%s\t%s\n' "$ENG" "$ESRC"
 
 PRESENT=""; NPRES=0
@@ -359,7 +371,8 @@ printf '%s\n' "$LIST" | ENG="$ENG" SHOWFILES="$SHOWFILES" awk '
     srcroot = (eng == "godot" && root == "src")
     for (gi = 1; gi <= ng; gi++) {
       g = G[gi]; hit = 0; nh = 0
-      if (g == "levels") {
+      # Web has no scene files: its levels are data files in a levels/ folder.
+      if (g == "levels" && eng != "web") {
         sceneext = (eng == "godot") ? "tscn" : ((eng == "unity") ? "unity" : "umap")
         if (ext != sceneext) continue
         hit = 1

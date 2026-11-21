@@ -10,7 +10,7 @@
 - 7. Closing Next-Step Widget: per gate, and the `workflow: minimal` route
 - 8. Follow-Up Actions
 
-After the verdict is presented and any stage update is complete (project.yaml + stage.txt), close with a structured next-step prompt using `AskUserQuestion`.
+After the verdict is presented and any stage update is complete (project.yaml + stage.txt), close with a next-step question, asked with the question tool.
 
 **Tailor the options to the gate that just ran.** The argument names the phase
 being entered, so `/gate-check systems-design` is the Concept → Systems Design gate.
@@ -21,7 +21,7 @@ the minimal route is not the ladder: offer the first incomplete step of
 `/setup-engine`, then `/brainstorm` (or `/reverse-document design [code root]`
 when the code root already holds the game: it writes the brief from what is
 built), then `/create-stories`, then `/dev-story` on the next story — the route
-`/help` gives.
+`/next-step` gives.
 
 For **Concept → Systems Design** (`/gate-check systems-design`) PASS — option [A] is
 `/map-systems` when `design/gdd/systems-index.md` does not exist yet (many
@@ -81,7 +81,7 @@ Based on the verdict, suggest specific next steps:
 - **Art bible exists but no asset specs?** → `/asset-spec system:[name]` to generate per-asset visual specs and generation prompts from approved GDDs
 - **No game concept?** → `/brainstorm` to create one
 - **No systems index?** → `/map-systems` to decompose the concept into systems
-- **Missing design docs?** → `/reverse-document` or delegate to `game-designer`
+- **Missing design documents?** → `/reverse-document`, or ask `game-designer`
 - **Small design change needed?** → `/quick-design` for changes under about one week of implementation (bypasses full GDD pipeline)
 - **No UX specs?** → `/ux-design [screen name]` to author specs, or `/team-ui [feature]` for full pipeline
 - **UX specs not reviewed?** → `/ux-review [file]` or `/ux-review all` to validate
@@ -100,7 +100,7 @@ Based on the verdict, suggest specific next steps:
 - **Missing epics?** → `/create-epics layer: foundation` then `/create-epics layer: core` (requires control manifest)
 - **Missing stories for an epic?** → `/create-stories [epic-slug]` (run after each epic is created)
 - **Stories not implementation-ready?** → `/story-readiness` to validate stories before developers pick them up
-- **Tests failing?** → delegate to `lead-programmer` or `qa-tester`
+- **Tests failing?** → ask `lead-programmer` or `qa-tester`
 - **No playtest data?** → `/playtest-report`
 - **No playtest sessions beyond the minimum?** → Additional sessions give more reliable signal. 3+ total is recommended before committing the full team. Use `/playtest-report` to structure findings.
 - **No Difficulty Curve doc?** → Author `design/difficulty-curve.md` by hand from the template at `.claude/docs/templates/difficulty-curve.md`. (`/quick-design` is a related session but writes to `design/quick-specs/`, not to this path — use it to think the curve through, then copy the outcome here.)

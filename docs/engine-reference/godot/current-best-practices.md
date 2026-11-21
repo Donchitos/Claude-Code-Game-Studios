@@ -80,7 +80,7 @@ This supplements (not replaces) the agent's built-in knowledge.
 
 ## Rendering (4.6)
 
-- **D3D12 is the default backend on Windows** (was Vulkan) — for better driver compatibility
+- **Vulkan is still the Windows default driver**; D3D12 is opt-in through `rendering/rendering_device/driver.windows` (Godot source, main/main.cpp at 4.6, 4.7 and 4.7.2)
 - **Glow now processes before tonemapping** with screen blending mode — existing glow setups may look different
 - **SSR overhauled** — significant improvement in realism, stability, and performance
 - **AgX tonemapper** — new white point and contrast controls

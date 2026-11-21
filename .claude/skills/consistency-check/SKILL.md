@@ -94,7 +94,8 @@ Glob pattern="design/gdd/*.md"
 Exclude the docs that live in `design/gdd/` but are not system GDDs:
 `game-concept.md`, `systems-index.md`, `game-pillars.md`, `gameplay-tags.md`,
 `entity-registry.md`, `fixture-swap-ledger.md`, `sound-bible.md` and any
-`gdd-cross-review-*.md` (the report `/review-all-gdds` writes here).
+`gdd-cross-review-*.md` (the report `/review-all-gdds` writes here). The entity
+registry itself is `design/registry/entities.yaml`, outside this glob.
 
 For `since-last-review` mode:
 ```bash

@@ -27,7 +27,7 @@
 | **Session Length** | [Typical play session: 10 min / 30 min / 1 hr / 2+ hr] |
 | **Monetization** | [Premium / F2P / Subscription / none yet] |
 | **Estimated Scope** | [Small (1-3 months) / Medium (3-9 months) / Large (9+ months)] |
-| **Comparable Titles** | [2-3 existing games in the same space] |
+| **Comparable Titles** | [2-3 existing games in the same space; any sales figure with its source, or "not researched"] |
 
 ---
 
@@ -260,9 +260,10 @@ the medium.]
 - [Risk 2 — e.g., "Networking for 100+ players may require dedicated infrastructure"]
 
 ### Market Risks
-[Things that could prevent commercial success]
-- [Risk 1 — e.g., "Genre is saturated with established competitors"]
-- [Risk 2 — e.g., "Target audience may be too niche for financial sustainability"]
+[Things that could prevent commercial success. Each claim about the market names
+its source or says "not researched"; never a figure from memory.]
+- [Risk 1 — e.g., "Genre is saturated with established competitors (not researched)"]
+- [Risk 2 — e.g., "Target audience may be too niche for financial sustainability (source: ...)"]
 
 ### Scope Risks
 [Things that could blow the timeline]
