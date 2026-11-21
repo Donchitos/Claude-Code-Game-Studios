@@ -1,0 +1,14 @@
+; Engine configuration file.
+; Best edited via the Godot editor rather than by hand.
+
+config_version=5
+
+[application]
+
+config/name="Clube do Bairro"
+config/features=PackedStringArray("4.7", "Forward Plus")
+run/main_scene="res://scenes/main.tscn"
+
+[rendering]
+
+renderer/rendering_method="forward_plus"

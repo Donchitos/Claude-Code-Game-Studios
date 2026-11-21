@@ -1,0 +1,89 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/main.gd" id="res://src/main.gd"]
+
+[node name="Main" type="Control"]
+custom_minimum_size = Vector2(1280, 720)
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("res://src/main.gd")
+
+[node name="WeekLabel" type="Label" parent="."]
+offset_left = 80.0
+offset_top = 60.0
+offset_right = 620.0
+offset_bottom = 100.0
+text = "Semana: 1"
+
+[node name="CashLabel" type="Label" parent="."]
+offset_left = 80.0
+offset_top = 110.0
+offset_right = 620.0
+offset_bottom = 150.0
+text = "Caixa: R$ 5000"
+
+[node name="PointsLabel" type="Label" parent="."]
+offset_left = 80.0
+offset_top = 160.0
+offset_right = 620.0
+offset_bottom = 200.0
+text = "Pontos: 0 / 7"
+
+[node name="FacilityLabel" type="Label" parent="."]
+offset_left = 80.0
+offset_top = 210.0
+offset_right = 620.0
+offset_bottom = 250.0
+text = "Instalação: nível 1 | reforços: 0"
+
+[node name="EscalarButton" type="Button" parent="."]
+offset_left = 80.0
+offset_top = 300.0
+offset_right = 400.0
+offset_bottom = 370.0
+text = "Escalar titulares"
+
+[node name="ContratarButton" type="Button" parent="."]
+offset_left = 420.0
+offset_top = 300.0
+offset_right = 780.0
+offset_bottom = 370.0
+text = "Contratar reforço (R$ 1.500)"
+
+[node name="MelhorarButton" type="Button" parent="."]
+offset_left = 80.0
+offset_top = 390.0
+offset_right = 400.0
+offset_bottom = 460.0
+text = "Melhorar instalação (R$ 2.000)"
+
+[node name="CortarButton" type="Button" parent="."]
+offset_left = 420.0
+offset_top = 390.0
+offset_right = 780.0
+offset_bottom = 460.0
+text = "Cortar gastos"
+
+[node name="EndPanel" type="Panel" parent="."]
+visible = false
+offset_left = 420.0
+offset_top = 220.0
+offset_right = 860.0
+offset_bottom = 500.0
+
+[node name="ResultLabel" type="Label" parent="EndPanel"]
+offset_left = 30.0
+offset_top = 30.0
+offset_right = 410.0
+offset_bottom = 140.0
+text = "Resultado"
+
+[node name="RestartButton" type="Button" parent="EndPanel"]
+offset_left = 130.0
+offset_top = 170.0
+offset_right = 310.0
+offset_bottom = 230.0
+text = "Reiniciar"

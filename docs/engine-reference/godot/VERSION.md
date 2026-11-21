@@ -3,7 +3,8 @@
 | Field | Value |
 |-------|-------|
 | **Engine Version** | Godot 4.7 |
-| **Installed at pin time** | NOT DETERMINED — `/setup-engine` §3 probes the installed editor and records the result here. |
+| **Installed at pin time** | VERIFIED — Godot 4.7.stable.official.5b4e0cb0f (2026-11-20) |
+| **Editor path** | `C:/Users/Saulo/AppData/Local/Programs/Godot/Godot-4.7/Godot_v4.7-stable_win64.exe` |
 | **Release Date** | June 2026 (latest patch: 4.7.2, August 2026) |
 | **Project Pinned** | 2026-10-17 |
 | **Last Docs Verified** | 2026-10-21 (Windows driver default and Compositor, against Godot source); 2026-10-17 (release timeline and 4.7 changes); 2026-02-12 (4.4-4.6 content) |
