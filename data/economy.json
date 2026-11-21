@@ -1,0 +1,15 @@
+{
+  "schema_version": 1,
+  "title": "Clube do Bairro",
+  "weeks": 6,
+  "starting_cash": 5000,
+  "target_points": 7,
+  "salary": 1200,
+  "austerity_salary": 600,
+  "gate_receipts": { "base": 800, "per_level": 400 },
+  "reinforcement": { "cost": 1500, "strength_bonus": 1 },
+  "facility": { "upgrade_cost": 2000, "max_level": 3, "start_level": 1 },
+  "match": { "starters_strength": 1, "crowd_penalty": 1, "win_threshold": 3, "draw_threshold": 2, "points_win": 3, "points_draw": 1, "points_loss": 0 },
+  "bankruptcy_below": 0,
+  "decisions": ["escalar_titulares", "contratar_reforco", "melhorar_instalacao", "cortar_gastos"]
+}

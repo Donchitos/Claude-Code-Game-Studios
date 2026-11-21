@@ -25,3 +25,33 @@ framework:
 # here. `/project-settings --local <key>=<value>` writes there; `/project-settings <key>=<value>`
 # edits this file. See `.claude/docs/config-resolution.md` for the full
 # precedence order.
+
+engine:
+  name: "Godot"
+  version: "4.7"
+  path: "C:/Users/Saulo/AppData/Local/Programs/Godot/Godot-4.7/Godot_v4.7-stable_win64.exe"
+  language: "GDScript"
+  rendering: "Forward+"
+  physics: "Godot Physics 2D"
+
+specialists:
+  code: "godot-gdscript-specialist"
+  shader: "godot-shader-specialist"
+  ui: "godot-specialist"
+  additional: ["godot-gdextension-specialist"]
+
+naming:
+  classes: PascalCase
+  variables: snake_case
+  constants: SCREAMING_SNAKE
+  signals: past_tense
+  files: snake_case
+  scenes: snake_case
+
+# Godot 4.7 installed and verified at 2026-11-20; editor path is engine.path above.
+# TODO: commands.build needs an export preset name from export_presets.cfg — set via /project-settings
+commands:
+  build: "[TO BE CONFIGURED]"
+  test: "C:/Users/Saulo/AppData/Local/Programs/Godot/Godot-4.7/Godot_v4.7-stable_win64_console.exe --headless --path . -s res://tests/smoke/run_smoke.gd"
+  run: "C:/Users/Saulo/AppData/Local/Programs/Godot/Godot-4.7/Godot_v4.7-stable_win64.exe --path . --windowed --resolution 1280x720"
+  smoke: "C:/Users/Saulo/AppData/Local/Programs/Godot/Godot-4.7/Godot_v4.7-stable_win64_console.exe --headless --path . --quit-after 5"
