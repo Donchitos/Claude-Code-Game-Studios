@@ -219,7 +219,7 @@ project.yaml                        # Project settings: engine, modes, goal
 .claude/
   settings.json                     # Hooks, permissions, safety rules
   agents/                           # 49 agent definitions (markdown + YAML frontmatter)
-  skills/                           # 75 skills, plus three old names (a subdirectory each)
+  skills/                           # 76 skills, plus three old names (a subdirectory each)
   hooks/                            # 18 scripts (bash) — 15 event hooks, two helpers they
                                     #   source (yaml-helper.sh, update-check.sh), and one
                                     #   opt-in diagnostic you wire yourself
@@ -250,7 +250,7 @@ studio-tests/                       # QA for the skills and agents themselves �
 
 Claude Code Game Studios is a template you are meant to edit. `studio-tests/` is how
 you check that an edited or newly written skill still holds up — a catalog of all
-75 skills and 49 agents, per-category quality rubrics, behavioral specs, and
+76 skills and 49 agents, per-category quality rubrics, behavioral specs, and
 templates for writing specs of your own.
 
 ```
@@ -328,7 +328,7 @@ nine stories or features).
 | Category | Count | Description |
 |----------|-------|-------------|
 | **Agents** | 49 | Specialized subagents across design, programming, art, audio, narrative, QA, and production |
-| **Skills** | 75 | Slash commands for every workflow phase (`/prototype`, `/start`, `/design-system`, `/create-epics`, `/create-stories`, `/dev-story`, `/story-done`, etc.) |
+| **Skills** | 76 | Slash commands for every workflow phase (`/prototype`, `/start`, `/design-system`, `/create-epics`, `/create-stories`, `/dev-story`, `/story-done`, etc.) |
 | **Hooks** | 15 | Automated validation on commits, pushes, asset changes, design-doc reads, writes and registries, session lifecycle, agent audit trail, and gap detection |
 | **Rules** | 14 | Path-scoped coding standards enforced when editing gameplay, engine, AI, UI, network code, scene and asset files, and more |
 | **Templates** | 62 | Document templates for GDDs, UX specs, ADRs, sprint plans, HUD design, accessibility, and more |
@@ -375,7 +375,7 @@ matches your project (a web project uses the general programmers):
 
 ### Slash Commands
 
-Type `/` in Claude Code to access all 75 skills (plus three old names that point to their new ones):
+Type `/` in Claude Code to access all 76 skills (plus three old names that point to their new ones):
 
 **Make a Game**
 `/prototype` `/cut`
@@ -387,7 +387,7 @@ Type `/` in Claude Code to access all 75 skills (plus three old names that point
 `/brainstorm` `/map-systems` `/design-system` `/quick-design` `/review-all-gdds` `/propagate-design-change`
 
 **Art & Assets**
-`/art-bible` `/asset-spec` `/asset-audit`
+`/art-bible` `/asset-spec` `/asset-generate` `/asset-audit`
 
 **UX & Interface Design**
 `/ux-design` `/ux-review`

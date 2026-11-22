@@ -3,7 +3,7 @@
 > **How to go from zero to a shipped game using the Agent Architecture.**
 >
 > This guide walks you through every phase of game development using the
-> 49-agent system, 75 slash commands, and 15 automated hooks. It assumes you
+> 49-agent system, 76 slash commands, and 15 automated hooks. It assumes you
 > have Claude Code installed and are working from the project root.
 >
 > The pipeline has 7 phases. At `rigor: standard` and `full`, each phase has
@@ -1602,7 +1602,7 @@ conflicts go to `producer`.
 
 ## Appendix B: Slash Command Quick-Reference
 
-### All 75 Commands by Category
+### All 76 Commands by Category
 
 #### Onboarding and Navigation (7)
 

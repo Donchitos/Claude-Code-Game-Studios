@@ -122,6 +122,7 @@ Ask yourself: "What department would handle this in a real studio?"
 | `/propagate-design-change` | Find ADRs and stories affected by a GDD change |
 | `/art-bible` | Guided, section-by-section Art Bible authoring — creates visual identity spec before asset production |
 | `/asset-spec` | Generate per-asset visual specifications and AI generation prompts from GDDs or character profiles |
+| `/asset-generate` | Generate one reviewable preview from an approved asset spec through optional Atlas Cloud integration |
 | `/ux-design` | Author UX specs (screen/flow, HUD, interaction patterns) |
 | `/ux-review` | Validate UX specs for accessibility and GDD alignment |
 | `/create-architecture` | Master architecture document for the game |
@@ -312,7 +313,7 @@ project.yaml                       -- Machine-readable project config (engine, m
 .claude/
   settings.json                    -- Claude Code hooks and project settings
   agents/                          -- 49 agent definitions (YAML frontmatter)
-  skills/                          -- 75 slash command definitions (YAML frontmatter)
+  skills/                          -- 76 slash command definitions (YAML frontmatter)
   hooks/                           -- 15 event hooks (.sh, wired by settings.json) + yaml-helper.sh, update-check.sh
   rules/                           -- 14 path-specific rule files
   docs/

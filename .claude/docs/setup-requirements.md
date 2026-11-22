@@ -94,7 +94,7 @@ alone.
 | `promptCacheTtl` | How long the main conversation's prompt cache lives. | Raise it if you work in long sessions with gaps; the cache surviving a break avoids re-sending context. |
 | `subagentPromptCacheTtl` | The same, for subagents and other off-conversation requests. | Worth raising on a 49-agent project like this one, where `team-*` skills spawn repeatedly. |
 | `autoCompactWindow` | How full the context gets before Claude Code compacts it. | Lower it if compaction keeps surprising you mid-task; raise it if you would rather compact less often and keep more history. |
-| `skillListingBudgetFraction` | How much context the skill listing may occupy. | Claude Code Game Studios ships 75 skills, so the listing is not small. Lower it if you want more room for work; `skillListingMaxDescChars` trims each description instead. |
+| `skillListingBudgetFraction` | How much context the skill listing may occupy. | Claude Code Game Studios ships 76 skills, so the listing is not small. Lower it if you want more room for work; `skillListingMaxDescChars` trims each description instead. |
 
 `sandbox.enabled` isolates shell commands from your filesystem and network. It
 is worth turning on, but it runs on **macOS, Linux and WSL2 only** — it is not
