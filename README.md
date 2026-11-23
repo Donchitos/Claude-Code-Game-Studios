@@ -103,6 +103,10 @@ clutter, not evidence.
 
 ## Getting Started
 
+**Using Codex on Windows?** The PowerShell 7 adapter provides Codex skill and
+role entry points, project configuration, and a session-start hook.
+[Set up the Codex adapter](docs/CODEX.md).
+
 ### Prerequisites
 
 - [Git](https://git-scm.com/)

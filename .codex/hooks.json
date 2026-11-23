@@ -1,0 +1,16 @@
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "pwsh -NoLogo -NoProfile -NonInteractive -Command \"& (Join-Path (git rev-parse --show-toplevel) '.codex/scripts/session-start.ps1')\"",
+            "timeout": 5,
+            "statusMessage": "Reading CCGS project settings"
+          }
+        ]
+      }
+    ]
+  }
+}

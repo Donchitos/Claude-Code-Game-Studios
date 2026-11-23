@@ -27,3 +27,7 @@
 # .gitattributes governs the INDEX. It does not retro-fix a working tree that
 # predates the rule -- run `git add --renormalize .` for that.
 .claude/**/*.md text eol=lf
+
+# The Codex sync check compares generated entries to UTF-8/LF output.
+.agents/skills/** text eol=lf
+.codex/agents/*.toml text eol=lf
