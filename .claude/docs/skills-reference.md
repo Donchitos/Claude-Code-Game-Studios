@@ -2,6 +2,9 @@
 
 75 slash commands organized by phase. Type `/` in Claude Code to access any of them.
 
+In Codex, invoke the same workflows as `$skill-name` through the generated
+`.agents/skills/` entries. See the [Codex adapter guide](../../docs/CODEX.md).
+
 > **Renamed in 1.3.0:** `/help` is now `/next-step`, `/settings` is now
 > `/project-settings` and `/changelog` is now `/write-changelog`, because other
 > AI tools keep those three names for commands of their own. The old names still

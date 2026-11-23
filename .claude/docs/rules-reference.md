@@ -1,5 +1,8 @@
 # Path-Specific Rules
 
+The [Codex project instructions](../../AGENTS.md#project-context-and-verification)
+direct agents to match and read the same rule files before working on a path.
+
 Rules in `.claude/rules/` carry `paths:` frontmatter. Claude Code loads a
 path-scoped rule **when it READS a file matching one of those globs** — not on
 every tool use, and not when it creates one.

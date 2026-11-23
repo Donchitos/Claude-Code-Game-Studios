@@ -1,5 +1,8 @@
 # Active Hooks
 
+The [Codex SessionStart hook](../../docs/CODEX.md#session-start-hook) has its
+own registration and PowerShell implementation.
+
 Hooks are configured in `.claude/settings.json` and fire automatically:
 
 | Hook | Event | Trigger | Action |

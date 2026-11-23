@@ -5,6 +5,9 @@ The following agents are available. Each has a dedicated definition file in
 spans multiple domains, the coordinating agent (usually `producer` or the
 domain lead) should delegate to specialists.
 
+In Codex, the generated `.codex/agents/` entries load these canonical role
+definitions. See the [Codex adapter guide](../../docs/CODEX.md).
+
 Which model an agent runs on is set by the `model:` line in its own file;
 `model-tiers.md` lists the agents that pin one. Every other agent runs on the
 session's model.
