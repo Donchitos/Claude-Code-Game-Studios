@@ -54,6 +54,6 @@ class QuestionWidgetAgentTests(unittest.TestCase):
         self.assertIn('tools: Read, Glob, Grep', text)
         self.assertNotIn('Write', text.split('\n## ')[0])
         count = len(list((ROOT / '.claude/agents').glob('*.md')))
-        self.assertEqual(count, 50, 'agent count drifted from the docs')
+        self.assertEqual(count, 51, 'agent count drifted from the docs')
         claude = (ROOT / 'CLAUDE.md').read_text(encoding='utf-8')
-        self.assertIn('50 coordinated Claude Code subagents', claude)
+        self.assertIn('51 coordinated Claude Code subagents', claude)

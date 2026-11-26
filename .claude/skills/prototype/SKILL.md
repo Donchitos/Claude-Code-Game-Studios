@@ -31,6 +31,20 @@ not an answer: ask again in plain text. Every ask follows
 `.claude/docs/automation-modes.md` (collaborative asks always · guided major-only · autonomous
 logs and proceeds; `automation_always_ask` categories always prompt).
 
+### External research (`gamer`)
+
+If the user asks for similar games, or a mechanic choice would be better
+informed by what other projects shipped, spawn `gamer` once with a narrow brief:
+the engine and platform, the mechanic in scope, and the decision to inform. Do
+not research on every run, and do not use it to add a route question — "Ask no
+question to choose the route" still holds. Its suggestions become inputs to the
+question the chosen route already asks, never a second research dump.
+
+Return contract: "Return only (1) the sourced research brief, (2) 3-6 bullets of
+local comparison, (3) typed suggestions with owner skills/agents, and (4) one
+question with 2-4 options and a recommendation. Write no files." If it returns
+`NOT ASSESSED — NO DATA`, pick the route from the user's words and the engine.
+
 ## Choose the route
 
 Read `engine.name` from `project.yaml`. Absent, empty or `[TO BE CONFIGURED]` is not set; with

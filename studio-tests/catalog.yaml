@@ -1238,3 +1238,11 @@ agents:
     last_category: ""
     last_category_result: ""
     category: specialist
+
+  - name: gamer
+    spec: studio-tests/agents/specialists/gamer.md
+    last_spec: ""
+    last_spec_result: ""
+    last_category: ""
+    last_category_result: ""
+    category: specialist

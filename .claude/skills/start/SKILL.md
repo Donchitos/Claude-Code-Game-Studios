@@ -3,7 +3,7 @@ name: start
 description: "Guides a first-time user through onboarding and picks the right workflow. Use when the user is new, just cloned or installed the studio, has no idea or engine yet, asks where to begin, or wants to bring in an existing game. A request for a game itself ('make me a game where...') is /prototype's."
 argument-hint: "[no arguments]"
 user-invocable: true
-allowed-tools: Read, Glob, Grep, AskUserQuestion, Skill, Bash(bash .claude/scripts/project-state.sh*), Bash(bash .claude/scripts/set-stage.sh *), Bash(bash .claude/scripts/config-set.sh *)
+allowed-tools: Read, Glob, Grep, AskUserQuestion, Skill, Agent, Bash(bash .claude/scripts/project-state.sh*), Bash(bash .claude/scripts/set-stage.sh *), Bash(bash .claude/scripts/config-set.sh *)
 model: sonnet
 ---
 
@@ -93,6 +93,21 @@ found (Phase 3) asks first, where their game is: a path, or drop it in this
 folder — with the question widget (free-text answer; plain text only if no widget tool exists);
 an answer with no game in it gets the A-or-B question. If no option fits, let the user
 describe their situation and route from that.
+
+### External references (`gamer`)
+
+If the user asks for similar games, benchmarks or "what do other projects do",
+or has no idea and wants references, spawn `gamer` once with a narrow brief: the
+engine and platform from `project-state.sh`, the idea or mechanic in scope, and
+the decision to inform. Ask only when the answer would change the route or the
+next step, not on every onboarding.
+
+Return contract: "Return only (1) the sourced research brief, (2) 3-6 bullets of
+local comparison, (3) typed suggestions with owner skills/agents, and (4) one
+question with 2-4 options and a recommendation. Write no files." Put that
+question to the user widget-first, then route their answer with Phase 3. Do not
+let research replace the one next step. `NOT ASSESSED — NO DATA` means route
+from what the user said.
 
 ## Phase 3: Route
 

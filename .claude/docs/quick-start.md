@@ -3,7 +3,7 @@
 ## What Is This?
 
 This is a complete Claude Code agent architecture for game development. It
-organizes 50 specialized AI agents into a studio hierarchy that mirrors
+organizes 51 specialized AI agents into a studio hierarchy that mirrors
 real game development teams, with defined responsibilities, delegation
 rules, and coordination protocols. It includes engine-specialist agents
 for Godot, Unity, and Unreal — each with dedicated sub-specialists for
@@ -311,7 +311,7 @@ CLAUDE.md                          -- Master config (read this first, ~80 lines)
 project.yaml                       -- Machine-readable project config (engine, modes, stage) — source of truth
 .claude/
   settings.json                    -- Claude Code hooks and project settings
-  agents/                          -- 50 agent definitions (YAML frontmatter)
+  agents/                          -- 51 agent definitions (YAML frontmatter)
   skills/                          -- 75 slash command definitions (YAML frontmatter)
   hooks/                           -- 15 event hooks (.sh, wired by settings.json) + yaml-helper.sh, update-check.sh
   rules/                           -- 14 path-specific rule files
