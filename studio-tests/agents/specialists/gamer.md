@@ -13,6 +13,7 @@ No gate IDs assigned.
 - [ ] `tools:` is read-only — `Read, Glob, Grep, WebSearch, WebFetch`, with no `Write`, `Edit`, `Agent` or question tool
 - [ ] Model tier is `inherit` — frontmatter `model:` reads exactly `inherit` (tiers: `.claude/docs/model-tiers.md`)
 - [ ] The body states that the orchestrator owns the question widget and that the agent has no question tool
+- [ ] The body maps `WebSearch`/`WebFetch` to `websearch`/`webfetch` for other runtimes and keeps the read-only boundary
 - [ ] The body defines `IMPROVEMENT`, `IMPLEMENTATION` and `FIX` with `High`/`Medium`/`Low` confidence
 
 ---

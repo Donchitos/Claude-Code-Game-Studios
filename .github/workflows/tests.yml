@@ -1,0 +1,26 @@
+name: Tests
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  regression:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install test dependencies
+        run: python -m pip install -r tests/requirements.txt
+
+      - name: Run regression tests
+        run: python -m unittest discover -s tests -p 'test_*.py'
+
+      - name: Check shell syntax
+        run: find .claude -name '*.sh' -type f -print0 | xargs -0 -n 1 bash -n

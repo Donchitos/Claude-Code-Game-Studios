@@ -3,6 +3,7 @@
 Run: python3 -m unittest discover -s tests -p test_gamer_agent.py -v
 """
 import pathlib
+import subprocess
 import unittest
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
@@ -31,6 +32,8 @@ class GamerAgentTests(unittest.TestCase):
         # An agent has no question tool: the orchestrator asks for it.
         self.assertIn('orchestrator', text)
         self.assertIn('no question tool', text)
+        self.assertIn('websearch', text)
+        self.assertIn('webfetch', text)
 
     def test_suggestion_types_and_output_contract(self):
         text = AGENT.read_text(encoding='utf-8')
@@ -58,3 +61,21 @@ class GamerAgentTests(unittest.TestCase):
         self.assertEqual(count, 51, 'agent count drifted from the docs')
         claude = (ROOT / 'CLAUDE.md').read_text(encoding='utf-8')
         self.assertIn('51 coordinated Claude Code subagents', claude)
+
+
+class AgentCheckNotesTests(unittest.TestCase):
+    def notes(self, agent):
+        result = subprocess.run(
+            ['bash', str(ROOT / '.claude/scripts/agent-check.sh'), '--agent', agent],
+            cwd=ROOT, capture_output=True, text=True,
+        )
+        self.assertEqual(result.returncode, 0, result.stderr)
+        return [line for line in result.stdout.splitlines() if 'asks-user' in line]
+
+    def test_tool_mentions_are_not_reported_as_asks_user(self):
+        for agent in ('gamer', 'question-widget-specialist'):
+            self.assertEqual(self.notes(agent), [], f'{agent} has asks-user noise')
+
+    def test_real_ask_instructions_are_still_reported(self):
+        self.assertTrue(self.notes('accessibility-specialist'),
+                        'agent-check lost real asks-user detection')

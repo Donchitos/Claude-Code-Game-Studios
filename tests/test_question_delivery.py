@@ -28,6 +28,8 @@ class QuestionDeliveryTests(unittest.TestCase):
         self.assertIn('Do not emit reasoning, a draft', modes)
         # The shared "ask again in plain text" fallback line stays covered.
         self.assertIn('"ask again in plain text"', modes)
+        # The root protocol must not contradict the widget-first rule.
+        self.assertNotIn('re-ask in\n  plain text and wait', claude)
 
     def test_no_skill_instructs_a_raw_text_question(self):
         offenders = []
