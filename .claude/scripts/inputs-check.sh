@@ -162,6 +162,7 @@ while IFS= read -r spec; do
   N=$((N + 1))
   case "$pat" in
     *[][*?]*) matches=$(glob_matches "$pat") ;;
+    */) if [ -d "${pat%/}" ]; then matches="${pat%/}"; else matches=""; fi ;;
     *) if [ -e "${pat%/}" ]; then matches="${pat%/}"; else matches=""; fi ;;
   esac
   if [ -z "$matches" ]; then

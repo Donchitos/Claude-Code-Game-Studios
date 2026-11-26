@@ -19,7 +19,7 @@ gate implications. Hard cap: ~4 hours.
 
 **Spike Mode workflow (replaces Phases 1–9):**
 
-1. **Define the spike question** (plain text, not a widget). From the one-shot's questions,
+1. **Define the spike question** (question widget when available; free-text answer, no preset options — plain text only if no widget tool exists). From the one-shot's questions,
    their words are the spike question: ask it again only when they named no mechanic. Otherwise: "What specific question does this spike answer? Give me one sentence: 'Can we [do X] using [approach Y]?'"
 
 2. **Choose path** — with an engine named, the path question from Phase 3. With no engine set, the spike is a browser build in the one-shot's folder shape, under the spike's own folder name.

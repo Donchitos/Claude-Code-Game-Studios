@@ -1,6 +1,6 @@
 # Claude Code Game Studios -- Game Studio Agent Architecture
 
-Indie game development managed through 49 coordinated Claude Code subagents.
+Indie game development managed through 51 coordinated Claude Code subagents.
 Each agent owns a specific domain, enforcing separation of concerns and quality.
 
 ## Technology Stack
@@ -50,11 +50,17 @@ Every task follows: **Question -> Options -> Decision -> Draft -> Approval**
 - Agents MUST ask "May I write this to [filepath]?" before using Write/Edit tools
   (exempt: `active.md` appends, agent memory, a subagent's new file at the path
   its orchestrating skill named; see `.claude/rules/agent-memory.md`)
+- **Questions go through the runtime's question widget** (`AskUserQuestion` in Claude Code,
+  `question` in OpenCode and other harnesses): no reasoning or draft text before the call,
+  context belongs in the question and option descriptions. Plain text is a fallback only when
+  no widget tool exists. A skipped question is re-asked through the widget. See
+  `.claude/docs/automation-modes.md` § Question delivery.
 - Agents MUST show drafts or summaries before requesting approval
 - Multi-file changes require explicit approval for the full changeset
 - No commits without user instruction
-- A skipped or dismissed question is not an answer: act on nothing, re-ask in
-  plain text and wait
+- A skipped or dismissed question is not an answer: act on nothing, re-ask through
+  the question widget, and wait. Plain text only when no widget tool exists
+  (`.claude/docs/automation-modes.md` § Question delivery)
 - Started outside this file's folder? Warn first: hooks, deny rules and the
   ask-first mode load only when Claude Code starts here
 

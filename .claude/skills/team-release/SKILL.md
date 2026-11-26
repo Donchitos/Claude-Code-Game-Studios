@@ -44,7 +44,7 @@ nothing:
 Then ask with `AskUserQuestion`, in every `automation` mode — an override is never
 taken on the user's behalf: `[A] Stop — I'll run /gate-check release (recommended)`
 / `[B] Proceed anyway — override the stage check`. On `[A]`, end the run: Verdict
-**BLOCKED** — release gate not passed. On `[B]`, ask (plain text) why, then record
+**BLOCKED** — release gate not passed. On `[B]`, ask why with the question widget (free-text answer; plain text only if no widget tool exists), then record
 the override as `Stage override: project.stage was [stage] — release gate not
 passed; the user chose to proceed: [reason]` in the Phase 1 brief, in the go/no-go
 record (`go-no-go-[version].md`) and in the final report. An override never
@@ -212,7 +212,7 @@ Delegate to **producer**, passing every sign-off collected so far:
 - Verdict: **BLOCKED** — release not deployed.
 
 After the user selects "Override NO-GO with documented rationale":
-- Ask (plain text, not widget): "Please describe the justification for overriding the NO-GO verdict. This will be embedded in the release record."
+- Ask with the question widget (free-text answer; plain text only if no widget tool exists): "Please describe the justification for overriding the NO-GO verdict. This will be embedded in the release record."
 - Wait for the user's written justification.
 - Embed the justification text in the partial approval record before Phase 6: append a "⚠️ Override Justification: [user's text]" field.
 - Only then proceed to Phase 6.

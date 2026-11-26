@@ -6,7 +6,7 @@ Tests the skills and agents themselves — not any game built with them.
 **This ships as part of the template, and it is meant to.** Claude Code Game Studios is a template
 you are expected to customize — edit a skill, add your own, retune an agent. This
 folder is how you check that what you changed still holds up: `catalog.yaml`
-tracks all 75 skills and 49 agents, `quality-rubric.md` defines per-category
+tracks all 75 skills and 51 agents, `quality-rubric.md` defines per-category
 pass/fail metrics, and `templates/` gives you the spec format for anything new
 you write. Driven by `/skill-test` and `/skill-improve`.
 
@@ -31,7 +31,7 @@ you write. Driven by `/skill-test` and `/skill-improve`.
 studio-tests/
 ├── README.md              ← you are here
 ├── CLAUDE.md              ← tells Claude how to use this framework
-├── catalog.yaml           ← master registry: all 75 skills + 49 agents, coverage tracking
+├── catalog.yaml           ← master registry: all 75 skills + 51 agents, coverage tracking
 ├── quality-rubric.md      ← category-specific pass/fail metrics for /skill-test category
 │
 ├── skills/                ← behavioral spec files for all 75 skills

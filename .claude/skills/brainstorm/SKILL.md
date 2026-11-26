@@ -38,6 +38,21 @@ Ask with the question tool. Without one, list the options numbered and end your 
 question is the last thing in the reply: no advice or lean after it. A skipped or dismissed
 question is not an answer: ask again in plain text.
 
+### External research (`gamer`)
+
+When the concept is vague, the user asks for similar games or references, or a
+choice would be better informed by what other projects did, spawn `gamer` once
+with a narrow brief: engine and platform from `project.yaml`, the mechanic or
+theme in scope, and the decision the research must inform. Ask only when the
+research would change a question you are about to ask — not on every run.
+
+Return contract: "Return only (1) the sourced research brief, (2) 3-6 bullets of
+local comparison, (3) typed suggestions with owner skills/agents, and (4) one
+question with 2-4 options and a recommendation for the user. Write no files."
+Use its question as the next question to the user, widget-first, with the
+trade-offs in the option descriptions. If it returns `NOT ASSESSED — NO DATA`,
+continue from the user's words without inventing references.
+
 ## Lean Brief flow (`workflow: minimal`)
 
 A few exchanges, not fifteen: capture the thinking that carries the game on one page, then get to

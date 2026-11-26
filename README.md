@@ -218,11 +218,12 @@ CLAUDE.md                           # Master configuration
 project.yaml                        # Project settings: engine, modes, goal
 .claude/
   settings.json                     # Hooks, permissions, safety rules
-  agents/                           # 49 agent definitions (markdown + YAML frontmatter)
-  skills/                           # 75 skills, plus three old names (a subdirectory each)
-  hooks/                            # 18 scripts (bash) — 15 event hooks, two helpers they
-                                    #   source (yaml-helper.sh, update-check.sh), and one
-                                    #   opt-in diagnostic you wire yourself
+  agents/                           # 51 agent definitions (markdown + YAML frontmatter)
+  skills/                           # 78 SKILL.md files: 75 current skills + 3 legacy aliases
+                                    #   (changelog, help, settings)
+  hooks/                            # 18 scripts (bash) — 15 hook commands across 8 events, two
+                                    #   helpers they source (yaml-helper.sh, update-check.sh),
+                                    #   and one opt-in diagnostic you wire yourself
   scripts/                          # Helper scripts the skills and hooks run; each .sh has --help
   rules/                            # 14 path-scoped coding standards
   genres/                           # Genre sheets and look guidance /prototype asks and
@@ -231,7 +232,8 @@ project.yaml                        # Project settings: engine, modes, goal
   statusline.sh                     # Status line script (context%, model, stage, epic breadcrumb)
   docs/
     workflow-catalog.yaml           # 7-phase pipeline definition (read by /next-step)
-    templates/                      # 62 document templates (+ per-section guidance)
+    templates/                      # 62 top-level document templates; 74 files in total
+                                    #   (8 per-section guides + 4 scaffold/config files)
 prototypes/                         # One-shots, one folder each (isolated from src/)
 references/                         # Optional: images and sounds you like, for /prototype
 src/                                # Game source code (Godot, Web). The code root is
@@ -250,7 +252,7 @@ studio-tests/                       # QA for the skills and agents themselves �
 
 Claude Code Game Studios is a template you are meant to edit. `studio-tests/` is how
 you check that an edited or newly written skill still holds up — a catalog of all
-75 skills and 49 agents, per-category quality rubrics, behavioral specs, and
+75 skills and 51 agents, per-category quality rubrics, behavioral specs, and
 templates for writing specs of your own.
 
 ```
@@ -317,7 +319,7 @@ C# under `Assets/Tests/` and C++ under `Source/**/Tests/`.
 
 Everything above is the light path: one brief, a game you play, one feature a
 sitting as it grows. For a team, a long project, or a person who wants the paperwork, the
-same project also has **studio mode**: 49 specialized agents in a studio
+same project also has **studio mode**: 51 specialized agents in a studio
 hierarchy, a design document per system, architecture decisions, epics and
 sprints, phase gates, and `team-*` pipelines that coordinate several agents on
 one feature. `/next-step` suggests it once when a grown game gets big (about
@@ -327,7 +329,7 @@ nine stories or features).
 
 | Category | Count | Description |
 |----------|-------|-------------|
-| **Agents** | 49 | Specialized subagents across design, programming, art, audio, narrative, QA, and production |
+| **Agents** | 51 | Specialized subagents across design, programming, art, audio, narrative, QA, and production |
 | **Skills** | 75 | Slash commands for every workflow phase (`/prototype`, `/start`, `/design-system`, `/create-epics`, `/create-stories`, `/dev-story`, `/story-done`, etc.) |
 | **Hooks** | 15 | Automated validation on commits, pushes, asset changes, design-doc reads, writes and registries, session lifecycle, agent audit trail, and gap detection |
 | **Rules** | 14 | Path-scoped coding standards enforced when editing gameplay, engine, AI, UI, network code, scene and asset files, and more |
@@ -354,11 +356,12 @@ Tier 3 — Specialists
   world-builder        ux-designer           prototyper
   performance-analyst  devops-engineer       analytics-engineer
   security-engineer    qa-tester             accessibility-specialist
-  live-ops-designer    community-manager
+  live-ops-designer    community-manager    question-widget-specialist
+  gamer
 ```
 
 Each agent declares a model in its frontmatter: the three directors ask for
-Opus, `lead-programmer` and fifteen specialists name Sonnet, and the remaining thirty
+Opus, `lead-programmer` and fifteen specialists name Sonnet, and the remaining thirty-two
 **inherit your session's model**. Treat the tiers as seniority of role, not as
 a billing plan — most of the studio runs on whatever model you are already using.
 

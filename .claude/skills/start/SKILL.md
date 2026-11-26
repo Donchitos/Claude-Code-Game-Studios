@@ -3,7 +3,7 @@ name: start
 description: "Guides a first-time user through onboarding and picks the right workflow. Use when the user is new, just cloned or installed the studio, has no idea or engine yet, asks where to begin, or wants to bring in an existing game. A request for a game itself ('make me a game where...') is /prototype's."
 argument-hint: "[no arguments]"
 user-invocable: true
-allowed-tools: Read, Glob, Grep, AskUserQuestion, Skill, Bash(bash .claude/scripts/project-state.sh*), Bash(bash .claude/scripts/set-stage.sh *), Bash(bash .claude/scripts/config-set.sh *)
+allowed-tools: Read, Glob, Grep, AskUserQuestion, Skill, Agent, Bash(bash .claude/scripts/project-state.sh*), Bash(bash .claude/scripts/set-stage.sh *), Bash(bash .claude/scripts/config-set.sh *)
 model: sonnet
 ---
 
@@ -89,9 +89,25 @@ prototype of one mechanic in that engine, with a browser sketch as one option.
 Wait for the answer. If it contradicts Phase 1, say what you found once and ask again: D on an
 empty project ("this looks like a fresh template; would A or B fit better?"), or B with code on
 disk ("I found code in `[code_root]`; did you mean D?"). D on an empty project with no game
-found (Phase 3) asks first, in plain text, where their game is: a path, or drop it in this
-folder; an answer with no game in it gets the A-or-B question. If no option fits, let the user
+found (Phase 3) asks first, where their game is: a path, or drop it in this
+folder — with the question widget (free-text answer; plain text only if no widget tool exists);
+an answer with no game in it gets the A-or-B question. If no option fits, let the user
 describe their situation and route from that.
+
+### External references (`gamer`)
+
+If the user asks for similar games, benchmarks or "what do other projects do",
+or has no idea and wants references, spawn `gamer` once with a narrow brief: the
+engine and platform from `project-state.sh`, the idea or mechanic in scope, and
+the decision to inform. Ask only when the answer would change the route or the
+next step, not on every onboarding.
+
+Return contract: "Return only (1) the sourced research brief, (2) 3-6 bullets of
+local comparison, (3) typed suggestions with owner skills/agents, and (4) one
+question with 2-4 options and a recommendation. Write no files." Put that
+question to the user widget-first, then route their answer with Phase 3. Do not
+let research replace the one next step. `NOT ASSESSED — NO DATA` means route
+from what the user said.
 
 ## Phase 3: Route
 
@@ -101,7 +117,7 @@ Name the immediate next step only. The full path waits for Phase 6, after the ri
   of what it will build before it builds anything. Skip Phases 4 to 6: that card is this route's
   assumptions card, and this route writes no setting (a rigor left unset reads as `minimal`). Go
   to Phase 7 with `/prototype`.
-- **B, an idea or none yet:** ask in plain text: "What's the idea, in a few words? A theme,
+- **B, an idea or none yet:** ask with the question widget (free-text answer; plain text only if no widget tool exists): "What's the idea, in a few words? A theme,
   feeling or genre is enough, or say none." None: `/brainstorm open`, which explores freely. A
   hint: `/brainstorm [their words]`, taken as it is. A hint, with no engine set: ask "How would
   you like to go on?" with `Build it now (Recommended)` (`/prototype [their words]`: pitches

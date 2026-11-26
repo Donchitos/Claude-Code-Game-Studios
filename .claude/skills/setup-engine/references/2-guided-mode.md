@@ -81,7 +81,7 @@ any other factor:
   - PC only → all engines viable; other factors decide
   - Several → Unity is the most portable across PC, mobile and console
 
-Then, in plain text:
+Then ask with the question widget, one at a time (plain text only if no widget tool exists):
 1. **What kind of game?** (2D, 3D, or both?)
 2. **Primary input method?** (keyboard/mouse, gamepad, touch, or mixed?)
 3. **Team size and experience?** (solo beginner, solo experienced, small team?)

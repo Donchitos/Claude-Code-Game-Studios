@@ -136,8 +136,10 @@ EOF
 SCOPE=$(printf '%s' "$PATHS" | awk 'NF' | tr '\n' ',' | sed 's/,$//')
 # The file list goes to awk on stdin, never as arguments: a large project
 # would pass thousands of paths, past the command-line limit of some systems.
+SCAN_ROOT="$(pwd -W 2>/dev/null || pwd)"
+SCAN_ROOT="${SCAN_ROOT%/}/"
 printf '%s' "$LIST" | awk 'NF { sub(/^\.\//, ""); print }' | sort -u | \
-LONG="$LONG" SCOPE="$SCOPE" EXCL="$EXCL" awk '
+LONG="$LONG" SCOPE="$SCOPE" EXCL="$EXCL" SCAN_ROOT="$SCAN_ROOT" awk '
   # A shell pattern as an anchored regex; * and ? match across folders too.
   function pat2re(g,    i, c, out) {
     out = "^"
@@ -162,8 +164,13 @@ LONG="$LONG" SCOPE="$SCOPE" EXCL="$EXCL" awk '
     # a bare getline, gawk read the first file as more of stdin and skipped its FNR 1.
     while ((getline f < "/dev/stdin") > 0) lst[++nlst] = f
     for (j = 1; j <= nlst; j++) {
+      # Only the match view is root-relative; opening and reported paths stay
+      # as listed. A literal prefix with its slash cannot match a sibling root.
+      matchpath = lst[j]
+      rootprefix = ENVIRON["SCAN_ROOT"]
+      if (index(matchpath, rootprefix) == 1) matchpath = substr(matchpath, length(rootprefix) + 1)
       skip = 0
-      for (i = 1; i <= nx; i++) if (xs[i] != "" && lst[j] ~ pat2re(xs[i])) skip = 1
+      for (i = 1; i <= nx; i++) if (xs[i] != "" && matchpath ~ pat2re(xs[i])) skip = 1
       if (!skip) { ARGV[ARGC++] = (lst[j] ~ /^(\/|[A-Za-z]:)/) ? lst[j] : "./" lst[j]; nfiles++ }
     }
   }

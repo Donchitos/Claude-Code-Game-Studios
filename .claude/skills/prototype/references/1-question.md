@@ -22,7 +22,7 @@ intent before proceeding — with or without a carry-forward note:
   - `Mid-production spike` — I'm already in Production and want to test a specific mechanic or technical question quickly (~4 hours, no phase gate implications)
 
 **If "Skip — concept already proven":**
-Ask (plain text, not a widget): "What evidence do you have that the concept works?"
+Ask with the question widget (free-text answer, no preset options; plain text only if no widget tool exists): "What evidence do you have that the concept works?"
 Record the one-line answer, then stop. Note: "Concept prototype skipped — evidence:
 [answer]." Suggest next step: `/map-systems` or `/design-system [mechanic]`.
 

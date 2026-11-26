@@ -3,7 +3,7 @@
 # hands work to one.
 #
 # /skill-test reads agents and skills as text and judges them. Some of what it
-# needs is mechanical and easy to miss by eye across 49 agent files: frontmatter
+# needs is mechanical and easy to miss by eye across 51 agent files: frontmatter
 # that does not parse, two descriptions close enough that the wrong agent gets
 # picked, an agent body that tells it to ask the user (an agent has no question
 # tool), a setting the tool ignores. This script finds those and prints them, so
@@ -44,7 +44,8 @@
 #   memory-grants     `memory:` is set, which turns on Read, Write and Edit even when
 #                     `tools` leaves them out
 #   asks-user         a body line that tells the agent to ask the user or wait for
-#                     approval; an agent's questions must come back in its report
+#                     approval; an agent's questions must come back in its report.
+#                     Tool-name mentions, table rows and negations are ignored
 #   no-delegations    printed under DELEGATION when no block was found, so "none
 #                     found" is never silent
 
@@ -130,6 +131,15 @@ ASKS_USER = re.compile(
     re.IGNORECASE)
 
 NO_TOOL = re.compile(r"AskUserQuestion`? is not\b|\bno (?:question tool|`?AskUserQuestion`?)\b|\bwithout (?:a question tool|`?AskUserQuestion`?)", re.I)
+
+# A table row, a description of what the tool is, or a negated verb states the
+# boundary; it does not tell the agent to ask the user. Skip those so the
+# asks-user note stays about real instructions.
+MENTION_ONLY = re.compile(
+    r"^\s*\||"                                                   # table row
+    r"\brender(?:s|ed)? for\b|"                                  # "the UI a harness renders for ..."
+    r"\b(?:never|not|do not|don't|does not|doesn't|no)\b[^.!?]{0,100}\bask",
+    re.I)
 
 CUE = re.compile(
     r"\bspawn|\bsub-?agents?\b|`Agent`|\bAgent tool\b|\bsubagent_type\b"
@@ -271,7 +281,7 @@ for name, path in agents.items():
     body = text.splitlines()[body_start:]
     for i, line in enumerate(body, start=body_start + 1):
         # A line that says the question tool is absent is the fix, not the problem.
-        if ASKS_USER.search(line) and not NO_TOOL.search(line):
+        if ASKS_USER.search(line) and not NO_TOOL.search(line) and not MENTION_ONLY.search(line):
             rec["notes"].append("asks-user line %d: %s" % (i, line.strip()[:120]))
     records[name] = rec
 

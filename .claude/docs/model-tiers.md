@@ -70,7 +70,7 @@ declares a tier except `/prototype`, which has no `model:` line, so it runs on
 the session's model. Whether the tier takes effect depends on how the skill starts
 (see the table at the top of this file).
 
-**Agent model tiers.** 30 agents use `model: inherit` and run on the session's
+**Agent model tiers.** 32 agents use `model: inherit` and run on the session's
 model. 19 are pinned:
 
 - **opus (3):** `creative-director`, `producer`, `technical-director`. Under an

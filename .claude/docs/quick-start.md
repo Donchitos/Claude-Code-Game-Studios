@@ -3,7 +3,7 @@
 ## What Is This?
 
 This is a complete Claude Code agent architecture for game development. It
-organizes 49 specialized AI agents into a studio hierarchy that mirrors
+organizes 51 specialized AI agents into a studio hierarchy that mirrors
 real game development teams, with defined responsibilities, delegation
 rules, and coordination protocols. It includes engine-specialist agents
 for Godot, Unity, and Unreal — each with dedicated sub-specialists for
@@ -311,9 +311,10 @@ CLAUDE.md                          -- Master config (read this first, ~80 lines)
 project.yaml                       -- Machine-readable project config (engine, modes, stage) — source of truth
 .claude/
   settings.json                    -- Claude Code hooks and project settings
-  agents/                          -- 49 agent definitions (YAML frontmatter)
-  skills/                          -- 75 slash command definitions (YAML frontmatter)
-  hooks/                           -- 15 event hooks (.sh, wired by settings.json) + yaml-helper.sh, update-check.sh
+  agents/                          -- 51 agent definitions (YAML frontmatter)
+  skills/                          -- 78 SKILL.md files: 75 slash commands + 3 legacy aliases
+  hooks/                           -- 15 hook commands across 8 events (.sh, wired by settings.json)
+                                      + yaml-helper.sh, update-check.sh
   rules/                           -- 14 path-specific rule files
   docs/
     quick-start.md                 -- This file
@@ -326,5 +327,5 @@ project.yaml                       -- Machine-readable project config (engine, m
     setup-requirements.md          -- System prerequisites (Git Bash, jq, Python)
     settings-local-template.md     -- Personal settings.local.json guide
     CLAUDE-local-template.md       -- Personal CLAUDE.local.md guide (gitignored overrides)
-    templates/                     -- 62 document templates (+ per-section guidance)
+    templates/                     -- 62 top-level document templates (74 files: +8 guides, +4 scaffold/config)
 ```

@@ -3,7 +3,7 @@ name: next-step
 description: "Names the one next step: make a game, change it after play, grow it, or the next studio-mode step. Use when asked what to do next, or stuck."
 argument-hint: "[optional: what you just finished, e.g. 'finished design-review' or 'stuck on ADRs']"
 user-invocable: true
-allowed-tools: Read, Glob, Grep, Bash(bash "*/.claude/skills/next-step/../../hooks/yaml-helper.sh" resolve_config *), Bash(bash "*/.claude/skills/next-step/../../scripts/story-status.sh"), Bash(bash .claude/scripts/story-status.sh*), Bash(bash .claude/scripts/artifact-check.sh *), Bash(bash ".claude/scripts/artifact-check.sh" *), Bash(bash ./.claude/scripts/artifact-check.sh *), Bash(git log *)
+allowed-tools: Read, Glob, Grep, Agent, Bash(bash "*/.claude/skills/next-step/../../hooks/yaml-helper.sh" resolve_config *), Bash(bash "*/.claude/skills/next-step/../../scripts/story-status.sh"), Bash(bash .claude/scripts/story-status.sh*), Bash(bash .claude/scripts/artifact-check.sh *), Bash(bash ".claude/scripts/artifact-check.sh" *), Bash(bash ./.claude/scripts/artifact-check.sh *), Bash(git log *)
 model: haiku
 ---
 
@@ -336,6 +336,21 @@ Glob finds no `prototypes/*/index.html`, check `engine.name` in `project.yaml`:
 - An engine other than `web`: the blocker stays `→ Next up`. Add under "Also
   available" that `/prototype --path html` is the fast option: a browser sketch
   of the core game, thrown away when the engine build starts.
+
+### External research (`gamer`)
+
+When the user asks what similar projects do, or the next step depends on
+benchmarking a mechanic or structure, spawn `gamer` once with a narrow brief:
+the engine and stage from `project.yaml`, the feature in scope, and the decision
+to inform. Keep the one next step first — research is an optional input, not a
+new compulsory phase.
+
+Return contract: "Return only (1) the sourced research brief, (2) 3-6 bullets of
+local comparison, (3) typed suggestions with owner skills/agents, and (4) one
+question with 2-4 options and a recommendation. Write no files." Offer its
+question under "Also available", widget-first. If it returns
+`NOT ASSESSED — NO DATA`, keep the step from the catalog and say no external
+reference was found.
 
 ---
 

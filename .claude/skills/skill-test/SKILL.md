@@ -260,7 +260,7 @@ story-readiness        | WARNINGS     | Check 5: no handoff
 Summary: 48 COMPLIANT, 3 WARNINGS, 1 NON-COMPLIANT, 1 NOT ASSESSED
 Aggregate Verdict: N WARNINGS / N FAILURES / N NOT ASSESSED
 
-Agents (observations, not scored): 49 read
+Agents (observations, not scored): 51 read
   asks-user: N agents · agent-type-list: N · preload-off: N · frontmatter: N
   Overlap pairs: [each pair, with whether both are still singled out]
   Delegation blocks: N in N skills; [the ones whose brief lacks a part]
@@ -575,8 +575,8 @@ gate-check             | gate     | YES      | never       | —        | never 
 design-review          | review   | YES      | never       | —        | never    | —        | critical
 ...
 
-AGENTS (49 total)
-Agent specs written: 49 (100%)
+AGENTS (51 total)
+Agent specs written: 51 (100%)
 
 Agent                  | Category   | Has Spec | Last Spec   | Result | Last Cat | C.Result
 -----------------------|------------|----------|-------------|--------|----------|----------
@@ -588,7 +588,7 @@ Top 5 Priority Gaps (skills with no spec, critical/high priority):
 (none if all specs are written)
 
 Skill coverage:  75/75 specs (100%)
-Agent coverage:  49/49 specs (100%)
+Agent coverage:  51/51 specs (100%)
 ```
 
 No file writes in audit mode.

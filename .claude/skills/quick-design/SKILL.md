@@ -54,7 +54,7 @@ implementation, or fundamentally alters an existing system's core rules — stop
 and redirect to `/design-system` instead. Verdict: **REDIRECTED** — use
 `/design-system` for this change.
 
-If there is no argument, ask the user to describe the change (plain text prompt), then classify it using the criteria above.
+If there is no argument, ask the user to describe the change with the question widget (free-text answer; plain text only if no widget tool exists), then classify it using the criteria above.
 
 Present the inferred classification using `AskUserQuestion`:
 - Prompt: "I've classified this as **[inferred type]** — [brief reason]. Is that correct?"
