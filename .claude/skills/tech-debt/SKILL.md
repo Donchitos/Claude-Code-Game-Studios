@@ -85,7 +85,7 @@ If no, stop here. Verdict: **BLOCKED** — user declined write.
 
 ## Phase 2B: Add Mode
 
-Ask the user for the description and affected files (plain text prompts).
+Ask the user for the description and affected files with the question widget (free-text answer; plain text only if no widget tool exists).
 
 **Run as a subagent?** `lead-programmer` preloads this skill, and a subagent has
 no `AskUserQuestion`. Return the three questions below (category, effort,

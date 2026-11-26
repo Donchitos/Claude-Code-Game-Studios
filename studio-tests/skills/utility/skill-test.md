@@ -169,7 +169,7 @@ Fixture defaults.
 - `.claude/skills/` contains 74 skill directories; 73 have a spec at the path
   their catalog entry names (in the sandbox, one skill's catalog `spec:` is
   emptied and its spec file removed — every live skill has a spec)
-- `catalog.yaml` has an `agents:` section with 49 entries, all with specs
+- `catalog.yaml` has an `agents:` section with 50 entries, all with specs
 
 **Input:** `/skill-test audit` (and, separately, `/skill-test` with no argument)
 
@@ -182,7 +182,7 @@ Fixture defaults.
    `studio-tests/skills/`), last static/category dates and
    results, category, priority
 4. Separate SKILLS and AGENTS tables, a Top 5 Priority Gaps list, and the lines
-   `Skill coverage: 73/74 specs (99%)` and `Agent coverage: 49/49 specs (100%)`
+   `Skill coverage: 73/74 specs (99%)` and `Agent coverage: 50/50 specs (100%)`
 5. No verdict line; the output ends with the offer to run `static all`,
    `category all` or `spec [name]`
 

@@ -108,14 +108,14 @@ engine or rebuild it there: say the one line One-shot 5's section 1 gives.
 
 **Once they have played,** ask two things, one at a time, and nothing else:
 
-1. In plain text: "What was the best moment, and the worst?"
+1. With the question widget (free-text answer; plain text only if no widget tool exists): "What was the best moment, and the worst?"
 2. With the question tool: "Keep going with it, change direction, or drop it?" Options:
    `Keep going` / `Change direction` / `Drop it`.
 
 A vague answer gets one follow-up at most. Then, in one reply:
 
 - **Keep going:** One-shot 5 (`SKILL.md`): its one question, keep iterating or grow it.
-- **Change direction:** ask in plain text, "What should the next version keep, and what should
+- **Change direction:** ask with the question widget (free-text answer; plain text only if no widget tool exists), "What should the next version keep, and what should
   change most?", write `prototypes/<name>/PIVOT-NOTE.md` from the answer (what to keep, what to
   change: the next brief reads it), then offer the next game: `/prototype <the changed idea, in
   their words>`.

@@ -1299,7 +1299,7 @@ closing, or produces a warning and lets work continue — per test type
 
 > **Different axis from `workflow`.** `workflow` controls *what docs are required.*
 > `team.size` controls *which agents exist to make them.* A solo dev on
-> `workflow: full` still doesn't need all 49 agents — they need the same coverage
+> `workflow: full` still doesn't need all 50 agents — they need the same coverage
 > from a smaller active set.
 
 ---
@@ -1310,7 +1310,7 @@ closing, or produces a warning and lets work continue — per test type
 |-------|-----------|-------|
 | `individual` | Core 8: `producer`, `game-designer`, `gameplay-programmer`, engine-specialist (engine-driven), `technical-artist`, `sound-designer`, `qa-tester`, `writer`. **Default.** | Directors and lead-* run only on explicit invocation (e.g. via `/architecture-decision`). Specialists outside the core 8 routed through their nearest core agent. Each `team-*` skill names its own set per value, which can sit outside the core 8 (`team-release` runs `release-manager`); each skill's own `team.size` list is authoritative, and the Affected skills table below mirrors it. |
 | `small` | Core 15: directors (CD, TD, PR) + leads (LP, AD, QL, ND) + game-designer + systems-designer + engine-specialist + technical-artist + sound-designer + qa-tester + ux-designer + writer | `team-*` skills add their `small` set (below); most reach their full pipeline only at `studio`. |
-| `studio` | All 49 agents available. Engine sub-specialists (e.g. `unity-dots-specialist` separate from `unity-specialist`) routed when relevant. The adversarial review pass in `team-combat`, `team-ui` and `team-polish`. | Commercial titles, learning the full org chart, large teams with parallel work. |
+| `studio` | All 50 agents available. Engine sub-specialists (e.g. `unity-dots-specialist` separate from `unity-specialist`) routed when relevant. The adversarial review pass in `team-combat`, `team-ui` and `team-polish`. | Commercial titles, learning the full org chart, large teams with parallel work. |
 
 ---
 

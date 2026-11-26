@@ -99,13 +99,48 @@ every mode and on every tool: the user closing the question, a headless run that
 returns every question as skipped, a reply that picks nothing.
 
 - Do not write a file, change a mode or setting, or pick an option on its behalf.
-- Ask again in plain text, say what is waiting on the answer, and wait.
+- Ask again through the question widget (see § Question delivery), say what is
+  waiting on the answer, and wait. Plain text only when the widget is unavailable.
 - In `autonomous`, a question the mode did not require can be decided as usual:
   pick the recommended option and log it via `log_decision`. A question in an
   `automation_always_ask` category, or in an exempt skill, is the user's: ask
   again and wait.
 - Where nobody can answer (CI, a headless run), stop and report what is waiting
   rather than choosing.
+
+---
+
+## Question delivery — widget first, no raw reasoning
+
+Several runtimes render questions as a widget: `AskUserQuestion` in Claude Code,
+`question` in OpenCode and other harnesses. Where such a tool exists, every
+user question goes through it.
+
+- Call the question tool directly. Do not emit reasoning, a draft, or a
+  "thinking" paragraph immediately before the call: that text reaches the user
+  as raw text next to the widget and reads like leaked internal reasoning.
+- Put the context the user needs in the question text and in each option's
+  description. Keep option labels short, and keep a free-text answer available
+  through the runtime's "type your own answer" affordance for open questions.
+- Plain text is a **fallback only**: use it when the runtime has no question
+  tool, or when its widget cannot accept the needed free text. In that case
+  say so in one short line, then ask in plain text.
+- When a skill says "ask in plain text", "ask again in plain text", or "not a
+  widget", read it as "plain text only if no question tool exists" — the widget
+  wins whenever available. This applies to the shared "a skipped or dismissed
+  question is not an answer: ask again in plain text" line in skill front matter.
+  Reports and result lines that are meant to be plain text (for example
+  `Run result:`) are output, not questions, and are unaffected.
+- A question returned skipped, dismissed or empty is still not an answer (see
+  § Every mode: a question with no answer): re-ask through the widget once. If
+  the widget is again skipped, or the runtime has no widget, state briefly what
+  is waiting and ask in plain text — do not dump a reasoning draft as the question.
+- Use the tool the current runtime provides. Never mention a question tool the
+  runtime does not have, and never narrate the tool choice to the user.
+
+`question-widget-specialist` audits this protocol and recommends wording,
+option shapes and fallbacks. It owns the harness question widget only — not
+in-game UI widgets, which belong to the UI agents.
 
 ---
 

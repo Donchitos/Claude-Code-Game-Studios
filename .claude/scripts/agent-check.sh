@@ -3,7 +3,7 @@
 # hands work to one.
 #
 # /skill-test reads agents and skills as text and judges them. Some of what it
-# needs is mechanical and easy to miss by eye across 49 agent files: frontmatter
+# needs is mechanical and easy to miss by eye across 50 agent files: frontmatter
 # that does not parse, two descriptions close enough that the wrong agent gets
 # picked, an agent body that tells it to ask the user (an agent has no question
 # tool), a setting the tool ignores. This script finds those and prints them, so

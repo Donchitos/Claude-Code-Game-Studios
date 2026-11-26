@@ -1230,3 +1230,11 @@ agents:
     last_category: ""
     last_category_result: ""
     category: specialist
+
+  - name: question-widget-specialist
+    spec: studio-tests/agents/specialists/question-widget-specialist.md
+    last_spec: ""
+    last_spec_result: ""
+    last_category: ""
+    last_category_result: ""
+    category: specialist

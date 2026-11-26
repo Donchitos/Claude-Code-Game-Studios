@@ -25,8 +25,9 @@ link, or what the user gave), or says "not researched". Never a number from memo
 Start with the person, not the game. Ask conversationally:
 - A moment in a game that moved or thrilled them, and what created it.
 - A fantasy they have always wanted in a game and never found.
-- The three games they spent the most time with, and why. Ask this as plain text, never with
-  preset options: they must be able to type any game.
+- The three games they spent the most time with, and why. Ask this with the question widget,
+  with no preset options (free-text answer); plain text only if no widget tool exists: they
+  must be able to type any game.
 - Genres they love or avoid. Then ask: challenge, relax, story or self-expression?
 
 Then ask these three questions together:

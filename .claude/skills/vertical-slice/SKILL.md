@@ -354,7 +354,7 @@ before committing the full team to Production, but is not a hard gate.
 **If PIVOT:**
 
 Before routing back to GDD revision, capture the carry-forward note. Ask these
-two questions (plain text, one at a time):
+two questions (question widget, one at a time; plain text only if no widget tool exists):
 
 1. "What systems or mechanics worked at this quality level and should be preserved in the revised design?"
 2. "What specifically failed — the core loop, the architecture, the pipeline, or the fun?"

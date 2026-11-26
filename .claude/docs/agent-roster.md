@@ -52,6 +52,7 @@ session's model.
 | `prototyper` | Rapid prototyping | Throwaway prototypes, mechanic testing, feasibility validation |
 | `security-engineer` | Security | Anti-cheat, exploit prevention, save encryption, network security |
 | `accessibility-specialist` | Accessibility | WCAG compliance, colorblind modes, remapping, text scaling |
+| `question-widget-specialist` | Runtime question delivery | Widget-first prompts, free-text options, no raw reasoning before the tool call, plain-text fallback |
 | `live-ops-designer` | Live operations | Seasons, events, battle passes, retention, live economy |
 | `community-manager` | Community | Patch notes, player feedback, crisis comms, community health |
 

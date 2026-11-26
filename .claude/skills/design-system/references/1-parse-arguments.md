@@ -35,7 +35,7 @@ A system name or retrofit path is **required**. If missing:
 2. If it exists: read it, find the highest-priority system with status "Not Started" or equivalent, and use `AskUserQuestion`:
    - Prompt: "The next system in your design order is **[system-name]** ([priority] | [layer]). Start designing it?"
    - Options: `[A] Yes — design [system-name]` / `[B] Pick a different system` / `[C] Stop here`
-   - If [A]: proceed with that system name. If [B]: ask which system to design (plain text). If [C]: exit.
+   - If [A]: proceed with that system name. If [B]: ask which system to design with the question widget (free-text answer, no preset options; plain text only if no widget tool exists). If [C]: exit.
 3. If no systems index exists, fail with:
    > "Usage: `/design-system <system-name>` — e.g., `/design-system movement`
    > Or to fill gaps in an existing GDD: `/design-system retrofit design/gdd/[system-name].md`

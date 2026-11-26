@@ -31,7 +31,7 @@ Recommended path (in order, `standard`/`full`):
 **If PIVOT:**
 
 Before routing to the next prototype, capture the carry-forward note. Ask these
-two questions (plain text, one at a time):
+two questions (question widget, one at a time; plain text only if no widget tool exists):
 
 1. "What specifically worked in this prototype that we should preserve in the next version?"
 2. "What is the single most important thing to change?"
