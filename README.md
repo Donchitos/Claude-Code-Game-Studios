@@ -219,10 +219,11 @@ project.yaml                        # Project settings: engine, modes, goal
 .claude/
   settings.json                     # Hooks, permissions, safety rules
   agents/                           # 51 agent definitions (markdown + YAML frontmatter)
-  skills/                           # 75 skills, plus three old names (a subdirectory each)
-  hooks/                            # 18 scripts (bash) — 15 event hooks, two helpers they
-                                    #   source (yaml-helper.sh, update-check.sh), and one
-                                    #   opt-in diagnostic you wire yourself
+  skills/                           # 78 SKILL.md files: 75 current skills + 3 legacy aliases
+                                    #   (changelog, help, settings)
+  hooks/                            # 18 scripts (bash) — 15 hook commands across 8 events, two
+                                    #   helpers they source (yaml-helper.sh, update-check.sh),
+                                    #   and one opt-in diagnostic you wire yourself
   scripts/                          # Helper scripts the skills and hooks run; each .sh has --help
   rules/                            # 14 path-scoped coding standards
   genres/                           # Genre sheets and look guidance /prototype asks and
@@ -231,7 +232,8 @@ project.yaml                        # Project settings: engine, modes, goal
   statusline.sh                     # Status line script (context%, model, stage, epic breadcrumb)
   docs/
     workflow-catalog.yaml           # 7-phase pipeline definition (read by /next-step)
-    templates/                      # 62 document templates (+ per-section guidance)
+    templates/                      # 62 top-level document templates; 74 files in total
+                                    #   (8 per-section guides + 4 scaffold/config files)
 prototypes/                         # One-shots, one folder each (isolated from src/)
 references/                         # Optional: images and sounds you like, for /prototype
 src/                                # Game source code (Godot, Web). The code root is
